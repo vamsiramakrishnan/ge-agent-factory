@@ -1,10 +1,38 @@
-import { describe, expect, test } from "bun:test";
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { reviewSpec } from "./factory-core.mjs";
 import { STATE_PATHS } from "./state-paths.mjs";
 
+let fixtureDir;
+let previousCatalogPath;
+
 describe("factory core spec review", () => {
+  beforeAll(async () => {
+    previousCatalogPath = process.env.GE_USE_CASE_CATALOG;
+    fixtureDir = await mkdtemp(join(tmpdir(), "ge-catalog-fixture-"));
+    const catalogPath = join(fixtureDir, "use-cases.generated.json");
+    await writeFile(catalogPath, `${JSON.stringify([{
+      id: "benefits-q-a-enrollment",
+      title: "Benefits Q&A Enrollment",
+      department: "hr",
+      persona: "Benefits operations lead",
+      generationSpec: {
+        sourceSystems: [{ id: "workday", name: "Workday" }],
+        entities: [{ name: "BenefitsEnrollment" }],
+        behaviorContract: { role: "Benefits operations lead", goldenEvals: [] },
+      },
+    }], null, 2)}\n`, "utf8");
+    process.env.GE_USE_CASE_CATALOG = catalogPath;
+  });
+
+  afterAll(async () => {
+    if (previousCatalogPath === undefined) delete process.env.GE_USE_CASE_CATALOG;
+    else process.env.GE_USE_CASE_CATALOG = previousCatalogPath;
+    if (fixtureDir) await rm(fixtureDir, { recursive: true, force: true });
+  });
+
   test("resolves existing catalog specs without requiring interview artifacts", async () => {
     const review = await reviewSpec({ usecaseId: "benefits-q-a-enrollment" });
 

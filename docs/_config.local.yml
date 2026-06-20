@@ -1,0 +1,7 @@
+# Local-only override for `bundle exec jekyll build`.
+# GitHub Pages uses `remote_theme` from _config.yml. Local builds use the bundled
+# theme gem so they do not need to fetch just-the-docs from GitHub on every run.
+remote_theme: false
+theme: just-the-docs
+plugins:
+  - jekyll-include-cache

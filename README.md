@@ -1,15 +1,21 @@
 # GE Agent Factory
 
-[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/?cloudshell_git_repo=https://github.com/vamsiramakrishnan/ge-agent-factory&cloudshell_workspace=installer&cloudshell_tutorial=installer/TUTORIAL.md)
+GE Agent Factory exists because enterprise agents need more than prompts: they
+need a business contract, source-system grounding, generated tools, tests, evals,
+deployment automation, and runtime identity. This repo makes those pieces one
+traceable path from use case to production.
 
-GE Agent Factory turns an enterprise use case into a **generated, tested, deployable
-Gemini Enterprise agent**. You start from a business use case (or an interview that
-produces one), and the factory generates a real ADK agent — code, tools, fixtures,
-tests, and evals — grounded by simulated source systems. The same generated workspace
-runs locally against fixtures and is then promoted to **your own** Google Cloud project
-(single-tenant; no shared/cross-project deploys): per-agent data stores, an MCP tool
-plane, Agent Runtime, Agent Registry, and a Gemini Enterprise publish. It is an agent
-**factory**, not a prompt-only demo generator.
+In one sentence, it turns an enterprise use case into a **generated, tested,
+deployable Gemini Enterprise agent**. You start from a business use case (or an
+interview that produces one), and the factory generates a real ADK agent — code,
+tools, fixtures, tests, and evals — grounded by simulated source systems. The
+same generated workspace runs locally against fixtures and is then promoted to
+**your own** Google Cloud project (single-tenant; no shared/cross-project
+deploys): per-agent data stores, an MCP tool plane, Agent Runtime, Agent
+Registry, and a Gemini Enterprise publish. It is an agent **factory**, not a
+prompt-only demo generator.
+
+[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/?cloudshell_git_repo=https://github.com/vamsiramakrishnan/ge-agent-factory&cloudshell_workspace=installer&cloudshell_tutorial=installer/TUTORIAL.md)
 
 **Architecture map:** [docs/architecture.svg](docs/architecture.svg) shows the system in
 developer-friendly terms.
@@ -20,9 +26,12 @@ The full docs site (sidebar + search) is published with GitHub Pages:
 
 **→ https://vamsiramakrishnan.github.io/ge-agent-factory/**
 
+- **[Developer Guide](https://vamsiramakrishnan.github.io/ge-agent-factory/developers.html)** — purpose, repo map, development loops, quality gates, and docs rules.
 - **[Concepts](https://vamsiramakrishnan.github.io/ge-agent-factory/concepts/)** — the factory model: local vs remote mode, the stage graph, OKF specs, the data plane, the MCP tool plane.
 - **[Reference](https://vamsiramakrishnan.github.io/ge-agent-factory/reference/)** — the `ge` CLI, `make` targets, configuration, and the apps.
 - **[Cookbooks](https://vamsiramakrishnan.github.io/ge-agent-factory/cookbooks/)** — task-oriented guides: build a canary, run a mission, bring your own simulator, ship to the cloud.
+- **[Operations](https://vamsiramakrishnan.github.io/ge-agent-factory/OPERATIONS.html)** — deploy, operate, troubleshoot, and recover the factory.
+- **[MCP](https://vamsiramakrishnan.github.io/ge-agent-factory/MCP.html)** — factory MCP tools plus the generated-agent MCP tool plane.
 
 The site is sourced from [`docs/`](docs/) (start at [`docs/index.md`](docs/index.md)).
 
@@ -33,6 +42,8 @@ Local development — no cloud credentials required:
 ```bash
 make setup          # install deps, sync catalog/skills, install the `ge` command, start the daemon
 make doctor-local   # check local tools: Bun, uv, Python, agents-cli, cache, harness wiring
+make devex-check    # fast gate: local doctor, docs links, workspace manifest contracts
+make devex-smoke    # prove the path: doctor → local mode → one validated canary workspace
 make console        # open the operator UI (Pipeline · Fleet · Activity · Doctor) → http://localhost:18260
 ```
 
@@ -117,6 +128,8 @@ ge init                # discover config → .ge.json
 ge mode local          # or: ge mode remote
 ge up                  # stand up all planes (infra + data + tool) → unified doctor
 ge doctor              # toolchain · factory · data plane · tool plane
+ge devex check         # fast gate: local doctor + docs links + workspace manifests
+ge devex smoke         # one-command local proof: doctor → validated canary workspace
 ge agents build --canary
 ge agents ship --canary
 ge agents status --watch
@@ -129,6 +142,7 @@ Run via `bun tools/ge.mjs <cmd>`, or install it on your PATH with `make setup` (
 
 ```bash
 bun install            # install workspace deps
+make devex-check       # fast local gate before or after a focused edit
 make ci                # the CI gate: source hygiene + full bun test suite (mirrors CI)
 bun test apps tools    # run the test suite directly
 ```

@@ -15,6 +15,7 @@ import { findOpenPort } from "./net.mjs";
 import { parseConcurrency } from "./concurrency.mjs";
 import { readJson, writeJson, updateJson } from "./json-io.mjs";
 import { buildFactoryConfig, explainFactoryConfig } from "./config-schema.mjs";
+import { runDocsCheck } from "./docs-check.mjs";
 import { commandMeta, commandRequirements } from "./ge-command-registry.mjs";
 import { buildFactoryAutopilotMission } from "./factory-autopilot-mission.mjs";
 import { buildDoctorReport, createCheckCollector, runDoctorSection } from "./factory-doctor.mjs";
@@ -28,6 +29,7 @@ import { LEGACY_STATE_PATHS, STATE_PATHS, displayStatePath } from "./state-paths
 import { loadInterviewSpecEntries, slug, validateGenerationSpec } from "../../apps/ge-demo-generator/src/agent-spec-registry.js";
 import { createFactoryPlan, runFactoryPlan } from "../../apps/ge-demo-generator/src/factory.js";
 import { removeWorkspace } from "../../apps/ge-demo-generator/src/projects.js";
+import { buildWorkspaceContractReport } from "../../apps/ge-demo-generator/src/workspace-contract.js";
 import { openRunLedger } from "./run-ledger.mjs";
 import { planWorkItem } from "./pipeline-state-machine.mjs";
 import { planReconcile } from "./reconcile.mjs";
@@ -37,6 +39,7 @@ const CONFIG_PATH = join(REPO_ROOT, ".ge.json");
 const STATE_PATH = STATE_PATHS.envState;
 const SYNC_STATE_PATH = STATE_PATHS.syncState;
 const CATALOG_PATH = join(REPO_ROOT, "apps/ge-demo-generator/generated/use-cases.generated.json");
+const catalogPath = () => process.env.GE_USE_CASE_CATALOG || CATALOG_PATH;
 const AGENT_SPEC_REGISTRY_PATH = join(REPO_ROOT, "apps/ge-demo-generator/src/agent-spec-registry.generated.json");
 const TF_DIR = join(REPO_ROOT, "installer/terraform");
 const MCP_SERVICE_DIR = join(REPO_ROOT, "apps/ge-demo-generator/mcp-service");
@@ -527,12 +530,13 @@ async function getJson(url, path, headers = {}) {
 
 // ── catalog ───────────────────────────────────────────────────────────────────
 export async function loadCatalog() {
-  if (!existsSync(CATALOG_PATH)) {
-    throw new Error(`catalog not found: ${CATALOG_PATH} (generated artifact — run \`npm run use-cases:sync\`)`);
+  const path = catalogPath();
+  if (!existsSync(path)) {
+    throw new Error(`catalog not found: ${path} (generated artifact — run \`bun run catalog\`)`);
   }
   // Read the JSON artifact fresh each call so a regenerated catalog is picked up
   // without restarting a long-running daemon.
-  const generated = JSON.parse(readFileSync(CATALOG_PATH, "utf8"));
+  const generated = JSON.parse(readFileSync(path, "utf8"));
   let interviewEntries = [];
   try {
     interviewEntries = await loadInterviewSpecEntries({ repoRoot: GEN_DIR });
@@ -1393,6 +1397,9 @@ function summarizeLocalWorkspace(workspaceId, { requestedId = null } = {}) {
   const workspacePath = join(LOCAL_PROJECTS, workspaceId);
   const manifestPath = join(workspacePath, "workspace.json");
   const manifest = readJson(manifestPath, null);
+  const contract = manifest && existsSync(workspacePath)
+    ? buildWorkspaceContractReport(workspacePath, { manifest, strictFiles: true })
+    : null;
   return {
     id: workspaceId,
     requestedId,
@@ -1406,6 +1413,12 @@ function summarizeLocalWorkspace(workspaceId, { requestedId = null } = {}) {
     readiness: manifest?.readiness || {},
     quality: manifest?.quality || {},
     registration: manifest?.registration || {},
+    contract: contract ? {
+      ok: contract.ok,
+      fails: contract.manifest?.fails || 0,
+      warnings: contract.manifest?.warnings || 0,
+      checks: contract.checks || [],
+    } : null,
     evalConfig: existsSync(join(workspacePath, "tests/eval/eval_config.json")) ? "tests/eval/eval_config.json" : null,
     smokeTest: existsSync(join(workspacePath, "tests/test_smoke.py")) ? "tests/test_smoke.py" : null,
   };
@@ -1421,6 +1434,112 @@ function summarizeLocalRunWorkspaces(run) {
     }));
 }
 
+function localWorkspaceContractReports({ ids = "", allWorkspaces = false, strictFiles = true } = {}) {
+  const store = readJson(LOCAL_PROJECT_STORE, { workspaces: [] });
+  const items = workspaceStoreItems(store);
+  const requested = parseIdList(ids);
+  const selected = [];
+  const byId = new Map(items.map((item) => [item.id, item]));
+
+  if (requested.length) {
+    for (const id of requested) {
+      const workspaceId = resolveLocalWorkspaceId(id);
+      selected.push(byId.get(workspaceId) || { id: workspaceId, useCaseId: id === workspaceId ? null : id });
+    }
+  } else {
+    for (const item of items) {
+      if (allWorkspaces || item.useCaseId) selected.push(item);
+    }
+  }
+
+  const seen = new Set();
+  return selected
+    .filter((item) => {
+      if (!item?.id || seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
+    })
+    .map((item) => {
+      const workspacePath = join(LOCAL_PROJECTS, item.id);
+      const manifestPath = join(workspacePath, "workspace.json");
+      const manifest = readJson(manifestPath, null);
+      if (!existsSync(workspacePath) || !manifest) {
+        return {
+          id: item.id,
+          useCaseId: item.useCaseId || null,
+          path: displayStatePath(workspacePath),
+          manifest: existsSync(manifestPath) ? displayStatePath(manifestPath) : null,
+          ok: false,
+          fails: 1,
+          warnings: 0,
+          checks: [{
+            id: "workspace:manifest_missing",
+            name: "workspace manifest",
+            status: "fail",
+            detail: existsSync(workspacePath) ? "workspace.json missing" : "workspace directory missing",
+            fix: item.useCaseId ? `ge agents build --ids ${item.useCaseId} --local --force` : "regenerate or remove the stale workspace registry entry",
+          }],
+        };
+      }
+      const contract = buildWorkspaceContractReport(workspacePath, { manifest, strictFiles });
+      return {
+        id: item.id,
+        useCaseId: item.useCaseId || manifest.source?.useCaseId || manifest.useCaseId || null,
+        path: displayStatePath(workspacePath),
+        manifest: displayStatePath(manifestPath),
+        ok: contract.ok,
+        fails: contract.manifest?.fails || 0,
+        warnings: contract.manifest?.warnings || 0,
+        checks: contract.checks || [],
+        missing: (contract.manifest?.requiredFiles || []).filter((file) => !file.exists).map((file) => file.path),
+      };
+    });
+}
+
+export function devexCheck(_cfg = {}, {
+  ids = "",
+  allWorkspaces = false,
+  strictWorkspaces = true,
+  docs = true,
+  local = true,
+} = {}) {
+  const startedAt = new Date().toISOString();
+  const doctor = local ? localPreflight() : null;
+  const docsResult = docs ? runDocsCheck({ root: REPO_ROOT }) : null;
+  const workspaceItems = localWorkspaceContractReports({
+    ids,
+    allWorkspaces,
+    strictFiles: strictWorkspaces,
+  });
+  const workspaceFails = workspaceItems.filter((item) => !item.ok).length;
+  const workspaceWarnings = workspaceItems.reduce((sum, item) => sum + (item.warnings || 0), 0);
+  const ok = (!doctor || doctor.fails === 0) && (!docsResult || docsResult.ok) && workspaceFails === 0;
+  return {
+    kind: "ge.devex.check",
+    ok,
+    blocked: !ok,
+    startedAt,
+    finishedAt: new Date().toISOString(),
+    doctor,
+    docs: docsResult,
+    workspaces: {
+      checked: workspaceItems.length,
+      failed: workspaceFails,
+      warnings: workspaceWarnings,
+      strict: strictWorkspaces,
+      all: allWorkspaces,
+      items: workspaceItems,
+    },
+    next: ok
+      ? ["ge devex smoke --target validated --force", "make console"]
+      : [
+        doctor?.fails ? "make setup" : null,
+        docsResult && !docsResult.ok ? "node tools/docs-check.mjs" : null,
+        workspaceFails ? "ge devex smoke --target validated --force" : null,
+      ].filter(Boolean),
+  };
+}
+
 function localWorkspaceExists(id) {
   if (!id) return false;
   if (!existsSync(join(LOCAL_PROJECTS, id))) return false;
@@ -1433,8 +1552,9 @@ function localWorkspaceExists(id) {
 // if the catalog hasn't been synced yet.
 function catalogDeptById() {
   try {
-    if (!existsSync(CATALOG_PATH)) return new Map();
-    return new Map(JSON.parse(readFileSync(CATALOG_PATH, "utf8")).map((e) => [e.id, e.department]));
+    const path = catalogPath();
+    if (!existsSync(path)) return new Map();
+    return new Map(JSON.parse(readFileSync(path, "utf8")).map((e) => [e.id, e.department]));
   } catch {
     return new Map();
   }
@@ -1832,6 +1952,24 @@ export async function devexSmoke(cfg, {
     log,
   });
   const workspace = build.primaryWorkspace || null;
+  const contract = workspace?.contract || null;
+  if (!workspace || !contract?.ok) {
+    return {
+      kind: "ge.devex.smoke",
+      ok: false,
+      blocked: true,
+      stage: "workspace_contract",
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      mode: "local",
+      target: buildTarget,
+      doctor,
+      build,
+      workspace,
+      contract,
+      next: workspace ? `ge devex check --id ${workspace.id}` : "ge devex check",
+    };
+  }
   return {
     kind: "ge.devex.smoke",
     ok: true,
@@ -1843,6 +1981,7 @@ export async function devexSmoke(cfg, {
     doctor,
     build,
     workspace,
+    contract,
     next: [
       workspace?.commands?.doctor || (workspace ? `ge-harness workspace doctor ${workspace.id} --stage preview` : null),
       workspace?.commands?.eval || null,

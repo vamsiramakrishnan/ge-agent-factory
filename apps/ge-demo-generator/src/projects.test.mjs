@@ -24,10 +24,27 @@ describe("workspace store", () => {
 
     const workspace = await createWorkspace({ storePath, projectsRoot: workspacesRoot, name: "Audit Agent" });
     const raw = JSON.parse(await readFile(storePath, "utf8"));
+    const manifest = JSON.parse(await readFile(join(workspacesRoot, workspace.id, "workspace.json"), "utf8"));
 
     expect(workspace.id).toBe("audit-agent");
     expect(raw.workspaces.map((item) => item.id)).toEqual(["audit-agent"]);
     expect(raw.projects).toBeUndefined();
+    expect(manifest.schemaVersion).toBe(1);
+    expect(manifest.purpose).toContain("Generated agent workspace");
+    expect(manifest.agent).toMatchObject({
+      runtime: "adk-python",
+      entrypoint: "app.agent:root_agent",
+    });
+    expect(manifest.commands).toMatchObject({
+      install: "uv sync",
+      run: "uv run adk web",
+      test: "uv run pytest",
+    });
+    expect(manifest.registration).toMatchObject({
+      agentRegistryReady: false,
+      geminiEnterpriseReady: false,
+    });
+    expect(manifest.generatedFiles.some((item) => item.path === "workspace.json" && item.exists)).toBe(true);
   });
 
   test("removeWorkspace persists the deletion to the store", async () => {

@@ -1,8 +1,18 @@
+---
+title: Operations
+nav_order: 6
+layout: default
+---
+
 # GE Agent Factory — Operations
 
 The canonical runbook for deploying the factory and shipping agents. Everything
 is driven by `bun tools/ge.mjs` (`ge`). Config resolves: flags > env > `.ge.json`
 > terraform outputs > gcloud discovery.
+
+Use this page when the question is operational: how to stand up the platform,
+what each cloud component owns, which stage failed, how local and remote mode
+split responsibility, and how to recover without inventing a one-off path.
 
 ## Components
 

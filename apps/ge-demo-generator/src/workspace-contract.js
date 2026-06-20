@@ -1,5 +1,5 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 export const WORKSPACE_SCHEMA_VERSION = 1;
@@ -62,6 +62,14 @@ export const REQUIRED_WORKSPACE_FILES = Object.freeze([
   WORKSPACE_PATHS.agent,
   WORKSPACE_PATHS.pyproject,
   WORKSPACE_PATHS.smokeTest,
+]);
+
+export const REQUIRED_WORKSPACE_COMMANDS = Object.freeze([
+  "install",
+  "run",
+  "test",
+  "validate",
+  "doctor",
 ]);
 
 export const WORKSPACE_STAGES = Object.freeze([
@@ -139,7 +147,143 @@ export async function writeWorkspaceText(workspaceDir, relPath, value) {
   return path;
 }
 
-export function buildWorkspaceContractReport(workspaceDir) {
+function check(id, ok, name, detail, fix = null, level = "fail") {
+  return {
+    id,
+    name,
+    status: ok ? "pass" : level,
+    detail,
+    fix,
+  };
+}
+
+function readWorkspaceManifestSync(workspaceDir) {
+  try {
+    return JSON.parse(readFileSync(workspacePath(workspaceDir, WORKSPACE_PATHS.workspaceManifest), "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+function hasText(value) {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function requiredGeneratedFiles(manifest) {
+  const generated = Array.isArray(manifest?.generatedFiles) ? manifest.generatedFiles : [];
+  const required = generated
+    .filter((item) => item?.required && item.path)
+    .map((item) => item.path);
+  return Array.from(new Set([
+    WORKSPACE_PATHS.workspaceManifest,
+    ...REQUIRED_WORKSPACE_FILES,
+    ...required,
+  ]));
+}
+
+export function validateWorkspaceManifest(manifest, { workspaceDir = null, strictFiles = true } = {}) {
+  const checks = [];
+  checks.push(check(
+    "manifest:schema_version",
+    manifest?.schemaVersion === WORKSPACE_SCHEMA_VERSION,
+    "schema version",
+    manifest?.schemaVersion === WORKSPACE_SCHEMA_VERSION
+      ? `v${WORKSPACE_SCHEMA_VERSION}`
+      : `expected v${WORKSPACE_SCHEMA_VERSION}, found ${manifest?.schemaVersion ?? "missing"}`,
+    "regenerate or refresh workspace.json with ge devex smoke --force",
+  ));
+  checks.push(check(
+    "manifest:purpose",
+    hasText(manifest?.purpose),
+    "purpose",
+    hasText(manifest?.purpose) ? manifest.purpose : "missing",
+    "add a crisp purpose to workspace.json",
+  ));
+  checks.push(check(
+    "manifest:agent",
+    hasText(manifest?.agent?.runtime) && hasText(manifest?.agent?.entrypoint),
+    "agent runtime",
+    hasText(manifest?.agent?.runtime) && hasText(manifest?.agent?.entrypoint)
+      ? `${manifest.agent.runtime} · ${manifest.agent.entrypoint}`
+      : "agent.runtime or agent.entrypoint missing",
+    "write agent.runtime and agent.entrypoint in workspace.json",
+  ));
+  const commands = manifest?.commands || {};
+  const missingCommands = REQUIRED_WORKSPACE_COMMANDS.filter((name) => !hasText(commands[name]));
+  checks.push(check(
+    "manifest:commands",
+    missingCommands.length === 0,
+    "commands",
+    missingCommands.length ? `missing ${missingCommands.join(", ")}` : REQUIRED_WORKSPACE_COMMANDS.join(", "),
+    "refresh workspace.json command contract",
+  ));
+  checks.push(check(
+    "manifest:registration",
+    typeof manifest?.registration?.agentRegistryReady === "boolean" && typeof manifest?.registration?.geminiEnterpriseReady === "boolean",
+    "registration flags",
+    typeof manifest?.registration?.agentRegistryReady === "boolean" && typeof manifest?.registration?.geminiEnterpriseReady === "boolean"
+      ? `agentRegistryReady=${manifest.registration.agentRegistryReady}, geminiEnterpriseReady=${manifest.registration.geminiEnterpriseReady}`
+      : "agentRegistryReady/geminiEnterpriseReady booleans missing",
+    "write explicit registration readiness flags",
+  ));
+  const generatedFiles = Array.isArray(manifest?.generatedFiles) ? manifest.generatedFiles : [];
+  checks.push(check(
+    "manifest:generated_files",
+    generatedFiles.some((item) => item?.path === WORKSPACE_PATHS.workspaceManifest),
+    "generated file inventory",
+    generatedFiles.length ? `${generatedFiles.length} file entries` : "missing generatedFiles[]",
+    "refresh workspace.json generatedFiles inventory",
+  ));
+  checks.push(check(
+    "manifest:source",
+    hasText(manifest?.source?.useCaseId) || hasText(manifest?.useCaseId),
+    "source use case",
+    manifest?.source?.useCaseId || manifest?.useCaseId || "missing",
+    "associate generated workspaces with source.useCaseId",
+    "warn",
+  ));
+  checks.push(check(
+    "manifest:quality",
+    Boolean(manifest?.quality && typeof manifest.quality === "object"),
+    "quality summary",
+    manifest?.quality ? Object.entries(manifest.quality).map(([key, value]) => `${key}=${value}`).join(", ") : "missing",
+    "refresh workspace readiness before publishing",
+    "warn",
+  ));
+
+  const requiredFiles = requiredGeneratedFiles(manifest).map((relPath) => ({
+    path: relPath,
+    exists: workspaceDir ? workspaceFileExists(workspaceDir, relPath) : false,
+  }));
+  if (workspaceDir) {
+    const missingFiles = requiredFiles.filter((item) => !item.exists).map((item) => item.path);
+    checks.push(check(
+      "workspace:required_files",
+      missingFiles.length === 0,
+      "required files",
+      missingFiles.length ? `missing ${missingFiles.join(", ")}` : `${requiredFiles.length} required files present`,
+      "regenerate or repair the workspace",
+      strictFiles ? "fail" : "warn",
+    ));
+  }
+  const fails = checks.filter((item) => item.status === "fail").length;
+  const warnings = checks.filter((item) => item.status === "warn").length;
+  return {
+    schemaVersion: WORKSPACE_SCHEMA_VERSION,
+    ok: fails === 0,
+    fails,
+    warnings,
+    checks,
+    requiredFiles,
+  };
+}
+
+export function buildWorkspaceContractReport(workspaceDir, options = {}) {
+  const manifest = options.manifest || readWorkspaceManifestSync(workspaceDir);
+  const manifestReport = validateWorkspaceManifest(manifest, {
+    workspaceDir,
+    strictFiles: options.strictFiles !== false,
+  });
   const required = REQUIRED_WORKSPACE_FILES.map((relPath) => ({
     path: relPath,
     exists: workspaceFileExists(workspaceDir, relPath),
@@ -147,6 +291,8 @@ export function buildWorkspaceContractReport(workspaceDir) {
   return {
     schemaVersion: WORKSPACE_SCHEMA_VERSION,
     required,
-    ok: required.every((item) => item.exists),
+    manifest: manifestReport,
+    checks: manifestReport.checks,
+    ok: required.every((item) => item.exists) && manifestReport.ok,
   };
 }

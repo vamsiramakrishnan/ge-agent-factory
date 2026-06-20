@@ -18,11 +18,12 @@ aux_links_new_tab: true
 exclude:
   - Gemfile
   - Gemfile.lock
+  - .bundle/
+  - .jekyll-cache/
+  - vendor/
   - adr/
   - collateral/
   - plans/
   - runbooks/
   - skills/
   - superpowers/
-  - OPERATIONS.md
-  - MCP.md

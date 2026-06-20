@@ -12,7 +12,7 @@ AGENTS_SKILLS_DIR ?= $(HOME)/.agents/skills
 .DEFAULT_GOAL := help
 
 
-.PHONY: help next bootstrap all setup install uninstall deps data-runtime deps-terraform skills-sync skills-doctor skills-spec-audit skills-install doctor doctor-local up cutover \
+.PHONY: help next bootstrap all setup install uninstall deps data-runtime deps-terraform skills-sync skills-doctor skills-spec-audit skills-install doctor doctor-local devex-check devex-smoke up cutover \
         provision provision-local sync sync-local mcp dev build \
         console presentation generator build-console build-presentation serve-console serve-presentation
 
@@ -36,6 +36,8 @@ help: ## Show this help (grouped by section)
 	@printf "\n\033[1mStart here (local development, no cloud deploy required)\033[0m\n"
 	@printf "  \033[36mmake setup\033[0m                 Install deps, sync catalog/skills, install the ge command, start the daemon\n"
 	@printf "  \033[36mmake doctor-local\033[0m          Check local tools: Bun, uv, Python, agents-cli, cache, harness wiring\n"
+	@printf "  \033[36mmake devex-check\033[0m           Fast gate: local doctor, docs links, workspace manifest contracts\n"
+	@printf "  \033[36mmake devex-smoke\033[0m           Prove the local path: doctor → local mode → one validated canary workspace\n"
 	@printf "  \033[36mmake console\033[0m               Open the operator UI for Pipeline, Fleet, Activity, Doctor, and generated specs\n"
 	@printf "  \033[36mmake provision-local CANARY=1\033[0m Build one generated agent locally up to the preview/build boundary\n"
 	@printf "\n\033[1mWhich local app should I run?\033[0m\n"
@@ -54,6 +56,8 @@ next: ## Explain the next useful command and show the ge status board when avail
 	@printf "\n\033[1mRecommended next steps\033[0m\n"
 	@printf "  Fresh clone or broken deps:       \033[36mmake setup\033[0m\n"
 	@printf "  Local health check:               \033[36mmake doctor-local\033[0m\n"
+	@printf "  Fast DevEx gate:                  \033[36mmake devex-check\033[0m\n"
+	@printf "  One-command local proof:          \033[36mmake devex-smoke\033[0m\n"
 	@printf "  Open the main UI:                 \033[36mmake console\033[0m  (http://localhost:18260)\n"
 	@printf "  Build one agent locally:          \033[36mmake mode-local && make provision-local CANARY=1\033[0m\n"
 	@printf "  Watch runs and blockers:          \033[36mmake console\033[0m  then open Activity, or run \033[36mge agents status --watch\033[0m\n"
@@ -201,6 +205,12 @@ doctor: ## Cloud preflight (APIs, IAM, IAP, memory, health)
 
 doctor-local: ## Local toolchain preflight (uv, python 3.11, agents-cli, shared cache)
 	@bun tools/ge.mjs doctor --local
+
+devex-check: ## Fast DevEx gate: local doctor + docs links + workspace manifest contracts (ID=<workspace-or-usecase>)
+	@bun tools/ge.mjs devex check $(if $(ID),--id "$(ID)",)
+
+devex-smoke: ## One-command local proof: doctor → local mode → one validated canary workspace (ID=<usecase> TARGET=validated|previewed)
+	@bun tools/ge.mjs devex smoke $(if $(ID),--id "$(ID)",) $(if $(TARGET),--target "$(TARGET)",)
 
 up: ## Terraform apply → build → re-apply → init → doctor (fresh project)
 	@bun tools/ge.mjs up
