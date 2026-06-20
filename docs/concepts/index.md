@@ -1,6 +1,6 @@
 ---
 title: Concepts
-nav_order: 2
+nav_order: 3
 has_children: true
 layout: default
 ---
@@ -11,6 +11,10 @@ These pages explain the *mental model* of the GE Agent Factory — the **why** a
 the **how it fits together**, not the exact commands. For commands, flags, and
 file layouts, follow the links into the [Reference](../reference/) section and the
 [Cookbooks](../cookbooks/).
+
+Read Concepts when you need to understand why the factory has a spec, why local
+and remote mode are separate, why simulators exist, and why deployment is modeled
+as a staged control plane instead of a single script.
 
 ## The big idea
 
@@ -51,3 +55,23 @@ described, and you can trace any line of generated code back to a spec intent.
 > It is an agent **factory**, not a prompt-only demo generator: the output is a
 > versioned workspace of running code, gated by tests, deployed under
 > least-privilege identities in single-tenant infrastructure.
+
+## Concept to source map
+
+| Concept | Source anchor | Why it matters |
+|---|---|---|
+| Factory line | `tools/lib/factory-core.mjs` | Shared engine behind CLI, console, and MCP |
+| Durable ledger | `tools/lib/run-ledger.mjs` | Single source of truth for local and remote runs |
+| Generated agent | `apps/ge-demo-generator/src/agent-workspace-pipeline.js` | Turns specs into ADK workspaces |
+| Simulator systems | `apps/ge-demo-generator/simulator-systems/` | Makes source systems testable before real integration |
+| Tool plane | `apps/ge-demo-generator/mcp-service/` | Runtime facade that generated agents call through MCP |
+| Cloud platform | `installer/terraform/` | Owns infra, IAM, data stores, MCP, and runtime services |
+
+## How to use this section
+
+- Start with **The factory line** if the stage names feel abstract.
+- Read **Specs and OKF** before changing generation behavior.
+- Read **Agents and ADK** before editing generated `app/agent.py` or `app/tools.py`.
+- Read **Simulators and BYO** before adding a source-system pack.
+- Read **Security and the Agent Gateway** before changing runtime identity,
+  ingress, IAP, or MCP invocation.

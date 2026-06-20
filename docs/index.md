@@ -6,29 +6,55 @@ nav_order: 1
 
 # GE Agent Factory
 
-[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/?cloudshell_git_repo=https://github.com/vamsiramakrishnan/ge-agent-factory&cloudshell_workspace=installer&cloudshell_tutorial=installer/TUTORIAL.md)
+**Purpose:** GE Agent Factory exists because enterprise agents should not jump
+from a slide, a prompt, or a one-off notebook straight into production. A useful
+agent needs a business contract, source-system grounding, generated tools,
+repeatable tests, evals, deployment automation, and runtime identity. This
+factory makes those pieces one traceable path.
 
-**GE Agent Factory turns an enterprise use case into a generated, tested, deployable
-Gemini Enterprise agent.** You start from a business use case (or an interview that
-produces one), and the factory generates a real ADK agent — code, tools, fixtures,
-tests, and evals — grounded by simulated source systems. The same workspace runs
-locally against fixtures and, when you are ready, is promoted to your own Google Cloud
-project: per-agent data stores, an MCP tool plane, Agent Runtime, Agent Registry, and a
-Gemini Enterprise publish. It is an agent **factory**, not a prompt-only demo generator.
+In one sentence: **it turns an enterprise use case into a generated, tested,
+deployable Gemini Enterprise agent.** You start from a use case or an interview;
+the factory writes the spec, generates real ADK code, builds fixtures and
+simulators, runs smoke tests and evals, and promotes the same checked workspace
+into your own Google Cloud project.
+
+It is an agent **factory**, not a prompt-only demo generator.
+
+[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/?cloudshell_git_repo=https://github.com/vamsiramakrishnan/ge-agent-factory&cloudshell_workspace=installer&cloudshell_tutorial=installer/TUTORIAL.md)
 
 ![Architecture](architecture.svg)
 
-## How it works
+## Why this system needs to exist
 
-- **Interview → spec (OKF).** A business use case becomes a portable spec in
-  [Open Knowledge Format](https://github.com/vamsiramakrishnan/ge-agent-factory) (systems,
-  entities, tools, and a behavior-contract workflow).
-- **Generate → validate.** The spec drives deterministic generation of a multi-agent ADK
-  workspace (`app/agent.py` + `app/tools.py`, fixtures, smoke tests, evalsets); the
-  Antigravity SDK reviews and refines it, then it is re-gated by pytest + `agents-cli eval`.
-- **Deploy.** The checked workspace is promoted through the cloud stage graph — per-agent
-  data load, Agent Runtime deploy, MCP/Agent Registry tool registration, and Gemini
-  Enterprise publish — all in **your own** GCP project (single-tenant).
+Most enterprise agent programs break at the handoff between intent and
+operation: the business use case lives in one place, data access in another,
+tool contracts in another, evals in another, and deployment rules somewhere
+else. That split makes agents hard to trust, hard to reproduce, and hard to
+ship safely.
+
+GE Agent Factory exists to make the handoff explicit:
+
+| Problem | Factory answer |
+|---|---|
+| Use cases are ambiguous | Normalize the business request into a versioned spec and OKF bundle |
+| Agents are demos, not systems | Generate ADK code, tools, fixtures, evals, and deployment artifacts |
+| Data access is hand-wired | Use simulator packs locally and governed MCP/data planes in cloud |
+| Quality is manual | Gate every workspace with tests, evals, and harness review/refine |
+| Releases are not repeatable | Run a stage graph with a durable ledger and resumable cloud control plane |
+| Enterprise data needs boundaries | Deploy into your own single-tenant Google Cloud project |
+
+## The factory path
+
+1. **Interview or choose a use case.** Start from business intent, not an
+   implementation guess.
+2. **Materialize the spec.** The spec is the contract: systems, entities, tools,
+   workflow, test mechanisms, and runtime expectations.
+3. **Generate the workspace.** The factory emits ADK code, tools, fixture data,
+   simulator bindings, smoke tests, eval config, and an OKF grounding bundle.
+4. **Validate locally.** Local mode runs generation, validation, and preview up
+   to the build boundary without cloud deployment.
+5. **Ship remotely.** Remote mode loads per-agent data, deploys Agent Runtime,
+   registers MCP tools, publishes to Gemini Enterprise, and verifies live access.
 
 ## Quickstart
 
@@ -37,6 +63,8 @@ Local development — no cloud credentials required:
 ```bash
 make setup          # install deps, sync catalog/skills, install the `ge` command, start the daemon
 make doctor-local   # check local tools: Bun, uv, Python, agents-cli, cache, harness wiring
+make devex-check    # fast gate: local doctor, docs links, workspace manifest contracts
+make devex-smoke    # prove the path: doctor → local mode → one validated canary workspace
 make console        # open the operator UI (Pipeline · Fleet · Activity · Doctor) → http://localhost:18260
 ```
 
@@ -47,7 +75,7 @@ make mode-local
 make provision-local CANARY=1
 ```
 
-Deploy to your own GCP project (the guided path):
+Deploy to your own GCP project:
 
 - Click **Open in Cloud Shell** above to clone the repo and run the installer
   ([`installer/TUTORIAL.md`](https://github.com/vamsiramakrishnan/ge-agent-factory/blob/main/installer/TUTORIAL.md)).
@@ -60,10 +88,26 @@ Deploy to your own GCP project (the guided path):
 
 Run `make help` for every target, or `make next` for a status-based recommendation.
 
-## Where to go next
+## Documentation map
 
-- **[Concepts](./concepts/)** — the factory model: modes, the stage graph, OKF specs,
-  the data plane, and the MCP tool plane.
-- **[Reference](./reference/)** — the `ge` CLI, `make` targets, configuration, and the apps.
-- **[Cookbooks](./cookbooks/)** — task-oriented guides: build a canary, run a mission,
-  bring your own simulator, ship to the cloud.
+| Need | Start here |
+|---|---|
+| Understand the purpose, repo shape, and developer loop | **[Developer Guide](./developers.html)** |
+| Learn the mental model before running commands | **[Concepts](./concepts/)** |
+| Look up exact commands, schemas, APIs, and architecture | **[Reference](./reference/)** |
+| Complete a task step by step | **[Cookbooks](./cookbooks/)** |
+| Deploy, operate, troubleshoot, and recover the factory | **[Operations](./OPERATIONS.html)** |
+| Expose the factory or generated agents through MCP | **[MCP](./MCP.html)** |
+
+## Read this first if you are new
+
+- If you are a **developer**, read the [Developer Guide](./developers.html), run
+  `make setup`, then open `make console`.
+- If you are an **operator**, read [Operations](./OPERATIONS.html), set
+  `GEMINI_ENTERPRISE_APP_ID`, then run `make bootstrap CANARY=1`.
+- If you are a **platform reviewer**, read [Architecture](./reference/architecture.html),
+  [Security and the Agent Gateway](./concepts/security-and-the-agent-gateway.html),
+  and [MCP](./MCP.html).
+- If you are an **agent author**, read [Specs and OKF](./concepts/specs-and-okf.html),
+  [Author a spec via the interview](./cookbooks/author-a-spec-via-interview.html),
+  and [Generate an agent](./cookbooks/generate-an-agent.html).

@@ -45,6 +45,83 @@ function status(ok, detail = {}) {
   return { status: ok ? "ready" : "missing", ...detail };
 }
 
+function existsRel(workspaceDir, relPath) {
+  return Boolean(workspaceDir && relPath && existsSync(join(workspaceDir, relPath)));
+}
+
+function fileItem(workspaceDir, kind, relPath, required = false) {
+  return {
+    kind,
+    path: relPath,
+    required,
+    exists: relPath === WORKSPACE_PATHS.workspaceManifest ? true : existsRel(workspaceDir, relPath),
+  };
+}
+
+function mergeItems(existingItems = [], generatedItems = []) {
+  const byPath = new Map();
+  for (const item of existingItems) {
+    if (item?.path) byPath.set(item.path, item);
+  }
+  for (const item of generatedItems) {
+    if (item?.path) byPath.set(item.path, { ...byPath.get(item.path), ...item });
+  }
+  return Array.from(byPath.values());
+}
+
+function generatedFileItems(workspaceDir) {
+  return [
+    fileItem(workspaceDir, "workspace_manifest", WORKSPACE_PATHS.workspaceManifest, true),
+    fileItem(workspaceDir, "spec", WORKSPACE_PATHS.useCaseSpec, true),
+    fileItem(workspaceDir, "pipeline", WORKSPACE_PATHS.pipeline, true),
+    fileItem(workspaceDir, "schema", WORKSPACE_PATHS.schema, true),
+    fileItem(workspaceDir, "fixtures", WORKSPACE_PATHS.fixtureManifest, true),
+    fileItem(workspaceDir, "agent", WORKSPACE_PATHS.agent, true),
+    fileItem(workspaceDir, "tools", WORKSPACE_PATHS.tools, true),
+    fileItem(workspaceDir, "pyproject", WORKSPACE_PATHS.pyproject, true),
+    fileItem(workspaceDir, "smoke_test", WORKSPACE_PATHS.smokeTest, true),
+    fileItem(workspaceDir, "golden_evals", WORKSPACE_PATHS.goldenEvals, false),
+    fileItem(workspaceDir, "agents_cli_evalset", WORKSPACE_PATHS.behaviorEvalset, false),
+    fileItem(workspaceDir, "agents_cli_eval_config", WORKSPACE_PATHS.evalConfig, false),
+  ];
+}
+
+function artifactItems(workspaceDir) {
+  return [
+    fileItem(workspaceDir, "validation_report", ARTIFACT_PATHS.validationReport, false),
+    fileItem(workspaceDir, "workspace_doctor", ARTIFACT_PATHS.workspaceDoctor, false),
+    fileItem(workspaceDir, "spec_code_trace", ARTIFACT_PATHS.specCodeTrace, false),
+    fileItem(workspaceDir, "preview_report", ARTIFACT_PATHS.previewReport, false),
+    fileItem(workspaceDir, "promotion_packet", ARTIFACT_PATHS.promotionPacket, false),
+    fileItem(workspaceDir, "deploy_plan", ARTIFACT_PATHS.deployPlan, false),
+    fileItem(workspaceDir, "publish_plan", ARTIFACT_PATHS.publishPlan, false),
+    fileItem(workspaceDir, "cloud_topology", ARTIFACT_PATHS.cloudTopology, false),
+    fileItem(workspaceDir, "data_plan", DATA_PATHS.dataPlan, false),
+    fileItem(workspaceDir, "cloud_data_manifest", DATA_PATHS.cloudDataManifest, false),
+    fileItem(workspaceDir, "source_integration_plan", DATA_PATHS.sourceIntegrationPlan, false),
+    fileItem(workspaceDir, "tool_registry_plan", DATA_PATHS.toolRegistryPlan, false),
+  ];
+}
+
+function qualityFromReadiness(readiness) {
+  return {
+    smokeTests: readiness.tests?.status || "missing",
+    specCodeTrace: readiness.specCodeTrace?.status || "missing",
+    localPreview: readiness.localPreview?.status || "missing",
+    dataPackage: readiness.dataPackage?.status || "missing",
+  };
+}
+
+function registrationFromReadiness(readiness) {
+  return {
+    agentRegistryReady: readiness.deployment?.status === "ready" || readiness.published?.status === "ready",
+    geminiEnterpriseReady: readiness.published?.status === "ready",
+    deployPlanReady: readiness.deployPlan?.status === "ready",
+    publishPlanReady: readiness.publishPlan?.status === "ready",
+    runtimeReady: readiness.deployment?.status === "ready",
+  };
+}
+
 export async function buildReadiness(workspaceDir) {
   const pipeline = await readJson(join(workspaceDir, WORKSPACE_PATHS.pipeline), {});
   const schema = await readJson(join(workspaceDir, WORKSPACE_PATHS.schema), null);
@@ -176,6 +253,20 @@ export async function updateWorkspaceCapabilities({ workspaceDir, manifestPath, 
     skillRegistry: {
       root: "skills",
       bindings: skillRegistry.bindings,
+    },
+    generatedFiles: mergeItems(manifest.generatedFiles, generatedFileItems(workspaceDir)),
+    artifacts: {
+      path: "artifacts",
+      ...(manifest.artifacts || {}),
+      items: mergeItems(manifest.artifacts?.items, artifactItems(workspaceDir)),
+    },
+    quality: {
+      ...(manifest.quality || {}),
+      ...qualityFromReadiness(readiness),
+    },
+    registration: {
+      ...(manifest.registration || {}),
+      ...registrationFromReadiness(readiness),
     },
     readiness,
     nextActions,

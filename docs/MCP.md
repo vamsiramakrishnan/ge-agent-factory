@@ -1,3 +1,9 @@
+---
+title: MCP
+nav_order: 7
+layout: default
+---
+
 # GE Agent Factory — MCP server
 
 `tools/mcp-server.mjs` exposes the factory operations as typed [MCP] tools over
@@ -37,9 +43,10 @@ project, bucket, and service identities to work with.
 
 ## Design
 
-One engine, two surfaces: see [../tools/README.md](../tools/README.md). Read-only
-tools (`list_usecases`, `doctor`, `status`, `logs`) are safe to call freely;
-`provision` and `sync` mutate and should be gated by the calling harness.
+One engine, two surfaces: see
+[`tools/README.md`](https://github.com/vamsiramakrishnan/ge-agent-factory/blob/main/tools/README.md).
+Read-only tools (`list_usecases`, `doctor`, `status`, `logs`) are safe to call
+freely; `provision` and `sync` mutate and should be gated by the calling harness.
 
 `factory_mcp_deploy` / `factory_mcp_doctor` operate the **tool plane** below.
 

@@ -47,7 +47,27 @@ without touching a cloud project.
    This is `ge doctor --local` under the hood — it checks the uv toolchain,
    Python 3.11, `agents-cli`, the shared cache, and harness wiring.
 
-3. **Open the console (the main operator UI).**
+3. **Run the fast DevEx gate.**
+
+   ```bash
+   make devex-check
+   ```
+
+   This is `ge devex check`: local doctor, GitHub Pages link check, and generated
+   workspace manifest contract validation in one fast command.
+
+4. **Prove one local workspace end to end.**
+
+   ```bash
+   make devex-smoke
+   ```
+
+   This runs local readiness, sets local mode, builds one canary workspace to the
+   `validated` stage, and prints the workspace path, `workspace.json`, eval
+   config, and next commands. It is the fastest proof that the repo is usable on
+   this machine.
+
+5. **Open the console (the main operator UI).**
 
    ```bash
    make console
@@ -56,7 +76,7 @@ without touching a cloud project.
    Serves the Pipeline / specs / Fleet / Activity / Doctor UI at
    **http://localhost:18260**.
 
-4. **Understand which mode you're in.**
+6. **Understand which mode you're in.**
 
    ```bash
    ge mode
@@ -72,7 +92,7 @@ without touching a cloud project.
    The `Makefile` also exposes `make mode-local` and `make mode-remote` as
    thin wrappers.
 
-5. **(Optional) Build one agent locally to confirm the pipeline runs.**
+7. **(Optional) Build one agent locally to the preview boundary.**
 
    ```bash
    make mode-local && make provision-local CANARY=1
@@ -85,6 +105,8 @@ without touching a cloud project.
 
 ```bash
 make doctor-local      # local toolchain section is all green
+make devex-check       # local doctor + docs links + workspace manifest contracts
+make devex-smoke       # validates one canary workspace and prints workspace.json
 ge mode                # prints: mode: local (or remote)
 ge state paths         # shows where state lands (.ge/...)
 ```

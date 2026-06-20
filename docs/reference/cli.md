@@ -47,6 +47,8 @@ ge                 # bare: project/app, mode, planes ✓/○, and the next comma
 | `ge init` | Discover config (terraform outputs → gcloud) → write `.ge.json` | shared | `ge init` |
 | `ge up` | Stand up the platform: infra + data + tool planes → unified doctor | `--infra` `--data` `--mcp` (one plane only) | `ge up` |
 | `ge doctor` | Unified health: toolchain · factory · data plane · tool plane | `--local` `--cloud` `--data` `--mcp` (filter); `--command <up\|data.up\|mcp.deploy\|agents.build\|agents.build.local\|agents.ship\|agents.sync>` | `ge doctor --local` |
+| `ge devex check` | Fast gate: local doctor, GitHub Pages local-link check, and generated workspace manifest contracts | `--id <workspace-or-usecase>` `--all-workspaces` `--no-docs` `--no-local` `--no-strict-workspaces` | `ge devex check` |
+| `ge devex smoke` | One-command local proof: run local doctor, set local mode, build one validated canary workspace, and print the workspace manifest + next commands | `--id <usecase>` `--target <stage>` `--preview` `--warm` `--force` | `ge devex smoke` |
 | `ge cutover` | Adopt a hand-managed project into Terraform | `--apply` (default: print the plan) | `ge cutover --apply` |
 | `ge mode [set]` | Show or set the operating mode | positional `local` \| `remote` | `ge mode local` |
 | `ge config explain` | Show each config value and where it came from | — | `ge config explain` |
@@ -240,6 +242,8 @@ status-based recommendation.
 | Target | What it does |
 |---|---|
 | `make setup` | Install JS + Python/uv deps, sync catalog/skills, put `ge` on PATH, start the daemon |
+| `make devex-check` | Run `ge devex check`: local doctor + docs links + workspace manifest contracts |
+| `make devex-smoke` | Run `ge devex smoke`: local doctor → local mode → one validated canary workspace |
 | `make bootstrap [CANARY=1]` | End-to-end: toolchain + `ge init` + `ge up`. `CANARY=1` also builds one agent. Needs `GEMINI_ENTERPRISE_APP_ID` + gcloud auth |
 | `make all` | Alias for `bootstrap` |
 | `make deps` / `make data-runtime` / `make deps-terraform` | Toolchain pieces: uv + agents-cli + `.venv` (google-antigravity); Snowfakery runtime; terraform |

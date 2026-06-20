@@ -3,6 +3,12 @@ import { existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
 import { buildReadiness, nextActionsForReadiness } from "./workspace-capabilities.js";
+import {
+  ARTIFACT_PATHS,
+  DATA_PATHS,
+  WORKSPACE_PATHS,
+  WORKSPACE_SCHEMA_VERSION,
+} from "./workspace-contract.js";
 
 const SAFE_ID = /^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/;
 const OPERATIONAL_DIRS = new Set(["runs", "versions"]);
@@ -80,9 +86,53 @@ export async function readWorkspaceManifest(projectsRoot, projectId) {
   return readJson(workspaceManifestPath(projectsRoot, projectId), null);
 }
 
+function existsRel(workspaceDir, relPath) {
+  return Boolean(workspaceDir && relPath && existsSync(join(workspaceDir, relPath)));
+}
+
+function fileItem(workspaceDir, kind, relPath, required = false) {
+  return {
+    kind,
+    path: relPath,
+    required,
+    exists: relPath === WORKSPACE_PATHS.workspaceManifest ? true : existsRel(workspaceDir, relPath),
+  };
+}
+
+function mergeArtifactItems(existingItems = [], generatedItems = []) {
+  const byPath = new Map();
+  for (const item of existingItems) {
+    if (item?.path) byPath.set(item.path, item);
+  }
+  for (const item of generatedItems) {
+    if (item?.path) byPath.set(item.path, { ...byPath.get(item.path), ...item });
+  }
+  return Array.from(byPath.values());
+}
+
+function buildWorkspaceCommands(project) {
+  const id = project.id;
+  const useCaseId = project.useCaseId || id;
+  return {
+    install: "uv sync",
+    run: "uv run adk web",
+    test: "uv run pytest",
+    eval: "uv run agents-cli eval run tests/eval/eval_config.json --all",
+    validate: `ge-harness validate ${id}`,
+    preview: `ge-harness preview ${id}`,
+    doctor: `ge-harness workspace doctor ${id} --stage preview`,
+    repair: `ge-harness workspace repair ${id} --stage preview`,
+    sync: `ge agents sync --ids ${useCaseId} --local`,
+    ship: `ge agents ship --ids ${id}`,
+  };
+}
+
 async function buildWorkspaceManifest(project, existing = null, workspaceDir = null) {
   const now = new Date().toISOString();
   const readiness = workspaceDir ? await buildReadiness(workspaceDir) : existing?.readiness || {};
+  const pipeline = workspaceDir ? await readJson(join(workspaceDir, WORKSPACE_PATHS.pipeline), null) : null;
+  const useCaseSpec = workspaceDir ? await readJson(join(workspaceDir, WORKSPACE_PATHS.useCaseSpec), null) : null;
+  const fixtureManifest = workspaceDir ? await readJson(join(workspaceDir, WORKSPACE_PATHS.fixtureManifest), null) : null;
   const capabilities = Array.from(new Set([
     ...(Array.isArray(existing?.capabilities) ? existing.capabilities : []),
     "workspace",
@@ -96,7 +146,38 @@ async function buildWorkspaceManifest(project, existing = null, workspaceDir = n
     ...(readiness.published?.status === "ready" ? ["published"] : []),
   ]));
   const nextActions = nextActionsForReadiness(readiness);
+  const generatedFiles = [
+    fileItem(workspaceDir, "workspace_manifest", WORKSPACE_PATHS.workspaceManifest, true),
+    fileItem(workspaceDir, "spec", WORKSPACE_PATHS.useCaseSpec, true),
+    fileItem(workspaceDir, "pipeline", WORKSPACE_PATHS.pipeline, true),
+    fileItem(workspaceDir, "schema", WORKSPACE_PATHS.schema, true),
+    fileItem(workspaceDir, "fixtures", WORKSPACE_PATHS.fixtureManifest, true),
+    fileItem(workspaceDir, "agent", WORKSPACE_PATHS.agent, true),
+    fileItem(workspaceDir, "tools", WORKSPACE_PATHS.tools, true),
+    fileItem(workspaceDir, "pyproject", WORKSPACE_PATHS.pyproject, true),
+    fileItem(workspaceDir, "smoke_test", WORKSPACE_PATHS.smokeTest, true),
+    fileItem(workspaceDir, "golden_evals", WORKSPACE_PATHS.goldenEvals, false),
+    fileItem(workspaceDir, "agents_cli_evalset", WORKSPACE_PATHS.behaviorEvalset, false),
+    fileItem(workspaceDir, "agents_cli_eval_config", WORKSPACE_PATHS.evalConfig, false),
+  ];
+  const artifactItems = [
+    fileItem(workspaceDir, "validation_report", ARTIFACT_PATHS.validationReport, false),
+    fileItem(workspaceDir, "workspace_doctor", ARTIFACT_PATHS.workspaceDoctor, false),
+    fileItem(workspaceDir, "spec_code_trace", ARTIFACT_PATHS.specCodeTrace, false),
+    fileItem(workspaceDir, "preview_report", ARTIFACT_PATHS.previewReport, false),
+    fileItem(workspaceDir, "promotion_packet", ARTIFACT_PATHS.promotionPacket, false),
+    fileItem(workspaceDir, "deploy_plan", ARTIFACT_PATHS.deployPlan, false),
+    fileItem(workspaceDir, "publish_plan", ARTIFACT_PATHS.publishPlan, false),
+    fileItem(workspaceDir, "cloud_topology", ARTIFACT_PATHS.cloudTopology, false),
+    fileItem(workspaceDir, "data_plan", DATA_PATHS.dataPlan, false),
+    fileItem(workspaceDir, "cloud_data_manifest", DATA_PATHS.cloudDataManifest, false),
+    fileItem(workspaceDir, "source_integration_plan", DATA_PATHS.sourceIntegrationPlan, false),
+    fileItem(workspaceDir, "tool_registry_plan", DATA_PATHS.toolRegistryPlan, false),
+  ];
+  const sourceUseCaseId = project.useCaseId || existing?.useCaseId || useCaseSpec?.id || fixtureManifest?.useCaseId || null;
+  const departmentId = project.departmentId || existing?.departmentId || useCaseSpec?.department || fixtureManifest?.department || pipeline?.domain || null;
   return {
+    schemaVersion: WORKSPACE_SCHEMA_VERSION,
     id: project.id,
     name: project.name,
     kind: project.kind || "workspace",
@@ -106,7 +187,42 @@ async function buildWorkspaceManifest(project, existing = null, workspaceDir = n
     goal: existing?.goal || null,
     capabilities,
     readiness,
-    agent: existing?.agent || null,
+    purpose: "Generated agent workspace: source contract, fixtures, ADK code, tests, evals, and release artifacts in one inspectable directory.",
+    source: {
+      useCaseId: sourceUseCaseId,
+      departmentId,
+      title: useCaseSpec?.title || fixtureManifest?.title || project.name,
+      spec: existsRel(workspaceDir, WORKSPACE_PATHS.useCaseSpec) ? WORKSPACE_PATHS.useCaseSpec : null,
+      pipeline: existsRel(workspaceDir, WORKSPACE_PATHS.pipeline) ? WORKSPACE_PATHS.pipeline : null,
+      fixtureManifest: existsRel(workspaceDir, WORKSPACE_PATHS.fixtureManifest) ? WORKSPACE_PATHS.fixtureManifest : null,
+    },
+    agent: {
+      name: existing?.agent?.name || project.id,
+      runtime: existing?.agent?.runtime || "adk-python",
+      entrypoint: existing?.agent?.entrypoint || "app.agent:root_agent",
+      agentPath: WORKSPACE_PATHS.agent,
+      toolsPath: WORKSPACE_PATHS.tools,
+      ...existing?.agent,
+    },
+    commands: {
+      ...buildWorkspaceCommands(project),
+      ...existing?.commands,
+    },
+    generatedFiles,
+    quality: {
+      smokeTests: readiness.tests?.status || "missing",
+      specCodeTrace: readiness.specCodeTrace?.status || "missing",
+      localPreview: readiness.localPreview?.status || "missing",
+      dataPackage: readiness.dataPackage?.status || "missing",
+    },
+    registration: {
+      ...existing?.registration,
+      agentRegistryReady: readiness.deployment?.status === "ready" || readiness.published?.status === "ready",
+      geminiEnterpriseReady: readiness.published?.status === "ready",
+      deployPlanReady: readiness.deployPlan?.status === "ready",
+      publishPlanReady: readiness.publishPlan?.status === "ready",
+      runtimeReady: readiness.deployment?.status === "ready",
+    },
     nextActions,
     nextAction: nextActions[0] || null,
     systems: {
@@ -119,10 +235,10 @@ async function buildWorkspaceManifest(project, existing = null, workspaceDir = n
     },
     artifacts: {
       path: "artifacts",
-      items: Array.isArray(existing?.artifacts?.items) ? existing.artifacts.items : [],
+      items: mergeArtifactItems(existing?.artifacts?.items, artifactItems),
     },
-    useCaseId: project.useCaseId || existing?.useCaseId || null,
-    departmentId: project.departmentId || existing?.departmentId || null,
+    useCaseId: sourceUseCaseId,
+    departmentId,
     currentVersion: existing?.currentVersion || null,
     versions: {
       path: "versions",
