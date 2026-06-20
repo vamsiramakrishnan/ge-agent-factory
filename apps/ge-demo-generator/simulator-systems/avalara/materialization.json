@@ -1,0 +1,221 @@
+{
+  "id": "avalara_materialization",
+  "version": 1,
+  "collections": {
+    "bank_accounts": {
+      "primaryKey": "bank_account_id",
+      "fieldAliases": {
+        "bank_account_id": [
+          "bank_account_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "bank": [
+          "bank",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "country": [
+          "country",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "payment_batches": {
+      "primaryKey": "batch_id",
+      "fieldAliases": {
+        "batch_id": [
+          "batch_id",
+          "id",
+          "source_record_id"
+        ],
+        "bank_account_id": [
+          "bank_account_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "amount": [
+          "amount",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "release_date": [
+          "release_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "cash_positions": {
+      "primaryKey": "cash_position_id",
+      "fieldAliases": {
+        "cash_position_id": [
+          "cash_position_id",
+          "id",
+          "source_record_id"
+        ],
+        "bank_account_id": [
+          "bank_account_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "as_of_date": [
+          "as_of_date",
+          "id",
+          "source_record_id"
+        ],
+        "balance": [
+          "balance",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "tax_filings": {
+      "primaryKey": "filing_id",
+      "fieldAliases": {
+        "filing_id": [
+          "filing_id",
+          "id",
+          "source_record_id"
+        ],
+        "jurisdiction": [
+          "jurisdiction",
+          "id",
+          "source_record_id"
+        ],
+        "period": [
+          "period",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "due_date": [
+          "due_date",
+          "id",
+          "source_record_id"
+        ],
+        "amount": [
+          "amount",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fieldAliases": {
+        "approval_id": [
+          "approval_id",
+          "id",
+          "source_record_id"
+        ],
+        "source_record_id": [
+          "source_record_id",
+          "id"
+        ],
+        "approver": [
+          "approver",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "reason": [
+          "reason",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "active"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

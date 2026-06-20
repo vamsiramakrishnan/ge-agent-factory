@@ -1,0 +1,192 @@
+{
+  "users": [
+    {
+      "user_id": "CONCUR-U-1002",
+      "employee_id": "1001002",
+      "login_id": "mina.patel@example.com",
+      "name": "Mina Patel",
+      "email": "mina.patel@example.com",
+      "country": "US",
+      "company_code": "2000",
+      "cost_center": "FIN-210",
+      "manager_id": "CONCUR-U-1003",
+      "ledger_code": "GEV-US",
+      "reimbursement_currency": "USD",
+      "status": "active"
+    },
+    {
+      "user_id": "CONCUR-U-1003",
+      "employee_id": "1001003",
+      "login_id": "jordan.lee@example.com",
+      "name": "Jordan Lee",
+      "email": "jordan.lee@example.com",
+      "country": "US",
+      "company_code": "0001",
+      "cost_center": "EXEC-001",
+      "manager_id": null,
+      "ledger_code": "GEC-US",
+      "reimbursement_currency": "USD",
+      "status": "active"
+    }
+  ],
+  "expense_reports": [
+    {
+      "report_id": "ER-2026-00077",
+      "user_id": "CONCUR-U-1002",
+      "report_name": "Atlanta supplier transition workshop",
+      "purpose": "Supplier transition and finance controls workshop",
+      "status": "submitted",
+      "approval_status": "pending_manager",
+      "payment_status": "not_paid",
+      "submitted_at": "2026-06-03T20:15:00Z",
+      "approved_at": null,
+      "total_amount": 2384.52,
+      "approved_amount": 0,
+      "currency": "USD",
+      "policy_exception_count": 2,
+      "audit_required": true
+    }
+  ],
+  "expense_entries": [
+    {
+      "entry_id": "EE-2026-00077-01",
+      "report_id": "ER-2026-00077",
+      "expense_type": "Airfare",
+      "transaction_date": "2026-05-29",
+      "vendor": "Delta Air Lines",
+      "city": "Atlanta",
+      "country": "US",
+      "amount": 842.33,
+      "currency": "USD",
+      "payment_type": "Corporate Card",
+      "receipt_required": true,
+      "receipt_id": "RCPT-7001",
+      "attendee_count": 0,
+      "allocation_id": "ALLOC-FIN-210",
+      "policy_status": "within_policy",
+      "exception_code": null
+    },
+    {
+      "entry_id": "EE-2026-00077-02",
+      "report_id": "ER-2026-00077",
+      "expense_type": "Hotel",
+      "transaction_date": "2026-06-01",
+      "vendor": "Marriott Marquis Atlanta",
+      "city": "Atlanta",
+      "country": "US",
+      "amount": 1288.19,
+      "currency": "USD",
+      "payment_type": "Corporate Card",
+      "receipt_required": true,
+      "receipt_id": "RCPT-7002",
+      "attendee_count": 0,
+      "allocation_id": "ALLOC-FIN-210",
+      "policy_status": "exception",
+      "exception_code": "DAILY_RATE_EXCEEDED"
+    },
+    {
+      "entry_id": "EE-2026-00077-03",
+      "report_id": "ER-2026-00077",
+      "expense_type": "Business Meal",
+      "transaction_date": "2026-06-02",
+      "vendor": "South City Kitchen",
+      "city": "Atlanta",
+      "country": "US",
+      "amount": 254,
+      "currency": "USD",
+      "payment_type": "Out of Pocket",
+      "receipt_required": true,
+      "receipt_id": null,
+      "attendee_count": 5,
+      "allocation_id": "ALLOC-FIN-210",
+      "policy_status": "exception",
+      "exception_code": "MISSING_RECEIPT"
+    }
+  ],
+  "receipts": [
+    {
+      "receipt_id": "RCPT-7001",
+      "entry_id": "EE-2026-00077-01",
+      "image_url": "mock://receipts/RCPT-7001.pdf",
+      "ocr_vendor": "Delta Air Lines",
+      "ocr_amount": 842.33,
+      "ocr_date": "2026-05-29",
+      "match_status": "matched",
+      "status": "attached"
+    },
+    {
+      "receipt_id": "RCPT-7002",
+      "entry_id": "EE-2026-00077-02",
+      "image_url": "mock://receipts/RCPT-7002.pdf",
+      "ocr_vendor": "Marriott Marquis Atlanta",
+      "ocr_amount": 1288.19,
+      "ocr_date": "2026-06-01",
+      "match_status": "matched",
+      "status": "attached"
+    }
+  ],
+  "card_transactions": [
+    {
+      "transaction_id": "CARD-9001",
+      "user_id": "CONCUR-U-1002",
+      "entry_id": "EE-2026-00077-01",
+      "card_last4": "1842",
+      "merchant": "Delta Air Lines",
+      "posted_date": "2026-05-30",
+      "amount": 842.33,
+      "currency": "USD",
+      "match_status": "matched",
+      "fraud_flag": false
+    },
+    {
+      "transaction_id": "CARD-9002",
+      "user_id": "CONCUR-U-1002",
+      "entry_id": "EE-2026-00077-02",
+      "card_last4": "1842",
+      "merchant": "Marriott Marquis Atlanta",
+      "posted_date": "2026-06-02",
+      "amount": 1288.19,
+      "currency": "USD",
+      "match_status": "matched",
+      "fraud_flag": false
+    }
+  ],
+  "trips": [
+    {
+      "trip_id": "TRIP-2026-0021",
+      "user_id": "CONCUR-U-1002",
+      "purpose": "Supplier transition workshop",
+      "status": "completed",
+      "start_date": "2026-05-31",
+      "end_date": "2026-06-03",
+      "destination": "Atlanta, GA",
+      "booking_source": "Concur Travel",
+      "estimated_cost": 2300,
+      "currency": "USD"
+    }
+  ],
+  "cash_advances": [
+    {
+      "cash_advance_id": "CA-2026-0012",
+      "user_id": "CONCUR-U-1002",
+      "trip_id": "TRIP-2026-0021",
+      "status": "closed",
+      "amount": 300,
+      "currency": "USD",
+      "issued_date": "2026-05-25",
+      "remaining_balance": 0
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APR-CONCUR-001",
+      "source_record_id": "ER-2026-00077",
+      "approver": "jordan.lee@example.com",
+      "state": "requested",
+      "reason": "manager approval required; two policy exceptions present",
+      "workflow_step": "Manager Approval",
+      "due_at": "2026-06-07T17:00:00Z"
+    }
+  ],
+  "audit_events": []
+}

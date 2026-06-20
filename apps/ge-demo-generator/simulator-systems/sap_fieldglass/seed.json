@@ -1,0 +1,449 @@
+{
+  "suppliers": [
+    {
+      "supplier_id": "FG-SUP-1001",
+      "name": "Apex Workforce Solutions",
+      "status": "active",
+      "country": "US",
+      "vendor_number": "V-300045",
+      "supplier_type": "Staffing",
+      "risk_tier": "medium",
+      "contact_email": "fg.apex@example.com"
+    },
+    {
+      "supplier_id": "FG-SUP-1002",
+      "name": "Northstar Talent Partners",
+      "status": "active",
+      "country": "US",
+      "vendor_number": "V-300077",
+      "supplier_type": "Staffing",
+      "risk_tier": "low",
+      "contact_email": "ops@northstartalent.example.com"
+    },
+    {
+      "supplier_id": "FG-SUP-1003",
+      "name": "Bharat Engineering Contractors",
+      "status": "pending_review",
+      "country": "IN",
+      "vendor_number": "V-410014",
+      "supplier_type": "Consulting",
+      "risk_tier": "medium",
+      "contact_email": "delivery@bharateng.example.com"
+    },
+    {
+      "supplier_id": "FG-SUP-1004",
+      "name": "Vector Industrial Services",
+      "status": "suspended",
+      "country": "US",
+      "vendor_number": "V-300109",
+      "supplier_type": "Services",
+      "risk_tier": "critical",
+      "contact_email": "contracts@vectorindustrial.example.com"
+    }
+  ],
+  "job_postings": [
+    {
+      "job_posting_id": "JP-FG-2026-014",
+      "title": "SAP Cutover Contractor",
+      "status": "open",
+      "labor_category": "IT Project Management",
+      "location": "Atlanta, GA",
+      "hiring_manager": "jordan.lee@example.com",
+      "supplier_distribution": "Apex Workforce Solutions",
+      "start_date": "2026-07-01",
+      "end_date": "2026-12-31",
+      "max_bill_rate": 145,
+      "currency": "USD"
+    },
+    {
+      "job_posting_id": "JP-FG-2026-019",
+      "title": "Manufacturing Quality Engineer",
+      "status": "filled",
+      "labor_category": "Engineering",
+      "location": "Lafayette, IN",
+      "hiring_manager": "mfg.manager@example.com",
+      "supplier_distribution": "Northstar Talent Partners",
+      "start_date": "2026-06-15",
+      "end_date": "2027-01-15",
+      "max_bill_rate": 118,
+      "currency": "USD"
+    },
+    {
+      "job_posting_id": "JP-FG-2026-022",
+      "title": "S/4 Data Migration Analyst",
+      "status": "submitted",
+      "labor_category": "Data",
+      "location": "Bangalore, IN",
+      "hiring_manager": "data.lead@example.com",
+      "supplier_distribution": "Bharat Engineering Contractors",
+      "start_date": "2026-07-15",
+      "end_date": "2027-03-31",
+      "max_bill_rate": 82,
+      "currency": "USD"
+    },
+    {
+      "job_posting_id": "JP-FG-2026-031",
+      "title": "Facilities Transition Lead",
+      "status": "draft",
+      "labor_category": "Operations",
+      "location": "Greenville, SC",
+      "hiring_manager": "facilities.lead@example.com",
+      "supplier_distribution": "Apex Workforce Solutions",
+      "start_date": "2026-08-01",
+      "end_date": "2027-02-28",
+      "max_bill_rate": 105,
+      "currency": "USD"
+    }
+  ],
+  "job_seekers": [
+    {
+      "job_seeker_id": "JS-FG-8841",
+      "supplier_id": "FG-SUP-1001",
+      "name": "Riley Chen",
+      "email": "riley.chen.contractor@example.com",
+      "status": "shortlisted",
+      "submitted_for": "JP-FG-2026-014",
+      "bill_rate": 138,
+      "currency": "USD",
+      "screening_status": "complete"
+    },
+    {
+      "job_seeker_id": "JS-FG-8842",
+      "supplier_id": "FG-SUP-1002",
+      "name": "Morgan Alvarez",
+      "email": "morgan.alvarez.contractor@example.com",
+      "status": "selected",
+      "submitted_for": "JP-FG-2026-019",
+      "bill_rate": 112,
+      "currency": "USD",
+      "screening_status": "complete"
+    },
+    {
+      "job_seeker_id": "JS-FG-8843",
+      "supplier_id": "FG-SUP-1003",
+      "name": "Anika Rao",
+      "email": "anika.rao.contractor@example.com",
+      "status": "interviewing",
+      "submitted_for": "JP-FG-2026-022",
+      "bill_rate": 78,
+      "currency": "USD",
+      "screening_status": "in_progress"
+    },
+    {
+      "job_seeker_id": "JS-FG-8844",
+      "supplier_id": "FG-SUP-1001",
+      "name": "Taylor Brooks",
+      "email": "taylor.brooks.contractor@example.com",
+      "status": "submitted",
+      "submitted_for": "JP-FG-2026-031",
+      "bill_rate": 101,
+      "currency": "USD",
+      "screening_status": "not_started"
+    },
+    {
+      "job_seeker_id": "JS-FG-8845",
+      "supplier_id": "FG-SUP-1004",
+      "name": "Casey Martin",
+      "email": "casey.martin.contractor@example.com",
+      "status": "rejected",
+      "submitted_for": "JP-FG-2026-014",
+      "bill_rate": 140,
+      "currency": "USD",
+      "screening_status": "exception"
+    }
+  ],
+  "work_orders": [
+    {
+      "work_order_id": "WO-FG-7000",
+      "job_posting_id": "JP-FG-2026-031",
+      "job_seeker_id": "JS-FG-8844",
+      "supplier_id": "FG-SUP-1001",
+      "worker_id": "",
+      "status": "draft",
+      "start_date": "2026-08-01",
+      "end_date": "2027-02-28",
+      "bill_rate": 101,
+      "currency": "USD",
+      "cost_center": "OPS-330",
+      "site": "Greenville, SC",
+      "tenure_end_date": "2027-02-28"
+    },
+    {
+      "work_order_id": "WO-FG-7001",
+      "job_posting_id": "JP-FG-2026-014",
+      "job_seeker_id": "JS-FG-8841",
+      "supplier_id": "FG-SUP-1001",
+      "worker_id": "FG-W-5001",
+      "status": "approved",
+      "start_date": "2026-07-01",
+      "end_date": "2026-12-31",
+      "bill_rate": 138,
+      "currency": "USD",
+      "cost_center": "FIN-210",
+      "site": "Atlanta, GA",
+      "tenure_end_date": "2026-12-31"
+    },
+    {
+      "work_order_id": "WO-FG-7002",
+      "job_posting_id": "JP-FG-2026-019",
+      "job_seeker_id": "JS-FG-8842",
+      "supplier_id": "FG-SUP-1002",
+      "worker_id": "FG-W-5002",
+      "status": "activated",
+      "start_date": "2026-06-15",
+      "end_date": "2027-01-15",
+      "bill_rate": 112,
+      "currency": "USD",
+      "cost_center": "MFG-410",
+      "site": "Lafayette, IN",
+      "tenure_end_date": "2027-01-15"
+    },
+    {
+      "work_order_id": "WO-FG-7003",
+      "job_posting_id": "JP-FG-2026-022",
+      "job_seeker_id": "JS-FG-8843",
+      "supplier_id": "FG-SUP-1003",
+      "worker_id": "FG-W-5003",
+      "status": "submitted",
+      "start_date": "2026-07-15",
+      "end_date": "2027-03-31",
+      "bill_rate": 78,
+      "currency": "USD",
+      "cost_center": "ENG-530",
+      "site": "Bangalore, IN",
+      "tenure_end_date": "2027-03-31"
+    },
+    {
+      "work_order_id": "WO-FG-7004",
+      "job_posting_id": "JP-FG-2026-014",
+      "job_seeker_id": "JS-FG-8845",
+      "supplier_id": "FG-SUP-1004",
+      "worker_id": "FG-W-5004",
+      "status": "cancelled",
+      "start_date": "2026-07-01",
+      "end_date": "2026-12-31",
+      "bill_rate": 140,
+      "currency": "USD",
+      "cost_center": "FIN-210",
+      "site": "Atlanta, GA",
+      "tenure_end_date": "2026-12-31"
+    }
+  ],
+  "workers": [
+    {
+      "worker_id": "FG-W-5001",
+      "external_worker_id": "CW-5001",
+      "name": "Riley Chen",
+      "email": "riley.chen.contractor@example.com",
+      "status": "pending_onboarding",
+      "worker_type": "contingent_worker",
+      "supplier_id": "FG-SUP-1001",
+      "work_order_id": "WO-FG-7001",
+      "manager_id": "W-1003",
+      "cost_center": "FIN-210",
+      "location": "Atlanta, GA",
+      "country": "US",
+      "onboarding_status": "badge_pending",
+      "security_badge_status": "not_issued"
+    },
+    {
+      "worker_id": "FG-W-5002",
+      "external_worker_id": "CW-5002",
+      "name": "Morgan Alvarez",
+      "email": "morgan.alvarez.contractor@example.com",
+      "status": "active",
+      "worker_type": "contingent_worker",
+      "supplier_id": "FG-SUP-1002",
+      "work_order_id": "WO-FG-7002",
+      "manager_id": "W-2040",
+      "cost_center": "MFG-410",
+      "location": "Lafayette, IN",
+      "country": "US",
+      "onboarding_status": "complete",
+      "security_badge_status": "issued"
+    },
+    {
+      "worker_id": "FG-W-5003",
+      "external_worker_id": "CW-5003",
+      "name": "Anika Rao",
+      "email": "anika.rao.contractor@example.com",
+      "status": "pending_onboarding",
+      "worker_type": "consultant",
+      "supplier_id": "FG-SUP-1003",
+      "work_order_id": "WO-FG-7003",
+      "manager_id": "W-3110",
+      "cost_center": "ENG-530",
+      "location": "Bangalore, IN",
+      "country": "IN",
+      "onboarding_status": "system_access_pending",
+      "security_badge_status": "pending"
+    },
+    {
+      "worker_id": "FG-W-5004",
+      "external_worker_id": "CW-5004",
+      "name": "Casey Martin",
+      "email": "casey.martin.contractor@example.com",
+      "status": "terminated",
+      "worker_type": "services_worker",
+      "supplier_id": "FG-SUP-1004",
+      "work_order_id": "WO-FG-7004",
+      "manager_id": "W-1003",
+      "cost_center": "FIN-210",
+      "location": "Atlanta, GA",
+      "country": "US",
+      "onboarding_status": "exception",
+      "security_badge_status": "revoked"
+    }
+  ],
+  "time_sheets": [
+    {
+      "time_sheet_id": "TS-FG-2026-W23-5001",
+      "worker_id": "FG-W-5001",
+      "work_order_id": "WO-FG-7001",
+      "week_start": "2026-06-01",
+      "week_end": "2026-06-07",
+      "hours": 38,
+      "overtime_hours": 0,
+      "status": "submitted",
+      "approver": "jordan.lee@example.com",
+      "invoice_status": "not_invoiced"
+    },
+    {
+      "time_sheet_id": "TS-FG-2026-W24-5002",
+      "worker_id": "FG-W-5002",
+      "work_order_id": "WO-FG-7002",
+      "week_start": "2026-06-08",
+      "week_end": "2026-06-14",
+      "hours": 42,
+      "overtime_hours": 2,
+      "status": "approved",
+      "approver": "mfg.manager@example.com",
+      "invoice_status": "invoice_pending"
+    },
+    {
+      "time_sheet_id": "TS-FG-2026-W25-5002",
+      "worker_id": "FG-W-5002",
+      "work_order_id": "WO-FG-7002",
+      "week_start": "2026-06-15",
+      "week_end": "2026-06-21",
+      "hours": 40,
+      "overtime_hours": 0,
+      "status": "draft",
+      "approver": "mfg.manager@example.com",
+      "invoice_status": "not_invoiced"
+    },
+    {
+      "time_sheet_id": "TS-FG-2026-W25-5003",
+      "worker_id": "FG-W-5003",
+      "work_order_id": "WO-FG-7003",
+      "week_start": "2026-06-15",
+      "week_end": "2026-06-21",
+      "hours": 0,
+      "overtime_hours": 0,
+      "status": "draft",
+      "approver": "data.lead@example.com",
+      "invoice_status": "not_invoiced"
+    },
+    {
+      "time_sheet_id": "TS-FG-2026-W22-5004",
+      "worker_id": "FG-W-5004",
+      "work_order_id": "WO-FG-7004",
+      "week_start": "2026-05-25",
+      "week_end": "2026-05-31",
+      "hours": 12,
+      "overtime_hours": 0,
+      "status": "rejected",
+      "approver": "jordan.lee@example.com",
+      "invoice_status": "blocked"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APR-FG-001",
+      "source_record_id": "WO-FG-7001",
+      "approver": "workforce.program@example.com",
+      "state": "approved",
+      "reason": "Work order reviewed by program office.",
+      "workflow_step": "Program Office Review",
+      "due_at": "2026-06-10T17:00:00Z"
+    },
+    {
+      "approval_id": "APR-FG-002",
+      "source_record_id": "WO-FG-7003",
+      "approver": "data.program@example.com",
+      "state": "requested",
+      "reason": "Cross-border data migration access requires review.",
+      "workflow_step": "Data Access Review",
+      "due_at": "2026-06-22T17:00:00Z"
+    },
+    {
+      "approval_id": "APR-FG-003",
+      "source_record_id": "SOW-FG-2203",
+      "approver": "procurement.legal@example.com",
+      "state": "pending",
+      "reason": "SOW milestone terms require legal approval.",
+      "workflow_step": "SOW Review",
+      "due_at": "2026-06-24T17:00:00Z"
+    },
+    {
+      "approval_id": "APR-FG-004",
+      "source_record_id": "FG-SUP-1004",
+      "approver": "supplier.risk@example.com",
+      "state": "pending_approval",
+      "reason": "Supplier suspended after safety incident.",
+      "workflow_step": "Supplier Risk Review",
+      "due_at": "2026-06-25T17:00:00Z"
+    }
+  ],
+  "audit_events": [],
+  "statement_of_works": [
+    {
+      "sow_id": "SOW-FG-2201",
+      "supplier_id": "FG-SUP-1001",
+      "name": "ERP Cutover Command Center",
+      "status": "active",
+      "owner": "transformation.office@example.com",
+      "start_date": "2026-06-01",
+      "end_date": "2026-12-31",
+      "committed_spend": 650000,
+      "currency": "USD",
+      "milestone_status": "on_track"
+    },
+    {
+      "sow_id": "SOW-FG-2202",
+      "supplier_id": "FG-SUP-1002",
+      "name": "Manufacturing Quality Surge Support",
+      "status": "active",
+      "owner": "mfg.manager@example.com",
+      "start_date": "2026-06-15",
+      "end_date": "2027-01-15",
+      "committed_spend": 420000,
+      "currency": "USD",
+      "milestone_status": "on_track"
+    },
+    {
+      "sow_id": "SOW-FG-2203",
+      "supplier_id": "FG-SUP-1003",
+      "name": "S/4 Data Migration Factory",
+      "status": "pending_approval",
+      "owner": "data.lead@example.com",
+      "start_date": "2026-07-15",
+      "end_date": "2027-03-31",
+      "committed_spend": 780000,
+      "currency": "USD",
+      "milestone_status": "not_started"
+    },
+    {
+      "sow_id": "SOW-FG-2204",
+      "supplier_id": "FG-SUP-1004",
+      "name": "Facilities Transition Support",
+      "status": "on_hold",
+      "owner": "facilities.lead@example.com",
+      "start_date": "2026-04-01",
+      "end_date": "2026-09-30",
+      "committed_spend": 250000,
+      "currency": "USD",
+      "milestone_status": "blocked"
+    }
+  ]
+}

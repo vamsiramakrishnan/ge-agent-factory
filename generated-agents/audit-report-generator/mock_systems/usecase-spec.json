@@ -1,0 +1,858 @@
+{
+  "id": "audit-report-generator",
+  "title": "Audit Report Generator",
+  "department": "finance",
+  "rowPolicy": {
+    "requestedRows": 50,
+    "minimumRowsPerEntity": 25,
+    "defaultRowsPerEntity": 50
+  },
+  "systems": [
+    {
+      "id": "auditboard",
+      "name": "AuditBoard",
+      "owns": [
+        "auditboard_records",
+        "auditboard_events",
+        "auditboard_audit_trail"
+      ],
+      "protocol": "REST API",
+      "localBacking": [
+        "alloydb"
+      ],
+      "toolNames": [
+        "query_auditboard_auditboard_records",
+        "query_auditboard_auditboard_events",
+        "query_auditboard_auditboard_audit_trail"
+      ],
+      "evidence": [
+        "source_system_record",
+        "generated_audit_trail"
+      ]
+    },
+    {
+      "id": "google_docs",
+      "name": "Google Docs",
+      "owns": [
+        "documents",
+        "comments",
+        "revision_history"
+      ],
+      "protocol": "Workspace API",
+      "localBacking": [
+        "cloud-storage"
+      ],
+      "toolNames": [
+        "query_google_docs_documents",
+        "query_google_docs_comments",
+        "query_google_docs_revision_history"
+      ],
+      "evidence": [
+        "source_system_record",
+        "generated_audit_trail"
+      ]
+    },
+    {
+      "id": "finance_3",
+      "name": "FINANCE 3",
+      "owns": [
+        "finance_3_records",
+        "finance_3_events"
+      ],
+      "protocol": "REST API",
+      "localBacking": [
+        "alloydb"
+      ],
+      "toolNames": [
+        "query_finance_3_records"
+      ],
+      "evidence": [
+        "source_system_record"
+      ]
+    }
+  ],
+  "dataContracts": [
+    {
+      "entity": "auditboard_records",
+      "sourceSystem": "AuditBoard",
+      "sourceSystemId": "auditboard",
+      "sourceKind": "alloydb",
+      "rows": 60,
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "actor",
+          "type": "person.fullName",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "enum",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "target_type",
+          "type": "lorem.words",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "date",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "lorem.sentence",
+          "ref": null,
+          "required": true
+        }
+      ]
+    },
+    {
+      "entity": "auditboard_events",
+      "sourceSystem": "AuditBoard",
+      "sourceSystemId": "auditboard",
+      "sourceKind": "alloydb",
+      "rows": 60,
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "actor",
+          "type": "person.fullName",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "enum",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "target_type",
+          "type": "lorem.words",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "date",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "lorem.sentence",
+          "ref": null,
+          "required": true
+        }
+      ]
+    },
+    {
+      "entity": "auditboard_audit_trail",
+      "sourceSystem": "AuditBoard",
+      "sourceSystemId": "auditboard",
+      "sourceKind": "alloydb",
+      "rows": 60,
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "actor",
+          "type": "person.fullName",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "enum",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "target_type",
+          "type": "lorem.words",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "date",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "lorem.sentence",
+          "ref": null,
+          "required": true
+        }
+      ]
+    },
+    {
+      "entity": "documents",
+      "sourceSystem": "Google Docs",
+      "sourceSystemId": "google_docs",
+      "sourceKind": "alloydb",
+      "rows": 60,
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "title",
+          "type": "lorem.sentence",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "owner",
+          "type": "person.fullName",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "last_updated",
+          "type": "date",
+          "ref": null,
+          "required": true
+        }
+      ]
+    },
+    {
+      "entity": "comments",
+      "sourceSystem": "Google Docs",
+      "sourceSystemId": "google_docs",
+      "sourceKind": "alloydb",
+      "rows": 60,
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "source_record_id",
+          "type": "seq",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "owner",
+          "type": "person.fullName",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "date",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "lorem.sentence",
+          "ref": null,
+          "required": true
+        }
+      ]
+    },
+    {
+      "entity": "revision_history",
+      "sourceSystem": "Google Docs",
+      "sourceSystemId": "google_docs",
+      "sourceKind": "alloydb",
+      "rows": 60,
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "actor",
+          "type": "person.fullName",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "enum",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "target_type",
+          "type": "lorem.words",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "date",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "lorem.sentence",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "document_id",
+          "type": "ref",
+          "ref": "documents.id",
+          "required": true
+        }
+      ]
+    },
+    {
+      "entity": "finance_3_records",
+      "sourceSystem": "FINANCE 3",
+      "sourceSystemId": "finance_3",
+      "sourceKind": "alloydb",
+      "rows": 60,
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "source_record_id",
+          "type": "seq",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "owner",
+          "type": "person.fullName",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "date",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "lorem.sentence",
+          "ref": null,
+          "required": true
+        }
+      ]
+    },
+    {
+      "entity": "finance_3_events",
+      "sourceSystem": "FINANCE 3",
+      "sourceSystemId": "finance_3",
+      "sourceKind": "alloydb",
+      "rows": 60,
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "actor",
+          "type": "person.fullName",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "enum",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "target_type",
+          "type": "lorem.words",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "date",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "lorem.sentence",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "finance_3_record_id",
+          "type": "ref",
+          "ref": "finance_3_records.id",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "evidenceRequired": [
+    "sql_result",
+    "source_system_record",
+    "document_reference",
+    "generated_audit_trail"
+  ],
+  "documentRequirements": [
+    "Audit Report Generator Controls Playbook: Workflow scope, Materiality thresholds, Escalation triggers, Audit evidence requirements, Quarter-end variations"
+  ],
+  "integrityRules": [
+    "revision_history.document_id -> documents.id; orphanPolicy=none",
+    "finance_3_events.finance_3_record_id -> finance_3_records.id; orphanPolicy=none"
+  ],
+  "apis": [
+    {
+      "id": "auditboard_recommend_api",
+      "sourceSystemId": "auditboard",
+      "method": "POST",
+      "path": "/api/auditboard/recommend",
+      "description": "Synchronous endpoint the agent calls to recommend in AuditBoard after evidence gating.",
+      "requestSchema": {
+        "target_id": "string",
+        "rationale": "string",
+        "metadata": "object"
+      },
+      "responseSchema": {
+        "action_id": "string",
+        "status": "string",
+        "audit_record_id": "string"
+      },
+      "idempotencyKey": "target_id+rationale"
+    }
+  ],
+  "datastorePackaging": {
+    "alloydb": {
+      "database": "audit_report_generator",
+      "schemas": [
+        "auditboard",
+        "google_docs",
+        "finance_3"
+      ]
+    },
+    "bigquery": {
+      "dataset": "finance_audit_report_generator",
+      "tables": [
+        "kpi_summary",
+        "evidence_index"
+      ]
+    },
+    "cloudStorage": {
+      "bucketSuffix": "audit-report-generator-evidence",
+      "prefixes": [
+        "documents",
+        "audit-trails",
+        "exports"
+      ]
+    },
+    "apis": {
+      "serviceName": "audit-report-generator-source-adapters",
+      "deploymentTarget": "cloud_run"
+    }
+  },
+  "behaviorContract": {
+    "role": "Chief Audit Executive agent for the Audit Report Generator workflow",
+    "primaryObjective": "Gemini drafts comprehensive audit reports with executive summary, root cause analysis, and recommendations. Automatic tone adaptation — risk-focused summary for audit committee, remediation guidance for management. so the Chief Audit Executive can move the Report drafting time KPI.",
+    "inScope": [
+      "Gemini drafts comprehensive audit reports with executive summary, root cause analysis, and recommendations",
+      "Automatic tone adaptation — risk-focused summary for audit committee, remediation guidance for management",
+      "Historical comparison highlights recurring findings and tracks remediation effectiveness across cycles"
+    ],
+    "outOfScope": [
+      "Final sign-off on materially significant journal entries (Controller retains authority)",
+      "Restatement of prior-period filings",
+      "Tax position changes that require external advisor review"
+    ],
+    "toolIntents": [
+      {
+        "name": "query_auditboard_auditboard_records",
+        "kind": "query",
+        "sourceSystemId": "auditboard",
+        "description": "Retrieve auditboard records from AuditBoard for the Audit Report Generator workflow.",
+        "requiredInputs": [
+          "lookup_key",
+          "date_range"
+        ],
+        "produces": [
+          "auditboard_records_records",
+          "auditboard_records_summary"
+        ],
+        "evidenceEmitted": [
+          "source_system_record"
+        ]
+      },
+      {
+        "name": "query_google_docs_documents",
+        "kind": "query",
+        "sourceSystemId": "google_docs",
+        "description": "Retrieve documents from Google Docs for the Audit Report Generator workflow.",
+        "requiredInputs": [
+          "lookup_key",
+          "date_range"
+        ],
+        "produces": [
+          "documents_records",
+          "documents_summary"
+        ],
+        "evidenceEmitted": [
+          "source_system_record"
+        ]
+      },
+      {
+        "name": "query_finance_3_finance_3_records",
+        "kind": "query",
+        "sourceSystemId": "finance_3",
+        "description": "Retrieve finance 3 records from FINANCE 3 for the Audit Report Generator workflow.",
+        "requiredInputs": [
+          "lookup_key",
+          "date_range"
+        ],
+        "produces": [
+          "finance_3_records_records",
+          "finance_3_records_summary"
+        ],
+        "evidenceEmitted": [
+          "source_system_record"
+        ]
+      },
+      {
+        "name": "lookup_audit_report_generator_controls_playbook",
+        "kind": "evidence_lookup",
+        "sourceSystemId": "google_docs",
+        "description": "Look up sections of the Audit Report Generator Controls Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+        "requiredInputs": [
+          "section_anchor"
+        ],
+        "produces": [
+          "document_section",
+          "citation_anchor"
+        ],
+        "evidenceEmitted": [
+          "document_reference"
+        ]
+      },
+      {
+        "name": "action_auditboard_recommend",
+        "kind": "action",
+        "sourceSystemId": "auditboard",
+        "description": "Execute the recommend step in AuditBoard after the agent has gathered evidence and validated escalation gates.",
+        "requiredInputs": [
+          "target_id",
+          "rationale"
+        ],
+        "produces": [
+          "action_id",
+          "audit_record_id"
+        ],
+        "evidenceEmitted": [
+          "api_response",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "evidenceRequirements": [
+      {
+        "claim": "Report drafting time moved from 2-3 weeks toward 2-3 days",
+        "mustCite": [
+          "auditboard.auditboard_records",
+          "google_docs.documents"
+        ],
+        "sourceSystemIds": [
+          "auditboard",
+          "google_docs"
+        ]
+      },
+      {
+        "claim": "Finding consistency moved from Varies by auditor toward Standardized format",
+        "mustCite": [
+          "auditboard.auditboard_records",
+          "google_docs.documents"
+        ],
+        "sourceSystemIds": [
+          "auditboard",
+          "google_docs"
+        ]
+      }
+    ],
+    "escalationRules": [
+      {
+        "trigger": "Report drafting time regresses past the 2-3 weeks baseline by more than 20%",
+        "action": "escalate_to_human",
+        "handoffTarget": "Chief Audit Executive",
+        "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+      },
+      {
+        "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+        "action": "request_more_info",
+        "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+      },
+      {
+        "trigger": "Proposed recommend action lacks supporting evidence from at least two systems",
+        "action": "refuse",
+        "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+      }
+    ],
+    "refusalRules": [
+      "Never fabricate metric values; only publish numbers derived from AuditBoard (and other named systems) entities.",
+      "Never bypass Chief Audit Executive approval on escalation triggers, even when confidence is high.",
+      "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+      "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+      "Do not claim a document is approved or published without document or revision evidence.",
+      "Do not claim an incident is remediated or closed without ITSM status evidence."
+    ],
+    "goldenEvals": [
+      {
+        "id": "audit-report-generator-end-to-end",
+        "prompt": "Run the Audit Report Generator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+        "expectedToolCalls": [
+          "query_auditboard_auditboard_records",
+          "query_google_docs_documents",
+          "query_finance_3_finance_3_records",
+          "lookup_audit_report_generator_controls_playbook",
+          "action_auditboard_recommend"
+        ],
+        "mustReferenceEntities": [
+          "auditboard_records",
+          "documents",
+          "finance_3_records"
+        ],
+        "mustCiteDocuments": [
+          "audit-report-generator-controls-playbook"
+        ],
+        "expectedActionOutcome": "Action recommend executed against AuditBoard, with audit-trail entry and Chief Audit Executive notified of outcomes.",
+        "forbiddenBehaviors": [
+          "do not invent KPI numbers",
+          "do not skip the evidence_lookup step before any recommendation",
+          "do not execute recommend without two-system evidence"
+        ]
+      }
+    ],
+    "simulatorEnrichment": {
+      "packBridges": [
+        {
+          "packId": "system_content_collaboration",
+          "simulatorArchetypes": [
+            "collaboration_docs",
+            "content_cms"
+          ],
+          "simulatorCollections": [
+            "workspaces",
+            "documents",
+            "comments",
+            "tasks",
+            "assets",
+            "content_items",
+            "workflow_tasks",
+            "approvals"
+          ],
+          "materializes": "document, comment, revision, content review, and publishing workflow rows into simulator seed overlays"
+        },
+        {
+          "packId": "system_itsm",
+          "simulatorArchetypes": [
+            "itsm",
+            "project_work",
+            "observability"
+          ],
+          "simulatorCollections": [
+            "tickets",
+            "cmdb_items",
+            "changes",
+            "slas",
+            "approvals",
+            "issues",
+            "alerts",
+            "incidents"
+          ],
+          "materializes": "ticket, incident, change, SLA, Jira issue, and remediation rows into ITSM simulator seeds"
+        }
+      ]
+    },
+    "evalEnrichment": {
+      "packHints": [
+        {
+          "packId": "system_content_collaboration",
+          "expectedToolKinds": [
+            "query",
+            "evidence_lookup"
+          ],
+          "mustReferenceEntities": [
+            "documents",
+            "comments",
+            "revision_history"
+          ],
+          "successCriteria": [
+            "Cite document titles or revision evidence for content claims.",
+            "Distinguish draft, review, published, and archived states.",
+            "Escalate unresolved review comments before publish-like actions."
+          ],
+          "refusalRules": [
+            "Do not claim a document is approved or published without document or revision evidence."
+          ]
+        },
+        {
+          "packId": "system_itsm",
+          "expectedToolKinds": [
+            "query",
+            "action",
+            "notification"
+          ],
+          "mustReferenceEntities": [
+            "tickets",
+            "incidents",
+            "change_requests"
+          ],
+          "successCriteria": [
+            "Use status, owner, created_at, and notes to prioritize remediation.",
+            "Treat active or pending SLA-risk records as escalation candidates.",
+            "Preserve audit trails for remediation actions."
+          ],
+          "refusalRules": [
+            "Do not claim an incident is remediated or closed without ITSM status evidence."
+          ]
+        }
+      ]
+    }
+  },
+  "agentQualityPlan": {
+    "naming": {
+      "agentName": "audit_report_generator_agent",
+      "displayName": "Audit Report Generator",
+      "rule": "Use snake_case Python identifiers for agent and tools; use title case only for display labels.",
+      "toolNamePattern": "<verb>_<source_system_id>_<business_object>",
+      "forbiddenPatterns": [
+        "helper",
+        "do_task",
+        "process_data",
+        "tool1",
+        "generic_agent"
+      ]
+    },
+    "adkCapabilities": {
+      "agentClass": "google.adk.agents.Agent",
+      "model": "gemini-3.5-flash",
+      "generateContentConfig": {
+        "temperature": 0.2,
+        "maxOutputTokens": null,
+        "reason": "Output budget left to the model default; the harness review sets a bound only when the use case warrants one."
+      },
+      "outputKey": "last_response",
+      "callbacks": [
+        "before_agent_callback initializes session state from the generated spec.",
+        "before_tool_callback enforces idempotency keys for write-like tool intents.",
+        "after_tool_callback records tool evidence and audit trails in session state."
+      ],
+      "stateKeys": [
+        "scenario_id",
+        "primary_objective",
+        "expected_tools",
+        "evidence_log",
+        "audit_trails"
+      ],
+      "useSubAgentsWhen": "Split into source-specific researcher/verifier sub-agents when live APIs replace fixtures or when one prompt needs parallel evidence collection.",
+      "useAgentToolWhen": "Expose specialist agents through AgentTool when the coordinator must retain control over final synthesis.",
+      "useCodeExecutorWhen": "Not required unless future specs add deterministic calculation or modeling work.",
+      "useMemoryWhen": "Only persist user preferences or repeated workflow context after the user explicitly asks for memory; keep generated demos session-scoped by default."
+    },
+    "toolDesign": {
+      "expectedToolCount": 17,
+      "sourceAdapters": [
+        "auditboard",
+        "google_docs",
+        "finance_3"
+      ],
+      "writeSafety": "All write-like tools require explicit inputs and return deterministic audit_trail values; callbacks block missing idempotency_key/idempotencyKey when present in args.",
+      "evidence": "Evidence lookup tools and document search must run before recommendations or write actions."
+    },
+    "evalPlan": {
+      "unitTests": [
+        "Import generated app.tools and app.agent.",
+        "Verify fixture tables exist and contain rows.",
+        "Verify generated agent instruction contains objective, tool playbook, and guardrails.",
+        "Statically verify advanced ADK config: callbacks, generate_content_config, output_key, and description."
+      ],
+      "agentEvals": [
+        "tool_trajectory_avg_score with ANY_ORDER for contract tool usage.",
+        "rubric_based_tool_use_quality_v1 for source-before-action reasoning.",
+        "rubric_based_final_response_quality_v1 for grounded final answers.",
+        "hallucinations_v1 and safety_v1 for cited evidence and guardrail adherence."
+      ],
+      "goldenEvalMinimum": 1,
+      "addMoreEvalsWhen": [
+        "A tool intent writes external state.",
+        "A source adapter has bidirectional sync semantics.",
+        "A workflow has escalation/refusal branches.",
+        "A document citation is mandatory for final answers."
+      ]
+    },
+    "mockDataQuality": {
+      "minimumRowsPerEntity": 25,
+      "requirements": [
+        "Every generated row has a stable primary key.",
+        "Foreign keys must resolve to generated parent rows.",
+        "Each table declares sourceSystem and sourceSystemId in fixtures/manifest.json.",
+        "Documents include citation anchors and linked entity ids when document evidence is needed.",
+        "Action-oriented workflows include at least one anomaly or edge-case fixture."
+      ]
+    }
+  }
+}

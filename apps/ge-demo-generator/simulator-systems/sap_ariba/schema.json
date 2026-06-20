@@ -1,0 +1,169 @@
+{
+  "id": "sap_ariba_schema",
+  "version": 3,
+  "apiProfile": {
+    "style": "sap-ariba-rest-json",
+    "security": ["oauth2", "realmScopedApiKey"],
+    "pagination": {
+      "styles": ["offset", "top-skip"],
+      "params": ["$top", "$skip", "limit", "offset", "$filter", "$orderby"]
+    },
+    "commonErrors": [400, 401, 403, 404, 409, 412, 422, 429, 500]
+  },
+  "collections": {
+    "suppliers": {
+      "primaryKey": "supplier_id",
+      "fields": {
+        "supplier_id": "string",
+        "sm_vendor_id": "string",
+        "anid": "string",
+        "name": "string",
+        "status": "enum:invited|registered|qualified|preferred|suspended|disqualified|pending_approval",
+        "lifecycle_phase": "string",
+        "risk_tier": "enum:low|medium|high|critical",
+        "country": "string",
+        "category": "string",
+        "diversity_status": "string",
+        "qualification_status": "enum:current|expired|bank_review_required|sanctions_review|required",
+        "preferred_supplier": "boolean"
+      },
+      "relations": {
+        "questionnaires": {
+          "collection": "supplier_questionnaires",
+          "localField": "supplier_id",
+          "foreignField": "supplier_id",
+          "many": true
+        },
+        "contracts": {
+          "collection": "contracts",
+          "localField": "supplier_id",
+          "foreignField": "supplier_id",
+          "many": true
+        },
+        "purchase_orders": {
+          "collection": "purchase_orders",
+          "localField": "supplier_id",
+          "foreignField": "supplier_id",
+          "many": true
+        }
+      }
+    },
+    "supplier_questionnaires": {
+      "primaryKey": "questionnaire_id",
+      "fields": {
+        "questionnaire_id": "string",
+        "supplier_id": "ref:suppliers.supplier_id",
+        "template": "string",
+        "status": "enum:draft|sent|submitted|approved|rejected|expired",
+        "risk_score": "number",
+        "submitted_at": { "type": "string", "format": "date-time" },
+        "expires_at": { "type": "string", "format": "date-time" },
+        "owner": "string"
+      }
+    },
+    "sourcing_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "title": "string",
+        "event_type": "enum:RFI|RFP|RFQ|Auction",
+        "status": "enum:draft|open|pending_award|awarded|cancelled|closed",
+        "category": "string",
+        "owner": "string",
+        "open_date": { "type": "string", "format": "date" },
+        "close_date": { "type": "string", "format": "date" },
+        "currency": "string",
+        "estimated_value": "number"
+      },
+      "relations": {
+        "bids": {
+          "collection": "sourcing_bids",
+          "localField": "event_id",
+          "foreignField": "event_id",
+          "many": true
+        }
+      }
+    },
+    "sourcing_bids": {
+      "primaryKey": "bid_id",
+      "fields": {
+        "bid_id": "string",
+        "event_id": "ref:sourcing_events.event_id",
+        "supplier_id": "ref:suppliers.supplier_id",
+        "status": "enum:draft|submitted|shortlisted|awarded|rejected|withdrawn",
+        "rank": "integer",
+        "bid_amount": "number",
+        "currency": "string",
+        "submitted_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "requisitions": {
+      "primaryKey": "requisition_id",
+      "fields": {
+        "requisition_id": "string",
+        "requester": "string",
+        "status": "enum:composing|submitted|approved|ordered|denied|cancelled",
+        "amount": "number",
+        "currency": "string",
+        "cost_center": "string",
+        "commodity_code": "string",
+        "approval_state": "enum:not_submitted|pending|approved|denied",
+        "guided_buying_policy": "string"
+      }
+    },
+    "purchase_orders": {
+      "primaryKey": "po_id",
+      "fields": {
+        "po_id": "string",
+        "supplier_id": "ref:suppliers.supplier_id",
+        "requisition_id": "ref:requisitions.requisition_id",
+        "status": "enum:ordered|acknowledged|changed|partially_invoiced|closed|cancelled",
+        "amount": "number",
+        "currency": "string",
+        "requester": "string",
+        "network_status": "enum:queued|sent_to_supplier|acknowledged|failed|disputed",
+        "order_method": "string"
+      }
+    },
+    "contracts": {
+      "primaryKey": "contract_id",
+      "fields": {
+        "contract_id": "string",
+        "supplier_id": "ref:suppliers.supplier_id",
+        "workspace_id": "string",
+        "status": "enum:draft|published|amendment|expired|terminated|pending_approval",
+        "contract_type": "string",
+        "effective_date": { "type": "string", "format": "date" },
+        "expiration_date": { "type": "string", "format": "date" },
+        "max_value": "number",
+        "currency": "string"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": "string",
+        "source_record_id": "string",
+        "approver": "string",
+        "state": "enum:requested|pending|pending_approval|approved|rejected",
+        "reason": "string",
+        "workflow_step": "string",
+        "due_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "actor": "string",
+        "role": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string",
+        "timestamp": { "type": "string", "format": "date-time" },
+        "detail": "string"
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+# Build-only: builds + pushes the console UI image to Artifact Registry. Does NOT
+# deploy — Terraform owns Cloud Run config (installer/terraform/ui_services.tf). Bind
+# a freshly built image to the console service with:
+#
+#   terraform apply -var console_image=<region>-docker.pkg.dev/<proj>/<repo>/ge-agent-factory-console:<tag>
+#
+# (installer/build-and-deploy.sh does this automatically). Build context is the repo
+# root so the image can include tools/ + the generator the server imports.
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'apps/console/Dockerfile'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:${_TAG}'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:latest'
+      - '.'
+
+images:
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:${_TAG}'
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:latest'
+
+substitutions:
+  _REGION: 'us-central1'
+  _SERVICE_NAME: 'ge-agent-factory-console'
+  _AR_REPO: 'cloud-run-source'
+  _TAG: 'latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

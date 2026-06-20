@@ -1,0 +1,306 @@
+{
+  "id": "sap_s4hana_mm_schema",
+  "version": 3,
+  "apiProfile": {
+    "style": "sap-odata-v2-v4",
+    "security": [
+      "oauth2",
+      "basicAuth",
+      "principalPropagation"
+    ],
+    "pagination": {
+      "styles": [
+        "top-skip",
+        "skiptoken",
+        "server-driven"
+      ],
+      "params": [
+        "$top",
+        "$skip",
+        "$skiptoken",
+        "$filter",
+        "$orderby",
+        "$select",
+        "$expand"
+      ]
+    },
+    "query": {
+      "searchParam": "$search",
+      "filterParam": "$filter",
+      "sortParam": "$orderby",
+      "expandParam": "$expand"
+    },
+    "commonErrors": [
+      400,
+      401,
+      403,
+      404,
+      409,
+      412,
+      422,
+      429,
+      500
+    ]
+  },
+  "collections": {
+    "plants": {
+      "primaryKey": "plant",
+      "fields": {
+        "plant": "string",
+        "name": "string",
+        "company_code": "string",
+        "country": "string",
+        "valuation_area": "string",
+        "status": "enum:active|blocked|decommissioned"
+      },
+      "relations": {
+        "storage_locations": {
+          "collection": "storage_locations",
+          "localField": "plant",
+          "foreignField": "plant",
+          "many": true
+        },
+        "materials": {
+          "collection": "materials",
+          "localField": "plant",
+          "foreignField": "plant",
+          "many": true
+        }
+      }
+    },
+    "storage_locations": {
+      "primaryKey": "storage_location_id",
+      "fields": {
+        "storage_location_id": "string",
+        "plant": "ref:plants.plant",
+        "name": "string",
+        "status": "enum:active|blocked|inventory_freeze"
+      }
+    },
+    "materials": {
+      "primaryKey": "material_id",
+      "fields": {
+        "material_id": "string",
+        "material_number": "string",
+        "description": "string",
+        "material_type": "enum:ROH|HALB|FERT|ERSA|DIEN|NLAG",
+        "base_uom": "string",
+        "plant": "ref:plants.plant",
+        "mrp_controller": "string",
+        "procurement_type": "enum:F|E|X",
+        "valuation_class": "string",
+        "status": "enum:active|blocked|phaseout|quality_hold",
+        "safety_stock": "integer",
+        "standard_price": "number",
+        "currency": "string"
+      },
+      "relations": {
+        "purchase_orders": {
+          "collection": "purchase_orders",
+          "localField": "material_id",
+          "foreignField": "material_id",
+          "many": true
+        },
+        "goods_receipts": {
+          "collection": "goods_receipts",
+          "localField": "material_id",
+          "foreignField": "material_id",
+          "many": true
+        }
+      }
+    },
+    "suppliers": {
+      "primaryKey": "supplier_id",
+      "fields": {
+        "supplier_id": "string",
+        "business_partner_id": "string",
+        "name": "string",
+        "status": "enum:active|blocked|one_time|marked_for_deletion",
+        "risk_tier": "enum:low|medium|high|critical",
+        "country": "string",
+        "category": "string",
+        "purchasing_org": "string",
+        "payment_terms": "string",
+        "source_list_block": "boolean",
+        "incoterms": "string",
+        "last_eval_score": "number"
+      },
+      "relations": {
+        "purchase_orders": {
+          "collection": "purchase_orders",
+          "localField": "supplier_id",
+          "foreignField": "supplier_id",
+          "many": true
+        },
+        "contracts": {
+          "collection": "contracts",
+          "localField": "supplier_id",
+          "foreignField": "supplier_id",
+          "many": true
+        }
+      }
+    },
+    "purchase_requisitions": {
+      "primaryKey": "requisition_id",
+      "fields": {
+        "requisition_id": "string",
+        "item": "string",
+        "material_id": "ref:materials.material_id",
+        "plant": "ref:plants.plant",
+        "requester": "string",
+        "status": "enum:draft|awaiting_release|released|converted|rejected|closed|cancelled",
+        "quantity": "integer",
+        "uom": "string",
+        "delivery_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "cost_center": "string",
+        "release_strategy": "string",
+        "release_status": "enum:not_relevant|blocked|partially_released|released|rejected",
+        "estimated_value": "number",
+        "currency": "string"
+      },
+      "relations": {
+        "material": {
+          "collection": "materials",
+          "localField": "material_id",
+          "foreignField": "material_id",
+          "many": false
+        },
+        "approvals": {
+          "collection": "approvals",
+          "localField": "requisition_id",
+          "foreignField": "source_record_id",
+          "many": true
+        }
+      }
+    },
+    "purchase_orders": {
+      "primaryKey": "po_id",
+      "fields": {
+        "po_id": "string",
+        "item": "string",
+        "supplier_id": "ref:suppliers.supplier_id",
+        "material_id": "ref:materials.material_id",
+        "plant": "ref:plants.plant",
+        "purchasing_org": "string",
+        "status": "enum:created|released|confirmed|partially_received|received|invoice_received|closed|cancelled|blocked",
+        "quantity": "integer",
+        "net_price": "number",
+        "amount": "number",
+        "currency": "string",
+        "requester": "string",
+        "delivery_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "confirmation_status": "enum:not_sent|sent|confirmed|exception",
+        "goods_receipt_status": "enum:not_received|short_received|received|over_received",
+        "invoice_receipt_status": "enum:not_invoiced|blocked|invoice_received|matched",
+        "release_strategy": "string",
+        "last_change_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "relations": {
+        "supplier": {
+          "collection": "suppliers",
+          "localField": "supplier_id",
+          "foreignField": "supplier_id",
+          "many": false
+        },
+        "material": {
+          "collection": "materials",
+          "localField": "material_id",
+          "foreignField": "material_id",
+          "many": false
+        },
+        "goods_receipts": {
+          "collection": "goods_receipts",
+          "localField": "po_id",
+          "foreignField": "po_id",
+          "many": true
+        },
+        "approvals": {
+          "collection": "approvals",
+          "localField": "po_id",
+          "foreignField": "source_record_id",
+          "many": true
+        }
+      }
+    },
+    "goods_receipts": {
+      "primaryKey": "goods_receipt_id",
+      "fields": {
+        "goods_receipt_id": "string",
+        "po_id": "ref:purchase_orders.po_id",
+        "material_id": "ref:materials.material_id",
+        "plant": "ref:plants.plant",
+        "posting_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "quantity": "integer",
+        "uom": "string",
+        "movement_type": "enum:101|102|103|105|122|161",
+        "status": "enum:parked|posted|reversed|quality_hold",
+        "material_document": "string"
+      }
+    },
+    "contracts": {
+      "primaryKey": "contract_id",
+      "fields": {
+        "contract_id": "string",
+        "supplier_id": "ref:suppliers.supplier_id",
+        "purchasing_org": "string",
+        "status": "enum:draft|active|released|expired|blocked|closed",
+        "target_value": "number",
+        "currency": "string",
+        "effective_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "expiration_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "consumed_value": "number",
+        "release_status": "enum:blocked|released|not_relevant"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": "string",
+        "source_record_id": "string",
+        "approver": "string",
+        "state": "enum:requested|pending|pending_approval|approved|rejected",
+        "reason": "string",
+        "workflow_step": "string",
+        "due_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "actor": "string",
+        "role": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string",
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "detail": "string"
+      }
+    }
+  }
+}

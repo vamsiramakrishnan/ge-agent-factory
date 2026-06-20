@@ -1,0 +1,68 @@
+{
+  "id": "sap_fieldglass_projection",
+  "version": 2,
+  "materialization": "Project contingent workforce scenarios into SAP Fieldglass suppliers, job postings, job seekers, work orders, workers, time sheets, SOWs, and approvals.",
+  "collectionMappings": [
+    {
+      "simulatorCollection": "suppliers",
+      "graphKinds": [
+        "supplier"
+      ],
+      "realizedObjects": [
+        "suppliers"
+      ]
+    },
+    {
+      "simulatorCollection": "job_postings",
+      "graphKinds": [
+        "requisition",
+        "position"
+      ],
+      "realizedObjects": [
+        "job_requisitions",
+        "positions"
+      ]
+    },
+    {
+      "simulatorCollection": "work_orders",
+      "graphKinds": [
+        "worker",
+        "contract"
+      ],
+      "realizedObjects": [
+        "work_orders",
+        "contracts"
+      ]
+    },
+    {
+      "simulatorCollection": "workers",
+      "graphKinds": [
+        "worker"
+      ],
+      "realizedObjects": [
+        "workers",
+        "employees"
+      ]
+    },
+    {
+      "simulatorCollection": "time_sheets",
+      "graphKinds": [
+        "time",
+        "finance"
+      ],
+      "realizedObjects": [
+        "time_sheets",
+        "invoices"
+      ]
+    },
+    {
+      "simulatorCollection": "approvals",
+      "graphKinds": [
+        "approval"
+      ],
+      "realizedObjects": [
+        "approvals"
+      ]
+    }
+  ]
+}

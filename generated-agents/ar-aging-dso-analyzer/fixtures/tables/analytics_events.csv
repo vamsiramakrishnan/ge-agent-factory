@@ -1,0 +1,61 @@
+id,period,metric_name,value,variance_pct,computed_at,historical_metric_id
+ID-0001,week,close_cycle_days,101.88,-15.1,2026-05-25,ID-0001
+ID-0002,month,auto_certified_accounts,128.23,-6.4,2026-05-26,ID-0002
+ID-0003,quarter,reconciliation_exception_rate,158.16,2.7,2026-05-27,ID-0003
+ID-0004,week,working_capital_forecast_accuracy,190.32,11.3,2026-05-28,ID-0004
+ID-0005,month,degero incidunt damnatio,159.61,-15.1,2026-05-29,ID-0005
+ID-0006,quarter,admiratio turpis vomica,191.88,-6.4,2026-05-30,ID-0006
+ID-0007,week,auxilium virgo vulgus,227.99,2.7,2026-05-25,ID-0007
+ID-0008,month,debilito optio aer,266.01,11.3,2026-05-26,ID-0008
+ID-0009,quarter,venustas villa vitium,217.34,-15.1,2026-05-27,ID-0009
+ID-0010,week,demoror supellex carmen,255.53,-6.4,2026-05-28,ID-0010
+ID-0011,month,tepidus deserunt abundans,297.83,2.7,2026-05-29,ID-0011
+ID-0012,quarter,reiciendis brevis comminor,341.69,11.3,2026-05-30,ID-0012
+ID-0013,week,adamo denique somniculosus,275.08,-15.1,2026-05-25,ID-0013
+ID-0014,month,vulgo adinventitias temptatio,319.18,-6.4,2026-05-26,ID-0014
+ID-0015,quarter,virga neque consuasor,367.67,2.7,2026-05-27,ID-0015
+ID-0016,week,sollicito caput aureus,417.38,11.3,2026-05-28,ID-0016
+ID-0017,month,adficio adeptio atque,332.81,-15.1,2026-05-29,ID-0017
+ID-0018,quarter,debilito nisi ea,382.82,-6.4,2026-05-30,ID-0018
+ID-0019,week,vindico vapulus curia,437.5,2.7,2026-05-25,ID-0019
+ID-0020,month,officiis audax conatus,493.06,11.3,2026-05-26,ID-0020
+ID-0021,quarter,vilicus dignissimos cunae,390.54,-15.1,2026-05-27,ID-0021
+ID-0022,week,tepidus solium argentum,446.47,-6.4,2026-05-28,ID-0022
+ID-0023,month,adfero antiquus teneo,507.34,2.7,2026-05-29,ID-0023
+ID-0024,quarter,voluptate caelum cognomen,568.74,11.3,2026-05-30,ID-0024
+ID-0025,week,voco caelestis somnus,448.27,-15.1,2026-05-25,ID-0025
+ID-0026,month,communis summa totam,510.12,-6.4,2026-05-26,ID-0026
+ID-0027,quarter,vorax tego crudelis,577.17,2.7,2026-05-27,ID-0027
+ID-0028,week,sui aspicio termes,644.43,11.3,2026-05-28,ID-0028
+ID-0029,month,paulatim clibanus summopere,506,-15.1,2026-05-29,ID-0029
+ID-0030,quarter,corporis vicissitudo tres,573.77,-6.4,2026-05-30,ID-0030
+ID-0031,week,suasoria suspendo universe,647.01,2.7,2026-05-25,ID-0031
+ID-0032,month,condico volutabrum umerus,720.11,11.3,2026-05-26,ID-0032
+ID-0033,quarter,derelinquo creator ascisco,563.74,-15.1,2026-05-27,ID-0033
+ID-0034,week,tumultus absum succedo,637.42,-6.4,2026-05-28,ID-0034
+ID-0035,month,totidem in volaticus,716.85,2.7,2026-05-29,ID-0035
+ID-0036,quarter,attero thesaurus ipsum,795.79,11.3,2026-05-30,ID-0036
+ID-0037,week,collum clam ut,621.47,-15.1,2026-05-25,ID-0037
+ID-0038,month,mollitia tristis ventus,701.06,-6.4,2026-05-26,ID-0038
+ID-0039,quarter,civis cohibeo conservo,786.68,2.7,2026-05-27,ID-0039
+ID-0040,week,aegrotatio terra circumvenio,871.48,11.3,2026-05-28,ID-0040
+ID-0041,month,corrumpo vinco sapiente,679.2,-15.1,2026-05-29,ID-0041
+ID-0042,quarter,tantillus ambitus chirographum,764.71,-6.4,2026-05-30,ID-0042
+ID-0043,week,earum attero voluntarius,856.52,2.7,2026-05-25,ID-0043
+ID-0044,month,curo conor cubicularis,947.16,11.3,2026-05-26,ID-0044
+ID-0045,quarter,civis solum volo,736.93,-15.1,2026-05-27,ID-0045
+ID-0046,week,clibanus aliqua patruus,828.36,-6.4,2026-05-28,ID-0046
+ID-0047,month,vociferor casso spes,926.35,2.7,2026-05-29,ID-0047
+ID-0048,quarter,patrocinor usitas vindico,1022.85,11.3,2026-05-30,ID-0048
+ID-0049,week,vacuus balbus ocer,794.66,-15.1,2026-05-25,ID-0049
+ID-0050,month,nostrum casus defaeco,892.01,-6.4,2026-05-26,ID-0050
+ID-0051,quarter,spectaculum voluptatum ambitus,996.19,2.7,2026-05-27,ID-0051
+ID-0052,week,vergo damno caute,1098.53,11.3,2026-05-28,ID-0052
+ID-0053,month,placeat reprehenderit carbo,852.4,-15.1,2026-05-29,ID-0053
+ID-0054,quarter,taceo abutor carpo,955.66,-6.4,2026-05-30,ID-0054
+ID-0055,week,degenero tabella pectus,1066.03,2.7,2026-05-25,ID-0055
+ID-0056,month,tibi trans vicissitudo,1174.21,11.3,2026-05-26,ID-0056
+ID-0057,quarter,taceo eligendi aegrotatio,910.13,-15.1,2026-05-27,ID-0057
+ID-0058,week,censura corporis vehemens,1019.3,-6.4,2026-05-28,ID-0058
+ID-0059,month,carpo sufficio cursus,1135.86,2.7,2026-05-29,ID-0059
+ID-0060,quarter,tredecim clarus decor,1249.9,11.3,2026-05-30,ID-0060

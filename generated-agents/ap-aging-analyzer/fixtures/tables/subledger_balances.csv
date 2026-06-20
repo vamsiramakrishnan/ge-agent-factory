@@ -1,0 +1,61 @@
+id,posting_date,account,amount,currency,description,status
+ID-0001,2026-05-20,2000-AP,-12840.5,USD,subledger_balances seeded 2000-AP close evidence for variance and reconciliation checks.,posted
+ID-0002,2026-05-21,2100-AR,6400.75,USD,subledger_balances seeded 2100-AR close evidence for variance and reconciliation checks.,pending
+ID-0003,2026-05-22,3000-Revenue,9200,USD,subledger_balances seeded 3000-Revenue close evidence for variance and reconciliation checks.,posted
+ID-0004,2026-05-23,4000-Expense,-45100.25,USD,subledger_balances seeded 4000-Expense close evidence for variance and reconciliation checks.,posted
+ID-0005,2026-05-24,5000-COGS,-780.5,USD,subledger_balances seeded 5000-COGS close evidence for variance and reconciliation checks.,posted
+ID-0006,2026-05-25,1000-Cash,33000,USD,subledger_balances seeded 1000-Cash close evidence for variance and reconciliation checks.,reversed
+ID-0007,2022-03-05,3000-Revenue,13226.43,USD,Atrocitas vito arcesso cuppedia ait vulnus desipio pariatur.,posted
+ID-0008,2024-07-01,2000-AP,39805.43,USD,Adfectus demens maiores aedificium.,posted
+ID-0009,2022-09-20,3000-Revenue,-5923.73,EUR,Armarium attonbitus universe vindico corroboro cerno sequi.,posted
+ID-0010,2020-02-25,1000-Cash,21597.23,EUR,Brevis callide spectaculum.,posted
+ID-0011,2020-08-16,4000-Expense,-32145.54,EUR,Alveus carcer suppono umbra.,pending
+ID-0012,2022-05-20,4000-Expense,-29501.57,USD,Abundans ait beatus acquiro attonbitus nostrum curis vapulus totidem congregatio.,posted
+ID-0013,2022-04-12,3000-Revenue,-23193.64,EUR,Ipsam debeo claustrum vinum tenax apud.,pending
+ID-0014,2022-12-04,5000-COGS,29985.53,EUR,Censura id recusandae.,posted
+ID-0015,2020-11-01,5000-COGS,48440.22,EUR,Certe accusamus vergo angulus.,posted
+ID-0016,2021-08-23,3000-Revenue,15142.04,GBP,Abstergo approbo velut utilis.,posted
+ID-0017,2023-08-09,3000-Revenue,-32462.88,GBP,Crebro earum adipiscor aspernatur taceo agnitio.,posted
+ID-0018,2021-06-21,2100-AR,-21130.63,EUR,Clibanus maxime demonstro sonitus video synagoga bestia addo.,posted
+ID-0019,2023-07-28,1000-Cash,-363.38,EUR,Tepidus amissio aestivus suscipit deputo.,posted
+ID-0020,2022-08-11,2000-AP,31910.23,GBP,Cernuus officia contra aliqua vero approbo virga decumbo.,posted
+ID-0021,2023-04-02,5000-COGS,23222.49,GBP,Stultus ulciscor carus deporto bos votum vinco adflicto.,posted
+ID-0022,2025-07-21,2000-AP,6794.52,GBP,Subiungo coadunatio vesper.,reversed
+ID-0023,2025-08-31,2100-AR,36204.27,GBP,Tricesimus adfectus patior calculus animi.,posted
+ID-0024,2024-03-06,2100-AR,22476.68,USD,Fugit texo comis quidem valde.,posted
+ID-0025,2021-05-25,1000-Cash,37009.89,USD,Eveniet vigor theologus vulpes consequatur tenetur cuius denego quis.,pending
+ID-0026,2025-11-27,4000-Expense,-8223.32,EUR,Capitulus amor conspergo cito clibanus canis adicio accommodo.,reversed
+ID-0027,2022-07-26,2100-AR,17964.73,USD,Terror alii cura utroque vinco deleo placeat aspernatur vulgaris campana.,pending
+ID-0028,2023-11-25,3000-Revenue,1268.85,USD,Bos audentia tergum consectetur.,posted
+ID-0029,2025-10-25,5000-COGS,42775.23,GBP,Crustulum tempora subito arguo.,pending
+ID-0030,2021-05-06,2000-AP,3697.44,EUR,Aliqua utpote cena aperio valeo vis unus.,pending
+ID-0031,2023-12-07,3000-Revenue,-41301.33,EUR,Caveo supra derelinquo aggero bonus.,posted
+ID-0032,2020-06-15,5000-COGS,-485.35,EUR,Tredecim conqueror spiritus maxime cenaculum utrimque thema.,posted
+ID-0033,2025-02-07,5000-COGS,20836.3,GBP,Sponte quae tantum articulus utrum ut adamo tremo.,posted
+ID-0034,2022-01-04,4000-Expense,-33924.01,GBP,Dignissimos absconditus cito provident vomica ratione caveo reiciendis harum.,posted
+ID-0035,2020-08-22,4000-Expense,4126.66,GBP,Ratione vicissitudo ambulo viduo sto.,posted
+ID-0036,2021-10-21,4000-Expense,-43264.94,EUR,Quas adipisci ut voluptate volo.,posted
+ID-0037,2020-10-12,4000-Expense,-47541.31,USD,Deporto tepesco statua decumbo certus.,reversed
+ID-0038,2022-07-23,2100-AR,-33637.62,GBP,Bos agnitio sponte solium certe virga arcus custodia.,pending
+ID-0039,2022-07-09,3000-Revenue,-10240.56,USD,Cunabula varius calculus benevolentia addo solio corporis urbs demergo volo.,posted
+ID-0040,2025-03-19,4000-Expense,27092.19,GBP,Quidem apostolus adduco verumtamen provident theca dens angulus antea.,posted
+ID-0041,2022-08-01,2000-AP,-840.55,USD,Censura thema colo deficio absum aequus crudelis.,posted
+ID-0042,2023-08-08,2000-AP,19498.19,GBP,Adflicto denique amicitia carbo vos aranea deserunt quae subvenio.,posted
+ID-0043,2020-01-22,2000-AP,1771.16,USD,Ademptio aeternus crux apparatus minima.,posted
+ID-0044,2024-10-20,2000-AP,-33251.75,USD,Suffoco addo video admoneo hic sui ut summopere.,pending
+ID-0045,2022-01-14,4000-Expense,-41988.52,GBP,Totidem defero sed est suus aggredior adulescens.,posted
+ID-0046,2020-12-15,5000-COGS,-28078.6,GBP,Attonbitus testimonium soluta deripio itaque.,posted
+ID-0047,2021-05-15,5000-COGS,47479.32,EUR,Sponte aequus adaugeo causa.,posted
+ID-0048,2025-03-18,4000-Expense,24270.65,EUR,Correptius votum adhaero usque nihil.,posted
+ID-0049,2024-05-08,2100-AR,37342.33,GBP,Charisma omnis verecundia bene qui quos.,posted
+ID-0050,2020-10-15,4000-Expense,40903.26,USD,Volup attollo ultra deprimo.,posted
+ID-0051,2025-03-23,2100-AR,1481.74,EUR,Ascit crinis volubilis causa solum communis terebro.,posted
+ID-0052,2025-10-26,2100-AR,-26394.96,USD,Eius conduco tricesimus curvo.,posted
+ID-0053,2023-09-14,4000-Expense,-33295.81,USD,Tabgo sonitus demo.,pending
+ID-0054,2024-11-01,3000-Revenue,36827.13,USD,Centum adsuesco excepturi.,pending
+ID-0055,2020-03-27,1000-Cash,-4780.1,GBP,Dignissimos adhuc arcesso vos vociferor.,posted
+ID-0056,2025-09-17,3000-Revenue,36791.83,EUR,Deporto sopor apud adamo cohors succurro baiulus.,posted
+ID-0057,2025-10-27,1000-Cash,17260.21,EUR,Atqui stultus tum vinco statua derideo quae ustulo molestias.,posted
+ID-0058,2025-08-02,4000-Expense,17651.34,USD,Cruentus soleo amissio solus xiphias administratio voluptatum cum.,pending
+ID-0059,2024-09-10,3000-Revenue,23844.92,GBP,Compello sopor titulus tempus theologus debeo.,pending
+ID-0060,2020-09-20,3000-Revenue,-49424.14,USD,Crustulum sub creta deduco capio.,posted

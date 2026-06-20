@@ -1,0 +1,964 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { ShoppingCart, User, Brain, ListChecks, MessageSquare } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "User Chat Query", lane: "system", type: "trigger" },
+    { id: "a1", label: "Role Analysis", lane: "agent", type: "action" },
+    { id: "a2", label: "Service Matching", lane: "agent", type: "action" },
+    { id: "a3", label: "Recommendations", lane: "agent", type: "output" },
+    { id: "h1", label: "User Requests", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "User Query", icon: MessageSquare, description: "User asks about available IT services via chat or service catalog portal.", trigger: "Chat", systems: ["ServiceNow", "Slack"] },
+  { label: "Role Context", icon: User, description: "User's role, department, and existing access analyzed to determine available services.", systems: ["Okta", "BigQuery"], integration: "ADK" },
+  { label: "Service Matching", icon: Brain, description: "LLM matches user needs to available services, suggesting relevant items with approval paths.", systems: ["Vertex AI"] },
+  { label: "Request Submission", icon: ListChecks, description: "User selects recommended services and agent submits access requests with auto-routing.", output: "Service Requests" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "ServiceNow", description: "Service catalog, request forms, approval workflows", direction: "bidirectional", protocol: "REST API", category: "erp" },
+    { system: "Okta", description: "User role, group membership, existing access entitlements", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "BigQuery", description: "Service request patterns by role, popular items trending", direction: "read", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Conversational service discovery, role-based recommendations", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "User Context Collection", description: "Identify user's role, department, and team from Okta. Pull existing access entitlements and previous service requests from ServiceNow.", systems: ["Okta", "ServiceNow"], layer: "integration", dataIn: "User identity + access history", dataOut: "User profile with current entitlements" },
+    { label: "Service Pattern Analysis", description: "Analyze service request patterns for users with similar roles and departments. Identify commonly requested services and typical onboarding bundles.", systems: ["BigQuery"], layer: "ml", dataIn: "User profile + role-based request patterns", dataOut: "Ranked service recommendations" },
+    { label: "Conversational Guidance", description: "Gemini guides users through available services in natural language, explaining what each service provides and showing the approval path. Personalizes recommendations based on role.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Service catalog + user context", dataOut: "Personalized service recommendations with approval paths" },
+    { label: "Request Orchestration", description: "Submit selected service requests via ServiceNow with appropriate approval routing. Track request status and notify user of approvals.", systems: ["ServiceNow"], layer: "integration", dataIn: "Selected services", dataOut: "Submitted requests with status tracking" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "IT Service Desk Manager agent for the Service Catalog Recommender workflow",
+  primaryObjective: "Gemini acts as a conversational guide — 'You're a new engineer, you'll need GitHub, AWS, and JetBrains.' LLM matches user needs to specific services and explains the approval path in plain language. so the IT Service Desk Manager can move the Self-service adoption KPI.",
+  inScope: [
+    "Gemini acts as a conversational guide — 'You're a new engineer, you'll need GitHub, AWS, and JetBrains.'",
+    "LLM matches user needs to specific services and explains the approval path in plain language",
+    "Role-based recommendations reduce wrong-form submissions from 25% to under 5%",
+  ],
+  outOfScope: [
+    "Production deployments outside an approved change window",
+    "Irreversible destructive actions on shared infrastructure (DROP, force-delete, key rotation)",
+    "Security incident attribution requiring forensics",
+  ],
+  toolIntents: [
+    {
+      name: "query_servicenow_tickets",
+      kind: "query",
+      sourceSystemId: "servicenow",
+      description: "Retrieve tickets from ServiceNow for the Service Catalog Recommender workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "tickets_records",
+        "tickets_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_okta_users",
+      kind: "query",
+      sourceSystemId: "okta",
+      description: "Retrieve users from Okta for the Service Catalog Recommender workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "users_records",
+        "users_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Service Catalog Recommender workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_service_catalog_recommender_runbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Service Catalog Recommender Operations Runbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_servicenow_recommend",
+      kind: "action",
+      sourceSystemId: "servicenow",
+      description: "Execute the recommend step in ServiceNow after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Self-service adoption moved from 30% use catalog toward 70% with recommendations",
+      mustCite: [
+        "servicenow.tickets",
+        "okta.users",
+      ],
+      sourceSystemIds: [
+        "servicenow",
+        "okta",
+      ],
+    },
+    {
+      claim: "Time to find service moved from 10-15 min browsing toward <2 min conversational",
+      mustCite: [
+        "servicenow.tickets",
+        "okta.users",
+      ],
+      sourceSystemIds: [
+        "servicenow",
+        "okta",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Self-service adoption regresses past the 30% use catalog baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "IT Service Desk Manager",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed recommend action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from ServiceNow (and other named systems) entities.",
+    "Never bypass IT Service Desk Manager approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "service-catalog-recommender-end-to-end",
+      prompt: "Run the Service Catalog Recommender workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_servicenow_tickets",
+        "query_okta_users",
+        "query_bigquery_analytics_events",
+        "lookup_service_catalog_recommender_runbook",
+        "action_servicenow_recommend",
+      ],
+      mustReferenceEntities: [
+        "tickets",
+        "users",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "service-catalog-recommender-runbook",
+      ],
+      expectedActionOutcome: "Action recommend executed against ServiceNow, with audit-trail entry and IT Service Desk Manager notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute recommend without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Service Catalog Recommender so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "servicenow",
+      name: "ServiceNow",
+      owns: [
+        "tickets",
+        "change_requests",
+        "incidents",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_servicenow_tickets",
+        "query_servicenow_change_requests",
+        "query_servicenow_incidents",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "okta",
+      name: "Okta",
+      owns: [
+        "users",
+        "groups",
+        "access_grants",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_okta_users",
+        "query_okta_groups",
+        "query_okta_access_grants",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "tickets",
+      sourceSystemId: "servicenow",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "change_requests",
+      sourceSystemId: "servicenow",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "incidents",
+      sourceSystemId: "servicenow",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "users",
+      sourceSystemId: "okta",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "groups",
+      sourceSystemId: "okta",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "access_grants",
+      sourceSystemId: "okta",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "service-catalog-recommender-runbook",
+      sourceSystemId: "bigquery",
+      type: "runbook",
+      title: "Service Catalog Recommender Operations Runbook",
+      requiredSections: [
+        "Detection signals",
+        "Triage procedures",
+        "Remediation actions",
+        "Rollback criteria",
+        "Post-incident review",
+      ],
+      linkedEntities: [
+        "tickets",
+        "change_requests",
+        "incidents",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "detection",
+        "triage",
+        "remediation",
+        "rollback",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "servicenow_recommend_api",
+      sourceSystemId: "servicenow",
+      method: "POST",
+      path: "/api/servicenow/recommend",
+      description: "Synchronous endpoint the agent calls to recommend in ServiceNow after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "service-catalog-recommender-baseline-gap",
+      description: "Seed a realistic gap where Self-service adoption sits between 30% use catalog and 70% with recommendations, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "tickets",
+        "change_requests",
+      ],
+      discoveryPath: [
+        "Inspect ServiceNow records for the affected entities",
+        "Compare against Okta historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next IT Service Desk Manager action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "service_catalog_recommender",
+      schemas: [
+        "servicenow",
+        "okta",
+      ],
+    },
+    bigquery: {
+      dataset: "it_service_catalog_recommender",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "service-catalog-recommender-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "service-catalog-recommender-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Service Catalog Recommender workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const ServiceCatalogRecommender = () => (
+  <UseCaseSlide
+    title="Service Catalog Recommender"
+    subtitle="IT5-07 • IT Service Management"
+    icon={ShoppingCart}
+    domainId="domain-42"
+    layer="Layer 1: OOTB"
+    persona="IT Service Desk Manager"
+    systems={["ServiceNow", "Okta", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "Self-service adoption", before: "30% use catalog", after: "70% with recommendations" },
+      { label: "Time to find service", before: "10-15 min browsing", after: "<2 min conversational" },
+      { label: "Request accuracy", before: "25% wrong form submitted", after: "<5% with guided flow" },
+    ]}
+    triggerType="event"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "User", action: "Select and request services", description: "User reviews personalized service recommendations and selects which services to request, with auto-routing to appropriate approvers." }}
+    statusQuo={[
+      "Users browse a complex service catalog with 200+ items, often selecting the wrong form.",
+      "New hires don't know what services are available or relevant to their role.",
+      "Service catalog adoption remains low at 30% because users find it easier to email IT directly.",
+    ]}
+    agentification={[
+      "Gemini acts as a conversational guide — 'You're a new engineer, you'll need GitHub, AWS, and JetBrains.'",
+      "LLM matches user needs to specific services and explains the approval path in plain language.",
+      "Role-based recommendations reduce wrong-form submissions from 25% to under 5%.",
+    ]}
+  />
+);

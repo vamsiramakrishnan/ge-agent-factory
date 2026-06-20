@@ -1,0 +1,62 @@
+{
+  "candidates": [
+    {
+      "candidate_id": "CANDIDATE-ID-001",
+      "name": "sample_name",
+      "email": "sample_email",
+      "status": "sample_status",
+      "location": "sample_location",
+      "source": "sample_source",
+      "current_employer": "sample_current_employer"
+    }
+  ],
+  "jobs": [
+    {
+      "job_id": "JOB-ID-001",
+      "title": "sample_title",
+      "department": "sample_department",
+      "location": "sample_location",
+      "status": "sample_status",
+      "hiring_manager": "sample_hiring_manager"
+    }
+  ],
+  "applications": [
+    {
+      "application_id": "APPLICATION-ID-001",
+      "candidate_id": "CANDIDATE-ID-001",
+      "job_id": "JOB-ID-001",
+      "stage": "sample_stage",
+      "status": "sample_status",
+      "recruiter": "sample_recruiter"
+    }
+  ],
+  "interviews": [
+    {
+      "interview_id": "INTERVIEW-ID-001",
+      "application_id": "APPLICATION-ID-001",
+      "interviewer": "sample_interviewer",
+      "status": "sample_status",
+      "scheduled_at": "sample_scheduled_at",
+      "feedback_state": "sample_feedback_state"
+    }
+  ],
+  "offers": [
+    {
+      "offer_id": "OFFER-ID-001",
+      "application_id": "APPLICATION-ID-001",
+      "status": "sample_status",
+      "salary_band": "sample_salary_band",
+      "start_date": "sample_start_date"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APPROVAL-ID-001",
+      "source_record_id": "SOURCE-RECORD-ID-001",
+      "approver": "sample_approver",
+      "state": "sample_state",
+      "reason": "sample_reason"
+    }
+  ],
+  "audit_events": []
+}

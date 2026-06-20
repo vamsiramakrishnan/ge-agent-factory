@@ -1,0 +1,39 @@
+{
+  "id": "greenhouse_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into greenhouse collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "candidate"
+      ],
+      "realizedObjects": [
+        "candidates",
+        "applications"
+      ],
+      "simulatorCollection": "candidates",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "job"
+      ],
+      "realizedObjects": [
+        "jobs"
+      ],
+      "simulatorCollection": "jobs",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "approval"
+      ],
+      "realizedObjects": [
+        "offers",
+        "approvals"
+      ],
+      "simulatorCollection": "offers",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

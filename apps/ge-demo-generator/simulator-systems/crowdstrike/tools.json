@@ -1,0 +1,108 @@
+{
+  "id": "crowdstrike_tools",
+  "version": 1,
+  "tools": [
+    {
+      "name": "search_assets",
+      "description": "Search assets in crowdstrike.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "assets"
+      }
+    },
+    {
+      "name": "get_asset",
+      "description": "Get one asset in crowdstrike.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "asset_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "asset_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "assets",
+        "primaryKey": "asset_id"
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending crowdstrike approvals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": {
+            "type": "string"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_pending_approvals",
+        "collection": "approvals"
+      }
+    },
+    {
+      "name": "submit_asset_update",
+      "description": "Submit an update to one asset in crowdstrike.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "asset_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "asset_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "assets",
+        "primaryKey": "asset_id"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List crowdstrike simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

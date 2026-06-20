@@ -1,0 +1,77 @@
+{
+  "id": "innovation_management_schema",
+  "version": 1,
+  "collections": {
+    "projects": {
+      "primaryKey": "project_id",
+      "fields": {
+        "project_id": "string",
+        "name": "string",
+        "status": "string",
+        "owner": "string",
+        "department": "string"
+      }
+    },
+    "issues": {
+      "primaryKey": "issue_id",
+      "fields": {
+        "issue_id": "string",
+        "project_id": "string",
+        "status": "string",
+        "priority": "string",
+        "assignee": "string",
+        "summary": "string"
+      }
+    },
+    "tasks": {
+      "primaryKey": "task_id",
+      "fields": {
+        "task_id": "string",
+        "issue_id": "string",
+        "status": "string",
+        "assignee": "string",
+        "due_date": "string"
+      }
+    },
+    "sprints": {
+      "primaryKey": "sprint_id",
+      "fields": {
+        "sprint_id": "string",
+        "project_id": "string",
+        "state": "string",
+        "start_date": "string",
+        "end_date": "string"
+      }
+    },
+    "releases": {
+      "primaryKey": "release_id",
+      "fields": {
+        "release_id": "string",
+        "project_id": "string",
+        "status": "string",
+        "version": "string",
+        "release_date": "string"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": "string",
+        "source_record_id": "string",
+        "approver": "string",
+        "state": "string",
+        "reason": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string"
+      }
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "anaplan_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into anaplan collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "finance"
+      ],
+      "realizedObjects": [
+        "planning_models",
+        "scenarios",
+        "forecast_lines"
+      ],
+      "simulatorCollection": "forecast_lines",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "approval"
+      ],
+      "realizedObjects": [
+        "approvals"
+      ],
+      "simulatorCollection": "approvals",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "id": "bigquery_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into bigquery collections.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "bigquery"
+      ],
+      "realizedObjects": [
+        "datasets"
+      ],
+      "simulatorCollection": "datasets",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "bigquery"
+      ],
+      "realizedObjects": [
+        "tables"
+      ],
+      "simulatorCollection": "tables",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "bigquery"
+      ],
+      "realizedObjects": [
+        "jobs"
+      ],
+      "simulatorCollection": "jobs",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "bigquery"
+      ],
+      "realizedObjects": [
+        "routines"
+      ],
+      "simulatorCollection": "routines",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

@@ -1,0 +1,1051 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { AlertTriangle, Radar, Brain, FileText, CheckCircle } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Crisis Signal", lane: "system", type: "trigger" },
+    { id: "a1", label: "Severity Assessment", lane: "agent", type: "action" },
+    { id: "a2", label: "Response Strategy", lane: "agent", type: "action" },
+    { id: "h1", label: "CMO + Legal Approve", lane: "human", type: "hitl" },
+    { id: "a3", label: "Response Execution", lane: "agent", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "h1"], ["h1", "a3"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Crisis Detection", icon: Radar, description: "Anomalous brand mention spike, sentiment drop, or media inquiry triggers crisis protocol.", trigger: "Event", systems: ["Brandwatch", "Sprout Social"] },
+  { label: "Impact Analysis", icon: Brain, description: "Crisis severity assessed — Tier 1 (existential) through Tier 3 (minor) — with spread modeling.", systems: ["Google News API", "BigQuery"], integration: "ADK" },
+  { label: "Response Draft", icon: FileText, description: "Channel-specific response strategy and holding statements generated for approval.", systems: ["Vertex AI"] },
+  { label: "CMO Approval", icon: CheckCircle, description: "CMO and Legal review response strategy, approve holding statements, and authorize channel-specific responses.", output: "Crisis Response" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Brandwatch", description: "Real-time mention monitoring, sentiment velocity, conversation threads", direction: "read", protocol: "REST API", category: "analytics" },
+    { system: "Sprout Social", description: "Social media crisis signals, DM inquiries, engagement spikes", direction: "read", protocol: "REST API", category: "analytics" },
+    { system: "Google News API", description: "Media coverage monitoring, journalist inquiry detection", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "Vertex AI (Gemini)", description: "Crisis severity assessment, response strategy generation, statement drafting", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+    { system: "Slack", description: "Crisis team alerting, war room coordination, approval workflow", direction: "write", protocol: "Webhook", category: "collaboration" },
+    { system: "BigQuery", description: "Historical crisis data, response effectiveness tracking", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+  ],
+  pipeline: [
+    { label: "Signal Detection", description: "Monitor for crisis signals: sudden sentiment drops (>15% in 2 hours), media inquiry spikes, viral negative content, or executive mention anomalies across Brandwatch and Sprout Social.", systems: ["Brandwatch", "Sprout Social", "Google News API"], layer: "integration", dataIn: "Real-time brand signals", dataOut: "Crisis signal with initial context" },
+    { label: "Severity Scoring", description: "Classify crisis severity using historical patterns, media spread velocity, influencer involvement, and potential business impact. Model viral spread trajectory.", systems: ["BigQuery ML"], layer: "ml", dataIn: "Crisis signal + historical crisis data", dataOut: "Severity tier + spread forecast" },
+    { label: "Response Strategy", description: "Gemini assesses crisis context, distinguishes genuine threats from manufactured controversy, and generates tiered response strategy. Drafts channel-specific holding statements — social vs. press vs. internal — with calibrated tone.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Severity assessment + conversation context + brand guidelines", dataOut: "Response strategy + holding statements" },
+    { label: "Coordination & Execution", description: "Alert crisis team via Slack, route response for CMO + Legal approval, coordinate channel-specific execution. Track response effectiveness and media sentiment recovery.", systems: ["Slack"], layer: "integration", dataIn: "Approved response strategy", dataOut: "Executed response + effectiveness tracking" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "CMO agent for the Crisis Communications Advisor workflow",
+  primaryObjective: "Gemini detects crisis signals in real-time and distinguishes genuine threats from manufactured controversy. LLM generates tiered response strategy calibrated to severity — not every negative mention is a crisis. so the CMO can move the Crisis detection time KPI.",
+  inScope: [
+    "Gemini detects crisis signals in real-time and distinguishes genuine threats from manufactured controversy",
+    "LLM generates tiered response strategy calibrated to severity — not every negative mention is a crisis",
+    "Drafts coordinated cross-channel responses maintaining consistent messaging with channel-appropriate tone",
+  ],
+  outOfScope: [
+    "Final approval of paid spend reallocations above the governance threshold",
+    "Trademark, legal, or regulated-industry claim approval",
+    "Crisis communications without comms-team sign-off",
+  ],
+  toolIntents: [
+    {
+      name: "query_brandwatch_brand_mentions",
+      kind: "query",
+      sourceSystemId: "brandwatch",
+      description: "Retrieve brand mentions from Brandwatch for the Crisis Communications Advisor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "brand_mentions_records",
+        "brand_mentions_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_sprout_social_social_posts",
+      kind: "query",
+      sourceSystemId: "sprout_social",
+      description: "Retrieve social posts from Sprout Social for the Crisis Communications Advisor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "social_posts_records",
+        "social_posts_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_google_news_api_google_news_api_records",
+      kind: "query",
+      sourceSystemId: "google_news_api",
+      description: "Retrieve google news api records from Google News API for the Crisis Communications Advisor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "google_news_api_records_records",
+        "google_news_api_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_slack_messages",
+      kind: "query",
+      sourceSystemId: "slack",
+      description: "Retrieve messages from Slack for the Crisis Communications Advisor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "messages_records",
+        "messages_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_crisis_communications_advisor_playbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "brandwatch",
+      description: "Look up sections of the Crisis Communications Advisor Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_brandwatch_generate",
+      kind: "action",
+      sourceSystemId: "brandwatch",
+      description: "Execute the generate step in Brandwatch after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Crisis detection time moved from Hours to days toward < 15 minutes",
+      mustCite: [
+        "brandwatch.brand_mentions",
+        "sprout_social.social_posts",
+      ],
+      sourceSystemIds: [
+        "brandwatch",
+        "sprout_social",
+      ],
+    },
+    {
+      claim: "First response time moved from 4-8 hours toward < 1 hour",
+      mustCite: [
+        "brandwatch.brand_mentions",
+        "sprout_social.social_posts",
+      ],
+      sourceSystemIds: [
+        "brandwatch",
+        "sprout_social",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Crisis detection time regresses past the Hours to days baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "CMO",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed generate action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from Brandwatch (and other named systems) entities.",
+    "Never bypass CMO approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "crisis-communications-advisor-end-to-end",
+      prompt: "Run the Crisis Communications Advisor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_brandwatch_brand_mentions",
+        "query_sprout_social_social_posts",
+        "query_google_news_api_google_news_api_records",
+        "query_slack_messages",
+        "lookup_crisis_communications_advisor_playbook",
+        "action_brandwatch_generate",
+      ],
+      mustReferenceEntities: [
+        "brand_mentions",
+        "social_posts",
+        "google_news_api_records",
+        "messages",
+      ],
+      mustCiteDocuments: [
+        "crisis-communications-advisor-playbook",
+      ],
+      expectedActionOutcome: "Action generate executed against Brandwatch, with audit-trail entry and CMO notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute generate without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Crisis Communications Advisor so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "brandwatch",
+      name: "Brandwatch",
+      owns: [
+        "brand_mentions",
+        "sentiment_scores",
+        "topic_clusters",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_brandwatch_brand_mentions",
+        "query_brandwatch_sentiment_scores",
+        "query_brandwatch_topic_clusters",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "sprout_social",
+      name: "Sprout Social",
+      owns: [
+        "social_posts",
+        "engagement_metrics",
+        "publishing_queue",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sprout_social_social_posts",
+        "query_sprout_social_engagement_metrics",
+        "query_sprout_social_publishing_queue",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "google_news_api",
+      name: "Google News API",
+      owns: [
+        "google_news_api_records",
+        "google_news_api_events",
+        "google_news_api_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_google_news_api_google_news_api_records",
+        "query_google_news_api_google_news_api_events",
+        "query_google_news_api_google_news_api_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "slack",
+      name: "Slack",
+      owns: [
+        "messages",
+        "channels",
+        "thread_replies",
+      ],
+      protocol: "Slack API",
+      localBacking: [
+        "json-api",
+      ],
+      toolNames: [
+        "query_slack_messages",
+        "query_slack_channels",
+        "query_slack_thread_replies",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "brand_mentions",
+      sourceSystemId: "brandwatch",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "sentiment_scores",
+      sourceSystemId: "brandwatch",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "topic_clusters",
+      sourceSystemId: "brandwatch",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "social_posts",
+      sourceSystemId: "sprout_social",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "channel",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "author",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "body",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "sentiment",
+          type: "enum",
+          values: [
+            "positive",
+            "neutral",
+            "negative",
+          ],
+          weights: [
+            0.4,
+            0.4,
+            0.2,
+          ],
+          required: true,
+        },
+        {
+          name: "sent_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "engagement_metrics",
+      sourceSystemId: "sprout_social",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "publishing_queue",
+      sourceSystemId: "sprout_social",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "google_news_api_records",
+      sourceSystemId: "google_news_api",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "google_news_api_events",
+      sourceSystemId: "google_news_api",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "google_news_api_record_id",
+          type: "ref",
+          ref: "google_news_api_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "google_news_api_audit_trail",
+      sourceSystemId: "google_news_api",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "messages",
+      sourceSystemId: "slack",
+      datastore: "json-api",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "channel",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "author",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "body",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "sentiment",
+          type: "enum",
+          values: [
+            "positive",
+            "neutral",
+            "negative",
+          ],
+          weights: [
+            0.4,
+            0.4,
+            0.2,
+          ],
+          required: true,
+        },
+        {
+          name: "sent_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "channels",
+      sourceSystemId: "slack",
+      datastore: "json-api",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "thread_replies",
+      sourceSystemId: "slack",
+      datastore: "json-api",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "channel",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "author",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "body",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "sentiment",
+          type: "enum",
+          values: [
+            "positive",
+            "neutral",
+            "negative",
+          ],
+          weights: [
+            0.4,
+            0.4,
+            0.2,
+          ],
+          required: true,
+        },
+        {
+          name: "sent_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "google_news_api_events.google_news_api_record_id",
+      to: "google_news_api_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "crisis-communications-advisor-playbook",
+      sourceSystemId: "brandwatch",
+      type: "playbook",
+      title: "Crisis Communications Advisor Playbook",
+      requiredSections: [
+        "Audience guidelines",
+        "Brand voice rules",
+        "Channel-specific guardrails",
+        "Measurement framework",
+        "Approval thresholds",
+      ],
+      linkedEntities: [
+        "brand_mentions",
+        "sentiment_scores",
+        "topic_clusters",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "audience",
+        "brand-voice",
+        "channels",
+        "approvals",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "brandwatch_generate_api",
+      sourceSystemId: "brandwatch",
+      method: "POST",
+      path: "/api/brandwatch/generate",
+      description: "Synchronous endpoint the agent calls to generate in Brandwatch after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "crisis-communications-advisor-baseline-gap",
+      description: "Seed a realistic gap where Crisis detection time sits between Hours to days and < 15 minutes, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "brand_mentions",
+        "sentiment_scores",
+      ],
+      discoveryPath: [
+        "Inspect Brandwatch records for the affected entities",
+        "Compare against Sprout Social historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next CMO action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "crisis_communications_advisor",
+      schemas: [
+        "brandwatch",
+        "sprout_social",
+        "google_news_api",
+        "slack",
+      ],
+    },
+    bigquery: {
+      dataset: "marketing_crisis_communications_advisor",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "crisis-communications-advisor-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "crisis-communications-advisor-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Crisis Communications Advisor workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const CrisisCommsAdvisor = () => (
+  <UseCaseSlide
+    title="Crisis Communications Advisor"
+    subtitle="A-3503 • Brand & Communications"
+    icon={AlertTriangle}
+    domainId="domain-35"
+    layer="Layer 3: Custom ADK"
+    persona="CMO"
+    systems={["Brandwatch", "Sprout Social", "Google News API", "Vertex AI", "Slack"]}
+    kpis={[
+      { label: "Crisis detection time", before: "Hours to days", after: "< 15 minutes" },
+      { label: "First response time", before: "4-8 hours", after: "< 1 hour" },
+      { label: "Response consistency", before: "Ad-hoc per channel", after: "Coordinated cross-channel" },
+    ]}
+    triggerType="event"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "CMO + Legal", action: "Approve crisis response", description: "CMO and Legal counsel jointly approve response strategy, holding statements, and channel-specific communications before execution." }}
+    statusQuo={[
+      "Crisis detection relies on someone noticing social media chatter or receiving a journalist call.",
+      "Response strategy developed ad-hoc in emergency meetings with no playbook.",
+      "Channel-specific messaging inconsistent — social team says one thing, PR team says another."
+    ]}
+    agentification={[
+      "Gemini detects crisis signals in real-time and distinguishes genuine threats from manufactured controversy.",
+      "LLM generates tiered response strategy calibrated to severity — not every negative mention is a crisis.",
+      "Drafts coordinated cross-channel responses maintaining consistent messaging with channel-appropriate tone."
+    ]}
+  />
+);

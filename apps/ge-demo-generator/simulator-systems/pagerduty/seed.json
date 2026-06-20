@@ -1,0 +1,224 @@
+{
+  "incidents": [
+    {
+      "incident_id": "PINC-1",
+      "incident_number": 1001,
+      "title": "transformation-api 5xx spike",
+      "status": "triggered",
+      "urgency": "high",
+      "service_id": "PSVC-1",
+      "assignee": "sam.rivera@example.com",
+      "created_at": "2026-06-17T06:01:00Z"
+    },
+    {
+      "incident_id": "PINC-2",
+      "incident_number": 1002,
+      "title": "mcp-service latency above SLO",
+      "status": "acknowledged",
+      "urgency": "low",
+      "service_id": "PSVC-2",
+      "assignee": "avery.johnson@example.com",
+      "created_at": "2026-06-16T22:14:00Z"
+    },
+    {
+      "incident_id": "PINC-3",
+      "incident_number": 1003,
+      "title": "Identity bridge token refresh failures",
+      "status": "triggered",
+      "urgency": "high",
+      "service_id": "PSVC-3",
+      "assignee": "mina.patel@example.com",
+      "created_at": "2026-06-15T17:45:00Z"
+    },
+    {
+      "incident_id": "PINC-4",
+      "incident_number": 1004,
+      "title": "OpenAPI downloader retry backlog",
+      "status": "resolved",
+      "urgency": "low",
+      "service_id": "PSVC-4",
+      "assignee": "diego.chen@example.com",
+      "created_at": "2026-06-14T12:05:00Z"
+    },
+    {
+      "incident_id": "PINC-5",
+      "incident_number": 1005,
+      "title": "Artifact writer returning intermittent 409",
+      "status": "acknowledged",
+      "urgency": "high",
+      "service_id": "PSVC-1",
+      "assignee": "sam.rivera@example.com",
+      "created_at": "2026-06-13T03:20:00Z"
+    },
+    {
+      "incident_id": "PINC-6",
+      "incident_number": 1006,
+      "title": "Preview workflow queue depth elevated",
+      "status": "triggered",
+      "urgency": "low",
+      "service_id": "PSVC-5",
+      "assignee": "jordan.lee@example.com",
+      "created_at": "2026-06-12T19:32:00Z"
+    },
+    {
+      "incident_id": "PINC-7",
+      "incident_number": 1007,
+      "title": "Simulator registry cache miss storm",
+      "status": "resolved",
+      "urgency": "high",
+      "service_id": "PSVC-2",
+      "assignee": "avery.johnson@example.com",
+      "created_at": "2026-06-11T09:18:00Z"
+    },
+    {
+      "incident_id": "PINC-8",
+      "incident_number": 1008,
+      "title": "BigQuery export job stuck running",
+      "status": "acknowledged",
+      "urgency": "low",
+      "service_id": "PSVC-5",
+      "assignee": "jordan.lee@example.com",
+      "created_at": "2026-06-10T16:51:00Z"
+    }
+  ],
+  "services": [
+    {
+      "service_id": "PSVC-1",
+      "name": "transformation-api",
+      "status": "critical",
+      "escalation_policy_id": "PEP-1",
+      "description": "Customer-facing transformation API"
+    },
+    {
+      "service_id": "PSVC-2",
+      "name": "mcp-service",
+      "status": "warning",
+      "escalation_policy_id": "PEP-1",
+      "description": "Simulator MCP backend"
+    },
+    {
+      "service_id": "PSVC-3",
+      "name": "identity-bridge",
+      "status": "active",
+      "escalation_policy_id": "PEP-2",
+      "description": "Okta and directory synchronization bridge"
+    },
+    {
+      "service_id": "PSVC-4",
+      "name": "spec-harvester",
+      "status": "maintenance",
+      "escalation_policy_id": "PEP-3",
+      "description": "OpenAPI discovery and downloader workers"
+    },
+    {
+      "service_id": "PSVC-5",
+      "name": "analytics-export",
+      "status": "warning",
+      "escalation_policy_id": "PEP-2",
+      "description": "Preview analytics export jobs"
+    }
+  ],
+  "escalation_policies": [
+    {
+      "policy_id": "PEP-1",
+      "name": "Platform On-Call",
+      "num_loops": 2,
+      "description": "Primary then secondary SRE"
+    },
+    {
+      "policy_id": "PEP-2",
+      "name": "Identity and Data On-Call",
+      "num_loops": 3,
+      "description": "Identity first responder, data platform backup"
+    },
+    {
+      "policy_id": "PEP-3",
+      "name": "Developer Productivity On-Call",
+      "num_loops": 2,
+      "description": "Tooling owner with platform escalation"
+    }
+  ],
+  "oncalls": [
+    {
+      "oncall_id": "PONC-1",
+      "policy_id": "PEP-1",
+      "user": "sam.rivera@example.com",
+      "escalation_level": 1,
+      "start": "2026-06-17T00:00:00Z",
+      "end": "2026-06-24T00:00:00Z"
+    },
+    {
+      "oncall_id": "PONC-2",
+      "policy_id": "PEP-1",
+      "user": "avery.johnson@example.com",
+      "escalation_level": 2,
+      "start": "2026-06-17T00:00:00Z",
+      "end": "2026-06-24T00:00:00Z"
+    },
+    {
+      "oncall_id": "PONC-3",
+      "policy_id": "PEP-2",
+      "user": "mina.patel@example.com",
+      "escalation_level": 1,
+      "start": "2026-06-15T00:00:00Z",
+      "end": "2026-06-22T00:00:00Z"
+    },
+    {
+      "oncall_id": "PONC-4",
+      "policy_id": "PEP-2",
+      "user": "jordan.lee@example.com",
+      "escalation_level": 2,
+      "start": "2026-06-15T00:00:00Z",
+      "end": "2026-06-22T00:00:00Z"
+    },
+    {
+      "oncall_id": "PONC-5",
+      "policy_id": "PEP-3",
+      "user": "diego.chen@example.com",
+      "escalation_level": 1,
+      "start": "2026-06-14T00:00:00Z",
+      "end": "2026-06-21T00:00:00Z"
+    },
+    {
+      "oncall_id": "PONC-6",
+      "policy_id": "PEP-3",
+      "user": "sam.rivera@example.com",
+      "escalation_level": 2,
+      "start": "2026-06-14T00:00:00Z",
+      "end": "2026-06-21T00:00:00Z"
+    },
+    {
+      "oncall_id": "PONC-7",
+      "policy_id": "PEP-1",
+      "user": "riley.morgan@example.com",
+      "escalation_level": 1,
+      "start": "2026-06-24T00:00:00Z",
+      "end": "2026-07-01T00:00:00Z"
+    },
+    {
+      "oncall_id": "PONC-8",
+      "policy_id": "PEP-2",
+      "user": "avery.johnson@example.com",
+      "escalation_level": 3,
+      "start": "2026-06-22T00:00:00Z",
+      "end": "2026-06-29T00:00:00Z"
+    },
+    {
+      "oncall_id": "PONC-9",
+      "policy_id": "PEP-3",
+      "user": "mina.patel@example.com",
+      "escalation_level": 2,
+      "start": "2026-06-21T00:00:00Z",
+      "end": "2026-06-28T00:00:00Z"
+    },
+    {
+      "oncall_id": "PONC-10",
+      "policy_id": "PEP-1",
+      "user": "jordan.lee@example.com",
+      "escalation_level": 3,
+      "start": "2026-06-24T00:00:00Z",
+      "end": "2026-07-01T00:00:00Z"
+    }
+  ],
+  "audit_events": []
+}

@@ -1,0 +1,227 @@
+{
+  "id": "datadog_workflows",
+  "version": 2,
+  "primitives": [
+    "role_permission_gate",
+    "state_machine_update",
+    "audit_trail",
+    "failure_injection",
+    "idempotency",
+    "rate_limit",
+    "async_jobs",
+    "webhook_emit"
+  ],
+  "toolHandlers": {
+    "submit_service_update": {
+      "primitive": "state_machine_update",
+      "collection": "services",
+      "primaryKey": "service_id",
+      "roleArg": "role",
+      "allowedRoles": [
+        "sre",
+        "service_owner",
+        "incident_commander",
+        "platform_admin"
+      ],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "transitions": {
+        "*": [
+          "operational",
+          "degraded",
+          "impaired",
+          "maintenance",
+          "retired"
+        ],
+        "operational": [
+          "degraded",
+          "impaired",
+          "maintenance",
+          "retired"
+        ],
+        "degraded": [
+          "operational",
+          "impaired",
+          "maintenance"
+        ],
+        "impaired": [
+          "degraded",
+          "operational",
+          "maintenance"
+        ],
+        "maintenance": [
+          "operational",
+          "degraded"
+        ],
+        "retired": []
+      },
+      "failureModes": {
+        "rate_limited": 0.05,
+        "conflict": 0.03,
+        "validation_error": 0.02,
+        "timeout": 0.01
+      },
+      "rateLimit": {
+        "capacity": 12,
+        "refillPerSecond": 0.5,
+        "key": "agent:system"
+      },
+      "latency": {
+        "distribution": "uniform",
+        "min_ms": 20,
+        "max_ms": 80
+      }
+    },
+    "submit_monitor_update": {
+      "primitive": "state_machine_update",
+      "collection": "monitors",
+      "primaryKey": "monitor_id",
+      "roleArg": "role",
+      "allowedRoles": [
+        "sre",
+        "service_owner",
+        "platform_admin"
+      ],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "transitions": {
+        "*": [
+          "ok",
+          "warn",
+          "alert",
+          "no_data",
+          "muted"
+        ],
+        "ok": [
+          "warn",
+          "alert",
+          "muted"
+        ],
+        "warn": [
+          "ok",
+          "alert",
+          "muted"
+        ],
+        "alert": [
+          "warn",
+          "ok",
+          "muted"
+        ],
+        "no_data": [
+          "ok",
+          "warn",
+          "muted"
+        ],
+        "muted": [
+          "ok",
+          "warn",
+          "alert",
+          "no_data"
+        ]
+      },
+      "failureModes": {
+        "rate_limited": 0.05,
+        "conflict": 0.04,
+        "validation_error": 0.03,
+        "forbidden": 0.01
+      },
+      "rateLimit": {
+        "capacity": 10,
+        "refillPerSecond": 0.4,
+        "key": "agent:system"
+      },
+      "latency": {
+        "distribution": "uniform",
+        "min_ms": 25,
+        "max_ms": 90
+      }
+    },
+    "submit_incident_update": {
+      "primitive": "state_machine_update",
+      "collection": "incidents",
+      "primaryKey": "incident_id",
+      "roleArg": "role",
+      "allowedRoles": [
+        "incident_commander",
+        "sre",
+        "platform_admin"
+      ],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "transitions": {
+        "*": [
+          "active",
+          "stable",
+          "resolved",
+          "archived"
+        ],
+        "active": [
+          "stable",
+          "resolved"
+        ],
+        "stable": [
+          "active",
+          "resolved"
+        ],
+        "resolved": [
+          "archived",
+          "active"
+        ],
+        "archived": []
+      },
+      "failureModes": {
+        "conflict": 0.04,
+        "rate_limited": 0.03,
+        "validation_error": 0.02,
+        "timeout": 0.01
+      },
+      "rateLimit": {
+        "capacity": 8,
+        "refillPerSecond": 0.25,
+        "key": "agent:system"
+      },
+      "latency": {
+        "distribution": "uniform",
+        "min_ms": 30,
+        "max_ms": 100
+      }
+    },
+    "run_monitor_check": {
+      "primitive": "state_machine_update",
+      "collection": "monitors",
+      "primaryKey": "monitor_id",
+      "roleArg": "role",
+      "allowedRoles": [
+        "sre",
+        "service_owner",
+        "platform_admin"
+      ],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "async": true,
+      "transitions": {
+        "*": [
+          "ok",
+          "warn",
+          "alert",
+          "no_data",
+          "muted"
+        ]
+      },
+      "failureModes": {
+        "rate_limited": 0.06,
+        "timeout": 0.03,
+        "validation_error": 0.02
+      },
+      "rateLimit": {
+        "capacity": 6,
+        "refillPerSecond": 0.2,
+        "key": "agent:system"
+      }
+    }
+  }
+}

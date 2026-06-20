@@ -1,0 +1,302 @@
+[
+  {
+    "id": "SKI-0001",
+    "name": "Drew Martin",
+    "email": "drew.martin@ge-demo.example",
+    "skill_name": "AI/ML",
+    "proficiency": "intermediate",
+    "acquired_date": "2022-05-09",
+    "expires": null,
+    "employee_id": "EMP-0013"
+  },
+  {
+    "id": "SKI-0002",
+    "name": "Riley Thomas",
+    "email": "riley.thomas@ge-demo.example",
+    "skill_name": "Data Analysis",
+    "proficiency": "expert",
+    "acquired_date": "2021-04-08",
+    "expires": null,
+    "employee_id": "EMP-0026"
+  },
+  {
+    "id": "SKI-0003",
+    "name": "Morgan Johnson",
+    "email": "morgan.johnson@ge-demo.example",
+    "skill_name": "Communication",
+    "proficiency": "intermediate",
+    "acquired_date": "2022-11-18",
+    "expires": null,
+    "employee_id": "EMP-0018"
+  },
+  {
+    "id": "SKI-0004",
+    "name": "Parker Smith",
+    "email": "parker.smith@ge-demo.example",
+    "skill_name": "Security",
+    "proficiency": "beginner",
+    "acquired_date": "2025-07-01",
+    "expires": "2026-03-23",
+    "employee_id": "EMP-0027"
+  },
+  {
+    "id": "SKI-0005",
+    "name": "Jordan Garcia",
+    "email": "jordan.garcia@ge-demo.example",
+    "skill_name": "AI/ML",
+    "proficiency": "advanced",
+    "acquired_date": "2024-05-11",
+    "expires": null,
+    "employee_id": "EMP-0004"
+  },
+  {
+    "id": "SKI-0006",
+    "name": "Hayden White",
+    "email": "hayden.white@ge-demo.example",
+    "skill_name": "Python",
+    "proficiency": "advanced",
+    "acquired_date": "2022-03-21",
+    "expires": null,
+    "employee_id": "EMP-0019"
+  },
+  {
+    "id": "SKI-0007",
+    "name": "Finley Harris",
+    "email": "finley.harris@ge-demo.example",
+    "skill_name": "Security",
+    "proficiency": "expert",
+    "acquired_date": "2026-06-25",
+    "expires": null,
+    "employee_id": "EMP-0002"
+  },
+  {
+    "id": "SKI-0008",
+    "name": "Quinn Williams",
+    "email": "quinn.williams@ge-demo.example",
+    "skill_name": "AI/ML",
+    "proficiency": "beginner",
+    "acquired_date": "2025-06-25",
+    "expires": "2028-11-01",
+    "employee_id": "EMP-0011"
+  },
+  {
+    "id": "SKI-0009",
+    "name": "Parker Jackson",
+    "email": "parker.jackson@ge-demo.example",
+    "skill_name": "Cloud",
+    "proficiency": "expert",
+    "acquired_date": "2023-06-12",
+    "expires": null,
+    "employee_id": "EMP-0020"
+  },
+  {
+    "id": "SKI-0010",
+    "name": "Ellis Brown",
+    "email": "ellis.brown@ge-demo.example",
+    "skill_name": "Security",
+    "proficiency": "expert",
+    "acquired_date": "2026-02-12",
+    "expires": "2028-04-03",
+    "employee_id": "EMP-0028"
+  },
+  {
+    "id": "SKI-0011",
+    "name": "Parker White",
+    "email": "parker.white@ge-demo.example",
+    "skill_name": "Security",
+    "proficiency": "beginner",
+    "acquired_date": "2022-04-26",
+    "expires": "2028-09-10",
+    "employee_id": "EMP-0008"
+  },
+  {
+    "id": "SKI-0012",
+    "name": "Quinn Kim",
+    "email": "quinn.kim@ge-demo.example",
+    "skill_name": "Agile",
+    "proficiency": "advanced",
+    "acquired_date": "2026-05-02",
+    "expires": "2028-04-28",
+    "employee_id": "EMP-0026"
+  },
+  {
+    "id": "SKI-0013",
+    "name": "Blake Davis",
+    "email": "blake.davis@ge-demo.example",
+    "skill_name": "Agile",
+    "proficiency": "beginner",
+    "acquired_date": "2021-12-09",
+    "expires": null,
+    "employee_id": "EMP-0009"
+  },
+  {
+    "id": "SKI-0014",
+    "name": "Hayden Martin",
+    "email": "hayden.martin@ge-demo.example",
+    "skill_name": "Security",
+    "proficiency": "advanced",
+    "acquired_date": "2023-07-24",
+    "expires": null,
+    "employee_id": "EMP-0007"
+  },
+  {
+    "id": "SKI-0015",
+    "name": "Reese Patel",
+    "email": "reese.patel@ge-demo.example",
+    "skill_name": "Leadership",
+    "proficiency": "intermediate",
+    "acquired_date": "2021-03-10",
+    "expires": null,
+    "employee_id": "EMP-0008"
+  },
+  {
+    "id": "SKI-0016",
+    "name": "Jordan Rodriguez",
+    "email": "jordan.rodriguez@ge-demo.example",
+    "skill_name": "Project Management",
+    "proficiency": "beginner",
+    "acquired_date": "2021-12-12",
+    "expires": "2027-10-22",
+    "employee_id": "EMP-0008"
+  },
+  {
+    "id": "SKI-0017",
+    "name": "Hayden White",
+    "email": "hayden.white@ge-demo.example",
+    "skill_name": "Data Analysis",
+    "proficiency": "advanced",
+    "acquired_date": "2024-07-25",
+    "expires": "2028-10-08",
+    "employee_id": "EMP-0006"
+  },
+  {
+    "id": "SKI-0018",
+    "name": "Riley Rodriguez",
+    "email": "riley.rodriguez@ge-demo.example",
+    "skill_name": "Communication",
+    "proficiency": "expert",
+    "acquired_date": "2021-07-01",
+    "expires": null,
+    "employee_id": "EMP-0006"
+  },
+  {
+    "id": "SKI-0019",
+    "name": "Rowan White",
+    "email": "rowan.white@ge-demo.example",
+    "skill_name": "Data Analysis",
+    "proficiency": "advanced",
+    "acquired_date": "2020-03-03",
+    "expires": "2028-05-27",
+    "employee_id": "EMP-0027"
+  },
+  {
+    "id": "SKI-0020",
+    "name": "Blake Williams",
+    "email": "blake.williams@ge-demo.example",
+    "skill_name": "Communication",
+    "proficiency": "beginner",
+    "acquired_date": "2026-10-22",
+    "expires": "2027-06-17",
+    "employee_id": "EMP-0022"
+  },
+  {
+    "id": "SKI-0021",
+    "name": "Rowan Jackson",
+    "email": "rowan.jackson@ge-demo.example",
+    "skill_name": "Communication",
+    "proficiency": "expert",
+    "acquired_date": "2025-11-24",
+    "expires": null,
+    "employee_id": "EMP-0020"
+  },
+  {
+    "id": "SKI-0022",
+    "name": "Avery Garcia",
+    "email": "avery.garcia@ge-demo.example",
+    "skill_name": "Agile",
+    "proficiency": "expert",
+    "acquired_date": "2020-05-27",
+    "expires": null,
+    "employee_id": "EMP-0020"
+  },
+  {
+    "id": "SKI-0023",
+    "name": "Alex Smith",
+    "email": "alex.smith@ge-demo.example",
+    "skill_name": "Project Management",
+    "proficiency": "intermediate",
+    "acquired_date": "2026-08-07",
+    "expires": null,
+    "employee_id": "EMP-0008"
+  },
+  {
+    "id": "SKI-0024",
+    "name": "Reese Jackson",
+    "email": "reese.jackson@ge-demo.example",
+    "skill_name": "SQL",
+    "proficiency": "intermediate",
+    "acquired_date": "2021-02-24",
+    "expires": "2027-11-16",
+    "employee_id": "EMP-0027"
+  },
+  {
+    "id": "SKI-0025",
+    "name": "Taylor Kim",
+    "email": "taylor.kim@ge-demo.example",
+    "skill_name": "Security",
+    "proficiency": "expert",
+    "acquired_date": "2025-07-15",
+    "expires": "2027-10-10",
+    "employee_id": "EMP-0019"
+  },
+  {
+    "id": "SKI-0026",
+    "name": "Ellis Davis",
+    "email": "ellis.davis@ge-demo.example",
+    "skill_name": "AI/ML",
+    "proficiency": "intermediate",
+    "acquired_date": "2025-06-08",
+    "expires": null,
+    "employee_id": "EMP-0015"
+  },
+  {
+    "id": "SKI-0027",
+    "name": "Jordan Miller",
+    "email": "jordan.miller@ge-demo.example",
+    "skill_name": "Python",
+    "proficiency": "beginner",
+    "acquired_date": "2025-11-13",
+    "expires": "2026-10-16",
+    "employee_id": "EMP-0009"
+  },
+  {
+    "id": "SKI-0028",
+    "name": "Harper Jackson",
+    "email": "harper.jackson@ge-demo.example",
+    "skill_name": "AI/ML",
+    "proficiency": "advanced",
+    "acquired_date": "2026-05-15",
+    "expires": "2027-09-15",
+    "employee_id": "EMP-0006"
+  },
+  {
+    "id": "SKI-0029",
+    "name": "Morgan Garcia",
+    "email": "morgan.garcia@ge-demo.example",
+    "skill_name": "SQL",
+    "proficiency": "advanced",
+    "acquired_date": "2023-10-19",
+    "expires": null,
+    "employee_id": "EMP-0012"
+  },
+  {
+    "id": "SKI-0030",
+    "name": "Taylor Wilson",
+    "email": "taylor.wilson@ge-demo.example",
+    "skill_name": "Agile",
+    "proficiency": "expert",
+    "acquired_date": "2023-04-15",
+    "expires": null,
+    "employee_id": "EMP-0020"
+  }
+]

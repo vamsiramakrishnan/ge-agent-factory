@@ -1,0 +1,51 @@
+{
+  "learners": [
+    {
+      "learner_id": "LEARNER-ID-001",
+      "name": "sample_name",
+      "email": "sample_email",
+      "status": "sample_status",
+      "department": "sample_department",
+      "manager_id": "MANAGER-ID-001"
+    }
+  ],
+  "courses": [
+    {
+      "course_id": "COURSE-ID-001",
+      "title": "sample_title",
+      "status": "sample_status",
+      "provider": "sample_provider",
+      "duration_hours": "sample_duration_hours",
+      "compliance_required": "sample_compliance_required"
+    }
+  ],
+  "enrollments": [
+    {
+      "enrollment_id": "ENROLLMENT-ID-001",
+      "learner_id": "LEARNER-ID-001",
+      "course_id": "COURSE-ID-001",
+      "status": "sample_status",
+      "due_date": "sample_due_date",
+      "completion_date": "sample_completion_date"
+    }
+  ],
+  "certifications": [
+    {
+      "certification_id": "CERTIFICATION-ID-001",
+      "learner_id": "LEARNER-ID-001",
+      "name": "sample_name",
+      "status": "sample_status",
+      "expiration_date": "sample_expiration_date"
+    }
+  ],
+  "skills": [
+    {
+      "skill_id": "SKILL-ID-001",
+      "learner_id": "LEARNER-ID-001",
+      "name": "sample_name",
+      "proficiency": "sample_proficiency",
+      "verified_at": "sample_verified_at"
+    }
+  ],
+  "audit_events": []
+}

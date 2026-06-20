@@ -1,0 +1,250 @@
+{
+  "id": "github_materialization",
+  "version": 1,
+  "collections": {
+    "repositories": {
+      "primaryKey": "repo_id",
+      "fieldAliases": {
+        "repo_id": [
+          "repo_id",
+          "id",
+          "source_record_id"
+        ],
+        "owner": [
+          "owner",
+          "id",
+          "source_record_id"
+        ],
+        "repo": [
+          "repo",
+          "id",
+          "source_record_id"
+        ],
+        "full_name": [
+          "full_name",
+          "id",
+          "source_record_id"
+        ],
+        "visibility": [
+          "visibility",
+          "id",
+          "source_record_id"
+        ],
+        "default_branch": [
+          "default_branch",
+          "id",
+          "source_record_id"
+        ],
+        "open_issues": [
+          "open_issues",
+          "id",
+          "source_record_id"
+        ],
+        "archived": [
+          "archived",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    },
+    "issues": {
+      "primaryKey": "issue_id",
+      "fieldAliases": {
+        "issue_id": [
+          "issue_id",
+          "id",
+          "source_record_id"
+        ],
+        "number": [
+          "number",
+          "id",
+          "source_record_id"
+        ],
+        "owner": [
+          "owner",
+          "id",
+          "source_record_id"
+        ],
+        "repo": [
+          "repo",
+          "id",
+          "source_record_id"
+        ],
+        "title": [
+          "title",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "state_reason": [
+          "state_reason",
+          "id",
+          "source_record_id"
+        ],
+        "assignee": [
+          "assignee",
+          "id",
+          "source_record_id"
+        ],
+        "labels": [
+          "labels",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "open"
+      }
+    },
+    "pulls": {
+      "primaryKey": "pull_id",
+      "fieldAliases": {
+        "pull_id": [
+          "pull_id",
+          "id",
+          "source_record_id"
+        ],
+        "number": [
+          "number",
+          "id",
+          "source_record_id"
+        ],
+        "owner": [
+          "owner",
+          "id",
+          "source_record_id"
+        ],
+        "repo": [
+          "repo",
+          "id",
+          "source_record_id"
+        ],
+        "title": [
+          "title",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "draft": [
+          "draft",
+          "id",
+          "source_record_id"
+        ],
+        "base": [
+          "base",
+          "id",
+          "source_record_id"
+        ],
+        "head": [
+          "head",
+          "id",
+          "source_record_id"
+        ],
+        "merged": [
+          "merged",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "open"
+      }
+    },
+    "workflow_runs": {
+      "primaryKey": "run_id",
+      "fieldAliases": {
+        "run_id": [
+          "run_id",
+          "id",
+          "source_record_id"
+        ],
+        "owner": [
+          "owner",
+          "id",
+          "source_record_id"
+        ],
+        "repo": [
+          "repo",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "conclusion": [
+          "conclusion",
+          "id",
+          "source_record_id"
+        ],
+        "head_branch": [
+          "head_branch",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "actor": [
+          "actor",
+          "id",
+          "source_record_id"
+        ],
+        "role": [
+          "role",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ],
+        "timestamp": [
+          "timestamp",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

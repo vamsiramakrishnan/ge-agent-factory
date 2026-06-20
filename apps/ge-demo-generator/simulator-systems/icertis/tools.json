@@ -1,0 +1,108 @@
+{
+  "id": "icertis_tools",
+  "version": 1,
+  "tools": [
+    {
+      "name": "search_agreements",
+      "description": "Search agreements in icertis.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "agreements"
+      }
+    },
+    {
+      "name": "get_agreement",
+      "description": "Get one agreement in icertis.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "agreement_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "agreement_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "agreements",
+        "primaryKey": "agreement_id"
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending icertis approvals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": {
+            "type": "string"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_pending_approvals",
+        "collection": "approvals"
+      }
+    },
+    {
+      "name": "submit_agreement_update",
+      "description": "Submit an update to one agreement in icertis.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "agreement_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "agreement_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "agreements",
+        "primaryKey": "agreement_id"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List icertis simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

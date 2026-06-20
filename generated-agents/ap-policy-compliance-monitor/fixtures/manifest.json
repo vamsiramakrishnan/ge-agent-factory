@@ -1,0 +1,1434 @@
+{
+  "id": "ap_policy_compliance_monitor",
+  "generatedAt": "2026-06-11T08:59:44.277Z",
+  "domain": "finance",
+  "seed": 42,
+  "systems": [
+    {
+      "id": "sap_s_4hana_fi",
+      "name": "SAP S/4HANA FI",
+      "owns": [
+        "gl_entries",
+        "subledger_balances",
+        "open_items"
+      ],
+      "protocol": "RFC/BAPI",
+      "localBacking": [
+        "alloydb"
+      ],
+      "toolNames": [
+        "query_sap_s_4hana_fi_gl_entries",
+        "query_sap_s_4hana_fi_subledger_balances",
+        "query_sap_s_4hana_fi_open_items"
+      ],
+      "evidence": [
+        "source_system_record",
+        "generated_audit_trail"
+      ]
+    },
+    {
+      "id": "coupa",
+      "name": "Coupa",
+      "owns": [
+        "requisitions",
+        "purchase_orders",
+        "invoices"
+      ],
+      "protocol": "REST API",
+      "localBacking": [
+        "alloydb"
+      ],
+      "toolNames": [
+        "query_coupa_requisitions",
+        "query_coupa_purchase_orders",
+        "query_coupa_invoices"
+      ],
+      "evidence": [
+        "source_system_record",
+        "generated_audit_trail"
+      ]
+    },
+    {
+      "id": "bigquery",
+      "name": "BigQuery",
+      "owns": [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates"
+      ],
+      "protocol": "BigQuery SQL",
+      "localBacking": [
+        "bigquery"
+      ],
+      "toolNames": [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates"
+      ],
+      "evidence": [
+        "source_system_record",
+        "generated_audit_trail"
+      ]
+    }
+  ],
+  "useCaseSpec": {
+    "id": "ap-policy-compliance-monitor",
+    "title": "AP Policy Compliance Monitor",
+    "department": "finance",
+    "rowPolicy": {
+      "requestedRows": 50,
+      "minimumRowsPerEntity": 25,
+      "defaultRowsPerEntity": 50
+    },
+    "systems": [
+      {
+        "id": "sap_s_4hana_fi",
+        "name": "SAP S/4HANA FI",
+        "owns": [
+          "gl_entries",
+          "subledger_balances",
+          "open_items"
+        ],
+        "protocol": "RFC/BAPI",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_sap_s_4hana_fi_gl_entries",
+          "query_sap_s_4hana_fi_subledger_balances",
+          "query_sap_s_4hana_fi_open_items"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "coupa",
+        "name": "Coupa",
+        "owns": [
+          "requisitions",
+          "purchase_orders",
+          "invoices"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_coupa_requisitions",
+          "query_coupa_purchase_orders",
+          "query_coupa_invoices"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "bigquery",
+        "name": "BigQuery",
+        "owns": [
+          "analytics_events",
+          "historical_metrics",
+          "cached_aggregates"
+        ],
+        "protocol": "BigQuery SQL",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_bigquery_analytics_events",
+          "query_bigquery_historical_metrics",
+          "query_bigquery_cached_aggregates"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "dataContracts": [
+      {
+        "entity": "gl_entries",
+        "sourceSystem": "SAP S/4HANA FI",
+        "sourceSystemId": "sap_s_4hana_fi",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "posting_date",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "account",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "lorem.sentence",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "subledger_balances",
+        "sourceSystem": "SAP S/4HANA FI",
+        "sourceSystemId": "sap_s_4hana_fi",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "posting_date",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "account",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "lorem.sentence",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "open_items",
+        "sourceSystem": "SAP S/4HANA FI",
+        "sourceSystemId": "sap_s_4hana_fi",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "posting_date",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "account",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "lorem.sentence",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "requisitions",
+        "sourceSystem": "Coupa",
+        "sourceSystemId": "coupa",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "vendor",
+            "type": "company.name",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "due_date",
+            "type": "date",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "purchase_orders",
+        "sourceSystem": "Coupa",
+        "sourceSystemId": "coupa",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "vendor",
+            "type": "company.name",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "due_date",
+            "type": "date",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "invoices",
+        "sourceSystem": "Coupa",
+        "sourceSystemId": "coupa",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "vendor",
+            "type": "company.name",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "due_date",
+            "type": "date",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "analytics_events",
+        "sourceSystem": "BigQuery",
+        "sourceSystemId": "bigquery",
+        "sourceKind": "bigquery",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "historical_metric_id",
+            "type": "ref",
+            "ref": "historical_metrics.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "historical_metrics",
+        "sourceSystem": "BigQuery",
+        "sourceSystemId": "bigquery",
+        "sourceKind": "bigquery",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "cached_aggregates",
+        "sourceSystem": "BigQuery",
+        "sourceSystemId": "bigquery",
+        "sourceKind": "bigquery",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          }
+        ]
+      }
+    ],
+    "evidenceRequired": [
+      "sql_result",
+      "source_system_record",
+      "document_reference",
+      "generated_audit_trail"
+    ],
+    "documentRequirements": [
+      "AP Policy Compliance Monitor Controls Playbook: Workflow scope, Materiality thresholds, Escalation triggers, Audit evidence requirements, Quarter-end variations"
+    ],
+    "integrityRules": [
+      "analytics_events.historical_metric_id -> historical_metrics.id; orphanPolicy=none"
+    ],
+    "apis": [],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "ap_policy_compliance_monitor",
+        "schemas": [
+          "sap_s_4hana_fi",
+          "coupa"
+        ]
+      },
+      "bigquery": {
+        "dataset": "finance_ap_policy_compliance_monitor",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "ap-policy-compliance-monitor-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "ap-policy-compliance-monitor-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "behaviorContract": {
+      "role": "AP Manager agent for the AP Policy Compliance Monitor workflow",
+      "primaryObjective": "100% of AP transactions scanned weekly against policy rules — no sampling gaps. Gemini detects split-purchasing patterns by analyzing same-vendor, same-day, below-threshold purchases. so the AP Manager can move the Violation detection rate KPI.",
+      "inScope": [
+        "100% of AP transactions scanned weekly against policy rules — no sampling gaps",
+        "Gemini detects split-purchasing patterns by analyzing same-vendor, same-day, below-threshold purchases",
+        "Department-level compliance scoring with trend analysis enables targeted policy training"
+      ],
+      "outOfScope": [
+        "Final sign-off on materially significant journal entries (Controller retains authority)",
+        "Restatement of prior-period filings",
+        "Tax position changes that require external advisor review"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_sap_s_4hana_fi_gl_entries",
+          "kind": "query",
+          "sourceSystemId": "sap_s_4hana_fi",
+          "description": "Retrieve gl entries from SAP S/4HANA FI for the AP Policy Compliance Monitor workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "gl_entries_records",
+            "gl_entries_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_coupa_requisitions",
+          "kind": "query",
+          "sourceSystemId": "coupa",
+          "description": "Retrieve requisitions from Coupa for the AP Policy Compliance Monitor workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "requisitions_records",
+            "requisitions_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_bigquery_analytics_events",
+          "kind": "query",
+          "sourceSystemId": "bigquery",
+          "description": "Retrieve analytics events from BigQuery for the AP Policy Compliance Monitor workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "analytics_events_records",
+            "analytics_events_summary"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "lookup_ap_policy_compliance_monitor_controls_playbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "bigquery",
+          "description": "Look up sections of the AP Policy Compliance Monitor Controls Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        }
+      ],
+      "evidenceRequirements": [
+        {
+          "claim": "Violation detection rate moved from 30% (sample-based) toward 100% (all transactions)",
+          "mustCite": [
+            "sap_s_4hana_fi.gl_entries",
+            "coupa.requisitions"
+          ],
+          "sourceSystemIds": [
+            "sap_s_4hana_fi",
+            "coupa"
+          ]
+        },
+        {
+          "claim": "Split-purchase detection moved from Rarely caught toward Pattern-detected",
+          "mustCite": [
+            "sap_s_4hana_fi.gl_entries",
+            "coupa.requisitions"
+          ],
+          "sourceSystemIds": [
+            "sap_s_4hana_fi",
+            "coupa"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Violation detection rate regresses past the 30% (sample-based) baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "AP Manager",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from SAP S/4HANA FI (and other named systems) entities.",
+        "Never bypass AP Manager approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+        "Do not invent metric values, trends, or forecast confidence when analytics rows are missing.",
+        "Do not approve, renew, or recommend supplier action without supplier/spend evidence.",
+        "Do not certify, close, or post finance actions without ledger and exception evidence."
+      ],
+      "goldenEvals": [
+        {
+          "id": "ap-policy-compliance-monitor-end-to-end",
+          "prompt": "Run the AP Policy Compliance Monitor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_sap_s_4hana_fi_gl_entries",
+            "query_coupa_requisitions",
+            "query_bigquery_analytics_events",
+            "lookup_ap_policy_compliance_monitor_controls_playbook"
+          ],
+          "mustReferenceEntities": [
+            "gl_entries",
+            "requisitions",
+            "analytics_events"
+          ],
+          "mustCiteDocuments": [
+            "ap-policy-compliance-monitor-controls-playbook"
+          ],
+          "expectedActionOutcome": "AP Manager receives a fully-cited recommendation; no external state change without explicit approval.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not act on single-system evidence"
+          ]
+        }
+      ],
+      "simulatorEnrichment": {
+        "packBridges": [
+          {
+            "packId": "system_analytics",
+            "simulatorArchetypes": [
+              "data_platform",
+              "digital_analytics",
+              "planning_epm"
+            ],
+            "simulatorCollections": [
+              "datasets",
+              "tables",
+              "pipelines",
+              "jobs",
+              "quality_checks",
+              "events",
+              "conversions"
+            ],
+            "materializes": "analytics tables, metric rows, forecasts, freshness signals, and quality checks into simulator seed overlays"
+          },
+          {
+            "packId": "system_procurement_ops",
+            "simulatorArchetypes": [
+              "procurement",
+              "supply_chain",
+              "clm"
+            ],
+            "simulatorCollections": [
+              "suppliers",
+              "purchase_orders",
+              "requisitions",
+              "contracts",
+              "approvals",
+              "materials",
+              "shipments",
+              "risk_events",
+              "agreements"
+            ],
+            "materializes": "supplier, spend, requisition, purchase order, contract, and supplier-risk rows into procurement simulator seeds"
+          },
+          {
+            "packId": "system_finance_erp",
+            "simulatorArchetypes": [
+              "erp_finance",
+              "tax_treasury",
+              "planning_epm"
+            ],
+            "simulatorCollections": [
+              "vendors",
+              "invoices",
+              "journal_entries",
+              "payments",
+              "bank_accounts",
+              "payment_batches",
+              "tax_filings",
+              "forecast_lines"
+            ],
+            "materializes": "ledger, AP/AR, invoice, payment, cash, tax, and close-control rows into finance simulator seeds"
+          }
+        ]
+      },
+      "evalEnrichment": {
+        "packHints": [
+          {
+            "packId": "system_analytics",
+            "expectedToolKinds": [
+              "query",
+              "calculation"
+            ],
+            "mustReferenceEntities": [
+              "analytics_events",
+              "historical_metrics",
+              "cached_aggregates"
+            ],
+            "successCriteria": [
+              "Derive metric claims from warehouse-backed rows.",
+              "Compare current values against historical or cached baselines.",
+              "Call out negative variance and stale computed_at dates."
+            ],
+            "refusalRules": [
+              "Do not invent metric values, trends, or forecast confidence when analytics rows are missing."
+            ]
+          },
+          {
+            "packId": "system_procurement_ops",
+            "expectedToolKinds": [
+              "query",
+              "evidence_lookup",
+              "action"
+            ],
+            "mustReferenceEntities": [
+              "suppliers",
+              "contracts",
+              "requisitions",
+              "purchase_orders",
+              "invoices"
+            ],
+            "successCriteria": [
+              "Cite vendor, amount, status, and due-date evidence for approval or sourcing recommendations.",
+              "Differentiate pending, approved, paid, and rejected spend records.",
+              "Escalate high-value or missing-contract cases before action."
+            ],
+            "refusalRules": [
+              "Do not approve, renew, or recommend supplier action without supplier/spend evidence."
+            ]
+          },
+          {
+            "packId": "system_finance_erp",
+            "expectedToolKinds": [
+              "query",
+              "calculation",
+              "action"
+            ],
+            "mustReferenceEntities": [
+              "gl_entries",
+              "subledger_balances",
+              "open_items",
+              "accounts_payable",
+              "accounts_receivable"
+            ],
+            "successCriteria": [
+              "Back close, cash, AP, AR, and control claims with ledger evidence.",
+              "Call out pending or reversed records as exceptions.",
+              "Preserve audit trail details for write-like finance actions."
+            ],
+            "refusalRules": [
+              "Do not certify, close, or post finance actions without ledger and exception evidence."
+            ]
+          }
+        ]
+      }
+    },
+    "agentQualityPlan": {
+      "naming": {
+        "agentName": "ap_policy_compliance_monitor_agent",
+        "displayName": "AP Policy Compliance Monitor",
+        "rule": "Use snake_case Python identifiers for agent and tools; use title case only for display labels.",
+        "toolNamePattern": "<verb>_<source_system_id>_<business_object>",
+        "forbiddenPatterns": [
+          "helper",
+          "do_task",
+          "process_data",
+          "tool1",
+          "generic_agent"
+        ]
+      },
+      "adkCapabilities": {
+        "agentClass": "google.adk.agents.Agent",
+        "model": "gemini-3.5-flash",
+        "generateContentConfig": {
+          "temperature": 0.2,
+          "maxOutputTokens": null,
+          "reason": "Output budget left to the model default; the harness review sets a bound only when the use case warrants one."
+        },
+        "outputKey": "last_response",
+        "callbacks": [
+          "before_agent_callback initializes session state from the generated spec.",
+          "before_tool_callback enforces idempotency keys for write-like tool intents.",
+          "after_tool_callback records tool evidence and audit trails in session state."
+        ],
+        "stateKeys": [
+          "scenario_id",
+          "primary_objective",
+          "expected_tools",
+          "evidence_log",
+          "audit_trails"
+        ],
+        "useSubAgentsWhen": "Split into source-specific researcher/verifier sub-agents when live APIs replace fixtures or when one prompt needs parallel evidence collection.",
+        "useAgentToolWhen": "Expose specialist agents through AgentTool when the coordinator must retain control over final synthesis.",
+        "useCodeExecutorWhen": "Not required unless future specs add deterministic calculation or modeling work.",
+        "useMemoryWhen": "Only persist user preferences or repeated workflow context after the user explicitly asks for memory; keep generated demos session-scoped by default."
+      },
+      "toolDesign": {
+        "expectedToolCount": 17,
+        "sourceAdapters": [
+          "sap_s_4hana_fi",
+          "coupa",
+          "bigquery"
+        ],
+        "writeSafety": "Read-only unless a behaviorContract tool intent explicitly declares an action or notification.",
+        "evidence": "Evidence lookup tools and document search must run before recommendations or write actions."
+      },
+      "evalPlan": {
+        "unitTests": [
+          "Import generated app.tools and app.agent.",
+          "Verify fixture tables exist and contain rows.",
+          "Verify generated agent instruction contains objective, tool playbook, and guardrails.",
+          "Statically verify advanced ADK config: callbacks, generate_content_config, output_key, and description."
+        ],
+        "agentEvals": [
+          "tool_trajectory_avg_score with ANY_ORDER for contract tool usage.",
+          "rubric_based_tool_use_quality_v1 for source-before-action reasoning.",
+          "rubric_based_final_response_quality_v1 for grounded final answers.",
+          "hallucinations_v1 and safety_v1 for cited evidence and guardrail adherence."
+        ],
+        "goldenEvalMinimum": 1,
+        "addMoreEvalsWhen": [
+          "A tool intent writes external state.",
+          "A source adapter has bidirectional sync semantics.",
+          "A workflow has escalation/refusal branches.",
+          "A document citation is mandatory for final answers."
+        ]
+      },
+      "mockDataQuality": {
+        "minimumRowsPerEntity": 25,
+        "requirements": [
+          "Every generated row has a stable primary key.",
+          "Foreign keys must resolve to generated parent rows.",
+          "Each table declares sourceSystem and sourceSystemId in fixtures/manifest.json.",
+          "Documents include citation anchors and linked entity ids when document evidence is needed.",
+          "Action-oriented workflows include at least one anomaly or edge-case fixture."
+        ]
+      }
+    }
+  },
+  "tables": [
+    {
+      "name": "gl_entries",
+      "path": "tables/gl_entries.csv",
+      "jsonPath": "tables/gl_entries.json",
+      "sourceSystem": "SAP S/4HANA FI",
+      "sourceSystemId": "sap_s_4hana_fi",
+      "sourceDescription": "gl_entries, subledger_balances, open_items",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "posting_date",
+          "type": "string"
+        },
+        {
+          "name": "account",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "number"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "subledger_balances",
+      "path": "tables/subledger_balances.csv",
+      "jsonPath": "tables/subledger_balances.json",
+      "sourceSystem": "SAP S/4HANA FI",
+      "sourceSystemId": "sap_s_4hana_fi",
+      "sourceDescription": "gl_entries, subledger_balances, open_items",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "posting_date",
+          "type": "string"
+        },
+        {
+          "name": "account",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "number"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "open_items",
+      "path": "tables/open_items.csv",
+      "jsonPath": "tables/open_items.json",
+      "sourceSystem": "SAP S/4HANA FI",
+      "sourceSystemId": "sap_s_4hana_fi",
+      "sourceDescription": "gl_entries, subledger_balances, open_items",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "posting_date",
+          "type": "string"
+        },
+        {
+          "name": "account",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "number"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "requisitions",
+      "path": "tables/requisitions.csv",
+      "jsonPath": "tables/requisitions.json",
+      "sourceSystem": "Coupa",
+      "sourceSystemId": "coupa",
+      "sourceDescription": "requisitions, purchase_orders, invoices",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "source_record_id",
+          "type": "string"
+        },
+        {
+          "name": "vendor",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "number"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "created_at",
+          "type": "string"
+        },
+        {
+          "name": "due_date",
+          "type": "string"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "purchase_orders",
+      "path": "tables/purchase_orders.csv",
+      "jsonPath": "tables/purchase_orders.json",
+      "sourceSystem": "Coupa",
+      "sourceSystemId": "coupa",
+      "sourceDescription": "requisitions, purchase_orders, invoices",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "source_record_id",
+          "type": "string"
+        },
+        {
+          "name": "vendor",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "number"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "created_at",
+          "type": "string"
+        },
+        {
+          "name": "due_date",
+          "type": "string"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "invoices",
+      "path": "tables/invoices.csv",
+      "jsonPath": "tables/invoices.json",
+      "sourceSystem": "Coupa",
+      "sourceSystemId": "coupa",
+      "sourceDescription": "requisitions, purchase_orders, invoices",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "source_record_id",
+          "type": "string"
+        },
+        {
+          "name": "vendor",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "number"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "created_at",
+          "type": "string"
+        },
+        {
+          "name": "due_date",
+          "type": "string"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "analytics_events",
+      "path": "tables/analytics_events.csv",
+      "jsonPath": "tables/analytics_events.json",
+      "sourceSystem": "BigQuery",
+      "sourceSystemId": "bigquery",
+      "sourceDescription": "analytics_events, historical_metrics, cached_aggregates",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "period",
+          "type": "string"
+        },
+        {
+          "name": "metric_name",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "type": "number"
+        },
+        {
+          "name": "variance_pct",
+          "type": "number"
+        },
+        {
+          "name": "computed_at",
+          "type": "string"
+        },
+        {
+          "name": "historical_metric_id",
+          "type": "string"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "historical_metrics",
+      "path": "tables/historical_metrics.csv",
+      "jsonPath": "tables/historical_metrics.json",
+      "sourceSystem": "BigQuery",
+      "sourceSystemId": "bigquery",
+      "sourceDescription": "analytics_events, historical_metrics, cached_aggregates",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "period",
+          "type": "string"
+        },
+        {
+          "name": "metric_name",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "type": "number"
+        },
+        {
+          "name": "variance_pct",
+          "type": "number"
+        },
+        {
+          "name": "computed_at",
+          "type": "string"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "cached_aggregates",
+      "path": "tables/cached_aggregates.csv",
+      "jsonPath": "tables/cached_aggregates.json",
+      "sourceSystem": "BigQuery",
+      "sourceSystemId": "bigquery",
+      "sourceDescription": "analytics_events, historical_metrics, cached_aggregates",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "period",
+          "type": "string"
+        },
+        {
+          "name": "metric_name",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "type": "number"
+        },
+        {
+          "name": "variance_pct",
+          "type": "number"
+        },
+        {
+          "name": "computed_at",
+          "type": "string"
+        }
+      ],
+      "rowCount": 60
+    }
+  ],
+  "documents": [
+    {
+      "id": "ap-policy-compliance-monitor-controls-playbook",
+      "path": "documents/ap-policy-compliance-monitor-controls-playbook.md",
+      "title": "AP Policy Compliance Monitor Controls Playbook",
+      "type": "policy",
+      "sourceSystem": "BigQuery",
+      "sourceSystemId": "bigquery",
+      "linkedEntities": [
+        "gl_entries",
+        "subledger_balances",
+        "open_items"
+      ],
+      "requiredSections": [
+        "Workflow scope",
+        "Materiality thresholds",
+        "Escalation triggers",
+        "Audit evidence requirements",
+        "Quarter-end variations"
+      ],
+      "citationAnchors": [
+        "scope",
+        "materiality",
+        "escalation",
+        "audit-evidence"
+      ],
+      "minimumWordCount": 500,
+      "wordCount": 560
+    }
+  ],
+  "totalRows": 540
+}

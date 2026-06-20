@@ -1,0 +1,1261 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { AlertCircle, Eye, Shield, Bell, FileText } from "lucide-react";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Completion Monitoring", lane: "system", type: "trigger" },
+    { id: "a1", label: "Risk Assessment", lane: "agent", type: "action" },
+    { id: "a2", label: "Smart Escalation", lane: "agent", type: "action" },
+    { id: "a3", label: "Compliance Report", lane: "agent", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Completion Monitoring", icon: Eye, description: "Training completion tracked across all employees.", trigger: "Continuous", systems: ["LMS"] },
+  { label: "Risk Assessment", icon: Shield, description: "Non-compliance risk scored by deadline proximity.", systems: ["Gemini"], integration: "Agent Designer" },
+  { label: "Smart Escalation", icon: Bell, description: "Tiered escalation: employee → manager → HRBP → legal." },
+  { label: "Compliance Report", icon: FileText, description: "Regulatory-ready compliance reports generated.", output: "Compliance Report" }
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Cornerstone", description: "Training completion status, assignment deadlines, enrollment data", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "Workday", description: "Org hierarchy for escalation routing, employee roles and jurisdictions", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "Email", description: "Escalation notifications to employees, managers, HRBPs", direction: "write", protocol: "SMTP/Workspace API", category: "collaboration" },
+    { system: "Slack", description: "Real-time escalation alerts and compliance status nudges", direction: "write", protocol: "Slack API", category: "collaboration" },
+  ],
+  pipeline: [
+    { label: "Completion Monitoring", description: "Continuously track training completion status across all employees from Cornerstone. Cross-reference with Workday org hierarchy and compliance deadlines.", systems: ["Cornerstone", "Workday"], layer: "integration", dataIn: "Completion records + assignment deadlines", dataOut: "Real-time compliance status by employee, team, region" },
+    { label: "Risk Scoring & Prioritization", description: "Score non-compliance risk by deadline proximity, regulatory severity, and historical completion patterns. Identify high-risk teams and individuals.", systems: ["Cornerstone", "Workday"], layer: "ml", dataIn: "Compliance status + deadline data + historical patterns", dataOut: "Risk-scored non-compliance queue with priority ranking" },
+    { label: "Smart Escalation", description: "Tiered escalation engine: employee reminder, manager notification, HRBP alert, legal escalation. Channel selection based on urgency (Email for standard, Slack for urgent).", systems: ["Email", "Slack"], layer: "integration", dataIn: "Risk-scored queue + org hierarchy", dataOut: "Targeted escalation notifications via appropriate channels" },
+    { label: "Regulatory Reporting", description: "Auto-generate regulatory-ready compliance reports meeting jurisdiction-specific format requirements. Dashboard updated for leadership visibility.", systems: ["Cornerstone"], layer: "integration", dataIn: "Completion data + regulatory templates", dataOut: "Jurisdiction-specific compliance reports" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "HR Ops Lead agent for the Compliance Tracking & Escalation Agent workflow",
+  primaryObjective: "Real-time compliance completion dashboards with drill-down by team and region. Intelligent escalation chains with tiered manager and HRBP notifications. so the HR Ops Lead can move the Completion rate KPI.",
+  inScope: [
+    "Real-time compliance completion dashboards with drill-down by team and region",
+    "Intelligent escalation chains with tiered manager and HRBP notifications",
+    "Automated regulatory report generation meeting jurisdiction-specific formats",
+  ],
+  outOfScope: [
+    "Final hiring, termination, or compensation decisions (HRBP/leadership retains authority)",
+    "Performance management adjudication and disciplinary action",
+    "Legal interpretation of employment law in ambiguous jurisdictions",
+  ],
+  toolIntents: [
+    {
+      name: "query_lms_lms_records",
+      kind: "query",
+      sourceSystemId: "lms",
+      description: "Retrieve lms records from LMS for the Compliance Tracking & Escalation Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "lms_records_records",
+        "lms_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_workday_employees",
+      kind: "query",
+      sourceSystemId: "workday",
+      description: "Retrieve employees from Workday for the Compliance Tracking & Escalation Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "employees_records",
+        "employees_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_slack_messages",
+      kind: "query",
+      sourceSystemId: "slack",
+      description: "Retrieve messages from Slack for the Compliance Tracking & Escalation Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "messages_records",
+        "messages_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_servicenow_tickets",
+      kind: "query",
+      sourceSystemId: "servicenow",
+      description: "Retrieve tickets from ServiceNow for the Compliance Tracking & Escalation Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "tickets_records",
+        "tickets_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_compliance_tracking_escalation_agent_policy_handbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "lms",
+      description: "Look up sections of the Compliance Tracking & Escalation Agent Policy Handbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_lms_execute",
+      kind: "action",
+      sourceSystemId: "lms",
+      description: "Execute the execute step in LMS after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Completion rate moved from 72% toward 98%",
+      mustCite: [
+        "lms.lms_records",
+        "workday.employees",
+      ],
+      sourceSystemIds: [
+        "lms",
+        "workday",
+      ],
+    },
+    {
+      claim: "Escalation speed moved from Weekly report toward Real-time",
+      mustCite: [
+        "lms.lms_records",
+        "workday.employees",
+      ],
+      sourceSystemIds: [
+        "lms",
+        "workday",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Completion rate regresses past the 72% baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "HR Ops Lead",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed execute action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from LMS (and other named systems) entities.",
+    "Never bypass HR Ops Lead approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "compliance-tracking-escalation-agent-end-to-end",
+      prompt: "Run the Compliance Tracking & Escalation Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_lms_lms_records",
+        "query_workday_employees",
+        "query_slack_messages",
+        "query_servicenow_tickets",
+        "lookup_compliance_tracking_escalation_agent_policy_handbook",
+        "action_lms_execute",
+      ],
+      mustReferenceEntities: [
+        "lms_records",
+        "employees",
+        "messages",
+        "tickets",
+      ],
+      mustCiteDocuments: [
+        "compliance-tracking-escalation-agent-policy-handbook",
+      ],
+      expectedActionOutcome: "Action execute executed against LMS, with audit-trail entry and HR Ops Lead notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute execute without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Compliance Tracking & Escalation Agent so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "lms",
+      name: "LMS",
+      owns: [
+        "lms_records",
+        "lms_events",
+        "lms_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_lms_lms_records",
+        "query_lms_lms_events",
+        "query_lms_lms_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "workday",
+      name: "Workday",
+      owns: [
+        "employees",
+        "positions",
+        "compensation_records",
+      ],
+      protocol: "Workday REST",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_workday_employees",
+        "query_workday_positions",
+        "query_workday_compensation_records",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "slack",
+      name: "Slack",
+      owns: [
+        "messages",
+        "channels",
+        "thread_replies",
+      ],
+      protocol: "Slack API",
+      localBacking: [
+        "json-api",
+      ],
+      toolNames: [
+        "query_slack_messages",
+        "query_slack_channels",
+        "query_slack_thread_replies",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "servicenow",
+      name: "ServiceNow",
+      owns: [
+        "tickets",
+        "change_requests",
+        "incidents",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_servicenow_tickets",
+        "query_servicenow_change_requests",
+        "query_servicenow_incidents",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "lms_records",
+      sourceSystemId: "lms",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "lms_events",
+      sourceSystemId: "lms",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "lms_record_id",
+          type: "ref",
+          ref: "lms_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "lms_audit_trail",
+      sourceSystemId: "lms",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "employees",
+      sourceSystemId: "workday",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "department",
+          type: "enum",
+          values: [
+            "Finance",
+            "HR",
+            "IT",
+            "Marketing",
+            "Procurement",
+            "Engineering",
+            "Operations",
+          ],
+          required: true,
+        },
+        {
+          name: "region",
+          type: "enum",
+          values: [
+            "US",
+            "EMEA",
+            "APAC",
+            "LATAM",
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "on_leave",
+            "inactive",
+          ],
+          weights: [
+            0.85,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "level",
+          type: "enum",
+          values: [
+            "L3",
+            "L4",
+            "L5",
+            "L6",
+            "L7",
+          ],
+          required: true,
+        },
+        {
+          name: "hired_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "positions",
+      sourceSystemId: "workday",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "department",
+          type: "enum",
+          values: [
+            "Finance",
+            "HR",
+            "IT",
+            "Marketing",
+            "Procurement",
+            "Engineering",
+            "Operations",
+          ],
+          required: true,
+        },
+        {
+          name: "region",
+          type: "enum",
+          values: [
+            "US",
+            "EMEA",
+            "APAC",
+            "LATAM",
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "on_leave",
+            "inactive",
+          ],
+          weights: [
+            0.85,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "level",
+          type: "enum",
+          values: [
+            "L3",
+            "L4",
+            "L5",
+            "L6",
+            "L7",
+          ],
+          required: true,
+        },
+        {
+          name: "hired_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "compensation_records",
+      sourceSystemId: "workday",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "department",
+          type: "enum",
+          values: [
+            "Finance",
+            "HR",
+            "IT",
+            "Marketing",
+            "Procurement",
+            "Engineering",
+            "Operations",
+          ],
+          required: true,
+        },
+        {
+          name: "region",
+          type: "enum",
+          values: [
+            "US",
+            "EMEA",
+            "APAC",
+            "LATAM",
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "on_leave",
+            "inactive",
+          ],
+          weights: [
+            0.85,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "level",
+          type: "enum",
+          values: [
+            "L3",
+            "L4",
+            "L5",
+            "L6",
+            "L7",
+          ],
+          required: true,
+        },
+        {
+          name: "hired_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "messages",
+      sourceSystemId: "slack",
+      datastore: "json-api",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "channel",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "author",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "body",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "sentiment",
+          type: "enum",
+          values: [
+            "positive",
+            "neutral",
+            "negative",
+          ],
+          weights: [
+            0.4,
+            0.4,
+            0.2,
+          ],
+          required: true,
+        },
+        {
+          name: "sent_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "channels",
+      sourceSystemId: "slack",
+      datastore: "json-api",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "thread_replies",
+      sourceSystemId: "slack",
+      datastore: "json-api",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "channel",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "author",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "body",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "sentiment",
+          type: "enum",
+          values: [
+            "positive",
+            "neutral",
+            "negative",
+          ],
+          weights: [
+            0.4,
+            0.4,
+            0.2,
+          ],
+          required: true,
+        },
+        {
+          name: "sent_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "tickets",
+      sourceSystemId: "servicenow",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "change_requests",
+      sourceSystemId: "servicenow",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "incidents",
+      sourceSystemId: "servicenow",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "lms_events.lms_record_id",
+      to: "lms_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "compliance-tracking-escalation-agent-policy-handbook",
+      sourceSystemId: "lms",
+      type: "policy",
+      title: "Compliance Tracking & Escalation Agent Policy Handbook",
+      requiredSections: [
+        "Eligibility and scope",
+        "Workflow steps",
+        "Manager responsibilities",
+        "Compliance and audit",
+        "Sensitive-data handling",
+      ],
+      linkedEntities: [
+        "lms_records",
+        "lms_events",
+        "lms_audit_trail",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "eligibility",
+        "workflow",
+        "compliance",
+        "sensitive-data",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "lms_execute_api",
+      sourceSystemId: "lms",
+      method: "POST",
+      path: "/api/lms/execute",
+      description: "Synchronous endpoint the agent calls to execute in LMS after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "compliance-tracking-escalation-agent-baseline-gap",
+      description: "Seed a realistic gap where Completion rate sits between 72% and 98%, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "lms_records",
+        "lms_events",
+      ],
+      discoveryPath: [
+        "Inspect LMS records for the affected entities",
+        "Compare against Workday historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next HR Ops Lead action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "compliance_tracking_escalation_agent",
+      schemas: [
+        "lms",
+        "workday",
+        "slack",
+        "servicenow",
+      ],
+    },
+    bigquery: {
+      dataset: "hr_compliance_tracking_escalation_agent",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "compliance-tracking-escalation-agent-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "compliance-tracking-escalation-agent-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Compliance Tracking & Escalation Agent workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const ComplianceTrackingEscalation = () => (
+  <UseCaseSlide
+    title="Compliance Tracking & Escalation Agent"
+    subtitle="A-506 • L&D"
+    icon={AlertCircle}
+    domainId="domain-5"
+    layer="Layer 2: Agent Designer"
+    persona="HR Ops Lead"
+    triggerType="scheduled"
+    swimlane={swimlane}
+    architecture={architecture}
+    systems={["LMS", "Workday", "Slack", "ServiceNow"]}
+    kpis={[
+      { label: "Completion rate", before: "72%", after: "98%" },
+      { label: "Escalation speed", before: "Weekly report", after: "Real-time" },
+      { label: "Regulatory reporting", before: "Manual assembly", after: "Auto-generated" }
+    ]}
+    flow={flow}
+    statusQuo={[
+      "Compliance tracking relies on manual spreadsheet pulls with stale data.",
+      "Escalation emails sent weeks before deadlines with no intelligent prioritization.",
+      "Regulatory reporting assembled manually, risking errors and missed submissions."
+    ]}
+    agentification={[
+      "Real-time compliance completion dashboards with drill-down by team and region.",
+      "Intelligent escalation chains with tiered manager and HRBP notifications.",
+      "Automated regulatory report generation meeting jurisdiction-specific formats."
+    ]}
+  />
+);

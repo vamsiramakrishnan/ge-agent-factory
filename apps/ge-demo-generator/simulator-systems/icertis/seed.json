@@ -1,0 +1,48 @@
+{
+  "agreements": [
+    {
+      "agreement_id": "AGREEMENT-ID-001",
+      "name": "sample_name",
+      "counterparty": "sample_counterparty",
+      "status": "sample_status",
+      "effective_date": "sample_effective_date",
+      "expiration_date": "sample_expiration_date"
+    }
+  ],
+  "clauses": [
+    {
+      "clause_id": "CLAUSE-ID-001",
+      "agreement_id": "AGREEMENT-ID-001",
+      "clause_type": "sample_clause_type",
+      "risk_level": "sample_risk_level",
+      "text": "sample_text"
+    }
+  ],
+  "obligations": [
+    {
+      "obligation_id": "OBLIGATION-ID-001",
+      "agreement_id": "AGREEMENT-ID-001",
+      "owner": "sample_owner",
+      "status": "sample_status",
+      "due_date": "sample_due_date"
+    }
+  ],
+  "amendments": [
+    {
+      "amendment_id": "AMENDMENT-ID-001",
+      "agreement_id": "AGREEMENT-ID-001",
+      "status": "sample_status",
+      "effective_date": "sample_effective_date"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APPROVAL-ID-001",
+      "source_record_id": "SOURCE-RECORD-ID-001",
+      "approver": "sample_approver",
+      "state": "sample_state",
+      "reason": "sample_reason"
+    }
+  ],
+  "audit_events": []
+}

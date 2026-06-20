@@ -1,0 +1,1256 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { TrendingUp, Radar, Brain, BarChart3, FileText } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Weekly Scan", lane: "system", type: "trigger" },
+    { id: "a1", label: "Signal Collection", lane: "agent", type: "action" },
+    { id: "a2", label: "Trend Validation", lane: "agent", type: "action" },
+    { id: "a3", label: "Trend Brief", lane: "agent", type: "output" },
+    { id: "h1", label: "Strategy Review", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Signal Scan", icon: Radar, description: "Search trends, industry news, LinkedIn activity, and technology adoption signals monitored.", trigger: "Weekly", systems: ["Google Trends", "Google News API"] },
+  { label: "Noise Filtering", icon: Brain, description: "Meaningful market shifts distinguished from media hype using corroborating signals.", systems: ["SEMrush", "BigQuery", "Vertex AI"], integration: "ADK" },
+  { label: "Impact Assessment", icon: BarChart3, description: "Validated trends scored for business relevance with content and positioning recommendations.", systems: ["Vertex AI"] },
+  { label: "Trend Brief", icon: FileText, description: "Weekly trend brief with actionable recommendations distributed to marketing leadership.", output: "Market Trend Intelligence" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Google Trends", description: "Search volume trends, related queries, geographic interest, breakout topics", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "SEMrush", description: "Keyword trend data, competitor content themes, industry topic analysis", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "LinkedIn", description: "Industry topic activity, professional discussion trends, job posting signals", direction: "read", protocol: "REST API", category: "collaboration" },
+    { system: "Google News API", description: "Industry news, technology announcements, market event detection", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "Vertex AI (Gemini)", description: "Trend validation, hype vs. reality assessment, strategic implication analysis", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+    { system: "BigQuery", description: "Historical trend data, adoption curve modeling, early signal detection", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+  ],
+  pipeline: [
+    { label: "Multi-Signal Collection", description: "Monitor search trends from Google Trends, keyword patterns from SEMrush, LinkedIn topic activity, and industry news. Aggregate into unified signal stream.", systems: ["Google Trends", "SEMrush", "LinkedIn", "Google News API"], layer: "integration", dataIn: "Raw signals across platforms", dataOut: "Unified trend signal stream" },
+    { label: "Velocity Measurement", description: "Measure trend velocity — search volume acceleration, content publication rate, and adoption indicators (job postings, tech stack mentions). Model adoption curve stage.", systems: ["BigQuery ML"], layer: "ml", dataIn: "Unified signals", dataOut: "Trend velocity scores with adoption stage" },
+    { label: "Signal vs. Noise Assessment", description: "Gemini distinguishes meaningful market shifts from media hype. Corroborates search trends with job postings, technology adoption, and buyer behavior changes. Assesses strategic implications for positioning and content strategy.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Trend velocity + corroborating signals", dataOut: "Validated trends with strategic recommendations" },
+    { label: "Brief & Alerting", description: "Generate weekly trend brief for marketing leadership. Spike alerts for breakout trends requiring immediate content response. Feed validated trends into content and campaign planning.", systems: ["BigQuery", "Slack"], layer: "integration", dataIn: "Validated trends", dataOut: "Trend brief + spike alerts + content backlog" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Marketing Analyst agent for the Market Trend & Signal Detector workflow",
+  primaryObjective: "Gemini distinguishes meaningful market shifts from noise by corroborating search trends with adoption signals. LLM assesses whether search volume spikes indicate real buyer activity or media-driven curiosity. so the Marketing Analyst can move the Trend detection speed KPI.",
+  inScope: [
+    "Gemini distinguishes meaningful market shifts from noise by corroborating search trends with adoption signals",
+    "LLM assesses whether search volume spikes indicate real buyer activity or media-driven curiosity",
+    "Generates actionable recommendations with specific content and positioning responses within 30 days",
+  ],
+  outOfScope: [
+    "Final approval of paid spend reallocations above the governance threshold",
+    "Trademark, legal, or regulated-industry claim approval",
+    "Crisis communications without comms-team sign-off",
+  ],
+  toolIntents: [
+    {
+      name: "query_google_trends_google_trends_records",
+      kind: "query",
+      sourceSystemId: "google_trends",
+      description: "Retrieve google trends records from Google Trends for the Market Trend & Signal Detector workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "google_trends_records_records",
+        "google_trends_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_semrush_keyword_rankings",
+      kind: "query",
+      sourceSystemId: "semrush",
+      description: "Retrieve keyword rankings from SEMrush for the Market Trend & Signal Detector workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "keyword_rankings_records",
+        "keyword_rankings_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_linkedin_linkedin_records",
+      kind: "query",
+      sourceSystemId: "linkedin",
+      description: "Retrieve linkedin records from LinkedIn for the Market Trend & Signal Detector workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "linkedin_records_records",
+        "linkedin_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_google_news_api_google_news_api_records",
+      kind: "query",
+      sourceSystemId: "google_news_api",
+      description: "Retrieve google news api records from Google News API for the Market Trend & Signal Detector workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "google_news_api_records_records",
+        "google_news_api_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_market_trend_signal_detector_playbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Market Trend & Signal Detector Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_google_trends_recommend",
+      kind: "action",
+      sourceSystemId: "google_trends",
+      description: "Execute the recommend step in Google Trends after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Trend detection speed moved from Weeks behind market toward < 7 day detection",
+      mustCite: [
+        "google_trends.google_trends_records",
+        "semrush.keyword_rankings",
+      ],
+      sourceSystemIds: [
+        "google_trends",
+        "semrush",
+      ],
+    },
+    {
+      claim: "Signal accuracy moved from Chasing hype cycles toward Validated with corroboration",
+      mustCite: [
+        "google_trends.google_trends_records",
+        "semrush.keyword_rankings",
+      ],
+      sourceSystemIds: [
+        "google_trends",
+        "semrush",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Trend detection speed regresses past the Weeks behind market baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Marketing Analyst",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed recommend action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from Google Trends (and other named systems) entities.",
+    "Never bypass Marketing Analyst approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "market-trend-signal-detector-end-to-end",
+      prompt: "Run the Market Trend & Signal Detector workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_google_trends_google_trends_records",
+        "query_semrush_keyword_rankings",
+        "query_linkedin_linkedin_records",
+        "query_google_news_api_google_news_api_records",
+        "lookup_market_trend_signal_detector_playbook",
+        "action_google_trends_recommend",
+      ],
+      mustReferenceEntities: [
+        "google_trends_records",
+        "keyword_rankings",
+        "linkedin_records",
+        "google_news_api_records",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "market-trend-signal-detector-playbook",
+      ],
+      expectedActionOutcome: "Action recommend executed against Google Trends, with audit-trail entry and Marketing Analyst notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute recommend without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Market Trend & Signal Detector so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "google_trends",
+      name: "Google Trends",
+      owns: [
+        "google_trends_records",
+        "google_trends_events",
+        "google_trends_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_google_trends_google_trends_records",
+        "query_google_trends_google_trends_events",
+        "query_google_trends_google_trends_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "semrush",
+      name: "SEMrush",
+      owns: [
+        "keyword_rankings",
+        "backlink_profile",
+        "competitor_data",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_semrush_keyword_rankings",
+        "query_semrush_backlink_profile",
+        "query_semrush_competitor_data",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "linkedin",
+      name: "LinkedIn",
+      owns: [
+        "linkedin_records",
+        "linkedin_events",
+        "linkedin_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_linkedin_linkedin_records",
+        "query_linkedin_linkedin_events",
+        "query_linkedin_linkedin_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "google_news_api",
+      name: "Google News API",
+      owns: [
+        "google_news_api_records",
+        "google_news_api_events",
+        "google_news_api_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_google_news_api_google_news_api_records",
+        "query_google_news_api_google_news_api_events",
+        "query_google_news_api_google_news_api_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "google_trends_records",
+      sourceSystemId: "google_trends",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "google_trends_events",
+      sourceSystemId: "google_trends",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "google_trends_record_id",
+          type: "ref",
+          ref: "google_trends_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "google_trends_audit_trail",
+      sourceSystemId: "google_trends",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "keyword_rankings",
+      sourceSystemId: "semrush",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "backlink_profile",
+      sourceSystemId: "semrush",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "competitor_data",
+      sourceSystemId: "semrush",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "linkedin_records",
+      sourceSystemId: "linkedin",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "linkedin_events",
+      sourceSystemId: "linkedin",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "linkedin_record_id",
+          type: "ref",
+          ref: "linkedin_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "linkedin_audit_trail",
+      sourceSystemId: "linkedin",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "google_news_api_records",
+      sourceSystemId: "google_news_api",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "google_news_api_events",
+      sourceSystemId: "google_news_api",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "google_news_api_record_id",
+          type: "ref",
+          ref: "google_news_api_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "google_news_api_audit_trail",
+      sourceSystemId: "google_news_api",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "google_trends_events.google_trends_record_id",
+      to: "google_trends_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "linkedin_events.linkedin_record_id",
+      to: "linkedin_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "google_news_api_events.google_news_api_record_id",
+      to: "google_news_api_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "market-trend-signal-detector-playbook",
+      sourceSystemId: "bigquery",
+      type: "playbook",
+      title: "Market Trend & Signal Detector Playbook",
+      requiredSections: [
+        "Audience guidelines",
+        "Brand voice rules",
+        "Channel-specific guardrails",
+        "Measurement framework",
+        "Approval thresholds",
+      ],
+      linkedEntities: [
+        "google_trends_records",
+        "google_trends_events",
+        "google_trends_audit_trail",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "audience",
+        "brand-voice",
+        "channels",
+        "approvals",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "google_trends_recommend_api",
+      sourceSystemId: "google_trends",
+      method: "POST",
+      path: "/api/google_trends/recommend",
+      description: "Synchronous endpoint the agent calls to recommend in Google Trends after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "market-trend-signal-detector-baseline-gap",
+      description: "Seed a realistic gap where Trend detection speed sits between Weeks behind market and < 7 day detection, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "google_trends_records",
+        "google_trends_events",
+      ],
+      discoveryPath: [
+        "Inspect Google Trends records for the affected entities",
+        "Compare against SEMrush historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Marketing Analyst action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "market_trend_signal_detector",
+      schemas: [
+        "google_trends",
+        "semrush",
+        "linkedin",
+        "google_news_api",
+      ],
+    },
+    bigquery: {
+      dataset: "marketing_market_trend_signal_detector",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "market-trend-signal-detector-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "market-trend-signal-detector-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Market Trend & Signal Detector workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const MarketTrendDetector = () => (
+  <UseCaseSlide
+    title="Market Trend & Signal Detector"
+    subtitle="A-3707 • Customer & Market Intelligence"
+    icon={TrendingUp}
+    domainId="domain-37"
+    layer="Layer 3: Custom ADK"
+    persona="Marketing Analyst"
+    systems={["Google Trends", "SEMrush", "LinkedIn", "Google News API", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "Trend detection speed", before: "Weeks behind market", after: "< 7 day detection" },
+      { label: "Signal accuracy", before: "Chasing hype cycles", after: "Validated with corroboration" },
+      { label: "Content response time", before: "60-90 days", after: "< 30 days from detection" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    statusQuo={[
+      "Market trends detected through conference attendance and ad-hoc news reading — weeks behind.",
+      "No distinction between genuine market shifts and media hype — resources wasted chasing noise.",
+      "Content response to emerging trends takes 60-90 days, missing the window."
+    ]}
+    agentification={[
+      "Gemini distinguishes meaningful market shifts from noise by corroborating search trends with adoption signals.",
+      "LLM assesses whether search volume spikes indicate real buyer activity or media-driven curiosity.",
+      "Generates actionable recommendations with specific content and positioning responses within 30 days."
+    ]}
+  />
+);

@@ -1,0 +1,61 @@
+id,posting_date,account,amount,currency,description,status
+ID-0001,2026-05-20,1000-Cash,12840.5,USD,gl_entries seeded 1000-Cash close evidence for variance and reconciliation checks.,posted
+ID-0002,2026-05-21,2000-AP,-6400.75,USD,gl_entries seeded 2000-AP close evidence for variance and reconciliation checks.,pending
+ID-0003,2026-05-22,2100-AR,9200,USD,gl_entries seeded 2100-AR close evidence for variance and reconciliation checks.,posted
+ID-0004,2026-05-23,3000-Revenue,45100.25,USD,gl_entries seeded 3000-Revenue close evidence for variance and reconciliation checks.,posted
+ID-0005,2026-05-24,4000-Expense,-780.5,USD,gl_entries seeded 4000-Expense close evidence for variance and reconciliation checks.,posted
+ID-0006,2026-05-25,5000-COGS,-33000,USD,gl_entries seeded 5000-COGS close evidence for variance and reconciliation checks.,reversed
+ID-0007,2025-02-24,2000-AP,41077.02,GBP,Accommodo vivo sursum cogo tricesimus cilicium uter amplexus succedo.,posted
+ID-0008,2020-07-30,2000-AP,-48759.6,EUR,Patrocinor clibanus coepi talus administratio.,pending
+ID-0009,2025-02-11,4000-Expense,9322.16,GBP,Aeternus capto thalassinus adeo.,posted
+ID-0010,2025-12-21,5000-COGS,2144.57,USD,Patruus amplus aliquid verbera sortitus tricesimus utroque mollitia ea.,posted
+ID-0011,2021-11-25,2100-AR,27387.97,EUR,Decipio pectus quos omnis subvenio capio doloremque amicitia creo depopulo.,posted
+ID-0012,2025-09-14,3000-Revenue,24359.39,EUR,Aeneus caterva conturbo demergo adipisci apud charisma volup.,posted
+ID-0013,2022-11-22,2000-AP,11078.01,USD,Ea abscido absens blanditiis.,posted
+ID-0014,2020-08-24,2100-AR,30258.57,EUR,Claudeo vicinus crux alias provident amplitudo conitor.,posted
+ID-0015,2025-03-31,2100-AR,20225.88,GBP,Cervus crur curis cunctatio.,pending
+ID-0016,2024-04-14,3000-Revenue,-19062.73,GBP,Trado ab repellat admoneo causa adulatio peccatus stipes amplus credo.,posted
+ID-0017,2022-03-19,1000-Cash,-8105.22,GBP,Aggero conspergo vilis.,posted
+ID-0018,2024-01-27,2100-AR,9366.08,USD,Vereor perspiciatis uterque surculus animi veniam aeger explicabo.,posted
+ID-0019,2020-01-26,2100-AR,-20495.93,EUR,Adimpleo annus laboriosam conicio suspendo solio tutis.,posted
+ID-0020,2022-07-31,4000-Expense,-22461.88,USD,Decumbo theologus traho umquam veritatis curvo comis non correptius.,posted
+ID-0021,2024-03-26,4000-Expense,-12544.71,USD,Aranea validus coniuratio arma acies sint.,posted
+ID-0022,2022-01-16,1000-Cash,-9037.11,USD,Pecto copia blandior voveo defetiscor sto aqua depereo.,posted
+ID-0023,2023-01-12,5000-COGS,-11579.33,USD,Cresco artificiose acervus.,posted
+ID-0024,2022-10-02,2000-AP,40008.32,USD,Combibo valeo pax trepide vorax civitas vito cribro creptio confugo.,posted
+ID-0025,2020-12-03,3000-Revenue,4170.48,GBP,Decet cognatus caveo autem adsuesco conicio centum voco labore.,posted
+ID-0026,2023-06-26,1000-Cash,-5595.63,EUR,Cuius vulgo utrum qui modi quas.,posted
+ID-0027,2022-05-16,1000-Cash,-2445.4,EUR,Vobis verbera suppono expedita.,pending
+ID-0028,2020-10-13,4000-Expense,-37517.92,GBP,Utpote vinco arcesso delectatio vomica.,posted
+ID-0029,2025-03-07,3000-Revenue,-12467.01,USD,Tempus crepusculum dolorem deprimo.,posted
+ID-0030,2025-03-12,5000-COGS,-9241.58,GBP,Nam viscus averto amo ultra decens uberrime varietas advenio.,pending
+ID-0031,2022-09-09,3000-Revenue,12659.25,GBP,Demoror sto suppono.,posted
+ID-0032,2020-10-21,2000-AP,-14128.45,GBP,Bene vita absorbeo vulpes spiculum.,pending
+ID-0033,2021-10-07,1000-Cash,23786.95,GBP,Aranea tardus tenus solus tener tyrannus placeat alienus.,posted
+ID-0034,2020-06-19,2100-AR,-9289.35,USD,Amor titulus vinitor aequus vis.,posted
+ID-0035,2021-10-18,1000-Cash,62.43,GBP,Admitto aequus culpa claustrum candidus cicuta thymbra vetus.,posted
+ID-0036,2025-06-09,2000-AP,-2356.3,USD,Volva pax contabesco socius annus valeo desolo deduco.,posted
+ID-0037,2023-10-01,1000-Cash,18261.72,USD,Traho thymum ipsam eius aranea terga cernuus derideo.,posted
+ID-0038,2020-10-20,3000-Revenue,-44566.8,GBP,A dolorem adipiscor cetera suffragium.,posted
+ID-0039,2025-01-13,1000-Cash,-25317.62,GBP,Ambitus contigo cerno turbo combibo.,posted
+ID-0040,2025-05-08,2100-AR,40994.32,EUR,Alii stips depulso cresco recusandae succurro abeo aspernatur summisse sophismata.,reversed
+ID-0041,2024-07-26,5000-COGS,20254.05,USD,Tero sequi administratio.,posted
+ID-0042,2025-09-28,3000-Revenue,-6727.09,EUR,Corporis corpus admoveo tenetur.,posted
+ID-0043,2024-12-07,5000-COGS,-28800.6,EUR,Utrum bibo spiritus pecus clementia approbo.,posted
+ID-0044,2024-06-07,2000-AP,14483.26,EUR,Aveho validus civis corona adsum amoveo ducimus ceno.,pending
+ID-0045,2020-02-02,2100-AR,-16265.45,USD,Cupio depromo culpo.,posted
+ID-0046,2023-07-28,1000-Cash,-3590.48,GBP,Spiculum color teres terebro eligendi voluptatibus antea.,posted
+ID-0047,2024-08-15,4000-Expense,-37979.28,USD,Claudeo terebro eaque.,posted
+ID-0048,2022-03-25,1000-Cash,-20019.95,EUR,Uberrime acervus velociter terra termes defungo cubicularis cognatus aedificium calco.,posted
+ID-0049,2022-11-27,4000-Expense,-2619.02,USD,Vilitas territo vulgaris illum vivo aestivus copiose caelum autus aqua.,posted
+ID-0050,2024-09-08,3000-Revenue,-35303.73,GBP,Cresco sperno caveo conitor vero clamo delinquo validus.,posted
+ID-0051,2020-05-16,1000-Cash,-49215.85,EUR,Appono vita ex carbo desino spoliatio.,posted
+ID-0052,2021-08-25,4000-Expense,-4033.51,EUR,Adimpleo asperiores decumbo bellicus admiratio turpis.,reversed
+ID-0053,2024-10-04,5000-COGS,-25802.29,GBP,Virgo vulgus summa vomica.,posted
+ID-0054,2021-07-22,2100-AR,9356.09,USD,Vomica auditor textor venustas villa vitium eligendi.,reversed
+ID-0055,2024-07-18,1000-Cash,-2309.99,GBP,Rerum sophismata ascisco maiores.,posted
+ID-0056,2022-12-29,1000-Cash,-49096.16,EUR,Calco reiciendis brevis comminor ubi suspendo allatus curto adamo denique.,posted
+ID-0057,2020-09-16,2000-AP,-10216.34,GBP,Adinventitias temptatio corrigo crudelis tego versus virga neque consuasor tersus.,posted
+ID-0058,2023-05-21,2100-AR,15663.11,USD,Versus ambitus dicta bos.,posted
+ID-0059,2020-03-19,2000-AP,36677.04,USD,Non debilito nisi ea tempore cimentarius conservo varius vindico vapulus.,posted
+ID-0060,2024-09-06,2100-AR,-246.01,USD,Audax conatus umbra beatae aequitas aegrotatio vilicus.,posted

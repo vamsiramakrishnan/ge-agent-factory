@@ -1,0 +1,208 @@
+substitutions:
+  _STAGE: validate
+  _ITEM_ID: manual
+  _WORKSPACE_ARCHIVE: ""
+  _ARTIFACT_PREFIX: ""
+  _RUNTIME_REGION: us-central1
+  _GOOGLE_GENAI_LOCATION: global
+  _GEMINI_ENTERPRISE_LOCATION: global
+  _GEMINI_ENTERPRISE_APP_ID: ""
+  _RUN_AGENT_EVALS: "true"
+  _RUN_AGENT_LINT: "true"
+  _RUN_AGENT_OPTIMIZE: "false"
+  _RUN_DEPLOYED_SMOKE: "true"
+  _DISPLAY_NAME: ""
+  _DESCRIPTION: ""
+  _TOOL_DESCRIPTION: ""
+  _PREVIEW_PROMPT: "hello"
+  # Shared builder image (toolchain + warm uv cache). Falls back to the public
+  # uv base image; the worker overrides this with the ge-agent-factory-builder image.
+  _BUILDER_IMAGE: "ghcr.io/astral-sh/uv:python3.11-bookworm"
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_HIGHCPU_8
+
+timeout: 7200s
+
+steps:
+  - id: restore-workspace
+    name: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        mkdir -p /workspace/agent
+        if [[ -n "${_WORKSPACE_ARCHIVE}" ]]; then
+          gcloud storage cp "${_WORKSPACE_ARCHIVE}" /workspace/workspace.tar.gz
+          tar -xzf /workspace/workspace.tar.gz -C /workspace/agent
+        else
+          cp -a . /workspace/agent
+        fi
+
+  - id: run-stage
+    name: ${_BUILDER_IMAGE}
+    entrypoint: bash
+    dir: /workspace/agent
+    env:
+      - GOOGLE_GENAI_USE_VERTEXAI=1
+      - GOOGLE_GENAI_LOCATION=${_GOOGLE_GENAI_LOCATION}
+      - GEMINI_ENTERPRISE_LOCATION=${_GEMINI_ENTERPRISE_LOCATION}
+      - GEMINI_ENTERPRISE_APP_ID=${_GEMINI_ENTERPRISE_APP_ID}
+    args:
+      - -ceu
+      - |
+        case "${_STAGE}" in
+          validate)
+            command -v agents-cli >/dev/null 2>&1 || uv tool install 'google-agents-cli>=0.2,<0.3'  # pin <0.3: the workspace eval flow uses 'eval run --all', removed in 0.3+ (0.5 reworked eval). TODO: migrate to the 0.5 eval-case model.
+            export PATH="$$HOME/.local/bin:$$PATH"
+            agents-cli install
+            mkdir -p artifacts
+            agents-cli info --json > artifacts/agents-cli-info.json
+            if [[ "${_RUN_AGENT_LINT}" == "true" ]]; then
+              agents-cli lint --fix --skip-codespell --skip-ty
+            fi
+            uv run pytest tests/test_smoke.py -q
+            EVAL_STATUS="skipped"
+            EVAL_EXIT=0
+            if [[ "${_RUN_AGENT_EVALS}" == "true" && -d tests/eval/evalsets ]]; then
+              EVAL_CONFIG_ARG=""
+              if [[ -f tests/eval/eval_config.json ]]; then
+                EVAL_CONFIG_ARG="--config tests/eval/eval_config.json"
+              fi
+              if agents-cli eval run --all $$EVAL_CONFIG_ARG; then
+                EVAL_STATUS="passed"
+              else
+                EVAL_EXIT=$?
+                EVAL_STATUS="failed"
+              fi
+            fi
+            if [[ "${EVAL_STATUS}" == "failed" ]]; then
+              printf '{"status":"failed","stage":"validate","owner":"cloud_build","nextStage":null,"error":"agents-cli eval run failed with exit %s","evalStatus":"failed"}\n' "${EVAL_EXIT}" > artifacts/factory-validate-result.json
+              exit "${EVAL_EXIT}"
+            fi
+            OPTIMIZE_STATUS="skipped"
+            if [[ "${_RUN_AGENT_OPTIMIZE}" == "true" ]]; then
+              if [[ -f tests/eval/optimization_config.json ]]; then
+                agents-cli eval optimize --config tests/eval/optimization_config.json
+                OPTIMIZE_STATUS="passed"
+              else
+                echo "Optimization requested but tests/eval/optimization_config.json is missing." >&2
+                exit 2
+              fi
+            fi
+            printf '{"status":"done","stage":"validate","owner":"cloud_build","nextStage":null,"lintStatus":"%s","evalStatus":"%s","optimizeStatus":"%s"}\n' "${_RUN_AGENT_LINT}" "${EVAL_STATUS}" "${OPTIMIZE_STATUS}" > artifacts/factory-validate-result.json
+            ;;
+          preview)
+            command -v agents-cli >/dev/null 2>&1 || uv tool install 'google-agents-cli>=0.2,<0.3'  # pin <0.3: the workspace eval flow uses 'eval run --all', removed in 0.3+ (0.5 reworked eval). TODO: migrate to the 0.5 eval-case model.
+            export PATH="$$HOME/.local/bin:$$PATH"
+            agents-cli install
+            mkdir -p artifacts
+            agents-cli info --json > artifacts/agents-cli-info.json
+            PREVIEW_PROMPT="${_PREVIEW_PROMPT:-hello}"
+            PREVIEW_EXIT=0
+            timeout --preserve-status 60s agents-cli run "$$PREVIEW_PROMPT" --start-server > artifacts/preview-stdout.log 2>&1 || PREVIEW_EXIT=$?
+            if [[ "$$PREVIEW_EXIT" -eq 0 || "$$PREVIEW_EXIT" -eq 143 ]] && [[ -s artifacts/preview-stdout.log ]]; then
+              printf '{"status":"done","stage":"preview","owner":"cloud_build","nextStage":null,"exitCode":%s,"prompt":"%s"}\n' "$$PREVIEW_EXIT" "$$PREVIEW_PROMPT" > artifacts/factory-preview-result.json
+            else
+              printf '{"status":"failed","stage":"preview","owner":"cloud_build","nextStage":null,"error":"agents-cli run failed with exit %s","exitCode":%s}\n' "$$PREVIEW_EXIT" "$$PREVIEW_EXIT" > artifacts/factory-preview-result.json
+              exit "$$PREVIEW_EXIT"
+            fi
+            ;;
+          deploy_runtime)
+            command -v agents-cli >/dev/null 2>&1 || uv tool install 'google-agents-cli>=0.2,<0.3'  # pin <0.3: the workspace eval flow uses 'eval run --all', removed in 0.3+ (0.5 reworked eval). TODO: migrate to the 0.5 eval-case model.
+            export PATH="$$HOME/.local/bin:$$PATH"
+            mkdir -p artifacts
+            agents-cli scaffold enhance . --name "${_ITEM_ID}" --deployment-target agent_runtime --agent-directory app --yes
+            if grep -q '^deployment_target[[:space:]]*=' pyproject.toml; then
+              sed -i '0,/^deployment_target[[:space:]]*=.*/s//deployment_target = "agent_runtime"/' pyproject.toml
+            else
+              printf '\n[tool.agents-cli.create_params]\ndeployment_target = "agent_runtime"\n' >> pyproject.toml
+            fi
+            agents-cli install
+            agents-cli info --json > artifacts/agents-cli-info.json
+            agents-cli deploy --project "$PROJECT_ID" --region "${_RUNTIME_REGION}" --no-confirm-project --agent-identity --no-wait
+            ;;
+          poll_runtime)
+            command -v agents-cli >/dev/null 2>&1 || uv tool install 'google-agents-cli>=0.2,<0.3'  # pin <0.3: the workspace eval flow uses 'eval run --all', removed in 0.3+ (0.5 reworked eval). TODO: migrate to the 0.5 eval-case model.
+            export PATH="$$HOME/.local/bin:$$PATH"
+            mkdir -p artifacts
+            agents-cli deploy --project "$PROJECT_ID" --region "${_RUNTIME_REGION}" --no-confirm-project --status
+            if [[ "${_RUN_DEPLOYED_SMOKE}" == "true" && -f deployment_metadata.json ]]; then
+              REMOTE_URL="$(python - <<'PY'
+import json
+from pathlib import Path
+meta = json.loads(Path("deployment_metadata.json").read_text())
+rid = meta.get("remote_agent_runtime_id") or meta.get("agent_runtime_id") or ""
+parts = rid.split("/")
+try:
+    project = parts[parts.index("projects") + 1]
+    location = parts[parts.index("locations") + 1]
+    engine = parts[parts.index("reasoningEngines") + 1]
+    print(f"https://{location}-aiplatform.googleapis.com/v1/projects/{project}/locations/{location}/reasoningEngines/{engine}")
+except Exception:
+    print("")
+PY
+)"
+              if [[ -n "$$REMOTE_URL" ]]; then
+                agents-cli run "${_PREVIEW_PROMPT:-hello}" --url "$$REMOTE_URL" --mode adk > artifacts/deployed-smoke-stdout.log 2>&1
+                printf '{"status":"done","stage":"verify_live","owner":"cloud_build","url":"%s"}\n' "$$REMOTE_URL" > artifacts/factory-verify-live-result.json
+              else
+                printf '{"status":"skipped","stage":"verify_live","owner":"cloud_build","reason":"no agent runtime url"}\n' > artifacts/factory-verify-live-result.json
+              fi
+            fi
+            ;;
+          publish_enterprise)
+            command -v agents-cli >/dev/null 2>&1 || uv tool install 'google-agents-cli>=0.2,<0.3'  # pin <0.3: the workspace eval flow uses 'eval run --all', removed in 0.3+ (0.5 reworked eval). TODO: migrate to the 0.5 eval-case model.
+            export PATH="$$HOME/.local/bin:$$PATH"
+            PUBLISH_ARGS=(
+              "publish" "gemini-enterprise"
+              "--metadata-file" "deployment_metadata.json"
+              "--project-id" "$PROJECT_ID"
+              "--gemini-enterprise-app-id" "${_GEMINI_ENTERPRISE_APP_ID}"
+              "--registration-type" "adk"
+            )
+            if [[ -n "${_DISPLAY_NAME}" ]]; then
+              PUBLISH_ARGS+=("--display-name" "${_DISPLAY_NAME}")
+            fi
+            if [[ -n "${_DESCRIPTION}" ]]; then
+              PUBLISH_ARGS+=("--description" "${_DESCRIPTION}")
+            fi
+            if [[ -n "${_TOOL_DESCRIPTION}" ]]; then
+              PUBLISH_ARGS+=("--tool-description" "${_TOOL_DESCRIPTION}")
+            fi
+            agents-cli "${PUBLISH_ARGS[@]}"
+            ;;
+          *)
+            echo "Unsupported Cloud Build factory stage: ${_STAGE}" >&2
+            exit 2
+            ;;
+        esac
+
+  - id: persist-artifacts
+    name: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
+    entrypoint: bash
+    dir: /workspace/agent
+    args:
+      - -ceu
+      - |
+        if [[ -n "${_ARTIFACT_PREFIX}" ]]; then
+          if [[ -f "artifacts/factory-${_STAGE}-result.json" ]]; then
+            gcloud storage cp "artifacts/factory-${_STAGE}-result.json" "${_ARTIFACT_PREFIX}/factory-${_STAGE}-result.json"
+          fi
+          tar \
+            --exclude .venv \
+            --exclude node_modules \
+            --exclude .pytest_cache \
+            --exclude __pycache__ \
+            --exclude .ruff_cache \
+            --exclude .mypy_cache \
+            --exclude .ge-harness \
+            --exclude runs \
+            -czf /workspace/agent-result.tar.gz .
+          gcloud storage cp /workspace/agent-result.tar.gz "${_ARTIFACT_PREFIX}/agent-result.tar.gz"
+          find . -maxdepth 3 \
+            \( -path './.venv' -o -path './node_modules' -o -path './.pytest_cache' -o -path './.ge-harness' -o -path './runs' \) -prune -o \
+            \( -name '*.json' -o -name '*.md' -o -name '*.jsonl' \) -print0 \
+            | xargs -0 -I{} gcloud storage cp "{}" "${_ARTIFACT_PREFIX}/files/{}" || true
+        fi

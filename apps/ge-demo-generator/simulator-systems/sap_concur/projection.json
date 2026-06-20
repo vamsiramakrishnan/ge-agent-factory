@@ -1,0 +1,70 @@
+{
+  "id": "sap_concur_projection",
+  "version": 2,
+  "materialization": "Project travel, expense, receipt, card transaction, trip, reimbursement, and approval scenario rows into SAP Concur domain collections.",
+  "collectionMappings": [
+    {
+      "simulatorCollection": "users",
+      "graphKinds": [
+        "worker",
+        "finance"
+      ],
+      "realizedObjects": [
+        "employees",
+        "users"
+      ]
+    },
+    {
+      "simulatorCollection": "expense_reports",
+      "graphKinds": [
+        "expense",
+        "finance",
+        "approval"
+      ],
+      "realizedObjects": [
+        "expense_reports",
+        "approvals"
+      ]
+    },
+    {
+      "simulatorCollection": "expense_entries",
+      "graphKinds": [
+        "expense"
+      ],
+      "realizedObjects": [
+        "expense_entries",
+        "transactions"
+      ]
+    },
+    {
+      "simulatorCollection": "card_transactions",
+      "graphKinds": [
+        "payment",
+        "expense"
+      ],
+      "realizedObjects": [
+        "card_transactions",
+        "payments"
+      ]
+    },
+    {
+      "simulatorCollection": "trips",
+      "graphKinds": [
+        "travel"
+      ],
+      "realizedObjects": [
+        "trips",
+        "itineraries"
+      ]
+    },
+    {
+      "simulatorCollection": "approvals",
+      "graphKinds": [
+        "approval"
+      ],
+      "realizedObjects": [
+        "approvals"
+      ]
+    }
+  ]
+}

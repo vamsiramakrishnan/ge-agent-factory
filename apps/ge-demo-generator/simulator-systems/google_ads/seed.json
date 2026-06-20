@@ -1,0 +1,51 @@
+{
+  "properties": [
+    {
+      "property_id": "PROPERTY-ID-001",
+      "name": "sample_name",
+      "status": "sample_status",
+      "channel": "sample_channel",
+      "owner": "sample_owner"
+    }
+  ],
+  "events": [
+    {
+      "event_id": "EVENT-ID-001",
+      "property_id": "PROPERTY-ID-001",
+      "event_name": "sample_event_name",
+      "status": "sample_status",
+      "occurred_at": "sample_occurred_at",
+      "count": "sample_count"
+    }
+  ],
+  "conversions": [
+    {
+      "conversion_id": "CONVERSION-ID-001",
+      "property_id": "PROPERTY-ID-001",
+      "name": "sample_name",
+      "status": "sample_status",
+      "value": "sample_value",
+      "currency": "sample_currency"
+    }
+  ],
+  "audiences": [
+    {
+      "audience_id": "AUDIENCE-ID-001",
+      "name": "sample_name",
+      "status": "sample_status",
+      "member_count": "sample_member_count",
+      "source": "sample_source"
+    }
+  ],
+  "experiments": [
+    {
+      "experiment_id": "EXPERIMENT-ID-001",
+      "property_id": "PROPERTY-ID-001",
+      "name": "sample_name",
+      "status": "sample_status",
+      "start_date": "sample_start_date",
+      "end_date": "sample_end_date"
+    }
+  ],
+  "audit_events": []
+}

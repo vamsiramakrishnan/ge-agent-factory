@@ -1,0 +1,16 @@
+use_case: "<use-case-name>"
+systems:
+  - name: "<system>"
+    role: operational_system
+    datastore_class: OLTP_SQL
+    target: alloydb
+    owns: []
+datastores:
+  - id: alloydb
+    class: OLTP_SQL
+  - id: firestore
+    class: OLTP_NOSQL_FIRESTORE
+  - id: bigquery
+    class: OLAP_BIGQUERY
+  - id: gcs
+    class: UNSTRUCTURED_GCS

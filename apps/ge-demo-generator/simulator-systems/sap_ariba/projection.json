@@ -1,0 +1,66 @@
+{
+  "id": "sap_ariba_projection",
+  "version": 2,
+  "materialization": "Project procurement and supplier-risk scenarios into SAP Ariba supplier lifecycle, sourcing, questionnaire, guided buying, contract, PO, and approval collections.",
+  "collectionMappings": [
+    {
+      "simulatorCollection": "suppliers",
+      "graphKinds": [
+        "supplier"
+      ],
+      "realizedObjects": [
+        "suppliers"
+      ]
+    },
+    {
+      "simulatorCollection": "supplier_questionnaires",
+      "graphKinds": [
+        "risk",
+        "supplier"
+      ],
+      "realizedObjects": [
+        "supplier_questionnaires",
+        "risk_scores"
+      ]
+    },
+    {
+      "simulatorCollection": "sourcing_events",
+      "graphKinds": [
+        "sourcing",
+        "purchase_order"
+      ],
+      "realizedObjects": [
+        "sourcing_events",
+        "requisitions"
+      ]
+    },
+    {
+      "simulatorCollection": "purchase_orders",
+      "graphKinds": [
+        "purchase_order"
+      ],
+      "realizedObjects": [
+        "purchase_orders"
+      ]
+    },
+    {
+      "simulatorCollection": "contracts",
+      "graphKinds": [
+        "contract"
+      ],
+      "realizedObjects": [
+        "contracts",
+        "agreements"
+      ]
+    },
+    {
+      "simulatorCollection": "approvals",
+      "graphKinds": [
+        "approval"
+      ],
+      "realizedObjects": [
+        "approvals"
+      ]
+    }
+  ]
+}

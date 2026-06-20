@@ -1,0 +1,108 @@
+{
+  "id": "capa_tracking_tools",
+  "version": 1,
+  "tools": [
+    {
+      "name": "search_risks",
+      "description": "Search risks in capa_tracking.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "risks"
+      }
+    },
+    {
+      "name": "get_risk",
+      "description": "Get one risk in capa_tracking.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "risk_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "risk_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "risks",
+        "primaryKey": "risk_id"
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending capa_tracking approvals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": {
+            "type": "string"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_pending_approvals",
+        "collection": "approvals"
+      }
+    },
+    {
+      "name": "submit_risk_update",
+      "description": "Submit an update to one risk in capa_tracking.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "risk_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "risk_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "risks",
+        "primaryKey": "risk_id"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List capa_tracking simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+id: bigtable
+class: OLTP_NOSQL_BIGTABLE
+target: Google Cloud Bigtable
+source_systems: []
+files:
+  table: table.yaml
+  mutations: mutations.ndjson
+  loader: load-bigtable.sh
+env:
+  required:
+    - GOOGLE_CLOUD_PROJECT
+    - BIGTABLE_INSTANCE
+evidence:
+  row_key_strategy: required
+  column_families: required

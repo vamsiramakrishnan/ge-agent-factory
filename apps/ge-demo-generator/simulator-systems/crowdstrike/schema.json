@@ -1,0 +1,79 @@
+{
+  "id": "crowdstrike_schema",
+  "version": 1,
+  "collections": {
+    "assets": {
+      "primaryKey": "asset_id",
+      "fields": {
+        "asset_id": "string",
+        "name": "string",
+        "status": "string",
+        "owner": "string",
+        "criticality": "string",
+        "environment": "string"
+      }
+    },
+    "findings": {
+      "primaryKey": "finding_id",
+      "fields": {
+        "finding_id": "string",
+        "asset_id": "string",
+        "status": "string",
+        "severity": "string",
+        "source": "string",
+        "detected_at": "string"
+      }
+    },
+    "incidents": {
+      "primaryKey": "incident_id",
+      "fields": {
+        "incident_id": "string",
+        "status": "string",
+        "severity": "string",
+        "commander": "string",
+        "opened_at": "string",
+        "summary": "string"
+      }
+    },
+    "controls": {
+      "primaryKey": "control_id",
+      "fields": {
+        "control_id": "string",
+        "name": "string",
+        "status": "string",
+        "owner": "string",
+        "framework": "string"
+      }
+    },
+    "exceptions": {
+      "primaryKey": "exception_id",
+      "fields": {
+        "exception_id": "string",
+        "finding_id": "string",
+        "status": "string",
+        "requester": "string",
+        "expiration_date": "string"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": "string",
+        "source_record_id": "string",
+        "approver": "string",
+        "state": "string",
+        "reason": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string"
+      }
+    }
+  }
+}

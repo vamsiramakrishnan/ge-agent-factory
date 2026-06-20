@@ -1,0 +1,245 @@
+{
+  "pods": [
+    {
+      "pod_id": "pod-uid-1",
+      "name": "transformation-api-7d9",
+      "namespace": "default",
+      "node": "node-a",
+      "phase": "Running",
+      "restart_count": 0,
+      "image": "gcr.io/ge/transformation-api:1.4"
+    },
+    {
+      "pod_id": "pod-uid-2",
+      "name": "mcp-service-5f1",
+      "namespace": "platform",
+      "node": "node-b",
+      "phase": "Pending",
+      "restart_count": 2,
+      "image": "gcr.io/ge/mcp-service:2.0"
+    },
+    {
+      "pod_id": "pod-uid-3",
+      "name": "identity-bridge-6c4",
+      "namespace": "platform",
+      "node": "node-c",
+      "phase": "Running",
+      "restart_count": 1,
+      "image": "gcr.io/ge/identity-bridge:1.9"
+    },
+    {
+      "pod_id": "pod-uid-4",
+      "name": "spec-harvester-0",
+      "namespace": "jobs",
+      "node": "node-d",
+      "phase": "Succeeded",
+      "restart_count": 0,
+      "image": "gcr.io/ge/spec-harvester:0.8"
+    },
+    {
+      "pod_id": "pod-uid-5",
+      "name": "analytics-export-8aa",
+      "namespace": "data",
+      "node": "node-e",
+      "phase": "Running",
+      "restart_count": 0,
+      "image": "gcr.io/ge/analytics-export:3.1"
+    },
+    {
+      "pod_id": "pod-uid-6",
+      "name": "finance-close-worker-1",
+      "namespace": "finance",
+      "node": "node-b",
+      "phase": "Failed",
+      "restart_count": 4,
+      "image": "gcr.io/ge/finance-close-worker:2.5"
+    },
+    {
+      "pod_id": "pod-uid-7",
+      "name": "supplier-portal-66d",
+      "namespace": "supplier",
+      "node": "node-a",
+      "phase": "Running",
+      "restart_count": 0,
+      "image": "gcr.io/ge/supplier-portal:4.2"
+    },
+    {
+      "pod_id": "pod-uid-8",
+      "name": "pagerduty-bridge-55a",
+      "namespace": "ops",
+      "node": "node-c",
+      "phase": "Running",
+      "restart_count": 0,
+      "image": "gcr.io/ge/pagerduty-bridge:1.2"
+    },
+    {
+      "pod_id": "pod-uid-9",
+      "name": "github-events-77f",
+      "namespace": "platform",
+      "node": "node-d",
+      "phase": "Unknown",
+      "restart_count": 3,
+      "image": "gcr.io/ge/github-events:1.1"
+    },
+    {
+      "pod_id": "pod-uid-10",
+      "name": "preview-renderer-4f2",
+      "namespace": "dev",
+      "node": "node-e",
+      "phase": "Pending",
+      "restart_count": 0,
+      "image": "gcr.io/ge/preview-renderer:0.6"
+    }
+  ],
+  "deployments": [
+    {
+      "deployment_id": "dep-uid-1",
+      "name": "transformation-api",
+      "namespace": "default",
+      "phase": "Available",
+      "replicas": 3,
+      "ready_replicas": 3,
+      "image": "gcr.io/ge/transformation-api:1.4"
+    },
+    {
+      "deployment_id": "dep-uid-2",
+      "name": "mcp-service",
+      "namespace": "platform",
+      "phase": "Progressing",
+      "replicas": 2,
+      "ready_replicas": 1,
+      "image": "gcr.io/ge/mcp-service:2.0"
+    },
+    {
+      "deployment_id": "dep-uid-3",
+      "name": "identity-bridge",
+      "namespace": "platform",
+      "phase": "Available",
+      "replicas": 2,
+      "ready_replicas": 2,
+      "image": "gcr.io/ge/identity-bridge:1.9"
+    },
+    {
+      "deployment_id": "dep-uid-4",
+      "name": "analytics-export",
+      "namespace": "data",
+      "phase": "Available",
+      "replicas": 4,
+      "ready_replicas": 4,
+      "image": "gcr.io/ge/analytics-export:3.1"
+    },
+    {
+      "deployment_id": "dep-uid-5",
+      "name": "finance-close-worker",
+      "namespace": "finance",
+      "phase": "ReplicaFailure",
+      "replicas": 3,
+      "ready_replicas": 1,
+      "image": "gcr.io/ge/finance-close-worker:2.5"
+    },
+    {
+      "deployment_id": "dep-uid-6",
+      "name": "supplier-portal",
+      "namespace": "supplier",
+      "phase": "Available",
+      "replicas": 3,
+      "ready_replicas": 3,
+      "image": "gcr.io/ge/supplier-portal:4.2"
+    }
+  ],
+  "services": [
+    {
+      "service_id": "svc-uid-1",
+      "name": "transformation-api",
+      "namespace": "default",
+      "type": "ClusterIP",
+      "cluster_ip": "10.0.12.4",
+      "ports": [
+        "8080/TCP"
+      ]
+    },
+    {
+      "service_id": "svc-uid-2",
+      "name": "mcp-service",
+      "namespace": "platform",
+      "type": "LoadBalancer",
+      "cluster_ip": "10.0.14.9",
+      "ports": [
+        "443/TCP"
+      ]
+    },
+    {
+      "service_id": "svc-uid-3",
+      "name": "identity-bridge",
+      "namespace": "platform",
+      "type": "ClusterIP",
+      "cluster_ip": "10.0.18.11",
+      "ports": [
+        "8443/TCP"
+      ]
+    },
+    {
+      "service_id": "svc-uid-4",
+      "name": "analytics-export",
+      "namespace": "data",
+      "type": "NodePort",
+      "cluster_ip": "10.0.22.19",
+      "ports": [
+        "8081/TCP"
+      ]
+    },
+    {
+      "service_id": "svc-uid-5",
+      "name": "supplier-portal",
+      "namespace": "supplier",
+      "type": "ExternalName",
+      "cluster_ip": "",
+      "ports": [
+        "443/TCP"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "node_id": "node-uid-a",
+      "name": "node-a",
+      "phase": "Ready",
+      "kubelet_version": "v1.30.2",
+      "allocatable_cpu": "4",
+      "allocatable_memory": "16Gi"
+    },
+    {
+      "node_id": "node-uid-b",
+      "name": "node-b",
+      "phase": "Ready",
+      "kubelet_version": "v1.30.2",
+      "allocatable_cpu": "8",
+      "allocatable_memory": "32Gi"
+    },
+    {
+      "node_id": "node-uid-c",
+      "name": "node-c",
+      "phase": "Ready",
+      "kubelet_version": "v1.30.2",
+      "allocatable_cpu": "8",
+      "allocatable_memory": "32Gi"
+    },
+    {
+      "node_id": "node-uid-d",
+      "name": "node-d",
+      "phase": "SchedulingDisabled",
+      "kubelet_version": "v1.30.1",
+      "allocatable_cpu": "4",
+      "allocatable_memory": "16Gi"
+    },
+    {
+      "node_id": "node-uid-e",
+      "name": "node-e",
+      "phase": "NotReady",
+      "kubelet_version": "v1.29.7",
+      "allocatable_cpu": "16",
+      "allocatable_memory": "64Gi"
+    }
+  ],
+  "audit_events": []
+}

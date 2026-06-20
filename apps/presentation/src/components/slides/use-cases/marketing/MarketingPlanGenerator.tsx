@@ -1,0 +1,944 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { FileText, Database, TrendingUp, PenTool, CheckCircle } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Quarterly Cycle", lane: "system", type: "trigger" },
+    { id: "a1", label: "Pipeline & Performance Ingest", lane: "agent", type: "action" },
+    { id: "a2", label: "Channel Mix Optimization", lane: "agent", type: "action" },
+    { id: "a3", label: "Plan Narrative Draft", lane: "agent", type: "output" },
+    { id: "h1", label: "CMO Approval", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Data Aggregation", icon: Database, description: "Pipeline data from CRM, historical campaign performance from HubSpot, and revenue targets ingested.", trigger: "Quarterly", systems: ["Salesforce CRM", "HubSpot"] },
+  { label: "Channel Analysis", icon: TrendingUp, description: "Historical CAC/LTV by channel, conversion rate trends, and diminishing returns curves analyzed.", systems: ["BigQuery", "Looker"], integration: "BigQuery ML" },
+  { label: "Plan Generation", icon: PenTool, description: "Gemini synthesizes targets, performance data, and competitive landscape into a board-ready marketing plan.", systems: ["Vertex AI"] },
+  { label: "CMO Approval", icon: CheckCircle, description: "CMO reviews strategic rationale, channel investment recommendations, and budget allocation before distribution.", output: "Marketing Plan" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Salesforce CRM", description: "Pipeline data, bookings, revenue targets by segment", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "HubSpot", description: "Campaign performance history, MQL volumes, engagement metrics", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "BigQuery", description: "Unified marketing data warehouse, trend analytics, channel mix models", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Plan narrative generation, strategic reasoning, channel investment logic", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+    { system: "Looker", description: "Performance dashboards, channel ROI visualizations", direction: "read", protocol: "REST API", category: "analytics" },
+    { system: "Google Workspace", description: "Board-ready marketing plan document output", direction: "write", protocol: "Workspace API", category: "collaboration" },
+  ],
+  pipeline: [
+    { label: "Data Aggregation", description: "Pull pipeline data from Salesforce, campaign performance from HubSpot, and revenue targets from finance. Aggregate in BigQuery with historical context.", systems: ["Salesforce CRM", "HubSpot", "BigQuery"], layer: "integration", dataIn: "Raw pipeline, campaign, and revenue data", dataOut: "Unified marketing performance dataset" },
+    { label: "Channel Mix Optimization", description: "Run marketing mix models to identify diminishing returns per channel. Calculate CAC/LTV ratios and conversion trends. Model budget scenarios for optimal allocation.", systems: ["BigQuery ML", "Looker"], layer: "ml", dataIn: "Historical spend and performance by channel", dataOut: "Channel ROI curves and optimal allocation model" },
+    { label: "Plan Narrative Generation", description: "Gemini synthesizes quarterly revenue targets, historical campaign performance, competitive landscape, and product launch calendar into a coherent marketing plan. Reasons about which channels deserve incremental investment vs. sunset.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Performance data + channel models + market context", dataOut: "Board-ready marketing plan with strategic rationale" },
+    { label: "Delivery & Review", description: "Plan formatted as board-ready document and delivered to CMO for validation before stakeholder distribution.", systems: ["Google Workspace", "Email"], layer: "integration", dataIn: "Approved plan narrative", dataOut: "Distributed marketing plan deck" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "CMO agent for the Marketing Plan Generator workflow",
+  primaryObjective: "Gemini synthesizes pipeline data, campaign performance, and competitive landscape into a coherent plan narrative with strategic rationale. LLM reasons about which channels deserve incremental investment vs. sunset based on diminishing returns curves and market shifts. so the CMO can move the Plan creation time KPI.",
+  inScope: [
+    "Gemini synthesizes pipeline data, campaign performance, and competitive landscape into a coherent plan narrative with strategic rationale",
+    "LLM reasons about which channels deserve incremental investment vs. sunset based on diminishing returns curves and market shifts",
+    "Generates board-ready plans with trade-offs and strategic recommendations, not just budget tables",
+  ],
+  outOfScope: [
+    "Final approval of paid spend reallocations above the governance threshold",
+    "Trademark, legal, or regulated-industry claim approval",
+    "Crisis communications without comms-team sign-off",
+  ],
+  toolIntents: [
+    {
+      name: "query_salesforce_crm_accounts",
+      kind: "query",
+      sourceSystemId: "salesforce_crm",
+      description: "Retrieve accounts from Salesforce CRM for the Marketing Plan Generator workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "accounts_records",
+        "accounts_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_hubspot_contacts",
+      kind: "query",
+      sourceSystemId: "hubspot",
+      description: "Retrieve contacts from HubSpot for the Marketing Plan Generator workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "contacts_records",
+        "contacts_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Marketing Plan Generator workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_marketing_plan_generator_playbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Marketing Plan Generator Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_salesforce_crm_recommend",
+      kind: "action",
+      sourceSystemId: "salesforce_crm",
+      description: "Execute the recommend step in Salesforce CRM after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Plan creation time moved from 3-4 weeks toward 2 days",
+      mustCite: [
+        "salesforce_crm.accounts",
+        "hubspot.contacts",
+      ],
+      sourceSystemIds: [
+        "salesforce_crm",
+        "hubspot",
+      ],
+    },
+    {
+      claim: "Data sources synthesized moved from 3-4 manual toward 12+ automated",
+      mustCite: [
+        "salesforce_crm.accounts",
+        "hubspot.contacts",
+      ],
+      sourceSystemIds: [
+        "salesforce_crm",
+        "hubspot",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Plan creation time regresses past the 3-4 weeks baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "CMO",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed recommend action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from Salesforce CRM (and other named systems) entities.",
+    "Never bypass CMO approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "marketing-plan-generator-end-to-end",
+      prompt: "Run the Marketing Plan Generator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_salesforce_crm_accounts",
+        "query_hubspot_contacts",
+        "query_bigquery_analytics_events",
+        "lookup_marketing_plan_generator_playbook",
+        "action_salesforce_crm_recommend",
+      ],
+      mustReferenceEntities: [
+        "accounts",
+        "contacts",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "marketing-plan-generator-playbook",
+      ],
+      expectedActionOutcome: "Action recommend executed against Salesforce CRM, with audit-trail entry and CMO notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute recommend without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Marketing Plan Generator so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "salesforce_crm",
+      name: "Salesforce CRM",
+      owns: [
+        "accounts",
+        "opportunities",
+        "campaign_influence",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_salesforce_crm_accounts",
+        "query_salesforce_crm_opportunities",
+        "query_salesforce_crm_campaign_influence",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "hubspot",
+      name: "HubSpot",
+      owns: [
+        "contacts",
+        "deals",
+        "engagement_events",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_hubspot_contacts",
+        "query_hubspot_deals",
+        "query_hubspot_engagement_events",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "accounts",
+      sourceSystemId: "salesforce_crm",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "account_name",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "number",
+          min: 5000,
+          max: 1000000,
+          required: true,
+        },
+        {
+          name: "stage",
+          type: "enum",
+          values: [
+            "prospecting",
+            "qualification",
+            "proposal",
+            "negotiation",
+            "closed_won",
+            "closed_lost",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "close_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "opportunities",
+      sourceSystemId: "salesforce_crm",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "campaign_influence",
+      sourceSystemId: "salesforce_crm",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "channel",
+          type: "enum",
+          values: [
+            "email",
+            "social",
+            "search",
+            "display",
+            "content",
+            "events",
+          ],
+          required: true,
+        },
+        {
+          name: "segment",
+          type: "enum",
+          values: [
+            "enterprise",
+            "mid_market",
+            "smb",
+          ],
+          required: true,
+        },
+        {
+          name: "impressions",
+          type: "number",
+          min: 1000,
+          max: 500000,
+          required: true,
+        },
+        {
+          name: "conversions",
+          type: "number",
+          min: 0,
+          max: 5000,
+          required: true,
+        },
+        {
+          name: "spend",
+          type: "number",
+          min: 1000,
+          max: 200000,
+          required: true,
+        },
+        {
+          name: "ctr",
+          type: "float",
+          min: 0.1,
+          max: 9.5,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "launched_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "contacts",
+      sourceSystemId: "hubspot",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "company",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "score",
+          type: "number",
+          min: 0,
+          max: 100,
+          required: true,
+        },
+        {
+          name: "stage",
+          type: "enum",
+          values: [
+            "new",
+            "qualified",
+            "engaged",
+            "opportunity",
+            "lost",
+          ],
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "deals",
+      sourceSystemId: "hubspot",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "account_name",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "number",
+          min: 5000,
+          max: 1000000,
+          required: true,
+        },
+        {
+          name: "stage",
+          type: "enum",
+          values: [
+            "prospecting",
+            "qualification",
+            "proposal",
+            "negotiation",
+            "closed_won",
+            "closed_lost",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "close_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "engagement_events",
+      sourceSystemId: "hubspot",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "company",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "score",
+          type: "number",
+          min: 0,
+          max: 100,
+          required: true,
+        },
+        {
+          name: "stage",
+          type: "enum",
+          values: [
+            "new",
+            "qualified",
+            "engaged",
+            "opportunity",
+            "lost",
+          ],
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "contact_id",
+          type: "ref",
+          ref: "contacts.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "engagement_events.contact_id",
+      to: "contacts.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "marketing-plan-generator-playbook",
+      sourceSystemId: "bigquery",
+      type: "playbook",
+      title: "Marketing Plan Generator Playbook",
+      requiredSections: [
+        "Audience guidelines",
+        "Brand voice rules",
+        "Channel-specific guardrails",
+        "Measurement framework",
+        "Approval thresholds",
+      ],
+      linkedEntities: [
+        "accounts",
+        "opportunities",
+        "campaign_influence",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "audience",
+        "brand-voice",
+        "channels",
+        "approvals",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "salesforce_crm_recommend_api",
+      sourceSystemId: "salesforce_crm",
+      method: "POST",
+      path: "/api/salesforce_crm/recommend",
+      description: "Synchronous endpoint the agent calls to recommend in Salesforce CRM after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "marketing-plan-generator-baseline-gap",
+      description: "Seed a realistic gap where Plan creation time sits between 3-4 weeks and 2 days, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "accounts",
+        "opportunities",
+      ],
+      discoveryPath: [
+        "Inspect Salesforce CRM records for the affected entities",
+        "Compare against HubSpot historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next CMO action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "marketing_plan_generator",
+      schemas: [
+        "salesforce_crm",
+        "hubspot",
+      ],
+    },
+    bigquery: {
+      dataset: "marketing_marketing_plan_generator",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "marketing-plan-generator-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "marketing-plan-generator-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Marketing Plan Generator workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const MarketingPlanGenerator = () => (
+  <UseCaseSlide
+    title="Marketing Plan Generator"
+    subtitle="A-2901 \u2022 Marketing Strategy"
+    icon={FileText}
+    domainId="domain-29"
+    layer="Layer 3: Custom ADK"
+    persona="CMO"
+    systems={["Salesforce CRM", "HubSpot", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "Plan creation time", before: "3-4 weeks", after: "2 days" },
+      { label: "Data sources synthesized", before: "3-4 manual", after: "12+ automated" },
+      { label: "Channel allocation accuracy", before: "Gut feel", after: "Model-validated" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "CMO", action: "Approve marketing plan", description: "CMO validates strategic rationale, channel investment recommendations, and budget allocation before board distribution." }}
+    statusQuo={[
+      "Quarterly marketing plans built in PowerPoint from fragmented CRM and campaign data across 3+ systems.",
+      "Channel allocation decisions based on prior year budgets and team advocacy rather than data-driven ROI analysis.",
+      "Competitive context gathered ad-hoc from sales anecdotes and outdated analyst reports."
+    ]}
+    agentification={[
+      "Gemini synthesizes pipeline data, campaign performance, and competitive landscape into a coherent plan narrative with strategic rationale.",
+      "LLM reasons about which channels deserve incremental investment vs. sunset based on diminishing returns curves and market shifts.",
+      "Generates board-ready plans with trade-offs and strategic recommendations, not just budget tables."
+    ]}
+  />
+);

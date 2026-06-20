@@ -1,0 +1,106 @@
+{
+  "id": "apigee_schema",
+  "version": 3,
+  "apiProfile": {
+    "style": "google-discovery-rest",
+    "security": [
+      "oauth2",
+      "service_account",
+      "bearerAuth"
+    ],
+    "pagination": {
+      "styles": [
+        "page-token",
+        "offset",
+        "page-number"
+      ],
+      "params": [
+        "pageSize",
+        "pageToken",
+        "offset",
+        "limit",
+        "count",
+        "startKey"
+      ]
+    },
+    "commonErrors": [
+      400,
+      401,
+      403,
+      404,
+      409,
+      412,
+      429,
+      500,
+      503
+    ]
+  },
+  "collections": {
+    "apis": {
+      "primaryKey": "api_id",
+      "description": "Apigee API proxy.",
+      "fields": {
+        "api_id": "string",
+        "name": "string",
+        "org": "string",
+        "latest_revision_id": "string",
+        "revision_count": "integer"
+      }
+    },
+    "apiproducts": {
+      "primaryKey": "apiproduct_id",
+      "description": "Apigee API product (bundle of proxies + quota).",
+      "fields": {
+        "apiproduct_id": "string",
+        "name": "string",
+        "display_name": "string",
+        "approval_type": "enum:auto|manual",
+        "environments": "array:string",
+        "quota": "string"
+      }
+    },
+    "developers": {
+      "primaryKey": "developer_id",
+      "description": "Apigee developer (app owner).",
+      "fields": {
+        "developer_id": "string",
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "first_name": "string",
+        "last_name": "string",
+        "status": "enum:active|inactive",
+        "org": "string"
+      }
+    },
+    "envgroups": {
+      "primaryKey": "envgroup_id",
+      "description": "Apigee environment group (hostname routing for environments).",
+      "fields": {
+        "envgroup_id": "string",
+        "name": "string",
+        "org": "string",
+        "status": "enum:ACTIVE|PROVISIONING",
+        "hostnames": "array:string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "description": "Simulator audit log.",
+      "fields": {
+        "event_id": "string",
+        "actor": "string",
+        "role": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string",
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

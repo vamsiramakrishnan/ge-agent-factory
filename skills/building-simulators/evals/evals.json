@@ -1,0 +1,65 @@
+{
+  "skill_name": "building-simulators",
+  "evals": [
+    {
+      "id": "repair-weak-procurement-simulator",
+      "prompt": "Use the building-simulators skill to repair a weak Coupa-style procurement simulator. The current pack has only suppliers and purchase_orders, one read-only search tool, no workflows, no audit events, and seed rows without approval state. Produce a concise repair plan and the smallest durable artifact changes needed for an enterprise simulator pack.",
+      "expected_output": "Identifies the procurement archetype, keeps fixes in schema/tools/workflows/materialization/seed/runtime contract rather than hand-edited generated rows, adds approvals or audit_events, adds at least one meaningful state-changing tool, defines role gates/state transitions/audit behavior, and names the simulator validation commands to run after repair.",
+      "assertions": [
+        "classifies Coupa as procurement",
+        "adds lifecycle state and approval/audit collections or fields",
+        "adds a submit/update workflow tool instead of read-only tools only",
+        "uses declarative workflow primitives before custom handlers",
+        "runs or recommends generator:validate-simulators or simulator conformance validation"
+      ]
+    },
+    {
+      "id": "openapi-harvesting-fallback",
+      "prompt": "Use the building-simulators skill for a ServiceNow ITSM simulator when cached OpenAPI discovery is incomplete. The repo has openapi-sources metadata for servicenow, but the cached _openapi/servicenow directory contains only public HTML docs and an error log from an authenticated export attempt: incident, change_request, approval, and cmdb docs are present as HTML; authenticated OpenAPI export returned 403. Explain how to derive simulator tools and provenance without blocking the mission.",
+      "expected_output": "Checks openapi-sources and the cached _openapi system directory first, uses available docs as provenance, records missing authenticated endpoints for follow-up, derives conservative tool names/input schemas/error shapes from documented incidents/changes/approvals, and proceeds with a starter or enterprise ITSM simulator that can later be refined from a machine-readable spec.",
+      "assertions": [
+        "does not invent that a complete OpenAPI spec exists",
+        "uses cached docs as provenance and records gaps",
+        "derives incident/change/approval tools conservatively",
+        "keeps the mission moving with scaffold plus validation",
+        "mentions refresh or authenticated export as follow-up"
+      ]
+    },
+    {
+      "id": "snowfakery-seed-materialization",
+      "prompt": "Use the building-simulators skill to debug a Workday-style HR simulator mission. Snowfakery generated workers.csv with 250 rows and positions.csv with 20 rows, but simulator.seed reports zero materialized workers because the pack seed has only two static workers and materialization aliases reference employee_records. The materialization report says: {\"ok\":false,\"system\":\"workday\",\"collections\":{\"workers\":{\"inputRows\":0,\"outputRows\":0}},\"errors\":[\"workers had zero materialized rows\"]}. What should be repaired, and what should not be patched by hand?",
+      "expected_output": "Separates deterministic starter seed from generated Snowfakery rows, treats zero materialized workers as a blocker, repairs materialization aliases or realization object names so workers.csv maps to the simulator workers collection, preserves seed.json as small starter state, avoids hand-editing generated CSVs as a durable fix, reruns the smallest seed/materialization validation node, and checks the materialization report.",
+      "assertions": [
+        "distinguishes seed.json starter rows from Snowfakery generated rows",
+        "repairs materialization aliases or realization plan mapping",
+        "treats zero materialized rows as a blocker",
+        "does not propose hand-editing generated CSVs as the durable fix",
+        "reruns simulator.seed/materialize and validates the report"
+      ]
+    },
+    {
+      "id": "runtime-conformance-triage",
+      "prompt": "Use the building-simulators skill to triage simulator.validate failures for an Okta identity simulator. The conformance report says: {\"ok\":false,\"errors\":[\"tool missing handler: submit_access_request_update\",\"unknown allowed role: identity_admins\",\"workflow handler collection missing from schema: approvals\"]}. Provide the smallest ordered fix list and validation loop.",
+      "expected_output": "Maps each validation error to the corresponding pack artifact, adds or aligns the missing runtime handler/tool declaration, aligns allowedRoles with registry roles, adds the approvals collection or changes the workflow binding, reruns the smallest simulator validation command, and only proceeds once the conformance report has no errors.",
+      "assertions": [
+        "fixes tools/runtime handler alignment",
+        "aligns allowedRoles with registry.json roles",
+        "repairs schema/workflows collection mismatch",
+        "orders fixes before rerunning validation",
+        "requires a clean conformance report before handoff"
+      ]
+    },
+    {
+      "id": "upstream-system-sophistication",
+      "prompt": "Use the building-simulators skill to upgrade a Salesforce CRM simulator from a static fixture into a Fortune 500-grade upstream system for an account-risk agent. The agent must reason about stale account reads, opportunity approval, role-limited updates, campaign influence, external D&B risk signals, and auditability. Describe the simulator capabilities and artifacts expected before factory generation.",
+      "expected_output": "Chooses CRM as the primary archetype and acknowledges external_intelligence as an interlocked source where needed, proposes collections beyond accounts such as opportunities, activities, campaigns, approvals, audit_events, and external risk signals, includes stale reads/integration failures/role gates/state transitions, defines materialization and projection contracts, and requires validation/coverage before generating the agent workspace.",
+      "assertions": [
+        "chooses crm as the main simulator archetype",
+        "models cross-system external intelligence without flattening it into vague rows",
+        "includes permissions, workflow state, failure modes, and audit trails",
+        "defines schema/tools/projection/materialization/workflows/seed expectations",
+        "runs simulator validation or coverage before factory generation"
+      ]
+    }
+  ]
+}

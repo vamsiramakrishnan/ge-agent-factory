@@ -1,0 +1,108 @@
+{
+  "id": "highradius_tools",
+  "version": 1,
+  "tools": [
+    {
+      "name": "search_vendors",
+      "description": "Search vendors in highradius.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "vendors"
+      }
+    },
+    {
+      "name": "get_vendor",
+      "description": "Get one vendor in highradius.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "vendor_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "vendor_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "vendors",
+        "primaryKey": "vendor_id"
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending highradius approvals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": {
+            "type": "string"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_pending_approvals",
+        "collection": "approvals"
+      }
+    },
+    {
+      "name": "submit_vendor_update",
+      "description": "Submit an update to one vendor in highradius.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "vendor_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "vendor_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "vendors",
+        "primaryKey": "vendor_id"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List highradius simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

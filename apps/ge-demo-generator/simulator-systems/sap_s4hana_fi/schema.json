@@ -1,0 +1,256 @@
+{
+  "id": "sap_s4hana_fi_schema",
+  "version": 3,
+  "collections": {
+    "company_codes": {
+      "primaryKey": "company_code",
+      "description": "SAP company code (legal entity) with fiscal year variant, chart of accounts, currency, and the currently open posting period range used to gate journal and invoice postings.",
+      "fields": {
+        "company_code": "string",
+        "name": "string",
+        "country": "string",
+        "currency": "string",
+        "fiscal_year_variant": "string",
+        "chart_of_accounts": "string",
+        "controlling_area": "string",
+        "current_posting_period": "string",
+        "open_period_from": "string",
+        "open_period_to": "string",
+        "status": "enum:active|blocked|closed"
+      }
+    },
+    "vendors": {
+      "primaryKey": "vendor_id",
+      "description": "SAP supplier / business-partner master (LFA1/BUT000) with reconciliation account, payment terms/method, withholding tax, risk tier, and a posting/payment block reason.",
+      "fields": {
+        "vendor_id": "string",
+        "business_partner_id": "string",
+        "name": "string",
+        "company_code": "string",
+        "country": "string",
+        "status": "enum:active|blocked|flagged|archived",
+        "reconciliation_account": "ref:gl_accounts.gl_account",
+        "payment_terms": "string",
+        "payment_method": "string",
+        "withholding_tax_type": "string",
+        "bank_account": "string",
+        "bank_verified": "boolean",
+        "block_reason": "enum:none|payment_block|posting_block|bank_change_review|sanctions_review",
+        "risk_tier": "enum:low|medium|high|critical"
+      }
+    },
+    "gl_accounts": {
+      "primaryKey": "gl_account",
+      "description": "General-ledger account master in a chart of accounts, with account type, open-item management flag, and reconciliation usage.",
+      "fields": {
+        "gl_account": "string",
+        "chart_of_accounts": "string",
+        "name": "string",
+        "account_type": "enum:asset|liability|expense|revenue|equity|reconciliation",
+        "open_item_managed": "boolean",
+        "currency": "string",
+        "is_reconciliation_account": "boolean",
+        "status": "enum:active|blocked|marked_for_deletion"
+      }
+    },
+    "cost_centers": {
+      "primaryKey": "cost_center",
+      "description": "Controlling cost center linked to a company code and rolled up to a profit center.",
+      "fields": {
+        "cost_center": "string",
+        "company_code": "string",
+        "name": "string",
+        "controlling_area": "string",
+        "profit_center": "ref:profit_centers.profit_center",
+        "manager": "string",
+        "status": "enum:active|locked|inactive"
+      }
+    },
+    "profit_centers": {
+      "primaryKey": "profit_center",
+      "description": "Controlling profit center for segment reporting.",
+      "fields": {
+        "profit_center": "string",
+        "company_code": "string",
+        "name": "string",
+        "controlling_area": "string",
+        "segment": "string",
+        "status": "enum:active|locked|inactive"
+      }
+    },
+    "purchase_orders": {
+      "primaryKey": "purchase_order_id",
+      "description": "Procurement purchase order (EKKO) used as the reference document for three-way match against goods receipts and supplier invoices.",
+      "fields": {
+        "purchase_order_id": "string",
+        "company_code": "string",
+        "vendor_id": "ref:vendors.vendor_id",
+        "cost_center": "ref:cost_centers.cost_center",
+        "gl_account": "ref:gl_accounts.gl_account",
+        "description": "string",
+        "currency": "string",
+        "ordered_quantity": "number",
+        "unit_price": "number",
+        "net_amount": "number",
+        "status": "enum:open|partially_received|fully_received|closed|cancelled",
+        "created_by": "string",
+        "created_date": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "goods_receipts": {
+      "primaryKey": "goods_receipt_id",
+      "description": "Goods receipt (MIGO/MKPF) recording received quantity against a purchase order; the GR leg of the three-way match.",
+      "fields": {
+        "goods_receipt_id": "string",
+        "purchase_order_id": "ref:purchase_orders.purchase_order_id",
+        "company_code": "string",
+        "vendor_id": "ref:vendors.vendor_id",
+        "received_quantity": "number",
+        "received_amount": "number",
+        "currency": "string",
+        "movement_type": "string",
+        "posting_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "status": "enum:posted|reversed|blocked"
+      }
+    },
+    "invoices": {
+      "primaryKey": "invoice_id",
+      "description": "Supplier invoice (RBKP/BSIK open item) progressing through parked -> matched -> approved -> posted -> paid -> cleared, gated by three-way match status and payment block.",
+      "fields": {
+        "invoice_id": "string",
+        "sap_document_number": "string",
+        "company_code": "ref:company_codes.company_code",
+        "fiscal_year": "string",
+        "vendor_id": "ref:vendors.vendor_id",
+        "purchase_order_id": "ref:purchase_orders.purchase_order_id",
+        "goods_receipt_id": "ref:goods_receipts.goods_receipt_id",
+        "gl_account": "ref:gl_accounts.gl_account",
+        "cost_center": "ref:cost_centers.cost_center",
+        "status": "enum:parked|matched|pending_approval|approved|blocked|posted|paid|cleared|rejected|cancelled",
+        "amount": "number",
+        "tax_amount": "number",
+        "currency": "string",
+        "invoiced_quantity": "number",
+        "baseline_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "due_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "posting_period": "string",
+        "payment_block": "enum:none|A|R|payment_block",
+        "three_way_match_status": "enum:matched|quantity_variance|price_variance|gr_missing|po_missing|not_required",
+        "document_type": "string",
+        "exception_reason": "string"
+      }
+    },
+    "journal_entries": {
+      "primaryKey": "journal_id",
+      "description": "GL journal entry / accounting document (BKPF) with posting period gating and reversal linkage.",
+      "fields": {
+        "journal_id": "string",
+        "sap_document_number": "string",
+        "company_code": "ref:company_codes.company_code",
+        "fiscal_year": "string",
+        "period": "string",
+        "ledger": "string",
+        "document_type": "string",
+        "status": "enum:parked|pending_approval|posted|reversed|rejected",
+        "posting_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "amount": "number",
+        "currency": "string",
+        "gl_account": "ref:gl_accounts.gl_account",
+        "cost_center": "ref:cost_centers.cost_center",
+        "profit_center": "ref:profit_centers.profit_center",
+        "created_by": "string",
+        "reversal_of": "ref:journal_entries.journal_id",
+        "reversal_document": "string"
+      }
+    },
+    "payment_runs": {
+      "primaryKey": "payment_run_id",
+      "description": "Automatic payment program run (F110) progressing created -> released -> executed; aggregates payments to vendors for a company code.",
+      "fields": {
+        "payment_run_id": "string",
+        "company_code": "ref:company_codes.company_code",
+        "run_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "payment_method": "string",
+        "status": "enum:created|proposed|released|executed|cancelled",
+        "total_amount": "number",
+        "currency": "string",
+        "payment_count": "integer",
+        "created_by": "string",
+        "released_by": "string"
+      }
+    },
+    "payments": {
+      "primaryKey": "payment_id",
+      "description": "Individual outgoing payment within a payment run, clearing a supplier invoice open item.",
+      "fields": {
+        "payment_id": "string",
+        "payment_run_id": "ref:payment_runs.payment_run_id",
+        "invoice_id": "ref:invoices.invoice_id",
+        "vendor_id": "ref:vendors.vendor_id",
+        "company_code": "ref:company_codes.company_code",
+        "status": "enum:planned|blocked|released|executed|cleared|cancelled",
+        "payment_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "amount": "number",
+        "currency": "string",
+        "bank_account": "string",
+        "payment_method": "string",
+        "clearing_document": "string"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "description": "Approval / release step that blocks a source record (invoice, journal, or payment run) until cleared.",
+      "fields": {
+        "approval_id": "string",
+        "source_collection": "string",
+        "source_record_id": "string",
+        "approver": "string",
+        "approver_role": "string",
+        "state": "enum:requested|pending_approval|approved|rejected|skipped",
+        "reason": "string",
+        "workflow_step": "string",
+        "sequence": "number",
+        "due_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "description": "Simulator audit log.",
+      "fields": {
+        "event_id": "string",
+        "actor": "string",
+        "role": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string",
+        "detail": "string",
+        "timestamp": "string"
+      }
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "id": "github_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into github collections.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "github"
+      ],
+      "realizedObjects": [
+        "repositories"
+      ],
+      "simulatorCollection": "repositories",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "github"
+      ],
+      "realizedObjects": [
+        "issues"
+      ],
+      "simulatorCollection": "issues",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "github"
+      ],
+      "realizedObjects": [
+        "pulls"
+      ],
+      "simulatorCollection": "pulls",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "github"
+      ],
+      "realizedObjects": [
+        "workflow_runs"
+      ],
+      "simulatorCollection": "workflow_runs",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

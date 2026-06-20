@@ -1,0 +1,73 @@
+{
+  "name": "accruals_deferrals_engine",
+  "domain": "finance",
+  "createdAt": "2026-06-11T08:59:30.749Z",
+  "steps": {
+    "init": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:30.749Z",
+      "name": "accruals_deferrals_engine",
+      "domain": "finance"
+    },
+    "schema": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:30.766Z",
+      "tables": 9,
+      "derived": true
+    },
+    "generate": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:30.797Z",
+      "tables": 9,
+      "totalRows": 510,
+      "seed": 42
+    },
+    "tools": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:30.806Z",
+      "output": "/tmp/regen2/accruals-deferrals-engine/app/tools.py",
+      "functions": 11,
+      "behaviorContract": "present",
+      "contractTools": 1,
+      "goldenEvals": 1,
+      "agentsCliEvalSet": "/tmp/regen2/accruals-deferrals-engine/tests/eval/evalsets/ge_behavior_contract.evalset.json"
+    },
+    "test": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:34.973Z",
+      "output": "/tmp/regen2/accruals-deferrals-engine/tests/test_smoke.py",
+      "ran": true,
+      "passed": true,
+      "exitCode": 0
+    }
+  },
+  "currentStep": "test",
+  "useCase": {
+    "id": "accruals-deferrals-engine",
+    "title": "Accruals & Deferrals Engine",
+    "department": "finance",
+    "systems": [
+      "SAP S/4HANA FI",
+      "BlackLine",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "kpis": [
+      {
+        "label": "Accrual accuracy",
+        "before": "85% within 10%",
+        "after": "97% within 5%"
+      },
+      {
+        "label": "Manual accrual entries",
+        "before": "40+ per close",
+        "after": "5 exceptions"
+      },
+      {
+        "label": "Reversal errors",
+        "before": "3-5 per quarter",
+        "after": "Zero"
+      }
+    ]
+  }
+}

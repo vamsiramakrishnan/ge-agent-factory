@@ -1,0 +1,72 @@
+{
+  "name": "audit_report_generator",
+  "domain": "finance",
+  "createdAt": "2026-06-11T09:00:02.718Z",
+  "steps": {
+    "init": {
+      "status": "done",
+      "completedAt": "2026-06-11T09:00:02.718Z",
+      "name": "audit_report_generator",
+      "domain": "finance"
+    },
+    "schema": {
+      "status": "done",
+      "completedAt": "2026-06-11T09:00:02.736Z",
+      "tables": 8,
+      "derived": true
+    },
+    "generate": {
+      "status": "done",
+      "completedAt": "2026-06-11T09:00:02.772Z",
+      "tables": 8,
+      "totalRows": 480,
+      "seed": 42
+    },
+    "tools": {
+      "status": "done",
+      "completedAt": "2026-06-11T09:00:02.782Z",
+      "output": "/tmp/regen2/audit-report-generator/app/tools.py",
+      "functions": 11,
+      "behaviorContract": "present",
+      "contractTools": 2,
+      "goldenEvals": 1,
+      "agentsCliEvalSet": "/tmp/regen2/audit-report-generator/tests/eval/evalsets/ge_behavior_contract.evalset.json"
+    },
+    "test": {
+      "status": "done",
+      "completedAt": "2026-06-11T09:00:07.002Z",
+      "output": "/tmp/regen2/audit-report-generator/tests/test_smoke.py",
+      "ran": true,
+      "passed": true,
+      "exitCode": 0
+    }
+  },
+  "currentStep": "test",
+  "useCase": {
+    "id": "audit-report-generator",
+    "title": "Audit Report Generator",
+    "department": "finance",
+    "systems": [
+      "AuditBoard",
+      "Vertex AI",
+      "Google Docs"
+    ],
+    "kpis": [
+      {
+        "label": "Report drafting time",
+        "before": "2-3 weeks",
+        "after": "2-3 days"
+      },
+      {
+        "label": "Finding consistency",
+        "before": "Varies by auditor",
+        "after": "Standardized format"
+      },
+      {
+        "label": "Audience-appropriate versions",
+        "before": "1 generic report",
+        "after": "Tailored for committee + management"
+      }
+    ]
+  }
+}

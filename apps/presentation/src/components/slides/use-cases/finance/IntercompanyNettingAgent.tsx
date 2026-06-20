@@ -1,0 +1,948 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { GitMerge, Database, Cpu, Brain, CheckCircle } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Monthly Cycle", lane: "system", type: "trigger" },
+    { id: "a1", label: "Position Calculation", lane: "agent", type: "action" },
+    { id: "a2", label: "Netting Optimization", lane: "agent", type: "action" },
+    { id: "a3", label: "Settlement Instructions", lane: "agent", type: "output" },
+    { id: "h1", label: "Treasury Approves", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "IC Balance Extract", icon: Database, description: "Intercompany balances extracted across all entities, currencies, and transaction types.", trigger: "Monthly", systems: ["SAP S/4HANA FI", "Kyriba"] },
+  { label: "Netting Optimization", icon: Cpu, description: "Multi-currency netting optimization to minimize settlement count and FX conversion costs.", systems: ["BigQuery"], integration: "ADK" },
+  { label: "Exception Handling", icon: Brain, description: "Gemini interprets withholding tax obligations and regulatory exceptions that affect netting calculations.", systems: ["Vertex AI"] },
+  { label: "Settlement Execution", icon: CheckCircle, description: "Treasury reviews netting results and approves settlement instructions for execution.", output: "Netting Settlement" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Kyriba", description: "Netting center, settlement execution, FX conversion", direction: "bidirectional", protocol: "REST API", category: "erp" },
+    { system: "SAP S/4HANA FI", description: "Intercompany balances, IC transaction details, entity master", direction: "bidirectional", protocol: "RFC/BAPI", category: "erp" },
+    { system: "BigQuery", description: "Netting optimization algorithms, FX cost minimization, settlement sequencing", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Withholding tax interpretation, regulatory exception handling", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "IC Balance Aggregation", description: "Extract intercompany balances across all entities. Reconcile offsetting positions and identify timing differences. Group by currency pair and transaction type (management fees, royalties, trade).", systems: ["SAP S/4HANA FI", "Kyriba"], layer: "integration", dataIn: "Entity-level IC sub-ledger data", dataOut: "Reconciled IC balance matrix by entity pair and currency" },
+    { label: "Multi-Currency Netting", description: "Optimize netting to minimize the number of settlements and FX conversion costs. Sequence settlements to reduce peak funding requirements. Calculate net positions after offsetting across the entity network.", systems: ["BigQuery"], layer: "ml", dataIn: "IC balance matrix + FX rates", dataOut: "Optimized netting results with settlement instructions" },
+    { label: "Regulatory Exception Handling", description: "Gemini interprets exceptions: 'Entity Japan owes Entity US $2M but has 10% withholding tax on management fees -- net payment at $1.8M and book $200K withholding.' Handles treaty rate applications and regulatory restrictions on cross-border netting.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Netting results + tax treaties + regulatory requirements", dataOut: "Tax-adjusted settlement instructions with compliance notes" },
+    { label: "Settlement & Posting", description: "Execute approved settlements through treasury management system. Post netting entries and withholding tax accruals in each entity's books.", systems: ["Kyriba", "SAP S/4HANA FI"], layer: "integration", dataIn: "Approved settlement instructions", dataOut: "Executed settlements with journal entries" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Treasury Analyst agent for the Intercompany Netting Agent workflow",
+  primaryObjective: "Multi-currency netting optimization reduces 120 payments to 15 net settlements, cutting bank fees and processing time by 85%. Gemini interprets withholding tax treaties and regulatory exceptions automatically, ensuring compliance with audit trail. so the Treasury Analyst can move the Settlement count reduction KPI.",
+  inScope: [
+    "Multi-currency netting optimization reduces 120 payments to 15 net settlements, cutting bank fees and processing time by 85%",
+    "Gemini interprets withholding tax treaties and regulatory exceptions automatically, ensuring compliance with audit trail",
+    "FX conversion cost savings of $800K annually by netting offsetting positions before currency conversion",
+  ],
+  outOfScope: [
+    "Final sign-off on materially significant journal entries (Controller retains authority)",
+    "Restatement of prior-period filings",
+    "Tax position changes that require external advisor review",
+  ],
+  toolIntents: [
+    {
+      name: "query_kyriba_cash_positions",
+      kind: "query",
+      sourceSystemId: "kyriba",
+      description: "Retrieve cash positions from Kyriba for the Intercompany Netting Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "cash_positions_records",
+        "cash_positions_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_sap_s_4hana_fi_gl_entries",
+      kind: "query",
+      sourceSystemId: "sap_s_4hana_fi",
+      description: "Retrieve gl entries from SAP S/4HANA FI for the Intercompany Netting Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "gl_entries_records",
+        "gl_entries_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Intercompany Netting Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_intercompany_netting_agent_controls_playbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Intercompany Netting Agent Controls Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Settlement count reduction moved from 120 payments/month toward 15 net settlements",
+      mustCite: [
+        "kyriba.cash_positions",
+        "sap_s_4hana_fi.gl_entries",
+      ],
+      sourceSystemIds: [
+        "kyriba",
+        "sap_s_4hana_fi",
+      ],
+    },
+    {
+      claim: "FX conversion savings moved from Gross conversion toward $800K/year saved",
+      mustCite: [
+        "kyriba.cash_positions",
+        "sap_s_4hana_fi.gl_entries",
+      ],
+      sourceSystemIds: [
+        "kyriba",
+        "sap_s_4hana_fi",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Settlement count reduction regresses past the 120 payments/month baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Treasury Analyst",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from Kyriba (and other named systems) entities.",
+    "Never bypass Treasury Analyst approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "intercompany-netting-agent-end-to-end",
+      prompt: "Run the Intercompany Netting Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_kyriba_cash_positions",
+        "query_sap_s_4hana_fi_gl_entries",
+        "query_bigquery_analytics_events",
+        "lookup_intercompany_netting_agent_controls_playbook",
+      ],
+      mustReferenceEntities: [
+        "cash_positions",
+        "gl_entries",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "intercompany-netting-agent-controls-playbook",
+      ],
+      expectedActionOutcome: "Treasury Analyst receives a fully-cited recommendation; no external state change without explicit approval.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not act on single-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Intercompany Netting Agent so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "kyriba",
+      name: "Kyriba",
+      owns: [
+        "cash_positions",
+        "bank_transactions",
+        "forecast_inputs",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_kyriba_cash_positions",
+        "query_kyriba_bank_transactions",
+        "query_kyriba_forecast_inputs",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "sap_s_4hana_fi",
+      name: "SAP S/4HANA FI",
+      owns: [
+        "gl_entries",
+        "subledger_balances",
+        "open_items",
+      ],
+      protocol: "RFC/BAPI",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sap_s_4hana_fi_gl_entries",
+        "query_sap_s_4hana_fi_subledger_balances",
+        "query_sap_s_4hana_fi_open_items",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "cash_positions",
+      sourceSystemId: "kyriba",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "bank_transactions",
+      sourceSystemId: "kyriba",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "forecast_inputs",
+      sourceSystemId: "kyriba",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "cost_center",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "month",
+            "quarter",
+            "year",
+          ],
+          required: true,
+        },
+        {
+          name: "budget_amount",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "actual_amount",
+          type: "number",
+          min: 0,
+          max: 6000000,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -100,
+          max: 100,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "scenario",
+          type: "enum",
+          values: [
+            "baseline",
+            "stretch",
+            "downside",
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "gl_entries",
+      sourceSystemId: "sap_s_4hana_fi",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "subledger_balances",
+      sourceSystemId: "sap_s_4hana_fi",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "open_items",
+      sourceSystemId: "sap_s_4hana_fi",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "intercompany-netting-agent-controls-playbook",
+      sourceSystemId: "bigquery",
+      type: "policy",
+      title: "Intercompany Netting Agent Controls Playbook",
+      requiredSections: [
+        "Workflow scope",
+        "Materiality thresholds",
+        "Escalation triggers",
+        "Audit evidence requirements",
+        "Quarter-end variations",
+      ],
+      linkedEntities: [
+        "cash_positions",
+        "bank_transactions",
+        "forecast_inputs",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "scope",
+        "materiality",
+        "escalation",
+        "audit-evidence",
+      ],
+    },
+  ],
+  apis: [],
+  anomalies: [
+    {
+      id: "intercompany-netting-agent-baseline-gap",
+      description: "Seed a realistic gap where Settlement count reduction sits between 120 payments/month and 15 net settlements, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "cash_positions",
+        "bank_transactions",
+      ],
+      discoveryPath: [
+        "Inspect Kyriba records for the affected entities",
+        "Compare against SAP S/4HANA FI historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Treasury Analyst action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "intercompany_netting_agent",
+      schemas: [
+        "kyriba",
+        "sap_s_4hana_fi",
+      ],
+    },
+    bigquery: {
+      dataset: "finance_intercompany_netting_agent",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "intercompany-netting-agent-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "intercompany-netting-agent-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Intercompany Netting Agent workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const IntercompanyNettingAgent = () => (
+  <UseCaseSlide
+    title="Intercompany Netting Agent"
+    subtitle="A-2406 - Treasury & Cash"
+    icon={GitMerge}
+    domainId="domain-24"
+    layer="Layer 3: Custom ADK"
+    persona="Treasury Analyst"
+    systems={["Kyriba", "SAP S/4HANA FI", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "Settlement count reduction", before: "120 payments/month", after: "15 net settlements" },
+      { label: "FX conversion savings", before: "Gross conversion", after: "$800K/year saved" },
+      { label: "Withholding tax accuracy", before: "Manual treaty lookup", after: "Automated with audit trail" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "Treasury Analyst", action: "Approve netting settlement", description: "Treasury Analyst reviews optimized netting results, validates withholding tax adjustments, and approves settlement instructions for execution." }}
+    statusQuo={[
+      "Intercompany settlements processed individually -- 120+ payments per month with full FX conversion on each.",
+      "Withholding tax obligations determined manually by looking up treaty rates for each cross-border payment.",
+      "Netting done in Excel with limited optimization -- missed offsetting opportunities leave $800K+ in unnecessary FX costs."
+    ]}
+    agentification={[
+      "Multi-currency netting optimization reduces 120 payments to 15 net settlements, cutting bank fees and processing time by 85%.",
+      "Gemini interprets withholding tax treaties and regulatory exceptions automatically, ensuring compliance with audit trail.",
+      "FX conversion cost savings of $800K annually by netting offsetting positions before currency conversion."
+    ]}
+  />
+);

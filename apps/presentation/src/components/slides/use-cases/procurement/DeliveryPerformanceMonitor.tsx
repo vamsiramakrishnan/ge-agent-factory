@@ -1,0 +1,1162 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { Truck, SatelliteDish, LineChart, AlertTriangle, PackageCheck } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "ASN Received", lane: "system", type: "trigger" },
+    { id: "a1", label: "OTIF Tracking", lane: "agent", type: "action" },
+    { id: "a2", label: "Exception Interpret", lane: "agent", type: "action" },
+    { id: "a3", label: "Action Alert", lane: "agent", type: "output" },
+    { id: "s2", label: "ERP Update", lane: "system", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "s2"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Shipment Ingest", icon: SatelliteDish, description: "ASN data and IoT/GPS tracking signals ingested from carriers and TMS platforms.", trigger: "Daily + Exception", systems: ["SAP S/4HANA MM", "TMS"] },
+  { label: "OTIF Analysis", icon: LineChart, description: "Time-series OTIF metrics with predictive late-delivery alerting and carrier/lane performance analysis.", systems: ["BigQuery"], integration: "Data Agent" },
+  { label: "Exception Context", icon: AlertTriangle, description: "LLM interprets carrier delay notifications and reasons about likely delay duration and production impact.", systems: ["Vertex AI"] },
+  { label: "Proactive Alert", icon: PackageCheck, description: "Recommended actions pushed to production planning and procurement teams.", output: "Delivery Alert" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "SAP S/4HANA MM", description: "Delivery schedules, goods receipt data, purchase order timelines", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "TMS", description: "Transportation management, carrier performance, routing data", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "ASN Data", description: "Advance shipping notices with shipment details, expected arrival times", direction: "read", protocol: "EDI/REST", category: "erp" },
+    { system: "IoT/GPS Tracking", description: "Real-time shipment location, transit time monitoring, geofencing alerts", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "BigQuery", description: "OTIF time-series analytics, carrier/lane performance, lead time variability tracking", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Exception context interpretation, delay impact reasoning, proactive alert generation", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Shipment Data Ingestion", description: "Ingest ASN data from suppliers, track shipments via carrier APIs and IoT/GPS. Compare actual transit against delivery schedules in SAP MM. Trigger exception alerts on deviations.", systems: ["SAP S/4HANA MM", "TMS", "ASN Data", "IoT/GPS Tracking"], layer: "integration", dataIn: "ASNs + GPS tracking + ERP delivery schedules", dataOut: "Shipment status events with schedule variance" },
+    { label: "OTIF Analytics & Prediction", description: "Time-series analysis on OTIF metrics. Predictive late-delivery alerting using ASN data combined with historical transit time models. Carrier/lane performance analysis and lead time variability tracking.", systems: ["BigQuery"], layer: "ml", dataIn: "Shipment events + historical transit data", dataOut: "OTIF metrics with predicted delivery dates and exception flags" },
+    { label: "Exception Interpretation & Alerting", description: "Gemini reads carrier delay notifications — 'shipment held at customs, documentation discrepancy' — and reasons about likely delay duration and production impact. Generates proactive alerts: '3 shipments from Supplier Y predicted 2-day delay due to Long Beach port congestion — recommend notifying Plant B and activating buffer stock.'", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Exception flags + carrier notifications + production schedules", dataOut: "Proactive delivery alerts with recommended actions" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Supplier Relationship Manager agent for the Delivery Performance Monitor workflow",
+  primaryObjective: "Predictive late-delivery alerting using ASN data + transit time models — flags delays before they arrive at the dock. LLM reads carrier notifications: 'shipment held at customs — documentation discrepancy' and reasons about likely delay duration and downstream impact. so the Supplier Relationship Manager can move the Late delivery detection KPI.",
+  inScope: [
+    "Predictive late-delivery alerting using ASN data + transit time models — flags delays before they arrive at the dock",
+    "LLM reads carrier notifications: 'shipment held at customs — documentation discrepancy' and reasons about likely delay duration and downstream impact",
+    "Generates proactive alerts: '3 shipments from Supplier Y predicted 2-day delay due to Long Beach port congestion — recommend notifying Plant B and activating buffer stock.'",
+  ],
+  outOfScope: [
+    "Contract execution without legal review",
+    "Supplier disqualification decisions (category lead retains authority)",
+    "Single-source justification overrides above policy threshold",
+  ],
+  toolIntents: [
+    {
+      name: "query_sap_s_4hana_mm_purchase_orders",
+      kind: "query",
+      sourceSystemId: "sap_s_4hana_mm",
+      description: "Retrieve purchase orders from SAP S/4HANA MM for the Delivery Performance Monitor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "purchase_orders_records",
+        "purchase_orders_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_tms_tms_records",
+      kind: "query",
+      sourceSystemId: "tms",
+      description: "Retrieve tms records from TMS for the Delivery Performance Monitor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "tms_records_records",
+        "tms_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_asn_data_asn_data_records",
+      kind: "query",
+      sourceSystemId: "asn_data",
+      description: "Retrieve asn data records from ASN Data for the Delivery Performance Monitor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "asn_data_records_records",
+        "asn_data_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_iot_gps_tracking_iot_gps_tracking_records",
+      kind: "query",
+      sourceSystemId: "iot_gps_tracking",
+      description: "Retrieve iot gps tracking records from IoT/GPS Tracking for the Delivery Performance Monitor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "iot_gps_tracking_records_records",
+        "iot_gps_tracking_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_delivery_performance_monitor_policy_guide",
+      kind: "evidence_lookup",
+      sourceSystemId: "sap_s_4hana_mm",
+      description: "Look up sections of the Delivery Performance Monitor Procurement Policy Guide to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_sap_s_4hana_mm_recommend",
+      kind: "action",
+      sourceSystemId: "sap_s_4hana_mm",
+      description: "Execute the recommend step in SAP S/4HANA MM after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Late delivery detection moved from After receipt (reactive) toward In-transit prediction",
+      mustCite: [
+        "sap_s_4hana_mm.purchase_orders",
+        "tms.tms_records",
+      ],
+      sourceSystemIds: [
+        "sap_s_4hana_mm",
+        "tms",
+      ],
+    },
+    {
+      claim: "OTIF reporting cycle moved from Monthly manual toward Daily automated",
+      mustCite: [
+        "sap_s_4hana_mm.purchase_orders",
+        "tms.tms_records",
+      ],
+      sourceSystemIds: [
+        "sap_s_4hana_mm",
+        "tms",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Late delivery detection regresses past the After receipt (reactive) baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Supplier Relationship Manager",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed recommend action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from SAP S/4HANA MM (and other named systems) entities.",
+    "Never bypass Supplier Relationship Manager approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "delivery-performance-monitor-end-to-end",
+      prompt: "Run the Delivery Performance Monitor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_sap_s_4hana_mm_purchase_orders",
+        "query_tms_tms_records",
+        "query_asn_data_asn_data_records",
+        "query_iot_gps_tracking_iot_gps_tracking_records",
+        "lookup_delivery_performance_monitor_policy_guide",
+        "action_sap_s_4hana_mm_recommend",
+      ],
+      mustReferenceEntities: [
+        "purchase_orders",
+        "tms_records",
+        "asn_data_records",
+        "iot_gps_tracking_records",
+      ],
+      mustCiteDocuments: [
+        "delivery-performance-monitor-policy-guide",
+      ],
+      expectedActionOutcome: "Action recommend executed against SAP S/4HANA MM, with audit-trail entry and Supplier Relationship Manager notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute recommend without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Delivery Performance Monitor so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "sap_s_4hana_mm",
+      name: "SAP S/4HANA MM",
+      owns: [
+        "purchase_orders",
+        "material_movements",
+        "vendors",
+      ],
+      protocol: "RFC/BAPI",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sap_s_4hana_mm_purchase_orders",
+        "query_sap_s_4hana_mm_material_movements",
+        "query_sap_s_4hana_mm_vendors",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "tms",
+      name: "TMS",
+      owns: [
+        "tms_records",
+        "tms_events",
+        "tms_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_tms_tms_records",
+        "query_tms_tms_events",
+        "query_tms_tms_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "asn_data",
+      name: "ASN Data",
+      owns: [
+        "asn_data_records",
+        "asn_data_events",
+        "asn_data_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_asn_data_asn_data_records",
+        "query_asn_data_asn_data_events",
+        "query_asn_data_asn_data_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "iot_gps_tracking",
+      name: "IoT/GPS Tracking",
+      owns: [
+        "iot_gps_tracking_records",
+        "iot_gps_tracking_events",
+        "iot_gps_tracking_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_iot_gps_tracking_iot_gps_tracking_records",
+        "query_iot_gps_tracking_iot_gps_tracking_events",
+        "query_iot_gps_tracking_iot_gps_tracking_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "purchase_orders",
+      sourceSystemId: "sap_s_4hana_mm",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "vendor",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: 100,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+            "JPY",
+          ],
+          weights: [
+            0.7,
+            0.15,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "pending",
+            "approved",
+            "paid",
+            "rejected",
+          ],
+          weights: [
+            0.1,
+            0.3,
+            0.3,
+            0.2,
+            0.1,
+          ],
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "due_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "material_movements",
+      sourceSystemId: "sap_s_4hana_mm",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "vendors",
+      sourceSystemId: "sap_s_4hana_mm",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "IT",
+            "Consulting",
+            "Manufacturing",
+            "Logistics",
+            "Facilities",
+            "Marketing",
+          ],
+          required: true,
+        },
+        {
+          name: "rating",
+          type: "number",
+          min: 1,
+          max: 5,
+          required: true,
+        },
+        {
+          name: "annual_spend",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "risk_score",
+          type: "enum",
+          values: [
+            "low",
+            "medium",
+            "high",
+          ],
+          weights: [
+            0.5,
+            0.35,
+            0.15,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending_review",
+            "terminated",
+          ],
+          required: true,
+        },
+        {
+          name: "onboarded_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "tms_records",
+      sourceSystemId: "tms",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "tms_events",
+      sourceSystemId: "tms",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "tms_record_id",
+          type: "ref",
+          ref: "tms_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "tms_audit_trail",
+      sourceSystemId: "tms",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "asn_data_records",
+      sourceSystemId: "asn_data",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "asn_data_events",
+      sourceSystemId: "asn_data",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "asn_data_record_id",
+          type: "ref",
+          ref: "asn_data_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "asn_data_audit_trail",
+      sourceSystemId: "asn_data",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "iot_gps_tracking_records",
+      sourceSystemId: "iot_gps_tracking",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "iot_gps_tracking_events",
+      sourceSystemId: "iot_gps_tracking",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "iot_gps_tracking_record_id",
+          type: "ref",
+          ref: "iot_gps_tracking_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "iot_gps_tracking_audit_trail",
+      sourceSystemId: "iot_gps_tracking",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "tms_events.tms_record_id",
+      to: "tms_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "asn_data_events.asn_data_record_id",
+      to: "asn_data_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "iot_gps_tracking_events.iot_gps_tracking_record_id",
+      to: "iot_gps_tracking_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "delivery-performance-monitor-policy-guide",
+      sourceSystemId: "sap_s_4hana_mm",
+      type: "policy",
+      title: "Delivery Performance Monitor Procurement Policy Guide",
+      requiredSections: [
+        "Sourcing principles",
+        "Approval thresholds",
+        "Supplier risk requirements",
+        "Contract and compliance gates",
+        "Exception handling",
+      ],
+      linkedEntities: [
+        "purchase_orders",
+        "material_movements",
+        "vendors",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "sourcing",
+        "approvals",
+        "supplier-risk",
+        "exceptions",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "sap_s_4hana_mm_recommend_api",
+      sourceSystemId: "sap_s_4hana_mm",
+      method: "POST",
+      path: "/api/sap_s_4hana_mm/recommend",
+      description: "Synchronous endpoint the agent calls to recommend in SAP S/4HANA MM after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "delivery-performance-monitor-baseline-gap",
+      description: "Seed a realistic gap where Late delivery detection sits between After receipt (reactive) and In-transit prediction, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "purchase_orders",
+        "material_movements",
+      ],
+      discoveryPath: [
+        "Inspect SAP S/4HANA MM records for the affected entities",
+        "Compare against TMS historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Supplier Relationship Manager action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "delivery_performance_monitor",
+      schemas: [
+        "sap_s_4hana_mm",
+        "tms",
+        "asn_data",
+        "iot_gps_tracking",
+      ],
+    },
+    bigquery: {
+      dataset: "procurement_delivery_performance_monitor",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "delivery-performance-monitor-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "delivery-performance-monitor-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Delivery Performance Monitor workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const DeliveryPerformanceMonitor = () => (
+  <UseCaseSlide
+    title="Delivery Performance Monitor"
+    subtitle="A-1703 • Supplier Performance"
+    icon={Truck}
+    domainId="domain-17"
+    layer="Layer 4: Data Agent"
+    persona="Supplier Relationship Manager"
+    systems={["SAP S/4HANA MM", "TMS", "ASN Data", "IoT/GPS Tracking"]}
+    kpis={[
+      { label: "Late delivery detection", before: "After receipt (reactive)", after: "In-transit prediction" },
+      { label: "OTIF reporting cycle", before: "Monthly manual", after: "Daily automated" },
+      { label: "Exception resolution time", before: "48 hours", after: "4 hours" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    statusQuo={[
+      "Delivery performance tracked retroactively from goods receipts — late shipments discovered after they impact production.",
+      "Carrier delay notifications are unstructured emails that sit in inboxes without analysis or escalation.",
+      "OTIF metrics compiled monthly in spreadsheets with no predictive capability or carrier-level drill-down."
+    ]}
+    agentification={[
+      "Predictive late-delivery alerting using ASN data + transit time models — flags delays before they arrive at the dock.",
+      "LLM reads carrier notifications: 'shipment held at customs — documentation discrepancy' and reasons about likely delay duration and downstream impact.",
+      "Generates proactive alerts: '3 shipments from Supplier Y predicted 2-day delay due to Long Beach port congestion — recommend notifying Plant B and activating buffer stock.'"
+    ]}
+  />
+);

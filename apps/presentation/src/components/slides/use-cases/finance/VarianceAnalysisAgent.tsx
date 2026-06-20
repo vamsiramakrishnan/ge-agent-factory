@@ -1,0 +1,1169 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { BarChart3, Database, Search, FileText, AlertTriangle } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Monthly Close", lane: "system", type: "trigger" },
+    { id: "a1", label: "Variance Calculation", lane: "agent", type: "action" },
+    { id: "a2", label: "Root Cause Analysis", lane: "agent", type: "action" },
+    { id: "a3", label: "Variance Bridge", lane: "agent", type: "output" },
+    { id: "h1", label: "FP&A Reviews", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Data Extraction", icon: Database, description: "Pull budget vs. actual data by cost center and GL account from ERP.", trigger: "Monthly close", systems: ["SAP S/4HANA FI/CO", "Anaplan"] },
+  { label: "Statistical Analysis", icon: BarChart3, description: "Significance testing on variances, Pareto analysis of largest drivers, and trend detection.", systems: ["BigQuery", "Looker"], integration: "ADK" },
+  { label: "Root Cause Investigation", icon: Search, description: "Cross-reference operational data to identify root causes behind significant variances.", systems: ["Vertex AI"] },
+  { label: "Variance Report", icon: FileText, description: "Generate variance bridge with root-cause narratives for FP&A review.", output: "Variance Analysis" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "SAP S/4HANA FI/CO", description: "Actuals by cost center, GL account, profit center", direction: "read", protocol: "RFC/BAPI", category: "erp" },
+    { system: "Anaplan", description: "Budget and forecast data for comparison", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "BigQuery", description: "Historical variance patterns, enriched analytics", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Looker", description: "Variance dashboards, drill-down visualizations", direction: "write", protocol: "Looker API", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Root cause narrative generation, operational data interpretation", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Budget vs. Actual Extraction", description: "Pull budget and actual data from SAP and Anaplan by cost center, GL account, and profit center. Calculate variances at every level of the hierarchy.", systems: ["SAP S/4HANA FI/CO", "Anaplan"], layer: "integration", dataIn: "Budget + actual by dimension", dataOut: "Variance data cube" },
+    { label: "Statistical Significance & Pareto", description: "Apply significance testing on variances, identify systematic vs. one-time deviations, and rank by absolute dollar impact using Pareto analysis.", systems: ["BigQuery", "Looker"], layer: "ml", dataIn: "Variance data cube", dataOut: "Ranked significant variances with trends" },
+    { label: "Root Cause Narratives", description: "Gemini investigates root causes by cross-referencing operational data. Distinguishes between systematic overspend and one-time events, generating actionable narratives.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Significant variances + operational context", dataOut: "Variance bridge with root-cause narratives" },
+    { label: "Report Delivery", description: "Refresh Looker dashboards and distribute variance bridge report to FP&A team and business partners.", systems: ["Looker", "Email"], layer: "integration", dataIn: "Variance narratives", dataOut: "Published variance analysis" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "FP&A Director / Analyst agent for the Variance Analysis Agent workflow",
+  primaryObjective: "Automated variance calculation with statistical significance testing at every hierarchy level. Gemini cross-references operational data to identify root causes without manual investigation. so the FP&A Director / Analyst can move the Variance analysis time KPI.",
+  inScope: [
+    "Automated variance calculation with statistical significance testing at every hierarchy level",
+    "Gemini cross-references operational data to identify root causes without manual investigation",
+    "Generates actionable narratives distinguishing systematic overspend from one-time events",
+  ],
+  outOfScope: [
+    "Final sign-off on materially significant journal entries (Controller retains authority)",
+    "Restatement of prior-period filings",
+    "Tax position changes that require external advisor review",
+  ],
+  toolIntents: [
+    {
+      name: "query_sap_s_4hana_fi_co_gl_entries",
+      kind: "query",
+      sourceSystemId: "sap_s_4hana_fi_co",
+      description: "Retrieve gl entries from SAP S/4HANA FI/CO for the Variance Analysis Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "gl_entries_records",
+        "gl_entries_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_anaplan_budget_lines",
+      kind: "query",
+      sourceSystemId: "anaplan",
+      description: "Retrieve budget lines from Anaplan for the Variance Analysis Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "budget_lines_records",
+        "budget_lines_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Variance Analysis Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "query_looker_dashboards",
+      kind: "query",
+      sourceSystemId: "looker",
+      description: "Retrieve dashboards from Looker for the Variance Analysis Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "dashboards_records",
+        "dashboards_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_variance_analysis_agent_controls_playbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Variance Analysis Agent Controls Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_sap_s_4hana_fi_co_generate",
+      kind: "action",
+      sourceSystemId: "sap_s_4hana_fi_co",
+      description: "Execute the generate step in SAP S/4HANA FI/CO after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Variance analysis time moved from 3-4 days toward 4 hours",
+      mustCite: [
+        "sap_s_4hana_fi_co.gl_entries",
+        "anaplan.budget_lines",
+      ],
+      sourceSystemIds: [
+        "sap_s_4hana_fi_co",
+        "anaplan",
+      ],
+    },
+    {
+      claim: "Root causes identified moved from Top 5 manual toward All significant auto",
+      mustCite: [
+        "sap_s_4hana_fi_co.gl_entries",
+        "anaplan.budget_lines",
+      ],
+      sourceSystemIds: [
+        "sap_s_4hana_fi_co",
+        "anaplan",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Variance analysis time regresses past the 3-4 days baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "FP&A Director / Analyst",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed generate action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from SAP S/4HANA FI/CO (and other named systems) entities.",
+    "Never bypass FP&A Director / Analyst approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "variance-analysis-agent-end-to-end",
+      prompt: "Run the Variance Analysis Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_sap_s_4hana_fi_co_gl_entries",
+        "query_anaplan_budget_lines",
+        "query_bigquery_analytics_events",
+        "query_looker_dashboards",
+        "lookup_variance_analysis_agent_controls_playbook",
+        "action_sap_s_4hana_fi_co_generate",
+      ],
+      mustReferenceEntities: [
+        "gl_entries",
+        "budget_lines",
+        "analytics_events",
+        "dashboards",
+      ],
+      mustCiteDocuments: [
+        "variance-analysis-agent-controls-playbook",
+      ],
+      expectedActionOutcome: "Action generate executed against SAP S/4HANA FI/CO, with audit-trail entry and FP&A Director / Analyst notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute generate without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Variance Analysis Agent so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "sap_s_4hana_fi_co",
+      name: "SAP S/4HANA FI/CO",
+      owns: [
+        "gl_entries",
+        "subledger_balances",
+        "open_items",
+      ],
+      protocol: "RFC/BAPI",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sap_s_4hana_fi_co_gl_entries",
+        "query_sap_s_4hana_fi_co_subledger_balances",
+        "query_sap_s_4hana_fi_co_open_items",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "anaplan",
+      name: "Anaplan",
+      owns: [
+        "budget_lines",
+        "forecast_versions",
+        "variance_records",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_anaplan_budget_lines",
+        "query_anaplan_forecast_versions",
+        "query_anaplan_variance_records",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "looker",
+      name: "Looker",
+      owns: [
+        "dashboards",
+        "explore_queries",
+        "metric_definitions",
+      ],
+      protocol: "LookerML",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_looker_dashboards",
+        "query_looker_explore_queries",
+        "query_looker_metric_definitions",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "gl_entries",
+      sourceSystemId: "sap_s_4hana_fi_co",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "subledger_balances",
+      sourceSystemId: "sap_s_4hana_fi_co",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "open_items",
+      sourceSystemId: "sap_s_4hana_fi_co",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "budget_lines",
+      sourceSystemId: "anaplan",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "cost_center",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "month",
+            "quarter",
+            "year",
+          ],
+          required: true,
+        },
+        {
+          name: "budget_amount",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "actual_amount",
+          type: "number",
+          min: 0,
+          max: 6000000,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -100,
+          max: 100,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "scenario",
+          type: "enum",
+          values: [
+            "baseline",
+            "stretch",
+            "downside",
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "forecast_versions",
+      sourceSystemId: "anaplan",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "cost_center",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "month",
+            "quarter",
+            "year",
+          ],
+          required: true,
+        },
+        {
+          name: "budget_amount",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "actual_amount",
+          type: "number",
+          min: 0,
+          max: 6000000,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -100,
+          max: 100,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "scenario",
+          type: "enum",
+          values: [
+            "baseline",
+            "stretch",
+            "downside",
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "variance_records",
+      sourceSystemId: "anaplan",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "dashboards",
+      sourceSystemId: "looker",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "explore_queries",
+      sourceSystemId: "looker",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "metric_definitions",
+      sourceSystemId: "looker",
+      datastore: "bigquery",
+      rowCount: 30,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "variance-analysis-agent-controls-playbook",
+      sourceSystemId: "bigquery",
+      type: "policy",
+      title: "Variance Analysis Agent Controls Playbook",
+      requiredSections: [
+        "Workflow scope",
+        "Materiality thresholds",
+        "Escalation triggers",
+        "Audit evidence requirements",
+        "Quarter-end variations",
+      ],
+      linkedEntities: [
+        "gl_entries",
+        "subledger_balances",
+        "open_items",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "scope",
+        "materiality",
+        "escalation",
+        "audit-evidence",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "sap_s_4hana_fi_co_generate_api",
+      sourceSystemId: "sap_s_4hana_fi_co",
+      method: "POST",
+      path: "/api/sap_s_4hana_fi_co/generate",
+      description: "Synchronous endpoint the agent calls to generate in SAP S/4HANA FI/CO after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "variance-analysis-agent-baseline-gap",
+      description: "Seed a realistic gap where Variance analysis time sits between 3-4 days and 4 hours, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "gl_entries",
+        "subledger_balances",
+      ],
+      discoveryPath: [
+        "Inspect SAP S/4HANA FI/CO records for the affected entities",
+        "Compare against Anaplan historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next FP&A Director / Analyst action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "variance_analysis_agent",
+      schemas: [
+        "sap_s_4hana_fi_co",
+        "anaplan",
+      ],
+    },
+    bigquery: {
+      dataset: "finance_variance_analysis_agent",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "variance-analysis-agent-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "variance-analysis-agent-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Variance Analysis Agent workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const VarianceAnalysisAgent = () => (
+  <UseCaseSlide
+    title="Variance Analysis Agent"
+    subtitle="A-2003 • FP&A"
+    icon={BarChart3}
+    domainId="domain-20"
+    layer="Layer 3: Custom ADK"
+    persona="FP&A Director / Analyst"
+    systems={["SAP S/4HANA FI/CO", "Anaplan", "BigQuery", "Looker", "Vertex AI"]}
+    kpis={[
+      { label: "Variance analysis time", before: "3-4 days", after: "4 hours" },
+      { label: "Root causes identified", before: "Top 5 manual", after: "All significant auto" },
+      { label: "Actionable insights", before: "Data tables", after: "Narrative with context" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "FP&A Director", action: "Review variance analysis", description: "FP&A Director validates root-cause narratives and determines whether variances require forecast adjustment or corrective action." }}
+    statusQuo={[
+      "Variance bridges built manually in Excel, requiring days of data pulling and formatting.",
+      "Root cause investigation is ad-hoc — analysts chase department heads for explanations via email.",
+      "Variance reports present data tables without distinguishing systematic issues from one-time events."
+    ]}
+    agentification={[
+      "Automated variance calculation with statistical significance testing at every hierarchy level.",
+      "Gemini cross-references operational data to identify root causes without manual investigation.",
+      "Generates actionable narratives distinguishing systematic overspend from one-time events."
+    ]}
+  />
+);

@@ -1,0 +1,49 @@
+{
+  "vendors": [
+    {
+      "vendor_id": "VENDOR-ID-001",
+      "name": "sample_name",
+      "status": "sample_status",
+      "country": "sample_country",
+      "payment_terms": "sample_payment_terms"
+    }
+  ],
+  "invoices": [
+    {
+      "invoice_id": "INVOICE-ID-001",
+      "vendor_id": "VENDOR-ID-001",
+      "status": "sample_status",
+      "amount": "sample_amount",
+      "currency": "sample_currency",
+      "due_date": "sample_due_date"
+    }
+  ],
+  "journal_entries": [
+    {
+      "journal_id": "JOURNAL-ID-001",
+      "status": "sample_status",
+      "ledger": "sample_ledger",
+      "period": "sample_period",
+      "amount": "sample_amount"
+    }
+  ],
+  "payments": [
+    {
+      "payment_id": "PAYMENT-ID-001",
+      "invoice_id": "INVOICE-ID-001",
+      "status": "sample_status",
+      "payment_date": "sample_payment_date",
+      "amount": "sample_amount"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APPROVAL-ID-001",
+      "source_record_id": "SOURCE-RECORD-ID-001",
+      "approver": "sample_approver",
+      "state": "sample_state",
+      "reason": "sample_reason"
+    }
+  ],
+  "audit_events": []
+}

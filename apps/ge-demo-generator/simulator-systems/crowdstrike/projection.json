@@ -1,0 +1,40 @@
+{
+  "id": "crowdstrike_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into crowdstrike collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "asset"
+      ],
+      "realizedObjects": [
+        "assets",
+        "findings"
+      ],
+      "simulatorCollection": "assets",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "incident"
+      ],
+      "realizedObjects": [
+        "incidents"
+      ],
+      "simulatorCollection": "incidents",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "risk"
+      ],
+      "realizedObjects": [
+        "controls",
+        "exceptions",
+        "approvals"
+      ],
+      "simulatorCollection": "exceptions",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

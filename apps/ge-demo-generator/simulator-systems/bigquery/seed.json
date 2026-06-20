@@ -1,0 +1,217 @@
+{
+  "datasets": [
+    {
+      "dataset_id": "ge_hr_analytics",
+      "project_id": "ge-transformation",
+      "location": "US",
+      "friendly_name": "HR Analytics",
+      "default_table_expiration_ms": 0
+    },
+    {
+      "dataset_id": "ge_finance_close",
+      "project_id": "ge-transformation",
+      "location": "US",
+      "friendly_name": "Finance Close",
+      "default_table_expiration_ms": 0
+    },
+    {
+      "dataset_id": "ge_supply_chain",
+      "project_id": "ge-transformation",
+      "location": "US",
+      "friendly_name": "Supply Chain Lake",
+      "default_table_expiration_ms": 0
+    },
+    {
+      "dataset_id": "ge_security_audit",
+      "project_id": "ge-secops",
+      "location": "US",
+      "friendly_name": "Security Audit",
+      "default_table_expiration_ms": 7776000000
+    },
+    {
+      "dataset_id": "ge_dev_sandbox",
+      "project_id": "ge-transformation-dev",
+      "location": "US",
+      "friendly_name": "Developer Sandbox",
+      "default_table_expiration_ms": 2592000000
+    }
+  ],
+  "tables": [
+    {
+      "table_id": "headcount_snapshot",
+      "dataset_id": "ge_hr_analytics",
+      "project_id": "ge-transformation",
+      "type": "TABLE",
+      "num_rows": 48211,
+      "num_bytes": 10485760
+    },
+    {
+      "table_id": "attrition_view",
+      "dataset_id": "ge_hr_analytics",
+      "project_id": "ge-transformation",
+      "type": "VIEW",
+      "num_rows": 0,
+      "num_bytes": 0
+    },
+    {
+      "table_id": "worker_event_delta",
+      "dataset_id": "ge_hr_analytics",
+      "project_id": "ge-transformation",
+      "type": "TABLE",
+      "num_rows": 820144,
+      "num_bytes": 87162880
+    },
+    {
+      "table_id": "close_tasks",
+      "dataset_id": "ge_finance_close",
+      "project_id": "ge-transformation",
+      "type": "TABLE",
+      "num_rows": 12840,
+      "num_bytes": 5242880
+    },
+    {
+      "table_id": "supplier_scorecard_mv",
+      "dataset_id": "ge_supply_chain",
+      "project_id": "ge-transformation",
+      "type": "MATERIALIZED_VIEW",
+      "num_rows": 0,
+      "num_bytes": 0
+    },
+    {
+      "table_id": "audit_log_export",
+      "dataset_id": "ge_security_audit",
+      "project_id": "ge-secops",
+      "type": "TABLE",
+      "num_rows": 6219000,
+      "num_bytes": 2818572288
+    },
+    {
+      "table_id": "sandbox_external_workday",
+      "dataset_id": "ge_dev_sandbox",
+      "project_id": "ge-transformation-dev",
+      "type": "EXTERNAL",
+      "num_rows": 0,
+      "num_bytes": 0
+    }
+  ],
+  "jobs": [
+    {
+      "job_id": "job_headcount_2026",
+      "project_id": "ge-transformation",
+      "state": "RUNNING",
+      "job_type": "QUERY",
+      "user_email": "mina.patel@example.com",
+      "total_bytes_processed": 10485760,
+      "creation_time_ms": 1781802300000,
+      "created_at": "2026-06-18T18:25:00Z"
+    },
+    {
+      "job_id": "job_attrition_load",
+      "project_id": "ge-transformation",
+      "state": "PENDING",
+      "job_type": "LOAD",
+      "user_email": "avery.johnson@example.com",
+      "total_bytes_processed": 0,
+      "creation_time_ms": 1781802600000,
+      "created_at": "2026-06-18T18:30:00Z"
+    },
+    {
+      "job_id": "job_finance_close_extract",
+      "project_id": "ge-transformation",
+      "state": "DONE",
+      "job_type": "EXTRACT",
+      "user_email": "finance.ops@example.com",
+      "total_bytes_processed": 7340032,
+      "creation_time_ms": 1781715900000,
+      "created_at": "2026-06-17T18:25:00Z"
+    },
+    {
+      "job_id": "job_supplier_score_refresh",
+      "project_id": "ge-transformation",
+      "state": "RUNNING",
+      "job_type": "QUERY",
+      "user_email": "supply.analytics@example.com",
+      "total_bytes_processed": 89128960,
+      "creation_time_ms": 1781805000000,
+      "created_at": "2026-06-18T19:10:00Z"
+    },
+    {
+      "job_id": "job_audit_log_copy",
+      "project_id": "ge-secops",
+      "state": "DONE",
+      "job_type": "COPY",
+      "user_email": "security.ops@example.com",
+      "total_bytes_processed": 2818572288,
+      "creation_time_ms": 1781632200000,
+      "created_at": "2026-06-16T19:10:00Z"
+    },
+    {
+      "job_id": "job_sandbox_preview",
+      "project_id": "ge-transformation-dev",
+      "state": "PENDING",
+      "job_type": "QUERY",
+      "user_email": "dev.preview@example.com",
+      "total_bytes_processed": 0,
+      "creation_time_ms": 1781806800000,
+      "created_at": "2026-06-18T19:40:00Z"
+    },
+    {
+      "job_id": "job_hr_backfill_2025",
+      "project_id": "ge-transformation",
+      "state": "DONE",
+      "job_type": "LOAD",
+      "user_email": "mina.patel@example.com",
+      "total_bytes_processed": 167772160,
+      "creation_time_ms": 1781542200000,
+      "created_at": "2026-06-15T18:10:00Z"
+    },
+    {
+      "job_id": "job_payroll_view_rebuild",
+      "project_id": "ge-transformation",
+      "state": "RUNNING",
+      "job_type": "QUERY",
+      "user_email": "payroll.data@example.com",
+      "total_bytes_processed": 41943040,
+      "creation_time_ms": 1781807700000,
+      "created_at": "2026-06-18T19:55:00Z"
+    }
+  ],
+  "routines": [
+    {
+      "routine_id": "fn_normalize_title",
+      "dataset_id": "ge_hr_analytics",
+      "project_id": "ge-transformation",
+      "routine_type": "SCALAR_FUNCTION",
+      "language": "SQL"
+    },
+    {
+      "routine_id": "sp_refresh_attrition",
+      "dataset_id": "ge_hr_analytics",
+      "project_id": "ge-transformation",
+      "routine_type": "PROCEDURE",
+      "language": "SQL"
+    },
+    {
+      "routine_id": "fn_supplier_risk_band",
+      "dataset_id": "ge_supply_chain",
+      "project_id": "ge-transformation",
+      "routine_type": "SCALAR_FUNCTION",
+      "language": "JAVASCRIPT"
+    },
+    {
+      "routine_id": "tvf_recent_audit_events",
+      "dataset_id": "ge_security_audit",
+      "project_id": "ge-secops",
+      "routine_type": "TABLE_VALUED_FUNCTION",
+      "language": "SQL"
+    },
+    {
+      "routine_id": "sp_purge_sandbox",
+      "dataset_id": "ge_dev_sandbox",
+      "project_id": "ge-transformation-dev",
+      "routine_type": "PROCEDURE",
+      "language": "SQL"
+    }
+  ],
+  "audit_events": []
+}

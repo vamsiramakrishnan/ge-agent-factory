@@ -1,0 +1,516 @@
+{
+  "id": "sap_fieldglass_materialization",
+  "version": 1,
+  "collections": {
+    "suppliers": {
+      "primaryKey": "supplier_id",
+      "fieldAliases": {
+        "supplier_id": [
+          "supplier_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "country": [
+          "country",
+          "id",
+          "source_record_id"
+        ],
+        "vendor_number": [
+          "vendor_number",
+          "id",
+          "source_record_id"
+        ],
+        "supplier_type": [
+          "supplier_type",
+          "id",
+          "source_record_id"
+        ],
+        "risk_tier": [
+          "risk_tier",
+          "id",
+          "source_record_id"
+        ],
+        "contact_email": [
+          "contact_email",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "job_postings": {
+      "primaryKey": "job_posting_id",
+      "fieldAliases": {
+        "job_posting_id": [
+          "job_posting_id",
+          "id",
+          "source_record_id"
+        ],
+        "title": [
+          "title",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "labor_category": [
+          "labor_category",
+          "id",
+          "source_record_id"
+        ],
+        "location": [
+          "location",
+          "id",
+          "source_record_id"
+        ],
+        "hiring_manager": [
+          "hiring_manager",
+          "id",
+          "source_record_id"
+        ],
+        "supplier_distribution": [
+          "supplier_distribution",
+          "id",
+          "source_record_id"
+        ],
+        "start_date": [
+          "start_date",
+          "id",
+          "source_record_id"
+        ],
+        "end_date": [
+          "end_date",
+          "id",
+          "source_record_id"
+        ],
+        "max_bill_rate": [
+          "max_bill_rate",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "job_seekers": {
+      "primaryKey": "job_seeker_id",
+      "fieldAliases": {
+        "job_seeker_id": [
+          "job_seeker_id",
+          "id",
+          "source_record_id"
+        ],
+        "supplier_id": [
+          "supplier_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "email": [
+          "email",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "submitted_for": [
+          "submitted_for",
+          "id",
+          "source_record_id"
+        ],
+        "bill_rate": [
+          "bill_rate",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "screening_status": [
+          "screening_status",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "work_orders": {
+      "primaryKey": "work_order_id",
+      "fieldAliases": {
+        "work_order_id": [
+          "work_order_id",
+          "id",
+          "source_record_id"
+        ],
+        "job_posting_id": [
+          "job_posting_id",
+          "id",
+          "source_record_id"
+        ],
+        "job_seeker_id": [
+          "job_seeker_id",
+          "id",
+          "source_record_id"
+        ],
+        "supplier_id": [
+          "supplier_id",
+          "id",
+          "source_record_id"
+        ],
+        "worker_id": [
+          "worker_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "start_date": [
+          "start_date",
+          "id",
+          "source_record_id"
+        ],
+        "end_date": [
+          "end_date",
+          "id",
+          "source_record_id"
+        ],
+        "bill_rate": [
+          "bill_rate",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "cost_center": [
+          "cost_center",
+          "id",
+          "source_record_id"
+        ],
+        "site": [
+          "site",
+          "id",
+          "source_record_id"
+        ],
+        "tenure_end_date": [
+          "tenure_end_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "activated"
+      }
+    },
+    "workers": {
+      "primaryKey": "worker_id",
+      "fieldAliases": {
+        "worker_id": [
+          "worker_id",
+          "id",
+          "source_record_id"
+        ],
+        "external_worker_id": [
+          "external_worker_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "email": [
+          "email",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "worker_type": [
+          "worker_type",
+          "id",
+          "source_record_id"
+        ],
+        "supplier_id": [
+          "supplier_id",
+          "id",
+          "source_record_id"
+        ],
+        "work_order_id": [
+          "work_order_id",
+          "id",
+          "source_record_id"
+        ],
+        "manager_id": [
+          "manager_id",
+          "id",
+          "source_record_id"
+        ],
+        "cost_center": [
+          "cost_center",
+          "id",
+          "source_record_id"
+        ],
+        "location": [
+          "location",
+          "id",
+          "source_record_id"
+        ],
+        "country": [
+          "country",
+          "id",
+          "source_record_id"
+        ],
+        "onboarding_status": [
+          "onboarding_status",
+          "id",
+          "source_record_id"
+        ],
+        "security_badge_status": [
+          "security_badge_status",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "time_sheets": {
+      "primaryKey": "time_sheet_id",
+      "fieldAliases": {
+        "time_sheet_id": [
+          "time_sheet_id",
+          "id",
+          "source_record_id"
+        ],
+        "worker_id": [
+          "worker_id",
+          "id",
+          "source_record_id"
+        ],
+        "work_order_id": [
+          "work_order_id",
+          "id",
+          "source_record_id"
+        ],
+        "week_start": [
+          "week_start",
+          "id",
+          "source_record_id"
+        ],
+        "week_end": [
+          "week_end",
+          "id",
+          "source_record_id"
+        ],
+        "hours": [
+          "hours",
+          "id",
+          "source_record_id"
+        ],
+        "overtime_hours": [
+          "overtime_hours",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "approver": [
+          "approver",
+          "id",
+          "source_record_id"
+        ],
+        "invoice_status": [
+          "invoice_status",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "submitted"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fieldAliases": {
+        "approval_id": [
+          "approval_id",
+          "id",
+          "source_record_id"
+        ],
+        "source_record_id": [
+          "source_record_id",
+          "id",
+          "source_record_id"
+        ],
+        "approver": [
+          "approver",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "reason": [
+          "reason",
+          "id",
+          "source_record_id"
+        ],
+        "workflow_step": [
+          "workflow_step",
+          "id",
+          "source_record_id"
+        ],
+        "due_at": [
+          "due_at",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "requested"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ],
+        "timestamp": [
+          "timestamp",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    },
+    "statement_of_works": {
+      "primaryKey": "sow_id",
+      "fieldAliases": {
+        "sow_id": [
+          "sow_id",
+          "id",
+          "source_record_id"
+        ],
+        "supplier_id": [
+          "supplier_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "owner": [
+          "owner",
+          "id",
+          "source_record_id"
+        ],
+        "start_date": [
+          "start_date",
+          "id",
+          "source_record_id"
+        ],
+        "end_date": [
+          "end_date",
+          "id",
+          "source_record_id"
+        ],
+        "committed_spend": [
+          "committed_spend",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "milestone_status": [
+          "milestone_status",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    }
+  }
+}

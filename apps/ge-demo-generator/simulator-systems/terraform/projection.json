@@ -1,0 +1,30 @@
+{
+  "id": "terraform_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into terraform collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "dataset"
+      ],
+      "realizedObjects": [
+        "datasets",
+        "tables"
+      ],
+      "simulatorCollection": "datasets",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "pipeline"
+      ],
+      "realizedObjects": [
+        "pipelines",
+        "jobs",
+        "quality_checks"
+      ],
+      "simulatorCollection": "pipelines",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

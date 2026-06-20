@@ -1,0 +1,61 @@
+{
+  "id": "servicenow_projection",
+  "version": 2,
+  "materialization": "Project scenario-graph ITSM/ITIL concepts into ServiceNow collections; Snowfakery realizes incident, problem, change, request, CMDB, and approval row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": ["incident", "service_management", "sla", "outage"],
+      "realizedObjects": ["incidents", "tickets", "events"],
+      "simulatorCollection": "incidents",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["problem", "root_cause"],
+      "realizedObjects": ["problems", "known_errors"],
+      "simulatorCollection": "problems",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["change", "deployment", "release"],
+      "realizedObjects": ["change_requests", "changes"],
+      "simulatorCollection": "change_requests",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["request", "catalog_request", "access_request"],
+      "realizedObjects": ["service_requests", "requests"],
+      "simulatorCollection": "service_requests",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["team", "support_group"],
+      "realizedObjects": ["assignment_groups", "groups"],
+      "simulatorCollection": "assignment_groups",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["service", "application", "asset", "cmdb_item"],
+      "realizedObjects": ["configuration_items", "cmdb_items", "services"],
+      "simulatorCollection": "configuration_items",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["dependency", "relationship"],
+      "realizedObjects": ["ci_relationships", "dependencies"],
+      "simulatorCollection": "ci_relationships",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["knowledge", "runbook", "article"],
+      "realizedObjects": ["knowledge_articles", "kb_articles"],
+      "simulatorCollection": "knowledge_articles",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["approval"],
+      "realizedObjects": ["approvals"],
+      "simulatorCollection": "approvals",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "workspaces": [
+    {
+      "workspace_id": "WORKSPACE-ID-001",
+      "name": "sample_name",
+      "status": "sample_status",
+      "owner": "sample_owner",
+      "department": "sample_department"
+    }
+  ],
+  "documents": [
+    {
+      "document_id": "DOCUMENT-ID-001",
+      "workspace_id": "WORKSPACE-ID-001",
+      "title": "sample_title",
+      "status": "sample_status",
+      "owner": "sample_owner",
+      "modified_at": "sample_modified_at"
+    }
+  ],
+  "comments": [
+    {
+      "comment_id": "COMMENT-ID-001",
+      "document_id": "DOCUMENT-ID-001",
+      "author": "sample_author",
+      "status": "sample_status",
+      "created_at": "sample_created_at"
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "TASK-ID-001",
+      "document_id": "DOCUMENT-ID-001",
+      "status": "sample_status",
+      "assignee": "sample_assignee",
+      "due_date": "sample_due_date"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APPROVAL-ID-001",
+      "source_record_id": "SOURCE-RECORD-ID-001",
+      "approver": "sample_approver",
+      "state": "sample_state",
+      "reason": "sample_reason"
+    }
+  ],
+  "audit_events": []
+}

@@ -1,0 +1,20 @@
+[project]
+name = "asc_606_contract_analyzer"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["google-adk", "pydantic>=2", "pytest>=8"]
+
+[project.optional-dependencies]
+eval = ["google-adk[eval]"]
+lint = ["ruff>=0.14.0"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.agents-cli]
+agent_directory = "app"
+region = "us-central1"
+
+[tool.agents-cli.create_params]
+deployment_target = "none"

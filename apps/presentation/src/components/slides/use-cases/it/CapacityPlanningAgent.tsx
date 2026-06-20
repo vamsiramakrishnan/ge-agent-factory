@@ -1,0 +1,1132 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { BarChart3, Database, Cpu, FileText, TrendingUp } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Weekly Cycle", lane: "system", type: "trigger" },
+    { id: "a1", label: "Utilization Metrics", lane: "agent", type: "action" },
+    { id: "a2", label: "Growth Forecast", lane: "agent", type: "action" },
+    { id: "a3", label: "Capacity Plan", lane: "agent", type: "output" },
+    { id: "s2", label: "Scaling Actions", lane: "system", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "s2"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Utilization Collection", icon: Database, description: "CPU, memory, storage, and network metrics pulled from Kubernetes, CloudWatch, and Datadog.", trigger: "Weekly", systems: ["Kubernetes", "Datadog"] },
+  { label: "Growth Forecasting", icon: Cpu, description: "Time-series forecasting with seasonal decomposition and growth projections for each service.", systems: ["BigQuery", "Vertex AI"], integration: "API" },
+  { label: "Capacity Plan", icon: FileText, description: "Gemini correlates capacity needs with business events — Black Friday, product launches, marketing campaigns.", systems: ["Vertex AI"] },
+  { label: "Pre-Scaling Actions", icon: TrendingUp, description: "Capacity plan with pre-scaling recommendations and budget impact for infrastructure team.", output: "Capacity Plan" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Kubernetes", description: "Pod resource requests/limits, node utilization, cluster capacity", direction: "read", protocol: "Kubernetes API", category: "erp" },
+    { system: "Datadog", description: "Application performance metrics, resource utilization time-series", direction: "read", protocol: "REST API", category: "analytics" },
+    { system: "AWS CloudWatch", description: "AWS resource metrics, auto-scaling group data", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "BigQuery", description: "Historical capacity data, seasonal patterns, forecast models", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Business event correlation, capacity narrative, scaling recommendations", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Utilization Collection", description: "Pull resource utilization from Kubernetes clusters, Datadog APM, AWS CloudWatch, and GCP Monitoring. Aggregate CPU, memory, storage, and network at the service and cluster level.", systems: ["Kubernetes", "Datadog", "AWS CloudWatch"], layer: "integration", dataIn: "Multi-source infrastructure metrics", dataOut: "Unified utilization dataset by service and cluster" },
+    { label: "Growth Forecasting", description: "Time-series forecasting on CPU, memory, storage, and network with seasonal decomposition. Model capacity threshold predictions — when will current capacity be exhausted at current growth rate.", systems: ["BigQuery"], layer: "ml", dataIn: "Historical utilization + growth trends", dataOut: "Capacity forecasts with exhaustion dates by resource" },
+    { label: "Business Event Correlation", description: "Gemini correlates capacity with events: 'Black Friday traffic projected 3.2x normal based on last year and marketing spend increase. Current capacity handles 2.5x. Recommend pre-scaling order processing by 40% starting November 20.'", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Capacity forecasts + business event calendar", dataOut: "Contextualized capacity plan with pre-scaling schedule" },
+    { label: "Action & Budget", description: "Capacity plan with pre-scaling schedule, infrastructure budget impact, and implementation timeline distributed to cloud and SRE teams.", systems: ["BigQuery"], layer: "integration", dataIn: "Capacity plan", dataOut: "Published plan with cost estimates and timelines" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Cloud Architect / SRE Manager agent for the Capacity Planning Agent workflow",
+  primaryObjective: "Gemini correlates capacity needs with business events, providing 2+ weeks of lead time for pre-scaling. Time-series forecasting with seasonal decomposition replaces annual guess-based capacity planning. so the Cloud Architect / SRE Manager can move the Capacity forecasting KPI.",
+  inScope: [
+    "Gemini correlates capacity needs with business events, providing 2+ weeks of lead time for pre-scaling",
+    "Time-series forecasting with seasonal decomposition replaces annual guess-based capacity planning",
+    "Capacity exhaustion predictions trigger proactive scaling before users experience degraded performance",
+  ],
+  outOfScope: [
+    "Production deployments outside an approved change window",
+    "Irreversible destructive actions on shared infrastructure (DROP, force-delete, key rotation)",
+    "Security incident attribution requiring forensics",
+  ],
+  toolIntents: [
+    {
+      name: "query_kubernetes_workloads",
+      kind: "query",
+      sourceSystemId: "kubernetes",
+      description: "Retrieve workloads from Kubernetes for the Capacity Planning Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "workloads_records",
+        "workloads_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_datadog_alerts",
+      kind: "query",
+      sourceSystemId: "datadog",
+      description: "Retrieve alerts from Datadog for the Capacity Planning Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "alerts_records",
+        "alerts_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "query_aws_cloudwatch_billing_records",
+      kind: "query",
+      sourceSystemId: "aws_cloudwatch",
+      description: "Retrieve billing records from AWS CloudWatch for the Capacity Planning Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "billing_records_records",
+        "billing_records_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Capacity Planning Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_capacity_planning_agent_runbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "datadog",
+      description: "Look up sections of the Capacity Planning Agent Operations Runbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_kubernetes_trigger",
+      kind: "action",
+      sourceSystemId: "kubernetes",
+      description: "Execute the trigger step in Kubernetes after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Capacity forecasting moved from Manual estimates toward ML time-series",
+      mustCite: [
+        "kubernetes.workloads",
+        "datadog.alerts",
+      ],
+      sourceSystemIds: [
+        "kubernetes",
+        "datadog",
+      ],
+    },
+    {
+      claim: "Pre-scaling lead time moved from Reactive (during event) toward 2+ weeks advance",
+      mustCite: [
+        "kubernetes.workloads",
+        "datadog.alerts",
+      ],
+      sourceSystemIds: [
+        "kubernetes",
+        "datadog",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Capacity forecasting regresses past the Manual estimates baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Cloud Architect / SRE Manager",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed trigger action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from Kubernetes (and other named systems) entities.",
+    "Never bypass Cloud Architect / SRE Manager approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "capacity-planning-agent-end-to-end",
+      prompt: "Run the Capacity Planning Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_kubernetes_workloads",
+        "query_datadog_alerts",
+        "query_aws_cloudwatch_billing_records",
+        "query_bigquery_analytics_events",
+        "lookup_capacity_planning_agent_runbook",
+        "action_kubernetes_trigger",
+      ],
+      mustReferenceEntities: [
+        "workloads",
+        "alerts",
+        "billing_records",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "capacity-planning-agent-runbook",
+      ],
+      expectedActionOutcome: "Action trigger executed against Kubernetes, with audit-trail entry and Cloud Architect / SRE Manager notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute trigger without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Capacity Planning Agent so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "kubernetes",
+      name: "Kubernetes",
+      owns: [
+        "workloads",
+        "deployments",
+        "pod_events",
+      ],
+      protocol: "Kubernetes API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_kubernetes_workloads",
+        "query_kubernetes_deployments",
+        "query_kubernetes_pod_events",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "datadog",
+      name: "Datadog",
+      owns: [
+        "alerts",
+        "monitors",
+        "metrics_snapshots",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_datadog_alerts",
+        "query_datadog_monitors",
+        "query_datadog_metrics_snapshots",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "aws_cloudwatch",
+      name: "AWS CloudWatch",
+      owns: [
+        "billing_records",
+        "resource_inventory",
+        "alarm_events",
+      ],
+      protocol: "AWS SDK",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_aws_cloudwatch_billing_records",
+        "query_aws_cloudwatch_resource_inventory",
+        "query_aws_cloudwatch_alarm_events",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "workloads",
+      sourceSystemId: "kubernetes",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "pending",
+            "running",
+            "succeeded",
+            "failed",
+            "rolled_back",
+          ],
+          required: true,
+        },
+        {
+          name: "duration_seconds",
+          type: "number",
+          min: 5,
+          max: 7200,
+          required: true,
+        },
+        {
+          name: "started_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "environment",
+          type: "enum",
+          values: [
+            "dev",
+            "staging",
+            "prod",
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "deployments",
+      sourceSystemId: "kubernetes",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "pending",
+            "running",
+            "succeeded",
+            "failed",
+            "rolled_back",
+          ],
+          required: true,
+        },
+        {
+          name: "duration_seconds",
+          type: "number",
+          min: 5,
+          max: 7200,
+          required: true,
+        },
+        {
+          name: "started_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "environment",
+          type: "enum",
+          values: [
+            "dev",
+            "staging",
+            "prod",
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "pod_events",
+      sourceSystemId: "kubernetes",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "workload_id",
+          type: "ref",
+          ref: "workloads.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "alerts",
+      sourceSystemId: "datadog",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "monitors",
+      sourceSystemId: "datadog",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "metrics_snapshots",
+      sourceSystemId: "datadog",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "billing_records",
+      sourceSystemId: "aws_cloudwatch",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "service",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: 1,
+          max: 10000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+          ],
+          required: true,
+        },
+        {
+          name: "period_start",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "period_end",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "resource_inventory",
+      sourceSystemId: "aws_cloudwatch",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "alarm_events",
+      sourceSystemId: "aws_cloudwatch",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "billing_record_id",
+          type: "ref",
+          ref: "billing_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "pod_events.workload_id",
+      to: "workloads.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "alarm_events.billing_record_id",
+      to: "billing_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "capacity-planning-agent-runbook",
+      sourceSystemId: "datadog",
+      type: "runbook",
+      title: "Capacity Planning Agent Operations Runbook",
+      requiredSections: [
+        "Detection signals",
+        "Triage procedures",
+        "Remediation actions",
+        "Rollback criteria",
+        "Post-incident review",
+      ],
+      linkedEntities: [
+        "workloads",
+        "deployments",
+        "pod_events",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "detection",
+        "triage",
+        "remediation",
+        "rollback",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "kubernetes_trigger_api",
+      sourceSystemId: "kubernetes",
+      method: "POST",
+      path: "/api/kubernetes/trigger",
+      description: "Synchronous endpoint the agent calls to trigger in Kubernetes after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "capacity-planning-agent-baseline-gap",
+      description: "Seed a realistic gap where Capacity forecasting sits between Manual estimates and ML time-series, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "workloads",
+        "deployments",
+      ],
+      discoveryPath: [
+        "Inspect Kubernetes records for the affected entities",
+        "Compare against Datadog historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Cloud Architect / SRE Manager action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "capacity_planning_agent",
+      schemas: [
+        "kubernetes",
+      ],
+    },
+    bigquery: {
+      dataset: "it_capacity_planning_agent",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "capacity-planning-agent-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "capacity-planning-agent-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Capacity Planning Agent workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const CapacityPlanningAgent = () => (
+  <UseCaseSlide
+    title="Capacity Planning Agent"
+    subtitle="A-4002 • Infra & Cloud Ops"
+    icon={BarChart3}
+    domainId="domain-40"
+    layer="Layer 4: Data Agent"
+    persona="Cloud Architect / SRE Manager"
+    systems={["Kubernetes", "Datadog", "AWS CloudWatch", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "Capacity forecasting", before: "Manual estimates", after: "ML time-series" },
+      { label: "Pre-scaling lead time", before: "Reactive (during event)", after: "2+ weeks advance" },
+      { label: "Capacity-related outages", before: "3-5/year", after: "0" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    statusQuo={[
+      "Capacity planning based on annual estimates that become stale within weeks of creation.",
+      "Pre-scaling for major events (Black Friday, launches) is reactive — scrambling during the event.",
+      "No correlation between business events (marketing campaigns, launches) and infrastructure capacity needs."
+    ]}
+    agentification={[
+      "Gemini correlates capacity needs with business events, providing 2+ weeks of lead time for pre-scaling.",
+      "Time-series forecasting with seasonal decomposition replaces annual guess-based capacity planning.",
+      "Capacity exhaustion predictions trigger proactive scaling before users experience degraded performance."
+    ]}
+  />
+);

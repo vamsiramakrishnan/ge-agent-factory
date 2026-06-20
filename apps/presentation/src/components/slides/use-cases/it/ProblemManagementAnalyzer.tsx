@@ -1,0 +1,1004 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { Microscope, Database, Brain, FileText, Search } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Weekly Analysis", lane: "system", type: "trigger" },
+    { id: "a1", label: "Incident Clustering", lane: "agent", type: "action" },
+    { id: "a2", label: "Root Cause Analysis", lane: "agent", type: "action" },
+    { id: "a3", label: "Problem Tickets", lane: "agent", type: "output" },
+    { id: "h1", label: "Manager Prioritizes", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Incident Analysis", icon: Database, description: "Historical incident data analyzed for recurring patterns and common failure modes.", trigger: "Weekly", systems: ["ServiceNow", "BigQuery"] },
+  { label: "Pattern Detection", icon: Microscope, description: "ML clustering identifies repeat incidents and correlates with infrastructure or code changes.", systems: ["Datadog", "BigQuery"], integration: "ADK" },
+  { label: "Root Cause Reasoning", icon: Brain, description: "LLM synthesizes incident clusters into problem statements with systemic root cause analysis.", systems: ["Vertex AI"] },
+  { label: "Manager Review", icon: FileText, description: "Service Desk Manager reviews identified problems and allocates engineering resources for root cause elimination.", output: "Problem Tickets" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "ServiceNow", description: "Incident records, problem tickets, configuration items", direction: "bidirectional", protocol: "REST API", category: "erp" },
+    { system: "Datadog", description: "Infrastructure metrics, application performance data", direction: "read", protocol: "REST API", category: "analytics" },
+    { system: "BigQuery", description: "Incident history, pattern analytics, MTTR trending", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Root cause reasoning, problem statement generation", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Incident Data Aggregation", description: "Pull incident records from ServiceNow with resolution notes, affected CIs, and categorization. Enrich with infrastructure metrics from Datadog at time of incident.", systems: ["ServiceNow", "Datadog"], layer: "integration", dataIn: "Incident records + infrastructure metrics", dataOut: "Enriched incident dataset" },
+    { label: "Pattern Clustering", description: "Cluster incidents by symptom similarity, affected services, and timing patterns. Identify recurring issues that have been resolved multiple times without addressing root cause.", systems: ["BigQuery"], layer: "ml", dataIn: "Enriched incidents", dataOut: "Incident clusters with recurrence metrics" },
+    { label: "Systemic Root Cause Analysis", description: "Gemini analyzes incident clusters to identify systemic root causes — shared infrastructure bottlenecks, code patterns, or configuration issues that cause repeat incidents across services.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Incident clusters + infrastructure context", dataOut: "Problem statements with root cause analysis" },
+    { label: "Problem Ticket Creation", description: "Create problem tickets in ServiceNow with root cause analysis, impacted services, and recommended fixes. Track root cause elimination through to permanent resolution.", systems: ["ServiceNow", "BigQuery"], layer: "integration", dataIn: "Root cause analysis", dataOut: "Problem tickets with resolution tracking" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "IT Service Desk Manager agent for the Problem Management Analyzer workflow",
+  primaryObjective: "Gemini clusters incidents automatically and identifies systemic root causes across services weekly. LLM generates actionable problem statements connecting repeat incidents to shared infrastructure bottlenecks. so the IT Service Desk Manager can move the Repeat incident rate KPI.",
+  inScope: [
+    "Gemini clusters incidents automatically and identifies systemic root causes across services weekly",
+    "LLM generates actionable problem statements connecting repeat incidents to shared infrastructure bottlenecks",
+    "Automated problem detection reduces repeat incident rate from 25% to 8% through proactive root cause elimination",
+  ],
+  outOfScope: [
+    "Production deployments outside an approved change window",
+    "Irreversible destructive actions on shared infrastructure (DROP, force-delete, key rotation)",
+    "Security incident attribution requiring forensics",
+  ],
+  toolIntents: [
+    {
+      name: "query_servicenow_tickets",
+      kind: "query",
+      sourceSystemId: "servicenow",
+      description: "Retrieve tickets from ServiceNow for the Problem Management Analyzer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "tickets_records",
+        "tickets_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Problem Management Analyzer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "query_datadog_alerts",
+      kind: "query",
+      sourceSystemId: "datadog",
+      description: "Retrieve alerts from Datadog for the Problem Management Analyzer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "alerts_records",
+        "alerts_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_problem_management_analyzer_runbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Problem Management Analyzer Operations Runbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_servicenow_generate",
+      kind: "action",
+      sourceSystemId: "servicenow",
+      description: "Execute the generate step in ServiceNow after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Repeat incident rate moved from 25% recurrence toward 8% with root cause fixes",
+      mustCite: [
+        "servicenow.tickets",
+        "bigquery.analytics_events",
+      ],
+      sourceSystemIds: [
+        "servicenow",
+        "bigquery",
+      ],
+    },
+    {
+      claim: "Problem identification moved from Manual quarterly review toward Automated weekly",
+      mustCite: [
+        "servicenow.tickets",
+        "bigquery.analytics_events",
+      ],
+      sourceSystemIds: [
+        "servicenow",
+        "bigquery",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Repeat incident rate regresses past the 25% recurrence baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "IT Service Desk Manager",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed generate action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from ServiceNow (and other named systems) entities.",
+    "Never bypass IT Service Desk Manager approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "problem-management-analyzer-end-to-end",
+      prompt: "Run the Problem Management Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_servicenow_tickets",
+        "query_bigquery_analytics_events",
+        "query_datadog_alerts",
+        "lookup_problem_management_analyzer_runbook",
+        "action_servicenow_generate",
+      ],
+      mustReferenceEntities: [
+        "tickets",
+        "analytics_events",
+        "alerts",
+      ],
+      mustCiteDocuments: [
+        "problem-management-analyzer-runbook",
+      ],
+      expectedActionOutcome: "Action generate executed against ServiceNow, with audit-trail entry and IT Service Desk Manager notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute generate without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Problem Management Analyzer so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "servicenow",
+      name: "ServiceNow",
+      owns: [
+        "tickets",
+        "change_requests",
+        "incidents",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_servicenow_tickets",
+        "query_servicenow_change_requests",
+        "query_servicenow_incidents",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "datadog",
+      name: "Datadog",
+      owns: [
+        "alerts",
+        "monitors",
+        "metrics_snapshots",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_datadog_alerts",
+        "query_datadog_monitors",
+        "query_datadog_metrics_snapshots",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "tickets",
+      sourceSystemId: "servicenow",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "change_requests",
+      sourceSystemId: "servicenow",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "incidents",
+      sourceSystemId: "servicenow",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "alerts",
+      sourceSystemId: "datadog",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "monitors",
+      sourceSystemId: "datadog",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "metrics_snapshots",
+      sourceSystemId: "datadog",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "problem-management-analyzer-runbook",
+      sourceSystemId: "bigquery",
+      type: "runbook",
+      title: "Problem Management Analyzer Operations Runbook",
+      requiredSections: [
+        "Detection signals",
+        "Triage procedures",
+        "Remediation actions",
+        "Rollback criteria",
+        "Post-incident review",
+      ],
+      linkedEntities: [
+        "tickets",
+        "change_requests",
+        "incidents",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "detection",
+        "triage",
+        "remediation",
+        "rollback",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "servicenow_generate_api",
+      sourceSystemId: "servicenow",
+      method: "POST",
+      path: "/api/servicenow/generate",
+      description: "Synchronous endpoint the agent calls to generate in ServiceNow after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "problem-management-analyzer-baseline-gap",
+      description: "Seed a realistic gap where Repeat incident rate sits between 25% recurrence and 8% with root cause fixes, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "tickets",
+        "change_requests",
+      ],
+      discoveryPath: [
+        "Inspect ServiceNow records for the affected entities",
+        "Compare against BigQuery historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next IT Service Desk Manager action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "problem_management_analyzer",
+      schemas: [
+        "servicenow",
+      ],
+    },
+    bigquery: {
+      dataset: "it_problem_management_analyzer",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "problem-management-analyzer-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "problem-management-analyzer-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Problem Management Analyzer workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const ProblemManagementAnalyzer = () => (
+  <UseCaseSlide
+    title="Problem Management Analyzer"
+    subtitle="IT5-06 • IT Service Management"
+    icon={Search}
+    domainId="domain-42"
+    layer="Layer 4: Data Agent"
+    persona="IT Service Desk Manager"
+    systems={["ServiceNow", "BigQuery", "Datadog", "Vertex AI"]}
+    kpis={[
+      { label: "Repeat incident rate", before: "25% recurrence", after: "8% with root cause fixes" },
+      { label: "Problem identification", before: "Manual quarterly review", after: "Automated weekly" },
+      { label: "MTTR for known issues", before: "45 min avg", after: "15 min with KB match" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "IT Service Desk Manager", action: "Prioritize problem resolution", description: "Manager reviews identified systemic problems and allocates engineering resources for root cause elimination." }}
+    statusQuo={[
+      "Problem management is reactive — systemic issues identified only after repeated costly incidents.",
+      "Incident pattern detection relies on manual review of ticket data in quarterly meetings.",
+      "Root cause analysis documented inconsistently across teams with no systemic tracking.",
+    ]}
+    agentification={[
+      "Gemini clusters incidents automatically and identifies systemic root causes across services weekly.",
+      "LLM generates actionable problem statements connecting repeat incidents to shared infrastructure bottlenecks.",
+      "Automated problem detection reduces repeat incident rate from 25% to 8% through proactive root cause elimination.",
+    ]}
+  />
+);

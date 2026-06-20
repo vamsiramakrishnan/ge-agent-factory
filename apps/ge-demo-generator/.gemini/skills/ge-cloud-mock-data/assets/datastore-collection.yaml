@@ -1,0 +1,23 @@
+use_case: "<use-case-name>"
+seed: 42
+datastores:
+  - id: alloydb
+    class: OLTP_SQL
+    owns: []
+    package: mock_data/oltp/alloydb/package.yaml
+  - id: firestore
+    class: OLTP_NOSQL_FIRESTORE
+    owns: []
+    package: mock_data/oltp/firestore/package.yaml
+  - id: bigtable
+    class: OLTP_NOSQL_BIGTABLE
+    owns: []
+    package: mock_data/oltp/bigtable/package.yaml
+  - id: bigquery
+    class: OLAP_BIGQUERY
+    owns: []
+    package: mock_data/olap/bigquery/package.yaml
+  - id: gcs
+    class: UNSTRUCTURED_GCS
+    owns: []
+    package: mock_data/blobs/object-plan.yaml

@@ -1,0 +1,866 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { BarChart, Database, TrendingUp, CheckCircle, Globe } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Quarterly Cycle", lane: "system", type: "trigger" },
+    { id: "a1", label: "Peer Data Pull", lane: "agent", type: "action" },
+    { id: "a2", label: "Benchmark Analysis", lane: "agent", type: "action" },
+    { id: "a3", label: "Peer Comparison", lane: "agent", type: "output" },
+    { id: "h1", label: "CFO Reviews", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Peer Data Collection", icon: Globe, description: "Pull financial data from peer companies via S&P Capital IQ, Bloomberg, and SEC filings.", trigger: "Quarterly + Chat", systems: ["S&P Capital IQ", "Bloomberg"] },
+  { label: "Ratio Calculation", icon: Database, description: "Calculate comparison ratios, percentile rankings, and trend analysis against peer group.", systems: ["BigQuery"], integration: "ADK" },
+  { label: "Contextualization", icon: TrendingUp, description: "Gemini contextualizes benchmarks — explains what drives gaps and whether they reflect strategic choices or underperformance.", systems: ["Vertex AI"] },
+  { label: "CFO Review", icon: CheckCircle, description: "CFO reviews peer benchmarking analysis for board presentation and strategic planning.", output: "Peer Benchmarking Report" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "S&P Capital IQ", description: "Peer financial statements, ratios, industry benchmarks", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "Bloomberg", description: "Market data, analyst estimates, peer valuations", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "BigQuery", description: "Internal financials, peer comparison datasets, historical benchmarks", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Benchmark contextualization, gap analysis reasoning", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Peer Group Construction", description: "Identify relevant peer group based on industry, size, geography, and business model. Pull latest financial data from Capital IQ and Bloomberg.", systems: ["S&P Capital IQ", "Bloomberg"], layer: "integration", dataIn: "Peer selection criteria", dataOut: "Peer financial dataset" },
+    { label: "Ratio & Ranking Analysis", description: "Calculate 30+ financial ratios for company and peers. Generate percentile rankings by metric. Analyze trends over 8 quarters to identify convergence or divergence.", systems: ["BigQuery"], layer: "ml", dataIn: "Company + peer financials", dataOut: "Ranked ratios with trend analysis" },
+    { label: "Contextual Interpretation", description: "Gemini explains benchmark gaps: 'Your gross margin of 62% is 75th percentile but R&D at 28% is 90th percentile — the gap suggests either over-investment or higher product complexity. Compare product portfolio breadth to validate.'", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Rankings + company strategy context", dataOut: "Contextualized benchmarking narrative" },
+    { label: "Report Assembly", description: "Generate peer benchmarking report with rankings, trend charts, and strategic commentary for board and CFO consumption.", systems: ["BigQuery"], layer: "integration", dataIn: "Benchmarking narrative + charts", dataOut: "Peer benchmarking report" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "CFO agent for the Peer Benchmarking Agent workflow",
+  primaryObjective: "Automated peer data collection and ratio calculation across 30+ metrics with percentile ranking. Gemini contextualizes gaps — distinguishes strategic choices from genuine underperformance. so the CFO can move the Benchmarking cycle KPI.",
+  inScope: [
+    "Automated peer data collection and ratio calculation across 30+ metrics with percentile ranking",
+    "Gemini contextualizes gaps — distinguishes strategic choices from genuine underperformance",
+    "Multi-quarter trend analysis reveals whether gaps are converging or diverging over time",
+  ],
+  outOfScope: [
+    "Final sign-off on materially significant journal entries (Controller retains authority)",
+    "Restatement of prior-period filings",
+    "Tax position changes that require external advisor review",
+  ],
+  toolIntents: [
+    {
+      name: "query_s_p_capital_iq_s_p_capital_iq_records",
+      kind: "query",
+      sourceSystemId: "s_p_capital_iq",
+      description: "Retrieve s p capital iq records from S&P Capital IQ for the Peer Benchmarking Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "s_p_capital_iq_records_records",
+        "s_p_capital_iq_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bloomberg_bloomberg_records",
+      kind: "query",
+      sourceSystemId: "bloomberg",
+      description: "Retrieve bloomberg records from Bloomberg for the Peer Benchmarking Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "bloomberg_records_records",
+        "bloomberg_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Peer Benchmarking Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_peer_benchmarking_agent_controls_playbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Peer Benchmarking Agent Controls Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Benchmarking cycle moved from 2-3 weeks manual toward 2-3 days automated",
+      mustCite: [
+        "s_p_capital_iq.s_p_capital_iq_records",
+        "bloomberg.bloomberg_records",
+      ],
+      sourceSystemIds: [
+        "s_p_capital_iq",
+        "bloomberg",
+      ],
+    },
+    {
+      claim: "Peer metrics compared moved from 5-10 basic ratios toward 30+ with percentile ranking",
+      mustCite: [
+        "s_p_capital_iq.s_p_capital_iq_records",
+        "bloomberg.bloomberg_records",
+      ],
+      sourceSystemIds: [
+        "s_p_capital_iq",
+        "bloomberg",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Benchmarking cycle regresses past the 2-3 weeks manual baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "CFO",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from S&P Capital IQ (and other named systems) entities.",
+    "Never bypass CFO approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "peer-benchmarking-agent-end-to-end",
+      prompt: "Run the Peer Benchmarking Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_s_p_capital_iq_s_p_capital_iq_records",
+        "query_bloomberg_bloomberg_records",
+        "query_bigquery_analytics_events",
+        "lookup_peer_benchmarking_agent_controls_playbook",
+      ],
+      mustReferenceEntities: [
+        "s_p_capital_iq_records",
+        "bloomberg_records",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "peer-benchmarking-agent-controls-playbook",
+      ],
+      expectedActionOutcome: "CFO receives a fully-cited recommendation; no external state change without explicit approval.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not act on single-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Peer Benchmarking Agent so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "s_p_capital_iq",
+      name: "S&P Capital IQ",
+      owns: [
+        "s_p_capital_iq_records",
+        "s_p_capital_iq_events",
+        "s_p_capital_iq_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_s_p_capital_iq_s_p_capital_iq_records",
+        "query_s_p_capital_iq_s_p_capital_iq_events",
+        "query_s_p_capital_iq_s_p_capital_iq_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bloomberg",
+      name: "Bloomberg",
+      owns: [
+        "bloomberg_records",
+        "bloomberg_events",
+        "bloomberg_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_bloomberg_bloomberg_records",
+        "query_bloomberg_bloomberg_events",
+        "query_bloomberg_bloomberg_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "s_p_capital_iq_records",
+      sourceSystemId: "s_p_capital_iq",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "s_p_capital_iq_events",
+      sourceSystemId: "s_p_capital_iq",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "s_p_capital_iq_record_id",
+          type: "ref",
+          ref: "s_p_capital_iq_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "s_p_capital_iq_audit_trail",
+      sourceSystemId: "s_p_capital_iq",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "bloomberg_records",
+      sourceSystemId: "bloomberg",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "bloomberg_events",
+      sourceSystemId: "bloomberg",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "bloomberg_record_id",
+          type: "ref",
+          ref: "bloomberg_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "bloomberg_audit_trail",
+      sourceSystemId: "bloomberg",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "s_p_capital_iq_events.s_p_capital_iq_record_id",
+      to: "s_p_capital_iq_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "bloomberg_events.bloomberg_record_id",
+      to: "bloomberg_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "peer-benchmarking-agent-controls-playbook",
+      sourceSystemId: "bigquery",
+      type: "policy",
+      title: "Peer Benchmarking Agent Controls Playbook",
+      requiredSections: [
+        "Workflow scope",
+        "Materiality thresholds",
+        "Escalation triggers",
+        "Audit evidence requirements",
+        "Quarter-end variations",
+      ],
+      linkedEntities: [
+        "s_p_capital_iq_records",
+        "s_p_capital_iq_events",
+        "s_p_capital_iq_audit_trail",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "scope",
+        "materiality",
+        "escalation",
+        "audit-evidence",
+      ],
+    },
+  ],
+  apis: [],
+  anomalies: [
+    {
+      id: "peer-benchmarking-agent-baseline-gap",
+      description: "Seed a realistic gap where Benchmarking cycle sits between 2-3 weeks manual and 2-3 days automated, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "s_p_capital_iq_records",
+        "s_p_capital_iq_events",
+      ],
+      discoveryPath: [
+        "Inspect S&P Capital IQ records for the affected entities",
+        "Compare against Bloomberg historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next CFO action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "peer_benchmarking_agent",
+      schemas: [
+        "s_p_capital_iq",
+        "bloomberg",
+      ],
+    },
+    bigquery: {
+      dataset: "finance_peer_benchmarking_agent",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "peer-benchmarking-agent-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "peer-benchmarking-agent-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Peer Benchmarking Agent workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const PeerBenchmarkingAgent = () => (
+  <UseCaseSlide
+    title="Peer Benchmarking Agent"
+    subtitle="A-2805 • Finance Analytics & Reporting"
+    icon={BarChart}
+    domainId="domain-28"
+    layer="Layer 3: Custom ADK"
+    persona="CFO"
+    systems={["S&P Capital IQ", "Bloomberg", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "Benchmarking cycle", before: "2-3 weeks manual", after: "2-3 days automated" },
+      { label: "Peer metrics compared", before: "5-10 basic ratios", after: "30+ with percentile ranking" },
+      { label: "Strategic context", before: "Numbers without explanation", after: "AI-contextualized gap analysis" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "CFO", action: "Review benchmarking analysis", description: "CFO reviews peer comparisons and strategic gap analysis for board presentation and strategic planning input." }}
+    statusQuo={[
+      "Peer benchmarking done manually using Capital IQ exports and spreadsheet analysis.",
+      "Limited to 5-10 basic ratios without percentile ranking or trend tracking.",
+      "Raw numbers presented without context — no explanation of what drives benchmark gaps."
+    ]}
+    agentification={[
+      "Automated peer data collection and ratio calculation across 30+ metrics with percentile ranking.",
+      "Gemini contextualizes gaps — distinguishes strategic choices from genuine underperformance.",
+      "Multi-quarter trend analysis reveals whether gaps are converging or diverging over time."
+    ]}
+  />
+);

@@ -1,0 +1,39 @@
+{
+  "accounts": [
+    {
+      "account_id": "ACCOUNT-ID-001",
+      "name": "sample_name",
+      "industry": "sample_industry",
+      "segment": "sample_segment",
+      "status": "sample_status"
+    }
+  ],
+  "contacts": [
+    {
+      "contact_id": "CONTACT-ID-001",
+      "account_id": "ACCOUNT-ID-001",
+      "name": "sample_name",
+      "email": "sample_email",
+      "role": "sample_role"
+    }
+  ],
+  "opportunities": [
+    {
+      "opportunity_id": "OPPORTUNITY-ID-001",
+      "account_id": "ACCOUNT-ID-001",
+      "stage": "sample_stage",
+      "amount": "sample_amount",
+      "close_date": "sample_close_date"
+    }
+  ],
+  "activities": [
+    {
+      "activity_id": "ACTIVITY-ID-001",
+      "account_id": "ACCOUNT-ID-001",
+      "type": "sample_type",
+      "status": "sample_status",
+      "created_at": "sample_created_at"
+    }
+  ],
+  "audit_events": []
+}

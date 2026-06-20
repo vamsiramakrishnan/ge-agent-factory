@@ -1,0 +1,1272 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { AlertTriangle, Upload, GitBranch, BarChart, Shield } from "lucide-react";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Restructuring Scenario", lane: "system", type: "trigger" },
+    { id: "a1", label: "Role Mapping", lane: "agent", type: "action" },
+    { id: "a2", label: "Impact Analysis", lane: "agent", type: "action" },
+    { id: "h1", label: "CHRO Reviews Impact", lane: "human", type: "hitl" },
+    { id: "a3", label: "Compliance Check", lane: "agent", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "h1"], ["h1", "a3"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Scenario Input", icon: Upload, description: "Restructuring scenario with target org structure.", trigger: "Restructuring", systems: ["HRIS"] },
+  { label: "Role Mapping", icon: GitBranch, description: "Current roles mapped to new structure via skills taxonomy.", systems: ["Gemini", "Skills DB"], integration: "ADK" },
+  { label: "Impact Analysis", icon: BarChart, description: "RIF, redeployment, reskilling impacts quantified." },
+  { label: "Compliance Check", icon: Shield, description: "WARN Act, severance, equity impact validated.", output: "Impact Report" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Workday", description: "Employee profiles, roles, skills, compensation data", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "SAP BPC", description: "Budget impact modeling, cost center realignment", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "BigQuery", description: "Skills taxonomy, role mapping analytics, compliance data", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Role mapping reasoning, impact narrative generation", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Scenario & Role Mapping", description: "Ingest restructuring scenario parameters from Workday. Map current roles to proposed structure using enterprise skills taxonomy in BigQuery.", systems: ["Workday", "BigQuery"], layer: "integration", dataIn: "Current org structure + target structure", dataOut: "Role-to-role mapping with skills overlap scores" },
+    { label: "Impact Quantification", description: "Multi-scenario modeling across RIF, redeployment, and reskilling pathways. Cost projections, timeline estimates, and headcount impact calculated.", systems: ["SAP BPC", "BigQuery", "Vertex AI (Gemini)"], layer: "ml", dataIn: "Role mapping + comp data + budget models", dataOut: "Quantified impact across pathways" },
+    { label: "Compliance & Narrative", description: "Gemini validates WARN Act compliance, adverse impact analysis, and severance requirements. Generates executive impact report with recommendations.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Impact data + regulatory requirements", dataOut: "Compliance-checked impact assessment report" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "CHRO agent for the Restructuring Impact Assessment Agent workflow",
+  primaryObjective: "Automated role-to-role mapping using an enterprise skills taxonomy to identify transferability and overlap. Multi-scenario impact modeling across RIF, redeployment, and reskilling pathways with cost and timeline projections. so the CHRO can move the Assessment time KPI.",
+  inScope: [
+    "Automated role-to-role mapping using an enterprise skills taxonomy to identify transferability and overlap",
+    "Multi-scenario impact modeling across RIF, redeployment, and reskilling pathways with cost and timeline projections",
+    "Compliance-checked recommendations ensuring adherence to labor regulations, WARN Act requirements, and internal policies",
+  ],
+  outOfScope: [
+    "Final hiring, termination, or compensation decisions (HRBP/leadership retains authority)",
+    "Performance management adjudication and disciplinary action",
+    "Legal interpretation of employment law in ambiguous jurisdictions",
+  ],
+  toolIntents: [
+    {
+      name: "query_workday_employees",
+      kind: "query",
+      sourceSystemId: "workday",
+      description: "Retrieve employees from Workday for the Restructuring Impact Assessment Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "employees_records",
+        "employees_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_sap_successfactors_employee_records",
+      kind: "query",
+      sourceSystemId: "sap_successfactors",
+      description: "Retrieve employee records from SAP SuccessFactors for the Restructuring Impact Assessment Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "employee_records_records",
+        "employee_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_skills_db_skills_db_records",
+      kind: "query",
+      sourceSystemId: "skills_db",
+      description: "Retrieve skills db records from Skills DB for the Restructuring Impact Assessment Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "skills_db_records_records",
+        "skills_db_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_google_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "google_bigquery",
+      description: "Retrieve analytics events from Google BigQuery for the Restructuring Impact Assessment Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_restructuring_impact_assessment_agent_policy_handbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "google_bigquery",
+      description: "Look up sections of the Restructuring Impact Assessment Agent Policy Handbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_workday_recommend",
+      kind: "action",
+      sourceSystemId: "workday",
+      description: "Execute the recommend step in Workday after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Assessment time moved from 6 weeks toward 48 hours",
+      mustCite: [
+        "workday.employees",
+        "sap_successfactors.employee_records",
+      ],
+      sourceSystemIds: [
+        "workday",
+        "sap_successfactors",
+      ],
+    },
+    {
+      claim: "Role mapping accuracy moved from 70% toward 95%",
+      mustCite: [
+        "workday.employees",
+        "sap_successfactors.employee_records",
+      ],
+      sourceSystemIds: [
+        "workday",
+        "sap_successfactors",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Assessment time regresses past the 6 weeks baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "CHRO",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed recommend action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from Workday (and other named systems) entities.",
+    "Never bypass CHRO approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "restructuring-impact-assessment-agent-end-to-end",
+      prompt: "Run the Restructuring Impact Assessment Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_workday_employees",
+        "query_sap_successfactors_employee_records",
+        "query_skills_db_skills_db_records",
+        "query_google_bigquery_analytics_events",
+        "lookup_restructuring_impact_assessment_agent_policy_handbook",
+        "action_workday_recommend",
+      ],
+      mustReferenceEntities: [
+        "employees",
+        "employee_records",
+        "skills_db_records",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "restructuring-impact-assessment-agent-policy-handbook",
+      ],
+      expectedActionOutcome: "Action recommend executed against Workday, with audit-trail entry and CHRO notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute recommend without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Restructuring Impact Assessment Agent so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "workday",
+      name: "Workday",
+      owns: [
+        "employees",
+        "positions",
+        "compensation_records",
+      ],
+      protocol: "Workday REST",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_workday_employees",
+        "query_workday_positions",
+        "query_workday_compensation_records",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "sap_successfactors",
+      name: "SAP SuccessFactors",
+      owns: [
+        "employee_records",
+        "performance_reviews",
+        "talent_pool",
+      ],
+      protocol: "RFC/BAPI",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sap_successfactors_employee_records",
+        "query_sap_successfactors_performance_reviews",
+        "query_sap_successfactors_talent_pool",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "skills_db",
+      name: "Skills DB",
+      owns: [
+        "skills_db_records",
+        "skills_db_events",
+        "skills_db_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_skills_db_skills_db_records",
+        "query_skills_db_skills_db_events",
+        "query_skills_db_skills_db_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "google_bigquery",
+      name: "Google BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_google_bigquery_analytics_events",
+        "query_google_bigquery_historical_metrics",
+        "query_google_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "employees",
+      sourceSystemId: "workday",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "department",
+          type: "enum",
+          values: [
+            "Finance",
+            "HR",
+            "IT",
+            "Marketing",
+            "Procurement",
+            "Engineering",
+            "Operations",
+          ],
+          required: true,
+        },
+        {
+          name: "region",
+          type: "enum",
+          values: [
+            "US",
+            "EMEA",
+            "APAC",
+            "LATAM",
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "on_leave",
+            "inactive",
+          ],
+          weights: [
+            0.85,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "level",
+          type: "enum",
+          values: [
+            "L3",
+            "L4",
+            "L5",
+            "L6",
+            "L7",
+          ],
+          required: true,
+        },
+        {
+          name: "hired_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "positions",
+      sourceSystemId: "workday",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "department",
+          type: "enum",
+          values: [
+            "Finance",
+            "HR",
+            "IT",
+            "Marketing",
+            "Procurement",
+            "Engineering",
+            "Operations",
+          ],
+          required: true,
+        },
+        {
+          name: "region",
+          type: "enum",
+          values: [
+            "US",
+            "EMEA",
+            "APAC",
+            "LATAM",
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "on_leave",
+            "inactive",
+          ],
+          weights: [
+            0.85,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "level",
+          type: "enum",
+          values: [
+            "L3",
+            "L4",
+            "L5",
+            "L6",
+            "L7",
+          ],
+          required: true,
+        },
+        {
+          name: "hired_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "compensation_records",
+      sourceSystemId: "workday",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "department",
+          type: "enum",
+          values: [
+            "Finance",
+            "HR",
+            "IT",
+            "Marketing",
+            "Procurement",
+            "Engineering",
+            "Operations",
+          ],
+          required: true,
+        },
+        {
+          name: "region",
+          type: "enum",
+          values: [
+            "US",
+            "EMEA",
+            "APAC",
+            "LATAM",
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "on_leave",
+            "inactive",
+          ],
+          weights: [
+            0.85,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "level",
+          type: "enum",
+          values: [
+            "L3",
+            "L4",
+            "L5",
+            "L6",
+            "L7",
+          ],
+          required: true,
+        },
+        {
+          name: "hired_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "employee_records",
+      sourceSystemId: "sap_successfactors",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "department",
+          type: "enum",
+          values: [
+            "Finance",
+            "HR",
+            "IT",
+            "Marketing",
+            "Procurement",
+            "Engineering",
+            "Operations",
+          ],
+          required: true,
+        },
+        {
+          name: "region",
+          type: "enum",
+          values: [
+            "US",
+            "EMEA",
+            "APAC",
+            "LATAM",
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "on_leave",
+            "inactive",
+          ],
+          weights: [
+            0.85,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "level",
+          type: "enum",
+          values: [
+            "L3",
+            "L4",
+            "L5",
+            "L6",
+            "L7",
+          ],
+          required: true,
+        },
+        {
+          name: "hired_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "performance_reviews",
+      sourceSystemId: "sap_successfactors",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "talent_pool",
+      sourceSystemId: "sap_successfactors",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "department",
+          type: "enum",
+          values: [
+            "Finance",
+            "HR",
+            "IT",
+            "Marketing",
+            "Procurement",
+            "Engineering",
+            "Operations",
+          ],
+          required: true,
+        },
+        {
+          name: "region",
+          type: "enum",
+          values: [
+            "US",
+            "EMEA",
+            "APAC",
+            "LATAM",
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "on_leave",
+            "inactive",
+          ],
+          weights: [
+            0.85,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "level",
+          type: "enum",
+          values: [
+            "L3",
+            "L4",
+            "L5",
+            "L6",
+            "L7",
+          ],
+          required: true,
+        },
+        {
+          name: "hired_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "skills_db_records",
+      sourceSystemId: "skills_db",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "skills_db_events",
+      sourceSystemId: "skills_db",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "skills_db_record_id",
+          type: "ref",
+          ref: "skills_db_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "skills_db_audit_trail",
+      sourceSystemId: "skills_db",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "google_bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "google_bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "google_bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "skills_db_events.skills_db_record_id",
+      to: "skills_db_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "restructuring-impact-assessment-agent-policy-handbook",
+      sourceSystemId: "google_bigquery",
+      type: "policy",
+      title: "Restructuring Impact Assessment Agent Policy Handbook",
+      requiredSections: [
+        "Eligibility and scope",
+        "Workflow steps",
+        "Manager responsibilities",
+        "Compliance and audit",
+        "Sensitive-data handling",
+      ],
+      linkedEntities: [
+        "employees",
+        "positions",
+        "compensation_records",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "eligibility",
+        "workflow",
+        "compliance",
+        "sensitive-data",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "workday_recommend_api",
+      sourceSystemId: "workday",
+      method: "POST",
+      path: "/api/workday/recommend",
+      description: "Synchronous endpoint the agent calls to recommend in Workday after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "restructuring-impact-assessment-agent-baseline-gap",
+      description: "Seed a realistic gap where Assessment time sits between 6 weeks and 48 hours, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "employees",
+        "positions",
+      ],
+      discoveryPath: [
+        "Inspect Workday records for the affected entities",
+        "Compare against SAP SuccessFactors historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next CHRO action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "restructuring_impact_assessment_agent",
+      schemas: [
+        "workday",
+        "sap_successfactors",
+        "skills_db",
+      ],
+    },
+    bigquery: {
+      dataset: "hr_restructuring_impact_assessment_agent",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "restructuring-impact-assessment-agent-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "restructuring-impact-assessment-agent-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Restructuring Impact Assessment Agent workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const RestructuringImpactAssessment = () => (
+  <UseCaseSlide
+    title="Restructuring Impact Assessment Agent"
+    subtitle="A-106 • Organization Design & Restructuring"
+    icon={AlertTriangle}
+    domainId="domain-1"
+    layer="Layer 3: Custom ADK"
+    persona="CHRO"
+    systems={["Workday", "SAP SuccessFactors", "Skills DB", "Google BigQuery"]}
+    kpis={[
+      { label: "Assessment time", before: "6 weeks", after: "48 hours" },
+      { label: "Role mapping accuracy", before: "70%", after: "95%" },
+      { label: "Compliance coverage", before: "Partial", after: "100%" },
+    ]}
+    triggerType="event"
+    swimlane={swimlane}
+    hitl={{ actor: "CHRO", action: "Approve impact plan", description: "Agent pauses after generating restructuring impact analysis. CHRO reviews RIF/redeployment/reskilling recommendations before any action is taken." }}
+    flow={flow}
+    architecture={architecture}
+    statusQuo={[
+      "Impact assessments conducted manually in spreadsheets with incomplete role mapping across business units.",
+      "RIF analysis lacks data-driven rigor — decisions often based on tenure or cost rather than skills and business need.",
+      "Redeployment and reskilling options are afterthoughts, evaluated too late in the restructuring timeline."
+    ]}
+    agentification={[
+      "Automated role-to-role mapping using an enterprise skills taxonomy to identify transferability and overlap.",
+      "Multi-scenario impact modeling across RIF, redeployment, and reskilling pathways with cost and timeline projections.",
+      "Compliance-checked recommendations ensuring adherence to labor regulations, WARN Act requirements, and internal policies."
+    ]}
+  />
+);

@@ -1,0 +1,889 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { PieChart, Database, Cpu, Brain, UserCheck } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Weekly Review", lane: "system", type: "trigger" },
+    { id: "a1", label: "Portfolio Analysis", lane: "agent", type: "action" },
+    { id: "a2", label: "Policy Check", lane: "agent", type: "action" },
+    { id: "a3", label: "Rebalance Plan", lane: "agent", type: "output" },
+    { id: "h1", label: "Treasurer Approves", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Portfolio Pull", icon: Database, description: "Current portfolio positions, market valuations, and cash forecast pulled from treasury system.", trigger: "Weekly", systems: ["Kyriba", "Bloomberg"] },
+  { label: "Optimization Engine", icon: Cpu, description: "Portfolio optimization across yield, liquidity, and risk dimensions with duration matching and credit quality analysis.", systems: ["BigQuery"], integration: "ADK" },
+  { label: "Policy Interpretation", icon: Brain, description: "Gemini interprets investment policy constraints against current market conditions and recommends allocations within limits.", systems: ["Vertex AI"] },
+  { label: "Execution Approval", icon: UserCheck, description: "Treasurer reviews rebalancing recommendations and approves trades within policy constraints.", output: "Rebalancing Plan" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Kyriba", description: "Portfolio positions, trade execution, compliance reporting", direction: "bidirectional", protocol: "REST API", category: "erp" },
+    { system: "Bloomberg", description: "Market prices, yield curves, credit ratings, benchmark indices", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "BigQuery", description: "Optimization models, duration matching, risk-return frontier analysis", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Investment policy interpretation, market context analysis, recommendation narrative", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Portfolio & Market Data", description: "Pull current portfolio positions with market valuations, accrued interest, and maturity schedules. Overlay with cash forecast to determine investable balances by time horizon.", systems: ["Kyriba", "Bloomberg"], layer: "integration", dataIn: "Portfolio positions + market data + cash forecast", dataOut: "Current portfolio state with investable balance timeline" },
+    { label: "Portfolio Optimization", description: "Optimize portfolio allocation across yield, liquidity, and credit risk dimensions. Duration matching against expected cash needs. Benchmark comparison against money market and short-term bond indices.", systems: ["BigQuery"], layer: "ml", dataIn: "Portfolio state + market yields + risk constraints", dataOut: "Optimal allocation with rebalancing trades" },
+    { label: "Policy Constraint Interpretation", description: "Gemini reads investment policy and interprets constraints: 'Policy limits single-issuer exposure to 10% but the new T-bill at 5.2% yield is attractive. At current portfolio size, you can allocate $8M without breaching.' Generates recommendation narrative.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Optimal allocation + investment policy + market conditions", dataOut: "Policy-compliant recommendations with narrative" },
+    { label: "Trade Recommendation & Execution", description: "Present rebalancing recommendations to Treasurer with expected yield improvement and risk impact. Execute approved trades through treasury management system.", systems: ["Kyriba"], layer: "integration", dataIn: "Approved rebalancing plan", dataOut: "Executed trades with confirmation" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Treasurer agent for the Investment Portfolio Optimizer workflow",
+  primaryObjective: "Weekly optimization across yield, liquidity, and risk dimensions captures 130bps additional yield on the investment portfolio. Gemini interprets investment policy constraints in real-time, ensuring continuous compliance rather than quarterly discovery. so the Treasurer can move the Portfolio yield KPI.",
+  inScope: [
+    "Weekly optimization across yield, liquidity, and risk dimensions captures 130bps additional yield on the investment portfolio",
+    "Gemini interprets investment policy constraints in real-time, ensuring continuous compliance rather than quarterly discovery",
+    "Cash forecast integration enables confident allocation, reducing the near-zero-yield buffer from 30% to 10% of portfolio",
+  ],
+  outOfScope: [
+    "Final sign-off on materially significant journal entries (Controller retains authority)",
+    "Restatement of prior-period filings",
+    "Tax position changes that require external advisor review",
+  ],
+  toolIntents: [
+    {
+      name: "query_kyriba_cash_positions",
+      kind: "query",
+      sourceSystemId: "kyriba",
+      description: "Retrieve cash positions from Kyriba for the Investment Portfolio Optimizer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "cash_positions_records",
+        "cash_positions_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bloomberg_bloomberg_records",
+      kind: "query",
+      sourceSystemId: "bloomberg",
+      description: "Retrieve bloomberg records from Bloomberg for the Investment Portfolio Optimizer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "bloomberg_records_records",
+        "bloomberg_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Investment Portfolio Optimizer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_investment_portfolio_optimizer_controls_playbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Investment Portfolio Optimizer Controls Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Portfolio yield moved from 3.8% toward 5.1%",
+      mustCite: [
+        "kyriba.cash_positions",
+        "bloomberg.bloomberg_records",
+      ],
+      sourceSystemIds: [
+        "kyriba",
+        "bloomberg",
+      ],
+    },
+    {
+      claim: "Policy compliance moved from Manual quarterly check toward Continuous automated",
+      mustCite: [
+        "kyriba.cash_positions",
+        "bloomberg.bloomberg_records",
+      ],
+      sourceSystemIds: [
+        "kyriba",
+        "bloomberg",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Portfolio yield regresses past the 3.8% baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Treasurer",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from Kyriba (and other named systems) entities.",
+    "Never bypass Treasurer approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "investment-portfolio-optimizer-end-to-end",
+      prompt: "Run the Investment Portfolio Optimizer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_kyriba_cash_positions",
+        "query_bloomberg_bloomberg_records",
+        "query_bigquery_analytics_events",
+        "lookup_investment_portfolio_optimizer_controls_playbook",
+      ],
+      mustReferenceEntities: [
+        "cash_positions",
+        "bloomberg_records",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "investment-portfolio-optimizer-controls-playbook",
+      ],
+      expectedActionOutcome: "Treasurer receives a fully-cited recommendation; no external state change without explicit approval.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not act on single-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Investment Portfolio Optimizer so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "kyriba",
+      name: "Kyriba",
+      owns: [
+        "cash_positions",
+        "bank_transactions",
+        "forecast_inputs",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_kyriba_cash_positions",
+        "query_kyriba_bank_transactions",
+        "query_kyriba_forecast_inputs",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bloomberg",
+      name: "Bloomberg",
+      owns: [
+        "bloomberg_records",
+        "bloomberg_events",
+        "bloomberg_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_bloomberg_bloomberg_records",
+        "query_bloomberg_bloomberg_events",
+        "query_bloomberg_bloomberg_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "cash_positions",
+      sourceSystemId: "kyriba",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "bank_transactions",
+      sourceSystemId: "kyriba",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "forecast_inputs",
+      sourceSystemId: "kyriba",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "cost_center",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "month",
+            "quarter",
+            "year",
+          ],
+          required: true,
+        },
+        {
+          name: "budget_amount",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "actual_amount",
+          type: "number",
+          min: 0,
+          max: 6000000,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -100,
+          max: 100,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "scenario",
+          type: "enum",
+          values: [
+            "baseline",
+            "stretch",
+            "downside",
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "bloomberg_records",
+      sourceSystemId: "bloomberg",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "bloomberg_events",
+      sourceSystemId: "bloomberg",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "bloomberg_record_id",
+          type: "ref",
+          ref: "bloomberg_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "bloomberg_audit_trail",
+      sourceSystemId: "bloomberg",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "bloomberg_events.bloomberg_record_id",
+      to: "bloomberg_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "investment-portfolio-optimizer-controls-playbook",
+      sourceSystemId: "bigquery",
+      type: "policy",
+      title: "Investment Portfolio Optimizer Controls Playbook",
+      requiredSections: [
+        "Workflow scope",
+        "Materiality thresholds",
+        "Escalation triggers",
+        "Audit evidence requirements",
+        "Quarter-end variations",
+      ],
+      linkedEntities: [
+        "cash_positions",
+        "bank_transactions",
+        "forecast_inputs",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "scope",
+        "materiality",
+        "escalation",
+        "audit-evidence",
+      ],
+    },
+  ],
+  apis: [],
+  anomalies: [
+    {
+      id: "investment-portfolio-optimizer-baseline-gap",
+      description: "Seed a realistic gap where Portfolio yield sits between 3.8% and 5.1%, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "cash_positions",
+        "bank_transactions",
+      ],
+      discoveryPath: [
+        "Inspect Kyriba records for the affected entities",
+        "Compare against Bloomberg historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Treasurer action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "investment_portfolio_optimizer",
+      schemas: [
+        "kyriba",
+        "bloomberg",
+      ],
+    },
+    bigquery: {
+      dataset: "finance_investment_portfolio_optimizer",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "investment-portfolio-optimizer-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "investment-portfolio-optimizer-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Investment Portfolio Optimizer workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const InvestmentPortfolioOptimizer = () => (
+  <UseCaseSlide
+    title="Investment Portfolio Optimizer"
+    subtitle="A-2404 - Treasury & Cash"
+    icon={PieChart}
+    domainId="domain-24"
+    layer="Layer 3: Custom ADK"
+    persona="Treasurer"
+    systems={["Kyriba", "Bloomberg", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "Portfolio yield", before: "3.8%", after: "5.1%" },
+      { label: "Policy compliance", before: "Manual quarterly check", after: "Continuous automated" },
+      { label: "Rebalancing frequency", before: "Monthly manual", after: "Weekly optimized" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "Treasurer", action: "Approve rebalancing trades", description: "Treasurer reviews portfolio optimization recommendations, validates policy compliance, and approves rebalancing trades." }}
+    statusQuo={[
+      "Portfolio managed monthly with basic yield comparison in Excel -- missing optimization across yield, liquidity, and risk trade-offs.",
+      "Investment policy compliance checked manually at quarter-end, sometimes discovering breaches retroactively.",
+      "Conservative allocations due to uncertainty about cash needs, leaving 30%+ in near-zero-yield sweep accounts."
+    ]}
+    agentification={[
+      "Weekly optimization across yield, liquidity, and risk dimensions captures 130bps additional yield on the investment portfolio.",
+      "Gemini interprets investment policy constraints in real-time, ensuring continuous compliance rather than quarterly discovery.",
+      "Cash forecast integration enables confident allocation, reducing the near-zero-yield buffer from 30% to 10% of portfolio."
+    ]}
+  />
+);

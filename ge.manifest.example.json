@@ -1,0 +1,13 @@
+{
+  "_comment": "Desired state for `ge apply`. Copy to ge.manifest.json and edit. Platform planes are opt-in (declare what must be up); fleet declares the target stage + which agents. `ge apply` plans the drift; `ge apply --yes` executes it in dependency order (gateway -> data -> tool plane -> agents).",
+  "platform": {
+    "infra": true,
+    "data": true,
+    "mcp": true
+  },
+  "fleet": {
+    "mode": "remote",
+    "target": "published",
+    "agents": "all"
+  }
+}

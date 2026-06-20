@@ -1,0 +1,1319 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { Siren, Search, Workflow, Shield, ShieldAlert } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Incident Declared", lane: "system", type: "trigger" },
+    { id: "a1", label: "Kill Chain Analysis", lane: "agent", type: "action" },
+    { id: "a2", label: "Containment Plan", lane: "agent", type: "action" },
+    { id: "a3", label: "Response Playbook", lane: "agent", type: "output" },
+    { id: "h1", label: "CISO Approves", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Incident Trigger", icon: Siren, description: "Security incident declared with initial classification, affected systems, and detection source.", trigger: "Event-driven", systems: ["PagerDuty", "Chronicle"] },
+  { label: "Forensic Analysis", icon: Search, description: "Attack kill chain mapped, lateral movement detected, and IOCs correlated across security tools.", systems: ["CrowdStrike", "Splunk"], integration: "ADK" },
+  { label: "Response Plan", icon: Workflow, description: "LLM generates containment and remediation playbook based on attack type and affected assets.", systems: ["Vertex AI"] },
+  { label: "CISO Authorization", icon: Shield, description: "CISO reviews containment plan and authorizes isolation, blocking, and forensic evidence preservation.", output: "Incident Response" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "CrowdStrike", description: "Endpoint detection, host isolation, forensic data", direction: "bidirectional", protocol: "REST API", category: "erp" },
+    { system: "Chronicle SIEM", description: "Log correlation, timeline reconstruction", direction: "read", protocol: "gRPC", category: "analytics" },
+    { system: "PagerDuty", description: "Incident lifecycle, on-call paging, escalation", direction: "bidirectional", protocol: "REST API", category: "collaboration" },
+    { system: "Splunk", description: "Deep forensic search, historical event analysis", direction: "read", protocol: "REST API", category: "analytics" },
+    { system: "Slack", description: "War room coordination, status updates", direction: "write", protocol: "REST API", category: "collaboration" },
+    { system: "Vertex AI (Gemini)", description: "Kill chain reasoning, playbook generation", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Incident Classification & Scoping", description: "Receive incident declaration from PagerDuty. Classify attack type, identify affected systems, and estimate blast radius using endpoint telemetry and SIEM correlation.", systems: ["PagerDuty", "CrowdStrike", "Chronicle SIEM"], layer: "integration", dataIn: "Incident declaration + initial indicators", dataOut: "Scoped incident with affected asset inventory" },
+    { label: "Kill Chain Reconstruction", description: "Map attack progression using MITRE ATT&CK framework. Detect lateral movement, privilege escalation, and data exfiltration attempts. Build forensic timeline.", systems: ["Splunk", "CrowdStrike"], layer: "ml", dataIn: "Security logs + endpoint telemetry", dataOut: "Attack kill chain timeline with IOCs" },
+    { label: "Response Playbook Generation", description: "Gemini generates a tailored incident response playbook based on attack type, affected assets, and business criticality. Recommends containment, eradication, and recovery steps.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Kill chain + asset criticality + attack type", dataOut: "Containment and recovery playbook" },
+    { label: "Containment Execution & Communication", description: "Execute approved containment actions — host isolation, domain blocking, credential rotation. Coordinate response team via Slack war room with regular status updates.", systems: ["CrowdStrike", "Slack", "PagerDuty"], layer: "integration", dataIn: "Approved playbook actions", dataOut: "Contained incident + forensic evidence preserved" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "CISO / Security Analyst agent for the Security Incident Responder workflow",
+  primaryObjective: "Gemini reconstructs the attack kill chain in minutes using MITRE ATT&CK mapping across all security telemetry. LLM generates tailored response playbooks based on specific attack type, affected assets, and business criticality. so the CISO / Security Analyst can move the Mean time to containment KPI.",
+  inScope: [
+    "Gemini reconstructs the attack kill chain in minutes using MITRE ATT&CK mapping across all security telemetry",
+    "LLM generates tailored response playbooks based on specific attack type, affected assets, and business criticality",
+    "Automated war room setup with real-time status updates reduces coordination overhead during incidents",
+  ],
+  outOfScope: [
+    "Production deployments outside an approved change window",
+    "Irreversible destructive actions on shared infrastructure (DROP, force-delete, key rotation)",
+    "Security incident attribution requiring forensics",
+  ],
+  toolIntents: [
+    {
+      name: "query_crowdstrike_scan_findings",
+      kind: "query",
+      sourceSystemId: "crowdstrike",
+      description: "Retrieve scan findings from CrowdStrike for the Security Incident Responder workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "scan_findings_records",
+        "scan_findings_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_chronicle_chronicle_records",
+      kind: "query",
+      sourceSystemId: "chronicle",
+      description: "Retrieve chronicle records from Chronicle for the Security Incident Responder workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "chronicle_records_records",
+        "chronicle_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_pagerduty_incidents",
+      kind: "query",
+      sourceSystemId: "pagerduty",
+      description: "Retrieve incidents from PagerDuty for the Security Incident Responder workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "incidents_records",
+        "incidents_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "query_splunk_log_events",
+      kind: "query",
+      sourceSystemId: "splunk",
+      description: "Retrieve log events from Splunk for the Security Incident Responder workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "log_events_records",
+        "log_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_security_incident_responder_runbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "pagerduty",
+      description: "Look up sections of the Security Incident Responder Operations Runbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_crowdstrike_generate",
+      kind: "action",
+      sourceSystemId: "crowdstrike",
+      description: "Execute the generate step in CrowdStrike after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Mean time to containment moved from 4-6 hours toward <45 minutes",
+      mustCite: [
+        "crowdstrike.scan_findings",
+        "chronicle.chronicle_records",
+      ],
+      sourceSystemIds: [
+        "crowdstrike",
+        "chronicle",
+      ],
+    },
+    {
+      claim: "Kill chain reconstruction moved from Days of forensics toward Minutes automated",
+      mustCite: [
+        "crowdstrike.scan_findings",
+        "chronicle.chronicle_records",
+      ],
+      sourceSystemIds: [
+        "crowdstrike",
+        "chronicle",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Mean time to containment regresses past the 4-6 hours baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "CISO / Security Analyst",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed generate action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from CrowdStrike (and other named systems) entities.",
+    "Never bypass CISO / Security Analyst approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "security-incident-responder-end-to-end",
+      prompt: "Run the Security Incident Responder workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_crowdstrike_scan_findings",
+        "query_chronicle_chronicle_records",
+        "query_pagerduty_incidents",
+        "query_splunk_log_events",
+        "lookup_security_incident_responder_runbook",
+        "action_crowdstrike_generate",
+      ],
+      mustReferenceEntities: [
+        "scan_findings",
+        "chronicle_records",
+        "incidents",
+        "log_events",
+        "messages",
+      ],
+      mustCiteDocuments: [
+        "security-incident-responder-runbook",
+      ],
+      expectedActionOutcome: "Action generate executed against CrowdStrike, with audit-trail entry and CISO / Security Analyst notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute generate without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Security Incident Responder so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "crowdstrike",
+      name: "CrowdStrike",
+      owns: [
+        "scan_findings",
+        "asset_inventory",
+        "remediation_tasks",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_crowdstrike_scan_findings",
+        "query_crowdstrike_asset_inventory",
+        "query_crowdstrike_remediation_tasks",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "chronicle",
+      name: "Chronicle",
+      owns: [
+        "chronicle_records",
+        "chronicle_events",
+        "chronicle_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_chronicle_chronicle_records",
+        "query_chronicle_chronicle_events",
+        "query_chronicle_chronicle_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "pagerduty",
+      name: "PagerDuty",
+      owns: [
+        "incidents",
+        "oncall_schedules",
+        "escalation_policies",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_pagerduty_incidents",
+        "query_pagerduty_oncall_schedules",
+        "query_pagerduty_escalation_policies",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "splunk",
+      name: "Splunk",
+      owns: [
+        "log_events",
+        "search_jobs",
+        "alert_actions",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_splunk_log_events",
+        "query_splunk_search_jobs",
+        "query_splunk_alert_actions",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "slack",
+      name: "Slack",
+      owns: [
+        "messages",
+        "channels",
+        "thread_replies",
+      ],
+      protocol: "Slack API",
+      localBacking: [
+        "json-api",
+      ],
+      toolNames: [
+        "query_slack_messages",
+        "query_slack_channels",
+        "query_slack_thread_replies",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "scan_findings",
+      sourceSystemId: "crowdstrike",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "severity",
+          type: "enum",
+          values: [
+            "low",
+            "medium",
+            "high",
+            "critical",
+          ],
+          weights: [
+            0.4,
+            0.35,
+            0.2,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "mitigated",
+            "accepted_risk",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "detected_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "asset",
+          type: "lorem.words",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "asset_inventory",
+      sourceSystemId: "crowdstrike",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "remediation_tasks",
+      sourceSystemId: "crowdstrike",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "chronicle_records",
+      sourceSystemId: "chronicle",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "chronicle_events",
+      sourceSystemId: "chronicle",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "chronicle_record_id",
+          type: "ref",
+          ref: "chronicle_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "chronicle_audit_trail",
+      sourceSystemId: "chronicle",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "incidents",
+      sourceSystemId: "pagerduty",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "oncall_schedules",
+      sourceSystemId: "pagerduty",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "escalation_policies",
+      sourceSystemId: "pagerduty",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "log_events",
+      sourceSystemId: "splunk",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "search_job_id",
+          type: "ref",
+          ref: "search_jobs.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "search_jobs",
+      sourceSystemId: "splunk",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "alert_actions",
+      sourceSystemId: "splunk",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "messages",
+      sourceSystemId: "slack",
+      datastore: "json-api",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "channel",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "author",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "body",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "sentiment",
+          type: "enum",
+          values: [
+            "positive",
+            "neutral",
+            "negative",
+          ],
+          weights: [
+            0.4,
+            0.4,
+            0.2,
+          ],
+          required: true,
+        },
+        {
+          name: "sent_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "channels",
+      sourceSystemId: "slack",
+      datastore: "json-api",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "thread_replies",
+      sourceSystemId: "slack",
+      datastore: "json-api",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "channel",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "author",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "body",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "sentiment",
+          type: "enum",
+          values: [
+            "positive",
+            "neutral",
+            "negative",
+          ],
+          weights: [
+            0.4,
+            0.4,
+            0.2,
+          ],
+          required: true,
+        },
+        {
+          name: "sent_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "chronicle_events.chronicle_record_id",
+      to: "chronicle_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "log_events.search_job_id",
+      to: "search_jobs.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "security-incident-responder-runbook",
+      sourceSystemId: "pagerduty",
+      type: "runbook",
+      title: "Security Incident Responder Operations Runbook",
+      requiredSections: [
+        "Detection signals",
+        "Triage procedures",
+        "Remediation actions",
+        "Rollback criteria",
+        "Post-incident review",
+      ],
+      linkedEntities: [
+        "scan_findings",
+        "asset_inventory",
+        "remediation_tasks",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "detection",
+        "triage",
+        "remediation",
+        "rollback",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "crowdstrike_generate_api",
+      sourceSystemId: "crowdstrike",
+      method: "POST",
+      path: "/api/crowdstrike/generate",
+      description: "Synchronous endpoint the agent calls to generate in CrowdStrike after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "security-incident-responder-baseline-gap",
+      description: "Seed a realistic gap where Mean time to containment sits between 4-6 hours and <45 minutes, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "scan_findings",
+        "asset_inventory",
+      ],
+      discoveryPath: [
+        "Inspect CrowdStrike records for the affected entities",
+        "Compare against Chronicle historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next CISO / Security Analyst action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "security_incident_responder",
+      schemas: [
+        "crowdstrike",
+        "chronicle",
+        "slack",
+      ],
+    },
+    bigquery: {
+      dataset: "it_security_incident_responder",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "security-incident-responder-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "security-incident-responder-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Security Incident Responder workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const SecurityIncidentResponder = () => (
+  <UseCaseSlide
+    title="Security Incident Responder"
+    subtitle="IT4-08 • Cybersecurity & Threat Management"
+    icon={ShieldAlert}
+    domainId="domain-41"
+    layer="Layer 3: Custom ADK"
+    persona="CISO / Security Analyst"
+    systems={["CrowdStrike", "Chronicle", "PagerDuty", "Splunk", "Slack", "Vertex AI"]}
+    kpis={[
+      { label: "Mean time to containment", before: "4-6 hours", after: "<45 minutes" },
+      { label: "Kill chain reconstruction", before: "Days of forensics", after: "Minutes automated" },
+      { label: "Playbook coverage", before: "12 static runbooks", after: "Dynamic per-incident" },
+    ]}
+    triggerType="event"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "CISO", action: "Authorize containment actions", description: "CISO reviews attack analysis and containment plan, authorizing system isolation, domain blocking, and credential rotation actions." }}
+    statusQuo={[
+      "Incident response follows static runbooks that don't adapt to the specific attack type or affected systems.",
+      "Kill chain reconstruction requires days of manual forensic analysis across multiple security tools.",
+      "War room coordination relies on manual paging, status page updates, and stakeholder communication.",
+    ]}
+    agentification={[
+      "Gemini reconstructs the attack kill chain in minutes using MITRE ATT&CK mapping across all security telemetry.",
+      "LLM generates tailored response playbooks based on specific attack type, affected assets, and business criticality.",
+      "Automated war room setup with real-time status updates reduces coordination overhead during incidents.",
+    ]}
+  />
+);

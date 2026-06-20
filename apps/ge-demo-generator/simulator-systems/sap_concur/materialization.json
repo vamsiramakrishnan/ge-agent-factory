@@ -1,0 +1,530 @@
+{
+  "id": "sap_concur_materialization",
+  "version": 1,
+  "collections": {
+    "users": {
+      "primaryKey": "user_id",
+      "fieldAliases": {
+        "user_id": [
+          "user_id",
+          "id",
+          "source_record_id"
+        ],
+        "employee_id": [
+          "employee_id",
+          "id",
+          "source_record_id"
+        ],
+        "login_id": [
+          "login_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "email": [
+          "email",
+          "id",
+          "source_record_id"
+        ],
+        "country": [
+          "country",
+          "id",
+          "source_record_id"
+        ],
+        "company_code": [
+          "company_code",
+          "id",
+          "source_record_id"
+        ],
+        "cost_center": [
+          "cost_center",
+          "id",
+          "source_record_id"
+        ],
+        "manager_id": [
+          "manager_id",
+          "id",
+          "source_record_id"
+        ],
+        "ledger_code": [
+          "ledger_code",
+          "id",
+          "source_record_id"
+        ],
+        "reimbursement_currency": [
+          "reimbursement_currency",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "expense_reports": {
+      "primaryKey": "report_id",
+      "fieldAliases": {
+        "report_id": [
+          "report_id",
+          "id",
+          "source_record_id"
+        ],
+        "user_id": [
+          "user_id",
+          "id",
+          "source_record_id"
+        ],
+        "report_name": [
+          "report_name",
+          "id",
+          "source_record_id"
+        ],
+        "purpose": [
+          "purpose",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "approval_status": [
+          "approval_status",
+          "id",
+          "source_record_id"
+        ],
+        "payment_status": [
+          "payment_status",
+          "id",
+          "source_record_id"
+        ],
+        "submitted_at": [
+          "submitted_at",
+          "id",
+          "source_record_id"
+        ],
+        "approved_at": [
+          "approved_at",
+          "id",
+          "source_record_id"
+        ],
+        "total_amount": [
+          "total_amount",
+          "id",
+          "source_record_id"
+        ],
+        "approved_amount": [
+          "approved_amount",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "policy_exception_count": [
+          "policy_exception_count",
+          "id",
+          "source_record_id"
+        ],
+        "audit_required": [
+          "audit_required",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "submitted",
+        "approval_status": "pending"
+      }
+    },
+    "expense_entries": {
+      "primaryKey": "entry_id",
+      "fieldAliases": {
+        "entry_id": [
+          "entry_id",
+          "id",
+          "source_record_id"
+        ],
+        "report_id": [
+          "report_id",
+          "id",
+          "source_record_id"
+        ],
+        "expense_type": [
+          "expense_type",
+          "id",
+          "source_record_id"
+        ],
+        "transaction_date": [
+          "transaction_date",
+          "id",
+          "source_record_id"
+        ],
+        "vendor": [
+          "vendor",
+          "id",
+          "source_record_id"
+        ],
+        "city": [
+          "city",
+          "id",
+          "source_record_id"
+        ],
+        "country": [
+          "country",
+          "id",
+          "source_record_id"
+        ],
+        "amount": [
+          "amount",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "payment_type": [
+          "payment_type",
+          "id",
+          "source_record_id"
+        ],
+        "receipt_required": [
+          "receipt_required",
+          "id",
+          "source_record_id"
+        ],
+        "receipt_id": [
+          "receipt_id",
+          "id",
+          "source_record_id"
+        ],
+        "attendee_count": [
+          "attendee_count",
+          "id",
+          "source_record_id"
+        ],
+        "allocation_id": [
+          "allocation_id",
+          "id",
+          "source_record_id"
+        ],
+        "policy_status": [
+          "policy_status",
+          "id",
+          "source_record_id"
+        ],
+        "exception_code": [
+          "exception_code",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "policy_status": "within_policy"
+      }
+    },
+    "receipts": {
+      "primaryKey": "receipt_id",
+      "fieldAliases": {
+        "receipt_id": [
+          "receipt_id",
+          "id",
+          "source_record_id"
+        ],
+        "entry_id": [
+          "entry_id",
+          "id",
+          "source_record_id"
+        ],
+        "image_url": [
+          "image_url",
+          "id",
+          "source_record_id"
+        ],
+        "ocr_vendor": [
+          "ocr_vendor",
+          "id",
+          "source_record_id"
+        ],
+        "ocr_amount": [
+          "ocr_amount",
+          "id",
+          "source_record_id"
+        ],
+        "ocr_date": [
+          "ocr_date",
+          "id",
+          "source_record_id"
+        ],
+        "match_status": [
+          "match_status",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "card_transactions": {
+      "primaryKey": "transaction_id",
+      "fieldAliases": {
+        "transaction_id": [
+          "transaction_id",
+          "id",
+          "source_record_id"
+        ],
+        "user_id": [
+          "user_id",
+          "id",
+          "source_record_id"
+        ],
+        "entry_id": [
+          "entry_id",
+          "id",
+          "source_record_id"
+        ],
+        "card_last4": [
+          "card_last4",
+          "id",
+          "source_record_id"
+        ],
+        "merchant": [
+          "merchant",
+          "id",
+          "source_record_id"
+        ],
+        "posted_date": [
+          "posted_date",
+          "id",
+          "source_record_id"
+        ],
+        "amount": [
+          "amount",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "match_status": [
+          "match_status",
+          "id",
+          "source_record_id"
+        ],
+        "fraud_flag": [
+          "fraud_flag",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    },
+    "trips": {
+      "primaryKey": "trip_id",
+      "fieldAliases": {
+        "trip_id": [
+          "trip_id",
+          "id",
+          "source_record_id"
+        ],
+        "user_id": [
+          "user_id",
+          "id",
+          "source_record_id"
+        ],
+        "purpose": [
+          "purpose",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "start_date": [
+          "start_date",
+          "id",
+          "source_record_id"
+        ],
+        "end_date": [
+          "end_date",
+          "id",
+          "source_record_id"
+        ],
+        "destination": [
+          "destination",
+          "id",
+          "source_record_id"
+        ],
+        "booking_source": [
+          "booking_source",
+          "id",
+          "source_record_id"
+        ],
+        "estimated_cost": [
+          "estimated_cost",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "cash_advances": {
+      "primaryKey": "cash_advance_id",
+      "fieldAliases": {
+        "cash_advance_id": [
+          "cash_advance_id",
+          "id",
+          "source_record_id"
+        ],
+        "user_id": [
+          "user_id",
+          "id",
+          "source_record_id"
+        ],
+        "trip_id": [
+          "trip_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "amount": [
+          "amount",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "issued_date": [
+          "issued_date",
+          "id",
+          "source_record_id"
+        ],
+        "remaining_balance": [
+          "remaining_balance",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fieldAliases": {
+        "approval_id": [
+          "approval_id",
+          "id",
+          "source_record_id"
+        ],
+        "source_record_id": [
+          "source_record_id",
+          "id",
+          "source_record_id"
+        ],
+        "approver": [
+          "approver",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "reason": [
+          "reason",
+          "id",
+          "source_record_id"
+        ],
+        "workflow_step": [
+          "workflow_step",
+          "id",
+          "source_record_id"
+        ],
+        "due_at": [
+          "due_at",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "requested"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ],
+        "timestamp": [
+          "timestamp",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

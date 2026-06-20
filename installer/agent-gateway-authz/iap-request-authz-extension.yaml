@@ -1,0 +1,11 @@
+# IAP-based authorization extension for the GE Agent Factory Agent Gateway.
+# iamEnforcementMode: DRY_RUN → audit-only (logs decisions, blocks nothing). failOpen
+# means a verifier error allows traffic. Flip to ENFORCED only after registries are
+# populated + the dry-run logs look right (see installer/AGENT-GATEWAY.md).
+name: ge-agent-factory-iap-authz-ext
+service: iap.googleapis.com
+failOpen: true
+timeout: 1s
+metadata:
+  iamEnforcementMode: "DRY_RUN"
+  iapPolicyVersion: "V1"

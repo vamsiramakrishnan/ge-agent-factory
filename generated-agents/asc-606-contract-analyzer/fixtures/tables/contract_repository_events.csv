@@ -1,0 +1,61 @@
+id,counterparty,value,currency,start_date,end_date,status,auto_renew,contract_repository_record_id
+ID-0001,Reynolds - Bode,4757939,GBP,2024-10-30,2024-12-08,terminated,false,ID-0013
+ID-0002,Lebsack Group,1861853,GBP,2023-07-05,2023-03-26,negotiating,true,ID-0054
+ID-0003,Murray Group,3530250,EUR,2022-08-28,2023-11-24,terminated,true,ID-0050
+ID-0004,Gutkowski - Kulas,4636282,USD,2024-08-02,2022-06-16,expired,true,ID-0010
+ID-0005,Ondricka - Pfannerstill,561055,USD,2021-11-10,2021-07-01,active,false,ID-0022
+ID-0006,Hackett and Sons,4764547,USD,2022-02-15,2023-01-13,terminated,false,ID-0007
+ID-0007,Dickinson and Sons,3387935,GBP,2025-02-25,2024-06-28,active,false,ID-0010
+ID-0008,"Fay, Abbott and Larkin",815200,USD,2020-02-11,2020-12-29,terminated,true,ID-0022
+ID-0009,Mohr - Hudson,1178675,USD,2025-10-05,2023-09-12,active,true,ID-0026
+ID-0010,Dach LLC,2065671,GBP,2023-10-16,2023-03-13,draft,false,ID-0008
+ID-0011,DuBuque Inc,4479418,USD,2023-01-18,2022-07-08,draft,false,ID-0005
+ID-0012,Pfeffer Inc,59794,GBP,2023-03-20,2025-01-06,terminated,false,ID-0030
+ID-0013,Deckow and Sons,4413974,EUR,2020-06-14,2022-04-30,terminated,false,ID-0013
+ID-0014,Littel - O'Conner,379786,EUR,2024-10-27,2022-08-08,terminated,false,ID-0020
+ID-0015,Bernhard - Reichert,3287080,GBP,2020-01-19,2021-04-22,expired,true,ID-0001
+ID-0016,"Bergstrom, Sauer and Leannon",710219,GBP,2023-09-22,2024-06-15,draft,true,ID-0054
+ID-0017,"Metz, Mayert and Krajcik",3584822,USD,2021-03-19,2021-11-18,negotiating,true,ID-0026
+ID-0018,"Blick, Schuster and Goldner",3464871,USD,2025-08-20,2023-10-26,negotiating,true,ID-0012
+ID-0019,"Gleason, Satterfield and Bogisich",3497755,EUR,2022-08-05,2020-03-09,negotiating,true,ID-0053
+ID-0020,Orn - Towne,1633200,GBP,2025-12-23,2024-12-14,terminated,true,ID-0035
+ID-0021,Hansen-Rogahn - Zieme,1215067,USD,2022-06-20,2020-10-12,draft,true,ID-0048
+ID-0022,Feeney Group,3824124,EUR,2024-07-28,2020-03-26,terminated,false,ID-0034
+ID-0023,McClure and Sons,3786084,EUR,2024-03-30,2022-05-03,negotiating,false,ID-0056
+ID-0024,"Effertz, O'Hara-Schneider and Becker",2279274,GBP,2024-01-25,2022-03-28,terminated,true,ID-0031
+ID-0025,"Gorczany, Miller and Klocko",3342126,GBP,2021-01-07,2020-02-11,expired,false,ID-0042
+ID-0026,"Leuschke-Kuhn, Marquardt and McCullough",2968273,EUR,2020-04-23,2020-03-10,active,true,ID-0037
+ID-0027,"Ebert, Donnelly and Schmitt",4986218,USD,2025-05-21,2023-09-26,terminated,true,ID-0051
+ID-0028,Wolf - Wehner,434666,EUR,2020-06-04,2021-04-07,negotiating,true,ID-0017
+ID-0029,Wiza - Kessler-Gottlieb,3993483,USD,2021-10-18,2021-05-24,draft,true,ID-0022
+ID-0030,"Schowalter, Stracke and Kuhic",1519073,EUR,2024-10-27,2020-10-27,active,false,ID-0009
+ID-0031,Bode Inc,1539253,GBP,2020-05-04,2022-07-06,active,false,ID-0035
+ID-0032,"Haley, Zboncak and Dietrich",2452069,GBP,2022-12-15,2022-11-25,terminated,true,ID-0052
+ID-0033,Ruecker Group,990132,GBP,2021-01-19,2023-05-29,active,true,ID-0039
+ID-0034,Okuneva - Denesik,1400429,USD,2021-02-04,2024-12-14,negotiating,false,ID-0059
+ID-0035,Schmeler Inc,444216,EUR,2025-01-26,2024-10-10,draft,false,ID-0014
+ID-0036,Gislason - Schiller,3140372,GBP,2020-11-29,2022-10-01,negotiating,true,ID-0030
+ID-0037,"Durgan, Koss and Crist",2441454,EUR,2023-08-01,2025-12-31,expired,true,ID-0050
+ID-0038,Heaney - Vandervort,2554172,EUR,2020-04-20,2020-03-17,active,true,ID-0051
+ID-0039,Ferry - Brown,3045514,USD,2021-01-15,2022-04-12,terminated,true,ID-0046
+ID-0040,Pagac - Howell,340164,USD,2024-12-17,2023-02-24,expired,true,ID-0021
+ID-0041,Watsica - Pagac,1594573,GBP,2025-09-07,2025-04-23,expired,true,ID-0017
+ID-0042,"Quigley, Hahn-Hayes and Gibson",1723499,GBP,2025-08-12,2021-02-11,negotiating,false,ID-0004
+ID-0043,Corwin - Kuvalis,1240826,EUR,2023-12-21,2024-07-04,expired,false,ID-0055
+ID-0044,"Adams, Jenkins and Tremblay",4546785,USD,2024-02-23,2021-08-18,draft,true,ID-0021
+ID-0045,Rice LLC,1446847,EUR,2021-10-19,2023-07-30,active,true,ID-0007
+ID-0046,Reynolds LLC,4658459,GBP,2023-05-26,2023-12-11,terminated,true,ID-0020
+ID-0047,Braun - Carter,4903036,USD,2020-05-27,2023-07-27,expired,true,ID-0040
+ID-0048,Mante Inc,4692196,GBP,2025-11-25,2021-07-23,terminated,true,ID-0021
+ID-0049,Koch - Fritsch,2892383,EUR,2024-12-10,2024-12-03,active,true,ID-0022
+ID-0050,"Bogan, Spencer and Schowalter",4119882,EUR,2022-10-03,2021-10-26,terminated,true,ID-0057
+ID-0051,"Krajcik, O'Reilly and Rau",351567,EUR,2020-09-12,2023-09-05,terminated,false,ID-0005
+ID-0052,Skiles and Sons,3063037,EUR,2021-07-13,2020-08-20,negotiating,true,ID-0041
+ID-0053,Davis Group,4138238,USD,2022-07-07,2021-01-03,terminated,false,ID-0014
+ID-0054,Ernser-Torphy and Sons,4582939,EUR,2023-10-12,2022-06-02,expired,false,ID-0041
+ID-0055,Corkery and Sons,2706080,GBP,2022-08-03,2022-04-10,terminated,true,ID-0051
+ID-0056,Marvin Inc,205954,USD,2020-01-14,2025-11-14,terminated,true,ID-0044
+ID-0057,West Inc,3918657,USD,2025-12-10,2020-02-26,expired,false,ID-0042
+ID-0058,Mueller - Lockman,2091795,USD,2021-01-09,2022-07-05,expired,false,ID-0006
+ID-0059,Okuneva LLC,823465,USD,2020-02-21,2025-01-04,terminated,true,ID-0014
+ID-0060,"Beatty, Huel and Anderson",3938986,USD,2020-03-29,2023-07-13,negotiating,false,ID-0033

@@ -1,0 +1,1084 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { Plane, FileText, Search, AlertTriangle, CheckCircle } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Expense Submitted", lane: "system", type: "trigger" },
+    { id: "a1", label: "Policy Rules Check", lane: "agent", type: "action" },
+    { id: "a2", label: "Anomaly Detection", lane: "agent", type: "action" },
+    { id: "a3", label: "LLM Receipt Parse", lane: "agent", type: "action" },
+    { id: "s2", label: "Route or Pay", lane: "system", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "s2"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Expense Intake", icon: FileText, description: "Expense report submitted with receipts, descriptions, and trip context.", trigger: "On submission", systems: ["SAP Concur"] },
+  { label: "Policy Validation", icon: Search, description: "Rule engine checks meal limits by city, hotel rate caps by tier, mileage rates, and duplicate claims.", systems: ["SAP Concur", "Navan"], integration: "Agent Designer" },
+  { label: "Anomaly Detection", icon: AlertTriangle, description: "ML flags unusual patterns — expenses just below approval thresholds, repeated round amounts, personal use indicators.", systems: ["P-card data", "BigQuery"] },
+  { label: "Decision Routing", icon: CheckCircle, description: "Compliant expenses auto-approved for payment; flagged items routed to manager with context.", output: "Compliance Decision" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "SAP Concur", description: "Expense reports, receipts, trip data, policy rule configuration", direction: "bidirectional", protocol: "REST API", category: "erp" },
+    { system: "Egencia/Navan", description: "Corporate travel bookings, approved trip itineraries for cross-reference", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "P-card Data", description: "Commercial card transaction feeds for duplicate detection across channels", direction: "read", protocol: "SFTP/API", category: "erp" },
+    { system: "BigQuery", description: "Expense pattern analytics, anomaly detection models, benchmark data", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Receipt interpretation, expense context validation, pattern gaming detection", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Policy Rule Validation", description: "Expense report validated against policy rule engine — meal limits by city tier, hotel rate caps, mileage rates, receipt requirements. Cross-reference P-card transactions for duplicate claim detection.", systems: ["SAP Concur", "Egencia/Navan", "P-card Data"], layer: "integration", dataIn: "Expense submission with receipts", dataOut: "Rule-based compliance results" },
+    { label: "Anomaly Detection", description: "ML flags unusual patterns in expense behavior — expenses consistently at approval thresholds, repeated round amounts, weekend charges without approved travel, personal use indicators.", systems: ["BigQuery"], layer: "ml", dataIn: "Expense history + current submission", dataOut: "Anomaly scores and flagged patterns" },
+    { label: "Context Interpretation & Routing", description: "Gemini reads receipt notes and descriptions to validate ambiguous cases — '$200 dinner for 8 attendees, client dinner' is valid business entertainment. Detects policy gaming patterns. Routes compliant expenses for auto-payment, flagged items to manager with context.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Flagged expenses + receipt images", dataOut: "Compliance decision with narrative justification" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Indirect Procurement Lead agent for the Travel & Expense Compliance Agent workflow",
+  primaryObjective: "Policy rule engine validates meal limits by city tier, hotel rate caps, and mileage rates in real time at submission. Anomaly detection flags patterns suggesting policy gaming: 'This employee consistently submits expenses at exactly $1 below the manager-approval threshold.' so the Indirect Procurement Lead can move the Policy violation detection KPI.",
+  inScope: [
+    "Policy rule engine validates meal limits by city tier, hotel rate caps, and mileage rates in real time at submission",
+    "Anomaly detection flags patterns suggesting policy gaming: 'This employee consistently submits expenses at exactly $1 below the manager-approval threshold.'",
+    "LLM interprets receipt notes and context — a $200 dinner for '8 attendees, client dinner, Project Apollo kickoff' is valid business entertainment; a $200 dinner for 1 person requires justification",
+  ],
+  outOfScope: [
+    "Contract execution without legal review",
+    "Supplier disqualification decisions (category lead retains authority)",
+    "Single-source justification overrides above policy threshold",
+  ],
+  toolIntents: [
+    {
+      name: "query_sap_concur_expense_reports",
+      kind: "query",
+      sourceSystemId: "sap_concur",
+      description: "Retrieve expense reports from SAP Concur for the Travel & Expense Compliance Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "expense_reports_records",
+        "expense_reports_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_egencia_navan_egencia_navan_records",
+      kind: "query",
+      sourceSystemId: "egencia_navan",
+      description: "Retrieve egencia navan records from Egencia/Navan for the Travel & Expense Compliance Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "egencia_navan_records_records",
+        "egencia_navan_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_p_card_data_p_card_data_records",
+      kind: "query",
+      sourceSystemId: "p_card_data",
+      description: "Retrieve p card data records from P-card data for the Travel & Expense Compliance Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "p_card_data_records_records",
+        "p_card_data_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_policy_docs_policy_docs_records",
+      kind: "query",
+      sourceSystemId: "policy_docs",
+      description: "Retrieve policy docs records from Policy docs for the Travel & Expense Compliance Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "policy_docs_records_records",
+        "policy_docs_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_travel_expense_compliance_agent_policy_guide",
+      kind: "evidence_lookup",
+      sourceSystemId: "sap_concur",
+      description: "Look up sections of the Travel & Expense Compliance Agent Procurement Policy Guide to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_sap_concur_submit",
+      kind: "action",
+      sourceSystemId: "sap_concur",
+      description: "Execute the submit step in SAP Concur after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Policy violation detection moved from 5% caught by audit toward 94% caught at submission",
+      mustCite: [
+        "sap_concur.expense_reports",
+        "egencia_navan.egencia_navan_records",
+      ],
+      sourceSystemIds: [
+        "sap_concur",
+        "egencia_navan",
+      ],
+    },
+    {
+      claim: "Expense processing time moved from 8-12 days toward < 24 hours",
+      mustCite: [
+        "sap_concur.expense_reports",
+        "egencia_navan.egencia_navan_records",
+      ],
+      sourceSystemIds: [
+        "sap_concur",
+        "egencia_navan",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Policy violation detection regresses past the 5% caught by audit baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Indirect Procurement Lead",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed submit action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from SAP Concur (and other named systems) entities.",
+    "Never bypass Indirect Procurement Lead approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "travel-expense-compliance-agent-end-to-end",
+      prompt: "Run the Travel & Expense Compliance Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_sap_concur_expense_reports",
+        "query_egencia_navan_egencia_navan_records",
+        "query_p_card_data_p_card_data_records",
+        "query_policy_docs_policy_docs_records",
+        "lookup_travel_expense_compliance_agent_policy_guide",
+        "action_sap_concur_submit",
+      ],
+      mustReferenceEntities: [
+        "expense_reports",
+        "egencia_navan_records",
+        "p_card_data_records",
+        "policy_docs_records",
+      ],
+      mustCiteDocuments: [
+        "travel-expense-compliance-agent-policy-guide",
+      ],
+      expectedActionOutcome: "Action submit executed against SAP Concur, with audit-trail entry and Indirect Procurement Lead notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute submit without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Travel & Expense Compliance Agent so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "sap_concur",
+      name: "SAP Concur",
+      owns: [
+        "expense_reports",
+        "travel_bookings",
+        "policy_exceptions",
+      ],
+      protocol: "RFC/BAPI",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sap_concur_expense_reports",
+        "query_sap_concur_travel_bookings",
+        "query_sap_concur_policy_exceptions",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "egencia_navan",
+      name: "Egencia/Navan",
+      owns: [
+        "egencia_navan_records",
+        "egencia_navan_events",
+        "egencia_navan_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_egencia_navan_egencia_navan_records",
+        "query_egencia_navan_egencia_navan_events",
+        "query_egencia_navan_egencia_navan_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "p_card_data",
+      name: "P-card data",
+      owns: [
+        "p_card_data_records",
+        "p_card_data_events",
+        "p_card_data_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_p_card_data_p_card_data_records",
+        "query_p_card_data_p_card_data_events",
+        "query_p_card_data_p_card_data_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "policy_docs",
+      name: "Policy docs",
+      owns: [
+        "policy_docs_records",
+        "policy_docs_events",
+        "policy_docs_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_policy_docs_policy_docs_records",
+        "query_policy_docs_policy_docs_events",
+        "query_policy_docs_policy_docs_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "expense_reports",
+      sourceSystemId: "sap_concur",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "travel_bookings",
+      sourceSystemId: "sap_concur",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "policy_exceptions",
+      sourceSystemId: "sap_concur",
+      datastore: "alloydb",
+      rowCount: 30,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "compliance",
+            "operational",
+            "financial",
+            "security",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "draft",
+            "retired",
+          ],
+          required: true,
+        },
+        {
+          name: "last_updated",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "egencia_navan_records",
+      sourceSystemId: "egencia_navan",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "egencia_navan_events",
+      sourceSystemId: "egencia_navan",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "egencia_navan_record_id",
+          type: "ref",
+          ref: "egencia_navan_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "egencia_navan_audit_trail",
+      sourceSystemId: "egencia_navan",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "p_card_data_records",
+      sourceSystemId: "p_card_data",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "p_card_data_events",
+      sourceSystemId: "p_card_data",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "p_card_data_record_id",
+          type: "ref",
+          ref: "p_card_data_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "p_card_data_audit_trail",
+      sourceSystemId: "p_card_data",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "policy_docs_records",
+      sourceSystemId: "policy_docs",
+      datastore: "alloydb",
+      rowCount: 30,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "compliance",
+            "operational",
+            "financial",
+            "security",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "draft",
+            "retired",
+          ],
+          required: true,
+        },
+        {
+          name: "last_updated",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "policy_docs_events",
+      sourceSystemId: "policy_docs",
+      datastore: "alloydb",
+      rowCount: 30,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "compliance",
+            "operational",
+            "financial",
+            "security",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "draft",
+            "retired",
+          ],
+          required: true,
+        },
+        {
+          name: "last_updated",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "policy_docs_record_id",
+          type: "ref",
+          ref: "policy_docs_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "policy_docs_audit_trail",
+      sourceSystemId: "policy_docs",
+      datastore: "alloydb",
+      rowCount: 30,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "compliance",
+            "operational",
+            "financial",
+            "security",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "draft",
+            "retired",
+          ],
+          required: true,
+        },
+        {
+          name: "last_updated",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "egencia_navan_events.egencia_navan_record_id",
+      to: "egencia_navan_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "p_card_data_events.p_card_data_record_id",
+      to: "p_card_data_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "policy_docs_events.policy_docs_record_id",
+      to: "policy_docs_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "travel-expense-compliance-agent-policy-guide",
+      sourceSystemId: "sap_concur",
+      type: "policy",
+      title: "Travel & Expense Compliance Agent Procurement Policy Guide",
+      requiredSections: [
+        "Sourcing principles",
+        "Approval thresholds",
+        "Supplier risk requirements",
+        "Contract and compliance gates",
+        "Exception handling",
+      ],
+      linkedEntities: [
+        "expense_reports",
+        "travel_bookings",
+        "policy_exceptions",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "sourcing",
+        "approvals",
+        "supplier-risk",
+        "exceptions",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "sap_concur_submit_api",
+      sourceSystemId: "sap_concur",
+      method: "POST",
+      path: "/api/sap_concur/submit",
+      description: "Synchronous endpoint the agent calls to submit in SAP Concur after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "travel-expense-compliance-agent-baseline-gap",
+      description: "Seed a realistic gap where Policy violation detection sits between 5% caught by audit and 94% caught at submission, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "expense_reports",
+        "travel_bookings",
+      ],
+      discoveryPath: [
+        "Inspect SAP Concur records for the affected entities",
+        "Compare against Egencia/Navan historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Indirect Procurement Lead action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "travel_expense_compliance_agent",
+      schemas: [
+        "sap_concur",
+        "egencia_navan",
+        "p_card_data",
+        "policy_docs",
+      ],
+    },
+    bigquery: {
+      dataset: "procurement_travel_expense_compliance_agent",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "travel-expense-compliance-agent-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "travel-expense-compliance-agent-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Travel & Expense Compliance Agent workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const TravelExpenseComplianceAgent = () => (
+  <UseCaseSlide
+    title="Travel & Expense Compliance Agent"
+    subtitle="A-1805 • Indirect & Tail Spend"
+    icon={Plane}
+    domainId="domain-18"
+    layer="Layer 2: Agent Designer"
+    persona="Indirect Procurement Lead"
+    systems={["SAP Concur", "Egencia/Navan", "P-card data", "Policy docs"]}
+    kpis={[
+      { label: "Policy violation detection", before: "5% caught by audit", after: "94% caught at submission" },
+      { label: "Expense processing time", before: "8-12 days", after: "< 24 hours" },
+      { label: "T&E policy compliance", before: "72%", after: "96%" },
+    ]}
+    triggerType="event"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    statusQuo={[
+      "Expense reports reviewed manually by managers who rubber-stamp without checking policy limits or receipt details.",
+      "Policy gaming goes undetected — employees learn the thresholds and consistently submit expenses at $1 below the approval limit.",
+      "Duplicate claims across P-card and expense reports caught only during quarterly audits, months after payment."
+    ]}
+    agentification={[
+      "Policy rule engine validates meal limits by city tier, hotel rate caps, and mileage rates in real time at submission.",
+      "Anomaly detection flags patterns suggesting policy gaming: 'This employee consistently submits expenses at exactly $1 below the manager-approval threshold.'",
+      "LLM interprets receipt notes and context — a $200 dinner for '8 attendees, client dinner, Project Apollo kickoff' is valid business entertainment; a $200 dinner for 1 person requires justification."
+    ]}
+  />
+);

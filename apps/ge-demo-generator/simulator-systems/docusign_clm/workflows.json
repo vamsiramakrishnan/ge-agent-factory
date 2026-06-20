@@ -1,0 +1,217 @@
+{
+  "id": "docusign_clm_workflows",
+  "version": 2,
+  "primitives": [
+    "create_record",
+    "role_permission_gate",
+    "state_machine",
+    "approval_blocker",
+    "idempotency_key",
+    "rate_limit",
+    "deterministic_failure_modes",
+    "async_job",
+    "audit_trail"
+  ],
+  "toolHandlers": {
+    "create_bulk_upload_job": {
+      "primitive": "create_record",
+      "collection": "bulk_jobs",
+      "primaryKey": "job_id",
+      "roleArg": "role",
+      "allowedRoles": [
+        "contract_manager",
+        "integration_admin"
+      ],
+      "rateLimit": {
+        "capacity": 20,
+        "refillPerSecond": 0.2,
+        "scope": "agent_system"
+      },
+      "latency": {
+        "minMs": 15,
+        "maxMs": 45
+      },
+      "failureModes": {
+        "rate_limited": 0.03,
+        "validation_error": 0.02,
+        "forbidden": 0.01,
+        "timeout": 0.01
+      }
+    },
+    "submit_agreement_update": {
+      "primitive": "state_machine_update",
+      "collection": "agreements",
+      "primaryKey": "agreement_id",
+      "roleArg": "role",
+      "allowedRoles": [
+        "contract_manager",
+        "legal_reviewer",
+        "business_owner",
+        "approver"
+      ],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "transitions": {
+        "*": [
+          "DRAFT",
+          "PENDING",
+          "COMPLETE",
+          "INACTIVE",
+          "CANCELED",
+          "DELETED"
+        ],
+        "DRAFT": [
+          "PENDING",
+          "CANCELED",
+          "DELETED"
+        ],
+        "PENDING": [
+          "COMPLETE",
+          "CANCELED",
+          "DRAFT"
+        ],
+        "COMPLETE": [
+          "INACTIVE",
+          "CANCELED",
+          "DELETED"
+        ],
+        "INACTIVE": [
+          "COMPLETE",
+          "DELETED"
+        ],
+        "CANCELED": [],
+        "DELETED": []
+      },
+      "approvalBlockers": [
+        {
+          "collection": "approvals",
+          "sourceRecordField": "source_record_id",
+          "states": [
+            "requested",
+            "pending",
+            "pending_approval"
+          ],
+          "blockedTargetStates": [
+            "COMPLETE",
+            "INACTIVE",
+            "CANCELED",
+            "DELETED"
+          ]
+        }
+      ],
+      "rateLimit": {
+        "capacity": 30,
+        "refillPerSecond": 0.5,
+        "scope": "agent_system"
+      },
+      "latency": {
+        "minMs": 10,
+        "maxMs": 35
+      },
+      "failureModes": {
+        "rate_limited": 0.04,
+        "validation_error": 0.03,
+        "conflict": 0.02,
+        "forbidden": 0.01,
+        "timeout": 0.01
+      }
+    },
+    "submit_obligation_update": {
+      "primitive": "state_machine_update",
+      "collection": "obligations",
+      "primaryKey": "obligation_id",
+      "roleArg": "role",
+      "allowedRoles": [
+        "contract_manager",
+        "business_owner",
+        "legal_reviewer"
+      ],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "transitions": {
+        "open": [
+          "in_progress",
+          "satisfied",
+          "waived",
+          "overdue"
+        ],
+        "in_progress": [
+          "satisfied",
+          "waived",
+          "overdue"
+        ],
+        "overdue": [
+          "in_progress",
+          "satisfied",
+          "waived"
+        ],
+        "satisfied": [],
+        "waived": []
+      },
+      "rateLimit": {
+        "capacity": 40,
+        "refillPerSecond": 0.6,
+        "scope": "agent_system"
+      },
+      "latency": {
+        "minMs": 8,
+        "maxMs": 25
+      },
+      "failureModes": {
+        "rate_limited": 0.03,
+        "validation_error": 0.03,
+        "forbidden": 0.01,
+        "timeout": 0.01
+      }
+    },
+    "submit_bulk_job_completion": {
+      "primitive": "state_machine_update",
+      "collection": "bulk_jobs",
+      "primaryKey": "job_id",
+      "roleArg": "role",
+      "allowedRoles": [
+        "contract_manager",
+        "integration_admin"
+      ],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "async": true,
+      "transitions": {
+        "OPEN": [
+          "UPLOAD_COMPLETE",
+          "CANCELED"
+        ],
+        "UPLOAD_COMPLETE": [
+          "IN_PROGRESS",
+          "CANCELED"
+        ],
+        "IN_PROGRESS": [
+          "COMPLETE",
+          "FAILED",
+          "CANCELED"
+        ],
+        "COMPLETE": [],
+        "FAILED": [],
+        "CANCELED": []
+      },
+      "rateLimit": {
+        "capacity": 15,
+        "refillPerSecond": 0.15,
+        "scope": "agent_system"
+      },
+      "latency": {
+        "minMs": 20,
+        "maxMs": 60
+      },
+      "failureModes": {
+        "rate_limited": 0.04,
+        "validation_error": 0.02,
+        "forbidden": 0.01,
+        "timeout": 0.02
+      }
+    }
+  }
+}

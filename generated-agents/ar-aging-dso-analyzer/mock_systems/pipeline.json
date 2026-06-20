@@ -1,0 +1,73 @@
+{
+  "name": "ar_aging_dso_analyzer",
+  "domain": "finance",
+  "createdAt": "2026-06-11T08:59:48.956Z",
+  "steps": {
+    "init": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:48.956Z",
+      "name": "ar_aging_dso_analyzer",
+      "domain": "finance"
+    },
+    "schema": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:48.974Z",
+      "tables": 9,
+      "derived": true
+    },
+    "generate": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:49.006Z",
+      "tables": 9,
+      "totalRows": 510,
+      "seed": 42
+    },
+    "tools": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:49.015Z",
+      "output": "/tmp/regen2/ar-aging-dso-analyzer/app/tools.py",
+      "functions": 12,
+      "behaviorContract": "present",
+      "contractTools": 2,
+      "goldenEvals": 1,
+      "agentsCliEvalSet": "/tmp/regen2/ar-aging-dso-analyzer/tests/eval/evalsets/ge_behavior_contract.evalset.json"
+    },
+    "test": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:53.111Z",
+      "output": "/tmp/regen2/ar-aging-dso-analyzer/tests/test_smoke.py",
+      "ran": true,
+      "passed": true,
+      "exitCode": 0
+    }
+  },
+  "currentStep": "test",
+  "useCase": {
+    "id": "ar-aging-dso-analyzer",
+    "title": "AR Aging & DSO Analyzer",
+    "department": "finance",
+    "systems": [
+      "SAP S/4HANA FI",
+      "BigQuery",
+      "Looker",
+      "Vertex AI"
+    ],
+    "kpis": [
+      {
+        "label": "Reporting cycle",
+        "before": "Manual weekly",
+        "after": "Auto-refreshed daily"
+      },
+      {
+        "label": "Root cause visibility",
+        "before": "Top-line DSO only",
+        "after": "Segment-level with narrative"
+      },
+      {
+        "label": "Bad debt forecast accuracy",
+        "before": "60%",
+        "after": "88%"
+      }
+    ]
+  }
+}

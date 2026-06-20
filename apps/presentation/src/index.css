@@ -1,0 +1,214 @@
+/* Geist (body/UI) — paired with Space Grotesk (display) + Geist Mono (data),
+   both already loaded by @ge/design. Geist reads better than Space Grotesk for
+   paragraphs and dense use-case copy. */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap');
+@import "@ge/design/tokens.css";
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Presentation deck — visual identity layer (presentation app ONLY).
+   Overrides + upgrades the shared @ge/design tokens for the deck so all slides
+   inherit richer depth, typography and a location-aware "Gemini aurora"
+   atmosphere — without touching the shared design system (the console keeps
+   the calm Cloud-Console look).
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Type roles ──────────────────────────────────────────────────────────
+     Display stays Space Grotesk (geometric, "engineered system" — already
+     tuned by the slides); body/UI becomes Geist. */
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-headline: "Space Grotesk", ui-sans-serif, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+
+  /* ── Surfaces: deeper cool-slate backdrop so the white stage lifts ──────── */
+  --color-background: #e8ecf4;
+  --color-on-surface: #15171c;     /* deeper ink for headline punch */
+  --color-secondary: #565a63;      /* nudged darker — raises the contrast floor */
+
+  /* Muted Google Cloud palette — blue + cool neutrals (white / grey / off-white).
+     No violet/magenta: the signature gradient + atmosphere stay all-blue→blue-grey,
+     and white text on the gradient stays legible. */
+  --gem-blue: #1a73e8;
+  --gem-iris: #4285f4;      /* Google primary-container blue */
+  --gem-magenta: #6b93d6;   /* soft muted blue (gradient tail) */
+
+  /* Location-aware atmosphere (set per-department by the shell; defaults here):
+     a muted Google blue paired with a cool bluish-grey wash. */
+  --atmo-1: #1a73e8;
+  --atmo-2: #9aa6b8;
+  --atmo-strength: 1;
+
+  /* Motion scale */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spatial: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Body uses Geist; headlines opt into Space Grotesk via .font-headline (already
+   applied throughout the deck). */
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ── Premium light needs micro-texture: a faint grain over the backdrop so the
+      near-white stage never reads flat/cheap. Fixed, non-interactive, cheap. ── */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+}
+
+/* ═══ The deck stage — an elevated work surface under every slide ═══════════
+   Gives content figure/ground without constraining full-bleed slides: it fills
+   most of the viewport behind the slide content. Two-channel elevation (broad
+   ambient + tight contact) + an inset top highlight = real, neutral depth. */
+.deck-stage {
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, #ffffff 0%, #f6f9fd 100%);
+  border: 1px solid rgba(60, 64, 67, 0.08);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 1px 2px rgba(21, 23, 28, 0.04),
+    0 18px 40px -12px rgba(21, 23, 28, 0.13),
+    0 50px 90px -40px rgba(21, 23, 28, 0.12);
+  overflow: hidden;
+}
+/* The stage carries a whisper of the current department's hue at its rim. */
+.deck-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    radial-gradient(120% 80% at 8% -10%, color-mix(in srgb, var(--atmo-1) 8%, transparent), transparent 55%),
+    radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--atmo-2) 6%, transparent), transparent 50%);
+  opacity: calc(0.9 * var(--atmo-strength));
+  transition: background 900ms var(--ease-spatial), opacity 900ms ease;
+}
+
+/* ═══ Location-aware aurora field (the ambient atmosphere) ══════════════════ */
+.aurora-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(120px);
+  transition: background-color 1100ms var(--ease-spatial), opacity 1100ms ease;
+  will-change: background-color;
+}
+
+/* ═══ Signature gradient → muted Google blue (was Cloud blue→green) ═════════
+   All-blue so white text stays legible. Propagates to every hero-gradient user:
+   logo, primary buttons, active level, progress head. */
+.hero-gradient {
+  background: linear-gradient(120deg, var(--gem-blue) 0%, var(--gem-iris) 54%, var(--gem-magenta) 100%);
+}
+.flow-gradient {
+  background: linear-gradient(120deg, var(--gem-blue) 0%, var(--gem-iris) 100%);
+}
+.accent-glow {
+  background: linear-gradient(135deg, var(--gem-iris) 0%, var(--gem-blue) 100%);
+}
+.text-gem-gradient {
+  background: linear-gradient(120deg, var(--gem-blue), var(--gem-iris) 55%, var(--gem-magenta));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ═══ Two-channel elevation (replaces the flat single-blue shadows) ═════════ */
+.shadow-ambient {
+  box-shadow:
+    0 1px 2px rgba(21, 23, 28, 0.05),
+    0 8px 20px -8px rgba(21, 23, 28, 0.12);
+}
+.shadow-ambient-lg {
+  box-shadow:
+    0 2px 4px rgba(21, 23, 28, 0.05),
+    0 24px 48px -16px rgba(21, 23, 28, 0.18);
+}
+.shadow-glow {
+  box-shadow:
+    0 2px 8px rgba(26, 115, 232, 0.18),
+    0 0 24px -2px color-mix(in srgb, var(--atmo-2) 35%, transparent);
+}
+
+/* ═══ Editorial cards — richer, neutral depth (upgrade in place) ════════════ */
+.editorial-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(60, 64, 67, 0.1);
+  background:
+    linear-gradient(180deg, #ffffff, #f6f9fd 96%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 1px 2px rgba(21, 23, 28, 0.04),
+    0 16px 34px -16px rgba(21, 23, 28, 0.16);
+}
+.editorial-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--atmo-1) 10%, transparent), transparent 32%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 44%);
+  opacity: 0.5;
+}
+.editorial-card > * { position: relative; z-index: 1; }
+
+.editorial-card-interactive {
+  transform: translateZ(0);
+  transition:
+    transform 220ms var(--ease-out-expo),
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+.editorial-card-interactive:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--atmo-2) 34%, rgba(60, 64, 67, 0.1));
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 1) inset,
+    0 2px 6px rgba(21, 23, 28, 0.06),
+    0 30px 56px -20px rgba(21, 23, 28, 0.22),
+    0 0 0 1px color-mix(in srgb, var(--atmo-2) 10%, transparent);
+}
+
+.editorial-active-card {
+  border-color: transparent;
+  background: linear-gradient(125deg, var(--gem-blue), var(--gem-iris) 60%, var(--gem-magenta));
+  color: white;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.25) inset,
+    0 18px 38px -14px color-mix(in srgb, var(--gem-iris) 55%, transparent);
+}
+
+/* ═══ Drill-down affordance — signals "this zooms a level in" ═══════════════ */
+.drill { cursor: zoom-in; }
+
+/* ═══ Quality floor ════════════════════════════════════════════════════════ */
+/* Visible keyboard focus everywhere (the deck was hover-only). */
+:where(button, a, [role="button"], input, select, [tabindex]):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--atmo-2) 70%, var(--color-primary));
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Respect reduced motion: damp the ambient/infinite animations + soften
+   transitions. Framer transitions are switched to fades in JS. */
+@media (prefers-reduced-motion: reduce) {
+  .agent-glow, .flow-line { animation: none !important; }
+  .aurora-blob, .deck-stage::before { transition: none !important; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

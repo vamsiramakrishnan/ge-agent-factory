@@ -1,0 +1,44 @@
+# CI gate — wire this to a Cloud Source Repositories trigger (push / PR) on the
+# default branch. It RUNS the guards that already exist in the repo (source
+# hygiene + the full bun test suite) so they stop being dormant. This is separate
+# from cloudbuild.yaml, which only builds + pushes the deploy image.
+#
+#   gcloud builds triggers create cloud-source-repositories \
+#     --repo=<repo> --branch-pattern='^(main|master)$' \
+#     --build-config=cloudbuild.ci.yaml
+steps:
+  - id: install
+    name: 'oven/bun:1.3'
+    entrypoint: bun
+    args: ['install', '--frozen-lockfile']
+
+  - id: hygiene
+    name: 'oven/bun:1.3'
+    entrypoint: bun
+    args: ['run', 'source:hygiene']
+    waitFor: ['install']
+
+  # Typecheck every workspace. `vite build` strips types, so without this a TS error
+  # ships silently — exactly how a bad state-union slipped through once.
+  - id: typecheck
+    name: 'oven/bun:1.3'
+    entrypoint: bun
+    args: ['run', 'lint']
+    waitFor: ['install']
+
+  # The catalog is a generated build artifact (relocated out of the source tree);
+  # generate it so tests/consumers that resolve the catalog can load it.
+  - id: catalog
+    name: 'oven/bun:1.3'
+    entrypoint: bun
+    args: ['run', 'catalog']
+    waitFor: ['install']
+
+  - id: test
+    name: 'oven/bun:1.3'
+    entrypoint: bun
+    args: ['test', 'apps', 'tools']
+    waitFor: ['hygiene', 'catalog']
+
+options:
+  logging: CLOUD_LOGGING_ONLY

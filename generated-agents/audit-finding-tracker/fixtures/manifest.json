@@ -1,0 +1,1273 @@
+{
+  "id": "audit_finding_tracker",
+  "generatedAt": "2026-06-11T08:59:57.914Z",
+  "domain": "finance",
+  "seed": 42,
+  "systems": [
+    {
+      "id": "auditboard",
+      "name": "AuditBoard",
+      "owns": [
+        "auditboard_records",
+        "auditboard_events",
+        "auditboard_audit_trail"
+      ],
+      "protocol": "REST API",
+      "localBacking": [
+        "alloydb"
+      ],
+      "toolNames": [
+        "query_auditboard_auditboard_records",
+        "query_auditboard_auditboard_events",
+        "query_auditboard_auditboard_audit_trail"
+      ],
+      "evidence": [
+        "source_system_record",
+        "generated_audit_trail"
+      ]
+    },
+    {
+      "id": "servicenow",
+      "name": "ServiceNow",
+      "owns": [
+        "tickets",
+        "change_requests",
+        "incidents"
+      ],
+      "protocol": "REST API",
+      "localBacking": [
+        "alloydb"
+      ],
+      "toolNames": [
+        "query_servicenow_tickets",
+        "query_servicenow_change_requests",
+        "query_servicenow_incidents"
+      ],
+      "evidence": [
+        "source_system_record",
+        "generated_audit_trail"
+      ]
+    },
+    {
+      "id": "finance_3",
+      "name": "FINANCE 3",
+      "owns": [
+        "finance_3_records",
+        "finance_3_events"
+      ],
+      "protocol": "REST API",
+      "localBacking": [
+        "alloydb"
+      ],
+      "toolNames": [
+        "query_finance_3_records"
+      ],
+      "evidence": [
+        "source_system_record"
+      ]
+    }
+  ],
+  "useCaseSpec": {
+    "id": "audit-finding-tracker",
+    "title": "Audit Finding Tracker",
+    "department": "finance",
+    "rowPolicy": {
+      "requestedRows": 50,
+      "minimumRowsPerEntity": 25,
+      "defaultRowsPerEntity": 50
+    },
+    "systems": [
+      {
+        "id": "auditboard",
+        "name": "AuditBoard",
+        "owns": [
+          "auditboard_records",
+          "auditboard_events",
+          "auditboard_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_auditboard_auditboard_records",
+          "query_auditboard_auditboard_events",
+          "query_auditboard_auditboard_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "servicenow",
+        "name": "ServiceNow",
+        "owns": [
+          "tickets",
+          "change_requests",
+          "incidents"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_servicenow_tickets",
+          "query_servicenow_change_requests",
+          "query_servicenow_incidents"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "finance_3",
+        "name": "FINANCE 3",
+        "owns": [
+          "finance_3_records",
+          "finance_3_events"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_finance_3_records"
+        ],
+        "evidence": [
+          "source_system_record"
+        ]
+      }
+    ],
+    "dataContracts": [
+      {
+        "entity": "auditboard_records",
+        "sourceSystem": "AuditBoard",
+        "sourceSystemId": "auditboard",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "auditboard_events",
+        "sourceSystem": "AuditBoard",
+        "sourceSystemId": "auditboard",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "auditboard_audit_trail",
+        "sourceSystem": "AuditBoard",
+        "sourceSystemId": "auditboard",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "tickets",
+        "sourceSystem": "ServiceNow",
+        "sourceSystemId": "servicenow",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "priority",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "assignee",
+            "type": "person.fullName",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "sla_met",
+            "type": "boolean",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "change_requests",
+        "sourceSystem": "ServiceNow",
+        "sourceSystemId": "servicenow",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "priority",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "assignee",
+            "type": "person.fullName",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "sla_met",
+            "type": "boolean",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "incidents",
+        "sourceSystem": "ServiceNow",
+        "sourceSystemId": "servicenow",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "priority",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "assignee",
+            "type": "person.fullName",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "sla_met",
+            "type": "boolean",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "finance_3_records",
+        "sourceSystem": "FINANCE 3",
+        "sourceSystemId": "finance_3",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "finance_3_events",
+        "sourceSystem": "FINANCE 3",
+        "sourceSystemId": "finance_3",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "finance_3_record_id",
+            "type": "ref",
+            "ref": "finance_3_records.id",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "evidenceRequired": [
+      "sql_result",
+      "source_system_record",
+      "document_reference",
+      "generated_audit_trail"
+    ],
+    "documentRequirements": [
+      "Audit Finding Tracker Controls Playbook: Workflow scope, Materiality thresholds, Escalation triggers, Audit evidence requirements, Quarter-end variations"
+    ],
+    "integrityRules": [
+      "finance_3_events.finance_3_record_id -> finance_3_records.id; orphanPolicy=none"
+    ],
+    "apis": [
+      {
+        "id": "auditboard_execute_api",
+        "sourceSystemId": "auditboard",
+        "method": "POST",
+        "path": "/api/auditboard/execute",
+        "description": "Synchronous endpoint the agent calls to execute in AuditBoard after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "audit_finding_tracker",
+        "schemas": [
+          "auditboard",
+          "servicenow",
+          "finance_3"
+        ]
+      },
+      "bigquery": {
+        "dataset": "finance_audit_finding_tracker",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "audit-finding-tracker-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "audit-finding-tracker-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "behaviorContract": {
+      "role": "Chief Audit Executive agent for the Audit Finding Tracker workflow",
+      "primaryObjective": "Automated deadline tracking with escalation ensures findings don't age without action. Gemini evaluates whether remediation plans address root cause or just treat symptoms. so the Chief Audit Executive can move the Avg remediation time KPI.",
+      "inScope": [
+        "Automated deadline tracking with escalation ensures findings don't age without action",
+        "Gemini evaluates whether remediation plans address root cause or just treat symptoms",
+        "Pattern detection across historical findings surfaces systemic issues requiring enterprise-level intervention"
+      ],
+      "outOfScope": [
+        "Final sign-off on materially significant journal entries (Controller retains authority)",
+        "Restatement of prior-period filings",
+        "Tax position changes that require external advisor review"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_auditboard_auditboard_records",
+          "kind": "query",
+          "sourceSystemId": "auditboard",
+          "description": "Retrieve auditboard records from AuditBoard for the Audit Finding Tracker workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "auditboard_records_records",
+            "auditboard_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_servicenow_tickets",
+          "kind": "query",
+          "sourceSystemId": "servicenow",
+          "description": "Retrieve tickets from ServiceNow for the Audit Finding Tracker workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "tickets_records",
+            "tickets_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_finance_3_finance_3_records",
+          "kind": "query",
+          "sourceSystemId": "finance_3",
+          "description": "Retrieve finance 3 records from FINANCE 3 for the Audit Finding Tracker workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "finance_3_records_records",
+            "finance_3_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_audit_finding_tracker_controls_playbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "auditboard",
+          "description": "Look up sections of the Audit Finding Tracker Controls Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_auditboard_execute",
+          "kind": "action",
+          "sourceSystemId": "auditboard",
+          "description": "Execute the execute step in AuditBoard after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "evidenceRequirements": [
+        {
+          "claim": "Avg remediation time moved from 90-120 days toward 30-45 days",
+          "mustCite": [
+            "auditboard.auditboard_records",
+            "servicenow.tickets"
+          ],
+          "sourceSystemIds": [
+            "auditboard",
+            "servicenow"
+          ]
+        },
+        {
+          "claim": "Overdue findings moved from 25-35% toward < 10%",
+          "mustCite": [
+            "auditboard.auditboard_records",
+            "servicenow.tickets"
+          ],
+          "sourceSystemIds": [
+            "auditboard",
+            "servicenow"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Avg remediation time regresses past the 90-120 days baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Chief Audit Executive",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed execute action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from AuditBoard (and other named systems) entities.",
+        "Never bypass Chief Audit Executive approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+        "Do not claim an incident is remediated or closed without ITSM status evidence."
+      ],
+      "goldenEvals": [
+        {
+          "id": "audit-finding-tracker-end-to-end",
+          "prompt": "Run the Audit Finding Tracker workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_auditboard_auditboard_records",
+            "query_servicenow_tickets",
+            "query_finance_3_finance_3_records",
+            "lookup_audit_finding_tracker_controls_playbook",
+            "action_auditboard_execute"
+          ],
+          "mustReferenceEntities": [
+            "auditboard_records",
+            "tickets",
+            "finance_3_records"
+          ],
+          "mustCiteDocuments": [
+            "audit-finding-tracker-controls-playbook"
+          ],
+          "expectedActionOutcome": "Action execute executed against AuditBoard, with audit-trail entry and Chief Audit Executive notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute execute without two-system evidence"
+          ]
+        }
+      ],
+      "simulatorEnrichment": {
+        "packBridges": [
+          {
+            "packId": "system_itsm",
+            "simulatorArchetypes": [
+              "itsm",
+              "project_work",
+              "observability"
+            ],
+            "simulatorCollections": [
+              "tickets",
+              "cmdb_items",
+              "changes",
+              "slas",
+              "approvals",
+              "issues",
+              "alerts",
+              "incidents"
+            ],
+            "materializes": "ticket, incident, change, SLA, Jira issue, and remediation rows into ITSM simulator seeds"
+          }
+        ]
+      },
+      "evalEnrichment": {
+        "packHints": [
+          {
+            "packId": "system_itsm",
+            "expectedToolKinds": [
+              "query",
+              "action",
+              "notification"
+            ],
+            "mustReferenceEntities": [
+              "tickets",
+              "incidents",
+              "change_requests"
+            ],
+            "successCriteria": [
+              "Use status, owner, created_at, and notes to prioritize remediation.",
+              "Treat active or pending SLA-risk records as escalation candidates.",
+              "Preserve audit trails for remediation actions."
+            ],
+            "refusalRules": [
+              "Do not claim an incident is remediated or closed without ITSM status evidence."
+            ]
+          }
+        ]
+      }
+    },
+    "agentQualityPlan": {
+      "naming": {
+        "agentName": "audit_finding_tracker_agent",
+        "displayName": "Audit Finding Tracker",
+        "rule": "Use snake_case Python identifiers for agent and tools; use title case only for display labels.",
+        "toolNamePattern": "<verb>_<source_system_id>_<business_object>",
+        "forbiddenPatterns": [
+          "helper",
+          "do_task",
+          "process_data",
+          "tool1",
+          "generic_agent"
+        ]
+      },
+      "adkCapabilities": {
+        "agentClass": "google.adk.agents.Agent",
+        "model": "gemini-3.5-flash",
+        "generateContentConfig": {
+          "temperature": 0.2,
+          "maxOutputTokens": null,
+          "reason": "Output budget left to the model default; the harness review sets a bound only when the use case warrants one."
+        },
+        "outputKey": "last_response",
+        "callbacks": [
+          "before_agent_callback initializes session state from the generated spec.",
+          "before_tool_callback enforces idempotency keys for write-like tool intents.",
+          "after_tool_callback records tool evidence and audit trails in session state."
+        ],
+        "stateKeys": [
+          "scenario_id",
+          "primary_objective",
+          "expected_tools",
+          "evidence_log",
+          "audit_trails"
+        ],
+        "useSubAgentsWhen": "Split into source-specific researcher/verifier sub-agents when live APIs replace fixtures or when one prompt needs parallel evidence collection.",
+        "useAgentToolWhen": "Expose specialist agents through AgentTool when the coordinator must retain control over final synthesis.",
+        "useCodeExecutorWhen": "Not required unless future specs add deterministic calculation or modeling work.",
+        "useMemoryWhen": "Only persist user preferences or repeated workflow context after the user explicitly asks for memory; keep generated demos session-scoped by default."
+      },
+      "toolDesign": {
+        "expectedToolCount": 17,
+        "sourceAdapters": [
+          "auditboard",
+          "servicenow",
+          "finance_3"
+        ],
+        "writeSafety": "All write-like tools require explicit inputs and return deterministic audit_trail values; callbacks block missing idempotency_key/idempotencyKey when present in args.",
+        "evidence": "Evidence lookup tools and document search must run before recommendations or write actions."
+      },
+      "evalPlan": {
+        "unitTests": [
+          "Import generated app.tools and app.agent.",
+          "Verify fixture tables exist and contain rows.",
+          "Verify generated agent instruction contains objective, tool playbook, and guardrails.",
+          "Statically verify advanced ADK config: callbacks, generate_content_config, output_key, and description."
+        ],
+        "agentEvals": [
+          "tool_trajectory_avg_score with ANY_ORDER for contract tool usage.",
+          "rubric_based_tool_use_quality_v1 for source-before-action reasoning.",
+          "rubric_based_final_response_quality_v1 for grounded final answers.",
+          "hallucinations_v1 and safety_v1 for cited evidence and guardrail adherence."
+        ],
+        "goldenEvalMinimum": 1,
+        "addMoreEvalsWhen": [
+          "A tool intent writes external state.",
+          "A source adapter has bidirectional sync semantics.",
+          "A workflow has escalation/refusal branches.",
+          "A document citation is mandatory for final answers."
+        ]
+      },
+      "mockDataQuality": {
+        "minimumRowsPerEntity": 25,
+        "requirements": [
+          "Every generated row has a stable primary key.",
+          "Foreign keys must resolve to generated parent rows.",
+          "Each table declares sourceSystem and sourceSystemId in fixtures/manifest.json.",
+          "Documents include citation anchors and linked entity ids when document evidence is needed.",
+          "Action-oriented workflows include at least one anomaly or edge-case fixture."
+        ]
+      }
+    }
+  },
+  "tables": [
+    {
+      "name": "auditboard_records",
+      "path": "tables/auditboard_records.csv",
+      "jsonPath": "tables/auditboard_records.json",
+      "sourceSystem": "AuditBoard",
+      "sourceSystemId": "auditboard",
+      "sourceDescription": "auditboard_records, auditboard_events, auditboard_audit_trail",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "actor",
+          "type": "string"
+        },
+        {
+          "name": "action",
+          "type": "string"
+        },
+        {
+          "name": "target_type",
+          "type": "string"
+        },
+        {
+          "name": "created_at",
+          "type": "string"
+        },
+        {
+          "name": "notes",
+          "type": "string"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "auditboard_events",
+      "path": "tables/auditboard_events.csv",
+      "jsonPath": "tables/auditboard_events.json",
+      "sourceSystem": "AuditBoard",
+      "sourceSystemId": "auditboard",
+      "sourceDescription": "auditboard_records, auditboard_events, auditboard_audit_trail",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "actor",
+          "type": "string"
+        },
+        {
+          "name": "action",
+          "type": "string"
+        },
+        {
+          "name": "target_type",
+          "type": "string"
+        },
+        {
+          "name": "created_at",
+          "type": "string"
+        },
+        {
+          "name": "notes",
+          "type": "string"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "auditboard_audit_trail",
+      "path": "tables/auditboard_audit_trail.csv",
+      "jsonPath": "tables/auditboard_audit_trail.json",
+      "sourceSystem": "AuditBoard",
+      "sourceSystemId": "auditboard",
+      "sourceDescription": "auditboard_records, auditboard_events, auditboard_audit_trail",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "actor",
+          "type": "string"
+        },
+        {
+          "name": "action",
+          "type": "string"
+        },
+        {
+          "name": "target_type",
+          "type": "string"
+        },
+        {
+          "name": "created_at",
+          "type": "string"
+        },
+        {
+          "name": "notes",
+          "type": "string"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "tickets",
+      "path": "tables/tickets.csv",
+      "jsonPath": "tables/tickets.json",
+      "sourceSystem": "ServiceNow",
+      "sourceSystemId": "servicenow",
+      "sourceDescription": "tickets, change_requests, incidents",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "priority",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "assignee",
+          "type": "string"
+        },
+        {
+          "name": "created_at",
+          "type": "string"
+        },
+        {
+          "name": "category",
+          "type": "string"
+        },
+        {
+          "name": "sla_met",
+          "type": "boolean"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "change_requests",
+      "path": "tables/change_requests.csv",
+      "jsonPath": "tables/change_requests.json",
+      "sourceSystem": "ServiceNow",
+      "sourceSystemId": "servicenow",
+      "sourceDescription": "tickets, change_requests, incidents",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "priority",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "assignee",
+          "type": "string"
+        },
+        {
+          "name": "created_at",
+          "type": "string"
+        },
+        {
+          "name": "category",
+          "type": "string"
+        },
+        {
+          "name": "sla_met",
+          "type": "boolean"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "incidents",
+      "path": "tables/incidents.csv",
+      "jsonPath": "tables/incidents.json",
+      "sourceSystem": "ServiceNow",
+      "sourceSystemId": "servicenow",
+      "sourceDescription": "tickets, change_requests, incidents",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "priority",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "assignee",
+          "type": "string"
+        },
+        {
+          "name": "created_at",
+          "type": "string"
+        },
+        {
+          "name": "category",
+          "type": "string"
+        },
+        {
+          "name": "sla_met",
+          "type": "boolean"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "finance_3_records",
+      "path": "tables/finance_3_records.csv",
+      "jsonPath": "tables/finance_3_records.json",
+      "sourceSystem": "FINANCE 3",
+      "sourceSystemId": "finance_3",
+      "sourceDescription": "finance_3_records, finance_3_events",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "source_record_id",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "owner",
+          "type": "string"
+        },
+        {
+          "name": "created_at",
+          "type": "string"
+        },
+        {
+          "name": "notes",
+          "type": "string"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "finance_3_events",
+      "path": "tables/finance_3_events.csv",
+      "jsonPath": "tables/finance_3_events.json",
+      "sourceSystem": "FINANCE 3",
+      "sourceSystemId": "finance_3",
+      "sourceDescription": "finance_3_records, finance_3_events",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "actor",
+          "type": "string"
+        },
+        {
+          "name": "action",
+          "type": "string"
+        },
+        {
+          "name": "target_type",
+          "type": "string"
+        },
+        {
+          "name": "created_at",
+          "type": "string"
+        },
+        {
+          "name": "notes",
+          "type": "string"
+        },
+        {
+          "name": "finance_3_record_id",
+          "type": "string"
+        }
+      ],
+      "rowCount": 60
+    }
+  ],
+  "documents": [
+    {
+      "id": "audit-finding-tracker-controls-playbook",
+      "path": "documents/audit-finding-tracker-controls-playbook.md",
+      "title": "Audit Finding Tracker Controls Playbook",
+      "type": "policy",
+      "sourceSystem": "AuditBoard",
+      "sourceSystemId": "auditboard",
+      "linkedEntities": [
+        "auditboard_records",
+        "auditboard_events",
+        "auditboard_audit_trail"
+      ],
+      "requiredSections": [
+        "Workflow scope",
+        "Materiality thresholds",
+        "Escalation triggers",
+        "Audit evidence requirements",
+        "Quarter-end variations"
+      ],
+      "citationAnchors": [
+        "scope",
+        "materiality",
+        "escalation",
+        "audit-evidence"
+      ],
+      "minimumWordCount": 500,
+      "wordCount": 527
+    }
+  ],
+  "totalRows": 480
+}

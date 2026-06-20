@@ -1,0 +1,1595 @@
+{
+  "seed": 42,
+  "domain": "finance",
+  "systems": [
+    {
+      "id": "kyriba",
+      "name": "Kyriba",
+      "owns": [
+        "cash_positions",
+        "bank_transactions",
+        "forecast_inputs"
+      ],
+      "protocol": "REST API",
+      "localBacking": [
+        "alloydb"
+      ],
+      "toolNames": [
+        "query_kyriba_cash_positions",
+        "query_kyriba_bank_transactions",
+        "query_kyriba_forecast_inputs"
+      ],
+      "evidence": [
+        "source_system_record",
+        "generated_audit_trail"
+      ]
+    },
+    {
+      "id": "sap_s_4hana_fi",
+      "name": "SAP S/4HANA FI",
+      "owns": [
+        "gl_entries",
+        "subledger_balances",
+        "open_items"
+      ],
+      "protocol": "RFC/BAPI",
+      "localBacking": [
+        "alloydb"
+      ],
+      "toolNames": [
+        "query_sap_s_4hana_fi_gl_entries",
+        "query_sap_s_4hana_fi_subledger_balances",
+        "query_sap_s_4hana_fi_open_items"
+      ],
+      "evidence": [
+        "source_system_record",
+        "generated_audit_trail"
+      ]
+    },
+    {
+      "id": "bigquery",
+      "name": "BigQuery",
+      "owns": [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates"
+      ],
+      "protocol": "BigQuery SQL",
+      "localBacking": [
+        "bigquery"
+      ],
+      "toolNames": [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates"
+      ],
+      "evidence": [
+        "source_system_record",
+        "generated_audit_trail"
+      ]
+    }
+  ],
+  "useCaseSpec": {
+    "id": "bank-reconciliation-agent",
+    "title": "Bank Reconciliation Agent",
+    "department": "finance",
+    "rowPolicy": {
+      "requestedRows": 50,
+      "minimumRowsPerEntity": 25,
+      "defaultRowsPerEntity": 50
+    },
+    "systems": [
+      {
+        "id": "kyriba",
+        "name": "Kyriba",
+        "owns": [
+          "cash_positions",
+          "bank_transactions",
+          "forecast_inputs"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_kyriba_cash_positions",
+          "query_kyriba_bank_transactions",
+          "query_kyriba_forecast_inputs"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "sap_s_4hana_fi",
+        "name": "SAP S/4HANA FI",
+        "owns": [
+          "gl_entries",
+          "subledger_balances",
+          "open_items"
+        ],
+        "protocol": "RFC/BAPI",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_sap_s_4hana_fi_gl_entries",
+          "query_sap_s_4hana_fi_subledger_balances",
+          "query_sap_s_4hana_fi_open_items"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "bigquery",
+        "name": "BigQuery",
+        "owns": [
+          "analytics_events",
+          "historical_metrics",
+          "cached_aggregates"
+        ],
+        "protocol": "BigQuery SQL",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_bigquery_analytics_events",
+          "query_bigquery_historical_metrics",
+          "query_bigquery_cached_aggregates"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "dataContracts": [
+      {
+        "entity": "cash_positions",
+        "sourceSystem": "Kyriba",
+        "sourceSystemId": "kyriba",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "bank_transactions",
+        "sourceSystem": "Kyriba",
+        "sourceSystemId": "kyriba",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "posting_date",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "account",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "lorem.sentence",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "forecast_inputs",
+        "sourceSystem": "Kyriba",
+        "sourceSystemId": "kyriba",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "cost_center",
+            "type": "lorem.words",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "budget_amount",
+            "type": "number",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "actual_amount",
+            "type": "number",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "scenario",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "gl_entries",
+        "sourceSystem": "SAP S/4HANA FI",
+        "sourceSystemId": "sap_s_4hana_fi",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "posting_date",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "account",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "lorem.sentence",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "subledger_balances",
+        "sourceSystem": "SAP S/4HANA FI",
+        "sourceSystemId": "sap_s_4hana_fi",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "posting_date",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "account",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "lorem.sentence",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "open_items",
+        "sourceSystem": "SAP S/4HANA FI",
+        "sourceSystemId": "sap_s_4hana_fi",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "posting_date",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "account",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "lorem.sentence",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "analytics_events",
+        "sourceSystem": "BigQuery",
+        "sourceSystemId": "bigquery",
+        "sourceKind": "bigquery",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "historical_metric_id",
+            "type": "ref",
+            "ref": "historical_metrics.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "historical_metrics",
+        "sourceSystem": "BigQuery",
+        "sourceSystemId": "bigquery",
+        "sourceKind": "bigquery",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "cached_aggregates",
+        "sourceSystem": "BigQuery",
+        "sourceSystemId": "bigquery",
+        "sourceKind": "bigquery",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          }
+        ]
+      }
+    ],
+    "evidenceRequired": [
+      "sql_result",
+      "source_system_record",
+      "document_reference",
+      "generated_audit_trail"
+    ],
+    "documentRequirements": [
+      "Bank Reconciliation Agent Controls Playbook: Workflow scope, Materiality thresholds, Escalation triggers, Audit evidence requirements, Quarter-end variations"
+    ],
+    "integrityRules": [
+      "analytics_events.historical_metric_id -> historical_metrics.id; orphanPolicy=none"
+    ],
+    "apis": [
+      {
+        "id": "kyriba_match_api",
+        "sourceSystemId": "kyriba",
+        "method": "POST",
+        "path": "/api/kyriba/match",
+        "description": "Synchronous endpoint the agent calls to match in Kyriba after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "bank_reconciliation_agent",
+        "schemas": [
+          "kyriba",
+          "sap_s_4hana_fi"
+        ]
+      },
+      "bigquery": {
+        "dataset": "finance_bank_reconciliation_agent",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "bank-reconciliation-agent-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "bank-reconciliation-agent-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "behaviorContract": {
+      "role": "Treasury Accountant agent for the Bank Reconciliation Agent workflow",
+      "primaryObjective": "ML matching achieves 96% auto-reconciliation rate, reducing manual effort from 3 hours to 20 minutes of exception review. Gemini investigates unmatched items by reading bank descriptions and cross-referencing internal records -- no phone calls needed. so the Treasury Accountant can move the Auto-match rate KPI.",
+      "inScope": [
+        "ML matching achieves 96% auto-reconciliation rate, reducing manual effort from 3 hours to 20 minutes of exception review",
+        "Gemini investigates unmatched items by reading bank descriptions and cross-referencing internal records -- no phone calls needed",
+        "Same-day exception resolution improves cash position accuracy for treasury forecasting"
+      ],
+      "outOfScope": [
+        "Final sign-off on materially significant journal entries (Controller retains authority)",
+        "Restatement of prior-period filings",
+        "Tax position changes that require external advisor review"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_kyriba_cash_positions",
+          "kind": "query",
+          "sourceSystemId": "kyriba",
+          "description": "Retrieve cash positions from Kyriba for the Bank Reconciliation Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "cash_positions_records",
+            "cash_positions_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_sap_s_4hana_fi_gl_entries",
+          "kind": "query",
+          "sourceSystemId": "sap_s_4hana_fi",
+          "description": "Retrieve gl entries from SAP S/4HANA FI for the Bank Reconciliation Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "gl_entries_records",
+            "gl_entries_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_bigquery_analytics_events",
+          "kind": "query",
+          "sourceSystemId": "bigquery",
+          "description": "Retrieve analytics events from BigQuery for the Bank Reconciliation Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "analytics_events_records",
+            "analytics_events_summary"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "lookup_bank_reconciliation_agent_controls_playbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "bigquery",
+          "description": "Look up sections of the Bank Reconciliation Agent Controls Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_kyriba_match",
+          "kind": "action",
+          "sourceSystemId": "kyriba",
+          "description": "Execute the match step in Kyriba after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "evidenceRequirements": [
+        {
+          "claim": "Auto-match rate moved from 70% toward 96%",
+          "mustCite": [
+            "kyriba.cash_positions",
+            "sap_s_4hana_fi.gl_entries"
+          ],
+          "sourceSystemIds": [
+            "kyriba",
+            "sap_s_4hana_fi"
+          ]
+        },
+        {
+          "claim": "Reconciliation time moved from 3 hours/day toward 20 min review",
+          "mustCite": [
+            "kyriba.cash_positions",
+            "sap_s_4hana_fi.gl_entries"
+          ],
+          "sourceSystemIds": [
+            "kyriba",
+            "sap_s_4hana_fi"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Auto-match rate regresses past the 70% baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Treasury Accountant",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed match action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Kyriba (and other named systems) entities.",
+        "Never bypass Treasury Accountant approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+        "Do not invent metric values, trends, or forecast confidence when analytics rows are missing.",
+        "Do not infer employee eligibility or employment status without Workday employee evidence.",
+        "Do not certify, close, or post finance actions without ledger and exception evidence."
+      ],
+      "goldenEvals": [
+        {
+          "id": "bank-reconciliation-agent-end-to-end",
+          "prompt": "Run the Bank Reconciliation Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_kyriba_cash_positions",
+            "query_sap_s_4hana_fi_gl_entries",
+            "query_bigquery_analytics_events",
+            "lookup_bank_reconciliation_agent_controls_playbook",
+            "action_kyriba_match"
+          ],
+          "mustReferenceEntities": [
+            "cash_positions",
+            "gl_entries",
+            "analytics_events"
+          ],
+          "mustCiteDocuments": [
+            "bank-reconciliation-agent-controls-playbook"
+          ],
+          "expectedActionOutcome": "Action match executed against Kyriba, with audit-trail entry and Treasury Accountant notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute match without two-system evidence"
+          ]
+        }
+      ],
+      "simulatorEnrichment": {
+        "packBridges": [
+          {
+            "packId": "system_analytics",
+            "simulatorArchetypes": [
+              "data_platform",
+              "digital_analytics",
+              "planning_epm"
+            ],
+            "simulatorCollections": [
+              "datasets",
+              "tables",
+              "pipelines",
+              "jobs",
+              "quality_checks",
+              "events",
+              "conversions"
+            ],
+            "materializes": "analytics tables, metric rows, forecasts, freshness signals, and quality checks into simulator seed overlays"
+          },
+          {
+            "packId": "system_hr_employee_records",
+            "simulatorArchetypes": [
+              "hr_talent",
+              "benefits"
+            ],
+            "simulatorCollections": [
+              "workers",
+              "positions",
+              "supervisory_orgs",
+              "worker_events",
+              "employees",
+              "life_events"
+            ],
+            "materializes": "employee, position, manager hierarchy, compensation, and life-event rows into HR simulator seeds"
+          },
+          {
+            "packId": "system_finance_erp",
+            "simulatorArchetypes": [
+              "erp_finance",
+              "tax_treasury",
+              "planning_epm"
+            ],
+            "simulatorCollections": [
+              "vendors",
+              "invoices",
+              "journal_entries",
+              "payments",
+              "bank_accounts",
+              "payment_batches",
+              "tax_filings",
+              "forecast_lines"
+            ],
+            "materializes": "ledger, AP/AR, invoice, payment, cash, tax, and close-control rows into finance simulator seeds"
+          }
+        ]
+      },
+      "evalEnrichment": {
+        "packHints": [
+          {
+            "packId": "system_analytics",
+            "expectedToolKinds": [
+              "query",
+              "calculation"
+            ],
+            "mustReferenceEntities": [
+              "analytics_events",
+              "historical_metrics",
+              "cached_aggregates"
+            ],
+            "successCriteria": [
+              "Derive metric claims from warehouse-backed rows.",
+              "Compare current values against historical or cached baselines.",
+              "Call out negative variance and stale computed_at dates."
+            ],
+            "refusalRules": [
+              "Do not invent metric values, trends, or forecast confidence when analytics rows are missing."
+            ]
+          },
+          {
+            "packId": "system_hr_employee_records",
+            "expectedToolKinds": [
+              "query",
+              "evidence_lookup"
+            ],
+            "mustReferenceEntities": [
+              "employees",
+              "positions",
+              "compensation_records"
+            ],
+            "successCriteria": [
+              "Anchor HR answers to employee status, region, and Workday record IDs.",
+              "Escalate terminated, leave, or missing employee cases.",
+              "Avoid using stale employee data for write-like actions."
+            ],
+            "refusalRules": [
+              "Do not infer employee eligibility or employment status without Workday employee evidence."
+            ]
+          },
+          {
+            "packId": "system_finance_erp",
+            "expectedToolKinds": [
+              "query",
+              "calculation",
+              "action"
+            ],
+            "mustReferenceEntities": [
+              "gl_entries",
+              "subledger_balances",
+              "open_items",
+              "accounts_payable",
+              "accounts_receivable"
+            ],
+            "successCriteria": [
+              "Back close, cash, AP, AR, and control claims with ledger evidence.",
+              "Call out pending or reversed records as exceptions.",
+              "Preserve audit trail details for write-like finance actions."
+            ],
+            "refusalRules": [
+              "Do not certify, close, or post finance actions without ledger and exception evidence."
+            ]
+          }
+        ]
+      }
+    },
+    "agentQualityPlan": {
+      "naming": {
+        "agentName": "bank_reconciliation_agent_agent",
+        "displayName": "Bank Reconciliation Agent",
+        "rule": "Use snake_case Python identifiers for agent and tools; use title case only for display labels.",
+        "toolNamePattern": "<verb>_<source_system_id>_<business_object>",
+        "forbiddenPatterns": [
+          "helper",
+          "do_task",
+          "process_data",
+          "tool1",
+          "generic_agent"
+        ]
+      },
+      "adkCapabilities": {
+        "agentClass": "google.adk.agents.Agent",
+        "model": "gemini-3.5-flash",
+        "generateContentConfig": {
+          "temperature": 0.2,
+          "maxOutputTokens": null,
+          "reason": "Output budget left to the model default; the harness review sets a bound only when the use case warrants one."
+        },
+        "outputKey": "last_response",
+        "callbacks": [
+          "before_agent_callback initializes session state from the generated spec.",
+          "before_tool_callback enforces idempotency keys for write-like tool intents.",
+          "after_tool_callback records tool evidence and audit trails in session state."
+        ],
+        "stateKeys": [
+          "scenario_id",
+          "primary_objective",
+          "expected_tools",
+          "evidence_log",
+          "audit_trails"
+        ],
+        "useSubAgentsWhen": "Split into source-specific researcher/verifier sub-agents when live APIs replace fixtures or when one prompt needs parallel evidence collection.",
+        "useAgentToolWhen": "Expose specialist agents through AgentTool when the coordinator must retain control over final synthesis.",
+        "useCodeExecutorWhen": "Not required unless future specs add deterministic calculation or modeling work.",
+        "useMemoryWhen": "Only persist user preferences or repeated workflow context after the user explicitly asks for memory; keep generated demos session-scoped by default."
+      },
+      "toolDesign": {
+        "expectedToolCount": 18,
+        "sourceAdapters": [
+          "kyriba",
+          "sap_s_4hana_fi",
+          "bigquery"
+        ],
+        "writeSafety": "All write-like tools require explicit inputs and return deterministic audit_trail values; callbacks block missing idempotency_key/idempotencyKey when present in args.",
+        "evidence": "Evidence lookup tools and document search must run before recommendations or write actions."
+      },
+      "evalPlan": {
+        "unitTests": [
+          "Import generated app.tools and app.agent.",
+          "Verify fixture tables exist and contain rows.",
+          "Verify generated agent instruction contains objective, tool playbook, and guardrails.",
+          "Statically verify advanced ADK config: callbacks, generate_content_config, output_key, and description."
+        ],
+        "agentEvals": [
+          "tool_trajectory_avg_score with ANY_ORDER for contract tool usage.",
+          "rubric_based_tool_use_quality_v1 for source-before-action reasoning.",
+          "rubric_based_final_response_quality_v1 for grounded final answers.",
+          "hallucinations_v1 and safety_v1 for cited evidence and guardrail adherence."
+        ],
+        "goldenEvalMinimum": 1,
+        "addMoreEvalsWhen": [
+          "A tool intent writes external state.",
+          "A source adapter has bidirectional sync semantics.",
+          "A workflow has escalation/refusal branches.",
+          "A document citation is mandatory for final answers."
+        ]
+      },
+      "mockDataQuality": {
+        "minimumRowsPerEntity": 25,
+        "requirements": [
+          "Every generated row has a stable primary key.",
+          "Foreign keys must resolve to generated parent rows.",
+          "Each table declares sourceSystem and sourceSystemId in fixtures/manifest.json.",
+          "Documents include citation anchors and linked entity ids when document evidence is needed.",
+          "Action-oriented workflows include at least one anomaly or edge-case fixture."
+        ]
+      }
+    }
+  },
+  "rowPolicy": {
+    "minimumRowsPerEntity": 25,
+    "defaultRowsPerEntity": 50
+  },
+  "tables": [
+    {
+      "name": "cash_positions",
+      "rows": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq"
+        },
+        {
+          "name": "source_record_id",
+          "type": "seq"
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "values": [
+            "active",
+            "pending",
+            "closed"
+          ]
+        },
+        {
+          "name": "owner",
+          "type": "person.fullName"
+        },
+        {
+          "name": "created_at",
+          "type": "date"
+        },
+        {
+          "name": "notes",
+          "type": "lorem.sentence"
+        }
+      ],
+      "_sourceSystem": "Kyriba",
+      "_sourceSystemId": "kyriba",
+      "_sourceKind": "alloydb",
+      "_sourceProtocol": "REST API",
+      "_sourceDescription": "cash_positions, bank_transactions, forecast_inputs"
+    },
+    {
+      "name": "bank_transactions",
+      "rows": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq"
+        },
+        {
+          "name": "posting_date",
+          "type": "date"
+        },
+        {
+          "name": "account",
+          "type": "enum",
+          "values": [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS"
+          ]
+        },
+        {
+          "name": "amount",
+          "type": "float",
+          "min": -50000,
+          "max": 50000
+        },
+        {
+          "name": "currency",
+          "type": "enum",
+          "values": [
+            "USD",
+            "EUR",
+            "GBP"
+          ]
+        },
+        {
+          "name": "description",
+          "type": "lorem.sentence"
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "values": [
+            "posted",
+            "pending",
+            "reversed"
+          ],
+          "weights": [
+            0.8,
+            0.15,
+            0.05
+          ]
+        }
+      ],
+      "_sourceSystem": "Kyriba",
+      "_sourceSystemId": "kyriba",
+      "_sourceKind": "alloydb",
+      "_sourceProtocol": "REST API",
+      "_sourceDescription": "cash_positions, bank_transactions, forecast_inputs"
+    },
+    {
+      "name": "forecast_inputs",
+      "rows": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq"
+        },
+        {
+          "name": "cost_center",
+          "type": "lorem.words"
+        },
+        {
+          "name": "period",
+          "type": "enum",
+          "values": [
+            "month",
+            "quarter",
+            "year"
+          ]
+        },
+        {
+          "name": "budget_amount",
+          "type": "number",
+          "min": 10000,
+          "max": 5000000
+        },
+        {
+          "name": "actual_amount",
+          "type": "number",
+          "min": 0,
+          "max": 6000000
+        },
+        {
+          "name": "variance_pct",
+          "type": "float",
+          "min": -100,
+          "max": 100
+        },
+        {
+          "name": "scenario",
+          "type": "enum",
+          "values": [
+            "baseline",
+            "stretch",
+            "downside"
+          ]
+        }
+      ],
+      "_sourceSystem": "Kyriba",
+      "_sourceSystemId": "kyriba",
+      "_sourceKind": "alloydb",
+      "_sourceProtocol": "REST API",
+      "_sourceDescription": "cash_positions, bank_transactions, forecast_inputs"
+    },
+    {
+      "name": "gl_entries",
+      "rows": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq"
+        },
+        {
+          "name": "posting_date",
+          "type": "date"
+        },
+        {
+          "name": "account",
+          "type": "enum",
+          "values": [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS"
+          ]
+        },
+        {
+          "name": "amount",
+          "type": "float",
+          "min": -50000,
+          "max": 50000
+        },
+        {
+          "name": "currency",
+          "type": "enum",
+          "values": [
+            "USD",
+            "EUR",
+            "GBP"
+          ]
+        },
+        {
+          "name": "description",
+          "type": "lorem.sentence"
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "values": [
+            "posted",
+            "pending",
+            "reversed"
+          ],
+          "weights": [
+            0.8,
+            0.15,
+            0.05
+          ]
+        }
+      ],
+      "_sourceSystem": "SAP S/4HANA FI",
+      "_sourceSystemId": "sap_s_4hana_fi",
+      "_sourceKind": "alloydb",
+      "_sourceProtocol": "RFC/BAPI",
+      "_sourceDescription": "gl_entries, subledger_balances, open_items"
+    },
+    {
+      "name": "subledger_balances",
+      "rows": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq"
+        },
+        {
+          "name": "posting_date",
+          "type": "date"
+        },
+        {
+          "name": "account",
+          "type": "enum",
+          "values": [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS"
+          ]
+        },
+        {
+          "name": "amount",
+          "type": "float",
+          "min": -50000,
+          "max": 50000
+        },
+        {
+          "name": "currency",
+          "type": "enum",
+          "values": [
+            "USD",
+            "EUR",
+            "GBP"
+          ]
+        },
+        {
+          "name": "description",
+          "type": "lorem.sentence"
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "values": [
+            "posted",
+            "pending",
+            "reversed"
+          ],
+          "weights": [
+            0.8,
+            0.15,
+            0.05
+          ]
+        }
+      ],
+      "_sourceSystem": "SAP S/4HANA FI",
+      "_sourceSystemId": "sap_s_4hana_fi",
+      "_sourceKind": "alloydb",
+      "_sourceProtocol": "RFC/BAPI",
+      "_sourceDescription": "gl_entries, subledger_balances, open_items"
+    },
+    {
+      "name": "open_items",
+      "rows": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq"
+        },
+        {
+          "name": "posting_date",
+          "type": "date"
+        },
+        {
+          "name": "account",
+          "type": "enum",
+          "values": [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS"
+          ]
+        },
+        {
+          "name": "amount",
+          "type": "float",
+          "min": -50000,
+          "max": 50000
+        },
+        {
+          "name": "currency",
+          "type": "enum",
+          "values": [
+            "USD",
+            "EUR",
+            "GBP"
+          ]
+        },
+        {
+          "name": "description",
+          "type": "lorem.sentence"
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "values": [
+            "posted",
+            "pending",
+            "reversed"
+          ],
+          "weights": [
+            0.8,
+            0.15,
+            0.05
+          ]
+        }
+      ],
+      "_sourceSystem": "SAP S/4HANA FI",
+      "_sourceSystemId": "sap_s_4hana_fi",
+      "_sourceKind": "alloydb",
+      "_sourceProtocol": "RFC/BAPI",
+      "_sourceDescription": "gl_entries, subledger_balances, open_items"
+    },
+    {
+      "name": "analytics_events",
+      "rows": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq"
+        },
+        {
+          "name": "period",
+          "type": "enum",
+          "values": [
+            "day",
+            "week",
+            "month",
+            "quarter"
+          ]
+        },
+        {
+          "name": "metric_name",
+          "type": "lorem.words"
+        },
+        {
+          "name": "value",
+          "type": "float",
+          "min": 0,
+          "max": 100000
+        },
+        {
+          "name": "variance_pct",
+          "type": "float",
+          "min": -50,
+          "max": 50
+        },
+        {
+          "name": "computed_at",
+          "type": "date"
+        },
+        {
+          "name": "historical_metric_id",
+          "type": "ref",
+          "ref": "historical_metrics.id"
+        }
+      ],
+      "_sourceSystem": "BigQuery",
+      "_sourceSystemId": "bigquery",
+      "_sourceKind": "bigquery",
+      "_sourceProtocol": "BigQuery SQL",
+      "_sourceDescription": "analytics_events, historical_metrics, cached_aggregates"
+    },
+    {
+      "name": "historical_metrics",
+      "rows": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq"
+        },
+        {
+          "name": "period",
+          "type": "enum",
+          "values": [
+            "day",
+            "week",
+            "month",
+            "quarter"
+          ]
+        },
+        {
+          "name": "metric_name",
+          "type": "lorem.words"
+        },
+        {
+          "name": "value",
+          "type": "float",
+          "min": 0,
+          "max": 100000
+        },
+        {
+          "name": "variance_pct",
+          "type": "float",
+          "min": -50,
+          "max": 50
+        },
+        {
+          "name": "computed_at",
+          "type": "date"
+        }
+      ],
+      "_sourceSystem": "BigQuery",
+      "_sourceSystemId": "bigquery",
+      "_sourceKind": "bigquery",
+      "_sourceProtocol": "BigQuery SQL",
+      "_sourceDescription": "analytics_events, historical_metrics, cached_aggregates"
+    },
+    {
+      "name": "cached_aggregates",
+      "rows": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq"
+        },
+        {
+          "name": "period",
+          "type": "enum",
+          "values": [
+            "day",
+            "week",
+            "month",
+            "quarter"
+          ]
+        },
+        {
+          "name": "metric_name",
+          "type": "lorem.words"
+        },
+        {
+          "name": "value",
+          "type": "float",
+          "min": 0,
+          "max": 100000
+        },
+        {
+          "name": "variance_pct",
+          "type": "float",
+          "min": -50,
+          "max": 50
+        },
+        {
+          "name": "computed_at",
+          "type": "date"
+        }
+      ],
+      "_sourceSystem": "BigQuery",
+      "_sourceSystemId": "bigquery",
+      "_sourceKind": "bigquery",
+      "_sourceProtocol": "BigQuery SQL",
+      "_sourceDescription": "analytics_events, historical_metrics, cached_aggregates"
+    }
+  ],
+  "documents": [
+    {
+      "id": "bank-reconciliation-agent-controls-playbook",
+      "name": "bank-reconciliation-agent-controls-playbook",
+      "type": "policy",
+      "title": "Bank Reconciliation Agent Controls Playbook",
+      "sourceSystem": "BigQuery",
+      "sourceSystemId": "bigquery",
+      "linkedEntities": [
+        "cash_positions",
+        "bank_transactions",
+        "forecast_inputs"
+      ],
+      "requiredSections": [
+        "Workflow scope",
+        "Materiality thresholds",
+        "Escalation triggers",
+        "Audit evidence requirements",
+        "Quarter-end variations"
+      ],
+      "topic": "Workflow scope; Materiality thresholds; Escalation triggers; Audit evidence requirements; Quarter-end variations",
+      "citationAnchors": [
+        "scope",
+        "materiality",
+        "escalation",
+        "audit-evidence"
+      ],
+      "minimumWordCount": 500
+    }
+  ],
+  "anomalies": [
+    {
+      "id": "bank-reconciliation-agent-baseline-gap",
+      "description": "Seed a realistic gap where Auto-match rate sits between 70% and 96%, so the agent can detect, narrate, and recommend remediation.",
+      "affectedEntities": [
+        "cash_positions",
+        "bank_transactions"
+      ],
+      "discoveryPath": [
+        "Inspect Kyriba records for the affected entities",
+        "Compare against SAP S/4HANA FI historical baseline",
+        "Generate a citation-backed recommendation"
+      ],
+      "expectedEvidence": [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail"
+      ],
+      "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next Treasury Accountant action."
+    }
+  ]
+}

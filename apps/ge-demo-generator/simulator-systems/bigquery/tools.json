@@ -1,0 +1,574 @@
+{
+  "id": "bigquery_tools",
+  "version": 3,
+  "tools": [
+    {
+      "name": "search_datasets",
+      "description": "[GET projects/{projectsId}/datasets] Lists datasets in the specified project.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text query across dataset ID, project, location, and friendly name."
+          },
+          "projectId": {
+            "type": "string",
+            "description": "Project ID for the dataset list request."
+          },
+          "all": {
+            "type": "boolean",
+            "description": "Whether to list all datasets, including hidden ones."
+          },
+          "filter": {
+            "type": "string",
+            "description": "Expression for filtering by labels, e.g. labels.department:hr."
+          },
+          "maxResults": {
+            "type": "integer",
+            "description": "Maximum number of results to return in a single response page."
+          },
+          "pageToken": {
+            "type": "string",
+            "description": "Page token returned by a previous call."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max rows to return."
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "datasets",
+        "query": {
+          "textFields": [
+            "dataset_id",
+            "project_id",
+            "location",
+            "friendly_name"
+          ],
+          "filters": {
+            "projectId": {
+              "field": "project_id",
+              "op": "eq_ci"
+            },
+            "filter": {
+              "field": "friendly_name",
+              "op": "contains"
+            }
+          },
+          "cursorFields": [
+            "dataset_id"
+          ],
+          "defaultSort": [
+            {
+              "field": "dataset_id",
+              "direction": "asc"
+            }
+          ],
+          "pagination": {
+            "style": "page-token",
+            "defaultLimit": 50,
+            "maxLimit": 1000
+          }
+        }
+      }
+    },
+    {
+      "name": "get_dataset",
+      "description": "[GET projects/{projectsId}/datasets/{datasetsId}] Returns the requested dataset.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset_id": {
+            "type": "string",
+            "description": "dataset primary key"
+          },
+          "datasetView": {
+            "type": "string",
+            "description": "View that determines which dataset information is returned."
+          },
+          "accessPolicyVersion": {
+            "type": "integer",
+            "description": "Access policy schema version to fetch."
+          },
+          "datasetId": {
+            "type": "string",
+            "description": "Dataset ID of the requested dataset."
+          },
+          "projectId": {
+            "type": "string",
+            "description": "Project ID of the requested dataset."
+          }
+        },
+        "required": [
+          "dataset_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "datasets",
+        "primaryKey": "dataset_id"
+      }
+    },
+    {
+      "name": "search_tables",
+      "description": "[GET projects/{projectsId}/datasets/{datasetsId}/tables] Lists tables in the specified dataset.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text query across table ID, dataset, project, and type."
+          },
+          "projectId": {
+            "type": "string",
+            "description": "Project ID of the requested table list."
+          },
+          "datasetId": {
+            "type": "string",
+            "description": "Dataset ID of the requested table list."
+          },
+          "type": {
+            "type": "string",
+            "description": "Simulator table type filter."
+          },
+          "pageToken": {
+            "type": "string",
+            "description": "Page token returned by a previous call."
+          },
+          "maxResults": {
+            "type": "integer",
+            "description": "Maximum number of results to return in a single response page."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max rows to return."
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "tables",
+        "query": {
+          "textFields": [
+            "table_id",
+            "dataset_id",
+            "project_id",
+            "type"
+          ],
+          "filters": {
+            "projectId": {
+              "field": "project_id",
+              "op": "eq_ci"
+            },
+            "datasetId": {
+              "field": "dataset_id",
+              "op": "eq_ci"
+            },
+            "type": {
+              "field": "type",
+              "op": "eq_ci"
+            }
+          },
+          "cursorFields": [
+            "table_id"
+          ],
+          "defaultSort": [
+            {
+              "field": "table_id",
+              "direction": "asc"
+            }
+          ],
+          "pagination": {
+            "style": "page-token",
+            "defaultLimit": 50,
+            "maxLimit": 1000
+          }
+        }
+      }
+    },
+    {
+      "name": "get_table",
+      "description": "[GET projects/{projectsId}/datasets/{datasetsId}/tables/{tablesId}] Gets the specified table resource.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "table_id": {
+            "type": "string",
+            "description": "table primary key"
+          },
+          "projectId": {
+            "type": "string",
+            "description": "Project ID of the requested table."
+          },
+          "tableId": {
+            "type": "string",
+            "description": "Table ID of the requested table."
+          },
+          "view": {
+            "type": "string",
+            "description": "View that determines which table information is returned."
+          },
+          "datasetId": {
+            "type": "string",
+            "description": "Dataset ID of the requested table."
+          },
+          "selectedFields": {
+            "type": "string",
+            "description": "Comma-separated list of table schema fields to return."
+          }
+        },
+        "required": [
+          "table_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "tables",
+        "primaryKey": "table_id"
+      }
+    },
+    {
+      "name": "search_jobs",
+      "description": "[GET projects/{projectsId}/jobs] Lists jobs in reverse chronological creation order.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text query across job ID, project, state, type, and user."
+          },
+          "projectId": {
+            "type": "string",
+            "description": "Project ID whose jobs are listed."
+          },
+          "parentJobId": {
+            "type": "string",
+            "description": "Show only child jobs of the specified parent."
+          },
+          "maxCreationTime": {
+            "type": "string",
+            "description": "Maximum job creation time in milliseconds since epoch."
+          },
+          "projection": {
+            "type": "string",
+            "description": "Restrict information returned to selected fields."
+          },
+          "maxResults": {
+            "type": "integer",
+            "description": "Maximum number of results to return in one page."
+          },
+          "stateFilter": {
+            "type": "string",
+            "description": "Filter for job state."
+          },
+          "job_type": {
+            "type": "string",
+            "description": "Simulator job type filter."
+          },
+          "allUsers": {
+            "type": "boolean",
+            "description": "Whether to display jobs owned by all users."
+          },
+          "minCreationTime": {
+            "type": "string",
+            "description": "Minimum job creation time in milliseconds since epoch."
+          },
+          "pageToken": {
+            "type": "string",
+            "description": "Page token returned by a previous call."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max rows to return."
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "jobs",
+        "query": {
+          "textFields": [
+            "job_id",
+            "project_id",
+            "state",
+            "job_type",
+            "user_email"
+          ],
+          "filters": {
+            "projectId": {
+              "field": "project_id",
+              "op": "eq_ci"
+            },
+            "stateFilter": {
+              "field": "state",
+              "op": "eq_ci"
+            },
+            "job_type": {
+              "field": "job_type",
+              "op": "eq_ci"
+            },
+            "minCreationTime": {
+              "field": "creation_time_ms",
+              "op": "gte"
+            },
+            "maxCreationTime": {
+              "field": "creation_time_ms",
+              "op": "lte"
+            }
+          },
+          "cursorFields": [
+            "job_id"
+          ],
+          "defaultSort": [
+            {
+              "field": "creation_time_ms",
+              "direction": "desc"
+            }
+          ],
+          "pagination": {
+            "style": "page-token",
+            "defaultLimit": 50,
+            "maxLimit": 1000
+          }
+        }
+      }
+    },
+    {
+      "name": "get_job",
+      "description": "[GET projects/{projectsId}/jobs/{jobsId}] Returns information about a specific job.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "description": "job primary key"
+          },
+          "location": {
+            "type": "string",
+            "description": "Geographic location of the job."
+          },
+          "jobId": {
+            "type": "string",
+            "description": "Job ID of the requested job."
+          },
+          "projectId": {
+            "type": "string",
+            "description": "Project ID of the requested job."
+          }
+        },
+        "required": [
+          "job_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "jobs",
+        "primaryKey": "job_id"
+      }
+    },
+    {
+      "name": "submit_job_update",
+      "description": "[POST projects/{projectsId}/jobs/{jobsId}/cancel] Requests that a job be cancelled.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "description": "job primary key"
+          },
+          "state": {
+            "type": "string",
+            "description": "Target state."
+          },
+          "note": {
+            "type": "string",
+            "description": "Reviewer note recorded on the change."
+          },
+          "role": {
+            "type": "string",
+            "description": "Acting role; gated by allowedRoles."
+          },
+          "idempotency_key": {
+            "type": "string",
+            "description": "Replays return the original result."
+          },
+          "jobId": {
+            "type": "string",
+            "description": "Job ID of the job to cancel."
+          },
+          "projectId": {
+            "type": "string",
+            "description": "Project ID of the job to cancel."
+          },
+          "location": {
+            "type": "string",
+            "description": "Geographic location of the job."
+          }
+        },
+        "required": [
+          "job_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "jobs",
+        "primaryKey": "job_id"
+      }
+    },
+    {
+      "name": "search_routines",
+      "description": "[GET projects/{projectsId}/datasets/{datasetsId}/routines] Lists routines in the specified dataset.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text query across routine ID, dataset, project, type, and language."
+          },
+          "projectId": {
+            "type": "string",
+            "description": "Project ID of the requested routine list."
+          },
+          "datasetId": {
+            "type": "string",
+            "description": "Dataset ID of the requested routine list."
+          },
+          "readMask": {
+            "type": "string",
+            "description": "Routine fields to include in the response."
+          },
+          "filter": {
+            "type": "string",
+            "description": "Supported format is routineType:{RoutineType}."
+          },
+          "maxResults": {
+            "type": "integer",
+            "description": "Maximum number of results to return in one page."
+          },
+          "pageToken": {
+            "type": "string",
+            "description": "Page token returned by a previous call."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max rows to return."
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "routines",
+        "query": {
+          "textFields": [
+            "routine_id",
+            "dataset_id",
+            "project_id",
+            "routine_type",
+            "language"
+          ],
+          "filters": {
+            "projectId": {
+              "field": "project_id",
+              "op": "eq_ci"
+            },
+            "datasetId": {
+              "field": "dataset_id",
+              "op": "eq_ci"
+            },
+            "filter": {
+              "field": "routine_type",
+              "op": "contains"
+            }
+          },
+          "cursorFields": [
+            "routine_id"
+          ],
+          "defaultSort": [
+            {
+              "field": "routine_id",
+              "direction": "asc"
+            }
+          ],
+          "pagination": {
+            "style": "page-token",
+            "defaultLimit": 50,
+            "maxLimit": 1000
+          }
+        }
+      }
+    },
+    {
+      "name": "get_routine",
+      "description": "[GET projects/{projectsId}/datasets/{datasetsId}/routines/{routinesId}] Gets the specified routine resource.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "routine_id": {
+            "type": "string",
+            "description": "routine primary key"
+          },
+          "routineId": {
+            "type": "string",
+            "description": "Routine ID of the requested routine."
+          },
+          "datasetId": {
+            "type": "string",
+            "description": "Dataset ID of the requested routine."
+          },
+          "projectId": {
+            "type": "string",
+            "description": "Project ID of the requested routine."
+          },
+          "readMask": {
+            "type": "string",
+            "description": "Routine fields to return in the response."
+          }
+        },
+        "required": [
+          "routine_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "routines",
+        "primaryKey": "routine_id"
+      }
+    },
+    {
+      "name": "poll_async_job",
+      "description": "Poll a queued asynchronous simulator job.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id"
+        ]
+      },
+      "binding": {
+        "op": "poll_async_job"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List BigQuery simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

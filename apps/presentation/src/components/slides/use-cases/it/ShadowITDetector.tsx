@@ -1,0 +1,1234 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { Eye, Database, AlertTriangle, Brain, CheckCircle } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Weekly Scan", lane: "system", type: "trigger" },
+    { id: "a1", label: "App Detection", lane: "agent", type: "action" },
+    { id: "a2", label: "Risk Assessment", lane: "agent", type: "action" },
+    { id: "a3", label: "Risk Report", lane: "agent", type: "output" },
+    { id: "h1", label: "IT Lead Reviews", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Shadow Detection", icon: Eye, description: "SSO bypass attempts, unsanctioned OAuth grants, and unapproved apps detected.", trigger: "Weekly", systems: ["Okta", "Google Workspace"] },
+  { label: "Risk Scoring", icon: AlertTriangle, description: "Each shadow app scored by data access scope, user count, and compliance risk.", systems: ["CrowdStrike", "BigQuery"], integration: "ADK" },
+  { label: "Impact Analysis", icon: Brain, description: "Gemini assesses data exposure risk and recommends adopt, monitor, or block for each app.", systems: ["Vertex AI"] },
+  { label: "Policy Decision", icon: CheckCircle, description: "End User Support Lead reviews findings and decides on adoption or blocking.", output: "Shadow IT Risk Report" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Okta", description: "SSO bypass attempts, OAuth grants, app catalog", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "Google Workspace", description: "OAuth token grants, third-party app access, Drive sharing", direction: "read", protocol: "Workspace API", category: "collaboration" },
+    { system: "Palo Alto", description: "Network traffic analysis, unsanctioned SaaS detection", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "CrowdStrike", description: "Browser extension inventory, unapproved software detection", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "BigQuery", description: "Shadow IT inventory, risk scoring, adoption tracking", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Risk reasoning, adopt/block recommendation", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Multi-Signal Detection", description: "Detect unsanctioned apps from multiple signals: OAuth grants in Google Workspace and Okta, network traffic to unknown SaaS in Palo Alto, unapproved browser extensions in CrowdStrike.", systems: ["Okta", "Google Workspace", "Palo Alto", "CrowdStrike"], layer: "integration", dataIn: "SSO logs + OAuth grants + network traffic + endpoint data", dataOut: "Detected shadow apps with usage signals" },
+    { label: "Risk Scoring", description: "Score each shadow app by data access scope (Calendar, Drive, email), user adoption count, data sensitivity exposure, compliance implications, and vendor security posture.", systems: ["BigQuery"], layer: "ml", dataIn: "Detected apps + data access + user counts", dataOut: "Risk-scored shadow IT inventory" },
+    { label: "Recommendation Reasoning", description: "Gemini recommends action for each shadow app: adopt officially (high usage, low risk), monitor (moderate usage, acceptable risk), or block (data exposure risk exceeds acceptable threshold). Suggests approved alternatives for blocked apps.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Risk scores + app capabilities + alternatives", dataOut: "Adopt/monitor/block recommendations with rationale" },
+    { label: "Policy Enforcement", description: "Execute approved decisions: add adopted apps to service catalog, configure monitoring for watched apps, block and notify users of restricted apps with approved alternatives.", systems: ["Okta", "BigQuery"], layer: "integration", dataIn: "Approved policy decisions", dataOut: "Enforced policies + user notifications" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "End User Support Lead agent for the Shadow IT Detector workflow",
+  primaryObjective: "Gemini detects shadow apps from multiple signals — OAuth grants, network traffic, and browser extensions. LLM assesses data exposure risk and recommends adopt, monitor, or block with approved alternatives. so the End User Support Lead can move the Shadow IT visibility KPI.",
+  inScope: [
+    "Gemini detects shadow apps from multiple signals — OAuth grants, network traffic, and browser extensions",
+    "LLM assesses data exposure risk and recommends adopt, monitor, or block with approved alternatives",
+    "Structured adopt/block process converts valuable shadow IT into official tools while blocking risky apps",
+  ],
+  outOfScope: [
+    "Production deployments outside an approved change window",
+    "Irreversible destructive actions on shared infrastructure (DROP, force-delete, key rotation)",
+    "Security incident attribution requiring forensics",
+  ],
+  toolIntents: [
+    {
+      name: "query_okta_users",
+      kind: "query",
+      sourceSystemId: "okta",
+      description: "Retrieve users from Okta for the Shadow IT Detector workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "users_records",
+        "users_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_google_workspace_accounts",
+      kind: "query",
+      sourceSystemId: "google_workspace",
+      description: "Retrieve accounts from Google Workspace for the Shadow IT Detector workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "accounts_records",
+        "accounts_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_palo_alto_palo_alto_records",
+      kind: "query",
+      sourceSystemId: "palo_alto",
+      description: "Retrieve palo alto records from Palo Alto for the Shadow IT Detector workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "palo_alto_records_records",
+        "palo_alto_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_crowdstrike_scan_findings",
+      kind: "query",
+      sourceSystemId: "crowdstrike",
+      description: "Retrieve scan findings from CrowdStrike for the Shadow IT Detector workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "scan_findings_records",
+        "scan_findings_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_shadow_it_detector_runbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Shadow IT Detector Operations Runbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_okta_approve",
+      kind: "action",
+      sourceSystemId: "okta",
+      description: "Execute the approve step in Okta after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Shadow IT visibility moved from Unknown scope toward 100% detected weekly",
+      mustCite: [
+        "okta.users",
+        "google_workspace.accounts",
+      ],
+      sourceSystemIds: [
+        "okta",
+        "google_workspace",
+      ],
+    },
+    {
+      claim: "Data exposure incidents moved from 4-5 per quarter toward < 1 per quarter",
+      mustCite: [
+        "okta.users",
+        "google_workspace.accounts",
+      ],
+      sourceSystemIds: [
+        "okta",
+        "google_workspace",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Shadow IT visibility regresses past the Unknown scope baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "End User Support Lead",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed approve action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from Okta (and other named systems) entities.",
+    "Never bypass End User Support Lead approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "shadow-it-detector-end-to-end",
+      prompt: "Run the Shadow IT Detector workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_okta_users",
+        "query_google_workspace_accounts",
+        "query_palo_alto_palo_alto_records",
+        "query_crowdstrike_scan_findings",
+        "lookup_shadow_it_detector_runbook",
+        "action_okta_approve",
+      ],
+      mustReferenceEntities: [
+        "users",
+        "accounts",
+        "palo_alto_records",
+        "scan_findings",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "shadow-it-detector-runbook",
+      ],
+      expectedActionOutcome: "Action approve executed against Okta, with audit-trail entry and End User Support Lead notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute approve without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Shadow IT Detector so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "okta",
+      name: "Okta",
+      owns: [
+        "users",
+        "groups",
+        "access_grants",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_okta_users",
+        "query_okta_groups",
+        "query_okta_access_grants",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "google_workspace",
+      name: "Google Workspace",
+      owns: [
+        "accounts",
+        "group_memberships",
+        "license_assignments",
+      ],
+      protocol: "Workspace API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_google_workspace_accounts",
+        "query_google_workspace_group_memberships",
+        "query_google_workspace_license_assignments",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "palo_alto",
+      name: "Palo Alto",
+      owns: [
+        "palo_alto_records",
+        "palo_alto_events",
+        "palo_alto_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_palo_alto_palo_alto_records",
+        "query_palo_alto_palo_alto_events",
+        "query_palo_alto_palo_alto_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "crowdstrike",
+      name: "CrowdStrike",
+      owns: [
+        "scan_findings",
+        "asset_inventory",
+        "remediation_tasks",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_crowdstrike_scan_findings",
+        "query_crowdstrike_asset_inventory",
+        "query_crowdstrike_remediation_tasks",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "users",
+      sourceSystemId: "okta",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "groups",
+      sourceSystemId: "okta",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "access_grants",
+      sourceSystemId: "okta",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "accounts",
+      sourceSystemId: "google_workspace",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "account_name",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "number",
+          min: 5000,
+          max: 1000000,
+          required: true,
+        },
+        {
+          name: "stage",
+          type: "enum",
+          values: [
+            "prospecting",
+            "qualification",
+            "proposal",
+            "negotiation",
+            "closed_won",
+            "closed_lost",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "close_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "group_memberships",
+      sourceSystemId: "google_workspace",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "license_assignments",
+      sourceSystemId: "google_workspace",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "palo_alto_records",
+      sourceSystemId: "palo_alto",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "palo_alto_events",
+      sourceSystemId: "palo_alto",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "palo_alto_record_id",
+          type: "ref",
+          ref: "palo_alto_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "palo_alto_audit_trail",
+      sourceSystemId: "palo_alto",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "scan_findings",
+      sourceSystemId: "crowdstrike",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "severity",
+          type: "enum",
+          values: [
+            "low",
+            "medium",
+            "high",
+            "critical",
+          ],
+          weights: [
+            0.4,
+            0.35,
+            0.2,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "mitigated",
+            "accepted_risk",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "detected_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "asset",
+          type: "lorem.words",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "asset_inventory",
+      sourceSystemId: "crowdstrike",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "remediation_tasks",
+      sourceSystemId: "crowdstrike",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "palo_alto_events.palo_alto_record_id",
+      to: "palo_alto_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "shadow-it-detector-runbook",
+      sourceSystemId: "bigquery",
+      type: "runbook",
+      title: "Shadow IT Detector Operations Runbook",
+      requiredSections: [
+        "Detection signals",
+        "Triage procedures",
+        "Remediation actions",
+        "Rollback criteria",
+        "Post-incident review",
+      ],
+      linkedEntities: [
+        "users",
+        "groups",
+        "access_grants",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "detection",
+        "triage",
+        "remediation",
+        "rollback",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "okta_approve_api",
+      sourceSystemId: "okta",
+      method: "POST",
+      path: "/api/okta/approve",
+      description: "Synchronous endpoint the agent calls to approve in Okta after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "shadow-it-detector-baseline-gap",
+      description: "Seed a realistic gap where Shadow IT visibility sits between Unknown scope and 100% detected weekly, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "users",
+        "groups",
+      ],
+      discoveryPath: [
+        "Inspect Okta records for the affected entities",
+        "Compare against Google Workspace historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next End User Support Lead action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "shadow_it_detector",
+      schemas: [
+        "okta",
+        "google_workspace",
+        "palo_alto",
+        "crowdstrike",
+      ],
+    },
+    bigquery: {
+      dataset: "it_shadow_it_detector",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "shadow-it-detector-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "shadow-it-detector-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Shadow IT Detector workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const ShadowITDetector = () => (
+  <UseCaseSlide
+    title="Shadow IT Detector"
+    subtitle="A-4608 • End User Computing"
+    icon={Eye}
+    domainId="domain-46"
+    layer="Layer 3: Custom ADK"
+    persona="End User Support Lead"
+    systems={["Okta", "Google Workspace", "Palo Alto", "CrowdStrike", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "Shadow IT visibility", before: "Unknown scope", after: "100% detected weekly" },
+      { label: "Data exposure incidents", before: "4-5 per quarter", after: "< 1 per quarter" },
+      { label: "Time to remediation", before: "Weeks after discovery", after: "< 48 hours" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "End User Support Lead", action: "Review policy decisions", description: "End User Support Lead reviews shadow IT findings and makes adopt/monitor/block decisions for each detected application." }}
+    statusQuo={[
+      "Shadow IT discovered only after a security incident — no proactive detection mechanism exists.",
+      "Users adopt AI tools, file sharing apps, and communication platforms with no security review.",
+      "No process to evaluate shadow IT for official adoption — blanket blocking drives users to find workarounds."
+    ]}
+    agentification={[
+      "Gemini detects shadow apps from multiple signals — OAuth grants, network traffic, and browser extensions.",
+      "LLM assesses data exposure risk and recommends adopt, monitor, or block with approved alternatives.",
+      "Structured adopt/block process converts valuable shadow IT into official tools while blocking risky apps."
+    ]}
+  />
+);

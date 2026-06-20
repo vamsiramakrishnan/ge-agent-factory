@@ -1,0 +1,255 @@
+{
+  "id": "hubspot_materialization",
+  "version": 1,
+  "collections": {
+    "leads": {
+      "primaryKey": "lead_id",
+      "fieldAliases": {
+        "lead_id": [
+          "lead_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "email": [
+          "email",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "score": [
+          "score",
+          "id",
+          "source_record_id"
+        ],
+        "source": [
+          "source",
+          "id",
+          "source_record_id"
+        ],
+        "account_id": [
+          "account_id",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "accounts": {
+      "primaryKey": "account_id",
+      "fieldAliases": {
+        "account_id": [
+          "account_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "industry": [
+          "industry",
+          "id",
+          "source_record_id"
+        ],
+        "segment": [
+          "segment",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "campaigns": {
+      "primaryKey": "campaign_id",
+      "fieldAliases": {
+        "campaign_id": [
+          "campaign_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "channel": [
+          "channel",
+          "id",
+          "source_record_id"
+        ],
+        "budget": [
+          "budget",
+          "id",
+          "source_record_id"
+        ],
+        "owner": [
+          "owner",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "journeys": {
+      "primaryKey": "journey_id",
+      "fieldAliases": {
+        "journey_id": [
+          "journey_id",
+          "id",
+          "source_record_id"
+        ],
+        "campaign_id": [
+          "campaign_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "audience_size": [
+          "audience_size",
+          "id",
+          "source_record_id"
+        ],
+        "activation_date": [
+          "activation_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "email_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "lead_id": [
+          "lead_id",
+          "id",
+          "source_record_id"
+        ],
+        "campaign_id": [
+          "campaign_id",
+          "id",
+          "source_record_id"
+        ],
+        "event_type": [
+          "event_type",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "occurred_at": [
+          "occurred_at",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "segments": {
+      "primaryKey": "segment_id",
+      "fieldAliases": {
+        "segment_id": [
+          "segment_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "criteria": [
+          "criteria",
+          "id",
+          "source_record_id"
+        ],
+        "member_count": [
+          "member_count",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

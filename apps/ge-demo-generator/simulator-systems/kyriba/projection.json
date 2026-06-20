@@ -1,0 +1,39 @@
+{
+  "id": "kyriba_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into kyriba collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "finance"
+      ],
+      "realizedObjects": [
+        "bank_accounts",
+        "payment_batches",
+        "cash_positions"
+      ],
+      "simulatorCollection": "cash_positions",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "tax"
+      ],
+      "realizedObjects": [
+        "tax_filings"
+      ],
+      "simulatorCollection": "tax_filings",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "approval"
+      ],
+      "realizedObjects": [
+        "approvals"
+      ],
+      "simulatorCollection": "approvals",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

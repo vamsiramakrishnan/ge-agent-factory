@@ -1,0 +1,187 @@
+import { test, expect } from "bun:test";
+import {
+  buildFactoryConfig,
+  classifyReadinessCheck,
+  classifyReadinessSection,
+  effectiveConfigFile,
+  explainConfig,
+  explainFactoryConfig,
+  resolveConfigField,
+  resolveScalars,
+  validateConfigFor,
+} from "./config-schema.mjs";
+
+test("precedence: flag beats env beats file beats default", () => {
+  const inputs = {
+    flags: { region: "flag-region" },
+    env: { GCP_REGION: "env-region" },
+    file: { region: "file-region" },
+  };
+  expect(resolveConfigField("region", inputs)).toEqual({ value: "flag-region", source: "flag" });
+  expect(resolveConfigField("region", { env: inputs.env, file: inputs.file })).toEqual({ value: "env-region", source: "env:GCP_REGION" });
+  expect(resolveConfigField("region", { file: inputs.file })).toEqual({ value: "file-region", source: "file" });
+  expect(resolveConfigField("region", {})).toEqual({ value: "us-central1", source: "default" });
+});
+
+test("project reads either env alias", () => {
+  expect(resolveConfigField("project", { env: { GOOGLE_CLOUD_PROJECT: "p2" } })).toEqual({ value: "p2", source: "env:GOOGLE_CLOUD_PROJECT" });
+  expect(resolveConfigField("project", { env: { GCP_PROJECT_ID: "p1", GOOGLE_CLOUD_PROJECT: "p2" } }).value).toBe("p1");
+});
+
+test("geApp flag maps to geAppId field", () => {
+  expect(resolveConfigField("geAppId", { flags: { geApp: "app/x" } })).toEqual({ value: "app/x", source: "flag" });
+});
+
+test("resolveScalars returns all fields with defaults", () => {
+  const s = resolveScalars({});
+  expect(s.region).toBe("us-central1");
+  expect(s.mode).toBe("local");
+  expect(s.geLocation).toBe("global");
+  expect(s.agentsRepo).toBe("");
+  expect(s.project).toBeUndefined();
+});
+
+test("explainConfig reports source per field", () => {
+  const r = explainConfig({ flags: { project: "demo" }, env: { GE_MODE: "local" } });
+  expect(r.project).toEqual({ value: "demo", source: "flag" });
+  expect(r.mode).toEqual({ value: "local", source: "env:GE_MODE" });
+  expect(r.region.source).toBe("default");
+});
+
+test("validateConfigFor throws on missing required field", () => {
+  expect(() => validateConfigFor("agents", {})).toThrow(/project|geAppId/);
+  expect(validateConfigFor("agents", { flags: { project: "p", geApp: "a" } })).toBe(true);
+});
+
+test("effectiveConfigFile drops cached project-scoped values when project is overridden", () => {
+  const rawFile = {
+    project: "old-project",
+    projectNumber: "111",
+    bucket: "old-bucket",
+    geAppId: "old-app",
+    gatewayUrl: "https://old.example",
+    serviceAccount: "runner@old-project.iam.gserviceaccount.com",
+    dataBucket: "old-data",
+    mcpServices: { hr: "https://old-mcp.example" },
+    tasksQueue: "custom-queue",
+  };
+  const { file, projectOverridden } = effectiveConfigFile(rawFile, { project: "new-project" }, {});
+  expect(projectOverridden).toBe(true);
+  expect(file.project).toBe("old-project");
+  expect(file.projectNumber).toBeUndefined();
+  expect(file.bucket).toBeUndefined();
+  expect(file.geAppId).toBeUndefined();
+  expect(file.gatewayUrl).toBeUndefined();
+  expect(file.serviceAccount).toBeUndefined();
+  expect(file.dataBucket).toBeUndefined();
+  expect(file.mcpServices).toBeUndefined();
+  expect(file.tasksQueue).toBe("custom-queue");
+});
+
+test("effectiveConfigFile preserves cached project-scoped values when project matches", () => {
+  const rawFile = { project: "same-project", projectNumber: "111", bucket: "same-bucket" };
+  const { file, projectOverridden } = effectiveConfigFile(rawFile, { project: "same-project" }, {});
+  expect(projectOverridden).toBe(false);
+  expect(file).toBe(rawFile);
+});
+
+test("buildFactoryConfig mirrors derived defaults from factory-core loadConfig", () => {
+  const cfg = buildFactoryConfig({
+    flags: { project: "demo", geApp: "apps/demo" },
+    env: { GOOGLE_CLOUD_PROJECT_NUMBER: "123", GE_AGENT_IDENTITY_ORG_ID: "456" },
+    file: {},
+  });
+  expect(cfg).toMatchObject({
+    project: "demo",
+    projectNumber: "123",
+    region: "us-central1",
+    gatewayService: "ge-agent-factory-gateway",
+    workerService: "ge-agent-factory-worker",
+    bucket: "demo-ge-agent-factory",
+    geAppId: "apps/demo",
+    geLocation: "global",
+    serviceAccount: "ge-agent-factory-runner@demo.iam.gserviceaccount.com",
+    tasksQueue: "ge-agent-factory-stages",
+    dataBucket: "demo-ge-agent-data",
+    alloydbDsnSecret: "ge-agent-alloydb-dsn",
+    bigtableInstance: "ge-agent-data",
+    bqLocation: "US",
+    mode: "local",
+    mcpServices: {},
+    agentIdentityOrgId: "456",
+  });
+  expect(cfg.agentIdentityPrincipalSet).toBe("principalSet://agents.global.org-456.system.id.goog/attribute.platformContainer/aiplatform/projects/123");
+});
+
+test("buildFactoryConfig avoids stale project-scoped file values after project override", () => {
+  const cfg = buildFactoryConfig({
+    flags: { project: "new-project" },
+    file: {
+      project: "old-project",
+      projectNumber: "111",
+      bucket: "old-bucket",
+      geAppId: "old-app",
+      gatewayUrl: "https://old.example",
+      dataBucket: "old-data",
+      mcpServices: { hr: "https://old-mcp.example" },
+    },
+  });
+  expect(cfg.project).toBe("new-project");
+  expect(cfg.projectNumber).toBeUndefined();
+  expect(cfg.bucket).toBe("new-project-ge-agent-factory");
+  expect(cfg.geAppId).toBeUndefined();
+  expect(cfg.gatewayUrl).toBeUndefined();
+  expect(cfg.dataBucket).toBe("new-project-ge-agent-data");
+  expect(cfg.mcpServices).toEqual({});
+});
+
+test("explainFactoryConfig reports project override guard", () => {
+  const report = explainFactoryConfig({
+    flags: { project: "new-project" },
+    file: { project: "old-project", projectNumber: "111" },
+  });
+  expect(report.project).toEqual({ value: "new-project", source: "flag" });
+  expect(report.projectNumber).toEqual({ value: undefined, source: "unset" });
+  expect(report._note).toMatch(/project overridden/);
+});
+
+test("classifyReadinessCheck maps known doctor failures to repair categories", () => {
+  expect(classifyReadinessCheck("readiness: up", { name: "config geAppId", status: "fail", detail: "<unset>" })).toMatchObject({
+    category: "setup-config",
+    action: "ge init",
+  });
+  expect(classifyReadinessCheck("data plane", { name: "agent-data bucket", status: "warn", detail: "missing", fix: "ge data up" })).toMatchObject({
+    category: "data-plane",
+    action: "ge data up",
+  });
+  expect(classifyReadinessCheck("tool plane", { name: "mcp hr", status: "warn", detail: "not deployed" })).toMatchObject({
+    category: "tool-plane",
+    action: "ge mcp deploy",
+  });
+  expect(classifyReadinessCheck("factory", { name: "gateway", status: "pass", detail: "ok" })).toMatchObject({
+    category: "ready",
+    action: "none",
+  });
+});
+
+test("classifyReadinessSection produces section repair plan", () => {
+  const section = classifyReadinessSection({
+    name: "factory",
+    checks: [
+      { name: "gateway", status: "pass", detail: "ok" },
+      { name: "worker Cloud Run service", status: "fail", detail: "missing" },
+    ],
+    fails: 1,
+  });
+  expect(section.checks[0].category).toBe("ready");
+  expect(section.repairPlan).toEqual([
+    { check: "worker Cloud Run service", category: "factory-plane", command: "ge up --infra", status: "fail" },
+  ]);
+});
+
+test("gatewayTransport resolves proxy by default, direct via env/flag/file", () => {
+  expect(buildFactoryConfig({}).gatewayTransport).toBe("proxy");
+  expect(buildFactoryConfig({ env: { GE_GATEWAY_TRANSPORT: "direct" } }).gatewayTransport).toBe("direct");
+  expect(buildFactoryConfig({ flags: { gatewayTransport: "direct" } }).gatewayTransport).toBe("direct");
+  expect(buildFactoryConfig({ file: { gatewayTransport: "direct" } }).gatewayTransport).toBe("direct");
+});

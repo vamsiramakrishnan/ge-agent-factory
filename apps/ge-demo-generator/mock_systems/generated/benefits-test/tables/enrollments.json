@@ -1,0 +1,227 @@
+[
+  {
+    "enrollment_id": "ENR-0001",
+    "employee_id": "-44",
+    "plan_name": "unknown",
+    "monthly_premium": 838,
+    "enrollment_date": "2024-11-09",
+    "status": "unknown",
+    "dependents": 634
+  },
+  {
+    "enrollment_id": "ENR-0002",
+    "employee_id": "-6",
+    "plan_name": "unknown",
+    "monthly_premium": 965,
+    "enrollment_date": "2024-04-25",
+    "status": "unknown",
+    "dependents": 428
+  },
+  {
+    "enrollment_id": "ENR-0003",
+    "employee_id": "-43",
+    "plan_name": "unknown",
+    "monthly_premium": 468,
+    "enrollment_date": "2024-09-15",
+    "status": "unknown",
+    "dependents": 731
+  },
+  {
+    "enrollment_id": "ENR-0004",
+    "employee_id": "-45",
+    "plan_name": "unknown",
+    "monthly_premium": 308,
+    "enrollment_date": "2025-07-31",
+    "status": "unknown",
+    "dependents": 301
+  },
+  {
+    "enrollment_id": "ENR-0005",
+    "employee_id": "-24",
+    "plan_name": "unknown",
+    "monthly_premium": 436,
+    "enrollment_date": "2024-03-03",
+    "status": "unknown",
+    "dependents": 808
+  },
+  {
+    "enrollment_id": "ENR-0006",
+    "employee_id": "-1",
+    "plan_name": "unknown",
+    "monthly_premium": 695,
+    "enrollment_date": "2026-01-16",
+    "status": "unknown",
+    "dependents": 401
+  },
+  {
+    "enrollment_id": "ENR-0007",
+    "employee_id": "-49",
+    "plan_name": "unknown",
+    "monthly_premium": 291,
+    "enrollment_date": "2025-01-21",
+    "status": "unknown",
+    "dependents": 858
+  },
+  {
+    "enrollment_id": "ENR-0008",
+    "employee_id": "-15",
+    "plan_name": "unknown",
+    "monthly_premium": 248,
+    "enrollment_date": "2025-11-12",
+    "status": "unknown",
+    "dependents": 703
+  },
+  {
+    "enrollment_id": "ENR-0009",
+    "employee_id": "-19",
+    "plan_name": "unknown",
+    "monthly_premium": 618,
+    "enrollment_date": "2026-05-13",
+    "status": "unknown",
+    "dependents": 989
+  },
+  {
+    "enrollment_id": "ENR-0010",
+    "employee_id": "-49",
+    "plan_name": "unknown",
+    "monthly_premium": 706,
+    "enrollment_date": "2024-05-10",
+    "status": "unknown",
+    "dependents": 124
+  },
+  {
+    "enrollment_id": "ENR-0011",
+    "employee_id": "-20",
+    "plan_name": "unknown",
+    "monthly_premium": 634,
+    "enrollment_date": "2026-03-09",
+    "status": "unknown",
+    "dependents": 76
+  },
+  {
+    "enrollment_id": "ENR-0012",
+    "employee_id": "-33",
+    "plan_name": "unknown",
+    "monthly_premium": 30,
+    "enrollment_date": "2025-01-30",
+    "status": "unknown",
+    "dependents": 166
+  },
+  {
+    "enrollment_id": "ENR-0013",
+    "employee_id": "-4",
+    "plan_name": "unknown",
+    "monthly_premium": 718,
+    "enrollment_date": "2024-03-14",
+    "status": "unknown",
+    "dependents": 451
+  },
+  {
+    "enrollment_id": "ENR-0014",
+    "employee_id": "-6",
+    "plan_name": "unknown",
+    "monthly_premium": 675,
+    "enrollment_date": "2026-05-15",
+    "status": "unknown",
+    "dependents": 401
+  },
+  {
+    "enrollment_id": "ENR-0015",
+    "employee_id": "-24",
+    "plan_name": "unknown",
+    "monthly_premium": 483,
+    "enrollment_date": "2024-01-25",
+    "status": "unknown",
+    "dependents": 830
+  },
+  {
+    "enrollment_id": "ENR-0016",
+    "employee_id": "-6",
+    "plan_name": "unknown",
+    "monthly_premium": 37,
+    "enrollment_date": "2026-04-23",
+    "status": "unknown",
+    "dependents": 411
+  },
+  {
+    "enrollment_id": "ENR-0017",
+    "employee_id": "-4",
+    "plan_name": "unknown",
+    "monthly_premium": 829,
+    "enrollment_date": "2025-03-18",
+    "status": "unknown",
+    "dependents": 541
+  },
+  {
+    "enrollment_id": "ENR-0018",
+    "employee_id": "-37",
+    "plan_name": "unknown",
+    "monthly_premium": 813,
+    "enrollment_date": "2024-04-08",
+    "status": "unknown",
+    "dependents": 273
+  },
+  {
+    "enrollment_id": "ENR-0019",
+    "employee_id": "-40",
+    "plan_name": "unknown",
+    "monthly_premium": 210,
+    "enrollment_date": "2024-10-09",
+    "status": "unknown",
+    "dependents": 857
+  },
+  {
+    "enrollment_id": "ENR-0020",
+    "employee_id": "-41",
+    "plan_name": "unknown",
+    "monthly_premium": 226,
+    "enrollment_date": "2024-01-23",
+    "status": "unknown",
+    "dependents": 686
+  },
+  {
+    "enrollment_id": "ENR-0021",
+    "employee_id": "-45",
+    "plan_name": "unknown",
+    "monthly_premium": 533,
+    "enrollment_date": "2024-02-12",
+    "status": "unknown",
+    "dependents": 104
+  },
+  {
+    "enrollment_id": "ENR-0022",
+    "employee_id": "-50",
+    "plan_name": "unknown",
+    "monthly_premium": 266,
+    "enrollment_date": "2024-01-24",
+    "status": "unknown",
+    "dependents": 999
+  },
+  {
+    "enrollment_id": "ENR-0023",
+    "employee_id": "-41",
+    "plan_name": "unknown",
+    "monthly_premium": 461,
+    "enrollment_date": "2024-08-22",
+    "status": "unknown",
+    "dependents": 833
+  },
+  {
+    "enrollment_id": "ENR-0024",
+    "employee_id": "-5",
+    "plan_name": "unknown",
+    "monthly_premium": 408,
+    "enrollment_date": "2026-01-05",
+    "status": "unknown",
+    "dependents": 542
+  },
+  {
+    "enrollment_id": "ENR-0025",
+    "employee_id": "-7",
+    "plan_name": "unknown",
+    "monthly_premium": 70,
+    "enrollment_date": "2024-08-13",
+    "status": "unknown",
+    "dependents": 742
+  }
+]

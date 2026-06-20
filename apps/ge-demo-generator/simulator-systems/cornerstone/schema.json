@@ -1,0 +1,69 @@
+{
+  "id": "cornerstone_schema",
+  "version": 1,
+  "collections": {
+    "learners": {
+      "primaryKey": "learner_id",
+      "fields": {
+        "learner_id": "string",
+        "name": "string",
+        "email": "string",
+        "status": "string",
+        "department": "string",
+        "manager_id": "string"
+      }
+    },
+    "courses": {
+      "primaryKey": "course_id",
+      "fields": {
+        "course_id": "string",
+        "title": "string",
+        "status": "string",
+        "provider": "string",
+        "duration_hours": "string",
+        "compliance_required": "string"
+      }
+    },
+    "enrollments": {
+      "primaryKey": "enrollment_id",
+      "fields": {
+        "enrollment_id": "string",
+        "learner_id": "string",
+        "course_id": "string",
+        "status": "string",
+        "due_date": "string",
+        "completion_date": "string"
+      }
+    },
+    "certifications": {
+      "primaryKey": "certification_id",
+      "fields": {
+        "certification_id": "string",
+        "learner_id": "string",
+        "name": "string",
+        "status": "string",
+        "expiration_date": "string"
+      }
+    },
+    "skills": {
+      "primaryKey": "skill_id",
+      "fields": {
+        "skill_id": "string",
+        "learner_id": "string",
+        "name": "string",
+        "proficiency": "string",
+        "verified_at": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string"
+      }
+    }
+  }
+}

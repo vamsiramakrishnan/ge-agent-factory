@@ -1,0 +1,81 @@
+{
+  "id": "greenhouse_schema",
+  "version": 1,
+  "collections": {
+    "candidates": {
+      "primaryKey": "candidate_id",
+      "fields": {
+        "candidate_id": "string",
+        "name": "string",
+        "email": "string",
+        "status": "string",
+        "location": "string",
+        "source": "string",
+        "current_employer": "string"
+      }
+    },
+    "jobs": {
+      "primaryKey": "job_id",
+      "fields": {
+        "job_id": "string",
+        "title": "string",
+        "department": "string",
+        "location": "string",
+        "status": "string",
+        "hiring_manager": "string"
+      }
+    },
+    "applications": {
+      "primaryKey": "application_id",
+      "fields": {
+        "application_id": "string",
+        "candidate_id": "string",
+        "job_id": "string",
+        "stage": "string",
+        "status": "string",
+        "recruiter": "string"
+      }
+    },
+    "interviews": {
+      "primaryKey": "interview_id",
+      "fields": {
+        "interview_id": "string",
+        "application_id": "string",
+        "interviewer": "string",
+        "status": "string",
+        "scheduled_at": "string",
+        "feedback_state": "string"
+      }
+    },
+    "offers": {
+      "primaryKey": "offer_id",
+      "fields": {
+        "offer_id": "string",
+        "application_id": "string",
+        "status": "string",
+        "salary_band": "string",
+        "start_date": "string"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": "string",
+        "source_record_id": "string",
+        "approver": "string",
+        "state": "string",
+        "reason": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string"
+      }
+    }
+  }
+}

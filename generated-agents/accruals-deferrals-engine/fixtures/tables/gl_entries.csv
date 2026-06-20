@@ -1,0 +1,61 @@
+id,posting_date,account,amount,currency,description,status
+ID-0001,2026-05-20,1000-Cash,12840.5,USD,gl_entries seeded 1000-Cash close evidence for variance and reconciliation checks.,posted
+ID-0002,2026-05-21,2000-AP,-6400.75,USD,gl_entries seeded 2000-AP close evidence for variance and reconciliation checks.,pending
+ID-0003,2026-05-22,2100-AR,9200,USD,gl_entries seeded 2100-AR close evidence for variance and reconciliation checks.,posted
+ID-0004,2026-05-23,3000-Revenue,45100.25,USD,gl_entries seeded 3000-Revenue close evidence for variance and reconciliation checks.,posted
+ID-0005,2026-05-24,4000-Expense,-780.5,USD,gl_entries seeded 4000-Expense close evidence for variance and reconciliation checks.,posted
+ID-0006,2026-05-25,5000-COGS,-33000,USD,gl_entries seeded 5000-COGS close evidence for variance and reconciliation checks.,reversed
+ID-0007,2020-06-12,5000-COGS,27224.48,USD,Tot suffragium suspendo.,posted
+ID-0008,2020-06-11,2100-AR,-38413.1,GBP,Comptus adversus colo communis suspendo repellendus valens.,posted
+ID-0009,2020-09-19,4000-Expense,26078.51,EUR,Depulso eos cursus acies amita addo repellat comburo dolor.,pending
+ID-0010,2021-06-30,2100-AR,25555.12,USD,Clam arx vetus.,pending
+ID-0011,2023-10-20,5000-COGS,30367.21,USD,Fugit timor vel cometes amo calcar curso toties undique absconditus.,posted
+ID-0012,2022-07-03,2000-AP,-38013.47,EUR,Commodi earum succedo convoco volup vivo caste derideo coerceo cinis.,posted
+ID-0013,2023-08-29,3000-Revenue,-44852.13,USD,Capto arbor deporto voro carbo spectaculum temptatio capio suscipit corona.,posted
+ID-0014,2023-10-20,3000-Revenue,-40971.03,GBP,Audentia adhaero officiis spiculum acceptus.,posted
+ID-0015,2021-05-11,3000-Revenue,-32563.36,GBP,Video apto confugo amplitudo vesper utpote.,posted
+ID-0016,2023-12-17,4000-Expense,5520.08,EUR,Aliquid velit velut recusandae.,posted
+ID-0017,2022-02-04,4000-Expense,39711.03,GBP,Sapiente ago arx velociter pecto absque ambitus somnus abscido.,posted
+ID-0018,2023-04-17,4000-Expense,15196.13,USD,Capio comparo tamen sodalitas ulciscor solum minus aliquid.,posted
+ID-0019,2021-08-04,2000-AP,47301.06,EUR,Quos theatrum desolo neque depromo autus suppono cicuta acidus similique.,posted
+ID-0020,2025-08-23,5000-COGS,41486.44,EUR,Vestrum cursus voco.,reversed
+ID-0021,2025-02-12,2000-AP,-11490.23,GBP,Assentator iusto video subito molestiae.,posted
+ID-0022,2023-09-10,5000-COGS,-35991.6,EUR,Talio subiungo subvenio contigo claudeo tolero tollo usque vereor dolorem.,posted
+ID-0023,2024-10-15,3000-Revenue,20196.69,GBP,Confero coruscus aliquid nesciunt adeptio deleniti illo cito officiis adaugeo.,posted
+ID-0024,2024-12-08,2100-AR,-37293.95,EUR,Bibo qui ait admoneo excepturi hic repellendus sursum voluptates.,posted
+ID-0025,2021-12-08,4000-Expense,-22916.78,EUR,Acies vivo tubineus.,posted
+ID-0026,2022-06-15,2000-AP,-34356.3,USD,Summopere solutio cibus virtus taceo iste perspiciatis.,posted
+ID-0027,2021-06-27,2100-AR,25784.61,USD,Adipisci adhaero umbra.,posted
+ID-0028,2022-11-05,1000-Cash,-838.41,EUR,Damno cubitum praesentium rem.,posted
+ID-0029,2022-04-01,3000-Revenue,313.63,GBP,Ascisco aeneus sapiente acquiro occaecati vilicus necessitatibus cresco.,posted
+ID-0030,2022-10-01,3000-Revenue,44146.49,EUR,Ventosus autus aegrus amaritudo accusamus alius statua aequitas comis tutis.,posted
+ID-0031,2024-11-20,2000-AP,-38183.52,GBP,Utpote tabesco thymbra cilicium atrocitas tandem timor vulariter.,posted
+ID-0032,2022-03-26,4000-Expense,-15919.65,GBP,Curto tantillus tego amet veniam despecto trepide comitatus vehemens.,posted
+ID-0033,2020-01-24,5000-COGS,-40871.34,USD,Virga nam ratione dedico clarus compono spectaculum tantum textilis testimonium.,posted
+ID-0034,2022-12-19,1000-Cash,4952.89,EUR,Consequatur angelus aranea temptatio quae ambitus ago substantia aequus traho.,posted
+ID-0035,2020-06-27,1000-Cash,48663.96,EUR,Tonsor vinitor vos tardus coruscus.,posted
+ID-0036,2024-08-30,3000-Revenue,-7577.8,GBP,Depromo absum delicate.,posted
+ID-0037,2020-09-17,1000-Cash,14921.03,GBP,Vivo corrupti circumvenio ustilo caecus vix abundans.,reversed
+ID-0038,2020-04-04,5000-COGS,2770.11,GBP,Iste volubilis eos.,posted
+ID-0039,2024-03-05,2100-AR,12755.81,EUR,Adipisci cicuta virga validus defleo quam chirographum audeo delectus conservo.,posted
+ID-0040,2020-06-19,5000-COGS,48621.08,GBP,Collum torqueo stillicidium ascisco vere traho vir.,posted
+ID-0041,2023-09-06,2100-AR,43272.85,GBP,Acquiro cotidie tollo.,reversed
+ID-0042,2020-11-25,3000-Revenue,-11910.92,GBP,Tum delicate cuppedia certus adstringo urbs torqueo xiphias vulnus.,posted
+ID-0043,2024-08-12,5000-COGS,34964.74,USD,Aperio virtus pecto calco spectaculum quae.,posted
+ID-0044,2020-09-05,4000-Expense,2030.77,GBP,Ulterius ipsam laudantium utor culpo appello ad.,posted
+ID-0045,2023-09-21,4000-Expense,-28703.59,USD,Consequatur officia cruciamentum.,posted
+ID-0046,2025-06-04,2100-AR,1398.95,GBP,Quasi unus vir arca vester deprimo.,posted
+ID-0047,2022-10-03,5000-COGS,-738.19,USD,Capto aestivus aperiam antiquus argentum aptus saepe attonbitus.,posted
+ID-0048,2025-05-19,2100-AR,16755.78,USD,Adhaero asporto cibo atqui.,posted
+ID-0049,2020-09-21,2100-AR,-29366.63,EUR,Strues adflicto thermae quisquam aggredior uterque verumtamen.,posted
+ID-0050,2021-08-29,4000-Expense,24825.97,USD,Correptius deorsum quae corporis.,posted
+ID-0051,2024-06-26,1000-Cash,-24756.31,GBP,Doloremque exercitationem amita dedecor expedita carcer censura cotidie accusator comminor.,posted
+ID-0052,2021-12-18,1000-Cash,39052.73,EUR,Testimonium deripio aiunt fuga ocer tamdiu custodia antiquus.,posted
+ID-0053,2022-03-06,3000-Revenue,7077.83,EUR,Pecto capillus ambitus argumentum cariosus arto audentia cinis atavus vel.,posted
+ID-0054,2023-02-23,2100-AR,48237.87,USD,Volubilis uredo totidem causa assumenda sordeo.,pending
+ID-0055,2023-05-05,3000-Revenue,-22002.09,GBP,Commodo cursim distinctio carcer.,posted
+ID-0056,2023-08-31,2000-AP,8123.82,USD,Expedita admoneo conduco appono adversus vox.,posted
+ID-0057,2024-11-10,2000-AP,18150.27,GBP,Demens cupiditas conscendo vetus triduana vociferor ante.,posted
+ID-0058,2025-08-18,2000-AP,-43350.38,GBP,Turba apud theatrum baiulus ascit asper torrens.,posted
+ID-0059,2023-02-20,2100-AR,37720.06,EUR,Decens cotidie delectatio cogito tametsi desolo campana velum credo.,posted
+ID-0060,2025-06-09,3000-Revenue,-38310.2,GBP,Conculco apud thalassinus quam expedita varietas tertius argentum.,posted

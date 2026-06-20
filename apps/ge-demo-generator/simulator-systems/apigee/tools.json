@@ -1,0 +1,501 @@
+{
+  "id": "apigee_tools",
+  "version": 3,
+  "tools": [
+    {
+      "name": "search_apis",
+      "description": "[GET v1/organizations/{organizationsId}/apis] Lists API proxies in an organization.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text query across API proxy name, org, and revision."
+          },
+          "org": {
+            "type": "string",
+            "description": "Apigee organization."
+          },
+          "includeMetaData": {
+            "type": "boolean",
+            "description": "Whether to include API proxy metadata."
+          },
+          "space": {
+            "type": "string",
+            "description": "Space ID to filter the list of proxies."
+          },
+          "includeRevisions": {
+            "type": "boolean",
+            "description": "Whether to include a list of revisions."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max rows to return."
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "apis",
+        "query": {
+          "textFields": [
+            "api_id",
+            "name",
+            "org",
+            "latest_revision_id"
+          ],
+          "filters": {
+            "org": {
+              "field": "org",
+              "op": "eq_ci"
+            },
+            "space": {
+              "field": "name",
+              "op": "contains"
+            }
+          },
+          "cursorFields": [
+            "api_id",
+            "name"
+          ],
+          "defaultSort": [
+            {
+              "field": "name",
+              "direction": "asc"
+            }
+          ],
+          "pagination": {
+            "style": "offset",
+            "defaultLimit": 100,
+            "maxLimit": 1000
+          }
+        }
+      }
+    },
+    {
+      "name": "get_api",
+      "description": "[GET v1/organizations/{organizationsId}/apis/{apisId}] Gets an API proxy.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "api_id": {
+            "type": "string",
+            "description": "api primary key"
+          },
+          "name": {
+            "type": "string",
+            "description": "Resource name of the API proxy."
+          }
+        },
+        "required": [
+          "api_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "apis",
+        "primaryKey": "api_id"
+      }
+    },
+    {
+      "name": "search_apiproducts",
+      "description": "[GET v1/organizations/{organizationsId}/apiproducts] Lists API products.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text query across product name, display name, approval type, environments, and quota."
+          },
+          "count": {
+            "type": "string",
+            "description": "Number of API products to return."
+          },
+          "attributevalue": {
+            "type": "string",
+            "description": "Value of the attribute used to filter the search."
+          },
+          "attributename": {
+            "type": "string",
+            "description": "Name of the attribute used to filter the search."
+          },
+          "expand": {
+            "type": "boolean",
+            "description": "Whether to expand product details."
+          },
+          "startKey": {
+            "type": "string",
+            "description": "Product key from which to start displaying results."
+          },
+          "space": {
+            "type": "string",
+            "description": "Space to list API products for."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max rows to return."
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "apiproducts",
+        "query": {
+          "textFields": [
+            "apiproduct_id",
+            "name",
+            "display_name",
+            "approval_type",
+            "environments",
+            "quota"
+          ],
+          "filters": {
+            "attributevalue": {
+              "field": "display_name",
+              "op": "contains"
+            },
+            "space": {
+              "field": "environments",
+              "op": "contains"
+            }
+          },
+          "cursorFields": [
+            "apiproduct_id",
+            "name"
+          ],
+          "defaultSort": [
+            {
+              "field": "name",
+              "direction": "asc"
+            }
+          ],
+          "pagination": {
+            "style": "offset",
+            "defaultLimit": 100,
+            "maxLimit": 1000
+          }
+        }
+      }
+    },
+    {
+      "name": "get_apiproduct",
+      "description": "[GET v1/organizations/{organizationsId}/apiproducts/{apiproductsId}] Gets configuration details for an API product.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "apiproduct_id": {
+            "type": "string",
+            "description": "apiproduct primary key"
+          },
+          "name": {
+            "type": "string",
+            "description": "Resource name of the API product."
+          }
+        },
+        "required": [
+          "apiproduct_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "apiproducts",
+        "primaryKey": "apiproduct_id"
+      }
+    },
+    {
+      "name": "search_developers",
+      "description": "[GET v1/organizations/{organizationsId}/developers] Lists developers in an organization.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text query across developer ID, email, name, status, and org."
+          },
+          "org": {
+            "type": "string",
+            "description": "Apigee organization."
+          },
+          "includeCompany": {
+            "type": "boolean",
+            "description": "Whether to include company developers."
+          },
+          "app": {
+            "type": "string",
+            "description": "Only developers associated with the app."
+          },
+          "count": {
+            "type": "string",
+            "description": "Number of developers to return."
+          },
+          "expand": {
+            "type": "boolean",
+            "description": "Whether to expand results."
+          },
+          "startKey": {
+            "type": "string",
+            "description": "Email address from which to start displaying developers."
+          },
+          "ids": {
+            "type": "string",
+            "description": "Comma-separated developer IDs to include."
+          },
+          "status": {
+            "type": "string",
+            "description": "Simulator developer status filter."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max rows to return."
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "developers",
+        "query": {
+          "textFields": [
+            "developer_id",
+            "email",
+            "first_name",
+            "last_name",
+            "status",
+            "org"
+          ],
+          "filters": {
+            "org": {
+              "field": "org",
+              "op": "eq_ci"
+            },
+            "ids": {
+              "field": "developer_id",
+              "op": "in"
+            },
+            "status": {
+              "field": "status",
+              "op": "eq_ci"
+            }
+          },
+          "cursorFields": [
+            "email",
+            "developer_id"
+          ],
+          "defaultSort": [
+            {
+              "field": "email",
+              "direction": "asc"
+            }
+          ],
+          "pagination": {
+            "style": "offset",
+            "defaultLimit": 100,
+            "maxLimit": 1000
+          }
+        }
+      }
+    },
+    {
+      "name": "get_developer",
+      "description": "[GET v1/organizations/{organizationsId}/developers/{developersId}] Returns developer details.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "developer_id": {
+            "type": "string",
+            "description": "developer primary key"
+          },
+          "name": {
+            "type": "string",
+            "description": "Email address of the developer."
+          },
+          "action": {
+            "type": "string",
+            "description": "Developer status action."
+          }
+        },
+        "required": [
+          "developer_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "developers",
+        "primaryKey": "developer_id"
+      }
+    },
+    {
+      "name": "submit_developer_update",
+      "description": "[POST v1/organizations/{organizationsId}/developers/{developersId}] Sets the status of a developer.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "developer_id": {
+            "type": "string",
+            "description": "developer primary key"
+          },
+          "status": {
+            "type": "string",
+            "description": "Target status."
+          },
+          "note": {
+            "type": "string",
+            "description": "Reviewer note recorded on the change."
+          },
+          "role": {
+            "type": "string",
+            "description": "Acting role; gated by allowedRoles."
+          },
+          "idempotency_key": {
+            "type": "string",
+            "description": "Replays return the original result."
+          },
+          "action": {
+            "type": "string",
+            "description": "Status of the developer."
+          },
+          "name": {
+            "type": "string",
+            "description": "Developer resource name."
+          }
+        },
+        "required": [
+          "developer_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "developers",
+        "primaryKey": "developer_id"
+      }
+    },
+    {
+      "name": "search_envgroups",
+      "description": "[GET v1/organizations/{organizationsId}/envgroups] Lists environment groups.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text query across environment group name, org, status, and hostnames."
+          },
+          "org": {
+            "type": "string",
+            "description": "Apigee organization."
+          },
+          "status": {
+            "type": "string",
+            "description": "Environment group status."
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "Maximum number of environment groups to return."
+          },
+          "pageToken": {
+            "type": "string",
+            "description": "Page token returned from a previous call."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max rows to return."
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "envgroups",
+        "query": {
+          "textFields": [
+            "envgroup_id",
+            "name",
+            "org",
+            "status",
+            "hostnames"
+          ],
+          "filters": {
+            "org": {
+              "field": "org",
+              "op": "eq_ci"
+            },
+            "status": {
+              "field": "status",
+              "op": "eq_ci"
+            }
+          },
+          "cursorFields": [
+            "envgroup_id",
+            "name"
+          ],
+          "defaultSort": [
+            {
+              "field": "name",
+              "direction": "asc"
+            }
+          ],
+          "pagination": {
+            "style": "page-token",
+            "defaultLimit": 25,
+            "maxLimit": 100
+          }
+        }
+      }
+    },
+    {
+      "name": "get_envgroup",
+      "description": "[GET v1/organizations/{organizationsId}/envgroups/{envgroupsId}] Gets an environment group.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "envgroup_id": {
+            "type": "string",
+            "description": "envgroup primary key"
+          },
+          "name": {
+            "type": "string",
+            "description": "Resource name of the environment group."
+          }
+        },
+        "required": [
+          "envgroup_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "envgroups",
+        "primaryKey": "envgroup_id"
+      }
+    },
+    {
+      "name": "poll_async_job",
+      "description": "Poll a queued asynchronous simulator job.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id"
+        ]
+      },
+      "binding": {
+        "op": "poll_async_job"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List Apigee simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

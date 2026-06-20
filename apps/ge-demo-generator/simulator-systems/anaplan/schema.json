@@ -1,0 +1,69 @@
+{
+  "id": "anaplan_schema",
+  "version": 1,
+  "collections": {
+    "planning_models": {
+      "primaryKey": "model_id",
+      "fields": {
+        "model_id": "string",
+        "name": "string",
+        "status": "string",
+        "period": "string",
+        "currency": "string"
+      }
+    },
+    "scenarios": {
+      "primaryKey": "scenario_id",
+      "fields": {
+        "scenario_id": "string",
+        "model_id": "string",
+        "name": "string",
+        "status": "string",
+        "version": "string",
+        "owner": "string"
+      }
+    },
+    "forecast_lines": {
+      "primaryKey": "forecast_line_id",
+      "fields": {
+        "forecast_line_id": "string",
+        "scenario_id": "string",
+        "cost_center": "string",
+        "account": "string",
+        "amount": "string",
+        "currency": "string",
+        "status": "string"
+      }
+    },
+    "budget_owners": {
+      "primaryKey": "owner_id",
+      "fields": {
+        "owner_id": "string",
+        "name": "string",
+        "email": "string",
+        "cost_center": "string",
+        "status": "string"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": "string",
+        "source_record_id": "string",
+        "approver": "string",
+        "state": "string",
+        "reason": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string"
+      }
+    }
+  }
+}

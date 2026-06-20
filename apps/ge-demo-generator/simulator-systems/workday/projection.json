@@ -1,0 +1,78 @@
+{
+  "id": "workday_projection",
+  "version": 2,
+  "materialization": "Project HR scenario graph and Snowfakery rows into Workday tenant-shaped worker, org, job, comp, absence, security, and business-process collections.",
+  "collectionMappings": [
+    {
+      "simulatorCollection": "workers",
+      "graphKinds": [
+        "worker",
+        "employment",
+        "workforce"
+      ],
+      "realizedObjects": [
+        "employees",
+        "employment_profiles",
+        "job_assignments",
+        "workers"
+      ]
+    },
+    {
+      "simulatorCollection": "positions",
+      "graphKinds": [
+        "position",
+        "employment"
+      ],
+      "realizedObjects": [
+        "positions",
+        "job_assignments"
+      ]
+    },
+    {
+      "simulatorCollection": "supervisory_orgs",
+      "graphKinds": [
+        "organization",
+        "workforce"
+      ],
+      "realizedObjects": [
+        "supervisory_orgs",
+        "departments",
+        "org_units"
+      ]
+    },
+    {
+      "simulatorCollection": "compensation_records",
+      "graphKinds": [
+        "compensation",
+        "worker"
+      ],
+      "realizedObjects": [
+        "compensation_records",
+        "payroll_records"
+      ]
+    },
+    {
+      "simulatorCollection": "absence_requests",
+      "graphKinds": [
+        "absence",
+        "life_event"
+      ],
+      "realizedObjects": [
+        "absence_requests",
+        "life_events"
+      ]
+    },
+    {
+      "simulatorCollection": "worker_events",
+      "graphKinds": [
+        "life_event",
+        "approval"
+      ],
+      "realizedObjects": [
+        "life_events",
+        "worker_events",
+        "approvals"
+      ]
+    }
+  ]
+}

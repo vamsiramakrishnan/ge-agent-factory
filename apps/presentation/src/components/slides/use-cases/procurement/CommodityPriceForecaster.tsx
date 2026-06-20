@@ -1,0 +1,1452 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { LineChart, Database, TrendingUp, Brain, Bell } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Weekly Price Feeds", lane: "system", type: "trigger" },
+    { id: "a1", label: "Index Ingestion", lane: "agent", type: "action" },
+    { id: "a2", label: "Time-Series Forecast", lane: "agent", type: "action" },
+    { id: "a3", label: "Event Interpretation", lane: "agent", type: "action" },
+    { id: "a4", label: "Action Briefing", lane: "agent", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "a4"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Index Ingestion", icon: Database, description: "Commodity price feeds ingested from metals, polymers, energy, and agricultural indices.", trigger: "Weekly", systems: ["S&P Global Platts", "ICIS", "Mintec"] },
+  { label: "Forecasting", icon: TrendingUp, description: "Time-series models project price trajectories with macro-economic indicator correlation.", systems: ["BigQuery", "Vertex AI", "LME", "CBOT"], integration: "Data Agent" },
+  { label: "Event Analysis", icon: Brain, description: "LLM interprets market-moving events — trade policies, OPEC decisions, natural disasters — that models miss.", systems: ["Vertex AI"] },
+  { label: "Procurement Brief", icon: Bell, description: "Actionable briefing connecting commodity forecasts to pre-buy, hedging, and index adjustment decisions.", output: "Price Forecast" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "S&P Global Platts", description: "Metals, energy, and petrochemical commodity price indices", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "ICIS", description: "Chemical and polymer price indices, market commentary", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "Mintec", description: "Food and agricultural commodity price data, seasonal trends", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "LME/CBOT", description: "Base metals exchange prices, agricultural futures, trading volumes", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "BigQuery", description: "Time-series storage, forecasting models, volatility analytics", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Market event interpretation, analyst report synthesis, procurement briefing generation", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Index Ingestion & Storage", description: "Ingest commodity price feeds from multiple providers across metals, polymers, energy, and agriculture. Store in BigQuery time-series with normalization across different index formats and update frequencies.", systems: ["S&P Global Platts", "ICIS", "Mintec", "LME/CBOT", "BigQuery"], layer: "integration", dataIn: "Raw commodity price feeds (40+ indices)", dataOut: "Normalized time-series in BigQuery" },
+    { label: "Forecasting & Volatility", description: "Time-series forecasting on commodity indices with macro-economic indicator correlation. Volatility modeling identifies hedging windows. Trigger volatility spike alerts when price movements exceed configurable thresholds.", systems: ["BigQuery"], layer: "ml", dataIn: "Historical price time-series + macro indicators", dataOut: "Price forecasts with confidence intervals + volatility alerts" },
+    { label: "Event Interpretation & Briefing", description: "Gemini interprets market-moving events that quantitative models cannot capture — trade policy announcements, OPEC+ decisions, natural disasters affecting producing regions. Generates actionable briefings connecting forecasts to procurement decisions: pre-buy timing, index adjustment windows, hedging recommendations.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Forecasts + market event signals", dataOut: "Procurement action briefing with recommendations" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Category Manager agent for the Commodity Price Forecaster workflow",
+  primaryObjective: "Time-series forecasting across 40+ commodity indices with volatility modeling and hedging window identification. Gemini interprets market-moving events that quantitative models cannot capture and connects them to procurement impact. so the Category Manager can move the Forecast accuracy (30-day) KPI.",
+  inScope: [
+    "Time-series forecasting across 40+ commodity indices with volatility modeling and hedging window identification",
+    "Gemini interprets market-moving events that quantitative models cannot capture and connects them to procurement impact",
+    "Generates actionable briefings: 'Aluminum projected +12% next quarter due to Chinese export curbs — recommend pre-buying Q3 requirements now.'",
+  ],
+  outOfScope: [
+    "Contract execution without legal review",
+    "Supplier disqualification decisions (category lead retains authority)",
+    "Single-source justification overrides above policy threshold",
+  ],
+  toolIntents: [
+    {
+      name: "query_s_p_global_platts_s_p_global_platts_records",
+      kind: "query",
+      sourceSystemId: "s_p_global_platts",
+      description: "Retrieve s p global platts records from S&P Global Platts for the Commodity Price Forecaster workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "s_p_global_platts_records_records",
+        "s_p_global_platts_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_icis_icis_records",
+      kind: "query",
+      sourceSystemId: "icis",
+      description: "Retrieve icis records from ICIS for the Commodity Price Forecaster workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "icis_records_records",
+        "icis_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_mintec_mintec_records",
+      kind: "query",
+      sourceSystemId: "mintec",
+      description: "Retrieve mintec records from Mintec for the Commodity Price Forecaster workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "mintec_records_records",
+        "mintec_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_lme_lme_records",
+      kind: "query",
+      sourceSystemId: "lme",
+      description: "Retrieve lme records from LME for the Commodity Price Forecaster workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "lme_records_records",
+        "lme_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_commodity_price_forecaster_policy_guide",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Commodity Price Forecaster Procurement Policy Guide to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_s_p_global_platts_recommend",
+      kind: "action",
+      sourceSystemId: "s_p_global_platts",
+      description: "Execute the recommend step in S&P Global Platts after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Forecast accuracy (30-day) moved from Analyst gut feel toward 85%+ directional accuracy",
+      mustCite: [
+        "s_p_global_platts.s_p_global_platts_records",
+        "icis.icis_records",
+      ],
+      sourceSystemIds: [
+        "s_p_global_platts",
+        "icis",
+      ],
+    },
+    {
+      claim: "Indices tracked moved from 5-10 manual toward 40+ automated",
+      mustCite: [
+        "s_p_global_platts.s_p_global_platts_records",
+        "icis.icis_records",
+      ],
+      sourceSystemIds: [
+        "s_p_global_platts",
+        "icis",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Forecast accuracy (30-day) regresses past the Analyst gut feel baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Category Manager",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed recommend action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from S&P Global Platts (and other named systems) entities.",
+    "Never bypass Category Manager approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "commodity-price-forecaster-end-to-end",
+      prompt: "Run the Commodity Price Forecaster workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_s_p_global_platts_s_p_global_platts_records",
+        "query_icis_icis_records",
+        "query_mintec_mintec_records",
+        "query_lme_lme_records",
+        "lookup_commodity_price_forecaster_policy_guide",
+        "action_s_p_global_platts_recommend",
+      ],
+      mustReferenceEntities: [
+        "s_p_global_platts_records",
+        "icis_records",
+        "mintec_records",
+        "lme_records",
+        "cbot_records",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "commodity-price-forecaster-policy-guide",
+      ],
+      expectedActionOutcome: "Action recommend executed against S&P Global Platts, with audit-trail entry and Category Manager notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute recommend without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Commodity Price Forecaster so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "s_p_global_platts",
+      name: "S&P Global Platts",
+      owns: [
+        "s_p_global_platts_records",
+        "s_p_global_platts_events",
+        "s_p_global_platts_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_s_p_global_platts_s_p_global_platts_records",
+        "query_s_p_global_platts_s_p_global_platts_events",
+        "query_s_p_global_platts_s_p_global_platts_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "icis",
+      name: "ICIS",
+      owns: [
+        "icis_records",
+        "icis_events",
+        "icis_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_icis_icis_records",
+        "query_icis_icis_events",
+        "query_icis_icis_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "mintec",
+      name: "Mintec",
+      owns: [
+        "mintec_records",
+        "mintec_events",
+        "mintec_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_mintec_mintec_records",
+        "query_mintec_mintec_events",
+        "query_mintec_mintec_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "lme",
+      name: "LME",
+      owns: [
+        "lme_records",
+        "lme_events",
+        "lme_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_lme_lme_records",
+        "query_lme_lme_events",
+        "query_lme_lme_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "cbot",
+      name: "CBOT",
+      owns: [
+        "cbot_records",
+        "cbot_events",
+        "cbot_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_cbot_cbot_records",
+        "query_cbot_cbot_events",
+        "query_cbot_cbot_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "s_p_global_platts_records",
+      sourceSystemId: "s_p_global_platts",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "s_p_global_platts_events",
+      sourceSystemId: "s_p_global_platts",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "s_p_global_platts_record_id",
+          type: "ref",
+          ref: "s_p_global_platts_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "s_p_global_platts_audit_trail",
+      sourceSystemId: "s_p_global_platts",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "icis_records",
+      sourceSystemId: "icis",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "icis_events",
+      sourceSystemId: "icis",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "icis_record_id",
+          type: "ref",
+          ref: "icis_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "icis_audit_trail",
+      sourceSystemId: "icis",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "mintec_records",
+      sourceSystemId: "mintec",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "mintec_events",
+      sourceSystemId: "mintec",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "mintec_record_id",
+          type: "ref",
+          ref: "mintec_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "mintec_audit_trail",
+      sourceSystemId: "mintec",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "lme_records",
+      sourceSystemId: "lme",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "lme_events",
+      sourceSystemId: "lme",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "lme_record_id",
+          type: "ref",
+          ref: "lme_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "lme_audit_trail",
+      sourceSystemId: "lme",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "cbot_records",
+      sourceSystemId: "cbot",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "cbot_events",
+      sourceSystemId: "cbot",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "cbot_record_id",
+          type: "ref",
+          ref: "cbot_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cbot_audit_trail",
+      sourceSystemId: "cbot",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "s_p_global_platts_events.s_p_global_platts_record_id",
+      to: "s_p_global_platts_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "icis_events.icis_record_id",
+      to: "icis_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "mintec_events.mintec_record_id",
+      to: "mintec_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "lme_events.lme_record_id",
+      to: "lme_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "cbot_events.cbot_record_id",
+      to: "cbot_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "commodity-price-forecaster-policy-guide",
+      sourceSystemId: "bigquery",
+      type: "policy",
+      title: "Commodity Price Forecaster Procurement Policy Guide",
+      requiredSections: [
+        "Sourcing principles",
+        "Approval thresholds",
+        "Supplier risk requirements",
+        "Contract and compliance gates",
+        "Exception handling",
+      ],
+      linkedEntities: [
+        "s_p_global_platts_records",
+        "s_p_global_platts_events",
+        "s_p_global_platts_audit_trail",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "sourcing",
+        "approvals",
+        "supplier-risk",
+        "exceptions",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "s_p_global_platts_recommend_api",
+      sourceSystemId: "s_p_global_platts",
+      method: "POST",
+      path: "/api/s_p_global_platts/recommend",
+      description: "Synchronous endpoint the agent calls to recommend in S&P Global Platts after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "commodity-price-forecaster-baseline-gap",
+      description: "Seed a realistic gap where Forecast accuracy (30-day) sits between Analyst gut feel and 85%+ directional accuracy, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "s_p_global_platts_records",
+        "s_p_global_platts_events",
+      ],
+      discoveryPath: [
+        "Inspect S&P Global Platts records for the affected entities",
+        "Compare against ICIS historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Category Manager action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "commodity_price_forecaster",
+      schemas: [
+        "s_p_global_platts",
+        "icis",
+        "mintec",
+        "lme",
+        "cbot",
+      ],
+    },
+    bigquery: {
+      dataset: "procurement_commodity_price_forecaster",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "commodity-price-forecaster-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "commodity-price-forecaster-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Commodity Price Forecaster workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const CommodityPriceForecaster = () => (
+  <UseCaseSlide
+    title="Commodity Price Forecaster"
+    subtitle="A-1903 • Spend Analytics"
+    icon={LineChart}
+    domainId="domain-19"
+    layer="Layer 4: Data Agent"
+    persona="Category Manager"
+    systems={["S&P Global Platts", "ICIS", "Mintec", "LME", "CBOT", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "Forecast accuracy (30-day)", before: "Analyst gut feel", after: "85%+ directional accuracy" },
+      { label: "Indices tracked", before: "5-10 manual", after: "40+ automated" },
+      { label: "Time to procurement action", before: "Days after event", after: "Same-day alert" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    statusQuo={[
+      "Category managers manually check Platts and trade publications for price trends, updating Excel forecasts.",
+      "Market-moving events (tariff announcements, OPEC decisions) take days to translate into procurement action.",
+      "No systematic connection between commodity forecasts and contract index adjustment timing."
+    ]}
+    agentification={[
+      "Time-series forecasting across 40+ commodity indices with volatility modeling and hedging window identification.",
+      "Gemini interprets market-moving events that quantitative models cannot capture and connects them to procurement impact.",
+      "Generates actionable briefings: 'Aluminum projected +12% next quarter due to Chinese export curbs — recommend pre-buying Q3 requirements now.'"
+    ]}
+  />
+);

@@ -1,0 +1,219 @@
+{
+  "id": "hr-test",
+  "generatedAt": "2026-05-12T01:30:20.093Z",
+  "domain": "hr",
+  "seed": 42,
+  "rowCount": 30,
+  "systems": [
+    {
+      "id": "workday",
+      "type": "api",
+      "entities": [
+        "employees",
+        "skills",
+        "incidents"
+      ]
+    },
+    {
+      "id": "bigquery",
+      "type": "data",
+      "entities": [
+        "employees",
+        "skills",
+        "incidents"
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "name": "employees",
+      "path": "tables/employees.csv",
+      "jsonPath": "tables/employees.json",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "email",
+          "type": "string"
+        },
+        {
+          "name": "department",
+          "type": "string"
+        },
+        {
+          "name": "region",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "level",
+          "type": "string"
+        },
+        {
+          "name": "hire_date",
+          "type": "string"
+        },
+        {
+          "name": "manager_id",
+          "type": "string"
+        },
+        {
+          "name": "salary",
+          "type": "number"
+        }
+      ],
+      "rowCount": 30
+    },
+    {
+      "name": "skills",
+      "path": "tables/skills.csv",
+      "jsonPath": "tables/skills.json",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "email",
+          "type": "string"
+        },
+        {
+          "name": "skill_name",
+          "type": "string"
+        },
+        {
+          "name": "proficiency",
+          "type": "string"
+        },
+        {
+          "name": "acquired_date",
+          "type": "string"
+        },
+        {
+          "name": "expires",
+          "type": "string"
+        },
+        {
+          "name": "employee_id",
+          "type": "string"
+        }
+      ],
+      "rowCount": 30
+    },
+    {
+      "name": "incidents",
+      "path": "tables/incidents.csv",
+      "jsonPath": "tables/incidents.json",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "email",
+          "type": "string"
+        },
+        {
+          "name": "priority",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "category",
+          "type": "string"
+        },
+        {
+          "name": "created_date",
+          "type": "string"
+        },
+        {
+          "name": "resolved_date",
+          "type": "string"
+        },
+        {
+          "name": "assignee_id",
+          "type": "string"
+        },
+        {
+          "name": "sla_met",
+          "type": "boolean"
+        }
+      ],
+      "rowCount": 30
+    }
+  ],
+  "documents": [
+    {
+      "id": "anomaly-evidence",
+      "path": "documents/anomaly_evidence.json",
+      "linkedEntities": [
+        "employees",
+        "skills",
+        "incidents"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "skills.employee_id",
+      "to": "employees.id"
+    },
+    {
+      "from": "incidents.assignee_id",
+      "to": "employees.id"
+    }
+  ],
+  "anomalies": [
+    {
+      "id": "skills-gap-west",
+      "description": "West region has 3x the average skills gap in AI/ML certifications",
+      "evidence": [
+        "employees",
+        "skills",
+        "incidents"
+      ],
+      "expectedDiscoveryPath": [
+        "query employees by region",
+        "join skills",
+        "compare certification rates"
+      ]
+    },
+    {
+      "id": "incident-spike-q1",
+      "description": "Q1 2026 shows 40% more P1 incidents than any other quarter",
+      "evidence": [
+        "employees",
+        "skills",
+        "incidents"
+      ],
+      "expectedDiscoveryPath": [
+        "query incidents by date",
+        "group by priority",
+        "compare to baseline"
+      ]
+    }
+  ]
+}

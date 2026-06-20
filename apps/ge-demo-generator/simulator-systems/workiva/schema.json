@@ -1,0 +1,67 @@
+{
+  "id": "workiva_schema",
+  "version": 1,
+  "collections": {
+    "workspaces": {
+      "primaryKey": "workspace_id",
+      "fields": {
+        "workspace_id": "string",
+        "name": "string",
+        "status": "string",
+        "owner": "string",
+        "department": "string"
+      }
+    },
+    "documents": {
+      "primaryKey": "document_id",
+      "fields": {
+        "document_id": "string",
+        "workspace_id": "string",
+        "title": "string",
+        "status": "string",
+        "owner": "string",
+        "modified_at": "string"
+      }
+    },
+    "comments": {
+      "primaryKey": "comment_id",
+      "fields": {
+        "comment_id": "string",
+        "document_id": "string",
+        "author": "string",
+        "status": "string",
+        "created_at": "string"
+      }
+    },
+    "tasks": {
+      "primaryKey": "task_id",
+      "fields": {
+        "task_id": "string",
+        "document_id": "string",
+        "status": "string",
+        "assignee": "string",
+        "due_date": "string"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": "string",
+        "source_record_id": "string",
+        "approver": "string",
+        "state": "string",
+        "reason": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string"
+      }
+    }
+  }
+}

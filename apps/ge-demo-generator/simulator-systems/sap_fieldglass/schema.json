@@ -1,0 +1,193 @@
+{
+  "id": "sap_fieldglass_schema",
+  "version": 3,
+  "apiProfile": {
+    "style": "sap-fieldglass-rest-json",
+    "security": ["oauth2", "tenantScopedApiKey"],
+    "pagination": {
+      "styles": ["offset", "page-number"],
+      "params": ["limit", "offset", "page", "$filter", "$orderby"]
+    },
+    "commonErrors": [400, 401, 403, 404, 409, 412, 422, 429, 500]
+  },
+  "collections": {
+    "suppliers": {
+      "primaryKey": "supplier_id",
+      "fields": {
+        "supplier_id": "string",
+        "name": "string",
+        "status": "enum:active|inactive|suspended|pending_review",
+        "country": "string",
+        "vendor_number": "string",
+        "supplier_type": "enum:Staffing|Consulting|Services|Payroll",
+        "risk_tier": "enum:low|medium|high|critical",
+        "contact_email": { "type": "string", "format": "email" }
+      },
+      "relations": {
+        "work_orders": {
+          "collection": "work_orders",
+          "localField": "supplier_id",
+          "foreignField": "supplier_id",
+          "many": true
+        },
+        "statement_of_works": {
+          "collection": "statement_of_works",
+          "localField": "supplier_id",
+          "foreignField": "supplier_id",
+          "many": true
+        }
+      }
+    },
+    "job_postings": {
+      "primaryKey": "job_posting_id",
+      "fields": {
+        "job_posting_id": "string",
+        "title": "string",
+        "status": "enum:draft|open|submitted|filled|closed|cancelled",
+        "labor_category": "string",
+        "location": "string",
+        "hiring_manager": "string",
+        "supplier_distribution": "string",
+        "start_date": { "type": "string", "format": "date" },
+        "end_date": { "type": "string", "format": "date" },
+        "max_bill_rate": "number",
+        "currency": "string"
+      },
+      "relations": {
+        "job_seekers": {
+          "collection": "job_seekers",
+          "localField": "job_posting_id",
+          "foreignField": "submitted_for",
+          "many": true
+        }
+      }
+    },
+    "job_seekers": {
+      "primaryKey": "job_seeker_id",
+      "fields": {
+        "job_seeker_id": "string",
+        "supplier_id": "ref:suppliers.supplier_id",
+        "name": "string",
+        "email": { "type": "string", "format": "email" },
+        "status": "enum:submitted|shortlisted|interviewing|selected|rejected|withdrawn",
+        "submitted_for": "ref:job_postings.job_posting_id",
+        "bill_rate": "number",
+        "currency": "string",
+        "screening_status": "enum:not_started|in_progress|complete|exception"
+      }
+    },
+    "work_orders": {
+      "primaryKey": "work_order_id",
+      "fields": {
+        "work_order_id": "string",
+        "job_posting_id": "ref:job_postings.job_posting_id",
+        "job_seeker_id": "ref:job_seekers.job_seeker_id",
+        "supplier_id": "ref:suppliers.supplier_id",
+        "worker_id": "ref:workers.worker_id",
+        "status": "enum:draft|submitted|approved|activated|paused|closed|cancelled",
+        "start_date": { "type": "string", "format": "date" },
+        "end_date": { "type": "string", "format": "date" },
+        "bill_rate": "number",
+        "currency": "string",
+        "cost_center": "string",
+        "site": "string",
+        "tenure_end_date": { "type": "string", "format": "date" }
+      },
+      "relations": {
+        "worker": {
+          "collection": "workers",
+          "localField": "worker_id",
+          "foreignField": "worker_id",
+          "many": false
+        },
+        "time_sheets": {
+          "collection": "time_sheets",
+          "localField": "work_order_id",
+          "foreignField": "work_order_id",
+          "many": true
+        },
+        "approvals": {
+          "collection": "approvals",
+          "localField": "work_order_id",
+          "foreignField": "source_record_id",
+          "many": true
+        }
+      }
+    },
+    "workers": {
+      "primaryKey": "worker_id",
+      "fields": {
+        "worker_id": "string",
+        "external_worker_id": "string",
+        "name": "string",
+        "email": { "type": "string", "format": "email" },
+        "status": "enum:pending_onboarding|active|paused|offboarded|terminated",
+        "worker_type": "enum:contingent_worker|consultant|services_worker",
+        "supplier_id": "ref:suppliers.supplier_id",
+        "work_order_id": "ref:work_orders.work_order_id",
+        "manager_id": "string",
+        "cost_center": "string",
+        "location": "string",
+        "country": "string",
+        "onboarding_status": "enum:not_started|badge_pending|system_access_pending|complete|exception",
+        "security_badge_status": "enum:not_issued|pending|issued|revoked"
+      }
+    },
+    "time_sheets": {
+      "primaryKey": "time_sheet_id",
+      "fields": {
+        "time_sheet_id": "string",
+        "worker_id": "ref:workers.worker_id",
+        "work_order_id": "ref:work_orders.work_order_id",
+        "week_start": { "type": "string", "format": "date" },
+        "week_end": { "type": "string", "format": "date" },
+        "hours": "number",
+        "overtime_hours": "number",
+        "status": "enum:draft|submitted|approved|rejected|invoiced",
+        "approver": "string",
+        "invoice_status": "enum:not_invoiced|invoice_pending|invoiced|blocked"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": "string",
+        "source_record_id": "string",
+        "approver": "string",
+        "state": "enum:requested|pending|pending_approval|approved|rejected",
+        "reason": "string",
+        "workflow_step": "string",
+        "due_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "actor": "string",
+        "role": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string",
+        "timestamp": { "type": "string", "format": "date-time" },
+        "detail": "string"
+      }
+    },
+    "statement_of_works": {
+      "primaryKey": "sow_id",
+      "fields": {
+        "sow_id": "string",
+        "supplier_id": "ref:suppliers.supplier_id",
+        "name": "string",
+        "status": "enum:draft|pending_approval|active|on_hold|closed|cancelled",
+        "owner": "string",
+        "start_date": { "type": "string", "format": "date" },
+        "end_date": { "type": "string", "format": "date" },
+        "committed_spend": "number",
+        "currency": "string",
+        "milestone_status": "enum:not_started|on_track|at_risk|complete|blocked"
+      }
+    }
+  }
+}

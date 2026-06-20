@@ -1,0 +1,108 @@
+{
+  "id": "manageengine_tools",
+  "version": 1,
+  "tools": [
+    {
+      "name": "search_tickets",
+      "description": "Search tickets in manageengine.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "tickets"
+      }
+    },
+    {
+      "name": "get_ticket",
+      "description": "Get one ticket in manageengine.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticket_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "tickets",
+        "primaryKey": "ticket_id"
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending manageengine approvals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": {
+            "type": "string"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_pending_approvals",
+        "collection": "approvals"
+      }
+    },
+    {
+      "name": "submit_ticket_update",
+      "description": "Submit an update to one ticket in manageengine.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticket_id": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ticket_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "tickets",
+        "primaryKey": "ticket_id"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List manageengine simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

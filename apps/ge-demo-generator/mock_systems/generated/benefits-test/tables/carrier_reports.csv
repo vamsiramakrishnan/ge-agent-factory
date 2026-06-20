@@ -1,0 +1,13 @@
+report_id,carrier,month,utilization_rate,total_claims,avg_cost_per_claim
+REP-0001,unknown,2025-07-18,688,302,56
+REP-0002,unknown,2024-12-20,336,382,578
+REP-0003,unknown,2024-10-10,668,675,356
+REP-0004,unknown,2025-06-01,939,814,944
+REP-0005,unknown,2024-08-26,38,405,568
+REP-0006,unknown,2026-05-24,481,933,399
+REP-0007,unknown,2024-06-24,204,995,893
+REP-0008,unknown,2025-01-31,539,810,779
+REP-0009,unknown,2024-05-16,218,726,854
+REP-0010,unknown,2025-10-27,270,76,962
+REP-0011,unknown,2026-02-03,646,915,740
+REP-0012,unknown,2024-07-11,838,112,499

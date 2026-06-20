@@ -1,0 +1,303 @@
+{
+  "id": "sap_ariba_tools",
+  "version": 2,
+  "tools": [
+    {
+      "name": "search_suppliers",
+      "description": "Search Ariba suppliers.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "qualification_status": {
+            "type": "string"
+          },
+          "risk_tier": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "suppliers"
+      }
+    },
+    {
+      "name": "get_supplier",
+      "description": "Get one supplier.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "supplier_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "supplier_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "suppliers",
+        "primaryKey": "supplier_id"
+      }
+    },
+    {
+      "name": "search_supplier_questionnaires",
+      "description": "Search Ariba supplier questionnaires.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "supplier_questionnaires"
+      }
+    },
+    {
+      "name": "get_supplier_questionnaire",
+      "description": "Get one supplier questionnaire.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "questionnaire_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "questionnaire_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "supplier_questionnaires",
+        "primaryKey": "questionnaire_id"
+      }
+    },
+    {
+      "name": "search_sourcing_events",
+      "description": "Search Ariba sourcing events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "event_type": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "sourcing_events"
+      }
+    },
+    {
+      "name": "get_sourcing_event",
+      "description": "Get one sourcing event.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "sourcing_events",
+        "primaryKey": "event_id"
+      }
+    },
+    {
+      "name": "search_sourcing_bids",
+      "description": "Search Ariba sourcing bids.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "event_id": {
+            "type": "string"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "sourcing_bids"
+      }
+    },
+    {
+      "name": "get_sourcing_bid",
+      "description": "Get one sourcing bid.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "bid_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "bid_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "sourcing_bids",
+        "primaryKey": "bid_id"
+      }
+    },
+    {
+      "name": "search_requisitions",
+      "description": "Search Ariba requisitions.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "cost_center": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "requisitions"
+      }
+    },
+    {
+      "name": "get_requisition",
+      "description": "Get one requisition.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "requisition_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "requisition_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "requisitions",
+        "primaryKey": "requisition_id"
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending Ariba approvals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": {
+            "type": "string"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_pending_approvals",
+        "collection": "approvals"
+      }
+    },
+    {
+      "name": "submit_supplier_update",
+      "description": "Submit a controlled state update for supplier.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "supplier_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "supplier_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "suppliers",
+        "primaryKey": "supplier_id"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List Ariba audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

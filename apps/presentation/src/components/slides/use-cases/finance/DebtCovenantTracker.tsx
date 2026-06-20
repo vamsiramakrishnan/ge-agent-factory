@@ -1,0 +1,873 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { FileCheck, Database, Cpu, Brain, AlertTriangle } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Monthly Close", lane: "system", type: "trigger" },
+    { id: "a1", label: "Ratio Calculation", lane: "agent", type: "action" },
+    { id: "a2", label: "Agreement Analysis", lane: "agent", type: "action" },
+    { id: "a3", label: "Compliance Report", lane: "agent", type: "output" },
+    { id: "h1", label: "Treasurer Reviews", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Financial Data Pull", icon: Database, description: "Financial ratios extracted from GL -- leverage, interest coverage, current ratio, and custom covenant metrics.", trigger: "Monthly close", systems: ["SAP S/4HANA FI"] },
+  { label: "Trend & Early Warning", icon: Cpu, description: "Ratio trend projection with early warning scoring -- flag if current trajectory breaches covenant within 2 quarters.", systems: ["BigQuery"], integration: "ADK" },
+  { label: "Agreement Interpretation", icon: Brain, description: "Gemini reads loan agreements to interpret complex definitions -- EBITDA add-backs, non-recurring charge limits, and cure provisions.", systems: ["Vertex AI"] },
+  { label: "Compliance Review", icon: AlertTriangle, description: "Treasurer reviews compliance report and early warning flags. Initiates lender communication if breach risk is elevated.", output: "Covenant Compliance Report" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "SAP S/4HANA FI", description: "GL balances, financial statements, ratio components", direction: "read", protocol: "RFC/BAPI", category: "erp" },
+    { system: "BigQuery", description: "Ratio calculations, trend projections, early warning models, historical compliance", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Loan agreement interpretation, add-back analysis, compliance narrative generation", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+    { system: "Document Repository", description: "Loan agreements, amendment letters, covenant waiver documentation", direction: "read", protocol: "REST API", category: "collaboration" },
+  ],
+  pipeline: [
+    { label: "Financial Ratio Extraction", description: "Extract financial data from GL and calculate covenant ratios -- leverage (Debt/EBITDA), interest coverage, current ratio, and any custom ratios defined in loan agreements.", systems: ["SAP S/4HANA FI", "BigQuery"], layer: "integration", dataIn: "GL balances and financial statement data", dataOut: "Calculated covenant ratios with components" },
+    { label: "Trend Projection & Early Warning", description: "Project ratio trends forward 2 quarters using historical patterns and forecast data. Score each covenant for breach risk -- early warning if projected to come within 10% of threshold. Flag covenants requiring attention.", systems: ["BigQuery"], layer: "ml", dataIn: "Current ratios + historical trends + forecast data", dataOut: "Projected ratios with breach risk scores" },
+    { label: "Agreement Interpretation", description: "Gemini reads loan agreement definitions: 'EBITDA defined as net income plus interest, taxes, D&A, plus add-backs for non-recurring charges up to $5M annually. The $3M restructuring charge qualifies as add-back, keeping compliant at 3.2x vs. 3.5x covenant.' Generates compliance narrative.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Ratio calculations + loan agreement text + recent charges", dataOut: "Interpreted compliance status with add-back analysis" },
+    { label: "Compliance Reporting", description: "Generate covenant compliance report with current ratios, trend projections, early warnings, and add-back analysis. Distribute to Treasurer and CFO.", systems: ["BigQuery"], layer: "integration", dataIn: "Complete compliance analysis", dataOut: "Covenant compliance report with early warnings" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Treasurer agent for the Debt Covenant Tracker workflow",
+  primaryObjective: "Continuous covenant monitoring with 2-quarter forward projections replaces quarterly surprise discoveries. Gemini reads loan agreements to automatically identify qualifying add-backs and interpret complex definitions. so the Treasurer can move the Covenant monitoring KPI.",
+  inScope: [
+    "Continuous covenant monitoring with 2-quarter forward projections replaces quarterly surprise discoveries",
+    "Gemini reads loan agreements to automatically identify qualifying add-backs and interpret complex definitions",
+    "Early warning system gives Treasurer 6+ months to take corrective action or proactively engage lenders",
+  ],
+  outOfScope: [
+    "Final sign-off on materially significant journal entries (Controller retains authority)",
+    "Restatement of prior-period filings",
+    "Tax position changes that require external advisor review",
+  ],
+  toolIntents: [
+    {
+      name: "query_sap_s_4hana_fi_gl_entries",
+      kind: "query",
+      sourceSystemId: "sap_s_4hana_fi",
+      description: "Retrieve gl entries from SAP S/4HANA FI for the Debt Covenant Tracker workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "gl_entries_records",
+        "gl_entries_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Debt Covenant Tracker workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "query_finance_3_finance_3_records",
+      kind: "query",
+      sourceSystemId: "finance_3",
+      description: "Retrieve finance 3 records from FINANCE 3 for the Debt Covenant Tracker workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "finance_3_records_records",
+        "finance_3_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_debt_covenant_tracker_controls_playbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Debt Covenant Tracker Controls Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Covenant monitoring moved from Quarterly manual toward Continuous automated",
+      mustCite: [
+        "sap_s_4hana_fi.gl_entries",
+        "bigquery.analytics_events",
+      ],
+      sourceSystemIds: [
+        "sap_s_4hana_fi",
+        "bigquery",
+      ],
+    },
+    {
+      claim: "Breach early warning moved from None (reactive) toward 2-quarter forward view",
+      mustCite: [
+        "sap_s_4hana_fi.gl_entries",
+        "bigquery.analytics_events",
+      ],
+      sourceSystemIds: [
+        "sap_s_4hana_fi",
+        "bigquery",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Covenant monitoring regresses past the Quarterly manual baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Treasurer",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from SAP S/4HANA FI (and other named systems) entities.",
+    "Never bypass Treasurer approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "debt-covenant-tracker-end-to-end",
+      prompt: "Run the Debt Covenant Tracker workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_sap_s_4hana_fi_gl_entries",
+        "query_bigquery_analytics_events",
+        "query_finance_3_finance_3_records",
+        "lookup_debt_covenant_tracker_controls_playbook",
+      ],
+      mustReferenceEntities: [
+        "gl_entries",
+        "analytics_events",
+        "finance_3_records",
+      ],
+      mustCiteDocuments: [
+        "debt-covenant-tracker-controls-playbook",
+      ],
+      expectedActionOutcome: "Treasurer receives a fully-cited recommendation; no external state change without explicit approval.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not act on single-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Debt Covenant Tracker so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "sap_s_4hana_fi",
+      name: "SAP S/4HANA FI",
+      owns: [
+        "gl_entries",
+        "subledger_balances",
+        "open_items",
+      ],
+      protocol: "RFC/BAPI",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sap_s_4hana_fi_gl_entries",
+        "query_sap_s_4hana_fi_subledger_balances",
+        "query_sap_s_4hana_fi_open_items",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "finance_3",
+      name: "FINANCE 3",
+      owns: [
+        "finance_3_records",
+        "finance_3_events",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_finance_3_records",
+      ],
+      evidence: [
+        "source_system_record",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "gl_entries",
+      sourceSystemId: "sap_s_4hana_fi",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "subledger_balances",
+      sourceSystemId: "sap_s_4hana_fi",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "open_items",
+      sourceSystemId: "sap_s_4hana_fi",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "finance_3_records",
+      sourceSystemId: "finance_3",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "finance_3_events",
+      sourceSystemId: "finance_3",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "finance_3_record_id",
+          type: "ref",
+          ref: "finance_3_records.id",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "finance_3_events.finance_3_record_id",
+      to: "finance_3_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "debt-covenant-tracker-controls-playbook",
+      sourceSystemId: "bigquery",
+      type: "policy",
+      title: "Debt Covenant Tracker Controls Playbook",
+      requiredSections: [
+        "Workflow scope",
+        "Materiality thresholds",
+        "Escalation triggers",
+        "Audit evidence requirements",
+        "Quarter-end variations",
+      ],
+      linkedEntities: [
+        "gl_entries",
+        "subledger_balances",
+        "open_items",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "scope",
+        "materiality",
+        "escalation",
+        "audit-evidence",
+      ],
+    },
+  ],
+  apis: [],
+  anomalies: [
+    {
+      id: "debt-covenant-tracker-baseline-gap",
+      description: "Seed a realistic gap where Covenant monitoring sits between Quarterly manual and Continuous automated, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "gl_entries",
+        "subledger_balances",
+      ],
+      discoveryPath: [
+        "Inspect SAP S/4HANA FI records for the affected entities",
+        "Compare against BigQuery historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Treasurer action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "debt_covenant_tracker",
+      schemas: [
+        "sap_s_4hana_fi",
+        "finance_3",
+      ],
+    },
+    bigquery: {
+      dataset: "finance_debt_covenant_tracker",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "debt-covenant-tracker-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "debt-covenant-tracker-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Debt Covenant Tracker workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const DebtCovenantTracker = () => (
+  <UseCaseSlide
+    title="Debt Covenant Tracker"
+    subtitle="A-2405 - Treasury & Cash"
+    icon={FileCheck}
+    domainId="domain-24"
+    layer="Layer 3: Custom ADK"
+    persona="Treasurer"
+    systems={["SAP S/4HANA FI", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "Covenant monitoring", before: "Quarterly manual", after: "Continuous automated" },
+      { label: "Breach early warning", before: "None (reactive)", after: "2-quarter forward view" },
+      { label: "Add-back identification", before: "Manual review of charges", after: "Automated with agreement reference" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "Treasurer", action: "Review compliance and early warnings", description: "Treasurer reviews covenant compliance status, validates add-back interpretations, and decides on proactive lender communication if breach risk is elevated." }}
+    statusQuo={[
+      "Covenant compliance calculated quarterly in Excel with manual reference to loan agreement definitions.",
+      "Complex EBITDA definitions with add-back limits require legal and accounting interpretation each quarter.",
+      "No forward-looking breach prediction -- surprises occur at quarter-end when it is too late to take corrective action."
+    ]}
+    agentification={[
+      "Continuous covenant monitoring with 2-quarter forward projections replaces quarterly surprise discoveries.",
+      "Gemini reads loan agreements to automatically identify qualifying add-backs and interpret complex definitions.",
+      "Early warning system gives Treasurer 6+ months to take corrective action or proactively engage lenders."
+    ]}
+  />
+);

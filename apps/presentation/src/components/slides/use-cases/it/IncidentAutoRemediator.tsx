@@ -1,0 +1,526 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, AgentBehaviorContract, UseCaseGenerationSpec } from "../../../../types/architecture";
+import { Zap, AlertTriangle, Search, Wrench, CheckCircle } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Alert Fired", lane: "system", type: "trigger" },
+    { id: "a1", label: "Diagnosis", lane: "agent", type: "action" },
+    { id: "a2", label: "Runbook Selection", lane: "agent", type: "action" },
+    { id: "h1", label: "SRE Approval", lane: "human", type: "hitl" },
+    { id: "a3", label: "Remediation", lane: "agent", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "h1"], ["h1", "a3"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Alert Intake", icon: AlertTriangle, description: "Alert fired from monitoring — agent receives alert with service context and recent deployment history.", trigger: "Alert", systems: ["PagerDuty", "Datadog"] },
+  { label: "Diagnosis", icon: Search, description: "Alert correlation, root cause probability ranking, and runbook matching based on symptom patterns.", systems: ["BigQuery", "Vertex AI"], integration: "ADK" },
+  { label: "Remediation Selection", icon: Wrench, description: "Gemini selects and adapts remediation — distinguishing slow memory leaks from code regressions.", systems: ["Vertex AI"] },
+  { label: "SRE Approval & Execution", icon: CheckCircle, description: "SRE Manager approves production remediation. Agent executes runbook and verifies recovery.", output: "Remediated Incident" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "PagerDuty", description: "Alert notifications, incident severity, on-call routing", direction: "bidirectional", protocol: "REST API", category: "erp" },
+    { system: "Datadog", description: "APM metrics, error traces, resource utilization at incident time", direction: "read", protocol: "REST API", category: "analytics" },
+    { system: "Kubernetes", description: "Pod status, restart history, resource consumption", direction: "bidirectional", protocol: "Kubernetes API", category: "erp" },
+    { system: "Terraform", description: "Infrastructure state, recent changes, rollback capabilities", direction: "read", protocol: "CLI / REST API", category: "erp" },
+    { system: "BigQuery", description: "Historical incident patterns, runbook success rates, correlation data", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Root cause reasoning, remediation selection, context-aware recovery", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Alert Intake & Correlation", description: "Receive alert from PagerDuty. Correlate with related alerts (deduplication), recent deployments, and infrastructure events. Pull service context from Datadog APM.", systems: ["PagerDuty", "Datadog"], layer: "integration", dataIn: "Alert notification + APM context", dataOut: "Enriched alert with deployment and resource context" },
+    { label: "Root Cause Ranking", description: "Rank probable root causes using historical incident patterns. Match symptoms against runbook database. Score runbook applicability based on symptom similarity and past success rates.", systems: ["BigQuery"], layer: "ml", dataIn: "Enriched alert + historical patterns", dataOut: "Ranked root causes with matched runbooks" },
+    { label: "Context-Aware Remediation Selection", description: "Gemini adapts remediation: 'High memory on pod checkout-api-7d4f matches runbook RB-042 (memory leak restart) — but this pod was deployed 10 minutes ago. Likely code regression. Recommend rollback instead of restart.'", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Ranked causes + deployment context", dataOut: "Selected remediation with rollback/restart decision" },
+    { label: "Execution & Verification", description: "After SRE approval, execute selected remediation via Kubernetes API (rollback, restart, scale). Verify recovery through Datadog health checks. Update PagerDuty incident with resolution.", systems: ["Kubernetes", "PagerDuty"], layer: "integration", dataIn: "Approved remediation action", dataOut: "Verified recovery with updated incident record" },
+  ],
+};
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "SRE auto-remediation copilot for GE production infrastructure",
+  primaryObjective: "Receive production alerts, correlate with deployment history and APM traces, rank root causes from historical patterns, recommend and execute remediation via Kubernetes API with SRE Manager approval, verify recovery, and update incident records.",
+  inScope: [
+    "Correlate multiple related alerts (deduplication) with deployment and infrastructure context from Datadog and Terraform",
+    "Rank probable root causes using historical incident patterns from BigQuery and runbook success rates",
+    "Recommend remediation actions (restart, rollback, scale) based on symptom patterns and deployment recency",
+    "Execute approved remediation via Kubernetes API and PagerDuty updates after explicit SRE Manager approval",
+    "Verify recovery via Datadog health checks and update incident status",
+  ],
+  outOfScope: [
+    "Autonomous execution without explicit SRE Manager approval — all production remediation is HITL-gated",
+    "Production schema changes, database migrations, or data modifications",
+    "Security incident response, breach containment, or access revocation — escalate to Security team",
+    "Customer-data-containing remediation — never expose PII in logs or incident updates",
+  ],
+  toolIntents: [
+    {
+      name: "query_pagerduty_active_incidents",
+      kind: "query",
+      sourceSystemId: "pagerduty",
+      description: "Retrieve active incident details and severity to establish remediation priority and escalation path.",
+      requiredInputs: ["incident_id"],
+      produces: ["incident_record", "severity_level"],
+      evidenceEmitted: ["source_system_record"],
+    },
+    {
+      name: "query_datadog_apm_traces",
+      kind: "query",
+      sourceSystemId: "datadog",
+      description: "Pull APM error traces and service dependency graphs at the time of alert to correlate failure patterns.",
+      requiredInputs: ["service_id", "time_range"],
+      produces: ["trace_data", "error_context"],
+      evidenceEmitted: ["source_system_record"],
+    },
+    {
+      name: "query_datadog_metrics",
+      kind: "query",
+      sourceSystemId: "datadog",
+      description: "Retrieve memory, CPU, disk I/O, and error rate metrics to distinguish memory leaks from code regressions.",
+      requiredInputs: ["service_id", "time_range"],
+      produces: ["metric_snapshot"],
+      evidenceEmitted: ["source_system_record"],
+    },
+    {
+      name: "query_kubernetes_pod_status",
+      kind: "query",
+      sourceSystemId: "kubernetes",
+      description: "Check pod restart count, resource limits, and deployment version to detect repeated failures.",
+      requiredInputs: ["pod_name", "namespace"],
+      produces: ["pod_state", "restart_history"],
+      evidenceEmitted: ["source_system_record"],
+    },
+    {
+      name: "query_terraform_state",
+      kind: "query",
+      sourceSystemId: "terraform",
+      description: "Retrieve infrastructure state and recent changes (deployments, configuration, capacity changes) to contextualize root cause.",
+      requiredInputs: ["service_id"],
+      produces: ["deployment_version", "recent_changes"],
+      evidenceEmitted: ["source_system_record"],
+    },
+    {
+      name: "query_bigquery_runbook_history",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Query historical incident patterns and runbook success rates to rank probable root causes and match symptoms.",
+      requiredInputs: ["symptom_pattern"],
+      produces: ["matched_runbooks", "success_rates"],
+      evidenceEmitted: ["sql_result"],
+    },
+    {
+      name: "action_kubernetes_rollback_deployment",
+      kind: "action",
+      sourceSystemId: "kubernetes",
+      description: "Execute a rollback to the previous stable deployment version after SRE approval, for code regression remediation.",
+      requiredInputs: ["deployment_name", "target_version"],
+      produces: ["rollback_id", "new_pod_status"],
+      evidenceEmitted: ["api_response"],
+    },
+    {
+      name: "action_kubernetes_restart_pod",
+      kind: "action",
+      sourceSystemId: "kubernetes",
+      description: "Restart a failing pod after SRE approval, for transient failure or memory leak remediation.",
+      requiredInputs: ["pod_name", "namespace"],
+      produces: ["restart_id", "new_pod_status"],
+      evidenceEmitted: ["api_response"],
+    },
+    {
+      name: "action_pagerduty_update_incident",
+      kind: "action",
+      sourceSystemId: "pagerduty",
+      description: "Update incident status, add incident notes with remediation action and verification results, and mark as resolved.",
+      requiredInputs: ["incident_id", "status", "note"],
+      produces: ["updated_incident_id"],
+      evidenceEmitted: ["api_response"],
+    },
+    {
+      name: "evidence_runbook_library",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Cite the SRE runbook library for remediation recommendations (citation anchors: symptom-mapping, success-rate, rollback-criteria).",
+      requiredInputs: ["runbook_id"],
+      produces: ["runbook_citation"],
+      evidenceEmitted: ["document_reference"],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Alert is correlated with a related incident pattern",
+      mustCite: ["alerts.fired_at", "alerts.service_id", "services.deployment_version"],
+      sourceSystemIds: ["pagerduty", "datadog", "terraform"],
+    },
+    {
+      claim: "Root cause rank includes symptom pattern match and historical success rate",
+      mustCite: ["runbooks.symptom_pattern", "runbooks.success_rate"],
+      sourceSystemIds: ["bigquery"],
+    },
+    {
+      claim: "Remediation action (restart vs rollback) is justified by deployment recency and metric trends",
+      mustCite: ["services.deployment_version", "incidents.alert_id"],
+      sourceSystemIds: ["terraform", "datadog"],
+    },
+    {
+      claim: "Recovery verified after remediation execution",
+      mustCite: ["incidents.outcome", "datadog metrics post-action"],
+      sourceSystemIds: ["datadog", "kubernetes"],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Incident severity is Sev-1 (critical production outage)",
+      action: "escalate_to_human",
+      handoffTarget: "SRE Manager + on-call lead",
+      rationale: "Sev-1 incidents require immediate human oversight and approval before any remediation action.",
+    },
+    {
+      trigger: "No runbook match found or matched runbooks have success_rate <50%",
+      action: "escalate_to_human",
+      handoffTarget: "SRE Manager",
+      rationale: "Low-confidence remediation must be escalated rather than auto-executed.",
+    },
+    {
+      trigger: "Pod restart count exceeds 3 in the last 24 hours",
+      action: "escalate_to_human",
+      handoffTarget: "SRE Manager",
+      rationale: "Repeated restarts on the same pod indicate a regression or fundamental issue requiring investigation.",
+    },
+    {
+      trigger: "Service has been flagged with security_tag or contains sensitive_data in recent deployments",
+      action: "refuse",
+      rationale: "Do not execute automatic remediation on security-sensitive services; require explicit Security team approval.",
+    },
+    {
+      trigger: "Recovery verification fails — metrics do not stabilize within 10 minutes post-action",
+      action: "escalate_to_human",
+      handoffTarget: "SRE Manager",
+      rationale: "If remediation does not resolve the incident quickly, escalate for manual investigation.",
+    },
+  ],
+  refusalRules: [
+    "Never execute remediation without explicit SRE Manager approval in the incident approval_comment field.",
+    "Never invent runbook IDs, deployment versions, or remediation actions — only execute what the agent recommends and SRE approves.",
+    "Never override the deployment-recency code-regression check — if a service was deployed <15 minutes ago, default to rollback over restart.",
+    "Never remediate a security-tagged service or one containing customer PII without explicit Security team handoff.",
+    "Never bypass PagerDuty update requirements — all production remediations must be logged in the incident record.",
+  ],
+  goldenEvals: [
+    {
+      id: "memory-leak-restart-happy-path",
+      prompt: "PagerDuty alert INC-0042: High memory on checkout-api pod, severity Sev-2. Last deployment was 3 days ago. Datadog shows gradual memory growth over 6 hours. Recommend and execute restart after SRE approval.",
+      expectedToolCalls: [
+        "query_pagerduty_active_incidents",
+        "query_datadog_apm_traces",
+        "query_datadog_metrics",
+        "query_kubernetes_pod_status",
+        "query_terraform_state",
+        "query_bigquery_runbook_history",
+        "evidence_runbook_library",
+        "action_kubernetes_restart_pod",
+        "action_pagerduty_update_incident",
+      ],
+      mustReferenceEntities: ["incidents", "alerts", "services", "runbooks"],
+      mustCiteDocuments: ["sre-runbook-library", "production-change-approval-policy"],
+      expectedActionOutcome: "Restart approved and executed; pod health restored; incident marked resolved in PagerDuty with runbook citation.",
+      forbiddenBehaviors: [
+        "do not execute restart without explicit approval",
+        "do not invent runbook IDs or success rates",
+      ],
+    },
+    {
+      id: "post-deploy-regression-rollback",
+      prompt: "PagerDuty alert INC-0043: Error rate spike on user-api, Sev-1. Deployment 10 minutes ago (v2.14.5 → v2.14.6). Datadog shows errors in new code path. Recommend rollback after SRE approval.",
+      expectedToolCalls: [
+        "query_pagerduty_active_incidents",
+        "query_datadog_apm_traces",
+        "query_datadog_metrics",
+        "query_kubernetes_pod_status",
+        "query_terraform_state",
+        "query_bigquery_runbook_history",
+        "evidence_runbook_library",
+        "action_kubernetes_rollback_deployment",
+        "action_pagerduty_update_incident",
+      ],
+      mustCiteDocuments: ["sre-runbook-library", "production-change-approval-policy"],
+      expectedActionOutcome: "Rollback to v2.14.5 approved and executed; error rate recovered; incident resolved.",
+      forbiddenBehaviors: [
+        "do not recommend restart for post-deploy regression",
+        "do not invent rollback target version",
+      ],
+    },
+    {
+      id: "sev1-escalation-no-auto-action",
+      prompt: "PagerDuty alert INC-0044: Database connection pool exhaustion, Sev-1. No matching runbook. Request SRE Manager assessment.",
+      expectedToolCalls: [
+        "query_pagerduty_active_incidents",
+        "query_datadog_apm_traces",
+        "query_datadog_metrics",
+        "query_bigquery_runbook_history",
+        "evidence_runbook_library",
+      ],
+      mustCiteDocuments: ["sre-runbook-library"],
+      expectedActionOutcome: "Escalate to SRE Manager; do not execute remediation; await human decision.",
+      forbiddenBehaviors: [
+        "do not invoke action tools",
+        "do not pretend to have a matching runbook",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "SRE auto-remediation needs enough incidents, alerts, services, and runbooks to demonstrate correlation, root cause ranking, and remediation selection without becoming a large-data demo.",
+  },
+  sourceSystems: [
+    {
+      id: "pagerduty",
+      name: "PagerDuty",
+      owns: ["incidents", "alerts", "on_call_routing"],
+      protocol: "REST API",
+      localBacking: ["json-api", "alloydb"],
+      toolNames: ["query_pagerduty_active_incidents", "action_pagerduty_update_incident"],
+      mcpToolNames: ["pagerduty_get_incident", "pagerduty_update_incident"],
+      evidence: ["source_system_record", "api_response"],
+    },
+    {
+      id: "datadog",
+      name: "Datadog",
+      owns: ["apm_traces", "metrics", "service_dependencies", "error_context"],
+      protocol: "REST API",
+      localBacking: ["json-api", "bigquery"],
+      toolNames: ["query_datadog_apm_traces", "query_datadog_metrics"],
+      mcpToolNames: ["datadog_get_traces", "datadog_get_metrics"],
+      evidence: ["source_system_record", "sql_result"],
+    },
+    {
+      id: "kubernetes",
+      name: "Kubernetes",
+      owns: ["pods", "deployments", "pod_restart_history", "resource_status"],
+      protocol: "Kubernetes API",
+      localBacking: ["json-api", "alloydb"],
+      toolNames: ["query_kubernetes_pod_status", "action_kubernetes_rollback_deployment", "action_kubernetes_restart_pod"],
+      mcpToolNames: ["k8s_get_pod_status", "k8s_rollback_deployment", "k8s_restart_pod"],
+      evidence: ["source_system_record", "api_response"],
+    },
+    {
+      id: "terraform",
+      name: "Terraform",
+      owns: ["infrastructure_state", "deployment_versions", "recent_changes", "rollback_targets"],
+      protocol: "CLI / REST API",
+      localBacking: ["json-api", "alloydb"],
+      toolNames: ["query_terraform_state"],
+      mcpToolNames: ["terraform_get_state"],
+      evidence: ["source_system_record"],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: ["incident_patterns", "runbook_success_rates", "mttr_trends", "correlation_data"],
+      protocol: "BigQuery SQL",
+      localBacking: ["json-api", "bigquery"],
+      toolNames: ["query_bigquery_runbook_history", "evidence_runbook_library"],
+      mcpToolNames: ["bigquery_query_runbook_history"],
+      evidence: ["sql_result", "document_reference"],
+    },
+  ],
+  entities: [
+    {
+      name: "incidents",
+      sourceSystemId: "pagerduty",
+      datastore: "alloydb",
+      rowCount: 50,
+      primaryKey: "id",
+      columns: [
+        { name: "id", type: "seq", required: true },
+        { name: "alert_id", type: "ref", ref: "alerts.id", required: true },
+        { name: "severity", type: "enum", values: ["Sev-4", "Sev-3", "Sev-2", "Sev-1"], weights: [0.3, 0.4, 0.2, 0.1], required: true },
+        { name: "status", type: "enum", values: ["triggered", "acknowledged", "resolved"], required: true },
+        { name: "fired_at", type: "date.recent", required: true },
+        { name: "outcome", type: "enum", values: ["auto_resolved", "manual_resolved", "escalated"], required: true },
+      ],
+    },
+    {
+      name: "alerts",
+      sourceSystemId: "datadog",
+      datastore: "alloydb",
+      rowCount: 80,
+      primaryKey: "id",
+      columns: [
+        { name: "id", type: "seq", required: true },
+        { name: "service_id", type: "ref", ref: "services.id", required: true },
+        { name: "severity", type: "enum", values: ["critical", "high", "medium", "low"], weights: [0.1, 0.2, 0.4, 0.3], required: true },
+        { name: "fired_at", type: "date.recent", required: true },
+        { name: "metric_type", type: "enum", values: ["cpu", "memory", "error_rate", "latency"], required: true },
+        { name: "threshold_breached", type: "number", required: true },
+      ],
+    },
+    {
+      name: "services",
+      sourceSystemId: "kubernetes",
+      datastore: "alloydb",
+      rowCount: 30,
+      primaryKey: "id",
+      columns: [
+        { name: "id", type: "seq", required: true },
+        { name: "team_id", type: "ref", ref: "teams.id", required: false },
+        { name: "name", type: "word.noun", required: true },
+        { name: "deployment_version", type: "lorem.word", required: true },
+        { name: "last_deployed_at", type: "date.recent", required: true },
+        { name: "is_security_tagged", type: "boolean", weights: [0.05, 0.95], required: true },
+      ],
+    },
+    {
+      name: "runbooks",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 40,
+      primaryKey: "id",
+      columns: [
+        { name: "id", type: "seq", required: true },
+        { name: "name", type: "lorem.sentence", required: true },
+        { name: "symptom_pattern", type: "enum", values: ["high_memory", "high_cpu", "error_spike", "latency_increase"], required: true },
+        { name: "action_type", type: "enum", values: ["restart", "rollback", "scale", "config_change"], required: true },
+        { name: "success_rate", type: "float", min: 0.3, max: 0.99, decimals: 2, required: true },
+      ],
+    },
+    {
+      name: "remediation_executions",
+      sourceSystemId: "kubernetes",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        { name: "id", type: "seq", required: true },
+        { name: "incident_id", type: "ref", ref: "incidents.id", required: true },
+        { name: "runbook_id", type: "ref", ref: "runbooks.id", required: true },
+        { name: "executed_by", type: "lorem.word", required: true },
+        { name: "executed_at", type: "date.recent", required: true },
+        { name: "outcome", type: "enum", values: ["success", "partial_success", "failure"], required: true },
+      ],
+    },
+  ],
+  relationships: [
+    { from: "incidents.alert_id", to: "alerts.id", cardinality: "many-to-one", orphanPolicy: "none" },
+    { from: "alerts.service_id", to: "services.id", cardinality: "many-to-one", orphanPolicy: "none" },
+    { from: "remediation_executions.incident_id", to: "incidents.id", cardinality: "many-to-one", orphanPolicy: "none" },
+    { from: "remediation_executions.runbook_id", to: "runbooks.id", cardinality: "many-to-one", orphanPolicy: "none" },
+  ],
+  documents: [
+    {
+      id: "sre-runbook-library",
+      sourceSystemId: "bigquery",
+      type: "knowledge_base",
+      title: "SRE Runbook Library",
+      requiredSections: ["Symptom Patterns", "Remediation Actions", "Success Rates", "Escalation Criteria"],
+      linkedEntities: ["runbooks", "services"],
+      minimumWordCount: 500,
+      citationAnchors: ["symptom-mapping", "success-rate", "rollback-criteria", "escalation-paths"],
+    },
+    {
+      id: "production-change-approval-policy",
+      sourceSystemId: "pagerduty",
+      type: "policy",
+      title: "Production Change Approval Policy",
+      requiredSections: ["Approval Authority", "Remediation Thresholds", "Security Exemptions", "Rollback Procedures"],
+      linkedEntities: ["incidents", "services"],
+      minimumWordCount: 400,
+      citationAnchors: ["approval-thresholds", "rollback-criteria", "security-exemptions", "audit-requirements"],
+    },
+  ],
+  apis: [
+    {
+      systemId: "kubernetes",
+      operation: "rollback_deployment",
+      method: "POST",
+      path: "/systems/kubernetes/deployments/{name}/rollback",
+      requestSchema: { name: "string", target_version: "string", namespace: "string" },
+      responseSchema: { rollback_id: "string", status: "string", new_pod_status: "string", timestamp: "string" },
+      fixture: "mock_data/apis/fixtures/kubernetes_rollback_deployment.json",
+      mcpToolName: "k8s_rollback_deployment",
+    },
+    {
+      systemId: "kubernetes",
+      operation: "restart_pod",
+      method: "POST",
+      path: "/systems/kubernetes/pods/{name}/restart",
+      requestSchema: { name: "string", namespace: "string" },
+      responseSchema: { restart_id: "string", status: "string", new_pod_status: "string" },
+      fixture: "mock_data/apis/fixtures/kubernetes_restart_pod.json",
+      mcpToolName: "k8s_restart_pod",
+    },
+    {
+      systemId: "pagerduty",
+      operation: "update_incident",
+      method: "PATCH",
+      path: "/systems/pagerduty/incidents/{id}",
+      requestSchema: { id: "string", status: "string", note: "string" },
+      responseSchema: { incident_id: "string", status: "string", updated_at: "string" },
+      fixture: "mock_data/apis/fixtures/pagerduty_update_incident.json",
+      mcpToolName: "pagerduty_update_incident",
+    },
+  ],
+  anomalies: [
+    {
+      id: "repeated-restart-same-pod",
+      description: "Pod restart count exceeds 3 in 24 hours on the same service, indicating not a transient memory leak but a code regression or unresolved root cause.",
+      affectedEntities: ["services", "alerts", "remediation_executions"],
+      discoveryPath: ["Find services with pod restart events", "Count restarts in last 24h", "Filter count > 3", "Cross-reference with deployment history", "Identify post-deployment regression pattern"],
+      expectedEvidence: ["kubernetes pod restart_history", "terraform deployment_version + timestamp", "datadog error patterns post-deployment"],
+      expectedRecommendation: "Escalate to SRE Manager for rollback evaluation; do not attempt further restarts without investigating root cause.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: { database: "it_sre_ops", schemas: ["pagerduty", "kubernetes", "terraform"] },
+    bigquery: { dataset: "it_sre_analytics", tables: ["runbook_success_rates", "mttr_trends", "incident_patterns"] },
+    cloudStorage: { bucketSuffix: "it-sre-runbooks", prefixes: ["runbooks/remediation", "incidents/logs"] },
+    apis: { serviceName: "it-sre-source-adapters", deploymentTarget: "cloud_run" },
+  },
+  behaviorContract,
+  validation: {
+    smokePrompt: "PagerDuty alert: High memory on checkout-api pod (Sev-2), deployment 3 days ago. Recommend restart after SRE approval. Verify recovery via Datadog and update incident.",
+    expectedAnswer: ["cites Datadog metric trends", "matches runbook by symptom pattern", "requests SRE Manager approval", "executes restart action", "verifies recovery", "updates PagerDuty incident"],
+    assertions: ["all tool names use canonical system ids", "all incident and runbook foreign keys resolve", "at least one document citation is used", "response proves MTTR improvement path"],
+  },
+};
+
+export const IncidentAutoRemediator = () => (
+  <UseCaseSlide
+    title="Incident Auto-Remediator"
+    subtitle="A-4003 • Infra & Cloud Ops"
+    icon={Zap}
+    domainId="domain-40"
+    layer="Layer 3: Custom ADK"
+    persona="SRE Manager"
+    systems={["PagerDuty", "Datadog", "Kubernetes", "Terraform", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "MTTR", before: "45 minutes", after: "<10 minutes" },
+      { label: "Auto-diagnosed incidents", before: "0%", after: "70%" },
+      { label: "Incorrect remediation rate", before: "15%", after: "<3%" },
+    ]}
+    triggerType="event"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    generationSpec={generationSpec}
+    hitl={{ actor: "SRE Manager", action: "Approve production remediation", description: "SRE Manager reviews diagnosis and approves remediation action before execution in production environments." }}
+    statusQuo={[
+      "On-call engineers wake up, read alerts, manually correlate with recent changes, and run runbooks by hand.",
+      "Same incidents recurring with the same manual remediation — no learning loop from past incidents.",
+      "Generic runbooks applied without considering deployment recency or code regression patterns."
+    ]}
+    agentification={[
+      "Gemini distinguishes slow memory leaks (restart) from code regressions (rollback) based on deployment timing.",
+      "Historical incident pattern matching builds institutional remediation knowledge that improves over time.",
+      "Auto-remediation reduces MTTR from 45 minutes to under 10 minutes for known incident patterns."
+    ]}
+  />
+);

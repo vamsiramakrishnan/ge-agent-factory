@@ -1,0 +1,48 @@
+{
+  "id": "jaggaer_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into jaggaer collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "supplier"
+      ],
+      "realizedObjects": [
+        "suppliers"
+      ],
+      "simulatorCollection": "suppliers",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "purchase_order"
+      ],
+      "realizedObjects": [
+        "purchase_orders",
+        "requisitions"
+      ],
+      "simulatorCollection": "purchase_orders",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "contract"
+      ],
+      "realizedObjects": [
+        "contracts"
+      ],
+      "simulatorCollection": "contracts",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "approval"
+      ],
+      "realizedObjects": [
+        "approvals"
+      ],
+      "simulatorCollection": "approvals",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

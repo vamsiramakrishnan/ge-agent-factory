@@ -1,0 +1,30 @@
+{
+  "id": "cornerstone_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into cornerstone collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "learning"
+      ],
+      "realizedObjects": [
+        "learners",
+        "courses",
+        "enrollments"
+      ],
+      "simulatorCollection": "enrollments",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "skill"
+      ],
+      "realizedObjects": [
+        "skills",
+        "certifications"
+      ],
+      "simulatorCollection": "skills",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

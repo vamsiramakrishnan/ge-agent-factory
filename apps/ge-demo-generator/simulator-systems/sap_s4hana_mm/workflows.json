@@ -1,0 +1,177 @@
+{
+  "id": "sap_s4hana_mm_workflows",
+  "version": 2,
+  "primitives": [
+    "role_permission_gate",
+    "state_machine",
+    "approval_blocker",
+    "idempotency_key",
+    "rate_limit",
+    "deterministic_failure_modes",
+    "audit_trail"
+  ],
+  "toolHandlers": {
+    "submit_purchase_requisition_update": {
+      "primitive": "state_machine_update",
+      "collection": "purchase_requisitions",
+      "primaryKey": "requisition_id",
+      "roleArg": "role",
+      "allowedRoles": [
+        "buyer",
+        "category_manager",
+        "approver"
+      ],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "transitions": {
+        "draft": [
+          "awaiting_release",
+          "cancelled"
+        ],
+        "awaiting_release": [
+          "released",
+          "rejected",
+          "cancelled"
+        ],
+        "released": [
+          "converted",
+          "closed"
+        ],
+        "converted": [
+          "closed"
+        ],
+        "rejected": [
+          "draft",
+          "closed"
+        ]
+      },
+      "approvalBlockers": [
+        {
+          "collection": "approvals",
+          "sourceRecordField": "source_record_id",
+          "states": [
+            "requested",
+            "pending",
+            "pending_approval"
+          ],
+          "blockedTargetStates": [
+            "released",
+            "converted",
+            "closed",
+            "cancelled"
+          ]
+        }
+      ],
+      "rateLimit": {
+        "capacity": 30,
+        "refillPerSecond": 0.4,
+        "scope": "agent_system"
+      },
+      "latency": {
+        "minMs": 10,
+        "maxMs": 35
+      },
+      "failureModes": {
+        "rate_limited": 0.03,
+        "validation_error": 0.03,
+        "conflict": 0.02,
+        "forbidden": 0.01,
+        "timeout": 0.01
+      }
+    },
+    "submit_purchase_order_update": {
+      "primitive": "state_machine_update",
+      "collection": "purchase_orders",
+      "primaryKey": "po_id",
+      "roleArg": "role",
+      "allowedRoles": [
+        "buyer",
+        "category_manager",
+        "approver",
+        "supplier_manager"
+      ],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "transitions": {
+        "*": [
+          "created",
+          "released",
+          "confirmed",
+          "partially_received",
+          "received",
+          "invoice_received",
+          "closed",
+          "cancelled",
+          "blocked"
+        ],
+        "created": [
+          "released",
+          "cancelled",
+          "blocked"
+        ],
+        "released": [
+          "confirmed",
+          "partially_received",
+          "cancelled",
+          "blocked"
+        ],
+        "confirmed": [
+          "partially_received",
+          "received",
+          "blocked"
+        ],
+        "partially_received": [
+          "received",
+          "closed",
+          "blocked"
+        ],
+        "received": [
+          "invoice_received",
+          "closed"
+        ],
+        "invoice_received": [
+          "closed",
+          "blocked"
+        ],
+        "blocked": [
+          "released",
+          "cancelled"
+        ]
+      },
+      "approvalBlockers": [
+        {
+          "collection": "approvals",
+          "sourceRecordField": "source_record_id",
+          "states": [
+            "requested",
+            "pending",
+            "pending_approval"
+          ],
+          "blockedTargetStates": [
+            "released",
+            "closed",
+            "cancelled"
+          ]
+        }
+      ],
+      "rateLimit": {
+        "capacity": 25,
+        "refillPerSecond": 0.35,
+        "scope": "agent_system"
+      },
+      "latency": {
+        "minMs": 12,
+        "maxMs": 45
+      },
+      "failureModes": {
+        "rate_limited": 0.04,
+        "validation_error": 0.03,
+        "conflict": 0.03,
+        "forbidden": 0.01,
+        "timeout": 0.01
+      }
+    }
+  }
+}

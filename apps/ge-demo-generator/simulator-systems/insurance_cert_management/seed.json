@@ -1,0 +1,60 @@
+{
+  "risks": [
+    {
+      "risk_id": "RISK-ID-001",
+      "name": "sample_name",
+      "status": "sample_status",
+      "severity": "sample_severity",
+      "owner": "sample_owner",
+      "domain": "sample_domain"
+    }
+  ],
+  "controls": [
+    {
+      "control_id": "CONTROL-ID-001",
+      "risk_id": "RISK-ID-001",
+      "name": "sample_name",
+      "status": "sample_status",
+      "owner": "sample_owner",
+      "framework": "sample_framework"
+    }
+  ],
+  "issues": [
+    {
+      "issue_id": "ISSUE-ID-001",
+      "control_id": "CONTROL-ID-001",
+      "status": "sample_status",
+      "severity": "sample_severity",
+      "remediation_owner": "sample_remediation_owner",
+      "due_date": "sample_due_date"
+    }
+  ],
+  "policies": [
+    {
+      "policy_id": "POLICY-ID-001",
+      "name": "sample_name",
+      "status": "sample_status",
+      "owner": "sample_owner",
+      "effective_date": "sample_effective_date"
+    }
+  ],
+  "assessments": [
+    {
+      "assessment_id": "ASSESSMENT-ID-001",
+      "risk_id": "RISK-ID-001",
+      "status": "sample_status",
+      "assessor": "sample_assessor",
+      "period": "sample_period"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APPROVAL-ID-001",
+      "source_record_id": "SOURCE-RECORD-ID-001",
+      "approver": "sample_approver",
+      "state": "sample_state",
+      "reason": "sample_reason"
+    }
+  ],
+  "audit_events": []
+}

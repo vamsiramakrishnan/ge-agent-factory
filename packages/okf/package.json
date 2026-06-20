@@ -1,0 +1,11 @@
+{
+  "name": "@ge/okf",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Standalone OKF (Open Knowledge Format) v0.1 bundle toolkit: slugging, minimal YAML frontmatter emit/parse, concept (Markdown) read/write, link helpers. Node builtins only, zero domain coupling.",
+  "main": "./src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs"
+  }
+}

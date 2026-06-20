@@ -1,0 +1,195 @@
+{
+  "id": "docusign_clm_materialization",
+  "version": 2,
+  "collections": {
+    "agreements": {
+      "primaryKey": "agreement_id",
+      "fieldAliases": {
+        "agreement_id": ["agreement_id", "id", "source_record_id", "contract_id"],
+        "account_id": ["account_id", "accountId", "tenant_id"],
+        "document_id": ["document_id", "documentId"],
+        "title": ["title", "name", "contract_name", "agreement_name"],
+        "file_name": ["file_name", "filename", "document_name"],
+        "type": ["type", "agreement_type", "contract_type"],
+        "category": ["category", "business_category"],
+        "summary": ["summary", "description"],
+        "status": ["status", "state"],
+        "review_status": ["review_status", "extraction_review_status"],
+        "counterparty": ["counterparty", "supplier_name", "customer_name"],
+        "party_names": ["party_names", "parties"],
+        "effective_date": ["effective_date", "start_date"],
+        "expiration_date": ["expiration_date", "end_date"],
+        "execution_date": ["execution_date", "signed_date"],
+        "term_length": ["term_length", "duration"],
+        "renewal_type": ["renewal_type", "renewal"],
+        "payment_terms_due_date": ["payment_terms_due_date", "payment_terms"],
+        "source_name": ["source_name", "source_system"],
+        "source_id": ["source_id", "external_id"],
+        "owner": ["owner", "contract_owner"],
+        "risk_level": ["risk_level", "risk"],
+        "jurisdiction": ["jurisdiction", "governing_law"],
+        "created_at": ["created_at", "created"],
+        "modified_at": ["modified_at", "updated_at", "last_modified"]
+      },
+      "defaults": {
+        "status": "DRAFT",
+        "review_status": "PENDING",
+        "source_name": "scenario_graph",
+        "risk_level": "medium"
+      }
+    },
+    "agreement_types": {
+      "primaryKey": "type_id",
+      "fieldAliases": {
+        "type_id": ["type_id", "id", "agreement_type_id"],
+        "name": ["name", "type", "agreement_type"],
+        "category": ["category", "business_category"],
+        "status": ["status", "state"],
+        "schema_version": ["schema_version", "version"],
+        "extraction_model": ["extraction_model", "model"]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "parties": {
+      "primaryKey": "party_id",
+      "fieldAliases": {
+        "party_id": ["party_id", "id"],
+        "agreement_id": ["agreement_id", "contract_id", "source_record_id"],
+        "name_in_agreement": ["name_in_agreement", "name", "party_name"],
+        "legal_entity_name": ["legal_entity_name", "legal_name"],
+        "role": ["role", "party_role"],
+        "country": ["country", "country_code"],
+        "signature_status": ["signature_status", "signature_state"]
+      },
+      "defaults": {
+        "signature_status": "NOT_REQUIRED"
+      }
+    },
+    "documents": {
+      "primaryKey": "document_id",
+      "fieldAliases": {
+        "document_id": ["document_id", "documentId", "id"],
+        "agreement_id": ["agreement_id", "contract_id"],
+        "account_id": ["account_id", "accountId"],
+        "file_name": ["file_name", "filename", "name"],
+        "status": ["status", "doc_status"],
+        "content_type": ["content_type", "mime_type"],
+        "size_bytes": ["size_bytes", "size"],
+        "uploaded_at": ["uploaded_at", "created_at"],
+        "source_name": ["source_name", "source_system"],
+        "checksum": ["checksum", "hash"]
+      },
+      "defaults": {
+        "status": "NOT_STARTED",
+        "content_type": "application/pdf"
+      }
+    },
+    "clauses": {
+      "primaryKey": "clause_id",
+      "fieldAliases": {
+        "clause_id": ["clause_id", "id"],
+        "agreement_id": ["agreement_id", "contract_id"],
+        "property_path": ["property_path", "path"],
+        "clause_type": ["clause_type", "type"],
+        "risk_level": ["risk_level", "risk"],
+        "text": ["text", "body", "clause_text"],
+        "modified_by_type": ["modified_by_type", "modified_by"],
+        "review_status": ["review_status", "state"]
+      },
+      "defaults": {
+        "risk_level": "medium",
+        "modified_by_type": "AI",
+        "review_status": "PENDING"
+      }
+    },
+    "obligations": {
+      "primaryKey": "obligation_id",
+      "fieldAliases": {
+        "obligation_id": ["obligation_id", "id"],
+        "agreement_id": ["agreement_id", "contract_id"],
+        "owner": ["owner", "assignee"],
+        "status": ["status", "state"],
+        "due_date": ["due_date", "deadline"],
+        "obligation_type": ["obligation_type", "type"],
+        "priority": ["priority", "risk_level"],
+        "source_clause_id": ["source_clause_id", "clause_id"]
+      },
+      "defaults": {
+        "status": "open",
+        "priority": "medium"
+      }
+    },
+    "amendments": {
+      "primaryKey": "amendment_id",
+      "fieldAliases": {
+        "amendment_id": ["amendment_id", "id"],
+        "agreement_id": ["agreement_id", "contract_id"],
+        "parent_agreement_id": ["parent_agreement_id", "parent_contract_id"],
+        "status": ["status", "state"],
+        "effective_date": ["effective_date", "start_date"],
+        "title": ["title", "name"],
+        "change_summary": ["change_summary", "summary"]
+      },
+      "defaults": {
+        "status": "draft"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fieldAliases": {
+        "approval_id": ["approval_id", "id"],
+        "source_record_id": ["source_record_id", "agreement_id", "amendment_id", "obligation_id"],
+        "approver": ["approver", "approver_email"],
+        "state": ["state", "status"],
+        "reason": ["reason", "note"],
+        "requested_at": ["requested_at", "created_at"],
+        "completed_at": ["completed_at"],
+        "role": ["role", "approval_role"]
+      },
+      "defaults": {
+        "state": "requested"
+      }
+    },
+    "bulk_jobs": {
+      "primaryKey": "job_id",
+      "fieldAliases": {
+        "job_id": ["job_id", "id"],
+        "account_id": ["account_id", "accountId"],
+        "external_job_id": ["external_job_id", "external_id"],
+        "name": ["name", "job_name"],
+        "status": ["status", "state"],
+        "expected_number_of_docs": ["expected_number_of_docs", "expected_docs"],
+        "uploaded_docs": ["uploaded_docs", "processed_docs"],
+        "language": ["language", "locale"],
+        "created_at": ["created_at"],
+        "modified_at": ["modified_at", "updated_at"],
+        "expires_at": ["expires_at"],
+        "ttl_period": ["ttl_period"],
+        "message": ["message", "status_message"]
+      },
+      "defaults": {
+        "status": "OPEN",
+        "uploaded_docs": 0,
+        "language": "en-US",
+        "ttl_period": "PT8H"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": ["event_id", "id"],
+        "actor": ["actor", "user"],
+        "role": ["role"],
+        "action": ["action"],
+        "entity": ["entity"],
+        "entity_id": ["entity_id", "source_record_id"],
+        "outcome": ["outcome", "status"],
+        "timestamp": ["timestamp", "created_at"],
+        "detail": ["detail", "message"]
+      },
+      "defaults": {}
+    }
+  }
+}

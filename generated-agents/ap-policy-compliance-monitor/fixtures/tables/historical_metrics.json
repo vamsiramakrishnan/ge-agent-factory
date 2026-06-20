@@ -1,0 +1,482 @@
+[
+  {
+    "id": "ID-0001",
+    "period": "week",
+    "metric_name": "risk_exposure_score",
+    "value": 120,
+    "variance_pct": 0,
+    "computed_at": "2026-04-30"
+  },
+  {
+    "id": "ID-0002",
+    "period": "month",
+    "metric_name": "control_exception_rate",
+    "value": 137,
+    "variance_pct": 0,
+    "computed_at": "2026-04-30"
+  },
+  {
+    "id": "ID-0003",
+    "period": "quarter",
+    "metric_name": "close_cycle_days",
+    "value": 154,
+    "variance_pct": 0,
+    "computed_at": "2026-04-30"
+  },
+  {
+    "id": "ID-0004",
+    "period": "week",
+    "metric_name": "auto_certified_accounts",
+    "value": 171,
+    "variance_pct": 0,
+    "computed_at": "2026-04-30"
+  },
+  {
+    "id": "ID-0005",
+    "period": "week",
+    "metric_name": "ultra conforto ustulo",
+    "value": 8813.44,
+    "variance_pct": 27.68,
+    "computed_at": "2025-01-31"
+  },
+  {
+    "id": "ID-0006",
+    "period": "day",
+    "metric_name": "curtus asperiores suffoco",
+    "value": 53534.78,
+    "variance_pct": 13.53,
+    "computed_at": "2021-03-06"
+  },
+  {
+    "id": "ID-0007",
+    "period": "day",
+    "metric_name": "adhuc comminor laborum",
+    "value": 85793.49,
+    "variance_pct": 16.69,
+    "computed_at": "2022-08-12"
+  },
+  {
+    "id": "ID-0008",
+    "period": "quarter",
+    "metric_name": "super via eum",
+    "value": 25890.43,
+    "variance_pct": -44.72,
+    "computed_at": "2024-05-10"
+  },
+  {
+    "id": "ID-0009",
+    "period": "day",
+    "metric_name": "cognatus exercitationem magni",
+    "value": 60058.32,
+    "variance_pct": -33.38,
+    "computed_at": "2022-04-12"
+  },
+  {
+    "id": "ID-0010",
+    "period": "month",
+    "metric_name": "volubilis suscipio vesco",
+    "value": 76221.21,
+    "variance_pct": 9.17,
+    "computed_at": "2021-02-24"
+  },
+  {
+    "id": "ID-0011",
+    "period": "month",
+    "metric_name": "qui pauper depraedor",
+    "value": 52865.66,
+    "variance_pct": -16.56,
+    "computed_at": "2023-02-12"
+  },
+  {
+    "id": "ID-0012",
+    "period": "day",
+    "metric_name": "tibi audax ago",
+    "value": 43624.6,
+    "variance_pct": 15.83,
+    "computed_at": "2022-08-17"
+  },
+  {
+    "id": "ID-0013",
+    "period": "week",
+    "metric_name": "labore conor vicissitudo",
+    "value": 92264.52,
+    "variance_pct": 0.24,
+    "computed_at": "2021-12-19"
+  },
+  {
+    "id": "ID-0014",
+    "period": "month",
+    "metric_name": "adfectus demo condico",
+    "value": 92053.59,
+    "variance_pct": -48.8,
+    "computed_at": "2023-04-26"
+  },
+  {
+    "id": "ID-0015",
+    "period": "month",
+    "metric_name": "deorsum ait voluptas",
+    "value": 51801.04,
+    "variance_pct": 11.42,
+    "computed_at": "2021-06-02"
+  },
+  {
+    "id": "ID-0016",
+    "period": "week",
+    "metric_name": "curto aestas amissio",
+    "value": 83747.26,
+    "variance_pct": -26.02,
+    "computed_at": "2021-03-03"
+  },
+  {
+    "id": "ID-0017",
+    "period": "month",
+    "metric_name": "tenuis aduro neque",
+    "value": 11921.04,
+    "variance_pct": -46.36,
+    "computed_at": "2020-04-25"
+  },
+  {
+    "id": "ID-0018",
+    "period": "quarter",
+    "metric_name": "angulus adipisci debitis",
+    "value": 84399.35,
+    "variance_pct": -23.76,
+    "computed_at": "2022-07-13"
+  },
+  {
+    "id": "ID-0019",
+    "period": "day",
+    "metric_name": "deduco nesciunt molestias",
+    "value": 33242.67,
+    "variance_pct": -18.45,
+    "computed_at": "2020-08-21"
+  },
+  {
+    "id": "ID-0020",
+    "period": "week",
+    "metric_name": "alveus tener voco",
+    "value": 97007.45,
+    "variance_pct": 36.51,
+    "computed_at": "2023-08-09"
+  },
+  {
+    "id": "ID-0021",
+    "period": "month",
+    "metric_name": "cinis quos defleo",
+    "value": 48201.73,
+    "variance_pct": 25.78,
+    "computed_at": "2021-09-09"
+  },
+  {
+    "id": "ID-0022",
+    "period": "week",
+    "metric_name": "vesper adstringo depereo",
+    "value": 91280.08,
+    "variance_pct": 11.04,
+    "computed_at": "2023-04-12"
+  },
+  {
+    "id": "ID-0023",
+    "period": "day",
+    "metric_name": "conicio ulterius laboriosam",
+    "value": 51474.22,
+    "variance_pct": -40.05,
+    "computed_at": "2020-02-05"
+  },
+  {
+    "id": "ID-0024",
+    "period": "quarter",
+    "metric_name": "cotidie pax ager",
+    "value": 68311.43,
+    "variance_pct": 43.26,
+    "computed_at": "2023-06-15"
+  },
+  {
+    "id": "ID-0025",
+    "period": "day",
+    "metric_name": "non tener cum",
+    "value": 87983.78,
+    "variance_pct": 14.87,
+    "computed_at": "2025-05-25"
+  },
+  {
+    "id": "ID-0026",
+    "period": "month",
+    "metric_name": "apostolus collum baiulus",
+    "value": 90882.65,
+    "variance_pct": 26.04,
+    "computed_at": "2024-01-22"
+  },
+  {
+    "id": "ID-0027",
+    "period": "week",
+    "metric_name": "auctus temperantia demitto",
+    "value": 22578.95,
+    "variance_pct": 11.66,
+    "computed_at": "2020-03-29"
+  },
+  {
+    "id": "ID-0028",
+    "period": "week",
+    "metric_name": "delicate arceo vorax",
+    "value": 20909.73,
+    "variance_pct": -36.97,
+    "computed_at": "2021-03-22"
+  },
+  {
+    "id": "ID-0029",
+    "period": "quarter",
+    "metric_name": "cursim maiores accusator",
+    "value": 3443.13,
+    "variance_pct": -5.42,
+    "computed_at": "2024-11-25"
+  },
+  {
+    "id": "ID-0030",
+    "period": "quarter",
+    "metric_name": "aiunt fugiat vereor",
+    "value": 38797.27,
+    "variance_pct": 32.96,
+    "computed_at": "2020-10-20"
+  },
+  {
+    "id": "ID-0031",
+    "period": "quarter",
+    "metric_name": "tantillus vilis spes",
+    "value": 36340.39,
+    "variance_pct": 43.82,
+    "computed_at": "2021-08-27"
+  },
+  {
+    "id": "ID-0032",
+    "period": "week",
+    "metric_name": "substantia teneo vetus",
+    "value": 20480.24,
+    "variance_pct": 29.8,
+    "computed_at": "2024-06-06"
+  },
+  {
+    "id": "ID-0033",
+    "period": "day",
+    "metric_name": "crepusculum cimentarius cogo",
+    "value": 98294.69,
+    "variance_pct": 14.28,
+    "computed_at": "2024-04-22"
+  },
+  {
+    "id": "ID-0034",
+    "period": "quarter",
+    "metric_name": "cotidie thorax dapifer",
+    "value": 86953.37,
+    "variance_pct": -31.94,
+    "computed_at": "2025-09-08"
+  },
+  {
+    "id": "ID-0035",
+    "period": "day",
+    "metric_name": "comparo temperantia cruentus",
+    "value": 60821.14,
+    "variance_pct": -5.54,
+    "computed_at": "2024-06-15"
+  },
+  {
+    "id": "ID-0036",
+    "period": "day",
+    "metric_name": "adsum coepi demitto",
+    "value": 16802,
+    "variance_pct": -14.52,
+    "computed_at": "2022-05-26"
+  },
+  {
+    "id": "ID-0037",
+    "period": "day",
+    "metric_name": "nostrum vado argentum",
+    "value": 59780.8,
+    "variance_pct": 16.48,
+    "computed_at": "2022-07-08"
+  },
+  {
+    "id": "ID-0038",
+    "period": "month",
+    "metric_name": "cunctatio despecto absens",
+    "value": 69172.01,
+    "variance_pct": 16.14,
+    "computed_at": "2020-03-25"
+  },
+  {
+    "id": "ID-0039",
+    "period": "week",
+    "metric_name": "volva curiositas desipio",
+    "value": 90993.02,
+    "variance_pct": 21.73,
+    "computed_at": "2023-06-29"
+  },
+  {
+    "id": "ID-0040",
+    "period": "quarter",
+    "metric_name": "urbs defluo demo",
+    "value": 38605.09,
+    "variance_pct": 46.68,
+    "computed_at": "2024-03-08"
+  },
+  {
+    "id": "ID-0041",
+    "period": "day",
+    "metric_name": "urbanus denique aegrotatio",
+    "value": 54971.73,
+    "variance_pct": -8.28,
+    "computed_at": "2025-04-08"
+  },
+  {
+    "id": "ID-0042",
+    "period": "day",
+    "metric_name": "trepide labore adopto",
+    "value": 97184.53,
+    "variance_pct": 1.26,
+    "computed_at": "2021-09-29"
+  },
+  {
+    "id": "ID-0043",
+    "period": "week",
+    "metric_name": "umquam cogo aurum",
+    "value": 12907.12,
+    "variance_pct": -20.22,
+    "computed_at": "2024-09-05"
+  },
+  {
+    "id": "ID-0044",
+    "period": "week",
+    "metric_name": "calcar aspernatur concedo",
+    "value": 93992.44,
+    "variance_pct": -15.7,
+    "computed_at": "2025-12-05"
+  },
+  {
+    "id": "ID-0045",
+    "period": "week",
+    "metric_name": "atrox vallum degero",
+    "value": 70967.14,
+    "variance_pct": 48.38,
+    "computed_at": "2020-04-19"
+  },
+  {
+    "id": "ID-0046",
+    "period": "day",
+    "metric_name": "suppellex cilicium audacia",
+    "value": 3936.18,
+    "variance_pct": -47.82,
+    "computed_at": "2024-08-24"
+  },
+  {
+    "id": "ID-0047",
+    "period": "day",
+    "metric_name": "delibero pecto cursus",
+    "value": 2710.66,
+    "variance_pct": 28.35,
+    "computed_at": "2020-01-24"
+  },
+  {
+    "id": "ID-0048",
+    "period": "quarter",
+    "metric_name": "varietas damnatio facilis",
+    "value": 47698.34,
+    "variance_pct": -11.08,
+    "computed_at": "2025-04-29"
+  },
+  {
+    "id": "ID-0049",
+    "period": "quarter",
+    "metric_name": "condico possimus vester",
+    "value": 96205.85,
+    "variance_pct": 0.9,
+    "computed_at": "2022-09-19"
+  },
+  {
+    "id": "ID-0050",
+    "period": "week",
+    "metric_name": "vitae aranea nisi",
+    "value": 28255.02,
+    "variance_pct": -22.1,
+    "computed_at": "2022-06-06"
+  },
+  {
+    "id": "ID-0051",
+    "period": "quarter",
+    "metric_name": "adopto nesciunt agnitio",
+    "value": 15452.08,
+    "variance_pct": -6.04,
+    "computed_at": "2023-01-23"
+  },
+  {
+    "id": "ID-0052",
+    "period": "week",
+    "metric_name": "comes aiunt cognatus",
+    "value": 96655.85,
+    "variance_pct": 44.48,
+    "computed_at": "2022-01-04"
+  },
+  {
+    "id": "ID-0053",
+    "period": "month",
+    "metric_name": "verbera absconditus tollo",
+    "value": 94836.96,
+    "variance_pct": -40.87,
+    "computed_at": "2020-12-19"
+  },
+  {
+    "id": "ID-0054",
+    "period": "quarter",
+    "metric_name": "fugiat accedo causa",
+    "value": 44994.37,
+    "variance_pct": 19.29,
+    "computed_at": "2024-05-26"
+  },
+  {
+    "id": "ID-0055",
+    "period": "quarter",
+    "metric_name": "civis fugiat expedita",
+    "value": 40564.53,
+    "variance_pct": -33.09,
+    "computed_at": "2025-11-12"
+  },
+  {
+    "id": "ID-0056",
+    "period": "quarter",
+    "metric_name": "deripio pax calcar",
+    "value": 54378.71,
+    "variance_pct": 19.5,
+    "computed_at": "2023-02-03"
+  },
+  {
+    "id": "ID-0057",
+    "period": "quarter",
+    "metric_name": "perferendis correptius ter",
+    "value": 17046.25,
+    "variance_pct": -11.55,
+    "computed_at": "2022-01-30"
+  },
+  {
+    "id": "ID-0058",
+    "period": "week",
+    "metric_name": "terminatio denuo thalassinus",
+    "value": 57648.89,
+    "variance_pct": -15.79,
+    "computed_at": "2024-11-10"
+  },
+  {
+    "id": "ID-0059",
+    "period": "day",
+    "metric_name": "caelestis desparatus cavus",
+    "value": 908.7,
+    "variance_pct": 14.83,
+    "computed_at": "2023-01-25"
+  },
+  {
+    "id": "ID-0060",
+    "period": "week",
+    "metric_name": "volaticus molestias urbanus",
+    "value": 13945.02,
+    "variance_pct": 6.92,
+    "computed_at": "2025-03-17"
+  }
+]

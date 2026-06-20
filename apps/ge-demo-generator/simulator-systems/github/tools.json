@@ -1,0 +1,681 @@
+{
+  "id": "github_tools",
+  "version": 3,
+  "tools": [
+    {
+      "name": "search_repositories",
+      "description": "[GET /orgs/{org}/repos] List organization repositories",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text query across repository owner, name, and full name."
+          },
+          "org": {
+            "type": "string",
+            "description": "Organization owner login."
+          },
+          "type": {
+            "type": "string",
+            "description": "Specifies the types of repositories you want returned."
+          },
+          "sort": {
+            "type": "string",
+            "description": "The property to sort results by."
+          },
+          "direction": {
+            "type": "string",
+            "description": "The order to sort by."
+          },
+          "per_page": {
+            "type": "integer",
+            "description": "The number of results per page."
+          },
+          "page": {
+            "type": "integer",
+            "description": "The page number of the results to fetch."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max rows to return."
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "repositories",
+        "query": {
+          "textFields": [
+            "owner",
+            "repo",
+            "full_name",
+            "visibility",
+            "default_branch"
+          ],
+          "filters": {
+            "org": {
+              "field": "owner",
+              "op": "eq_ci"
+            },
+            "type": {
+              "field": "visibility",
+              "op": "eq_ci"
+            }
+          },
+          "defaultSort": [
+            {
+              "field": "full_name",
+              "direction": "asc"
+            }
+          ],
+          "pagination": {
+            "style": "page-number",
+            "defaultLimit": 30,
+            "maxLimit": 100
+          }
+        }
+      }
+    },
+    {
+      "name": "get_repository",
+      "description": "[GET /repos/{owner}/{repo}] Get a repository",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "repo_id": {
+            "type": "string",
+            "description": "repository primary key"
+          },
+          "owner": {
+            "type": "string",
+            "description": "The account owner of the repository."
+          },
+          "repo": {
+            "type": "string",
+            "description": "The name of the repository without the .git extension."
+          }
+        },
+        "required": [
+          "repo_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "repositories",
+        "primaryKey": "repo_id"
+      }
+    },
+    {
+      "name": "search_issues",
+      "description": "[GET /repos/{owner}/{repo}/issues] List repository issues",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text query across issue title, assignee, labels, owner, and repo."
+          },
+          "owner": {
+            "type": "string",
+            "description": "Repository owner login."
+          },
+          "repo": {
+            "type": "string",
+            "description": "Repository name."
+          },
+          "milestone": {
+            "type": "string",
+            "description": "Milestone filter."
+          },
+          "state": {
+            "type": "string",
+            "description": "Issue state to return."
+          },
+          "assignee": {
+            "type": "string",
+            "description": "Assigned user login."
+          },
+          "type": {
+            "type": "string",
+            "description": "Issue type."
+          },
+          "creator": {
+            "type": "string",
+            "description": "The user that created the issue."
+          },
+          "mentioned": {
+            "type": "string",
+            "description": "A user mentioned in the issue."
+          },
+          "issue_field_values": {
+            "type": "string",
+            "description": "Comma-separated issue field filters."
+          },
+          "labels": {
+            "type": "string",
+            "description": "Comma-separated label names."
+          },
+          "sort": {
+            "type": "string",
+            "description": "What to sort results by."
+          },
+          "direction": {
+            "type": "string",
+            "description": "The direction to sort results by."
+          },
+          "since": {
+            "type": "string",
+            "description": "Only show issues updated after the given ISO timestamp."
+          },
+          "per_page": {
+            "type": "integer",
+            "description": "The number of results per page."
+          },
+          "page": {
+            "type": "integer",
+            "description": "The page number of the results to fetch."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max rows to return."
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "issues",
+        "query": {
+          "textFields": [
+            "owner",
+            "repo",
+            "title",
+            "assignee",
+            "labels",
+            "state"
+          ],
+          "filters": {
+            "owner": {
+              "field": "owner",
+              "op": "eq_ci"
+            },
+            "repo": {
+              "field": "repo",
+              "op": "eq_ci"
+            },
+            "state": {
+              "field": "state",
+              "op": "eq_ci"
+            },
+            "assignee": {
+              "field": "assignee",
+              "op": "eq_ci"
+            },
+            "labels": {
+              "field": "labels",
+              "op": "contains"
+            },
+            "since": {
+              "field": "updated_at",
+              "op": "gte"
+            }
+          },
+          "defaultSort": [
+            {
+              "field": "updated_at",
+              "direction": "desc"
+            }
+          ],
+          "pagination": {
+            "style": "page-number",
+            "defaultLimit": 30,
+            "maxLimit": 100
+          }
+        }
+      }
+    },
+    {
+      "name": "get_issue",
+      "description": "[GET /repos/{owner}/{repo}/issues/{issue_number}] Get an issue",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "issue_id": {
+            "type": "string",
+            "description": "issue primary key"
+          },
+          "owner": {
+            "type": "string",
+            "description": "The account owner of the repository."
+          },
+          "repo": {
+            "type": "string",
+            "description": "The repository name."
+          },
+          "issue_number": {
+            "type": "integer",
+            "description": "The number that identifies the issue."
+          }
+        },
+        "required": [
+          "issue_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "issues",
+        "primaryKey": "issue_id"
+      }
+    },
+    {
+      "name": "submit_issue_update",
+      "description": "[PATCH /repos/{owner}/{repo}/issues/{issue_number}] Update an issue",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "issue_id": {
+            "type": "string",
+            "description": "issue primary key"
+          },
+          "state": {
+            "type": "string",
+            "description": "Target state."
+          },
+          "note": {
+            "type": "string",
+            "description": "Reviewer note recorded on the change."
+          },
+          "role": {
+            "type": "string",
+            "description": "Acting role; gated by allowedRoles."
+          },
+          "idempotency_key": {
+            "type": "string",
+            "description": "Replays return the original result."
+          },
+          "owner": {
+            "type": "string",
+            "description": "The account owner of the repository."
+          },
+          "repo": {
+            "type": "string",
+            "description": "The repository name."
+          },
+          "issue_number": {
+            "type": "integer",
+            "description": "The number that identifies the issue."
+          }
+        },
+        "required": [
+          "issue_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "issues",
+        "primaryKey": "issue_id"
+      }
+    },
+    {
+      "name": "search_pulls",
+      "description": "[GET /repos/{owner}/{repo}/pulls] List pull requests",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text query across pull title, owner, repo, branches, and state."
+          },
+          "owner": {
+            "type": "string",
+            "description": "Repository owner login."
+          },
+          "repo": {
+            "type": "string",
+            "description": "Repository name."
+          },
+          "state": {
+            "type": "string",
+            "description": "Either open, closed, or all."
+          },
+          "head": {
+            "type": "string",
+            "description": "Filter pulls by head branch."
+          },
+          "base": {
+            "type": "string",
+            "description": "Filter pulls by base branch."
+          },
+          "sort": {
+            "type": "string",
+            "description": "What to sort results by."
+          },
+          "direction": {
+            "type": "string",
+            "description": "The sort direction."
+          },
+          "per_page": {
+            "type": "integer",
+            "description": "The number of results per page."
+          },
+          "page": {
+            "type": "integer",
+            "description": "The page number of results to fetch."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max rows to return."
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "pulls",
+        "query": {
+          "textFields": [
+            "owner",
+            "repo",
+            "title",
+            "state",
+            "base",
+            "head"
+          ],
+          "filters": {
+            "owner": {
+              "field": "owner",
+              "op": "eq_ci"
+            },
+            "repo": {
+              "field": "repo",
+              "op": "eq_ci"
+            },
+            "state": {
+              "field": "state",
+              "op": "eq_ci"
+            },
+            "head": {
+              "field": "head",
+              "op": "contains"
+            },
+            "base": {
+              "field": "base",
+              "op": "eq_ci"
+            }
+          },
+          "defaultSort": [
+            {
+              "field": "updated_at",
+              "direction": "desc"
+            }
+          ],
+          "pagination": {
+            "style": "page-number",
+            "defaultLimit": 30,
+            "maxLimit": 100
+          }
+        }
+      }
+    },
+    {
+      "name": "get_pull",
+      "description": "[GET /repos/{owner}/{repo}/pulls/{pull_number}] Get a pull request",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "pull_id": {
+            "type": "string",
+            "description": "pull primary key"
+          },
+          "owner": {
+            "type": "string",
+            "description": "The account owner of the repository."
+          },
+          "repo": {
+            "type": "string",
+            "description": "The repository name."
+          },
+          "pull_number": {
+            "type": "integer",
+            "description": "The number that identifies the pull request."
+          }
+        },
+        "required": [
+          "pull_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "pulls",
+        "primaryKey": "pull_id"
+      }
+    },
+    {
+      "name": "submit_pull_update",
+      "description": "[PATCH /repos/{owner}/{repo}/pulls/{pull_number}] Update a pull request",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "pull_id": {
+            "type": "string",
+            "description": "pull primary key"
+          },
+          "state": {
+            "type": "string",
+            "description": "Target state."
+          },
+          "note": {
+            "type": "string",
+            "description": "Reviewer note recorded on the change."
+          },
+          "role": {
+            "type": "string",
+            "description": "Acting role; gated by allowedRoles."
+          },
+          "idempotency_key": {
+            "type": "string",
+            "description": "Replays return the original result."
+          },
+          "owner": {
+            "type": "string",
+            "description": "The account owner of the repository."
+          },
+          "repo": {
+            "type": "string",
+            "description": "The repository name."
+          },
+          "pull_number": {
+            "type": "integer",
+            "description": "The number that identifies the pull request."
+          }
+        },
+        "required": [
+          "pull_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "pulls",
+        "primaryKey": "pull_id"
+      }
+    },
+    {
+      "name": "search_workflow_runs",
+      "description": "[GET /repos/{owner}/{repo}/actions/runs] List workflow runs for a repository",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text query across workflow name, owner, repo, branch, event, status, and conclusion."
+          },
+          "owner": {
+            "type": "string",
+            "description": "Repository owner login."
+          },
+          "repo": {
+            "type": "string",
+            "description": "Repository name."
+          },
+          "actor": {
+            "type": "string",
+            "description": "Returns workflow runs created by a login."
+          },
+          "branch": {
+            "type": "string",
+            "description": "Returns workflow runs associated with a branch."
+          },
+          "event": {
+            "type": "string",
+            "description": "Returns workflow run triggered by the event."
+          },
+          "status": {
+            "type": "string",
+            "description": "Returns workflow runs with the specified status or conclusion."
+          },
+          "per_page": {
+            "type": "integer",
+            "description": "The number of results per page."
+          },
+          "page": {
+            "type": "integer",
+            "description": "The page number of results to fetch."
+          },
+          "created": {
+            "type": "string",
+            "description": "Returns workflow runs created within a date-time range."
+          },
+          "exclude_pull_requests": {
+            "type": "boolean",
+            "description": "If true, pull requests are omitted from the response."
+          },
+          "check_suite_id": {
+            "type": "integer",
+            "description": "Returns workflow runs with the check_suite_id."
+          },
+          "head_sha": {
+            "type": "string",
+            "description": "Only returns workflow runs associated with the specified head_sha."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max rows to return."
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "workflow_runs",
+        "query": {
+          "textFields": [
+            "owner",
+            "repo",
+            "name",
+            "status",
+            "conclusion",
+            "head_branch",
+            "event"
+          ],
+          "filters": {
+            "owner": {
+              "field": "owner",
+              "op": "eq_ci"
+            },
+            "repo": {
+              "field": "repo",
+              "op": "eq_ci"
+            },
+            "branch": {
+              "field": "head_branch",
+              "op": "eq_ci"
+            },
+            "event": {
+              "field": "event",
+              "op": "eq_ci"
+            },
+            "status": {
+              "field": "status",
+              "op": "eq_ci"
+            }
+          },
+          "defaultSort": [
+            {
+              "field": "created_at",
+              "direction": "desc"
+            }
+          ],
+          "pagination": {
+            "style": "page-number",
+            "defaultLimit": 30,
+            "maxLimit": 100
+          }
+        }
+      }
+    },
+    {
+      "name": "get_workflow_run",
+      "description": "[GET /repos/{owner}/{repo}/actions/runs/{run_id}] Get a workflow run",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "run_id": {
+            "type": "string",
+            "description": "workflow_run primary key"
+          },
+          "owner": {
+            "type": "string",
+            "description": "The account owner of the repository."
+          },
+          "repo": {
+            "type": "string",
+            "description": "The repository name."
+          },
+          "exclude_pull_requests": {
+            "type": "boolean",
+            "description": "If true, pull requests are omitted from the response."
+          }
+        },
+        "required": [
+          "run_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "workflow_runs",
+        "primaryKey": "run_id"
+      }
+    },
+    {
+      "name": "poll_async_job",
+      "description": "Poll a queued asynchronous simulator job.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id"
+        ]
+      },
+      "binding": {
+        "op": "poll_async_job"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List GitHub simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

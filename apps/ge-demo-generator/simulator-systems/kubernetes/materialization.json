@@ -1,0 +1,212 @@
+{
+  "id": "kubernetes_materialization",
+  "version": 1,
+  "collections": {
+    "pods": {
+      "primaryKey": "pod_id",
+      "fieldAliases": {
+        "pod_id": [
+          "pod_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "namespace": [
+          "namespace",
+          "id",
+          "source_record_id"
+        ],
+        "node": [
+          "node",
+          "id",
+          "source_record_id"
+        ],
+        "phase": [
+          "phase",
+          "id",
+          "source_record_id"
+        ],
+        "restart_count": [
+          "restart_count",
+          "id",
+          "source_record_id"
+        ],
+        "image": [
+          "image",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "phase": "Pending"
+      }
+    },
+    "deployments": {
+      "primaryKey": "deployment_id",
+      "fieldAliases": {
+        "deployment_id": [
+          "deployment_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "namespace": [
+          "namespace",
+          "id",
+          "source_record_id"
+        ],
+        "phase": [
+          "phase",
+          "id",
+          "source_record_id"
+        ],
+        "replicas": [
+          "replicas",
+          "id",
+          "source_record_id"
+        ],
+        "ready_replicas": [
+          "ready_replicas",
+          "id",
+          "source_record_id"
+        ],
+        "image": [
+          "image",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "phase": "Progressing"
+      }
+    },
+    "services": {
+      "primaryKey": "service_id",
+      "fieldAliases": {
+        "service_id": [
+          "service_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "namespace": [
+          "namespace",
+          "id",
+          "source_record_id"
+        ],
+        "type": [
+          "type",
+          "id",
+          "source_record_id"
+        ],
+        "cluster_ip": [
+          "cluster_ip",
+          "id",
+          "source_record_id"
+        ],
+        "ports": [
+          "ports",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    },
+    "nodes": {
+      "primaryKey": "node_id",
+      "fieldAliases": {
+        "node_id": [
+          "node_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "phase": [
+          "phase",
+          "id",
+          "source_record_id"
+        ],
+        "kubelet_version": [
+          "kubelet_version",
+          "id",
+          "source_record_id"
+        ],
+        "allocatable_cpu": [
+          "allocatable_cpu",
+          "id",
+          "source_record_id"
+        ],
+        "allocatable_memory": [
+          "allocatable_memory",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "phase": "Ready"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "actor": [
+          "actor",
+          "id",
+          "source_record_id"
+        ],
+        "role": [
+          "role",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ],
+        "timestamp": [
+          "timestamp",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

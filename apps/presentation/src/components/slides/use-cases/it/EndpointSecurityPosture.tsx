@@ -1,0 +1,1073 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { Shield, Database, AlertTriangle, Brain, CheckCircle } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Daily Scan", lane: "system", type: "trigger" },
+    { id: "a1", label: "Posture Scan", lane: "agent", type: "action" },
+    { id: "a2", label: "Risk Prioritization", lane: "agent", type: "action" },
+    { id: "a3", label: "Remediation Plan", lane: "agent", type: "output" },
+    { id: "h1", label: "IT Lead Reviews", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Endpoint Scan", icon: Shield, description: "All endpoints scanned for OS patches, encryption status, antivirus, and screen lock compliance.", trigger: "Daily", systems: ["CrowdStrike", "ManageEngine"] },
+  { label: "Risk Scoring", icon: Database, description: "Non-compliant devices scored by vulnerability exposure, data sensitivity, and user role.", systems: ["Okta", "BigQuery"], integration: "ADK" },
+  { label: "Remediation Prioritization", icon: Brain, description: "Gemini prioritizes remediation based on risk and recommends targeted actions for each cohort.", systems: ["Vertex AI"] },
+  { label: "Action & Tracking", icon: CheckCircle, description: "End User Support Lead approves remediation actions for high-risk endpoints.", output: "Endpoint Compliance Report" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "CrowdStrike", description: "Endpoint detection, vulnerability scans, threat indicators", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "ManageEngine", description: "Patch status, software inventory, device configuration", direction: "bidirectional", protocol: "REST API", category: "erp" },
+    { system: "Okta", description: "Device trust status, user-device mapping, compliance posture", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "BigQuery", description: "Compliance trending, vulnerability exposure analytics, remediation tracking", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Risk prioritization reasoning, remediation strategy", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Multi-Source Posture Scan", description: "Collect endpoint compliance data from CrowdStrike (vulnerability scan, EDR status), ManageEngine (patch level, encryption, antivirus), and Okta (device trust posture). Merge into unified compliance view.", systems: ["CrowdStrike", "ManageEngine", "Okta"], layer: "integration", dataIn: "EDR + MDM + IAM device data", dataOut: "Unified endpoint compliance dataset" },
+    { label: "Risk Prioritization", description: "Score non-compliant devices by vulnerability severity, data exposure risk (does the device access PII?), user role (executive vs. intern), and remediation urgency.", systems: ["BigQuery"], layer: "ml", dataIn: "Compliance data + asset criticality", dataOut: "Risk-prioritized non-compliance list" },
+    { label: "Remediation Strategy", description: "Gemini groups non-compliant devices into cohorts and recommends targeted actions: force-push patches to VPN-connected devices, email remote workers who haven't connected in 2 weeks, escalate executive devices to white-glove support.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Prioritized devices + remediation options", dataOut: "Cohort-specific remediation plan" },
+    { label: "Enforcement & Tracking", description: "Execute approved remediation actions via ManageEngine. Track compliance rate improvement. Flag persistent non-compliance for access restriction.", systems: ["ManageEngine", "BigQuery"], layer: "integration", dataIn: "Approved remediation actions", dataOut: "Remediation execution + compliance tracking" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "End User Support Lead agent for the Endpoint Security Posture Agent workflow",
+  primaryObjective: "Gemini scans all endpoints daily and merges data from CrowdStrike, ManageEngine, and Okta for complete posture. LLM groups non-compliant devices into cohorts with targeted remediation — VPN push, email outreach, or white-glove. so the End User Support Lead can move the Endpoint compliance rate KPI.",
+  inScope: [
+    "Gemini scans all endpoints daily and merges data from CrowdStrike, ManageEngine, and Okta for complete posture",
+    "LLM groups non-compliant devices into cohorts with targeted remediation — VPN push, email outreach, or white-glove",
+    "Daily scanning reduces vulnerability exposure from weeks to days, achieving 96% compliance rate",
+  ],
+  outOfScope: [
+    "Production deployments outside an approved change window",
+    "Irreversible destructive actions on shared infrastructure (DROP, force-delete, key rotation)",
+    "Security incident attribution requiring forensics",
+  ],
+  toolIntents: [
+    {
+      name: "query_crowdstrike_scan_findings",
+      kind: "query",
+      sourceSystemId: "crowdstrike",
+      description: "Retrieve scan findings from CrowdStrike for the Endpoint Security Posture Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "scan_findings_records",
+        "scan_findings_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_manageengine_manageengine_records",
+      kind: "query",
+      sourceSystemId: "manageengine",
+      description: "Retrieve manageengine records from ManageEngine for the Endpoint Security Posture Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "manageengine_records_records",
+        "manageengine_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_okta_users",
+      kind: "query",
+      sourceSystemId: "okta",
+      description: "Retrieve users from Okta for the Endpoint Security Posture Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "users_records",
+        "users_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Endpoint Security Posture Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_endpoint_security_posture_agent_runbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Endpoint Security Posture Agent Operations Runbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_crowdstrike_post",
+      kind: "action",
+      sourceSystemId: "crowdstrike",
+      description: "Execute the post step in CrowdStrike after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Endpoint compliance rate moved from 78% toward 96%",
+      mustCite: [
+        "crowdstrike.scan_findings",
+        "manageengine.manageengine_records",
+      ],
+      sourceSystemIds: [
+        "crowdstrike",
+        "manageengine",
+      ],
+    },
+    {
+      claim: "Patch deployment time moved from 14 days average toward 48 hours",
+      mustCite: [
+        "crowdstrike.scan_findings",
+        "manageengine.manageengine_records",
+      ],
+      sourceSystemIds: [
+        "crowdstrike",
+        "manageengine",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Endpoint compliance rate regresses past the 78% baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "End User Support Lead",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed post action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from CrowdStrike (and other named systems) entities.",
+    "Never bypass End User Support Lead approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "endpoint-security-posture-agent-end-to-end",
+      prompt: "Run the Endpoint Security Posture Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_crowdstrike_scan_findings",
+        "query_manageengine_manageengine_records",
+        "query_okta_users",
+        "query_bigquery_analytics_events",
+        "lookup_endpoint_security_posture_agent_runbook",
+        "action_crowdstrike_post",
+      ],
+      mustReferenceEntities: [
+        "scan_findings",
+        "manageengine_records",
+        "users",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "endpoint-security-posture-agent-runbook",
+      ],
+      expectedActionOutcome: "Action post executed against CrowdStrike, with audit-trail entry and End User Support Lead notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute post without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Endpoint Security Posture Agent so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "crowdstrike",
+      name: "CrowdStrike",
+      owns: [
+        "scan_findings",
+        "asset_inventory",
+        "remediation_tasks",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_crowdstrike_scan_findings",
+        "query_crowdstrike_asset_inventory",
+        "query_crowdstrike_remediation_tasks",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "manageengine",
+      name: "ManageEngine",
+      owns: [
+        "manageengine_records",
+        "manageengine_events",
+        "manageengine_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_manageengine_manageengine_records",
+        "query_manageengine_manageengine_events",
+        "query_manageengine_manageengine_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "okta",
+      name: "Okta",
+      owns: [
+        "users",
+        "groups",
+        "access_grants",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_okta_users",
+        "query_okta_groups",
+        "query_okta_access_grants",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "scan_findings",
+      sourceSystemId: "crowdstrike",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "severity",
+          type: "enum",
+          values: [
+            "low",
+            "medium",
+            "high",
+            "critical",
+          ],
+          weights: [
+            0.4,
+            0.35,
+            0.2,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "mitigated",
+            "accepted_risk",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "detected_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "asset",
+          type: "lorem.words",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "asset_inventory",
+      sourceSystemId: "crowdstrike",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "remediation_tasks",
+      sourceSystemId: "crowdstrike",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "manageengine_records",
+      sourceSystemId: "manageengine",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "manageengine_events",
+      sourceSystemId: "manageengine",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "manageengine_record_id",
+          type: "ref",
+          ref: "manageengine_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "manageengine_audit_trail",
+      sourceSystemId: "manageengine",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "users",
+      sourceSystemId: "okta",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "groups",
+      sourceSystemId: "okta",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "access_grants",
+      sourceSystemId: "okta",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "manageengine_events.manageengine_record_id",
+      to: "manageengine_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "endpoint-security-posture-agent-runbook",
+      sourceSystemId: "bigquery",
+      type: "runbook",
+      title: "Endpoint Security Posture Agent Operations Runbook",
+      requiredSections: [
+        "Detection signals",
+        "Triage procedures",
+        "Remediation actions",
+        "Rollback criteria",
+        "Post-incident review",
+      ],
+      linkedEntities: [
+        "scan_findings",
+        "asset_inventory",
+        "remediation_tasks",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "detection",
+        "triage",
+        "remediation",
+        "rollback",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "crowdstrike_post_api",
+      sourceSystemId: "crowdstrike",
+      method: "POST",
+      path: "/api/crowdstrike/post",
+      description: "Synchronous endpoint the agent calls to post in CrowdStrike after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "endpoint-security-posture-agent-baseline-gap",
+      description: "Seed a realistic gap where Endpoint compliance rate sits between 78% and 96%, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "scan_findings",
+        "asset_inventory",
+      ],
+      discoveryPath: [
+        "Inspect CrowdStrike records for the affected entities",
+        "Compare against ManageEngine historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next End User Support Lead action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "endpoint_security_posture_agent",
+      schemas: [
+        "crowdstrike",
+        "manageengine",
+        "okta",
+      ],
+    },
+    bigquery: {
+      dataset: "it_endpoint_security_posture_agent",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "endpoint-security-posture-agent-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "endpoint-security-posture-agent-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Endpoint Security Posture Agent workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const EndpointSecurityPosture = () => (
+  <UseCaseSlide
+    title="Endpoint Security Posture Agent"
+    subtitle="A-4605 • End User Computing"
+    icon={Shield}
+    domainId="domain-46"
+    layer="Layer 3: Custom ADK"
+    persona="End User Support Lead"
+    systems={["CrowdStrike", "ManageEngine", "Okta", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "Endpoint compliance rate", before: "78%", after: "96%" },
+      { label: "Patch deployment time", before: "14 days average", after: "48 hours" },
+      { label: "Vulnerability exposure window", before: "Weeks", after: "Days" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    statusQuo={[
+      "Endpoint compliance checked monthly — non-compliant devices operate for weeks before detection.",
+      "Remediation is one-size-fits-all: same process for critical security patches and minor updates.",
+      "Remote workers fall through the cracks because they rarely connect to VPN for patch deployment."
+    ]}
+    agentification={[
+      "Gemini scans all endpoints daily and merges data from CrowdStrike, ManageEngine, and Okta for complete posture.",
+      "LLM groups non-compliant devices into cohorts with targeted remediation — VPN push, email outreach, or white-glove.",
+      "Daily scanning reduces vulnerability exposure from weeks to days, achieving 96% compliance rate."
+    ]}
+  />
+);

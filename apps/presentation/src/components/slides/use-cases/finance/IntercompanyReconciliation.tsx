@@ -1,0 +1,960 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { ArrowLeftRight, Database, GitMerge, Search, FileText } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Monthly Close", lane: "system", type: "trigger" },
+    { id: "a1", label: "IC Balance Extraction", lane: "agent", type: "action" },
+    { id: "a2", label: "Fuzzy Matching", lane: "agent", type: "action" },
+    { id: "a3", label: "Mismatch Investigation", lane: "agent", type: "action" },
+    { id: "a4", label: "Correcting Entries", lane: "agent", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "a4"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Balance Extraction", icon: Database, description: "Extract intercompany balances across all entities and currencies.", trigger: "Monthly", systems: ["SAP S/4HANA FI", "BlackLine"] },
+  { label: "Transaction Matching", icon: GitMerge, description: "Fuzzy matching on IC transactions across entities and currencies with threshold-based exception flagging.", systems: ["BlackLine", "BigQuery"], integration: "ADK" },
+  { label: "Mismatch Investigation", icon: Search, description: "Investigate mismatches that aren't simple timing differences — trace to amendments and unprocessed entries.", systems: ["Vertex AI"] },
+  { label: "Resolution", icon: FileText, description: "Generate correcting entries and notify responsible controllers.", output: "Reconciled IC" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "SAP S/4HANA FI", description: "Intercompany balances, IC transaction details across entities", direction: "read", protocol: "RFC/BAPI", category: "erp" },
+    { system: "BlackLine", description: "IC matching rules, reconciliation workpapers, exception tracking", direction: "bidirectional", protocol: "REST API", category: "erp" },
+    { system: "BigQuery", description: "Historical IC patterns, currency conversion data, aging analytics", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Mismatch root cause investigation, correcting entry generation", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "IC Balance Aggregation", description: "Extract intercompany balances across all entities, normalize currencies, and organize by IC partner pair for matching.", systems: ["SAP S/4HANA FI", "BlackLine"], layer: "integration", dataIn: "Entity-level IC balances", dataOut: "Normalized IC balance pairs" },
+    { label: "Fuzzy Matching", description: "Match IC transactions across entities using fuzzy matching on amounts, dates, and references. Apply currency conversion and threshold-based exception flagging for unresolved items.", systems: ["BlackLine", "BigQuery"], layer: "ml", dataIn: "Normalized IC pairs", dataOut: "Matched transactions + unresolved exceptions" },
+    { label: "Mismatch Investigation", description: "Gemini investigates mismatches that aren't simple timing differences. Traces discrepancies to contract amendments, unprocessed entries, or FX differences. Generates correcting entries.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Unresolved IC mismatches + supporting docs", dataOut: "Root cause analysis + correcting entries" },
+    { label: "Resolution & Notification", description: "Post correcting entries and notify responsible entity controllers of actions taken and remaining items requiring manual resolution.", systems: ["SAP S/4HANA FI", "Email"], layer: "integration", dataIn: "Correcting entries", dataOut: "Posted corrections + controller notifications" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "GL Accountant / Controller agent for the Intercompany Reconciliation workflow",
+  primaryObjective: "Fuzzy matching across entities resolves 95% of IC transactions automatically. Gemini traces mismatches to contract amendments or unprocessed entries without manual investigation. so the GL Accountant / Controller can move the Auto-match rate KPI.",
+  inScope: [
+    "Fuzzy matching across entities resolves 95% of IC transactions automatically",
+    "Gemini traces mismatches to contract amendments or unprocessed entries without manual investigation",
+    "Auto-generates correcting entries and notifies responsible controllers with full context",
+  ],
+  outOfScope: [
+    "Final sign-off on materially significant journal entries (Controller retains authority)",
+    "Restatement of prior-period filings",
+    "Tax position changes that require external advisor review",
+  ],
+  toolIntents: [
+    {
+      name: "query_sap_s_4hana_fi_gl_entries",
+      kind: "query",
+      sourceSystemId: "sap_s_4hana_fi",
+      description: "Retrieve gl entries from SAP S/4HANA FI for the Intercompany Reconciliation workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "gl_entries_records",
+        "gl_entries_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_blackline_reconciliations",
+      kind: "query",
+      sourceSystemId: "blackline",
+      description: "Retrieve reconciliations from BlackLine for the Intercompany Reconciliation workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "reconciliations_records",
+        "reconciliations_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Intercompany Reconciliation workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_intercompany_reconciliation_controls_playbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Intercompany Reconciliation Controls Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_sap_s_4hana_fi_generate",
+      kind: "action",
+      sourceSystemId: "sap_s_4hana_fi",
+      description: "Execute the generate step in SAP S/4HANA FI after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Auto-match rate moved from 60% toward 95%",
+      mustCite: [
+        "sap_s_4hana_fi.gl_entries",
+        "blackline.reconciliations",
+      ],
+      sourceSystemIds: [
+        "sap_s_4hana_fi",
+        "blackline",
+      ],
+    },
+    {
+      claim: "IC reconciliation time moved from 3-4 days toward 4 hours",
+      mustCite: [
+        "sap_s_4hana_fi.gl_entries",
+        "blackline.reconciliations",
+      ],
+      sourceSystemIds: [
+        "sap_s_4hana_fi",
+        "blackline",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Auto-match rate regresses past the 60% baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "GL Accountant / Controller",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed generate action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from SAP S/4HANA FI (and other named systems) entities.",
+    "Never bypass GL Accountant / Controller approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "intercompany-reconciliation-end-to-end",
+      prompt: "Run the Intercompany Reconciliation workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_sap_s_4hana_fi_gl_entries",
+        "query_blackline_reconciliations",
+        "query_bigquery_analytics_events",
+        "lookup_intercompany_reconciliation_controls_playbook",
+        "action_sap_s_4hana_fi_generate",
+      ],
+      mustReferenceEntities: [
+        "gl_entries",
+        "reconciliations",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "intercompany-reconciliation-controls-playbook",
+      ],
+      expectedActionOutcome: "Action generate executed against SAP S/4HANA FI, with audit-trail entry and GL Accountant / Controller notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute generate without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Intercompany Reconciliation so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "sap_s_4hana_fi",
+      name: "SAP S/4HANA FI",
+      owns: [
+        "gl_entries",
+        "subledger_balances",
+        "open_items",
+      ],
+      protocol: "RFC/BAPI",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sap_s_4hana_fi_gl_entries",
+        "query_sap_s_4hana_fi_subledger_balances",
+        "query_sap_s_4hana_fi_open_items",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "blackline",
+      name: "BlackLine",
+      owns: [
+        "reconciliations",
+        "matching_rules",
+        "certifications",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_blackline_reconciliations",
+        "query_blackline_matching_rules",
+        "query_blackline_certifications",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "gl_entries",
+      sourceSystemId: "sap_s_4hana_fi",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "subledger_balances",
+      sourceSystemId: "sap_s_4hana_fi",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "open_items",
+      sourceSystemId: "sap_s_4hana_fi",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "reconciliations",
+      sourceSystemId: "blackline",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "in_progress",
+            "certified",
+            "exception",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "match_rate",
+          type: "float",
+          min: 0,
+          max: 1,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "last_run",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "matching_rules",
+      sourceSystemId: "blackline",
+      datastore: "alloydb",
+      rowCount: 30,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "in_progress",
+            "certified",
+            "exception",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "match_rate",
+          type: "float",
+          min: 0,
+          max: 1,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "last_run",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "certifications",
+      sourceSystemId: "blackline",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "in_progress",
+            "certified",
+            "exception",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "match_rate",
+          type: "float",
+          min: 0,
+          max: 1,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "last_run",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "intercompany-reconciliation-controls-playbook",
+      sourceSystemId: "bigquery",
+      type: "policy",
+      title: "Intercompany Reconciliation Controls Playbook",
+      requiredSections: [
+        "Workflow scope",
+        "Materiality thresholds",
+        "Escalation triggers",
+        "Audit evidence requirements",
+        "Quarter-end variations",
+      ],
+      linkedEntities: [
+        "gl_entries",
+        "subledger_balances",
+        "open_items",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "scope",
+        "materiality",
+        "escalation",
+        "audit-evidence",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "sap_s_4hana_fi_generate_api",
+      sourceSystemId: "sap_s_4hana_fi",
+      method: "POST",
+      path: "/api/sap_s_4hana_fi/generate",
+      description: "Synchronous endpoint the agent calls to generate in SAP S/4HANA FI after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "intercompany-reconciliation-baseline-gap",
+      description: "Seed a realistic gap where Auto-match rate sits between 60% and 95%, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "gl_entries",
+        "subledger_balances",
+      ],
+      discoveryPath: [
+        "Inspect SAP S/4HANA FI records for the affected entities",
+        "Compare against BlackLine historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next GL Accountant / Controller action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "intercompany_reconciliation",
+      schemas: [
+        "sap_s_4hana_fi",
+        "blackline",
+      ],
+    },
+    bigquery: {
+      dataset: "finance_intercompany_reconciliation",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "intercompany-reconciliation-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "intercompany-reconciliation-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Intercompany Reconciliation workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const IntercompanyReconciliation = () => (
+  <UseCaseSlide
+    title="Intercompany Reconciliation"
+    subtitle="A-2102 • GL & Close"
+    icon={ArrowLeftRight}
+    domainId="domain-21"
+    layer="Layer 3: Custom ADK"
+    persona="GL Accountant / Controller"
+    systems={["SAP S/4HANA FI", "BlackLine", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "Auto-match rate", before: "60%", after: "95%" },
+      { label: "IC reconciliation time", before: "3-4 days", after: "4 hours" },
+      { label: "Unresolved items at close", before: "15-20", after: "2-3" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    statusQuo={[
+      "IC reconciliation requires manual comparison of balances across 10+ entities with different currencies.",
+      "Mismatches investigated by chasing entity controllers via email — days of back-and-forth.",
+      "Correcting entries drafted manually after root cause is finally identified."
+    ]}
+    agentification={[
+      "Fuzzy matching across entities resolves 95% of IC transactions automatically.",
+      "Gemini traces mismatches to contract amendments or unprocessed entries without manual investigation.",
+      "Auto-generates correcting entries and notifies responsible controllers with full context."
+    ]}
+  />
+);

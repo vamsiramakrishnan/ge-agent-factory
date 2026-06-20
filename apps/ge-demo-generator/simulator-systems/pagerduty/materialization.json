@@ -1,0 +1,195 @@
+{
+  "id": "pagerduty_materialization",
+  "version": 1,
+  "collections": {
+    "incidents": {
+      "primaryKey": "incident_id",
+      "fieldAliases": {
+        "incident_id": [
+          "incident_id",
+          "id",
+          "source_record_id"
+        ],
+        "incident_number": [
+          "incident_number",
+          "id",
+          "source_record_id"
+        ],
+        "title": [
+          "title",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "urgency": [
+          "urgency",
+          "id",
+          "source_record_id"
+        ],
+        "service_id": [
+          "service_id",
+          "id",
+          "source_record_id"
+        ],
+        "assignee": [
+          "assignee",
+          "id",
+          "source_record_id"
+        ],
+        "created_at": [
+          "created_at",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "triggered"
+      }
+    },
+    "services": {
+      "primaryKey": "service_id",
+      "fieldAliases": {
+        "service_id": [
+          "service_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "escalation_policy_id": [
+          "escalation_policy_id",
+          "id",
+          "source_record_id"
+        ],
+        "description": [
+          "description",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "escalation_policies": {
+      "primaryKey": "policy_id",
+      "fieldAliases": {
+        "policy_id": [
+          "policy_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "num_loops": [
+          "num_loops",
+          "id",
+          "source_record_id"
+        ],
+        "description": [
+          "description",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    },
+    "oncalls": {
+      "primaryKey": "oncall_id",
+      "fieldAliases": {
+        "oncall_id": [
+          "oncall_id",
+          "id",
+          "source_record_id"
+        ],
+        "policy_id": [
+          "policy_id",
+          "id",
+          "source_record_id"
+        ],
+        "user": [
+          "user",
+          "id",
+          "source_record_id"
+        ],
+        "escalation_level": [
+          "escalation_level",
+          "id",
+          "source_record_id"
+        ],
+        "start": [
+          "start",
+          "id",
+          "source_record_id"
+        ],
+        "end": [
+          "end",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "actor": [
+          "actor",
+          "id",
+          "source_record_id"
+        ],
+        "role": [
+          "role",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ],
+        "timestamp": [
+          "timestamp",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

@@ -1,0 +1,761 @@
+{
+  "id": "sap_s4hana_fi_materialization",
+  "version": 2,
+  "collections": {
+    "company_codes": {
+      "primaryKey": "company_code",
+      "fieldAliases": {
+        "company_code": [
+          "company_code",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "country": [
+          "country",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "fiscal_year_variant": [
+          "fiscal_year_variant",
+          "id",
+          "source_record_id"
+        ],
+        "chart_of_accounts": [
+          "chart_of_accounts",
+          "id",
+          "source_record_id"
+        ],
+        "controlling_area": [
+          "controlling_area",
+          "id",
+          "source_record_id"
+        ],
+        "current_posting_period": [
+          "current_posting_period",
+          "id",
+          "source_record_id"
+        ],
+        "open_period_from": [
+          "open_period_from",
+          "id",
+          "source_record_id"
+        ],
+        "open_period_to": [
+          "open_period_to",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ]
+      }
+    },
+    "vendors": {
+      "primaryKey": "vendor_id",
+      "fieldAliases": {
+        "vendor_id": [
+          "vendor_id",
+          "id",
+          "source_record_id"
+        ],
+        "business_partner_id": [
+          "business_partner_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "company_code": [
+          "company_code",
+          "id",
+          "source_record_id"
+        ],
+        "country": [
+          "country",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "reconciliation_account": [
+          "reconciliation_account",
+          "id",
+          "source_record_id"
+        ],
+        "payment_terms": [
+          "payment_terms",
+          "id",
+          "source_record_id"
+        ],
+        "payment_method": [
+          "payment_method",
+          "id",
+          "source_record_id"
+        ],
+        "withholding_tax_type": [
+          "withholding_tax_type",
+          "id",
+          "source_record_id"
+        ],
+        "bank_account": [
+          "bank_account",
+          "id",
+          "source_record_id"
+        ],
+        "bank_verified": [
+          "bank_verified",
+          "id",
+          "source_record_id"
+        ],
+        "block_reason": [
+          "block_reason",
+          "id",
+          "source_record_id"
+        ],
+        "risk_tier": [
+          "risk_tier",
+          "id",
+          "source_record_id"
+        ]
+      }
+    },
+    "gl_accounts": {
+      "primaryKey": "gl_account",
+      "fieldAliases": {
+        "gl_account": [
+          "gl_account",
+          "id",
+          "source_record_id"
+        ],
+        "chart_of_accounts": [
+          "chart_of_accounts",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "account_type": [
+          "account_type",
+          "id",
+          "source_record_id"
+        ],
+        "open_item_managed": [
+          "open_item_managed",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "is_reconciliation_account": [
+          "is_reconciliation_account",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ]
+      }
+    },
+    "cost_centers": {
+      "primaryKey": "cost_center",
+      "fieldAliases": {
+        "cost_center": [
+          "cost_center",
+          "id",
+          "source_record_id"
+        ],
+        "company_code": [
+          "company_code",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "controlling_area": [
+          "controlling_area",
+          "id",
+          "source_record_id"
+        ],
+        "profit_center": [
+          "profit_center",
+          "id",
+          "source_record_id"
+        ],
+        "manager": [
+          "manager",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ]
+      }
+    },
+    "profit_centers": {
+      "primaryKey": "profit_center",
+      "fieldAliases": {
+        "profit_center": [
+          "profit_center",
+          "id",
+          "source_record_id"
+        ],
+        "company_code": [
+          "company_code",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "controlling_area": [
+          "controlling_area",
+          "id",
+          "source_record_id"
+        ],
+        "segment": [
+          "segment",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ]
+      }
+    },
+    "purchase_orders": {
+      "primaryKey": "purchase_order_id",
+      "fieldAliases": {
+        "purchase_order_id": [
+          "purchase_order_id",
+          "id",
+          "source_record_id"
+        ],
+        "company_code": [
+          "company_code",
+          "id",
+          "source_record_id"
+        ],
+        "vendor_id": [
+          "vendor_id",
+          "id",
+          "source_record_id"
+        ],
+        "cost_center": [
+          "cost_center",
+          "id",
+          "source_record_id"
+        ],
+        "gl_account": [
+          "gl_account",
+          "id",
+          "source_record_id"
+        ],
+        "description": [
+          "description",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "ordered_quantity": [
+          "ordered_quantity",
+          "id",
+          "source_record_id"
+        ],
+        "unit_price": [
+          "unit_price",
+          "id",
+          "source_record_id"
+        ],
+        "net_amount": [
+          "net_amount",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "created_by": [
+          "created_by",
+          "id",
+          "source_record_id"
+        ],
+        "created_date": [
+          "created_date",
+          "id",
+          "source_record_id"
+        ]
+      }
+    },
+    "goods_receipts": {
+      "primaryKey": "goods_receipt_id",
+      "fieldAliases": {
+        "goods_receipt_id": [
+          "goods_receipt_id",
+          "id",
+          "source_record_id"
+        ],
+        "purchase_order_id": [
+          "purchase_order_id",
+          "id",
+          "source_record_id"
+        ],
+        "company_code": [
+          "company_code",
+          "id",
+          "source_record_id"
+        ],
+        "vendor_id": [
+          "vendor_id",
+          "id",
+          "source_record_id"
+        ],
+        "received_quantity": [
+          "received_quantity",
+          "id",
+          "source_record_id"
+        ],
+        "received_amount": [
+          "received_amount",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "movement_type": [
+          "movement_type",
+          "id",
+          "source_record_id"
+        ],
+        "posting_date": [
+          "posting_date",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ]
+      }
+    },
+    "invoices": {
+      "primaryKey": "invoice_id",
+      "fieldAliases": {
+        "invoice_id": [
+          "invoice_id",
+          "id",
+          "source_record_id"
+        ],
+        "sap_document_number": [
+          "sap_document_number",
+          "id",
+          "source_record_id"
+        ],
+        "company_code": [
+          "company_code",
+          "id",
+          "source_record_id"
+        ],
+        "fiscal_year": [
+          "fiscal_year",
+          "id",
+          "source_record_id"
+        ],
+        "vendor_id": [
+          "vendor_id",
+          "id",
+          "source_record_id"
+        ],
+        "purchase_order_id": [
+          "purchase_order_id",
+          "id",
+          "source_record_id"
+        ],
+        "goods_receipt_id": [
+          "goods_receipt_id",
+          "id",
+          "source_record_id"
+        ],
+        "gl_account": [
+          "gl_account",
+          "id",
+          "source_record_id"
+        ],
+        "cost_center": [
+          "cost_center",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "amount": [
+          "amount",
+          "id",
+          "source_record_id"
+        ],
+        "tax_amount": [
+          "tax_amount",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "invoiced_quantity": [
+          "invoiced_quantity",
+          "id",
+          "source_record_id"
+        ],
+        "baseline_date": [
+          "baseline_date",
+          "id",
+          "source_record_id"
+        ],
+        "due_date": [
+          "due_date",
+          "id",
+          "source_record_id"
+        ],
+        "posting_period": [
+          "posting_period",
+          "id",
+          "source_record_id"
+        ],
+        "payment_block": [
+          "payment_block",
+          "id",
+          "source_record_id"
+        ],
+        "three_way_match_status": [
+          "three_way_match_status",
+          "id",
+          "source_record_id"
+        ],
+        "document_type": [
+          "document_type",
+          "id",
+          "source_record_id"
+        ],
+        "exception_reason": [
+          "exception_reason",
+          "id",
+          "source_record_id"
+        ]
+      }
+    },
+    "journal_entries": {
+      "primaryKey": "journal_id",
+      "fieldAliases": {
+        "journal_id": [
+          "journal_id",
+          "id",
+          "source_record_id"
+        ],
+        "sap_document_number": [
+          "sap_document_number",
+          "id",
+          "source_record_id"
+        ],
+        "company_code": [
+          "company_code",
+          "id",
+          "source_record_id"
+        ],
+        "fiscal_year": [
+          "fiscal_year",
+          "id",
+          "source_record_id"
+        ],
+        "period": [
+          "period",
+          "id",
+          "source_record_id"
+        ],
+        "ledger": [
+          "ledger",
+          "id",
+          "source_record_id"
+        ],
+        "document_type": [
+          "document_type",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "posting_date": [
+          "posting_date",
+          "id",
+          "source_record_id"
+        ],
+        "amount": [
+          "amount",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "gl_account": [
+          "gl_account",
+          "id",
+          "source_record_id"
+        ],
+        "cost_center": [
+          "cost_center",
+          "id",
+          "source_record_id"
+        ],
+        "profit_center": [
+          "profit_center",
+          "id",
+          "source_record_id"
+        ],
+        "created_by": [
+          "created_by",
+          "id",
+          "source_record_id"
+        ],
+        "reversal_of": [
+          "reversal_of",
+          "id",
+          "source_record_id"
+        ],
+        "reversal_document": [
+          "reversal_document",
+          "id",
+          "source_record_id"
+        ]
+      }
+    },
+    "payment_runs": {
+      "primaryKey": "payment_run_id",
+      "fieldAliases": {
+        "payment_run_id": [
+          "payment_run_id",
+          "id",
+          "source_record_id"
+        ],
+        "company_code": [
+          "company_code",
+          "id",
+          "source_record_id"
+        ],
+        "run_date": [
+          "run_date",
+          "id",
+          "source_record_id"
+        ],
+        "payment_method": [
+          "payment_method",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "total_amount": [
+          "total_amount",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "payment_count": [
+          "payment_count",
+          "id",
+          "source_record_id"
+        ],
+        "created_by": [
+          "created_by",
+          "id",
+          "source_record_id"
+        ],
+        "released_by": [
+          "released_by",
+          "id",
+          "source_record_id"
+        ]
+      }
+    },
+    "payments": {
+      "primaryKey": "payment_id",
+      "fieldAliases": {
+        "payment_id": [
+          "payment_id",
+          "id",
+          "source_record_id"
+        ],
+        "payment_run_id": [
+          "payment_run_id",
+          "id",
+          "source_record_id"
+        ],
+        "invoice_id": [
+          "invoice_id",
+          "id",
+          "source_record_id"
+        ],
+        "vendor_id": [
+          "vendor_id",
+          "id",
+          "source_record_id"
+        ],
+        "company_code": [
+          "company_code",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "payment_date": [
+          "payment_date",
+          "id",
+          "source_record_id"
+        ],
+        "amount": [
+          "amount",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "bank_account": [
+          "bank_account",
+          "id",
+          "source_record_id"
+        ],
+        "payment_method": [
+          "payment_method",
+          "id",
+          "source_record_id"
+        ],
+        "clearing_document": [
+          "clearing_document",
+          "id",
+          "source_record_id"
+        ]
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fieldAliases": {
+        "approval_id": [
+          "approval_id",
+          "id",
+          "source_record_id"
+        ],
+        "source_collection": [
+          "source_collection",
+          "id",
+          "source_record_id"
+        ],
+        "source_record_id": [
+          "source_record_id",
+          "id",
+          "source_record_id"
+        ],
+        "approver": [
+          "approver",
+          "id",
+          "source_record_id"
+        ],
+        "approver_role": [
+          "approver_role",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "reason": [
+          "reason",
+          "id",
+          "source_record_id"
+        ],
+        "workflow_step": [
+          "workflow_step",
+          "id",
+          "source_record_id"
+        ],
+        "sequence": [
+          "sequence",
+          "id",
+          "source_record_id"
+        ],
+        "due_at": [
+          "due_at",
+          "id",
+          "source_record_id"
+        ]
+      }
+    }
+  }
+}

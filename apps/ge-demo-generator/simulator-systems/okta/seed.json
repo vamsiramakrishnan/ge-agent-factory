@@ -1,0 +1,244 @@
+{
+  "users": [
+    {
+      "user_id": "00u-USER-1",
+      "login": "avery.johnson@example.com",
+      "email": "avery.johnson@example.com",
+      "first_name": "Avery",
+      "last_name": "Johnson",
+      "status": "ACTIVE",
+      "department": "HR",
+      "manager": "jordan.lee@example.com",
+      "last_login": "2026-06-15T08:12:00Z"
+    },
+    {
+      "user_id": "00u-USER-2",
+      "login": "mina.patel@example.com",
+      "email": "mina.patel@example.com",
+      "first_name": "Mina",
+      "last_name": "Patel",
+      "status": "ACTIVE",
+      "department": "Finance",
+      "manager": "jordan.lee@example.com",
+      "last_login": "2026-06-16T14:03:00Z"
+    },
+    {
+      "user_id": "00u-USER-3",
+      "login": "sam.rivera@example.com",
+      "email": "sam.rivera@example.com",
+      "first_name": "Sam",
+      "last_name": "Rivera",
+      "status": "SUSPENDED",
+      "department": "Engineering",
+      "manager": "avery.johnson@example.com",
+      "last_login": "2026-05-30T19:44:00Z"
+    },
+    {
+      "user_id": "00u-USER-4",
+      "login": "diego.chen@example.com",
+      "email": "diego.chen@example.com",
+      "first_name": "Diego",
+      "last_name": "Chen",
+      "status": "ACTIVE",
+      "department": "Engineering",
+      "manager": "avery.johnson@example.com",
+      "last_login": "2026-06-17T11:28:00Z"
+    },
+    {
+      "user_id": "00u-USER-5",
+      "login": "riley.morgan@example.com",
+      "email": "riley.morgan@example.com",
+      "first_name": "Riley",
+      "last_name": "Morgan",
+      "status": "PROVISIONED",
+      "department": "Security",
+      "manager": "jordan.lee@example.com",
+      "last_login": "2026-06-10T13:02:00Z"
+    },
+    {
+      "user_id": "00u-USER-6",
+      "login": "jordan.lee@example.com",
+      "email": "jordan.lee@example.com",
+      "first_name": "Jordan",
+      "last_name": "Lee",
+      "status": "ACTIVE",
+      "department": "Leadership",
+      "manager": "taylor.king@example.com",
+      "last_login": "2026-06-18T07:18:00Z"
+    },
+    {
+      "user_id": "00u-USER-7",
+      "login": "taylor.king@example.com",
+      "email": "taylor.king@example.com",
+      "first_name": "Taylor",
+      "last_name": "King",
+      "status": "ACTIVE",
+      "department": "Leadership",
+      "manager": "board@example.com",
+      "last_login": "2026-06-14T16:20:00Z"
+    },
+    {
+      "user_id": "00u-USER-8",
+      "login": "nora.singh@example.com",
+      "email": "nora.singh@example.com",
+      "first_name": "Nora",
+      "last_name": "Singh",
+      "status": "STAGED",
+      "department": "HR",
+      "manager": "avery.johnson@example.com",
+      "last_login": "2026-06-01T09:00:00Z"
+    },
+    {
+      "user_id": "00u-USER-9",
+      "login": "luca.martin@example.com",
+      "email": "luca.martin@example.com",
+      "first_name": "Luca",
+      "last_name": "Martin",
+      "status": "DEPROVISIONED",
+      "department": "Operations",
+      "manager": "jordan.lee@example.com",
+      "last_login": "2026-04-28T20:11:00Z"
+    },
+    {
+      "user_id": "00u-USER-10",
+      "login": "chloe.adams@example.com",
+      "email": "chloe.adams@example.com",
+      "first_name": "Chloe",
+      "last_name": "Adams",
+      "status": "ACTIVE",
+      "department": "Legal",
+      "manager": "taylor.king@example.com",
+      "last_login": "2026-06-12T15:22:00Z"
+    }
+  ],
+  "groups": [
+    {
+      "group_id": "00g-GRP-1",
+      "name": "HR Partners",
+      "description": "HR partner access",
+      "group_type": "OKTA_GROUP",
+      "member_count": 12,
+      "risk_tier": "medium"
+    },
+    {
+      "group_id": "00g-GRP-2",
+      "name": "Finance Admins",
+      "description": "Privileged finance access",
+      "group_type": "OKTA_GROUP",
+      "member_count": 4,
+      "risk_tier": "high"
+    },
+    {
+      "group_id": "00g-GRP-3",
+      "name": "Engineering Contributors",
+      "description": "GitHub and CI contributor access",
+      "group_type": "OKTA_GROUP",
+      "member_count": 38,
+      "risk_tier": "medium"
+    },
+    {
+      "group_id": "00g-GRP-4",
+      "name": "Security Reviewers",
+      "description": "Access review and incident response approvers",
+      "group_type": "OKTA_GROUP",
+      "member_count": 7,
+      "risk_tier": "high"
+    },
+    {
+      "group_id": "00g-GRP-5",
+      "name": "All Employees",
+      "description": "Built-in workforce group",
+      "group_type": "BUILT_IN",
+      "member_count": 1840,
+      "risk_tier": "low"
+    }
+  ],
+  "applications": [
+    {
+      "application_id": "0oa-APP-1",
+      "name": "workday",
+      "label": "Workday HCM",
+      "sign_on_mode": "SAML_2_0",
+      "status": "ACTIVE",
+      "criticality": "high"
+    },
+    {
+      "application_id": "0oa-APP-2",
+      "name": "github",
+      "label": "GitHub Enterprise",
+      "sign_on_mode": "OPENID_CONNECT",
+      "status": "ACTIVE",
+      "criticality": "medium"
+    },
+    {
+      "application_id": "0oa-APP-3",
+      "name": "pagerduty",
+      "label": "PagerDuty",
+      "sign_on_mode": "SAML_2_0",
+      "status": "ACTIVE",
+      "criticality": "high"
+    },
+    {
+      "application_id": "0oa-APP-4",
+      "name": "jira",
+      "label": "Atlassian Jira",
+      "sign_on_mode": "OPENID_CONNECT",
+      "status": "ACTIVE",
+      "criticality": "medium"
+    },
+    {
+      "application_id": "0oa-APP-5",
+      "name": "bigquery-console",
+      "label": "Google BigQuery Console",
+      "sign_on_mode": "SAML_2_0",
+      "status": "ACTIVE",
+      "criticality": "high"
+    },
+    {
+      "application_id": "0oa-APP-6",
+      "name": "legacy-vpn",
+      "label": "Legacy VPN",
+      "sign_on_mode": "SECURE_PASSWORD_STORE",
+      "status": "INACTIVE",
+      "criticality": "medium"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APPR-okta-1",
+      "source_record_id": "00u-USER-2",
+      "approver": "identity.admin@example.com",
+      "state": "requested",
+      "reason": "privileged group membership review"
+    },
+    {
+      "approval_id": "APPR-okta-2",
+      "source_record_id": "00u-USER-5",
+      "approver": "security.reviewer@example.com",
+      "state": "pending",
+      "reason": "security reviewer activation"
+    },
+    {
+      "approval_id": "APPR-okta-3",
+      "source_record_id": "00u-USER-8",
+      "approver": "hr.partner@example.com",
+      "state": "approved",
+      "reason": "new hire activation"
+    },
+    {
+      "approval_id": "APPR-okta-4",
+      "source_record_id": "00u-USER-3",
+      "approver": "security.reviewer@example.com",
+      "state": "requested",
+      "reason": "suspended engineer deprovision review"
+    },
+    {
+      "approval_id": "APPR-okta-5",
+      "source_record_id": "00u-USER-10",
+      "approver": "legal.ops@example.com",
+      "state": "rejected",
+      "reason": "legal hold exception"
+    }
+  ],
+  "audit_events": []
+}

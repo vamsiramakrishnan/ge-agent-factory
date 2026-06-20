@@ -1,0 +1,617 @@
+{
+  "id": "jira_materialization",
+  "version": 2,
+  "collections": {
+    "projects": {
+      "primaryKey": "project_id",
+      "fieldAliases": {
+        "project_id": [
+          "project_id",
+          "id",
+          "source_record_id"
+        ],
+        "key": [
+          "key",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "project_type_key": [
+          "project_type_key",
+          "id",
+          "source_record_id"
+        ],
+        "lead_account_id": [
+          "lead_account_id",
+          "id",
+          "source_record_id"
+        ],
+        "lead": [
+          "lead",
+          "id",
+          "source_record_id"
+        ],
+        "category": [
+          "category",
+          "id",
+          "source_record_id"
+        ],
+        "url": [
+          "url",
+          "id",
+          "source_record_id"
+        ],
+        "default_assignee": [
+          "default_assignee",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "department": [
+          "department",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "components": {
+      "primaryKey": "component_id",
+      "fieldAliases": {
+        "component_id": [
+          "component_id",
+          "id",
+          "source_record_id"
+        ],
+        "project_id": [
+          "project_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "description": [
+          "description",
+          "id",
+          "source_record_id"
+        ],
+        "lead_account_id": [
+          "lead_account_id",
+          "id",
+          "source_record_id"
+        ],
+        "lead": [
+          "lead",
+          "id",
+          "source_record_id"
+        ],
+        "assignee_type": [
+          "assignee_type",
+          "id",
+          "source_record_id"
+        ],
+        "active": [
+          "active",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "active": true
+      }
+    },
+    "epics": {
+      "primaryKey": "epic_id",
+      "fieldAliases": {
+        "epic_id": [
+          "epic_id",
+          "id",
+          "source_record_id"
+        ],
+        "key": [
+          "key",
+          "id",
+          "source_record_id"
+        ],
+        "project_id": [
+          "project_id",
+          "id",
+          "source_record_id"
+        ],
+        "summary": [
+          "summary",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "color": [
+          "color",
+          "id",
+          "source_record_id"
+        ],
+        "story_points": [
+          "story_points",
+          "id",
+          "source_record_id"
+        ],
+        "assignee_account_id": [
+          "assignee_account_id",
+          "id",
+          "source_record_id"
+        ],
+        "assignee": [
+          "assignee",
+          "id",
+          "source_record_id"
+        ],
+        "labels": [
+          "labels",
+          "id",
+          "source_record_id"
+        ],
+        "done": [
+          "done",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "to_do"
+      }
+    },
+    "issues": {
+      "primaryKey": "issue_id",
+      "fieldAliases": {
+        "issue_id": [
+          "issue_id",
+          "id",
+          "source_record_id"
+        ],
+        "key": [
+          "key",
+          "id",
+          "source_record_id"
+        ],
+        "project_id": [
+          "project_id",
+          "id",
+          "source_record_id"
+        ],
+        "epic_id": [
+          "epic_id",
+          "id",
+          "source_record_id"
+        ],
+        "component_id": [
+          "component_id",
+          "id",
+          "source_record_id"
+        ],
+        "sprint_id": [
+          "sprint_id",
+          "id",
+          "source_record_id"
+        ],
+        "issue_type": [
+          "issue_type",
+          "id",
+          "source_record_id"
+        ],
+        "summary": [
+          "summary",
+          "id",
+          "source_record_id"
+        ],
+        "description": [
+          "description",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "resolution": [
+          "resolution",
+          "id",
+          "source_record_id"
+        ],
+        "priority": [
+          "priority",
+          "id",
+          "source_record_id"
+        ],
+        "story_points": [
+          "story_points",
+          "id",
+          "source_record_id"
+        ],
+        "assignee_account_id": [
+          "assignee_account_id",
+          "id",
+          "source_record_id"
+        ],
+        "assignee": [
+          "assignee",
+          "id",
+          "source_record_id"
+        ],
+        "reporter": [
+          "reporter",
+          "id",
+          "source_record_id"
+        ],
+        "labels": [
+          "labels",
+          "id",
+          "source_record_id"
+        ],
+        "affected_versions": [
+          "affected_versions",
+          "id",
+          "source_record_id"
+        ],
+        "fix_version_id": [
+          "fix_version_id",
+          "id",
+          "source_record_id"
+        ],
+        "created_at": [
+          "created_at",
+          "id",
+          "source_record_id"
+        ],
+        "updated_at": [
+          "updated_at",
+          "id",
+          "source_record_id"
+        ],
+        "last_note": [
+          "last_note",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "to_do",
+        "resolution": "unresolved"
+      }
+    },
+    "subtasks": {
+      "primaryKey": "subtask_id",
+      "fieldAliases": {
+        "subtask_id": [
+          "subtask_id",
+          "id",
+          "source_record_id"
+        ],
+        "key": [
+          "key",
+          "id",
+          "source_record_id"
+        ],
+        "issue_id": [
+          "issue_id",
+          "id",
+          "source_record_id"
+        ],
+        "summary": [
+          "summary",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "assignee_account_id": [
+          "assignee_account_id",
+          "id",
+          "source_record_id"
+        ],
+        "assignee": [
+          "assignee",
+          "id",
+          "source_record_id"
+        ],
+        "original_estimate_hours": [
+          "original_estimate_hours",
+          "id",
+          "source_record_id"
+        ],
+        "remaining_estimate_hours": [
+          "remaining_estimate_hours",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "to_do"
+      }
+    },
+    "sprints": {
+      "primaryKey": "sprint_id",
+      "fieldAliases": {
+        "sprint_id": [
+          "sprint_id",
+          "id",
+          "source_record_id"
+        ],
+        "project_id": [
+          "project_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "goal": [
+          "goal",
+          "id",
+          "source_record_id"
+        ],
+        "start_date": [
+          "start_date",
+          "id",
+          "source_record_id"
+        ],
+        "end_date": [
+          "end_date",
+          "id",
+          "source_record_id"
+        ],
+        "complete_date": [
+          "complete_date",
+          "id",
+          "source_record_id"
+        ],
+        "velocity_target": [
+          "velocity_target",
+          "id",
+          "source_record_id"
+        ],
+        "committed_points": [
+          "committed_points",
+          "id",
+          "source_record_id"
+        ],
+        "completed_points": [
+          "completed_points",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "future"
+      }
+    },
+    "releases": {
+      "primaryKey": "release_id",
+      "fieldAliases": {
+        "release_id": [
+          "release_id",
+          "id",
+          "source_record_id"
+        ],
+        "project_id": [
+          "project_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "version": [
+          "version",
+          "id",
+          "source_record_id"
+        ],
+        "description": [
+          "description",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "release_date": [
+          "release_date",
+          "id",
+          "source_record_id"
+        ],
+        "start_date": [
+          "start_date",
+          "id",
+          "source_record_id"
+        ],
+        "driver": [
+          "driver",
+          "id",
+          "source_record_id"
+        ],
+        "released": [
+          "released",
+          "id",
+          "source_record_id"
+        ],
+        "overdue": [
+          "overdue",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "unreleased"
+      }
+    },
+    "board_transitions": {
+      "primaryKey": "transition_id",
+      "fieldAliases": {
+        "transition_id": [
+          "transition_id",
+          "id",
+          "source_record_id"
+        ],
+        "issue_id": [
+          "issue_id",
+          "id",
+          "source_record_id"
+        ],
+        "from_status": [
+          "from_status",
+          "id",
+          "source_record_id"
+        ],
+        "to_status": [
+          "to_status",
+          "id",
+          "source_record_id"
+        ],
+        "actor": [
+          "actor",
+          "id",
+          "source_record_id"
+        ],
+        "actor_role": [
+          "actor_role",
+          "id",
+          "source_record_id"
+        ],
+        "transitioned_at": [
+          "transitioned_at",
+          "id",
+          "source_record_id"
+        ],
+        "note": [
+          "note",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fieldAliases": {
+        "approval_id": [
+          "approval_id",
+          "id",
+          "source_record_id"
+        ],
+        "source_record_id": [
+          "source_record_id",
+          "id"
+        ],
+        "source_collection": [
+          "source_collection",
+          "id",
+          "source_record_id"
+        ],
+        "approver": [
+          "approver",
+          "id",
+          "source_record_id"
+        ],
+        "approver_role": [
+          "approver_role",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "reason": [
+          "reason",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "requested"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "actor": [
+          "actor",
+          "id",
+          "source_record_id"
+        ],
+        "role": [
+          "role",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ],
+        "detail": [
+          "detail",
+          "id",
+          "source_record_id"
+        ],
+        "timestamp": [
+          "timestamp",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

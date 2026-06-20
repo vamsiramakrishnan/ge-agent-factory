@@ -1,0 +1,108 @@
+{
+  "id": "jaggaer_tools",
+  "version": 1,
+  "tools": [
+    {
+      "name": "search_suppliers",
+      "description": "Search suppliers in jaggaer.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "suppliers"
+      }
+    },
+    {
+      "name": "get_supplier",
+      "description": "Get one supplier in jaggaer.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "supplier_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "supplier_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "suppliers",
+        "primaryKey": "supplier_id"
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending jaggaer approvals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": {
+            "type": "string"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_pending_approvals",
+        "collection": "approvals"
+      }
+    },
+    {
+      "name": "submit_supplier_update",
+      "description": "Submit an update to one supplier in jaggaer.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "supplier_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "supplier_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "suppliers",
+        "primaryKey": "supplier_id"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List jaggaer simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

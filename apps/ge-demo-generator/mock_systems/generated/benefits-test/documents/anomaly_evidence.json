@@ -1,0 +1,17 @@
+[
+  {
+    "anomaly_id": "underutilized-hdhp",
+    "description": "HDHP plan has 60% lower utilization than PPO plans but 20% higher per-claim cost",
+    "affected_records": [
+      "ENR-0017",
+      "ENR-0005",
+      "ENR-0015",
+      "ENR-0003"
+    ],
+    "discovery_hint": [
+      "query enrollments by plan",
+      "cross-reference carrier utilization",
+      "compare cost ratios"
+    ]
+  }
+]

@@ -1,0 +1,1209 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { FileCheck, Upload, ScanText, Brain, AlertTriangle } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Monthly Scan", lane: "system", type: "trigger" },
+    { id: "a1", label: "COI Collection", lane: "agent", type: "action" },
+    { id: "a2", label: "OCR Extraction", lane: "agent", type: "action" },
+    { id: "a3", label: "Coverage Validation", lane: "agent", type: "action" },
+    { id: "a4", label: "Gap Alert", lane: "agent", type: "output" },
+    { id: "s2", label: "Supplier Portal", lane: "system", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "a4"], ["a4", "s2"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Certificate Tracking", icon: Upload, description: "Insurance certificate expiry dates tracked and renewal reminders sent to suppliers.", trigger: "Monthly + Expiry Event", systems: ["Insurance Cert Mgmt", "Supplier Portal"] },
+  { label: "OCR Extraction", icon: ScanText, description: "Document AI reads COIs in non-standard formats from different insurers, extracting coverage details.", systems: ["Google Document AI"], integration: "Agent Designer" },
+  { label: "Coverage Validation", icon: Brain, description: "LLM validates extracted coverage against contractual minimums — $5M umbrella vs. required $10M flagged.", systems: ["Contract System", "Vertex AI"] },
+  { label: "Gap Notification", icon: AlertTriangle, description: "Coverage gaps and expiring certificates surfaced with contractual requirement context.", output: "Coverage Gap Report" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Insurance Cert Management", description: "Certificate of insurance tracking, expiry monitoring, renewal workflows", direction: "bidirectional", protocol: "REST API", category: "erp" },
+    { system: "Contract System", description: "Contractual insurance requirements, coverage minimums, endorsement clauses", direction: "read", protocol: "REST API", category: "clm" },
+    { system: "Supplier Portal", description: "Certificate upload and renewal submission from suppliers", direction: "read", protocol: "REST API", category: "collaboration" },
+    { system: "Google Document AI", description: "OCR extraction of coverage details from non-standard COI formats", direction: "bidirectional", protocol: "REST API", category: "ai" },
+    { system: "Vertex AI (Gemini)", description: "Coverage validation against contractual minimums, endorsement language interpretation", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Certificate Collection & Tracking", description: "Track certificate expiry dates across supplier base. Send renewal reminders to suppliers via portal. Collect updated COIs and log in certificate management system.", systems: ["Insurance Cert Management", "Supplier Portal"], layer: "integration", dataIn: "COI uploads from suppliers + expiry schedules", dataOut: "Certificate inventory with expiry alerts" },
+    { label: "OCR Extraction & Validation", description: "Google Document AI reads COIs in non-standard formats from different insurers. Extracts policy type, coverage limits, deductibles, named insured, additional insured status, and endorsements. Validates extracted amounts against contractual minimums.", systems: ["Google Document AI"], layer: "ml", dataIn: "Raw COI documents (PDF/image)", dataOut: "Structured coverage data with field confidence scores" },
+    { label: "Coverage Gap & Endorsement Analysis", description: "Gemini validates extracted coverage against contract requirements: 'Contract requires $10M umbrella coverage but COI shows $5M — gap flagged.' Interprets endorsement language: 'Waiver of subrogation endorsement is present but limited to named location — contract requires blanket waiver.'", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Structured coverage data + contractual requirements", dataOut: "Coverage gap report with endorsement analysis" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Contract Manager agent for the Insurance & Liability Monitor workflow",
+  primaryObjective: "OCR/NLP via Document AI reads COIs in non-standard formats and extracts policy type, limits, deductibles, named insured, and endorsements. LLM validates coverage against contract requirements: 'COI shows $5M umbrella but contract requires $10M — gap flagged.' so the Contract Manager can move the Expired certificate detection KPI.",
+  inScope: [
+    "OCR/NLP via Document AI reads COIs in non-standard formats and extracts policy type, limits, deductibles, named insured, and endorsements",
+    "LLM validates coverage against contract requirements: 'COI shows $5M umbrella but contract requires $10M — gap flagged.'",
+    "Interprets endorsement language — 'waiver of subrogation limited to named location' vs. contract's blanket waiver requirement",
+  ],
+  outOfScope: [
+    "Contract execution without legal review",
+    "Supplier disqualification decisions (category lead retains authority)",
+    "Single-source justification overrides above policy threshold",
+  ],
+  toolIntents: [
+    {
+      name: "query_insurance_cert_management_insurance_cert_management_records",
+      kind: "query",
+      sourceSystemId: "insurance_cert_management",
+      description: "Retrieve insurance cert management records from Insurance Cert Management for the Insurance & Liability Monitor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "insurance_cert_management_records_records",
+        "insurance_cert_management_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_contract_system_contract_system_records",
+      kind: "query",
+      sourceSystemId: "contract_system",
+      description: "Retrieve contract system records from Contract System for the Insurance & Liability Monitor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "contract_system_records_records",
+        "contract_system_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_supplier_portal_supplier_portal_records",
+      kind: "query",
+      sourceSystemId: "supplier_portal",
+      description: "Retrieve supplier portal records from Supplier Portal for the Insurance & Liability Monitor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "supplier_portal_records_records",
+        "supplier_portal_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_google_document_ai_google_document_ai_records",
+      kind: "query",
+      sourceSystemId: "google_document_ai",
+      description: "Retrieve google document ai records from Google Document AI for the Insurance & Liability Monitor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "google_document_ai_records_records",
+        "google_document_ai_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_insurance_liability_monitor_policy_guide",
+      kind: "evidence_lookup",
+      sourceSystemId: "insurance_cert_management",
+      description: "Look up sections of the Insurance & Liability Monitor Procurement Policy Guide to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_insurance_cert_management_validate",
+      kind: "action",
+      sourceSystemId: "insurance_cert_management",
+      description: "Execute the validate step in Insurance Cert Management after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Expired certificate detection moved from Quarterly manual audit toward Real-time tracking",
+      mustCite: [
+        "insurance_cert_management.insurance_cert_management_records",
+        "contract_system.contract_system_records",
+      ],
+      sourceSystemIds: [
+        "insurance_cert_management",
+        "contract_system",
+      ],
+    },
+    {
+      claim: "COI processing time moved from 15 min per cert toward 30 seconds automated",
+      mustCite: [
+        "insurance_cert_management.insurance_cert_management_records",
+        "contract_system.contract_system_records",
+      ],
+      sourceSystemIds: [
+        "insurance_cert_management",
+        "contract_system",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Expired certificate detection regresses past the Quarterly manual audit baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Contract Manager",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed validate action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from Insurance Cert Management (and other named systems) entities.",
+    "Never bypass Contract Manager approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "insurance-liability-monitor-end-to-end",
+      prompt: "Run the Insurance & Liability Monitor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_insurance_cert_management_insurance_cert_management_records",
+        "query_contract_system_contract_system_records",
+        "query_supplier_portal_supplier_portal_records",
+        "query_google_document_ai_google_document_ai_records",
+        "lookup_insurance_liability_monitor_policy_guide",
+        "action_insurance_cert_management_validate",
+      ],
+      mustReferenceEntities: [
+        "insurance_cert_management_records",
+        "contract_system_records",
+        "supplier_portal_records",
+        "google_document_ai_records",
+      ],
+      mustCiteDocuments: [
+        "insurance-liability-monitor-policy-guide",
+      ],
+      expectedActionOutcome: "Action validate executed against Insurance Cert Management, with audit-trail entry and Contract Manager notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute validate without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Insurance & Liability Monitor so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "insurance_cert_management",
+      name: "Insurance Cert Management",
+      owns: [
+        "insurance_cert_management_records",
+        "insurance_cert_management_events",
+        "insurance_cert_management_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_insurance_cert_management_insurance_cert_management_records",
+        "query_insurance_cert_management_insurance_cert_management_events",
+        "query_insurance_cert_management_insurance_cert_management_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "contract_system",
+      name: "Contract System",
+      owns: [
+        "contract_system_records",
+        "contract_system_events",
+        "contract_system_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_contract_system_contract_system_records",
+        "query_contract_system_contract_system_events",
+        "query_contract_system_contract_system_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "supplier_portal",
+      name: "Supplier Portal",
+      owns: [
+        "supplier_portal_records",
+        "supplier_portal_events",
+        "supplier_portal_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_supplier_portal_supplier_portal_records",
+        "query_supplier_portal_supplier_portal_events",
+        "query_supplier_portal_supplier_portal_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "google_document_ai",
+      name: "Google Document AI",
+      owns: [
+        "google_document_ai_records",
+        "google_document_ai_events",
+        "google_document_ai_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_google_document_ai_google_document_ai_records",
+        "query_google_document_ai_google_document_ai_events",
+        "query_google_document_ai_google_document_ai_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "insurance_cert_management_records",
+      sourceSystemId: "insurance_cert_management",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "insurance_cert_management_events",
+      sourceSystemId: "insurance_cert_management",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "insurance_cert_management_record_id",
+          type: "ref",
+          ref: "insurance_cert_management_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "insurance_cert_management_audit_trail",
+      sourceSystemId: "insurance_cert_management",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "contract_system_records",
+      sourceSystemId: "contract_system",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "counterparty",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "start_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "end_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "negotiating",
+            "active",
+            "expired",
+            "terminated",
+          ],
+          required: true,
+        },
+        {
+          name: "auto_renew",
+          type: "boolean",
+          trueRate: 0.4,
+        },
+      ],
+    },
+    {
+      name: "contract_system_events",
+      sourceSystemId: "contract_system",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "counterparty",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "start_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "end_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "negotiating",
+            "active",
+            "expired",
+            "terminated",
+          ],
+          required: true,
+        },
+        {
+          name: "auto_renew",
+          type: "boolean",
+          trueRate: 0.4,
+        },
+        {
+          name: "contract_system_record_id",
+          type: "ref",
+          ref: "contract_system_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "contract_system_audit_trail",
+      sourceSystemId: "contract_system",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "counterparty",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "start_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "end_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "negotiating",
+            "active",
+            "expired",
+            "terminated",
+          ],
+          required: true,
+        },
+        {
+          name: "auto_renew",
+          type: "boolean",
+          trueRate: 0.4,
+        },
+      ],
+    },
+    {
+      name: "supplier_portal_records",
+      sourceSystemId: "supplier_portal",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "IT",
+            "Consulting",
+            "Manufacturing",
+            "Logistics",
+            "Facilities",
+            "Marketing",
+          ],
+          required: true,
+        },
+        {
+          name: "rating",
+          type: "number",
+          min: 1,
+          max: 5,
+          required: true,
+        },
+        {
+          name: "annual_spend",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "risk_score",
+          type: "enum",
+          values: [
+            "low",
+            "medium",
+            "high",
+          ],
+          weights: [
+            0.5,
+            0.35,
+            0.15,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending_review",
+            "terminated",
+          ],
+          required: true,
+        },
+        {
+          name: "onboarded_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "supplier_portal_events",
+      sourceSystemId: "supplier_portal",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "IT",
+            "Consulting",
+            "Manufacturing",
+            "Logistics",
+            "Facilities",
+            "Marketing",
+          ],
+          required: true,
+        },
+        {
+          name: "rating",
+          type: "number",
+          min: 1,
+          max: 5,
+          required: true,
+        },
+        {
+          name: "annual_spend",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "risk_score",
+          type: "enum",
+          values: [
+            "low",
+            "medium",
+            "high",
+          ],
+          weights: [
+            0.5,
+            0.35,
+            0.15,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending_review",
+            "terminated",
+          ],
+          required: true,
+        },
+        {
+          name: "onboarded_on",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "supplier_portal_record_id",
+          type: "ref",
+          ref: "supplier_portal_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "supplier_portal_audit_trail",
+      sourceSystemId: "supplier_portal",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "IT",
+            "Consulting",
+            "Manufacturing",
+            "Logistics",
+            "Facilities",
+            "Marketing",
+          ],
+          required: true,
+        },
+        {
+          name: "rating",
+          type: "number",
+          min: 1,
+          max: 5,
+          required: true,
+        },
+        {
+          name: "annual_spend",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "risk_score",
+          type: "enum",
+          values: [
+            "low",
+            "medium",
+            "high",
+          ],
+          weights: [
+            0.5,
+            0.35,
+            0.15,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending_review",
+            "terminated",
+          ],
+          required: true,
+        },
+        {
+          name: "onboarded_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "google_document_ai_records",
+      sourceSystemId: "google_document_ai",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "review",
+            "published",
+            "archived",
+          ],
+          required: true,
+        },
+        {
+          name: "last_updated",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "google_document_ai_events",
+      sourceSystemId: "google_document_ai",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "review",
+            "published",
+            "archived",
+          ],
+          required: true,
+        },
+        {
+          name: "last_updated",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "google_document_ai_record_id",
+          type: "ref",
+          ref: "google_document_ai_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "google_document_ai_audit_trail",
+      sourceSystemId: "google_document_ai",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "review",
+            "published",
+            "archived",
+          ],
+          required: true,
+        },
+        {
+          name: "last_updated",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "insurance_cert_management_events.insurance_cert_management_record_id",
+      to: "insurance_cert_management_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "contract_system_events.contract_system_record_id",
+      to: "contract_system_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "supplier_portal_events.supplier_portal_record_id",
+      to: "supplier_portal_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "google_document_ai_events.google_document_ai_record_id",
+      to: "google_document_ai_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "insurance-liability-monitor-policy-guide",
+      sourceSystemId: "insurance_cert_management",
+      type: "policy",
+      title: "Insurance & Liability Monitor Procurement Policy Guide",
+      requiredSections: [
+        "Sourcing principles",
+        "Approval thresholds",
+        "Supplier risk requirements",
+        "Contract and compliance gates",
+        "Exception handling",
+      ],
+      linkedEntities: [
+        "insurance_cert_management_records",
+        "insurance_cert_management_events",
+        "insurance_cert_management_audit_trail",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "sourcing",
+        "approvals",
+        "supplier-risk",
+        "exceptions",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "insurance_cert_management_validate_api",
+      sourceSystemId: "insurance_cert_management",
+      method: "POST",
+      path: "/api/insurance_cert_management/validate",
+      description: "Synchronous endpoint the agent calls to validate in Insurance Cert Management after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "insurance-liability-monitor-baseline-gap",
+      description: "Seed a realistic gap where Expired certificate detection sits between Quarterly manual audit and Real-time tracking, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "insurance_cert_management_records",
+        "insurance_cert_management_events",
+      ],
+      discoveryPath: [
+        "Inspect Insurance Cert Management records for the affected entities",
+        "Compare against Contract System historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Contract Manager action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "insurance_liability_monitor",
+      schemas: [
+        "insurance_cert_management",
+        "contract_system",
+        "supplier_portal",
+        "google_document_ai",
+      ],
+    },
+    bigquery: {
+      dataset: "procurement_insurance_liability_monitor",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "insurance-liability-monitor-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "insurance-liability-monitor-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Insurance & Liability Monitor workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const InsuranceLiabilityMonitor = () => (
+  <UseCaseSlide
+    title="Insurance & Liability Monitor"
+    subtitle="A-1608 • Supplier Risk"
+    icon={FileCheck}
+    domainId="domain-16"
+    layer="Layer 2: Agent Designer"
+    persona="Contract Manager"
+    systems={["Insurance Cert Management", "Contract System", "Supplier Portal", "Google Document AI"]}
+    kpis={[
+      { label: "Expired certificate detection", before: "Quarterly manual audit", after: "Real-time tracking" },
+      { label: "COI processing time", before: "15 min per cert", after: "30 seconds automated" },
+      { label: "Coverage gap detection rate", before: "Spot-checked", after: "100% validated" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    statusQuo={[
+      "Insurance certificates tracked in spreadsheets — expired certs discovered only during audits.",
+      "COIs arrive in dozens of formats from different insurers — manual extraction is tedious and error-prone.",
+      "No systematic validation of coverage amounts against contractual requirements."
+    ]}
+    agentification={[
+      "OCR/NLP via Document AI reads COIs in non-standard formats and extracts policy type, limits, deductibles, named insured, and endorsements.",
+      "LLM validates coverage against contract requirements: 'COI shows $5M umbrella but contract requires $10M — gap flagged.'",
+      "Interprets endorsement language — 'waiver of subrogation limited to named location' vs. contract's blanket waiver requirement."
+    ]}
+  />
+);

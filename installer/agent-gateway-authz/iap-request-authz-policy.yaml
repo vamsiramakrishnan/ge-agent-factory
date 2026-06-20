@@ -1,0 +1,13 @@
+# Authorization policy binding the IAP authz extension to the Agent Gateway.
+# Targets ONLY ge-agent-factory-agw (scoped, affects nothing else). action: CUSTOM +
+# policyProfile: REQUEST_AUTHZ delegates the decision to the (DRY_RUN) extension.
+name: ge-agent-factory-iap-authz-policy
+target:
+  resources:
+    - "projects/vital-octagon-19612/locations/us-central1/agentGateways/ge-agent-factory-agw"
+policyProfile: REQUEST_AUTHZ
+action: CUSTOM
+customProvider:
+  authzExtension:
+    resources:
+      - "projects/vital-octagon-19612/locations/us-central1/authzExtensions/ge-agent-factory-iap-authz-ext"

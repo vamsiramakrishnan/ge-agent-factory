@@ -1,0 +1,58 @@
+{
+  "id": "sap_ariba_workflows",
+  "version": 2,
+  "primitives": [
+    "role_permission_gate",
+    "state_machine",
+    "approval_blocker",
+    "idempotency_key",
+    "rate_limit",
+    "deterministic_failure_modes",
+    "audit_trail"
+  ],
+  "toolHandlers": {
+    "submit_supplier_update": {
+      "primitive": "state_machine_update",
+      "collection": "suppliers",
+      "primaryKey": "supplier_id",
+      "roleArg": "role",
+      "allowedRoles": ["buyer", "category_manager", "approver", "supplier_manager"],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "transitions": {
+        "*": ["invited", "registered", "qualified", "preferred", "suspended", "disqualified", "pending_approval"],
+        "invited": ["registered", "disqualified"],
+        "registered": ["qualified", "pending_approval", "suspended"],
+        "qualified": ["preferred", "suspended", "disqualified"],
+        "pending_approval": ["qualified", "disqualified"],
+        "suspended": ["qualified", "disqualified"],
+        "preferred": ["qualified", "suspended"]
+      },
+      "approvalBlockers": [
+        {
+          "collection": "approvals",
+          "sourceRecordField": "source_record_id",
+          "states": ["requested", "pending", "pending_approval"],
+          "blockedTargetStates": ["qualified", "preferred", "disqualified"]
+        }
+      ],
+      "rateLimit": {
+        "capacity": 25,
+        "refillPerSecond": 0.3,
+        "scope": "agent_system"
+      },
+      "latency": {
+        "minMs": 10,
+        "maxMs": 40
+      },
+      "failureModes": {
+        "rate_limited": 0.04,
+        "validation_error": 0.03,
+        "conflict": 0.02,
+        "forbidden": 0.01,
+        "timeout": 0.01
+      }
+    }
+  }
+}

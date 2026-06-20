@@ -1,0 +1,72 @@
+{
+  "id": "zendesk_schema",
+  "version": 1,
+  "collections": {
+    "tickets": {
+      "primaryKey": "ticket_id",
+      "fields": {
+        "ticket_id": "string",
+        "type": "string",
+        "short_description": "string",
+        "state": "string",
+        "priority": "string",
+        "assignment_group": "string",
+        "requester": "string",
+        "configuration_item": "string",
+        "sla": "string"
+      }
+    },
+    "cmdb_items": {
+      "primaryKey": "ci_id",
+      "fields": {
+        "ci_id": "string",
+        "name": "string",
+        "type": "string",
+        "status": "string",
+        "owner": "string",
+        "criticality": "string"
+      }
+    },
+    "changes": {
+      "primaryKey": "change_id",
+      "fields": {
+        "change_id": "string",
+        "ticket_id": "string",
+        "state": "string",
+        "risk": "string",
+        "planned_start": "string",
+        "planned_end": "string"
+      }
+    },
+    "slas": {
+      "primaryKey": "sla_id",
+      "fields": {
+        "sla_id": "string",
+        "ticket_id": "string",
+        "state": "string",
+        "target_time": "string",
+        "breach_risk": "string"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": "string",
+        "source_record_id": "string",
+        "approver": "string",
+        "state": "string",
+        "reason": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string"
+      }
+    }
+  }
+}

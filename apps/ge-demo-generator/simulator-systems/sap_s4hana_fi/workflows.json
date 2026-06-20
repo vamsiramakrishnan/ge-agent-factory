@@ -1,0 +1,105 @@
+{
+  "id": "sap_s4hana_fi_workflows",
+  "version": 2,
+  "primitives": [
+    "role_permission_gate",
+    "state_machine",
+    "approval_blocker",
+    "failure_injection",
+    "audit_trail"
+  ],
+  "toolHandlers": {
+    "submit_invoice_update": {
+      "primitive": "state_machine_update",
+      "collection": "invoices",
+      "primaryKey": "invoice_id",
+      "roleArg": "role",
+      "allowedRoles": ["ap_analyst", "controller", "finance_manager"],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "transitions": {
+        "*": ["matched", "pending_approval", "approved", "blocked", "posted", "rejected", "cancelled"],
+        "parked": ["matched", "blocked", "rejected", "cancelled"],
+        "matched": ["pending_approval", "approved", "blocked", "rejected"],
+        "pending_approval": ["approved", "blocked", "rejected"],
+        "approved": ["posted", "blocked"],
+        "blocked": ["matched", "approved", "rejected"],
+        "posted": ["paid", "rejected"],
+        "paid": ["cleared"],
+        "rejected": ["parked", "cancelled"]
+      },
+      "approvalBlockers": [
+        {
+          "collection": "approvals",
+          "sourceRecordField": "source_record_id",
+          "states": ["requested", "pending_approval"],
+          "blockedTargetStates": ["approved", "posted", "paid", "cleared"]
+        }
+      ],
+      "failureModes": {
+        "validation_error": 0.02,
+        "forbidden": 0.025,
+        "conflict": 0.03
+      }
+    },
+    "submit_journal_entry_update": {
+      "primitive": "state_machine_update",
+      "collection": "journal_entries",
+      "primaryKey": "journal_id",
+      "roleArg": "role",
+      "allowedRoles": ["gl_accountant", "controller", "finance_manager"],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "transitions": {
+        "*": ["pending_approval", "posted", "reversed", "rejected"],
+        "parked": ["pending_approval", "posted", "rejected"],
+        "pending_approval": ["posted", "rejected"],
+        "posted": ["reversed"],
+        "rejected": ["parked"]
+      },
+      "approvalBlockers": [
+        {
+          "collection": "approvals",
+          "sourceRecordField": "source_record_id",
+          "states": ["requested", "pending_approval"],
+          "blockedTargetStates": ["posted"]
+        }
+      ],
+      "failureModes": {
+        "conflict": 0.06,
+        "validation_error": 0.03
+      }
+    },
+    "submit_payment_run_update": {
+      "primitive": "state_machine_update",
+      "collection": "payment_runs",
+      "primaryKey": "payment_run_id",
+      "roleArg": "role",
+      "allowedRoles": ["ap_analyst", "controller", "finance_manager"],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "transitions": {
+        "*": ["proposed", "released", "executed", "cancelled"],
+        "created": ["proposed", "cancelled"],
+        "proposed": ["released", "cancelled"],
+        "released": ["executed", "cancelled"],
+        "executed": []
+      },
+      "approvalBlockers": [
+        {
+          "collection": "approvals",
+          "sourceRecordField": "source_record_id",
+          "states": ["requested", "pending_approval"],
+          "blockedTargetStates": ["released", "executed"]
+        }
+      ],
+      "failureModes": {
+        "forbidden": 0.05,
+        "rate_limited": 0.03
+      }
+    }
+  }
+}

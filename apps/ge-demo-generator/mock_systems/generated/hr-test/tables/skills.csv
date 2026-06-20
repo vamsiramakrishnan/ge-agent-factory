@@ -1,0 +1,31 @@
+id,name,email,skill_name,proficiency,acquired_date,expires,employee_id
+SKI-0001,Drew Martin,drew.martin@ge-demo.example,AI/ML,intermediate,2022-05-09,,EMP-0013
+SKI-0002,Riley Thomas,riley.thomas@ge-demo.example,Data Analysis,expert,2021-04-08,,EMP-0026
+SKI-0003,Morgan Johnson,morgan.johnson@ge-demo.example,Communication,intermediate,2022-11-18,,EMP-0018
+SKI-0004,Parker Smith,parker.smith@ge-demo.example,Security,beginner,2025-07-01,2026-03-23,EMP-0027
+SKI-0005,Jordan Garcia,jordan.garcia@ge-demo.example,AI/ML,advanced,2024-05-11,,EMP-0004
+SKI-0006,Hayden White,hayden.white@ge-demo.example,Python,advanced,2022-03-21,,EMP-0019
+SKI-0007,Finley Harris,finley.harris@ge-demo.example,Security,expert,2026-06-25,,EMP-0002
+SKI-0008,Quinn Williams,quinn.williams@ge-demo.example,AI/ML,beginner,2025-06-25,2028-11-01,EMP-0011
+SKI-0009,Parker Jackson,parker.jackson@ge-demo.example,Cloud,expert,2023-06-12,,EMP-0020
+SKI-0010,Ellis Brown,ellis.brown@ge-demo.example,Security,expert,2026-02-12,2028-04-03,EMP-0028
+SKI-0011,Parker White,parker.white@ge-demo.example,Security,beginner,2022-04-26,2028-09-10,EMP-0008
+SKI-0012,Quinn Kim,quinn.kim@ge-demo.example,Agile,advanced,2026-05-02,2028-04-28,EMP-0026
+SKI-0013,Blake Davis,blake.davis@ge-demo.example,Agile,beginner,2021-12-09,,EMP-0009
+SKI-0014,Hayden Martin,hayden.martin@ge-demo.example,Security,advanced,2023-07-24,,EMP-0007
+SKI-0015,Reese Patel,reese.patel@ge-demo.example,Leadership,intermediate,2021-03-10,,EMP-0008
+SKI-0016,Jordan Rodriguez,jordan.rodriguez@ge-demo.example,Project Management,beginner,2021-12-12,2027-10-22,EMP-0008
+SKI-0017,Hayden White,hayden.white@ge-demo.example,Data Analysis,advanced,2024-07-25,2028-10-08,EMP-0006
+SKI-0018,Riley Rodriguez,riley.rodriguez@ge-demo.example,Communication,expert,2021-07-01,,EMP-0006
+SKI-0019,Rowan White,rowan.white@ge-demo.example,Data Analysis,advanced,2020-03-03,2028-05-27,EMP-0027
+SKI-0020,Blake Williams,blake.williams@ge-demo.example,Communication,beginner,2026-10-22,2027-06-17,EMP-0022
+SKI-0021,Rowan Jackson,rowan.jackson@ge-demo.example,Communication,expert,2025-11-24,,EMP-0020
+SKI-0022,Avery Garcia,avery.garcia@ge-demo.example,Agile,expert,2020-05-27,,EMP-0020
+SKI-0023,Alex Smith,alex.smith@ge-demo.example,Project Management,intermediate,2026-08-07,,EMP-0008
+SKI-0024,Reese Jackson,reese.jackson@ge-demo.example,SQL,intermediate,2021-02-24,2027-11-16,EMP-0027
+SKI-0025,Taylor Kim,taylor.kim@ge-demo.example,Security,expert,2025-07-15,2027-10-10,EMP-0019
+SKI-0026,Ellis Davis,ellis.davis@ge-demo.example,AI/ML,intermediate,2025-06-08,,EMP-0015
+SKI-0027,Jordan Miller,jordan.miller@ge-demo.example,Python,beginner,2025-11-13,2026-10-16,EMP-0009
+SKI-0028,Harper Jackson,harper.jackson@ge-demo.example,AI/ML,advanced,2026-05-15,2027-09-15,EMP-0006
+SKI-0029,Morgan Garcia,morgan.garcia@ge-demo.example,SQL,advanced,2023-10-19,,EMP-0012
+SKI-0030,Taylor Wilson,taylor.wilson@ge-demo.example,Agile,expert,2023-04-15,,EMP-0020

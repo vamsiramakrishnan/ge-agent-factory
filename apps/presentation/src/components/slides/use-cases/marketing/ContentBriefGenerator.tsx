@@ -1,0 +1,923 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { FileText, Search, BarChart3, PenTool, CheckCircle } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Brief Requested", lane: "system", type: "trigger" },
+    { id: "a1", label: "Keyword & Gap Analysis", lane: "agent", type: "action" },
+    { id: "a2", label: "Brief Generation", lane: "agent", type: "action" },
+    { id: "a3", label: "Brief Delivered", lane: "agent", type: "output" },
+    { id: "h1", label: "Strategist Review", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Keyword Research", icon: Search, description: "Target keyword data, competitor content rankings, and content performance retrieved.", trigger: "Chat request", systems: ["SEMrush", "Ahrefs"] },
+  { label: "Gap Analysis", icon: BarChart3, description: "Top 10 ranking pages analyzed for content gaps, structural advantages, and search intent.", systems: ["Google Analytics 4", "SEMrush"], integration: "Analytics" },
+  { label: "Brief Drafting", icon: PenTool, description: "Comprehensive brief with recommended angle, outline, word count, and differentiation strategy generated.", systems: ["Vertex AI"] },
+  { label: "Strategist Review", icon: CheckCircle, description: "Content Strategist validates angle, outline, and keyword targeting before writer assignment.", output: "Content Brief" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "SEMrush", description: "Keyword volume, difficulty, competitor rankings, SERP features", direction: "read", protocol: "REST API", category: "analytics" },
+    { system: "Ahrefs", description: "Backlink profiles, content gap data, competitor content analysis", direction: "read", protocol: "REST API", category: "analytics" },
+    { system: "Google Analytics 4", description: "Internal content performance, traffic trends, engagement metrics", direction: "read", protocol: "REST API", category: "analytics" },
+    { system: "WordPress", description: "Existing content inventory, internal linking structure", direction: "read", protocol: "REST API", category: "collaboration" },
+    { system: "Vertex AI (Gemini)", description: "Search intent analysis, content gap interpretation, brief generation", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+    { system: "Google Docs", description: "Brief document output for strategist review", direction: "write", protocol: "Workspace API", category: "collaboration" },
+  ],
+  pipeline: [
+    { label: "Keyword & Competitive Data", description: "Pull keyword data from SEMrush/Ahrefs, competitor content rankings, and internal content performance from GA4. Map existing content inventory from WordPress.", systems: ["SEMrush", "Ahrefs", "Google Analytics 4", "WordPress"], layer: "integration", dataIn: "Keyword queries + competitor URLs + internal content", dataOut: "Keyword landscape + competitor content profiles" },
+    { label: "Gap & Intent Analysis", description: "Score content against top-ranking competitors. Estimate organic traffic potential. Identify content gaps \u2014 not just missing subtopics but structural and depth advantages.", systems: ["SEMrush", "BigQuery"], layer: "ml", dataIn: "Competitor content profiles + keyword data", dataOut: "Content gap analysis with traffic potential estimates" },
+    { label: "Brief Generation", description: "Analyze top 10 ranking pages for target keyword and identify gaps. Understand search intent. Draft comprehensive brief with recommended angle, outline, word count, internal linking, and differentiation strategy.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Gap analysis + search intent signals + content inventory", dataOut: "Comprehensive content brief with differentiation strategy" },
+    { label: "Delivery", description: "Brief delivered via Google Docs to Content Strategist for review and writer assignment.", systems: ["Google Docs"], layer: "integration", dataIn: "Generated brief", dataOut: "Reviewable content brief document" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Content Strategist agent for the Content Brief Generator workflow",
+  primaryObjective: "Gemini analyzes top 10 ranking pages and identifies not just missing subtopics but structural and depth advantages competitors hold. Understands search intent nuances \\u2014 distinguishing informational, commercial, and transactional queries for format recommendations. so the Content Strategist can move the Brief creation time KPI.",
+  inScope: [
+    "Gemini analyzes top 10 ranking pages and identifies not just missing subtopics but structural and depth advantages competitors hold",
+    "Understands search intent nuances \\u2014 distinguishing informational, commercial, and transactional queries for format recommendations",
+    "Drafts comprehensive briefs with differentiation strategy, not just keyword-stuffed outlines",
+  ],
+  outOfScope: [
+    "Final approval of paid spend reallocations above the governance threshold",
+    "Trademark, legal, or regulated-industry claim approval",
+    "Crisis communications without comms-team sign-off",
+  ],
+  toolIntents: [
+    {
+      name: "query_semrush_keyword_rankings",
+      kind: "query",
+      sourceSystemId: "semrush",
+      description: "Retrieve keyword rankings from SEMrush for the Content Brief Generator workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "keyword_rankings_records",
+        "keyword_rankings_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_ahrefs_keyword_rankings",
+      kind: "query",
+      sourceSystemId: "ahrefs",
+      description: "Retrieve keyword rankings from Ahrefs for the Content Brief Generator workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "keyword_rankings_records",
+        "keyword_rankings_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_google_analytics_4_session_events",
+      kind: "query",
+      sourceSystemId: "google_analytics_4",
+      description: "Retrieve session events from Google Analytics 4 for the Content Brief Generator workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "session_events_records",
+        "session_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "query_wordpress_content_entries",
+      kind: "query",
+      sourceSystemId: "wordpress",
+      description: "Retrieve content entries from WordPress for the Content Brief Generator workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "content_entries_records",
+        "content_entries_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_content_brief_generator_playbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "google_analytics_4",
+      description: "Look up sections of the Content Brief Generator Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_semrush_recommend",
+      kind: "action",
+      sourceSystemId: "semrush",
+      description: "Execute the recommend step in SEMrush after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Brief creation time moved from 4-6 hours toward 15 minutes",
+      mustCite: [
+        "semrush.keyword_rankings",
+        "ahrefs.keyword_rankings",
+      ],
+      sourceSystemIds: [
+        "semrush",
+        "ahrefs",
+      ],
+    },
+    {
+      claim: "Competitive pages analyzed moved from 3-5 manual toward Top 10 automated",
+      mustCite: [
+        "semrush.keyword_rankings",
+        "ahrefs.keyword_rankings",
+      ],
+      sourceSystemIds: [
+        "semrush",
+        "ahrefs",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Brief creation time regresses past the 4-6 hours baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Content Strategist",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed recommend action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from SEMrush (and other named systems) entities.",
+    "Never bypass Content Strategist approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "content-brief-generator-end-to-end",
+      prompt: "Run the Content Brief Generator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_semrush_keyword_rankings",
+        "query_ahrefs_keyword_rankings",
+        "query_google_analytics_4_session_events",
+        "query_wordpress_content_entries",
+        "lookup_content_brief_generator_playbook",
+        "action_semrush_recommend",
+      ],
+      mustReferenceEntities: [
+        "keyword_rankings",
+        "keyword_rankings",
+        "session_events",
+        "content_entries",
+      ],
+      mustCiteDocuments: [
+        "content-brief-generator-playbook",
+      ],
+      expectedActionOutcome: "Action recommend executed against SEMrush, with audit-trail entry and Content Strategist notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute recommend without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Content Brief Generator so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "semrush",
+      name: "SEMrush",
+      owns: [
+        "keyword_rankings",
+        "backlink_profile",
+        "competitor_data",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_semrush_keyword_rankings",
+        "query_semrush_backlink_profile",
+        "query_semrush_competitor_data",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "ahrefs",
+      name: "Ahrefs",
+      owns: [
+        "keyword_rankings",
+        "backlink_profile",
+        "competitor_data",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_ahrefs_keyword_rankings",
+        "query_ahrefs_backlink_profile",
+        "query_ahrefs_competitor_data",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "google_analytics_4",
+      name: "Google Analytics 4",
+      owns: [
+        "session_events",
+        "conversion_paths",
+        "audience_segments",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_google_analytics_4_session_events",
+        "query_google_analytics_4_conversion_paths",
+        "query_google_analytics_4_audience_segments",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "wordpress",
+      name: "WordPress",
+      owns: [
+        "content_entries",
+        "publishing_workflows",
+        "media_assets",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "cloud-storage",
+      ],
+      toolNames: [
+        "query_wordpress_content_entries",
+        "query_wordpress_publishing_workflows",
+        "query_wordpress_media_assets",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "keyword_rankings",
+      sourceSystemId: "semrush",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "backlink_profile",
+      sourceSystemId: "semrush",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "competitor_data",
+      sourceSystemId: "semrush",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "session_events",
+      sourceSystemId: "google_analytics_4",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "conversion_path_id",
+          type: "ref",
+          ref: "conversion_paths.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "conversion_paths",
+      sourceSystemId: "google_analytics_4",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "audience_segments",
+      sourceSystemId: "google_analytics_4",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "channel",
+          type: "enum",
+          values: [
+            "email",
+            "social",
+            "search",
+            "display",
+            "content",
+            "events",
+          ],
+          required: true,
+        },
+        {
+          name: "segment",
+          type: "enum",
+          values: [
+            "enterprise",
+            "mid_market",
+            "smb",
+          ],
+          required: true,
+        },
+        {
+          name: "impressions",
+          type: "number",
+          min: 1000,
+          max: 500000,
+          required: true,
+        },
+        {
+          name: "conversions",
+          type: "number",
+          min: 0,
+          max: 5000,
+          required: true,
+        },
+        {
+          name: "spend",
+          type: "number",
+          min: 1000,
+          max: 200000,
+          required: true,
+        },
+        {
+          name: "ctr",
+          type: "float",
+          min: 0.1,
+          max: 9.5,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "launched_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "content_entries",
+      sourceSystemId: "wordpress",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "publishing_workflows",
+      sourceSystemId: "wordpress",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "media_assets",
+      sourceSystemId: "wordpress",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "session_events.conversion_path_id",
+      to: "conversion_paths.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "content-brief-generator-playbook",
+      sourceSystemId: "google_analytics_4",
+      type: "playbook",
+      title: "Content Brief Generator Playbook",
+      requiredSections: [
+        "Audience guidelines",
+        "Brand voice rules",
+        "Channel-specific guardrails",
+        "Measurement framework",
+        "Approval thresholds",
+      ],
+      linkedEntities: [
+        "keyword_rankings",
+        "backlink_profile",
+        "competitor_data",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "audience",
+        "brand-voice",
+        "channels",
+        "approvals",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "semrush_recommend_api",
+      sourceSystemId: "semrush",
+      method: "POST",
+      path: "/api/semrush/recommend",
+      description: "Synchronous endpoint the agent calls to recommend in SEMrush after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "content-brief-generator-baseline-gap",
+      description: "Seed a realistic gap where Brief creation time sits between 4-6 hours and 15 minutes, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "keyword_rankings",
+        "backlink_profile",
+      ],
+      discoveryPath: [
+        "Inspect SEMrush records for the affected entities",
+        "Compare against Ahrefs historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Content Strategist action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "content_brief_generator",
+      schemas: [
+        "semrush",
+        "ahrefs",
+        "wordpress",
+      ],
+    },
+    bigquery: {
+      dataset: "marketing_content_brief_generator",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "content-brief-generator-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "content-brief-generator-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Content Brief Generator workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const ContentBriefGenerator = () => (
+  <UseCaseSlide
+    title="Content Brief Generator"
+    subtitle="A-3001 \u2022 Content & Creative"
+    icon={FileText}
+    domainId="domain-30"
+    layer="Layer 1: OOTB"
+    persona="Content Strategist"
+    systems={["SEMrush", "Ahrefs", "Google Analytics 4", "WordPress", "Vertex AI"]}
+    kpis={[
+      { label: "Brief creation time", before: "4-6 hours", after: "15 minutes" },
+      { label: "Competitive pages analyzed", before: "3-5 manual", after: "Top 10 automated" },
+      { label: "Content ranking rate", before: "35%", after: "65%" },
+    ]}
+    triggerType="chat"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "Content Strategist", action: "Review content brief", description: "Content Strategist validates angle, outline, keyword targeting, and differentiation strategy before assigning to writer." }}
+    statusQuo={[
+      "Content briefs created manually with limited competitive analysis \u2014 strategist reviews 3-5 competitor pages at best.",
+      "Search intent often misjudged, leading to content that ranks poorly despite strong domain authority.",
+      "No systematic internal linking strategy or content gap quantification in the briefing process."
+    ]}
+    agentification={[
+      "Gemini analyzes top 10 ranking pages and identifies not just missing subtopics but structural and depth advantages competitors hold.",
+      "Understands search intent nuances \u2014 distinguishing informational, commercial, and transactional queries for format recommendations.",
+      "Drafts comprehensive briefs with differentiation strategy, not just keyword-stuffed outlines."
+    ]}
+  />
+);

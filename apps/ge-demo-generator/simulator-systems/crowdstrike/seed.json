@@ -1,0 +1,60 @@
+{
+  "assets": [
+    {
+      "asset_id": "ASSET-ID-001",
+      "name": "sample_name",
+      "status": "sample_status",
+      "owner": "sample_owner",
+      "criticality": "sample_criticality",
+      "environment": "sample_environment"
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "FINDING-ID-001",
+      "asset_id": "ASSET-ID-001",
+      "status": "sample_status",
+      "severity": "sample_severity",
+      "source": "sample_source",
+      "detected_at": "sample_detected_at"
+    }
+  ],
+  "incidents": [
+    {
+      "incident_id": "INCIDENT-ID-001",
+      "status": "sample_status",
+      "severity": "sample_severity",
+      "commander": "sample_commander",
+      "opened_at": "sample_opened_at",
+      "summary": "sample_summary"
+    }
+  ],
+  "controls": [
+    {
+      "control_id": "CONTROL-ID-001",
+      "name": "sample_name",
+      "status": "sample_status",
+      "owner": "sample_owner",
+      "framework": "sample_framework"
+    }
+  ],
+  "exceptions": [
+    {
+      "exception_id": "EXCEPTION-ID-001",
+      "finding_id": "FINDING-ID-001",
+      "status": "sample_status",
+      "requester": "sample_requester",
+      "expiration_date": "sample_expiration_date"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APPROVAL-ID-001",
+      "source_record_id": "SOURCE-RECORD-ID-001",
+      "approver": "sample_approver",
+      "state": "sample_state",
+      "reason": "sample_reason"
+    }
+  ],
+  "audit_events": []
+}

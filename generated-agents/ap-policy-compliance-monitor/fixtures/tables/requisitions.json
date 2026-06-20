@@ -1,0 +1,602 @@
+[
+  {
+    "id": "ID-0001",
+    "source_record_id": "SOU-0001",
+    "vendor": "Apex Facilities",
+    "amount": 18500.25,
+    "currency": "USD",
+    "status": "pending",
+    "created_at": "2026-05-06",
+    "due_date": "2026-06-06"
+  },
+  {
+    "id": "ID-0002",
+    "source_record_id": "SOU-0002",
+    "vendor": "Northstar Logistics",
+    "amount": 74200.9,
+    "currency": "USD",
+    "status": "approved",
+    "created_at": "2026-05-07",
+    "due_date": "2026-06-10"
+  },
+  {
+    "id": "ID-0003",
+    "source_record_id": "SOU-0003",
+    "vendor": "Summit Software",
+    "amount": 126000,
+    "currency": "USD",
+    "status": "approved",
+    "created_at": "2026-05-08",
+    "due_date": "2026-06-14"
+  },
+  {
+    "id": "ID-0004",
+    "source_record_id": "SOU-0004",
+    "vendor": "Vertex Components",
+    "amount": 9800.5,
+    "currency": "USD",
+    "status": "rejected",
+    "created_at": "2026-05-09",
+    "due_date": "2026-06-18"
+  },
+  {
+    "id": "ID-0005",
+    "source_record_id": "SOU-0005",
+    "vendor": "Zemlak, Huels and Upton",
+    "amount": 71431.86,
+    "currency": "USD",
+    "status": "pending",
+    "created_at": "2024-12-10",
+    "due_date": "2025-09-24"
+  },
+  {
+    "id": "ID-0006",
+    "source_record_id": "SOU-0006",
+    "vendor": "Bechtelar, Mitchell and Hoppe",
+    "amount": 45678.03,
+    "currency": "USD",
+    "status": "pending",
+    "created_at": "2022-07-07",
+    "due_date": "2024-07-04"
+  },
+  {
+    "id": "ID-0007",
+    "source_record_id": "SOU-0007",
+    "vendor": "Weissnat - Hettinger",
+    "amount": 59406.71,
+    "currency": "USD",
+    "status": "approved",
+    "created_at": "2025-06-24",
+    "due_date": "2023-09-04"
+  },
+  {
+    "id": "ID-0008",
+    "source_record_id": "SOU-0008",
+    "vendor": "Turcotte, Conroy and Grimes",
+    "amount": 48651.45,
+    "currency": "USD",
+    "status": "draft",
+    "created_at": "2020-09-26",
+    "due_date": "2023-05-09"
+  },
+  {
+    "id": "ID-0009",
+    "source_record_id": "SOU-0009",
+    "vendor": "Sporer LLC",
+    "amount": 43050.11,
+    "currency": "USD",
+    "status": "pending",
+    "created_at": "2021-11-02",
+    "due_date": "2024-09-25"
+  },
+  {
+    "id": "ID-0010",
+    "source_record_id": "SOU-0010",
+    "vendor": "Stiedemann and Sons",
+    "amount": 43155.42,
+    "currency": "USD",
+    "status": "approved",
+    "created_at": "2022-03-24",
+    "due_date": "2023-08-10"
+  },
+  {
+    "id": "ID-0011",
+    "source_record_id": "SOU-0011",
+    "vendor": "Cummerata, Toy and Balistreri",
+    "amount": 64617.66,
+    "currency": "USD",
+    "status": "pending",
+    "created_at": "2020-06-06",
+    "due_date": "2022-06-16"
+  },
+  {
+    "id": "ID-0012",
+    "source_record_id": "SOU-0012",
+    "vendor": "Hickle - Kling-Pfeffer",
+    "amount": 14141.24,
+    "currency": "USD",
+    "status": "draft",
+    "created_at": "2023-01-12",
+    "due_date": "2025-10-14"
+  },
+  {
+    "id": "ID-0013",
+    "source_record_id": "SOU-0013",
+    "vendor": "Howell Group",
+    "amount": 2432.87,
+    "currency": "EUR",
+    "status": "approved",
+    "created_at": "2021-09-26",
+    "due_date": "2025-05-26"
+  },
+  {
+    "id": "ID-0014",
+    "source_record_id": "SOU-0014",
+    "vendor": "Towne - Wyman",
+    "amount": 28911.7,
+    "currency": "JPY",
+    "status": "pending",
+    "created_at": "2022-04-25",
+    "due_date": "2022-01-16"
+  },
+  {
+    "id": "ID-0015",
+    "source_record_id": "SOU-0015",
+    "vendor": "Littel and Sons",
+    "amount": 83381.63,
+    "currency": "USD",
+    "status": "pending",
+    "created_at": "2021-07-22",
+    "due_date": "2021-03-02"
+  },
+  {
+    "id": "ID-0016",
+    "source_record_id": "SOU-0016",
+    "vendor": "Wisoky - McClure",
+    "amount": 14005.75,
+    "currency": "USD",
+    "status": "approved",
+    "created_at": "2022-12-07",
+    "due_date": "2022-05-30"
+  },
+  {
+    "id": "ID-0017",
+    "source_record_id": "SOU-0017",
+    "vendor": "Marks, Huels and Littel",
+    "amount": 22852.2,
+    "currency": "JPY",
+    "status": "rejected",
+    "created_at": "2024-05-01",
+    "due_date": "2023-03-15"
+  },
+  {
+    "id": "ID-0018",
+    "source_record_id": "SOU-0018",
+    "vendor": "Cassin, Terry and Koepp",
+    "amount": 98100.64,
+    "currency": "USD",
+    "status": "paid",
+    "created_at": "2023-07-14",
+    "due_date": "2022-04-02"
+  },
+  {
+    "id": "ID-0019",
+    "source_record_id": "SOU-0019",
+    "vendor": "Howe - Mayert",
+    "amount": 86571.16,
+    "currency": "JPY",
+    "status": "approved",
+    "created_at": "2024-12-18",
+    "due_date": "2024-08-02"
+  },
+  {
+    "id": "ID-0020",
+    "source_record_id": "SOU-0020",
+    "vendor": "Brekke and Sons",
+    "amount": 43971.07,
+    "currency": "EUR",
+    "status": "paid",
+    "created_at": "2020-05-16",
+    "due_date": "2025-04-20"
+  },
+  {
+    "id": "ID-0021",
+    "source_record_id": "SOU-0021",
+    "vendor": "Walter Group",
+    "amount": 47736.66,
+    "currency": "USD",
+    "status": "paid",
+    "created_at": "2024-02-27",
+    "due_date": "2020-10-21"
+  },
+  {
+    "id": "ID-0022",
+    "source_record_id": "SOU-0022",
+    "vendor": "Gottlieb - Altenwerth-Zieme",
+    "amount": 67714.45,
+    "currency": "EUR",
+    "status": "pending",
+    "created_at": "2020-02-01",
+    "due_date": "2024-06-05"
+  },
+  {
+    "id": "ID-0023",
+    "source_record_id": "SOU-0023",
+    "vendor": "Romaguera, Runolfsson and Bogisich",
+    "amount": 48814.02,
+    "currency": "USD",
+    "status": "approved",
+    "created_at": "2022-06-11",
+    "due_date": "2020-05-24"
+  },
+  {
+    "id": "ID-0024",
+    "source_record_id": "SOU-0024",
+    "vendor": "White Group",
+    "amount": 95516.01,
+    "currency": "USD",
+    "status": "pending",
+    "created_at": "2020-06-17",
+    "due_date": "2023-01-02"
+  },
+  {
+    "id": "ID-0025",
+    "source_record_id": "SOU-0025",
+    "vendor": "Bins, Feeney and Ward",
+    "amount": 40569.76,
+    "currency": "GBP",
+    "status": "pending",
+    "created_at": "2022-11-10",
+    "due_date": "2021-05-10"
+  },
+  {
+    "id": "ID-0026",
+    "source_record_id": "SOU-0026",
+    "vendor": "Herzog LLC",
+    "amount": 12379.77,
+    "currency": "GBP",
+    "status": "approved",
+    "created_at": "2022-09-11",
+    "due_date": "2023-07-08"
+  },
+  {
+    "id": "ID-0027",
+    "source_record_id": "SOU-0027",
+    "vendor": "Flatley LLC",
+    "amount": 82271.23,
+    "currency": "EUR",
+    "status": "approved",
+    "created_at": "2023-02-14",
+    "due_date": "2020-11-09"
+  },
+  {
+    "id": "ID-0028",
+    "source_record_id": "SOU-0028",
+    "vendor": "Graham, Becker and Abbott",
+    "amount": 51161.8,
+    "currency": "USD",
+    "status": "pending",
+    "created_at": "2024-03-29",
+    "due_date": "2020-05-17"
+  },
+  {
+    "id": "ID-0029",
+    "source_record_id": "SOU-0029",
+    "vendor": "Robel, Hessel and Haley",
+    "amount": 78914.36,
+    "currency": "GBP",
+    "status": "approved",
+    "created_at": "2025-06-17",
+    "due_date": "2022-04-07"
+  },
+  {
+    "id": "ID-0030",
+    "source_record_id": "SOU-0030",
+    "vendor": "Kunde, Prosacco and Ratke",
+    "amount": 66671.9,
+    "currency": "JPY",
+    "status": "paid",
+    "created_at": "2025-09-15",
+    "due_date": "2024-03-19"
+  },
+  {
+    "id": "ID-0031",
+    "source_record_id": "SOU-0031",
+    "vendor": "Nolan - Will",
+    "amount": 50090.07,
+    "currency": "USD",
+    "status": "approved",
+    "created_at": "2021-04-02",
+    "due_date": "2022-03-19"
+  },
+  {
+    "id": "ID-0032",
+    "source_record_id": "SOU-0032",
+    "vendor": "Johnson and Sons",
+    "amount": 85049.77,
+    "currency": "USD",
+    "status": "approved",
+    "created_at": "2022-11-01",
+    "due_date": "2025-04-13"
+  },
+  {
+    "id": "ID-0033",
+    "source_record_id": "SOU-0033",
+    "vendor": "Grimes - Ritchie",
+    "amount": 31631.17,
+    "currency": "USD",
+    "status": "pending",
+    "created_at": "2024-04-12",
+    "due_date": "2021-03-12"
+  },
+  {
+    "id": "ID-0034",
+    "source_record_id": "SOU-0034",
+    "vendor": "Beer, Gleichner and Hoeger",
+    "amount": 33800.82,
+    "currency": "USD",
+    "status": "pending",
+    "created_at": "2022-06-25",
+    "due_date": "2022-12-16"
+  },
+  {
+    "id": "ID-0035",
+    "source_record_id": "SOU-0035",
+    "vendor": "Altenwerth Inc",
+    "amount": 96353.58,
+    "currency": "USD",
+    "status": "approved",
+    "created_at": "2021-11-14",
+    "due_date": "2024-08-23"
+  },
+  {
+    "id": "ID-0036",
+    "source_record_id": "SOU-0036",
+    "vendor": "Cassin-Auer, Carter and Greenholt",
+    "amount": 77336.88,
+    "currency": "USD",
+    "status": "pending",
+    "created_at": "2022-03-25",
+    "due_date": "2020-01-03"
+  },
+  {
+    "id": "ID-0037",
+    "source_record_id": "SOU-0037",
+    "vendor": "Stamm-Bailey - Sauer",
+    "amount": 45853.78,
+    "currency": "USD",
+    "status": "pending",
+    "created_at": "2020-05-24",
+    "due_date": "2021-05-15"
+  },
+  {
+    "id": "ID-0038",
+    "source_record_id": "SOU-0038",
+    "vendor": "Krajcik - Weissnat-Schaden",
+    "amount": 99133.66,
+    "currency": "USD",
+    "status": "rejected",
+    "created_at": "2020-06-14",
+    "due_date": "2022-03-12"
+  },
+  {
+    "id": "ID-0039",
+    "source_record_id": "SOU-0039",
+    "vendor": "Mueller - Corkery",
+    "amount": 81131.27,
+    "currency": "USD",
+    "status": "pending",
+    "created_at": "2024-01-17",
+    "due_date": "2021-07-23"
+  },
+  {
+    "id": "ID-0040",
+    "source_record_id": "SOU-0040",
+    "vendor": "Kovacek and Sons",
+    "amount": 70801.36,
+    "currency": "USD",
+    "status": "pending",
+    "created_at": "2020-01-18",
+    "due_date": "2023-10-14"
+  },
+  {
+    "id": "ID-0041",
+    "source_record_id": "SOU-0041",
+    "vendor": "Lehner-Flatley LLC",
+    "amount": 67994.07,
+    "currency": "USD",
+    "status": "pending",
+    "created_at": "2024-11-03",
+    "due_date": "2022-10-04"
+  },
+  {
+    "id": "ID-0042",
+    "source_record_id": "SOU-0042",
+    "vendor": "Cummerata Inc",
+    "amount": 20997.63,
+    "currency": "USD",
+    "status": "paid",
+    "created_at": "2025-11-20",
+    "due_date": "2024-10-04"
+  },
+  {
+    "id": "ID-0043",
+    "source_record_id": "SOU-0043",
+    "vendor": "Donnelly-Wilderman, Wunsch and Kertzmann",
+    "amount": 59396.74,
+    "currency": "USD",
+    "status": "approved",
+    "created_at": "2025-11-20",
+    "due_date": "2021-02-20"
+  },
+  {
+    "id": "ID-0044",
+    "source_record_id": "SOU-0044",
+    "vendor": "Willms, Rosenbaum-Crooks and Franecki",
+    "amount": 64097.46,
+    "currency": "USD",
+    "status": "pending",
+    "created_at": "2023-05-23",
+    "due_date": "2024-08-18"
+  },
+  {
+    "id": "ID-0045",
+    "source_record_id": "SOU-0045",
+    "vendor": "Hermiston and Sons",
+    "amount": 22944.81,
+    "currency": "USD",
+    "status": "pending",
+    "created_at": "2021-12-06",
+    "due_date": "2025-02-01"
+  },
+  {
+    "id": "ID-0046",
+    "source_record_id": "SOU-0046",
+    "vendor": "Barrows, Carter and VonRueden",
+    "amount": 99326.18,
+    "currency": "USD",
+    "status": "paid",
+    "created_at": "2022-03-25",
+    "due_date": "2022-05-10"
+  },
+  {
+    "id": "ID-0047",
+    "source_record_id": "SOU-0047",
+    "vendor": "Mayer-Hermiston, Maggio and Fisher",
+    "amount": 19240.13,
+    "currency": "GBP",
+    "status": "pending",
+    "created_at": "2023-01-14",
+    "due_date": "2021-04-29"
+  },
+  {
+    "id": "ID-0048",
+    "source_record_id": "SOU-0048",
+    "vendor": "Streich - McCullough-Kertzmann",
+    "amount": 58050.88,
+    "currency": "USD",
+    "status": "paid",
+    "created_at": "2021-09-11",
+    "due_date": "2022-02-12"
+  },
+  {
+    "id": "ID-0049",
+    "source_record_id": "SOU-0049",
+    "vendor": "Johnston, Kuphal and Dibbert",
+    "amount": 33223.31,
+    "currency": "GBP",
+    "status": "pending",
+    "created_at": "2020-06-04",
+    "due_date": "2020-05-31"
+  },
+  {
+    "id": "ID-0050",
+    "source_record_id": "SOU-0050",
+    "vendor": "Schroeder, Powlowski and Corwin",
+    "amount": 87600.72,
+    "currency": "USD",
+    "status": "pending",
+    "created_at": "2022-07-21",
+    "due_date": "2020-03-23"
+  },
+  {
+    "id": "ID-0051",
+    "source_record_id": "SOU-0051",
+    "vendor": "Johnson - Wiza",
+    "amount": 22689.92,
+    "currency": "USD",
+    "status": "pending",
+    "created_at": "2021-05-20",
+    "due_date": "2020-01-04"
+  },
+  {
+    "id": "ID-0052",
+    "source_record_id": "SOU-0052",
+    "vendor": "Olson, Jones and Ratke",
+    "amount": 81696.27,
+    "currency": "USD",
+    "status": "pending",
+    "created_at": "2025-05-31",
+    "due_date": "2024-11-03"
+  },
+  {
+    "id": "ID-0053",
+    "source_record_id": "SOU-0053",
+    "vendor": "McLaughlin, Little and Sauer",
+    "amount": 58418.9,
+    "currency": "JPY",
+    "status": "draft",
+    "created_at": "2021-08-04",
+    "due_date": "2023-08-11"
+  },
+  {
+    "id": "ID-0054",
+    "source_record_id": "SOU-0054",
+    "vendor": "Brakus - Hills",
+    "amount": 93299.2,
+    "currency": "EUR",
+    "status": "approved",
+    "created_at": "2024-04-14",
+    "due_date": "2022-10-09"
+  },
+  {
+    "id": "ID-0055",
+    "source_record_id": "SOU-0055",
+    "vendor": "Stoltenberg, Dietrich and Wolff",
+    "amount": 85668.07,
+    "currency": "EUR",
+    "status": "paid",
+    "created_at": "2023-05-17",
+    "due_date": "2025-09-07"
+  },
+  {
+    "id": "ID-0056",
+    "source_record_id": "SOU-0056",
+    "vendor": "Schaden LLC",
+    "amount": 38497.07,
+    "currency": "USD",
+    "status": "paid",
+    "created_at": "2020-01-26",
+    "due_date": "2024-03-22"
+  },
+  {
+    "id": "ID-0057",
+    "source_record_id": "SOU-0057",
+    "vendor": "Purdy, Wisoky and Raynor",
+    "amount": 86277.79,
+    "currency": "USD",
+    "status": "paid",
+    "created_at": "2023-04-26",
+    "due_date": "2022-05-19"
+  },
+  {
+    "id": "ID-0058",
+    "source_record_id": "SOU-0058",
+    "vendor": "Hagenes - Pacocha",
+    "amount": 79688.47,
+    "currency": "USD",
+    "status": "approved",
+    "created_at": "2023-06-07",
+    "due_date": "2024-12-30"
+  },
+  {
+    "id": "ID-0059",
+    "source_record_id": "SOU-0059",
+    "vendor": "Bechtelar, Hackett and Harvey",
+    "amount": 73296.64,
+    "currency": "USD",
+    "status": "draft",
+    "created_at": "2024-09-14",
+    "due_date": "2021-09-18"
+  },
+  {
+    "id": "ID-0060",
+    "source_record_id": "SOU-0060",
+    "vendor": "Bednar Inc",
+    "amount": 94450.42,
+    "currency": "USD",
+    "status": "approved",
+    "created_at": "2023-10-17",
+    "due_date": "2021-03-12"
+  }
+]

@@ -1,0 +1,200 @@
+{
+  "id": "workday_schema",
+  "version": 2,
+  "collections": {
+    "workers": {
+      "primaryKey": "worker_id",
+      "description": "Workday worker profile including employee/contingent worker identity, org assignment, job profile, pay group, management chain, and security-sensitive status.",
+      "fields": {
+        "worker_id": "string",
+        "employee_id": "string",
+        "universal_id": "string",
+        "name": "string",
+        "preferred_name": "string",
+        "email": "string",
+        "status": "enum:active|on_leave|terminated|pre_hire",
+        "worker_type": "enum:employee|contingent_worker|manager|executive",
+        "position_id": "ref:positions.position_id",
+        "manager_id": "ref:workers.worker_id",
+        "supervisory_org_id": "ref:supervisory_orgs.org_id",
+        "company": "string",
+        "company_code": "string",
+        "business_unit": "string",
+        "cost_center": "string",
+        "location": "string",
+        "country": "string",
+        "business_title": "string",
+        "job_profile_id": "ref:job_profiles.job_profile_id",
+        "job_profile": "string",
+        "job_family": "string",
+        "management_level": "string",
+        "pay_group": "string",
+        "time_type": "enum:full_time|part_time",
+        "fte": "number",
+        "hire_date": "string",
+        "continuous_service_date": "string",
+        "worker_subtype": "string",
+        "security_groups": "array:string",
+        "skills": "array:string"
+      }
+    },
+    "positions": {
+      "primaryKey": "position_id",
+      "description": "Budgeted Workday position with staffing, org, job, location, and headcount controls.",
+      "fields": {
+        "position_id": "string",
+        "position_number": "string",
+        "title": "string",
+        "job_profile_id": "ref:job_profiles.job_profile_id",
+        "job_profile": "string",
+        "supervisory_org_id": "ref:supervisory_orgs.org_id",
+        "cost_center": "string",
+        "company": "string",
+        "location": "string",
+        "worker_type": "string",
+        "availability_date": "string",
+        "status": "enum:open|filled|frozen|closed",
+        "worker_id": "ref:workers.worker_id",
+        "position_restriction_reason": "string"
+      }
+    },
+    "supervisory_orgs": {
+      "primaryKey": "org_id",
+      "description": "Manager-led Workday supervisory organization hierarchy for routing, staffing, and approvals.",
+      "fields": {
+        "org_id": "string",
+        "name": "string",
+        "manager_id": "ref:workers.worker_id",
+        "parent_org_id": "ref:supervisory_orgs.org_id",
+        "organization_type": "string",
+        "cost_center": "string",
+        "company": "string",
+        "business_unit": "string",
+        "location": "string",
+        "active": "boolean"
+      }
+    },
+    "job_profiles": {
+      "primaryKey": "job_profile_id",
+      "description": "Workday job profile and job family metadata.",
+      "fields": {
+        "job_profile_id": "string",
+        "job_code": "string",
+        "name": "string",
+        "job_family": "string",
+        "job_level": "string",
+        "management_level": "string",
+        "exempt_status": "string",
+        "worker_type": "string",
+        "active": "boolean"
+      }
+    },
+    "compensation_records": {
+      "primaryKey": "compensation_id",
+      "description": "Current worker compensation plan assignments and salary basis.",
+      "fields": {
+        "compensation_id": "string",
+        "worker_id": "ref:workers.worker_id",
+        "effective_date": "string",
+        "currency": "string",
+        "base_pay": "number",
+        "salary_plan": "string",
+        "bonus_plan": "string",
+        "allowance_plan": "string",
+        "pay_frequency": "string",
+        "compa_ratio": "number",
+        "grade_profile": "string",
+        "status": "string"
+      }
+    },
+    "absence_requests": {
+      "primaryKey": "absence_id",
+      "description": "Workday absence and leave requests with balances and approval state.",
+      "fields": {
+        "absence_id": "string",
+        "worker_id": "ref:workers.worker_id",
+        "absence_type": "string",
+        "start_date": "string",
+        "end_date": "string",
+        "quantity": "number",
+        "unit": "string",
+        "status": "string",
+        "approver": "string",
+        "balance_before": "number",
+        "balance_after": "number"
+      }
+    },
+    "business_processes": {
+      "primaryKey": "business_process_id",
+      "description": "Workday business process instances for job, comp, leave, hire, and termination events.",
+      "fields": {
+        "business_process_id": "string",
+        "worker_id": "ref:workers.worker_id",
+        "type": "enum:change_job|transfer|compensation_change|leave_request|termination|hire",
+        "status": "enum:initiated|pending_approval|completed|denied|rescinded",
+        "initiated_by": "string",
+        "initiated_at": "string",
+        "effective_date": "string",
+        "current_step_id": "ref:business_process_steps.step_id",
+        "tenant": "string",
+        "reason": "string"
+      }
+    },
+    "business_process_steps": {
+      "primaryKey": "step_id",
+      "description": "Approval and review steps belonging to a Workday business process.",
+      "fields": {
+        "step_id": "string",
+        "business_process_id": "ref:business_processes.business_process_id",
+        "sequence": "number",
+        "step_name": "string",
+        "approver_role": "string",
+        "assignee": "string",
+        "status": "enum:not_started|requested|approved|denied|skipped",
+        "due_at": "string"
+      }
+    },
+    "worker_events": {
+      "primaryKey": "event_id",
+      "description": "Worker-facing event summary for pending changes and audit trails.",
+      "fields": {
+        "event_id": "string",
+        "worker_id": "ref:workers.worker_id",
+        "event_type": "string",
+        "status": "string",
+        "reason": "string",
+        "effective_date": "string",
+        "target_manager_id": "string",
+        "target_cost_center": "string",
+        "business_process_id": "ref:business_processes.business_process_id"
+      }
+    },
+    "security_assignments": {
+      "primaryKey": "assignment_id",
+      "description": "Workday security group assignment evidence for domain-sensitive simulator behavior.",
+      "fields": {
+        "assignment_id": "string",
+        "worker_id": "ref:workers.worker_id",
+        "security_group": "string",
+        "domain": "string",
+        "role": "string",
+        "effective_date": "string",
+        "status": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "description": "Simulator audit log.",
+      "fields": {
+        "event_id": "string",
+        "actor": "string",
+        "role": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string",
+        "timestamp": "string"
+      }
+    }
+  }
+}

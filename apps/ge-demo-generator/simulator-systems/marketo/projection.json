@@ -1,0 +1,31 @@
+{
+  "id": "marketo_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into marketo collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "lead"
+      ],
+      "realizedObjects": [
+        "leads",
+        "accounts"
+      ],
+      "simulatorCollection": "leads",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "campaign"
+      ],
+      "realizedObjects": [
+        "campaigns",
+        "journeys",
+        "email_events",
+        "segments"
+      ],
+      "simulatorCollection": "campaigns",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

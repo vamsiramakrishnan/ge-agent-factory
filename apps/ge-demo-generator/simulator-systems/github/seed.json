@@ -1,0 +1,358 @@
+{
+  "repositories": [
+    {
+      "repo_id": "R-1",
+      "owner": "ge-aerospace",
+      "repo": "transformation-platform",
+      "full_name": "ge-aerospace/transformation-platform",
+      "visibility": "private",
+      "default_branch": "main",
+      "open_issues": 7,
+      "archived": false
+    },
+    {
+      "repo_id": "R-2",
+      "owner": "ge-aerospace",
+      "repo": "mcp-simulators",
+      "full_name": "ge-aerospace/mcp-simulators",
+      "visibility": "internal",
+      "default_branch": "main",
+      "open_issues": 3,
+      "archived": false
+    },
+    {
+      "repo_id": "R-3",
+      "owner": "ge-aerospace",
+      "repo": "identity-bridge",
+      "full_name": "ge-aerospace/identity-bridge",
+      "visibility": "private",
+      "default_branch": "main",
+      "open_issues": 5,
+      "archived": false
+    },
+    {
+      "repo_id": "R-4",
+      "owner": "ge-aerospace",
+      "repo": "analytics-export",
+      "full_name": "ge-aerospace/analytics-export",
+      "visibility": "internal",
+      "default_branch": "main",
+      "open_issues": 2,
+      "archived": false
+    },
+    {
+      "repo_id": "R-5",
+      "owner": "ge-aerospace",
+      "repo": "legacy-ingest",
+      "full_name": "ge-aerospace/legacy-ingest",
+      "visibility": "private",
+      "default_branch": "master",
+      "open_issues": 0,
+      "archived": true
+    }
+  ],
+  "issues": [
+    {
+      "issue_id": "I-101",
+      "number": 101,
+      "owner": "ge-aerospace",
+      "repo": "transformation-platform",
+      "title": "Flaky conformance test on CI",
+      "state": "open",
+      "state_reason": "reopened",
+      "assignee": "sam-rivera",
+      "labels": [
+        "bug",
+        "ci"
+      ],
+      "created_at": "2026-06-10T09:12:00Z",
+      "updated_at": "2026-06-17T19:42:00Z"
+    },
+    {
+      "issue_id": "I-102",
+      "number": 102,
+      "owner": "ge-aerospace",
+      "repo": "transformation-platform",
+      "title": "Add durable state runbook",
+      "state": "open",
+      "state_reason": "reopened",
+      "assignee": "avery-johnson",
+      "labels": [
+        "docs"
+      ],
+      "created_at": "2026-06-09T13:05:00Z",
+      "updated_at": "2026-06-15T16:30:00Z"
+    },
+    {
+      "issue_id": "I-103",
+      "number": 103,
+      "owner": "ge-aerospace",
+      "repo": "mcp-simulators",
+      "title": "Preserve query params in generated tools",
+      "state": "open",
+      "state_reason": "reopened",
+      "assignee": "mina-patel",
+      "labels": [
+        "enhancement",
+        "openapi"
+      ],
+      "created_at": "2026-06-11T08:20:00Z",
+      "updated_at": "2026-06-18T07:55:00Z"
+    },
+    {
+      "issue_id": "I-104",
+      "number": 104,
+      "owner": "ge-aerospace",
+      "repo": "identity-bridge",
+      "title": "Okta filter expression mismatch",
+      "state": "open",
+      "state_reason": "reopened",
+      "assignee": "diego-chen",
+      "labels": [
+        "bug",
+        "identity"
+      ],
+      "created_at": "2026-06-12T10:44:00Z",
+      "updated_at": "2026-06-18T11:05:00Z"
+    },
+    {
+      "issue_id": "I-105",
+      "number": 105,
+      "owner": "ge-aerospace",
+      "repo": "analytics-export",
+      "title": "BigQuery job status surface",
+      "state": "open",
+      "state_reason": "reopened",
+      "assignee": "jordan-lee",
+      "labels": [
+        "async",
+        "bigquery"
+      ],
+      "created_at": "2026-06-13T22:10:00Z",
+      "updated_at": "2026-06-18T13:18:00Z"
+    },
+    {
+      "issue_id": "I-106",
+      "number": 106,
+      "owner": "ge-aerospace",
+      "repo": "transformation-platform",
+      "title": "Remove stale simulator registry entries",
+      "state": "closed",
+      "state_reason": "completed",
+      "assignee": "sam-rivera",
+      "labels": [
+        "cleanup"
+      ],
+      "created_at": "2026-06-01T15:15:00Z",
+      "updated_at": "2026-06-14T18:34:00Z"
+    },
+    {
+      "issue_id": "I-107",
+      "number": 107,
+      "owner": "ge-aerospace",
+      "repo": "mcp-simulators",
+      "title": "PagerDuty service include missing",
+      "state": "closed",
+      "state_reason": "completed",
+      "assignee": "riley-morgan",
+      "labels": [
+        "bug",
+        "pagerduty"
+      ],
+      "created_at": "2026-05-29T12:40:00Z",
+      "updated_at": "2026-06-12T09:25:00Z"
+    },
+    {
+      "issue_id": "I-108",
+      "number": 108,
+      "owner": "ge-aerospace",
+      "repo": "identity-bridge",
+      "title": "Audit admin role changes",
+      "state": "open",
+      "state_reason": "reopened",
+      "assignee": "chloe-adams",
+      "labels": [
+        "security"
+      ],
+      "created_at": "2026-06-08T18:02:00Z",
+      "updated_at": "2026-06-16T21:09:00Z"
+    }
+  ],
+  "pulls": [
+    {
+      "pull_id": "PR-201",
+      "number": 201,
+      "owner": "ge-aerospace",
+      "repo": "transformation-platform",
+      "title": "feat: OpenAPI tools generator",
+      "state": "open",
+      "draft": false,
+      "base": "main",
+      "head": "openapi-import",
+      "merged": false,
+      "created_at": "2026-06-12T08:11:00Z",
+      "updated_at": "2026-06-18T12:40:00Z"
+    },
+    {
+      "pull_id": "PR-202",
+      "number": 202,
+      "owner": "ge-aerospace",
+      "repo": "mcp-simulators",
+      "title": "fix: seed drift",
+      "state": "open",
+      "draft": true,
+      "base": "main",
+      "head": "seed-fix",
+      "merged": false,
+      "created_at": "2026-06-13T17:20:00Z",
+      "updated_at": "2026-06-18T09:10:00Z"
+    },
+    {
+      "pull_id": "PR-203",
+      "number": 203,
+      "owner": "ge-aerospace",
+      "repo": "identity-bridge",
+      "title": "chore: rotate Okta SDK token fixture",
+      "state": "closed",
+      "draft": false,
+      "base": "main",
+      "head": "token-fixture",
+      "merged": true,
+      "created_at": "2026-06-05T10:30:00Z",
+      "updated_at": "2026-06-12T11:18:00Z"
+    },
+    {
+      "pull_id": "PR-204",
+      "number": 204,
+      "owner": "ge-aerospace",
+      "repo": "analytics-export",
+      "title": "feat: async export polling",
+      "state": "open",
+      "draft": false,
+      "base": "main",
+      "head": "async-export",
+      "merged": false,
+      "created_at": "2026-06-14T09:55:00Z",
+      "updated_at": "2026-06-18T13:22:00Z"
+    },
+    {
+      "pull_id": "PR-205",
+      "number": 205,
+      "owner": "ge-aerospace",
+      "repo": "mcp-simulators",
+      "title": "test: generic pagination coverage",
+      "state": "closed",
+      "draft": false,
+      "base": "main",
+      "head": "pagination-tests",
+      "merged": true,
+      "created_at": "2026-05-27T14:00:00Z",
+      "updated_at": "2026-06-03T18:47:00Z"
+    },
+    {
+      "pull_id": "PR-206",
+      "number": 206,
+      "owner": "ge-aerospace",
+      "repo": "transformation-platform",
+      "title": "fix: retry analyzer source fetches",
+      "state": "open",
+      "draft": false,
+      "base": "main",
+      "head": "spec-retry",
+      "merged": false,
+      "created_at": "2026-06-16T07:05:00Z",
+      "updated_at": "2026-06-18T17:30:00Z"
+    }
+  ],
+  "workflow_runs": [
+    {
+      "run_id": "RUN-9001",
+      "owner": "ge-aerospace",
+      "repo": "transformation-platform",
+      "name": "CI",
+      "status": "completed",
+      "conclusion": "success",
+      "head_branch": "main",
+      "event": "push",
+      "created_at": "2026-06-18T12:45:00Z"
+    },
+    {
+      "run_id": "RUN-9002",
+      "owner": "ge-aerospace",
+      "repo": "transformation-platform",
+      "name": "CI",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_branch": "openapi-import",
+      "event": "pull_request",
+      "created_at": "2026-06-18T12:50:00Z"
+    },
+    {
+      "run_id": "RUN-9003",
+      "owner": "ge-aerospace",
+      "repo": "mcp-simulators",
+      "name": "Pytest",
+      "status": "completed",
+      "conclusion": "success",
+      "head_branch": "seed-fix",
+      "event": "pull_request",
+      "created_at": "2026-06-18T09:12:00Z"
+    },
+    {
+      "run_id": "RUN-9004",
+      "owner": "ge-aerospace",
+      "repo": "identity-bridge",
+      "name": "Security Scan",
+      "status": "completed",
+      "conclusion": "failure",
+      "head_branch": "main",
+      "event": "schedule",
+      "created_at": "2026-06-18T06:00:00Z"
+    },
+    {
+      "run_id": "RUN-9005",
+      "owner": "ge-aerospace",
+      "repo": "analytics-export",
+      "name": "Integration",
+      "status": "in_progress",
+      "conclusion": "null",
+      "head_branch": "async-export",
+      "event": "pull_request",
+      "created_at": "2026-06-18T13:25:00Z"
+    },
+    {
+      "run_id": "RUN-9006",
+      "owner": "ge-aerospace",
+      "repo": "mcp-simulators",
+      "name": "Lint",
+      "status": "queued",
+      "conclusion": "null",
+      "head_branch": "main",
+      "event": "push",
+      "created_at": "2026-06-18T14:15:00Z"
+    },
+    {
+      "run_id": "RUN-9007",
+      "owner": "ge-aerospace",
+      "repo": "transformation-platform",
+      "name": "Deploy Preview",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "head_branch": "spec-retry",
+      "event": "pull_request",
+      "created_at": "2026-06-17T20:05:00Z"
+    },
+    {
+      "run_id": "RUN-9008",
+      "owner": "ge-aerospace",
+      "repo": "analytics-export",
+      "name": "Nightly Export",
+      "status": "completed",
+      "conclusion": "success",
+      "head_branch": "main",
+      "event": "schedule",
+      "created_at": "2026-06-18T02:00:00Z"
+    }
+  ],
+  "audit_events": []
+}

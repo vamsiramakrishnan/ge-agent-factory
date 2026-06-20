@@ -1,0 +1,996 @@
+{
+  "id": "asc_606_contract_analyzer_semantic_model",
+  "generatedAt": "2026-06-11T08:59:53.337Z",
+  "dataset": "agent_asc_606_contract_analyzer",
+  "primaryObjective": "Gemini reads complex contract language and applies the 5-step ASC 606 model with cited guidance. Precedent matching ensures consistent treatment across similar contracts. so the Controller can move the Contract analysis time KPI.",
+  "tables": [
+    {
+      "name": "sales_orders",
+      "sourceSystem": "SAP S/4HANA SD",
+      "description": "sales_orders, contracts, billing_documents",
+      "grain": "one row per sales order",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "source_record_id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ]
+        },
+        {
+          "name": "vendor",
+          "type": "string",
+          "description": "vendor (string)."
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "description": "Currency code (ISO 4217)."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "due_date",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "contracts",
+      "sourceSystem": "SAP S/4HANA SD",
+      "description": "sales_orders, contracts, billing_documents",
+      "grain": "one row per contract",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "counterparty",
+          "type": "string",
+          "description": "counterparty (string)."
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "description": "Currency code (ISO 4217)."
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        },
+        {
+          "name": "auto_renew",
+          "type": "boolean",
+          "description": "auto renew (boolean)."
+        }
+      ]
+    },
+    {
+      "name": "billing_documents",
+      "sourceSystem": "SAP S/4HANA SD",
+      "description": "sales_orders, contracts, billing_documents",
+      "grain": "one row per billing document",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "source_record_id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ]
+        },
+        {
+          "name": "vendor",
+          "type": "string",
+          "description": "vendor (string)."
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "description": "Currency code (ISO 4217)."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "due_date",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "contract_repository_records",
+      "sourceSystem": "Contract Repository",
+      "description": "contract_repository_records, contract_repository_events, contract_repository_audit_trail",
+      "grain": "one row per contract repository record",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "counterparty",
+          "type": "string",
+          "description": "counterparty (string)."
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "description": "Currency code (ISO 4217)."
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        },
+        {
+          "name": "auto_renew",
+          "type": "boolean",
+          "description": "auto renew (boolean)."
+        }
+      ]
+    },
+    {
+      "name": "contract_repository_events",
+      "sourceSystem": "Contract Repository",
+      "description": "contract_repository_records, contract_repository_events, contract_repository_audit_trail",
+      "grain": "one row per contract repository event",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "counterparty",
+          "type": "string",
+          "description": "counterparty (string)."
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "description": "Currency code (ISO 4217)."
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        },
+        {
+          "name": "auto_renew",
+          "type": "boolean",
+          "description": "auto renew (boolean)."
+        },
+        {
+          "name": "contract_repository_record_id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "contract_repository_audit_trail",
+      "sourceSystem": "Contract Repository",
+      "description": "contract_repository_records, contract_repository_events, contract_repository_audit_trail",
+      "grain": "one row per contract repository audit trail",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "counterparty",
+          "type": "string",
+          "description": "counterparty (string)."
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "description": "Currency code (ISO 4217)."
+        },
+        {
+          "name": "start_date",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "end_date",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        },
+        {
+          "name": "auto_renew",
+          "type": "boolean",
+          "description": "auto renew (boolean)."
+        }
+      ]
+    },
+    {
+      "name": "analytics_events",
+      "sourceSystem": "BigQuery",
+      "description": "analytics_events, historical_metrics, cached_aggregates",
+      "grain": "one row per analytics event",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "period",
+          "type": "string",
+          "description": "period (string)."
+        },
+        {
+          "name": "metric_name",
+          "type": "string",
+          "description": "Human-readable label."
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "variance_pct",
+          "type": "number",
+          "description": "variance pct (number)."
+        },
+        {
+          "name": "computed_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "historical_metric_id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "historical_metrics",
+      "sourceSystem": "BigQuery",
+      "description": "analytics_events, historical_metrics, cached_aggregates",
+      "grain": "one row per historical metric",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "period",
+          "type": "string",
+          "description": "period (string)."
+        },
+        {
+          "name": "metric_name",
+          "type": "string",
+          "description": "Human-readable label."
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "variance_pct",
+          "type": "number",
+          "description": "variance pct (number)."
+        },
+        {
+          "name": "computed_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cached_aggregates",
+      "sourceSystem": "BigQuery",
+      "description": "analytics_events, historical_metrics, cached_aggregates",
+      "grain": "one row per cached aggregate",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "period",
+          "type": "string",
+          "description": "period (string)."
+        },
+        {
+          "name": "metric_name",
+          "type": "string",
+          "description": "Human-readable label."
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "variance_pct",
+          "type": "number",
+          "description": "variance pct (number)."
+        },
+        {
+          "name": "computed_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        }
+      ]
+    }
+  ],
+  "joins": [
+    {
+      "left": "sales_orders.source_record_id",
+      "right": "billing_documents.source_record_id",
+      "on": "source_record_id",
+      "type": "many-to-one"
+    }
+  ],
+  "measures": [],
+  "glossary": [
+    {
+      "term": "SAP S/4HANA SD",
+      "definition": "Source system: SAP S/4HANA SD.",
+      "maps_to": [
+        "sales_orders",
+        "contracts",
+        "billing_documents"
+      ]
+    },
+    {
+      "term": "Contract Repository",
+      "definition": "Source system: Contract Repository.",
+      "maps_to": [
+        "contract_repository_records",
+        "contract_repository_events",
+        "contract_repository_audit_trail"
+      ]
+    },
+    {
+      "term": "BigQuery",
+      "definition": "Source system: BigQuery.",
+      "maps_to": [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates"
+      ]
+    }
+  ],
+  "bigquery": {
+    "tables": [
+      {
+        "table": "sales_orders",
+        "description": "sales_orders, contracts, billing_documents",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "source_record_id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "vendor",
+            "description": "vendor (string)."
+          },
+          {
+            "name": "amount",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "currency",
+            "description": "Currency code (ISO 4217)."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "due_date",
+            "description": "Date/timestamp."
+          }
+        ]
+      },
+      {
+        "table": "contracts",
+        "description": "sales_orders, contracts, billing_documents",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "counterparty",
+            "description": "counterparty (string)."
+          },
+          {
+            "name": "value",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "currency",
+            "description": "Currency code (ISO 4217)."
+          },
+          {
+            "name": "start_date",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "end_date",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          },
+          {
+            "name": "auto_renew",
+            "description": "auto renew (boolean)."
+          }
+        ]
+      },
+      {
+        "table": "billing_documents",
+        "description": "sales_orders, contracts, billing_documents",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "source_record_id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "vendor",
+            "description": "vendor (string)."
+          },
+          {
+            "name": "amount",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "currency",
+            "description": "Currency code (ISO 4217)."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "due_date",
+            "description": "Date/timestamp."
+          }
+        ]
+      },
+      {
+        "table": "contract_repository_records",
+        "description": "contract_repository_records, contract_repository_events, contract_repository_audit_trail",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "counterparty",
+            "description": "counterparty (string)."
+          },
+          {
+            "name": "value",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "currency",
+            "description": "Currency code (ISO 4217)."
+          },
+          {
+            "name": "start_date",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "end_date",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          },
+          {
+            "name": "auto_renew",
+            "description": "auto renew (boolean)."
+          }
+        ]
+      },
+      {
+        "table": "contract_repository_events",
+        "description": "contract_repository_records, contract_repository_events, contract_repository_audit_trail",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "counterparty",
+            "description": "counterparty (string)."
+          },
+          {
+            "name": "value",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "currency",
+            "description": "Currency code (ISO 4217)."
+          },
+          {
+            "name": "start_date",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "end_date",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          },
+          {
+            "name": "auto_renew",
+            "description": "auto renew (boolean)."
+          },
+          {
+            "name": "contract_repository_record_id",
+            "description": "Unique identifier."
+          }
+        ]
+      },
+      {
+        "table": "contract_repository_audit_trail",
+        "description": "contract_repository_records, contract_repository_events, contract_repository_audit_trail",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "counterparty",
+            "description": "counterparty (string)."
+          },
+          {
+            "name": "value",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "currency",
+            "description": "Currency code (ISO 4217)."
+          },
+          {
+            "name": "start_date",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "end_date",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          },
+          {
+            "name": "auto_renew",
+            "description": "auto renew (boolean)."
+          }
+        ]
+      },
+      {
+        "table": "analytics_events",
+        "description": "analytics_events, historical_metrics, cached_aggregates",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "period",
+            "description": "period (string)."
+          },
+          {
+            "name": "metric_name",
+            "description": "Human-readable label."
+          },
+          {
+            "name": "value",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "variance_pct",
+            "description": "variance pct (number)."
+          },
+          {
+            "name": "computed_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "historical_metric_id",
+            "description": "Unique identifier."
+          }
+        ]
+      },
+      {
+        "table": "historical_metrics",
+        "description": "analytics_events, historical_metrics, cached_aggregates",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "period",
+            "description": "period (string)."
+          },
+          {
+            "name": "metric_name",
+            "description": "Human-readable label."
+          },
+          {
+            "name": "value",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "variance_pct",
+            "description": "variance pct (number)."
+          },
+          {
+            "name": "computed_at",
+            "description": "Date/timestamp."
+          }
+        ]
+      },
+      {
+        "table": "cached_aggregates",
+        "description": "analytics_events, historical_metrics, cached_aggregates",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "period",
+            "description": "period (string)."
+          },
+          {
+            "name": "metric_name",
+            "description": "Human-readable label."
+          },
+          {
+            "name": "value",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "variance_pct",
+            "description": "variance pct (number)."
+          },
+          {
+            "name": "computed_at",
+            "description": "Date/timestamp."
+          }
+        ]
+      }
+    ]
+  }
+}

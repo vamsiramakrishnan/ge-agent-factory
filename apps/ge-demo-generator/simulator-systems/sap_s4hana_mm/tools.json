@@ -1,0 +1,404 @@
+{
+  "id": "sap_s4hana_mm_tools",
+  "version": 3,
+  "tools": [
+    {
+      "name": "search_plants",
+      "description": "Search SAP plants and valuation areas.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "$search": { "type": "string" },
+          "$filter": { "type": "string" },
+          "$top": { "type": "integer" },
+          "$skip": { "type": "integer" },
+          "$orderby": { "type": "string" },
+          "company_code": { "type": "string" },
+          "country": { "type": "string" },
+          "status": { "type": "string" }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "plants",
+        "query": {
+          "textFields": ["plant", "name", "valuation_area"],
+          "filters": {
+            "company_code": { "field": "company_code", "op": "eq" },
+            "country": { "field": "country", "op": "eq_ci" },
+            "status": { "field": "status", "op": "eq_ci" }
+          },
+          "defaultSort": [{ "field": "plant", "direction": "asc" }],
+          "pagination": { "style": "top-skip", "defaultLimit": 20, "maxLimit": 100 }
+        }
+      }
+    },
+    {
+      "name": "search_materials",
+      "description": "Search SAP material master views by plant, type, controller, procurement type, and status.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "$search": { "type": "string" },
+          "$filter": { "type": "string" },
+          "$top": { "type": "integer" },
+          "$skip": { "type": "integer" },
+          "$orderby": { "type": "string" },
+          "query": { "type": "string" },
+          "status": { "type": "string" },
+          "plant": { "type": "string" },
+          "material_type": { "type": "string" },
+          "mrp_controller": { "type": "string" },
+          "procurement_type": { "type": "string" },
+          "limit": { "type": "integer" }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "materials",
+        "query": {
+          "textFields": ["material_number", "description", "material_type", "mrp_controller"],
+          "filters": {
+            "status": { "field": "status", "op": "eq_ci" },
+            "plant": { "field": "plant", "op": "eq" },
+            "material_type": { "field": "material_type", "op": "eq_ci" },
+            "mrp_controller": { "field": "mrp_controller", "op": "eq_ci" },
+            "procurement_type": { "field": "procurement_type", "op": "eq_ci" }
+          },
+          "defaultSort": [{ "field": "material_number", "direction": "asc" }],
+          "pagination": { "style": "top-skip", "defaultLimit": 20, "maxLimit": 100 }
+        }
+      }
+    },
+    {
+      "name": "get_material",
+      "description": "Get one SAP material and optionally include purchase orders and goods receipts.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "material_id": { "type": "string" },
+          "include": { "type": "string" },
+          "includes": { "type": "array", "items": { "type": "string" } },
+          "include_purchase_orders": { "type": "boolean" },
+          "include_goods_receipts": { "type": "boolean" }
+        },
+        "required": ["material_id"]
+      },
+      "binding": { "op": "get", "collection": "materials", "primaryKey": "material_id" }
+    },
+    {
+      "name": "search_suppliers",
+      "description": "Search SAP business partners/suppliers by purchasing org, risk, category, block state, and status.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "$search": { "type": "string" },
+          "$filter": { "type": "string" },
+          "$top": { "type": "integer" },
+          "$skip": { "type": "integer" },
+          "$orderby": { "type": "string" },
+          "query": { "type": "string" },
+          "status": { "type": "string" },
+          "purchasing_org": { "type": "string" },
+          "risk_tier": { "type": "string" },
+          "category": { "type": "string" },
+          "source_list_block": { "type": "boolean" },
+          "limit": { "type": "integer" }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "suppliers",
+        "query": {
+          "textFields": ["supplier_id", "business_partner_id", "name", "category"],
+          "filters": {
+            "status": { "field": "status", "op": "eq_ci" },
+            "purchasing_org": { "field": "purchasing_org", "op": "eq_ci" },
+            "risk_tier": { "field": "risk_tier", "op": "eq_ci" },
+            "category": { "field": "category", "op": "contains" },
+            "source_list_block": { "field": "source_list_block", "op": "eq" }
+          },
+          "defaultSort": [{ "field": "name", "direction": "asc" }],
+          "pagination": { "style": "top-skip", "defaultLimit": 20, "maxLimit": 100 }
+        }
+      }
+    },
+    {
+      "name": "get_supplier",
+      "description": "Get one supplier and optionally include related purchase orders and outline agreements.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "supplier_id": { "type": "string" },
+          "include": { "type": "string" },
+          "includes": { "type": "array", "items": { "type": "string" } },
+          "include_purchase_orders": { "type": "boolean" },
+          "include_contracts": { "type": "boolean" }
+        },
+        "required": ["supplier_id"]
+      },
+      "binding": { "op": "get", "collection": "suppliers", "primaryKey": "supplier_id" }
+    },
+    {
+      "name": "search_purchase_requisitions",
+      "description": "Search SAP purchase requisitions by release strategy, plant, requester, material, delivery date, and release status.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "$search": { "type": "string" },
+          "$filter": { "type": "string" },
+          "$top": { "type": "integer" },
+          "$skip": { "type": "integer" },
+          "$orderby": { "type": "string" },
+          "query": { "type": "string" },
+          "status": { "type": "string" },
+          "plant": { "type": "string" },
+          "material_id": { "type": "string" },
+          "release_status": { "type": "string" },
+          "requester": { "type": "string" },
+          "delivery_before": { "type": "string" },
+          "limit": { "type": "integer" }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "purchase_requisitions",
+        "query": {
+          "textFields": ["requisition_id", "requester", "cost_center", "release_strategy"],
+          "filters": {
+            "status": { "field": "status", "op": "eq_ci" },
+            "plant": { "field": "plant", "op": "eq" },
+            "material_id": { "field": "material_id", "op": "eq" },
+            "release_status": { "field": "release_status", "op": "eq_ci" },
+            "requester": { "field": "requester", "op": "contains" },
+            "delivery_before": { "field": "delivery_date", "op": "lte" }
+          },
+          "defaultSort": [{ "field": "delivery_date", "direction": "asc" }],
+          "pagination": { "style": "top-skip", "defaultLimit": 20, "maxLimit": 100 }
+        }
+      }
+    },
+    {
+      "name": "get_purchase_requisition",
+      "description": "Get one purchase requisition and optionally include material and release approvals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "requisition_id": { "type": "string" },
+          "include": { "type": "string" },
+          "include_material": { "type": "boolean" },
+          "include_approvals": { "type": "boolean" }
+        },
+        "required": ["requisition_id"]
+      },
+      "binding": { "op": "get", "collection": "purchase_requisitions", "primaryKey": "requisition_id" }
+    },
+    {
+      "name": "search_purchase_orders",
+      "description": "Search SAP purchase orders by supplier, plant, material, status, GR/IR status, and delivery date.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "$search": { "type": "string" },
+          "$filter": { "type": "string" },
+          "$top": { "type": "integer" },
+          "$skip": { "type": "integer" },
+          "$orderby": { "type": "string" },
+          "query": { "type": "string" },
+          "status": { "type": "string" },
+          "supplier_id": { "type": "string" },
+          "material_id": { "type": "string" },
+          "plant": { "type": "string" },
+          "confirmation_status": { "type": "string" },
+          "goods_receipt_status": { "type": "string" },
+          "invoice_receipt_status": { "type": "string" },
+          "delivery_before": { "type": "string" },
+          "limit": { "type": "integer" }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "purchase_orders",
+        "query": {
+          "textFields": ["po_id", "supplier_id", "material_id", "requester", "release_strategy"],
+          "filters": {
+            "status": { "field": "status", "op": "eq_ci" },
+            "supplier_id": { "field": "supplier_id", "op": "eq" },
+            "material_id": { "field": "material_id", "op": "eq" },
+            "plant": { "field": "plant", "op": "eq" },
+            "confirmation_status": { "field": "confirmation_status", "op": "eq_ci" },
+            "goods_receipt_status": { "field": "goods_receipt_status", "op": "eq_ci" },
+            "invoice_receipt_status": { "field": "invoice_receipt_status", "op": "eq_ci" },
+            "delivery_before": { "field": "delivery_date", "op": "lte" }
+          },
+          "defaultSort": [{ "field": "last_change_at", "direction": "desc" }],
+          "pagination": { "style": "top-skip", "defaultLimit": 20, "maxLimit": 100 }
+        }
+      }
+    },
+    {
+      "name": "get_purchase_order",
+      "description": "Get one purchase order and optionally include supplier, material, goods receipts, and approvals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "po_id": { "type": "string" },
+          "include": { "type": "string" },
+          "includes": { "type": "array", "items": { "type": "string" } },
+          "include_supplier": { "type": "boolean" },
+          "include_material": { "type": "boolean" },
+          "include_goods_receipts": { "type": "boolean" },
+          "include_approvals": { "type": "boolean" }
+        },
+        "required": ["po_id"]
+      },
+      "binding": { "op": "get", "collection": "purchase_orders", "primaryKey": "po_id" }
+    },
+    {
+      "name": "search_goods_receipts",
+      "description": "Search goods movements/material documents for purchase orders.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "$search": { "type": "string" },
+          "$filter": { "type": "string" },
+          "$top": { "type": "integer" },
+          "$skip": { "type": "integer" },
+          "$orderby": { "type": "string" },
+          "query": { "type": "string" },
+          "status": { "type": "string" },
+          "po_id": { "type": "string" },
+          "material_id": { "type": "string" },
+          "plant": { "type": "string" },
+          "movement_type": { "type": "string" },
+          "posted_after": { "type": "string" },
+          "limit": { "type": "integer" }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "goods_receipts",
+        "query": {
+          "textFields": ["goods_receipt_id", "material_document", "po_id"],
+          "filters": {
+            "status": { "field": "status", "op": "eq_ci" },
+            "po_id": { "field": "po_id", "op": "eq" },
+            "material_id": { "field": "material_id", "op": "eq" },
+            "plant": { "field": "plant", "op": "eq" },
+            "movement_type": { "field": "movement_type", "op": "eq" },
+            "posted_after": { "field": "posting_date", "op": "gte" }
+          },
+          "defaultSort": [{ "field": "posting_date", "direction": "desc" }],
+          "pagination": { "style": "top-skip", "defaultLimit": 20, "maxLimit": 100 }
+        }
+      }
+    },
+    {
+      "name": "get_goods_receipt",
+      "description": "Get one goods receipt/material document row.",
+      "inputSchema": {
+        "type": "object",
+        "properties": { "goods_receipt_id": { "type": "string" } },
+        "required": ["goods_receipt_id"]
+      },
+      "binding": { "op": "get", "collection": "goods_receipts", "primaryKey": "goods_receipt_id" }
+    },
+    {
+      "name": "search_contracts",
+      "description": "Search SAP outline agreements/contracts by supplier, purchasing org, status, and expiration.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "$search": { "type": "string" },
+          "$filter": { "type": "string" },
+          "$top": { "type": "integer" },
+          "$skip": { "type": "integer" },
+          "$orderby": { "type": "string" },
+          "query": { "type": "string" },
+          "supplier_id": { "type": "string" },
+          "purchasing_org": { "type": "string" },
+          "status": { "type": "string" },
+          "expires_before": { "type": "string" },
+          "limit": { "type": "integer" }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "contracts",
+        "query": {
+          "textFields": ["contract_id", "supplier_id", "purchasing_org"],
+          "filters": {
+            "supplier_id": { "field": "supplier_id", "op": "eq" },
+            "purchasing_org": { "field": "purchasing_org", "op": "eq_ci" },
+            "status": { "field": "status", "op": "eq_ci" },
+            "expires_before": { "field": "expiration_date", "op": "lte" }
+          },
+          "defaultSort": [{ "field": "expiration_date", "direction": "asc" }],
+          "pagination": { "style": "top-skip", "defaultLimit": 20, "maxLimit": 100 }
+        }
+      }
+    },
+    {
+      "name": "get_contract",
+      "description": "Get one SAP outline agreement/contract.",
+      "inputSchema": {
+        "type": "object",
+        "properties": { "contract_id": { "type": "string" } },
+        "required": ["contract_id"]
+      },
+      "binding": { "op": "get", "collection": "contracts", "primaryKey": "contract_id" }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending SAP MM approvals for requisitions and purchase orders.",
+      "inputSchema": {
+        "type": "object",
+        "properties": { "source_record_id": { "type": "string" } }
+      },
+      "binding": { "op": "list_pending_approvals", "collection": "approvals" }
+    },
+    {
+      "name": "submit_purchase_requisition_update",
+      "description": "Submit a controlled release/status update for a purchase requisition.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "requisition_id": { "type": "string" },
+          "status": { "type": "string" },
+          "note": { "type": "string" },
+          "role": { "type": "string" },
+          "idempotency_key": { "type": "string" },
+          "seed": { "type": "integer" }
+        },
+        "required": ["requisition_id"]
+      },
+      "binding": { "op": "submit", "collection": "purchase_requisitions", "primaryKey": "requisition_id" }
+    },
+    {
+      "name": "submit_purchase_order_update",
+      "description": "Submit a controlled release, confirmation, receipt, close, or block update for a purchase order.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "po_id": { "type": "string" },
+          "status": { "type": "string" },
+          "note": { "type": "string" },
+          "role": { "type": "string" },
+          "idempotency_key": { "type": "string" },
+          "seed": { "type": "integer" }
+        },
+        "required": ["po_id"]
+      },
+      "binding": { "op": "submit", "collection": "purchase_orders", "primaryKey": "po_id" }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List SAP MM simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": { "limit": { "type": "integer" } }
+      },
+      "binding": { "op": "list_audit_events" }
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "generatedAt": "2026-06-11T09:00:02.597Z",
+  "agentId": "audit_report_generator",
+  "role": "Chief Audit Executive agent for the Audit Report Generator workflow",
+  "primaryObjective": "Gemini drafts comprehensive audit reports with executive summary, root cause analysis, and recommendations. Automatic tone adaptation — risk-focused summary for audit committee, remediation guidance for management. so the Chief Audit Executive can move the Report drafting time KPI.",
+  "evals": [
+    {
+      "id": "audit-report-generator-end-to-end",
+      "prompt": "Run the Audit Report Generator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      "expectedToolCalls": [
+        "query_auditboard_auditboard_records",
+        "query_google_docs_documents",
+        "query_finance_3_finance_3_records",
+        "lookup_audit_report_generator_controls_playbook",
+        "action_auditboard_recommend"
+      ],
+      "mustReferenceEntities": [
+        "auditboard_records",
+        "documents",
+        "finance_3_records"
+      ],
+      "mustCiteDocuments": [
+        "audit-report-generator-controls-playbook"
+      ],
+      "expectedActionOutcome": "Action recommend executed against AuditBoard, with audit-trail entry and Chief Audit Executive notified of outcomes.",
+      "forbiddenBehaviors": [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute recommend without two-system evidence"
+      ]
+    }
+  ],
+  "packEvalHints": [
+    {
+      "packId": "system_content_collaboration",
+      "expectedToolKinds": [
+        "query",
+        "evidence_lookup"
+      ],
+      "mustReferenceEntities": [
+        "documents",
+        "comments",
+        "revision_history"
+      ],
+      "successCriteria": [
+        "Cite document titles or revision evidence for content claims.",
+        "Distinguish draft, review, published, and archived states.",
+        "Escalate unresolved review comments before publish-like actions."
+      ],
+      "refusalRules": [
+        "Do not claim a document is approved or published without document or revision evidence."
+      ]
+    },
+    {
+      "packId": "system_itsm",
+      "expectedToolKinds": [
+        "query",
+        "action",
+        "notification"
+      ],
+      "mustReferenceEntities": [
+        "tickets",
+        "incidents",
+        "change_requests"
+      ],
+      "successCriteria": [
+        "Use status, owner, created_at, and notes to prioritize remediation.",
+        "Treat active or pending SLA-risk records as escalation candidates.",
+        "Preserve audit trails for remediation actions."
+      ],
+      "refusalRules": [
+        "Do not claim an incident is remediated or closed without ITSM status evidence."
+      ]
+    }
+  ],
+  "refusalRules": [
+    "Never fabricate metric values; only publish numbers derived from AuditBoard (and other named systems) entities.",
+    "Never bypass Chief Audit Executive approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+    "Do not claim a document is approved or published without document or revision evidence.",
+    "Do not claim an incident is remediated or closed without ITSM status evidence."
+  ],
+  "escalationTriggers": [
+    {
+      "trigger": "Report drafting time regresses past the 2-3 weeks baseline by more than 20%",
+      "action": "escalate_to_human",
+      "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+    },
+    {
+      "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      "action": "request_more_info",
+      "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+    },
+    {
+      "trigger": "Proposed recommend action lacks supporting evidence from at least two systems",
+      "action": "refuse",
+      "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+    }
+  ]
+}

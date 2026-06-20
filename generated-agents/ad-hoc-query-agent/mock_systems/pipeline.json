@@ -1,0 +1,73 @@
+{
+  "name": "ad_hoc_query_agent",
+  "domain": "finance",
+  "createdAt": "2026-06-11T08:59:35.322Z",
+  "steps": {
+    "init": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:35.323Z",
+      "name": "ad_hoc_query_agent",
+      "domain": "finance"
+    },
+    "schema": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:35.339Z",
+      "tables": 9,
+      "derived": true
+    },
+    "generate": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:35.372Z",
+      "tables": 9,
+      "totalRows": 510,
+      "seed": 42
+    },
+    "tools": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:35.381Z",
+      "output": "/tmp/regen2/ad-hoc-query-agent/app/tools.py",
+      "functions": 11,
+      "behaviorContract": "present",
+      "contractTools": 1,
+      "goldenEvals": 1,
+      "agentsCliEvalSet": "/tmp/regen2/ad-hoc-query-agent/tests/eval/evalsets/ge_behavior_contract.evalset.json"
+    },
+    "test": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:39.528Z",
+      "output": "/tmp/regen2/ad-hoc-query-agent/tests/test_smoke.py",
+      "ran": true,
+      "passed": true,
+      "exitCode": 0
+    }
+  },
+  "currentStep": "test",
+  "useCase": {
+    "id": "ad-hoc-query-agent",
+    "title": "Ad-Hoc Query Agent",
+    "department": "finance",
+    "systems": [
+      "BigQuery",
+      "Looker",
+      "SAP S/4HANA",
+      "Vertex AI"
+    ],
+    "kpis": [
+      {
+        "label": "Query response time",
+        "before": "Hours-days (manual pull)",
+        "after": "< 30 seconds"
+      },
+      {
+        "label": "Data accessibility",
+        "before": "Requires SQL knowledge",
+        "after": "Natural language"
+      },
+      {
+        "label": "Context quality",
+        "before": "Raw numbers only",
+        "after": "Numbers + explanations + next steps"
+      }
+    ]
+  }
+}

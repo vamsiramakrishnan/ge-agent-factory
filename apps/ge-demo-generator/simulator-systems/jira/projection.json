@@ -1,0 +1,55 @@
+{
+  "id": "jira_projection",
+  "version": 2,
+  "materialization": "Project the scenario graph (agile delivery concepts) into Jira-shaped collections: projects, components, epics, issues, subtasks, sprints, releases, and board transitions. Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": ["project", "team"],
+      "realizedObjects": ["projects", "boards"],
+      "simulatorCollection": "projects",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["component", "module"],
+      "realizedObjects": ["components"],
+      "simulatorCollection": "components",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["epic", "initiative"],
+      "realizedObjects": ["epics"],
+      "simulatorCollection": "epics",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["work_item", "story", "task", "bug"],
+      "realizedObjects": ["issues", "stories", "tasks", "bugs"],
+      "simulatorCollection": "issues",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["subtask", "checklist_item"],
+      "realizedObjects": ["subtasks"],
+      "simulatorCollection": "subtasks",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["sprint", "iteration"],
+      "realizedObjects": ["sprints"],
+      "simulatorCollection": "sprints",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["release", "version"],
+      "realizedObjects": ["releases", "approvals"],
+      "simulatorCollection": "releases",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["transition", "workflow_event"],
+      "realizedObjects": ["board_transitions"],
+      "simulatorCollection": "board_transitions",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

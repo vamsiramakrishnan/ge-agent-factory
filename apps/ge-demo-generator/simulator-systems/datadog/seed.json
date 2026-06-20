@@ -1,0 +1,385 @@
+{
+  "services": [
+    {
+      "service_id": "svc-payments-api",
+      "name": "payments-api",
+      "status": "degraded",
+      "owner": "Maya Singh",
+      "team": "payments-platform",
+      "tier": "tier_0",
+      "environment": "prod",
+      "repository": "github.com/ge/payments-api",
+      "service_catalog_url": "https://app.datadoghq.com/services/payments-api",
+      "last_deploy_at": "2026-06-18T22:14:00Z"
+    },
+    {
+      "service_id": "svc-workday-sync",
+      "name": "workday-sync",
+      "status": "operational",
+      "owner": "Jordan Lee",
+      "team": "enterprise-integrations",
+      "tier": "tier_1",
+      "environment": "prod",
+      "repository": "github.com/ge/workday-sync",
+      "service_catalog_url": "https://app.datadoghq.com/services/workday-sync",
+      "last_deploy_at": "2026-06-17T15:36:00Z"
+    },
+    {
+      "service_id": "svc-supplier-portal",
+      "name": "supplier-portal",
+      "status": "maintenance",
+      "owner": "Rina Patel",
+      "team": "source-to-pay",
+      "tier": "tier_1",
+      "environment": "prod",
+      "repository": "github.com/ge/supplier-portal",
+      "service_catalog_url": "https://app.datadoghq.com/services/supplier-portal",
+      "last_deploy_at": "2026-06-16T03:22:00Z"
+    },
+    {
+      "service_id": "svc-identity-bridge",
+      "name": "identity-bridge",
+      "status": "impaired",
+      "owner": "Diego Chen",
+      "team": "identity-platform",
+      "tier": "tier_0",
+      "environment": "prod",
+      "repository": "github.com/ge/identity-bridge",
+      "service_catalog_url": "https://app.datadoghq.com/services/identity-bridge",
+      "last_deploy_at": "2026-06-18T10:05:00Z"
+    },
+    {
+      "service_id": "svc-analytics-export",
+      "name": "analytics-export",
+      "status": "operational",
+      "owner": "Avery Johnson",
+      "team": "data-platform",
+      "tier": "tier_1",
+      "environment": "prod",
+      "repository": "github.com/ge/analytics-export",
+      "service_catalog_url": "https://app.datadoghq.com/services/analytics-export",
+      "last_deploy_at": "2026-06-18T17:42:00Z"
+    }
+  ],
+  "monitors": [
+    {
+      "monitor_id": "mon-payments-latency",
+      "service_id": "svc-payments-api",
+      "name": "payments-api p95 latency",
+      "type": "metric_alert",
+      "status": "alert",
+      "severity": "p1",
+      "query": "avg(last_5m):p95:trace.http.request.duration{service:payments-api,env:prod} > 900",
+      "tags": [
+        "service:payments-api",
+        "env:prod",
+        "team:payments-platform"
+      ],
+      "notification_channels": [
+        "#payments-oncall",
+        "@pagerduty-payments"
+      ],
+      "evaluation_delay": 60,
+      "last_triggered_at": "2026-06-19T01:54:00Z"
+    },
+    {
+      "monitor_id": "mon-workday-sync-errors",
+      "service_id": "svc-workday-sync",
+      "name": "workday-sync integration error rate",
+      "type": "query_alert",
+      "status": "ok",
+      "severity": "p2",
+      "query": "sum(last_15m):sum:workday.sync.errors{env:prod}.as_count() > 10",
+      "tags": [
+        "service:workday-sync",
+        "env:prod",
+        "team:enterprise-integrations"
+      ],
+      "notification_channels": [
+        "#enterprise-integrations"
+      ],
+      "evaluation_delay": 120,
+      "last_triggered_at": "2026-06-12T09:17:00Z"
+    },
+    {
+      "monitor_id": "mon-supplier-portal-synthetics",
+      "service_id": "svc-supplier-portal",
+      "name": "supplier portal checkout synthetic",
+      "type": "synthetics_alert",
+      "status": "muted",
+      "severity": "p3",
+      "query": "synthetics.test.status{test:supplier-checkout,env:prod} != 0",
+      "tags": [
+        "service:supplier-portal",
+        "env:prod",
+        "team:source-to-pay"
+      ],
+      "notification_channels": [
+        "#source-to-pay-ops"
+      ],
+      "evaluation_delay": 0,
+      "last_triggered_at": "2026-06-18T03:08:00Z"
+    },
+    {
+      "monitor_id": "mon-identity-token-refresh",
+      "service_id": "svc-identity-bridge",
+      "name": "identity bridge token refresh failure",
+      "type": "service_check",
+      "status": "warn",
+      "severity": "p2",
+      "query": "service_check.identity_bridge.token_refresh{env:prod}.over('env:prod').last(3).count_by_status()",
+      "tags": [
+        "service:identity-bridge",
+        "env:prod",
+        "team:identity-platform"
+      ],
+      "notification_channels": [
+        "#identity-platform",
+        "@pagerduty-identity"
+      ],
+      "evaluation_delay": 30,
+      "last_triggered_at": "2026-06-18T11:44:00Z"
+    },
+    {
+      "monitor_id": "mon-analytics-export-queue",
+      "service_id": "svc-analytics-export",
+      "name": "analytics export queue depth",
+      "type": "metric_alert",
+      "status": "ok",
+      "severity": "p3",
+      "query": "avg(last_10m):max:export.queue.depth{service:analytics-export,env:prod} > 250",
+      "tags": [
+        "service:analytics-export",
+        "env:prod",
+        "team:data-platform"
+      ],
+      "notification_channels": [
+        "#data-platform"
+      ],
+      "evaluation_delay": 90,
+      "last_triggered_at": "2026-06-17T21:12:00Z"
+    }
+  ],
+  "alerts": [
+    {
+      "alert_id": "alert-payments-001",
+      "monitor_id": "mon-payments-latency",
+      "service_id": "svc-payments-api",
+      "state": "triggered",
+      "severity": "p1",
+      "triggered_at": "2026-06-19T01:54:00Z",
+      "recovered_at": "",
+      "summary": "p95 latency breached 900ms for payments-api in prod",
+      "scope": "service:payments-api,env:prod,region:us-east-1",
+      "correlation_key": "corr-payments-latency-20260619"
+    },
+    {
+      "alert_id": "alert-workday-017",
+      "monitor_id": "mon-workday-sync-errors",
+      "service_id": "svc-workday-sync",
+      "state": "recovered",
+      "severity": "p2",
+      "triggered_at": "2026-06-12T09:17:00Z",
+      "recovered_at": "2026-06-12T09:34:00Z",
+      "summary": "Workday sync errors exceeded threshold after API token rotation",
+      "scope": "service:workday-sync,env:prod",
+      "correlation_key": "corr-workday-sync-token-rotation"
+    },
+    {
+      "alert_id": "alert-supplier-044",
+      "monitor_id": "mon-supplier-portal-synthetics",
+      "service_id": "svc-supplier-portal",
+      "state": "ignored",
+      "severity": "p3",
+      "triggered_at": "2026-06-18T03:08:00Z",
+      "recovered_at": "",
+      "summary": "Synthetic checkout path disabled during planned procurement maintenance",
+      "scope": "service:supplier-portal,env:prod",
+      "correlation_key": "corr-supplier-maint-20260618"
+    },
+    {
+      "alert_id": "alert-identity-009",
+      "monitor_id": "mon-identity-token-refresh",
+      "service_id": "svc-identity-bridge",
+      "state": "acknowledged",
+      "severity": "p2",
+      "triggered_at": "2026-06-18T11:44:00Z",
+      "recovered_at": "",
+      "summary": "Identity bridge token refresh checks are warning",
+      "scope": "service:identity-bridge,env:prod",
+      "correlation_key": "corr-identity-token-refresh"
+    },
+    {
+      "alert_id": "alert-analytics-031",
+      "monitor_id": "mon-analytics-export-queue",
+      "service_id": "svc-analytics-export",
+      "state": "recovered",
+      "severity": "p3",
+      "triggered_at": "2026-06-17T21:12:00Z",
+      "recovered_at": "2026-06-17T21:47:00Z",
+      "summary": "Analytics export queue depth exceeded warning threshold",
+      "scope": "service:analytics-export,env:prod",
+      "correlation_key": "corr-analytics-queue-depth"
+    }
+  ],
+  "incidents": [
+    {
+      "incident_id": "inc-payments-20260619",
+      "service_id": "svc-payments-api",
+      "title": "Payments API elevated latency for card authorization",
+      "status": "active",
+      "severity": "sev1",
+      "commander": "Avery Chen",
+      "started_at": "2026-06-19T01:58:00Z",
+      "resolved_at": "",
+      "customer_impact": true,
+      "timeline_url": "https://app.datadoghq.com/incidents/inc-payments-20260619"
+    },
+    {
+      "incident_id": "inc-workday-20260612",
+      "service_id": "svc-workday-sync",
+      "title": "Workday integration token rotation created sync backlog",
+      "status": "resolved",
+      "severity": "sev3",
+      "commander": "Jordan Lee",
+      "started_at": "2026-06-12T09:20:00Z",
+      "resolved_at": "2026-06-12T10:05:00Z",
+      "customer_impact": false,
+      "timeline_url": "https://app.datadoghq.com/incidents/inc-workday-20260612"
+    },
+    {
+      "incident_id": "inc-identity-20260618",
+      "service_id": "svc-identity-bridge",
+      "title": "Identity bridge token refresh warnings",
+      "status": "stable",
+      "severity": "sev2",
+      "commander": "Diego Chen",
+      "started_at": "2026-06-18T11:48:00Z",
+      "resolved_at": "",
+      "customer_impact": false,
+      "timeline_url": "https://app.datadoghq.com/incidents/inc-identity-20260618"
+    },
+    {
+      "incident_id": "inc-supplier-20260618",
+      "service_id": "svc-supplier-portal",
+      "title": "Supplier portal planned maintenance",
+      "status": "archived",
+      "severity": "sev4",
+      "commander": "Rina Patel",
+      "started_at": "2026-06-18T02:30:00Z",
+      "resolved_at": "2026-06-18T04:15:00Z",
+      "customer_impact": true,
+      "timeline_url": "https://app.datadoghq.com/incidents/inc-supplier-20260618"
+    }
+  ],
+  "slos": [
+    {
+      "slo_id": "slo-payments-availability",
+      "service_id": "svc-payments-api",
+      "name": "payments-api monthly availability",
+      "status": "red",
+      "target": 99.95,
+      "window": "30d",
+      "burn_rate": 12.4,
+      "error_budget_remaining": 21.8,
+      "last_evaluated_at": "2026-06-19T02:00:00Z"
+    },
+    {
+      "slo_id": "slo-workday-freshness",
+      "service_id": "svc-workday-sync",
+      "name": "Workday employee data freshness",
+      "status": "green",
+      "target": 99.5,
+      "window": "7d",
+      "burn_rate": 0.7,
+      "error_budget_remaining": 94.3,
+      "last_evaluated_at": "2026-06-19T02:00:00Z"
+    },
+    {
+      "slo_id": "slo-supplier-checkout",
+      "service_id": "svc-supplier-portal",
+      "name": "Supplier portal checkout success",
+      "status": "yellow",
+      "target": 99,
+      "window": "30d",
+      "burn_rate": 2.1,
+      "error_budget_remaining": 62.5,
+      "last_evaluated_at": "2026-06-19T02:00:00Z"
+    },
+    {
+      "slo_id": "slo-identity-refresh",
+      "service_id": "svc-identity-bridge",
+      "name": "Identity token refresh success",
+      "status": "yellow",
+      "target": 99.9,
+      "window": "7d",
+      "burn_rate": 3.6,
+      "error_budget_remaining": 48.1,
+      "last_evaluated_at": "2026-06-19T02:00:00Z"
+    },
+    {
+      "slo_id": "slo-analytics-export",
+      "service_id": "svc-analytics-export",
+      "name": "Analytics export completion",
+      "status": "green",
+      "target": 99,
+      "window": "30d",
+      "burn_rate": 0.9,
+      "error_budget_remaining": 88.4,
+      "last_evaluated_at": "2026-06-19T02:00:00Z"
+    }
+  ],
+  "api_keys": [
+    {
+      "key_id": "key-payments-remote-config",
+      "name": "payments-api remote config",
+      "status": "active",
+      "category": "remote_config",
+      "owner": "payments-platform",
+      "created_at": "2026-01-15T12:10:00Z",
+      "modified_at": "2026-06-15T18:00:00Z",
+      "last4": "9f2a"
+    },
+    {
+      "key_id": "key-workday-sync-service",
+      "name": "workday-sync service account",
+      "status": "active",
+      "category": "service_account",
+      "owner": "enterprise-integrations",
+      "created_at": "2025-11-04T08:45:00Z",
+      "modified_at": "2026-06-12T09:05:00Z",
+      "last4": "44bd"
+    },
+    {
+      "key_id": "key-supplier-legacy",
+      "name": "supplier portal legacy collector",
+      "status": "disabled",
+      "category": "standard",
+      "owner": "source-to-pay",
+      "created_at": "2024-09-20T17:30:00Z",
+      "modified_at": "2026-06-18T04:00:00Z",
+      "last4": "a8c1"
+    },
+    {
+      "key_id": "key-identity-service",
+      "name": "identity bridge service account",
+      "status": "active",
+      "category": "service_account",
+      "owner": "identity-platform",
+      "created_at": "2025-12-08T10:00:00Z",
+      "modified_at": "2026-06-18T11:30:00Z",
+      "last4": "77ac"
+    },
+    {
+      "key_id": "key-analytics-export",
+      "name": "analytics export app key",
+      "status": "revoked",
+      "category": "standard",
+      "owner": "data-platform",
+      "created_at": "2025-07-19T14:20:00Z",
+      "modified_at": "2026-06-17T21:50:00Z",
+      "last4": "0d4e"
+    }
+  ],
+  "audit_events": []
+}

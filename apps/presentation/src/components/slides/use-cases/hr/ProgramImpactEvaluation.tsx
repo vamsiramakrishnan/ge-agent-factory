@@ -1,0 +1,1162 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { BarChart, Download, Brain, Calculator } from "lucide-react";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Post-Program Data", lane: "system", type: "trigger" },
+    { id: "a1", label: "Impact Analysis (L1-L4)", lane: "agent", type: "action" },
+    { id: "a2", label: "ROI Calculation", lane: "agent", type: "action" },
+    { id: "a3", label: "Impact Dashboard", lane: "agent", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Multi-Signal Data", icon: Download, description: "Surveys, performance, behavior, business metrics.", trigger: "Post-Program", systems: ["LMS", "HRIS", "Surveys"] },
+  { label: "Impact Analysis", icon: Brain, description: "Kirkpatrick L1-L4 evaluation with statistical rigor.", systems: ["Gemini", "BigQuery"], integration: "Data Agent" },
+  { label: "ROI Calculation", icon: Calculator, description: "Program cost vs business impact quantified." },
+  { label: "Dashboard", icon: BarChart, description: "Interactive impact dashboard for stakeholders.", output: "Impact Report" }
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Cornerstone", description: "Program completions, assessment scores, learner feedback (L1)", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "Workday", description: "Performance ratings, behavioral indicators, promotion data (L3-L4)", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "BigQuery", description: "Impact analytics warehouse, ROI calculations, statistical models", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Looker", description: "Interactive impact dashboards, stakeholder reporting", direction: "write", protocol: "Looker API", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Multi-level impact analysis, causal reasoning, ROI narrative generation", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Multi-Signal Data Collection", description: "Aggregate post-program data across Kirkpatrick levels: surveys (L1), knowledge assessments (L2), behavioral indicators from Workday (L3), and business metrics (L4).", systems: ["Cornerstone", "Workday", "BigQuery"], layer: "integration", dataIn: "Surveys, assessments, performance data, business KPIs", dataOut: "Unified multi-level evaluation dataset" },
+    { label: "Impact Analysis (L1-L4)", description: "Gemini performs Kirkpatrick L1-L4 evaluation with statistical rigor. Correlates program participation with behavioral change and business outcomes using control groups.", systems: ["Vertex AI (Gemini)", "BigQuery"], layer: "ml", dataIn: "Multi-level evaluation dataset + control group data", dataOut: "Statistical impact analysis across all Kirkpatrick levels" },
+    { label: "ROI Calculation", description: "Quantify program cost vs. business impact. Model cost-per-outcome and compare against alternative interventions. Generate ROI narrative for budget justification.", systems: ["Vertex AI (Gemini)", "BigQuery"], layer: "llm", dataIn: "Impact analysis + program cost data", dataOut: "Quantified ROI with budget justification narrative" },
+    { label: "Dashboard & Reporting", description: "Interactive impact dashboard for stakeholders with drill-down by program, cohort, and business unit. Auto-generated executive summary for leadership.", systems: ["Looker"], layer: "integration", dataIn: "ROI results + impact analysis", dataOut: "Interactive impact report with executive summary" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "L&D Lead agent for the Program Impact Evaluation Agent workflow",
+  primaryObjective: "Multi-level impact evaluation across Kirkpatrick L1-L4 with automated data collection. Behavioral change tracking through 360-degree feedback and performance data correlation. so the L&D Lead can move the Evaluation depth KPI.",
+  inScope: [
+    "Multi-level impact evaluation across Kirkpatrick L1-L4 with automated data collection",
+    "Behavioral change tracking through 360-degree feedback and performance data correlation",
+    "Automated ROI dashboards connecting program spend to measurable business outcomes",
+  ],
+  outOfScope: [
+    "Final hiring, termination, or compensation decisions (HRBP/leadership retains authority)",
+    "Performance management adjudication and disciplinary action",
+    "Legal interpretation of employment law in ambiguous jurisdictions",
+  ],
+  toolIntents: [
+    {
+      name: "query_lms_lms_records",
+      kind: "query",
+      sourceSystemId: "lms",
+      description: "Retrieve lms records from LMS for the Program Impact Evaluation Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "lms_records_records",
+        "lms_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_workday_employees",
+      kind: "query",
+      sourceSystemId: "workday",
+      description: "Retrieve employees from Workday for the Program Impact Evaluation Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "employees_records",
+        "employees_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_survey_platform_survey_platform_records",
+      kind: "query",
+      sourceSystemId: "survey_platform",
+      description: "Retrieve survey platform records from Survey Platform for the Program Impact Evaluation Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "survey_platform_records_records",
+        "survey_platform_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_google_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "google_bigquery",
+      description: "Retrieve analytics events from Google BigQuery for the Program Impact Evaluation Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_program_impact_evaluation_agent_policy_handbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "google_bigquery",
+      description: "Look up sections of the Program Impact Evaluation Agent Policy Handbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Evaluation depth moved from L1 surveys only toward L1-L4 Kirkpatrick",
+      mustCite: [
+        "lms.lms_records",
+        "workday.employees",
+      ],
+      sourceSystemIds: [
+        "lms",
+        "workday",
+      ],
+    },
+    {
+      claim: "ROI measurement moved from None toward Quantified",
+      mustCite: [
+        "lms.lms_records",
+        "workday.employees",
+      ],
+      sourceSystemIds: [
+        "lms",
+        "workday",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Evaluation depth regresses past the L1 surveys only baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "L&D Lead",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from LMS (and other named systems) entities.",
+    "Never bypass L&D Lead approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "program-impact-evaluation-agent-end-to-end",
+      prompt: "Run the Program Impact Evaluation Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_lms_lms_records",
+        "query_workday_employees",
+        "query_survey_platform_survey_platform_records",
+        "query_google_bigquery_analytics_events",
+        "lookup_program_impact_evaluation_agent_policy_handbook",
+      ],
+      mustReferenceEntities: [
+        "lms_records",
+        "employees",
+        "survey_platform_records",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "program-impact-evaluation-agent-policy-handbook",
+      ],
+      expectedActionOutcome: "L&D Lead receives a fully-cited recommendation; no external state change without explicit approval.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not act on single-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Program Impact Evaluation Agent so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "lms",
+      name: "LMS",
+      owns: [
+        "lms_records",
+        "lms_events",
+        "lms_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_lms_lms_records",
+        "query_lms_lms_events",
+        "query_lms_lms_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "workday",
+      name: "Workday",
+      owns: [
+        "employees",
+        "positions",
+        "compensation_records",
+      ],
+      protocol: "Workday REST",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_workday_employees",
+        "query_workday_positions",
+        "query_workday_compensation_records",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "survey_platform",
+      name: "Survey Platform",
+      owns: [
+        "survey_platform_records",
+        "survey_platform_events",
+        "survey_platform_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_survey_platform_survey_platform_records",
+        "query_survey_platform_survey_platform_events",
+        "query_survey_platform_survey_platform_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "google_bigquery",
+      name: "Google BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_google_bigquery_analytics_events",
+        "query_google_bigquery_historical_metrics",
+        "query_google_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "lms_records",
+      sourceSystemId: "lms",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "lms_events",
+      sourceSystemId: "lms",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "lms_record_id",
+          type: "ref",
+          ref: "lms_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "lms_audit_trail",
+      sourceSystemId: "lms",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "employees",
+      sourceSystemId: "workday",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "department",
+          type: "enum",
+          values: [
+            "Finance",
+            "HR",
+            "IT",
+            "Marketing",
+            "Procurement",
+            "Engineering",
+            "Operations",
+          ],
+          required: true,
+        },
+        {
+          name: "region",
+          type: "enum",
+          values: [
+            "US",
+            "EMEA",
+            "APAC",
+            "LATAM",
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "on_leave",
+            "inactive",
+          ],
+          weights: [
+            0.85,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "level",
+          type: "enum",
+          values: [
+            "L3",
+            "L4",
+            "L5",
+            "L6",
+            "L7",
+          ],
+          required: true,
+        },
+        {
+          name: "hired_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "positions",
+      sourceSystemId: "workday",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "department",
+          type: "enum",
+          values: [
+            "Finance",
+            "HR",
+            "IT",
+            "Marketing",
+            "Procurement",
+            "Engineering",
+            "Operations",
+          ],
+          required: true,
+        },
+        {
+          name: "region",
+          type: "enum",
+          values: [
+            "US",
+            "EMEA",
+            "APAC",
+            "LATAM",
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "on_leave",
+            "inactive",
+          ],
+          weights: [
+            0.85,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "level",
+          type: "enum",
+          values: [
+            "L3",
+            "L4",
+            "L5",
+            "L6",
+            "L7",
+          ],
+          required: true,
+        },
+        {
+          name: "hired_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "compensation_records",
+      sourceSystemId: "workday",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "department",
+          type: "enum",
+          values: [
+            "Finance",
+            "HR",
+            "IT",
+            "Marketing",
+            "Procurement",
+            "Engineering",
+            "Operations",
+          ],
+          required: true,
+        },
+        {
+          name: "region",
+          type: "enum",
+          values: [
+            "US",
+            "EMEA",
+            "APAC",
+            "LATAM",
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "on_leave",
+            "inactive",
+          ],
+          weights: [
+            0.85,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "level",
+          type: "enum",
+          values: [
+            "L3",
+            "L4",
+            "L5",
+            "L6",
+            "L7",
+          ],
+          required: true,
+        },
+        {
+          name: "hired_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "survey_platform_records",
+      sourceSystemId: "survey_platform",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "respondent_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "question_code",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "score",
+          type: "number",
+          min: 1,
+          max: 10,
+          required: true,
+        },
+        {
+          name: "comment",
+          type: "lorem.sentence",
+        },
+        {
+          name: "submitted_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "survey_platform_events",
+      sourceSystemId: "survey_platform",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "survey_platform_record_id",
+          type: "ref",
+          ref: "survey_platform_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "survey_platform_audit_trail",
+      sourceSystemId: "survey_platform",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "google_bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "google_bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "google_bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "lms_events.lms_record_id",
+      to: "lms_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "survey_platform_events.survey_platform_record_id",
+      to: "survey_platform_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "program-impact-evaluation-agent-policy-handbook",
+      sourceSystemId: "google_bigquery",
+      type: "policy",
+      title: "Program Impact Evaluation Agent Policy Handbook",
+      requiredSections: [
+        "Eligibility and scope",
+        "Workflow steps",
+        "Manager responsibilities",
+        "Compliance and audit",
+        "Sensitive-data handling",
+      ],
+      linkedEntities: [
+        "lms_records",
+        "lms_events",
+        "lms_audit_trail",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "eligibility",
+        "workflow",
+        "compliance",
+        "sensitive-data",
+      ],
+    },
+  ],
+  apis: [],
+  anomalies: [
+    {
+      id: "program-impact-evaluation-agent-baseline-gap",
+      description: "Seed a realistic gap where Evaluation depth sits between L1 surveys only and L1-L4 Kirkpatrick, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "lms_records",
+        "lms_events",
+      ],
+      discoveryPath: [
+        "Inspect LMS records for the affected entities",
+        "Compare against Workday historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next L&D Lead action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "program_impact_evaluation_agent",
+      schemas: [
+        "lms",
+        "workday",
+        "survey_platform",
+      ],
+    },
+    bigquery: {
+      dataset: "hr_program_impact_evaluation_agent",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "program-impact-evaluation-agent-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "program-impact-evaluation-agent-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Program Impact Evaluation Agent workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const ProgramImpactEvaluation = () => (
+  <UseCaseSlide
+    title="Program Impact Evaluation Agent"
+    subtitle="A-508 • L&D"
+    icon={BarChart}
+    domainId="domain-5"
+    layer="Layer 4: Data Agent"
+    persona="L&D Lead"
+    triggerType="scheduled"
+    swimlane={swimlane}
+    architecture={architecture}
+    systems={["LMS", "Workday", "Survey Platform", "Google BigQuery"]}
+    kpis={[
+      { label: "Evaluation depth", before: "L1 surveys only", after: "L1-L4 Kirkpatrick" },
+      { label: "ROI measurement", before: "None", after: "Quantified" },
+      { label: "Budget justification", before: "Anecdotal", after: "Data-driven" }
+    ]}
+    flow={flow}
+    statusQuo={[
+      "L&D ROI measured only by satisfaction surveys (Kirkpatrick Level 1).",
+      "No linkage established between training programs and behavioral change or business outcomes.",
+      "Budget justification for learning initiatives is difficult without impact evidence."
+    ]}
+    agentification={[
+      "Multi-level impact evaluation across Kirkpatrick L1-L4 with automated data collection.",
+      "Behavioral change tracking through 360-degree feedback and performance data correlation.",
+      "Automated ROI dashboards connecting program spend to measurable business outcomes."
+    ]}
+  />
+);

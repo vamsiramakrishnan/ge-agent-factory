@@ -1,0 +1,47 @@
+{
+  "eval_set_id": "ge_behavior_contract",
+  "name": "GE Behavior Contract",
+  "description": "Behavior-contract evals for ad_hoc_query_agent. Generated from the enriched use-case spec.",
+  "eval_cases": [
+    {
+      "eval_id": "ad-hoc-query-agent-end-to-end",
+      "conversation": [
+        {
+          "invocation_id": "ad-hoc-query-agent-end-to-end_turn_1",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Run the Ad-Hoc Query Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "query_bigquery_analytics_events",
+                "args": {}
+              },
+              {
+                "name": "query_looker_dashboards",
+                "args": {}
+              },
+              {
+                "name": "query_sap_s_4hana_transactions",
+                "args": {}
+              },
+              {
+                "name": "lookup_ad_hoc_query_agent_controls_playbook",
+                "args": {}
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "app",
+        "user_id": "ge_eval_user",
+        "state": {}
+      }
+    }
+  ]
+}

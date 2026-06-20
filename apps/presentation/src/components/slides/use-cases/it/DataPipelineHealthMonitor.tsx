@@ -1,0 +1,1121 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { Activity, AlertTriangle, Wrench, CheckCircle, Workflow } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Pipeline Failure", lane: "system", type: "trigger" },
+    { id: "a1", label: "Failure Diagnosis", lane: "agent", type: "action" },
+    { id: "a2", label: "Auto-Fix Generation", lane: "agent", type: "action" },
+    { id: "a3", label: "Fix Proposal", lane: "agent", type: "output" },
+    { id: "h1", label: "Engineer Approves", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Failure Detection", icon: AlertTriangle, description: "Pipeline failure or data freshness violation detected from DAG execution monitoring.", trigger: "Event + Daily", systems: ["Apache Airflow", "dbt"] },
+  { label: "Root Cause Diagnosis", icon: Activity, description: "Upstream dependencies, schema changes, and row count anomalies analyzed to identify failure cause.", systems: ["BigQuery", "Datadog"], integration: "ADK" },
+  { label: "Fix Generation", icon: Wrench, description: "LLM generates fix proposal — schema migration, default value addition, or upstream notification.", systems: ["Vertex AI"] },
+  { label: "Engineer Approval", icon: CheckCircle, description: "Data Engineer reviews proposed fix and approves for deployment to pipeline.", output: "Pipeline Fix" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Apache Airflow", description: "DAG execution status, task logs, dependency graphs", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "dbt", description: "Model compilation, schema tests, data freshness checks", direction: "bidirectional", protocol: "CLI / REST API", category: "erp" },
+    { system: "BigQuery", description: "Table metadata, schema changes, row counts, data freshness", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Datadog", description: "Pipeline latency metrics, alert history", direction: "read", protocol: "REST API", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Failure diagnosis, fix generation, impact assessment", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Failure Detection & Alerting", description: "Monitor Airflow DAG executions, dbt model runs, and BigQuery table freshness. Detect failures, timeouts, and data quality violations in real time.", systems: ["Apache Airflow", "dbt", "Datadog"], layer: "integration", dataIn: "DAG execution logs + dbt test results", dataOut: "Failure alerts with affected pipeline context" },
+    { label: "Root Cause Analysis", description: "Trace failure through dependency graph. Identify root cause: upstream schema change, data volume spike, infrastructure issue, or code regression. Check BigQuery information schema for recent changes.", systems: ["BigQuery", "Apache Airflow"], layer: "ml", dataIn: "Failure alert + dependency graph + schema history", dataOut: "Root cause identification with evidence" },
+    { label: "Fix Proposal Generation", description: "Gemini generates a concrete fix proposal based on root cause. For schema changes: generate dbt model update. For data issues: suggest default values or filtering. Assesses downstream impact of the fix.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Root cause + dbt model code + downstream dependencies", dataOut: "Fix proposal with impact assessment" },
+    { label: "Fix Deployment & Verification", description: "Approved fix deployed to pipeline. Re-run affected DAGs and verify data freshness and quality tests pass. Update pipeline health dashboard.", systems: ["dbt", "Apache Airflow", "BigQuery"], layer: "integration", dataIn: "Approved fix", dataOut: "Restored pipeline with verified data quality" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Data Platform Lead agent for the Data Pipeline Health Monitor workflow",
+  primaryObjective: "Gemini diagnoses pipeline failures automatically — tracing through dependency graphs and schema changes. LLM generates concrete fix proposals (dbt model updates, default values) with downstream impact assessment. so the Data Platform Lead can move the Pipeline failure MTTR KPI.",
+  inScope: [
+    "Gemini diagnoses pipeline failures automatically — tracing through dependency graphs and schema changes",
+    "LLM generates concrete fix proposals (dbt model updates, default values) with downstream impact assessment",
+    "Proactive monitoring catches freshness violations before downstream consumers are affected",
+  ],
+  outOfScope: [
+    "Production deployments outside an approved change window",
+    "Irreversible destructive actions on shared infrastructure (DROP, force-delete, key rotation)",
+    "Security incident attribution requiring forensics",
+  ],
+  toolIntents: [
+    {
+      name: "query_apache_airflow_apache_airflow_records",
+      kind: "query",
+      sourceSystemId: "apache_airflow",
+      description: "Retrieve apache airflow records from Apache Airflow for the Data Pipeline Health Monitor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "apache_airflow_records_records",
+        "apache_airflow_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_dbt_dbt_records",
+      kind: "query",
+      sourceSystemId: "dbt",
+      description: "Retrieve dbt records from dbt for the Data Pipeline Health Monitor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "dbt_records_records",
+        "dbt_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Data Pipeline Health Monitor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "query_datadog_alerts",
+      kind: "query",
+      sourceSystemId: "datadog",
+      description: "Retrieve alerts from Datadog for the Data Pipeline Health Monitor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "alerts_records",
+        "alerts_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_data_pipeline_health_monitor_runbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Data Pipeline Health Monitor Operations Runbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_apache_airflow_generate",
+      kind: "action",
+      sourceSystemId: "apache_airflow",
+      description: "Execute the generate step in Apache Airflow after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Pipeline failure MTTR moved from 2-4 hours toward 20 minutes with auto-fix",
+      mustCite: [
+        "apache_airflow.apache_airflow_records",
+        "dbt.dbt_records",
+      ],
+      sourceSystemIds: [
+        "apache_airflow",
+        "dbt",
+      ],
+    },
+    {
+      claim: "Data freshness SLA moved from 85% met toward 97% met",
+      mustCite: [
+        "apache_airflow.apache_airflow_records",
+        "dbt.dbt_records",
+      ],
+      sourceSystemIds: [
+        "apache_airflow",
+        "dbt",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Pipeline failure MTTR regresses past the 2-4 hours baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Data Platform Lead",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed generate action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from Apache Airflow (and other named systems) entities.",
+    "Never bypass Data Platform Lead approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "data-pipeline-health-monitor-end-to-end",
+      prompt: "Run the Data Pipeline Health Monitor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_apache_airflow_apache_airflow_records",
+        "query_dbt_dbt_records",
+        "query_bigquery_analytics_events",
+        "query_datadog_alerts",
+        "lookup_data_pipeline_health_monitor_runbook",
+        "action_apache_airflow_generate",
+      ],
+      mustReferenceEntities: [
+        "apache_airflow_records",
+        "dbt_records",
+        "analytics_events",
+        "alerts",
+      ],
+      mustCiteDocuments: [
+        "data-pipeline-health-monitor-runbook",
+      ],
+      expectedActionOutcome: "Action generate executed against Apache Airflow, with audit-trail entry and Data Platform Lead notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute generate without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Data Pipeline Health Monitor so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "apache_airflow",
+      name: "Apache Airflow",
+      owns: [
+        "apache_airflow_records",
+        "apache_airflow_events",
+        "apache_airflow_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_apache_airflow_apache_airflow_records",
+        "query_apache_airflow_apache_airflow_events",
+        "query_apache_airflow_apache_airflow_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "dbt",
+      name: "dbt",
+      owns: [
+        "dbt_records",
+        "dbt_events",
+        "dbt_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_dbt_dbt_records",
+        "query_dbt_dbt_events",
+        "query_dbt_dbt_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "datadog",
+      name: "Datadog",
+      owns: [
+        "alerts",
+        "monitors",
+        "metrics_snapshots",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_datadog_alerts",
+        "query_datadog_monitors",
+        "query_datadog_metrics_snapshots",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "apache_airflow_records",
+      sourceSystemId: "apache_airflow",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "apache_airflow_events",
+      sourceSystemId: "apache_airflow",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "apache_airflow_record_id",
+          type: "ref",
+          ref: "apache_airflow_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "apache_airflow_audit_trail",
+      sourceSystemId: "apache_airflow",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "dbt_records",
+      sourceSystemId: "dbt",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "dbt_events",
+      sourceSystemId: "dbt",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "dbt_record_id",
+          type: "ref",
+          ref: "dbt_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "dbt_audit_trail",
+      sourceSystemId: "dbt",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "alerts",
+      sourceSystemId: "datadog",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "monitors",
+      sourceSystemId: "datadog",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "metrics_snapshots",
+      sourceSystemId: "datadog",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "apache_airflow_events.apache_airflow_record_id",
+      to: "apache_airflow_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "dbt_events.dbt_record_id",
+      to: "dbt_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "data-pipeline-health-monitor-runbook",
+      sourceSystemId: "bigquery",
+      type: "runbook",
+      title: "Data Pipeline Health Monitor Operations Runbook",
+      requiredSections: [
+        "Detection signals",
+        "Triage procedures",
+        "Remediation actions",
+        "Rollback criteria",
+        "Post-incident review",
+      ],
+      linkedEntities: [
+        "apache_airflow_records",
+        "apache_airflow_events",
+        "apache_airflow_audit_trail",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "detection",
+        "triage",
+        "remediation",
+        "rollback",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "apache_airflow_generate_api",
+      sourceSystemId: "apache_airflow",
+      method: "POST",
+      path: "/api/apache_airflow/generate",
+      description: "Synchronous endpoint the agent calls to generate in Apache Airflow after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "data-pipeline-health-monitor-baseline-gap",
+      description: "Seed a realistic gap where Pipeline failure MTTR sits between 2-4 hours and 20 minutes with auto-fix, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "apache_airflow_records",
+        "apache_airflow_events",
+      ],
+      discoveryPath: [
+        "Inspect Apache Airflow records for the affected entities",
+        "Compare against dbt historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Data Platform Lead action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "data_pipeline_health_monitor",
+      schemas: [
+        "apache_airflow",
+        "dbt",
+      ],
+    },
+    bigquery: {
+      dataset: "it_data_pipeline_health_monitor",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "data-pipeline-health-monitor-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "data-pipeline-health-monitor-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Data Pipeline Health Monitor workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const DataPipelineHealthMonitor = () => (
+  <UseCaseSlide
+    title="Data Pipeline Health Monitor"
+    subtitle="IT6-01 • Data & AI Platform"
+    icon={Workflow}
+    domainId="domain-43"
+    layer="Layer 3: Custom ADK"
+    persona="Data Platform Lead"
+    systems={["Apache Airflow", "dbt", "BigQuery", "Datadog", "Vertex AI"]}
+    kpis={[
+      { label: "Pipeline failure MTTR", before: "2-4 hours", after: "20 minutes with auto-fix" },
+      { label: "Data freshness SLA", before: "85% met", after: "97% met" },
+      { label: "Schema break resolution", before: "Manual investigation", after: "Auto-diagnosed + fix proposed" },
+    ]}
+    triggerType="event"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "Data Engineer", action: "Approve pipeline fix", description: "Engineer reviews the auto-generated fix proposal, validates the impact assessment, and approves deployment to the affected pipeline." }}
+    statusQuo={[
+      "Pipeline failures diagnosed manually by reading Airflow logs and tracing upstream dependencies.",
+      "Schema breaks from upstream changes require hours of investigation to identify and fix.",
+      "Data freshness SLA violations discovered by downstream consumers rather than proactive monitoring.",
+    ]}
+    agentification={[
+      "Gemini diagnoses pipeline failures automatically — tracing through dependency graphs and schema changes.",
+      "LLM generates concrete fix proposals (dbt model updates, default values) with downstream impact assessment.",
+      "Proactive monitoring catches freshness violations before downstream consumers are affected.",
+    ]}
+  />
+);

@@ -1,0 +1,360 @@
+{
+  "id": "okta_tools",
+  "version": 3,
+  "tools": [
+    {
+      "name": "search_users",
+      "description": "[GET /api/v1/users] List Users",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text query across login, email, name, department, manager, and status."
+          },
+          "q": {
+            "type": "string",
+            "description": "Finds a user that matches firstName, lastName, and email properties."
+          },
+          "after": {
+            "type": "string",
+            "description": "Specifies the pagination cursor for the next page of users."
+          },
+          "filter": {
+            "type": "string",
+            "description": "Filters users with a supported expression for a subset of properties."
+          },
+          "search": {
+            "type": "string",
+            "description": "Searches for users with a supported filtering expression for most properties."
+          },
+          "sortBy": {
+            "type": "string"
+          },
+          "sortOrder": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max rows to return."
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "users",
+        "query": {
+          "textFields": [
+            "login",
+            "email",
+            "first_name",
+            "last_name",
+            "department",
+            "manager",
+            "status"
+          ],
+          "defaultSort": [
+            {
+              "field": "last_name",
+              "direction": "asc"
+            }
+          ],
+          "pagination": {
+            "style": "cursor",
+            "defaultLimit": 25,
+            "maxLimit": 200
+          }
+        }
+      }
+    },
+    {
+      "name": "get_user",
+      "description": "[GET /api/v1/users/{userId}] Get User",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "user primary key"
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "users",
+        "primaryKey": "user_id"
+      }
+    },
+    {
+      "name": "submit_user_update",
+      "description": "[PUT /api/v1/users/{userId}] Update User",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "description": "user primary key"
+          },
+          "status": {
+            "type": "string",
+            "description": "Target status."
+          },
+          "note": {
+            "type": "string",
+            "description": "Reviewer note recorded on the change."
+          },
+          "role": {
+            "type": "string",
+            "description": "Acting role; gated by allowedRoles."
+          },
+          "idempotency_key": {
+            "type": "string",
+            "description": "Replays return the original result."
+          },
+          "userId": {
+            "type": "string"
+          },
+          "strict": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "user_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "users",
+        "primaryKey": "user_id"
+      }
+    },
+    {
+      "name": "search_groups",
+      "description": "[GET /api/v1/groups] List Groups",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text query across group name, description, type, and risk tier."
+          },
+          "q": {
+            "type": "string",
+            "description": "Searches the name property of groups for matching value."
+          },
+          "filter": {
+            "type": "string",
+            "description": "Filter expression for groups."
+          },
+          "after": {
+            "type": "string",
+            "description": "Specifies the pagination cursor for the next page of groups."
+          },
+          "expand": {
+            "type": "string",
+            "description": "Includes additional metadata in the response."
+          },
+          "search": {
+            "type": "string",
+            "description": "Searches for groups with a supported filtering expression."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max rows to return."
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "groups",
+        "query": {
+          "textFields": [
+            "name",
+            "description",
+            "group_type",
+            "risk_tier"
+          ],
+          "defaultSort": [
+            {
+              "field": "name",
+              "direction": "asc"
+            }
+          ],
+          "pagination": {
+            "style": "cursor",
+            "defaultLimit": 25,
+            "maxLimit": 200
+          }
+        }
+      }
+    },
+    {
+      "name": "get_group",
+      "description": "[GET /api/v1/groups/{groupId}] Get Group",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "description": "group primary key"
+          },
+          "groupId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "group_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "groups",
+        "primaryKey": "group_id"
+      }
+    },
+    {
+      "name": "search_applications",
+      "description": "[GET /api/v1/apps] List Applications",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text query across application name, label, sign-on mode, status, and criticality."
+          },
+          "q": {
+            "type": "string"
+          },
+          "after": {
+            "type": "string",
+            "description": "Specifies the pagination cursor for the next page of apps."
+          },
+          "filter": {
+            "type": "string",
+            "description": "Filters apps by status, user.id, group.id or credentials.signing.kid expression."
+          },
+          "expand": {
+            "type": "string",
+            "description": "Traverses users link relationship and optionally embeds Application User resource."
+          },
+          "includeNonDeleted": {
+            "type": "boolean"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max rows to return."
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "applications",
+        "query": {
+          "textFields": [
+            "name",
+            "label",
+            "sign_on_mode",
+            "status",
+            "criticality"
+          ],
+          "defaultSort": [
+            {
+              "field": "label",
+              "direction": "asc"
+            }
+          ],
+          "pagination": {
+            "style": "cursor",
+            "defaultLimit": 25,
+            "maxLimit": 200
+          }
+        }
+      }
+    },
+    {
+      "name": "get_application",
+      "description": "[GET /api/v1/apps/{appId}] Get Application",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "application_id": {
+            "type": "string",
+            "description": "application primary key"
+          },
+          "appId": {
+            "type": "string"
+          },
+          "expand": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "application_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "applications",
+        "primaryKey": "application_id"
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending approval records.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_pending_approvals",
+        "collection": "approvals"
+      }
+    },
+    {
+      "name": "poll_async_job",
+      "description": "Poll a queued asynchronous simulator job.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id"
+        ]
+      },
+      "binding": {
+        "op": "poll_async_job"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List Okta simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

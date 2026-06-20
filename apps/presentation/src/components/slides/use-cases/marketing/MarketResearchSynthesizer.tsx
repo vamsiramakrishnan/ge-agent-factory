@@ -1,0 +1,1263 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { BookOpen, Database, Brain, FileText, CheckCircle } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Research Request", lane: "system", type: "trigger" },
+    { id: "a1", label: "Source Collection", lane: "agent", type: "action" },
+    { id: "a2", label: "Synthesis", lane: "agent", type: "action" },
+    { id: "h1", label: "PMM Reviews", lane: "human", type: "hitl" },
+    { id: "a3", label: "Brief Published", lane: "agent", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "h1"], ["h1", "a3"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Source Ingest", icon: Database, description: "Analyst reports, market data, and competitive intelligence aggregated from multiple sources.", trigger: "Chat + Quarterly", systems: ["Gartner", "Forrester", "G2"] },
+  { label: "Multi-Source Synthesis", icon: Brain, description: "40+ page reports distilled into 2-page intelligence briefs with strategic implications.", systems: ["Vertex AI", "BigQuery"], integration: "ADK" },
+  { label: "PMM Review", icon: CheckCircle, description: "Product Marketing Manager validates insights and adds market context.", systems: ["Google Docs"] },
+  { label: "Brief Distribution", icon: FileText, description: "Market intelligence brief distributed to stakeholders with actionable recommendations.", output: "Market Intelligence Brief" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Gartner", description: "Analyst reports, Magic Quadrant data, market forecasts", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "Forrester", description: "Wave reports, technology assessments, buyer insights", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "G2", description: "User reviews, product comparisons, satisfaction scores", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "Vertex AI (Gemini)", description: "Report synthesis, insight extraction, strategic implication analysis", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+    { system: "Google Workspace", description: "Intelligence briefs, research summaries, distribution", direction: "bidirectional", protocol: "Workspace API", category: "collaboration" },
+    { system: "BigQuery", description: "Market sizing data, historical trend analysis, competitive tracking", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+  ],
+  pipeline: [
+    { label: "Source Aggregation", description: "Ingest analyst reports from Gartner and Forrester, user reviews from G2, market data feeds, and competitive intelligence. Structure for cross-source analysis.", systems: ["Gartner", "Forrester", "G2"], layer: "integration", dataIn: "Analyst reports + market data + reviews", dataOut: "Structured research corpus" },
+    { label: "Quantitative Analysis", description: "Calculate market sizing estimates, growth rates, segment share, and competitive positioning metrics from structured data sources.", systems: ["BigQuery ML"], layer: "ml", dataIn: "Structured market data", dataOut: "Market metrics with confidence intervals" },
+    { label: "Strategic Synthesis", description: "Gemini synthesizes 40+ page reports, analyst briefings, and reviews into a 2-page intelligence brief. Identifies non-obvious insights — not just 'market is growing' but shifts in buyer evaluation criteria that favor or threaten our positioning.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Research corpus + market metrics", dataOut: "Intelligence brief with strategic implications" },
+    { label: "Distribution", description: "Format brief for stakeholder distribution via Google Workspace. Track readership and feedback. Maintain searchable research archive in BigQuery.", systems: ["Google Workspace", "BigQuery"], layer: "integration", dataIn: "Approved intelligence brief", dataOut: "Distributed brief + feedback tracking" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Product Marketing Mgr agent for the Market Research Synthesizer workflow",
+  primaryObjective: "Gemini synthesizes 40-page Gartner reports, analyst briefings, and G2 reviews into 2-page intelligence briefs. LLM identifies non-obvious insights — shifts in buyer evaluation criteria, not just market size growth. so the Product Marketing Mgr can move the Report synthesis time KPI.",
+  inScope: [
+    "Gemini synthesizes 40-page Gartner reports, analyst briefings, and G2 reviews into 2-page intelligence briefs",
+    "LLM identifies non-obvious insights — shifts in buyer evaluation criteria, not just market size growth",
+    "Maintains searchable research archive with cross-report pattern detection across quarters",
+  ],
+  outOfScope: [
+    "Final approval of paid spend reallocations above the governance threshold",
+    "Trademark, legal, or regulated-industry claim approval",
+    "Crisis communications without comms-team sign-off",
+  ],
+  toolIntents: [
+    {
+      name: "query_gartner_gartner_records",
+      kind: "query",
+      sourceSystemId: "gartner",
+      description: "Retrieve gartner records from Gartner for the Market Research Synthesizer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "gartner_records_records",
+        "gartner_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_forrester_forrester_records",
+      kind: "query",
+      sourceSystemId: "forrester",
+      description: "Retrieve forrester records from Forrester for the Market Research Synthesizer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "forrester_records_records",
+        "forrester_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_g2_g2_records",
+      kind: "query",
+      sourceSystemId: "g2",
+      description: "Retrieve g2 records from G2 for the Market Research Synthesizer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "g2_records_records",
+        "g2_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Market Research Synthesizer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_market_research_synthesizer_playbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Market Research Synthesizer Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_gartner_archive",
+      kind: "action",
+      sourceSystemId: "gartner",
+      description: "Execute the archive step in Gartner after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Report synthesis time moved from 2-3 days per report toward 2 hours",
+      mustCite: [
+        "gartner.gartner_records",
+        "forrester.forrester_records",
+      ],
+      sourceSystemIds: [
+        "gartner",
+        "forrester",
+      ],
+    },
+    {
+      claim: "Sources analyzed moved from 3-5 per brief toward 15+ per brief",
+      mustCite: [
+        "gartner.gartner_records",
+        "forrester.forrester_records",
+      ],
+      sourceSystemIds: [
+        "gartner",
+        "forrester",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Report synthesis time regresses past the 2-3 days per report baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Product Marketing Mgr",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed archive action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from Gartner (and other named systems) entities.",
+    "Never bypass Product Marketing Mgr approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "market-research-synthesizer-end-to-end",
+      prompt: "Run the Market Research Synthesizer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_gartner_gartner_records",
+        "query_forrester_forrester_records",
+        "query_g2_g2_records",
+        "query_bigquery_analytics_events",
+        "lookup_market_research_synthesizer_playbook",
+        "action_gartner_archive",
+      ],
+      mustReferenceEntities: [
+        "gartner_records",
+        "forrester_records",
+        "g2_records",
+        "analytics_events",
+        "accounts",
+      ],
+      mustCiteDocuments: [
+        "market-research-synthesizer-playbook",
+      ],
+      expectedActionOutcome: "Action archive executed against Gartner, with audit-trail entry and Product Marketing Mgr notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute archive without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Market Research Synthesizer so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "gartner",
+      name: "Gartner",
+      owns: [
+        "gartner_records",
+        "gartner_events",
+        "gartner_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_gartner_gartner_records",
+        "query_gartner_gartner_events",
+        "query_gartner_gartner_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "forrester",
+      name: "Forrester",
+      owns: [
+        "forrester_records",
+        "forrester_events",
+        "forrester_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_forrester_forrester_records",
+        "query_forrester_forrester_events",
+        "query_forrester_forrester_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "g2",
+      name: "G2",
+      owns: [
+        "g2_records",
+        "g2_events",
+        "g2_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_g2_g2_records",
+        "query_g2_g2_events",
+        "query_g2_g2_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "google_workspace",
+      name: "Google Workspace",
+      owns: [
+        "accounts",
+        "group_memberships",
+        "license_assignments",
+      ],
+      protocol: "Workspace API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_google_workspace_accounts",
+        "query_google_workspace_group_memberships",
+        "query_google_workspace_license_assignments",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "gartner_records",
+      sourceSystemId: "gartner",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "gartner_events",
+      sourceSystemId: "gartner",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "gartner_record_id",
+          type: "ref",
+          ref: "gartner_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "gartner_audit_trail",
+      sourceSystemId: "gartner",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "forrester_records",
+      sourceSystemId: "forrester",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "forrester_events",
+      sourceSystemId: "forrester",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "forrester_record_id",
+          type: "ref",
+          ref: "forrester_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "forrester_audit_trail",
+      sourceSystemId: "forrester",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "g2_records",
+      sourceSystemId: "g2",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "g2_events",
+      sourceSystemId: "g2",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "g2_record_id",
+          type: "ref",
+          ref: "g2_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "g2_audit_trail",
+      sourceSystemId: "g2",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "accounts",
+      sourceSystemId: "google_workspace",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "account_name",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "number",
+          min: 5000,
+          max: 1000000,
+          required: true,
+        },
+        {
+          name: "stage",
+          type: "enum",
+          values: [
+            "prospecting",
+            "qualification",
+            "proposal",
+            "negotiation",
+            "closed_won",
+            "closed_lost",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "close_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "group_memberships",
+      sourceSystemId: "google_workspace",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "license_assignments",
+      sourceSystemId: "google_workspace",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "gartner_events.gartner_record_id",
+      to: "gartner_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "forrester_events.forrester_record_id",
+      to: "forrester_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "g2_events.g2_record_id",
+      to: "g2_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "market-research-synthesizer-playbook",
+      sourceSystemId: "bigquery",
+      type: "playbook",
+      title: "Market Research Synthesizer Playbook",
+      requiredSections: [
+        "Audience guidelines",
+        "Brand voice rules",
+        "Channel-specific guardrails",
+        "Measurement framework",
+        "Approval thresholds",
+      ],
+      linkedEntities: [
+        "gartner_records",
+        "gartner_events",
+        "gartner_audit_trail",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "audience",
+        "brand-voice",
+        "channels",
+        "approvals",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "gartner_archive_api",
+      sourceSystemId: "gartner",
+      method: "POST",
+      path: "/api/gartner/archive",
+      description: "Synchronous endpoint the agent calls to archive in Gartner after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "market-research-synthesizer-baseline-gap",
+      description: "Seed a realistic gap where Report synthesis time sits between 2-3 days per report and 2 hours, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "gartner_records",
+        "gartner_events",
+      ],
+      discoveryPath: [
+        "Inspect Gartner records for the affected entities",
+        "Compare against Forrester historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Product Marketing Mgr action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "market_research_synthesizer",
+      schemas: [
+        "gartner",
+        "forrester",
+        "g2",
+        "google_workspace",
+      ],
+    },
+    bigquery: {
+      dataset: "marketing_market_research_synthesizer",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "market-research-synthesizer-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "market-research-synthesizer-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Market Research Synthesizer workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const MarketResearchSynthesizer = () => (
+  <UseCaseSlide
+    title="Market Research Synthesizer"
+    subtitle="A-3701 • Customer & Market Intelligence"
+    icon={BookOpen}
+    domainId="domain-37"
+    layer="Layer 1: OOTB"
+    persona="Product Marketing Mgr"
+    systems={["Gartner", "Forrester", "G2", "BigQuery", "Vertex AI", "Google Workspace"]}
+    kpis={[
+      { label: "Report synthesis time", before: "2-3 days per report", after: "2 hours" },
+      { label: "Sources analyzed", before: "3-5 per brief", after: "15+ per brief" },
+      { label: "Stakeholder coverage", before: "Ad-hoc sharing", after: "Systematic distribution" },
+    ]}
+    triggerType="chat"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "Product Marketing Mgr", action: "Review research brief", description: "Product Marketing Manager validates synthesized insights, adds market context, and approves for stakeholder distribution." }}
+    statusQuo={[
+      "Analyst reports read by one person — insights trapped in individual inboxes.",
+      "Market intelligence briefs take 2-3 days to create manually, limiting research velocity.",
+      "Competitive positioning based on incomplete data from whichever reports were recently read."
+    ]}
+    agentification={[
+      "Gemini synthesizes 40-page Gartner reports, analyst briefings, and G2 reviews into 2-page intelligence briefs.",
+      "LLM identifies non-obvious insights — shifts in buyer evaluation criteria, not just market size growth.",
+      "Maintains searchable research archive with cross-report pattern detection across quarters."
+    ]}
+  />
+);

@@ -1,0 +1,6 @@
+name: ap_aging_analyzer
+agent_directory: app
+region: us-central1
+create_params:
+  deployment_target: agent_runtime
+  is_a2a: false

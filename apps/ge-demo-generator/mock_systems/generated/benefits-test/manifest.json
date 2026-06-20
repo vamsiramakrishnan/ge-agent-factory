@@ -1,0 +1,150 @@
+{
+  "id": "benefits-test",
+  "generatedAt": "2026-05-12T01:32:24.365Z",
+  "domain": "hr",
+  "seed": 99,
+  "rowCount": 67,
+  "systems": [
+    {
+      "id": "benefits-platform",
+      "type": "api"
+    },
+    {
+      "id": "carrier-reports",
+      "type": "data"
+    }
+  ],
+  "tables": [
+    {
+      "name": "enrollments",
+      "path": "tables/enrollments.csv",
+      "jsonPath": "tables/enrollments.json",
+      "primaryKey": "enrollment_id",
+      "columns": [
+        {
+          "name": "enrollment_id",
+          "type": "string"
+        },
+        {
+          "name": "employee_id",
+          "type": "string"
+        },
+        {
+          "name": "plan_name",
+          "type": "string"
+        },
+        {
+          "name": "monthly_premium",
+          "type": "number"
+        },
+        {
+          "name": "enrollment_date",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "dependents",
+          "type": "number"
+        }
+      ],
+      "rowCount": 25
+    },
+    {
+      "name": "employees",
+      "path": "tables/employees.csv",
+      "jsonPath": "tables/employees.json",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "email",
+          "type": "string"
+        },
+        {
+          "name": "department",
+          "type": "string"
+        },
+        {
+          "name": "region",
+          "type": "string"
+        },
+        {
+          "name": "salary",
+          "type": "number"
+        }
+      ],
+      "rowCount": 30
+    },
+    {
+      "name": "carrier_reports",
+      "path": "tables/carrier_reports.csv",
+      "jsonPath": "tables/carrier_reports.json",
+      "primaryKey": "report_id",
+      "columns": [
+        {
+          "name": "report_id",
+          "type": "string"
+        },
+        {
+          "name": "carrier",
+          "type": "string"
+        },
+        {
+          "name": "month",
+          "type": "string"
+        },
+        {
+          "name": "utilization_rate",
+          "type": "number"
+        },
+        {
+          "name": "total_claims",
+          "type": "number"
+        },
+        {
+          "name": "avg_cost_per_claim",
+          "type": "number"
+        }
+      ],
+      "rowCount": 12
+    }
+  ],
+  "documents": [
+    {
+      "id": "anomaly-evidence",
+      "path": "documents/anomaly_evidence.json",
+      "linkedEntities": [
+        "enrollments",
+        "employees",
+        "carrier_reports"
+      ]
+    }
+  ],
+  "relationships": [],
+  "anomalies": [
+    {
+      "id": "underutilized-hdhp",
+      "description": "HDHP plan has 60% lower utilization than PPO plans but 20% higher per-claim cost",
+      "evidence": [
+        "enrollments",
+        "employees",
+        "carrier_reports"
+      ],
+      "expectedDiscoveryPath": [
+        "query enrollments by plan",
+        "cross-reference carrier utilization",
+        "compare cost ratios"
+      ]
+    }
+  ]
+}

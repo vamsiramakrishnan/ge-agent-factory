@@ -1,0 +1,61 @@
+id,source_record_id,vendor,amount,currency,status,created_at,due_date
+ID-0001,SOU-0001,Apex Facilities,18500.25,USD,pending,2026-05-06,2026-06-06
+ID-0002,SOU-0002,Northstar Logistics,74200.9,USD,approved,2026-05-07,2026-06-10
+ID-0003,SOU-0003,Summit Software,126000,USD,approved,2026-05-08,2026-06-14
+ID-0004,SOU-0004,Vertex Components,9800.5,USD,rejected,2026-05-09,2026-06-18
+ID-0005,SOU-0005,"Zemlak, Huels and Upton",71431.86,USD,pending,2024-12-10,2025-09-24
+ID-0006,SOU-0006,"Bechtelar, Mitchell and Hoppe",45678.03,USD,pending,2022-07-07,2024-07-04
+ID-0007,SOU-0007,Weissnat - Hettinger,59406.71,USD,approved,2025-06-24,2023-09-04
+ID-0008,SOU-0008,"Turcotte, Conroy and Grimes",48651.45,USD,draft,2020-09-26,2023-05-09
+ID-0009,SOU-0009,Sporer LLC,43050.11,USD,pending,2021-11-02,2024-09-25
+ID-0010,SOU-0010,Stiedemann and Sons,43155.42,USD,approved,2022-03-24,2023-08-10
+ID-0011,SOU-0011,"Cummerata, Toy and Balistreri",64617.66,USD,pending,2020-06-06,2022-06-16
+ID-0012,SOU-0012,Hickle - Kling-Pfeffer,14141.24,USD,draft,2023-01-12,2025-10-14
+ID-0013,SOU-0013,Howell Group,2432.87,EUR,approved,2021-09-26,2025-05-26
+ID-0014,SOU-0014,Towne - Wyman,28911.7,JPY,pending,2022-04-25,2022-01-16
+ID-0015,SOU-0015,Littel and Sons,83381.63,USD,pending,2021-07-22,2021-03-02
+ID-0016,SOU-0016,Wisoky - McClure,14005.75,USD,approved,2022-12-07,2022-05-30
+ID-0017,SOU-0017,"Marks, Huels and Littel",22852.2,JPY,rejected,2024-05-01,2023-03-15
+ID-0018,SOU-0018,"Cassin, Terry and Koepp",98100.64,USD,paid,2023-07-14,2022-04-02
+ID-0019,SOU-0019,Howe - Mayert,86571.16,JPY,approved,2024-12-18,2024-08-02
+ID-0020,SOU-0020,Brekke and Sons,43971.07,EUR,paid,2020-05-16,2025-04-20
+ID-0021,SOU-0021,Walter Group,47736.66,USD,paid,2024-02-27,2020-10-21
+ID-0022,SOU-0022,Gottlieb - Altenwerth-Zieme,67714.45,EUR,pending,2020-02-01,2024-06-05
+ID-0023,SOU-0023,"Romaguera, Runolfsson and Bogisich",48814.02,USD,approved,2022-06-11,2020-05-24
+ID-0024,SOU-0024,White Group,95516.01,USD,pending,2020-06-17,2023-01-02
+ID-0025,SOU-0025,"Bins, Feeney and Ward",40569.76,GBP,pending,2022-11-10,2021-05-10
+ID-0026,SOU-0026,Herzog LLC,12379.77,GBP,approved,2022-09-11,2023-07-08
+ID-0027,SOU-0027,Flatley LLC,82271.23,EUR,approved,2023-02-14,2020-11-09
+ID-0028,SOU-0028,"Graham, Becker and Abbott",51161.8,USD,pending,2024-03-29,2020-05-17
+ID-0029,SOU-0029,"Robel, Hessel and Haley",78914.36,GBP,approved,2025-06-17,2022-04-07
+ID-0030,SOU-0030,"Kunde, Prosacco and Ratke",66671.9,JPY,paid,2025-09-15,2024-03-19
+ID-0031,SOU-0031,Nolan - Will,50090.07,USD,approved,2021-04-02,2022-03-19
+ID-0032,SOU-0032,Johnson and Sons,85049.77,USD,approved,2022-11-01,2025-04-13
+ID-0033,SOU-0033,Grimes - Ritchie,31631.17,USD,pending,2024-04-12,2021-03-12
+ID-0034,SOU-0034,"Beer, Gleichner and Hoeger",33800.82,USD,pending,2022-06-25,2022-12-16
+ID-0035,SOU-0035,Altenwerth Inc,96353.58,USD,approved,2021-11-14,2024-08-23
+ID-0036,SOU-0036,"Cassin-Auer, Carter and Greenholt",77336.88,USD,pending,2022-03-25,2020-01-03
+ID-0037,SOU-0037,Stamm-Bailey - Sauer,45853.78,USD,pending,2020-05-24,2021-05-15
+ID-0038,SOU-0038,Krajcik - Weissnat-Schaden,99133.66,USD,rejected,2020-06-14,2022-03-12
+ID-0039,SOU-0039,Mueller - Corkery,81131.27,USD,pending,2024-01-17,2021-07-23
+ID-0040,SOU-0040,Kovacek and Sons,70801.36,USD,pending,2020-01-18,2023-10-14
+ID-0041,SOU-0041,Lehner-Flatley LLC,67994.07,USD,pending,2024-11-03,2022-10-04
+ID-0042,SOU-0042,Cummerata Inc,20997.63,USD,paid,2025-11-20,2024-10-04
+ID-0043,SOU-0043,"Donnelly-Wilderman, Wunsch and Kertzmann",59396.74,USD,approved,2025-11-20,2021-02-20
+ID-0044,SOU-0044,"Willms, Rosenbaum-Crooks and Franecki",64097.46,USD,pending,2023-05-23,2024-08-18
+ID-0045,SOU-0045,Hermiston and Sons,22944.81,USD,pending,2021-12-06,2025-02-01
+ID-0046,SOU-0046,"Barrows, Carter and VonRueden",99326.18,USD,paid,2022-03-25,2022-05-10
+ID-0047,SOU-0047,"Mayer-Hermiston, Maggio and Fisher",19240.13,GBP,pending,2023-01-14,2021-04-29
+ID-0048,SOU-0048,Streich - McCullough-Kertzmann,58050.88,USD,paid,2021-09-11,2022-02-12
+ID-0049,SOU-0049,"Johnston, Kuphal and Dibbert",33223.31,GBP,pending,2020-06-04,2020-05-31
+ID-0050,SOU-0050,"Schroeder, Powlowski and Corwin",87600.72,USD,pending,2022-07-21,2020-03-23
+ID-0051,SOU-0051,Johnson - Wiza,22689.92,USD,pending,2021-05-20,2020-01-04
+ID-0052,SOU-0052,"Olson, Jones and Ratke",81696.27,USD,pending,2025-05-31,2024-11-03
+ID-0053,SOU-0053,"McLaughlin, Little and Sauer",58418.9,JPY,draft,2021-08-04,2023-08-11
+ID-0054,SOU-0054,Brakus - Hills,93299.2,EUR,approved,2024-04-14,2022-10-09
+ID-0055,SOU-0055,"Stoltenberg, Dietrich and Wolff",85668.07,EUR,paid,2023-05-17,2025-09-07
+ID-0056,SOU-0056,Schaden LLC,38497.07,USD,paid,2020-01-26,2024-03-22
+ID-0057,SOU-0057,"Purdy, Wisoky and Raynor",86277.79,USD,paid,2023-04-26,2022-05-19
+ID-0058,SOU-0058,Hagenes - Pacocha,79688.47,USD,approved,2023-06-07,2024-12-30
+ID-0059,SOU-0059,"Bechtelar, Hackett and Harvey",73296.64,USD,draft,2024-09-14,2021-09-18
+ID-0060,SOU-0060,Bednar Inc,94450.42,USD,approved,2023-10-17,2021-03-12

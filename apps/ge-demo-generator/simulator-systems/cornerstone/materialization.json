@@ -1,0 +1,215 @@
+{
+  "id": "cornerstone_materialization",
+  "version": 1,
+  "collections": {
+    "learners": {
+      "primaryKey": "learner_id",
+      "fieldAliases": {
+        "learner_id": [
+          "learner_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "email": [
+          "email",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "department": [
+          "department",
+          "id",
+          "source_record_id"
+        ],
+        "manager_id": [
+          "manager_id",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "courses": {
+      "primaryKey": "course_id",
+      "fieldAliases": {
+        "course_id": [
+          "course_id",
+          "id",
+          "source_record_id"
+        ],
+        "title": [
+          "title",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "provider": [
+          "provider",
+          "id",
+          "source_record_id"
+        ],
+        "duration_hours": [
+          "duration_hours",
+          "id",
+          "source_record_id"
+        ],
+        "compliance_required": [
+          "compliance_required",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "enrollments": {
+      "primaryKey": "enrollment_id",
+      "fieldAliases": {
+        "enrollment_id": [
+          "enrollment_id",
+          "id",
+          "source_record_id"
+        ],
+        "learner_id": [
+          "learner_id",
+          "id",
+          "source_record_id"
+        ],
+        "course_id": [
+          "course_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "due_date": [
+          "due_date",
+          "id",
+          "source_record_id"
+        ],
+        "completion_date": [
+          "completion_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "certifications": {
+      "primaryKey": "certification_id",
+      "fieldAliases": {
+        "certification_id": [
+          "certification_id",
+          "id",
+          "source_record_id"
+        ],
+        "learner_id": [
+          "learner_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "expiration_date": [
+          "expiration_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "skills": {
+      "primaryKey": "skill_id",
+      "fieldAliases": {
+        "skill_id": [
+          "skill_id",
+          "id",
+          "source_record_id"
+        ],
+        "learner_id": [
+          "learner_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "proficiency": [
+          "proficiency",
+          "id",
+          "source_record_id"
+        ],
+        "verified_at": [
+          "verified_at",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

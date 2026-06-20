@@ -1,0 +1,1385 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { Timer, Database, GitCompare, Brain, BarChart3 } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Weekly Schedule", lane: "system", type: "trigger" },
+    { id: "a1", label: "Process Mining", lane: "agent", type: "action" },
+    { id: "a2", label: "Bottleneck Analysis", lane: "agent", type: "action" },
+    { id: "a3", label: "Org Recommendations", lane: "agent", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Event Log Extract", icon: Database, description: "Process event logs extracted from ERP and Coupa for req-to-pay cycle analysis.", trigger: "Weekly", systems: ["SAP S/4HANA", "Coupa"] },
+  { label: "Process Mining", icon: GitCompare, description: "Conformance checking, variant analysis, and bottleneck identification via Celonis process mining pipeline.", systems: ["Celonis", "BigQuery"], integration: "ADK" },
+  { label: "LLM Interpretation", icon: Brain, description: "Process mining results translated into actionable organizational recommendations with specific threshold changes.", systems: ["Vertex AI"] },
+  { label: "Dashboard Refresh", icon: BarChart3, description: "Cycle time metrics, bottleneck visualizations, and recommendation narratives published to Looker dashboard.", output: "Process Insights" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "SAP S/4HANA", description: "Process event logs — requisition, PO, goods receipt, invoice, payment timestamps", direction: "read", protocol: "RFC/BAPI", category: "erp" },
+    { system: "Coupa", description: "Workflow event logs, approval timestamps, requisition lifecycle events", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "Celonis", description: "Process mining engine — conformance checking, variant analysis, bottleneck identification", direction: "bidirectional", protocol: "REST API", category: "analytics" },
+    { system: "BigQuery", description: "Process event data warehouse, cycle time metrics, SLA tracking tables", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Looker", description: "Cycle time dashboards, bottleneck visualizations, touchless rate trending", direction: "write", protocol: "Looker API", category: "collaboration" },
+    { system: "Vertex AI (Gemini)", description: "Translates process mining statistics into actionable organizational recommendations", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Event Log Extraction", description: "Extract process event logs from SAP and Coupa covering the full req-to-pay cycle. Normalize timestamps and event types into a unified event log for process mining.", systems: ["SAP S/4HANA", "Coupa"], layer: "integration", dataIn: "Raw ERP/Coupa event logs with timestamps", dataOut: "Unified process event log in standard format" },
+    { label: "Process Mining & Bottleneck Analysis", description: "Run conformance checking against the ideal P2P process. Variant analysis identifies non-standard paths. Bottleneck identification pinpoints where requisitions stall and for how long. Calculate touchless processing rate and SLA compliance.", systems: ["Celonis", "BigQuery"], layer: "ml", dataIn: "Unified event log", dataOut: "Process variants, bottleneck heatmap, cycle time distributions" },
+    { label: "Organizational Recommendation Generation", description: "LLM interprets process mining results and generates actionable narratives: 'Requisitions in Facilities take 3x longer — root cause: approval matrix requires VP sign-off for all facilities requests regardless of value. Recommendation: raise VP threshold from $0 to $10K to eliminate 60% of VP approvals.'", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Process mining statistics + organizational context", dataOut: "Specific threshold change and process improvement recommendations" },
+    { label: "Dashboard & Report Distribution", description: "Publish cycle time metrics, bottleneck visualizations, and recommendation narratives to Looker dashboard. Distribute weekly reports to P2P Ops Manager.", systems: ["Looker", "BigQuery"], layer: "integration", dataIn: "Analyzed metrics + recommendations", dataOut: "Published dashboard with actionable insights" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "P2P Operations Manager agent for the P2P Cycle Time Analyzer workflow",
+  primaryObjective: "Process mining on full req-to-pay event logs with conformance checking and variant analysis. LLM translates statistical bottlenecks into specific org recommendations: 'VP threshold from $0 to $10K eliminates 60% of VP approvals in Facilities.' so the P2P Operations Manager can move the Avg req-to-pay cycle KPI.",
+  inScope: [
+    "Process mining on full req-to-pay event logs with conformance checking and variant analysis",
+    "LLM translates statistical bottlenecks into specific org recommendations: 'VP threshold from $0 to $10K eliminates 60% of VP approvals in Facilities.'",
+    "Weekly automated cycle time dashboards with touchless processing rate trending and SLA compliance tracking",
+  ],
+  outOfScope: [
+    "Contract execution without legal review",
+    "Supplier disqualification decisions (category lead retains authority)",
+    "Single-source justification overrides above policy threshold",
+  ],
+  toolIntents: [
+    {
+      name: "query_sap_s_4hana_transactions",
+      kind: "query",
+      sourceSystemId: "sap_s_4hana",
+      description: "Retrieve transactions from SAP S/4HANA for the P2P Cycle Time Analyzer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "transactions_records",
+        "transactions_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_coupa_requisitions",
+      kind: "query",
+      sourceSystemId: "coupa",
+      description: "Retrieve requisitions from Coupa for the P2P Cycle Time Analyzer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "requisitions_records",
+        "requisitions_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_celonis_celonis_records",
+      kind: "query",
+      sourceSystemId: "celonis",
+      description: "Retrieve celonis records from Celonis for the P2P Cycle Time Analyzer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "celonis_records_records",
+        "celonis_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the P2P Cycle Time Analyzer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_p2p_cycle_time_analyzer_policy_guide",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the P2P Cycle Time Analyzer Procurement Policy Guide to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_sap_s_4hana_recommend",
+      kind: "action",
+      sourceSystemId: "sap_s_4hana",
+      description: "Execute the recommend step in SAP S/4HANA after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Avg req-to-pay cycle moved from 18 days toward 7 days",
+      mustCite: [
+        "sap_s_4hana.transactions",
+        "coupa.requisitions",
+      ],
+      sourceSystemIds: [
+        "sap_s_4hana",
+        "coupa",
+      ],
+    },
+    {
+      claim: "Touchless processing rate moved from 15% toward 72%",
+      mustCite: [
+        "sap_s_4hana.transactions",
+        "coupa.requisitions",
+      ],
+      sourceSystemIds: [
+        "sap_s_4hana",
+        "coupa",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Avg req-to-pay cycle regresses past the 18 days baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "P2P Operations Manager",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed recommend action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from SAP S/4HANA (and other named systems) entities.",
+    "Never bypass P2P Operations Manager approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "p2p-cycle-time-analyzer-end-to-end",
+      prompt: "Run the P2P Cycle Time Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_sap_s_4hana_transactions",
+        "query_coupa_requisitions",
+        "query_celonis_celonis_records",
+        "query_bigquery_analytics_events",
+        "lookup_p2p_cycle_time_analyzer_policy_guide",
+        "action_sap_s_4hana_recommend",
+      ],
+      mustReferenceEntities: [
+        "transactions",
+        "requisitions",
+        "celonis_records",
+        "analytics_events",
+        "dashboards",
+      ],
+      mustCiteDocuments: [
+        "p2p-cycle-time-analyzer-policy-guide",
+      ],
+      expectedActionOutcome: "Action recommend executed against SAP S/4HANA, with audit-trail entry and P2P Operations Manager notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute recommend without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for P2P Cycle Time Analyzer so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "sap_s_4hana",
+      name: "SAP S/4HANA",
+      owns: [
+        "transactions",
+        "journal_entries",
+        "master_data",
+      ],
+      protocol: "RFC/BAPI",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sap_s_4hana_transactions",
+        "query_sap_s_4hana_journal_entries",
+        "query_sap_s_4hana_master_data",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "coupa",
+      name: "Coupa",
+      owns: [
+        "requisitions",
+        "purchase_orders",
+        "invoices",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_coupa_requisitions",
+        "query_coupa_purchase_orders",
+        "query_coupa_invoices",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "celonis",
+      name: "Celonis",
+      owns: [
+        "celonis_records",
+        "celonis_events",
+        "celonis_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_celonis_celonis_records",
+        "query_celonis_celonis_events",
+        "query_celonis_celonis_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "looker",
+      name: "Looker",
+      owns: [
+        "dashboards",
+        "explore_queries",
+        "metric_definitions",
+      ],
+      protocol: "LookerML",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_looker_dashboards",
+        "query_looker_explore_queries",
+        "query_looker_metric_definitions",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "transactions",
+      sourceSystemId: "sap_s_4hana",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "journal_entries",
+      sourceSystemId: "sap_s_4hana",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "master_data",
+      sourceSystemId: "sap_s_4hana",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "requisitions",
+      sourceSystemId: "coupa",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "vendor",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: 100,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+            "JPY",
+          ],
+          weights: [
+            0.7,
+            0.15,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "pending",
+            "approved",
+            "paid",
+            "rejected",
+          ],
+          weights: [
+            0.1,
+            0.3,
+            0.3,
+            0.2,
+            0.1,
+          ],
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "due_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "purchase_orders",
+      sourceSystemId: "coupa",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "vendor",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: 100,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+            "JPY",
+          ],
+          weights: [
+            0.7,
+            0.15,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "pending",
+            "approved",
+            "paid",
+            "rejected",
+          ],
+          weights: [
+            0.1,
+            0.3,
+            0.3,
+            0.2,
+            0.1,
+          ],
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "due_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "invoices",
+      sourceSystemId: "coupa",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "vendor",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: 100,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+            "JPY",
+          ],
+          weights: [
+            0.7,
+            0.15,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "pending",
+            "approved",
+            "paid",
+            "rejected",
+          ],
+          weights: [
+            0.1,
+            0.3,
+            0.3,
+            0.2,
+            0.1,
+          ],
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "due_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "celonis_records",
+      sourceSystemId: "celonis",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "celonis_events",
+      sourceSystemId: "celonis",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "celonis_record_id",
+          type: "ref",
+          ref: "celonis_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "celonis_audit_trail",
+      sourceSystemId: "celonis",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "dashboards",
+      sourceSystemId: "looker",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "explore_queries",
+      sourceSystemId: "looker",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "metric_definitions",
+      sourceSystemId: "looker",
+      datastore: "bigquery",
+      rowCount: 30,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "celonis_events.celonis_record_id",
+      to: "celonis_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "p2p-cycle-time-analyzer-policy-guide",
+      sourceSystemId: "bigquery",
+      type: "policy",
+      title: "P2P Cycle Time Analyzer Procurement Policy Guide",
+      requiredSections: [
+        "Sourcing principles",
+        "Approval thresholds",
+        "Supplier risk requirements",
+        "Contract and compliance gates",
+        "Exception handling",
+      ],
+      linkedEntities: [
+        "transactions",
+        "journal_entries",
+        "master_data",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "sourcing",
+        "approvals",
+        "supplier-risk",
+        "exceptions",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "sap_s_4hana_recommend_api",
+      sourceSystemId: "sap_s_4hana",
+      method: "POST",
+      path: "/api/sap_s_4hana/recommend",
+      description: "Synchronous endpoint the agent calls to recommend in SAP S/4HANA after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "p2p-cycle-time-analyzer-baseline-gap",
+      description: "Seed a realistic gap where Avg req-to-pay cycle sits between 18 days and 7 days, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "transactions",
+        "journal_entries",
+      ],
+      discoveryPath: [
+        "Inspect SAP S/4HANA records for the affected entities",
+        "Compare against Coupa historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next P2P Operations Manager action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "p2p_cycle_time_analyzer",
+      schemas: [
+        "sap_s_4hana",
+        "coupa",
+        "celonis",
+      ],
+    },
+    bigquery: {
+      dataset: "procurement_p2p_cycle_time_analyzer",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "p2p-cycle-time-analyzer-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "p2p-cycle-time-analyzer-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the P2P Cycle Time Analyzer workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const P2PCycleTimeAnalyzer = () => (
+  <UseCaseSlide
+    title="P2P Cycle Time Analyzer"
+    subtitle="A-1509 • Procure-to-Pay"
+    icon={Timer}
+    domainId="domain-15"
+    layer="Layer 4: Data Agent"
+    persona="P2P Operations Manager"
+    systems={["SAP S/4HANA", "Coupa", "Celonis", "BigQuery", "Looker"]}
+    kpis={[
+      { label: "Avg req-to-pay cycle", before: "18 days", after: "7 days" },
+      { label: "Touchless processing rate", before: "15%", after: "72%" },
+      { label: "Bottleneck identification", before: "Quarterly manual review", after: "Weekly automated" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    statusQuo={[
+      "P2P cycle time metrics compiled manually from ERP reports — quarterly at best, always backward-looking.",
+      "Bottlenecks identified anecdotally ('approvals are slow') without data on where exactly requisitions stall.",
+      "No connection between process data and organizational root causes — numbers without recommendations."
+    ]}
+    agentification={[
+      "Process mining on full req-to-pay event logs with conformance checking and variant analysis.",
+      "LLM translates statistical bottlenecks into specific org recommendations: 'VP threshold from $0 to $10K eliminates 60% of VP approvals in Facilities.'",
+      "Weekly automated cycle time dashboards with touchless processing rate trending and SLA compliance tracking."
+    ]}
+  />
+);

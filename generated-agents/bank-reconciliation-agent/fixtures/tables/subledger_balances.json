@@ -1,0 +1,542 @@
+[
+  {
+    "id": "ID-0001",
+    "posting_date": "2026-05-20",
+    "account": "2000-AP",
+    "amount": -12840.5,
+    "currency": "USD",
+    "description": "subledger_balances seeded 2000-AP close evidence for variance and reconciliation checks.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0002",
+    "posting_date": "2026-05-21",
+    "account": "2100-AR",
+    "amount": 6400.75,
+    "currency": "USD",
+    "description": "subledger_balances seeded 2100-AR close evidence for variance and reconciliation checks.",
+    "status": "pending"
+  },
+  {
+    "id": "ID-0003",
+    "posting_date": "2026-05-22",
+    "account": "3000-Revenue",
+    "amount": 9200,
+    "currency": "USD",
+    "description": "subledger_balances seeded 3000-Revenue close evidence for variance and reconciliation checks.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0004",
+    "posting_date": "2026-05-23",
+    "account": "4000-Expense",
+    "amount": -45100.25,
+    "currency": "USD",
+    "description": "subledger_balances seeded 4000-Expense close evidence for variance and reconciliation checks.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0005",
+    "posting_date": "2026-05-24",
+    "account": "5000-COGS",
+    "amount": -780.5,
+    "currency": "USD",
+    "description": "subledger_balances seeded 5000-COGS close evidence for variance and reconciliation checks.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0006",
+    "posting_date": "2026-05-25",
+    "account": "1000-Cash",
+    "amount": 33000,
+    "currency": "USD",
+    "description": "subledger_balances seeded 1000-Cash close evidence for variance and reconciliation checks.",
+    "status": "reversed"
+  },
+  {
+    "id": "ID-0007",
+    "posting_date": "2024-12-18",
+    "account": "4000-Expense",
+    "amount": 21432.67,
+    "currency": "EUR",
+    "description": "Suasoria suspendo universe certus timor autus conitor condico volutabrum umerus.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0008",
+    "posting_date": "2024-05-12",
+    "account": "3000-Revenue",
+    "amount": 44709.07,
+    "currency": "EUR",
+    "description": "Ascisco terror tabernus credo acies tumultus.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0009",
+    "posting_date": "2024-03-22",
+    "account": "5000-COGS",
+    "amount": -6233.87,
+    "currency": "USD",
+    "description": "Totidem in volaticus admoneo despecto supellex unus attero.",
+    "status": "pending"
+  },
+  {
+    "id": "ID-0010",
+    "posting_date": "2023-04-26",
+    "account": "2100-AR",
+    "amount": -36828.5,
+    "currency": "GBP",
+    "description": "Collum clam ut speculum.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0011",
+    "posting_date": "2021-07-03",
+    "account": "3000-Revenue",
+    "amount": 7174.6,
+    "currency": "GBP",
+    "description": "Abundans sperno admoneo inflammatio civis cohibeo conservo quas concido synagoga.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0012",
+    "posting_date": "2020-05-29",
+    "account": "4000-Expense",
+    "amount": -21424.17,
+    "currency": "EUR",
+    "description": "Concedo adstringo corrumpo vinco sapiente speciosus ratione avarus.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0013",
+    "posting_date": "2024-07-04",
+    "account": "1000-Cash",
+    "amount": -22214.72,
+    "currency": "USD",
+    "description": "Vomer aegre earum attero voluntarius amplitudo.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0014",
+    "posting_date": "2024-06-05",
+    "account": "4000-Expense",
+    "amount": -7727.14,
+    "currency": "EUR",
+    "description": "Celo basium denuncio censura civis solum.",
+    "status": "reversed"
+  },
+  {
+    "id": "ID-0015",
+    "posting_date": "2023-08-16",
+    "account": "1000-Cash",
+    "amount": -42441.64,
+    "currency": "GBP",
+    "description": "Aliqua patruus quia socius ceno.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0016",
+    "posting_date": "2025-10-16",
+    "account": "2000-AP",
+    "amount": 17602.63,
+    "currency": "GBP",
+    "description": "Coma cerno patrocinor usitas vindico amiculum arma.",
+    "status": "pending"
+  },
+  {
+    "id": "ID-0017",
+    "posting_date": "2024-06-02",
+    "account": "5000-COGS",
+    "amount": -29736.74,
+    "currency": "EUR",
+    "description": "Sponte cumque accendo nostrum casus defaeco vita cubitum.",
+    "status": "pending"
+  },
+  {
+    "id": "ID-0018",
+    "posting_date": "2021-02-17",
+    "account": "4000-Expense",
+    "amount": 47700.7,
+    "currency": "USD",
+    "description": "Damno aliquam tamisium.",
+    "status": "pending"
+  },
+  {
+    "id": "ID-0019",
+    "posting_date": "2022-08-09",
+    "account": "2000-AP",
+    "amount": -6559.67,
+    "currency": "GBP",
+    "description": "Odit placeat reprehenderit.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0020",
+    "posting_date": "2024-04-14",
+    "account": "1000-Cash",
+    "amount": -30072.97,
+    "currency": "GBP",
+    "description": "Abutor carpo bestia cerno carmen advenio degenero tabella.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0021",
+    "posting_date": "2024-01-14",
+    "account": "1000-Cash",
+    "amount": 45149.08,
+    "currency": "GBP",
+    "description": "Trans vicissitudo illum averto provident talus taceo eligendi aegrotatio.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0022",
+    "posting_date": "2025-07-11",
+    "account": "3000-Revenue",
+    "amount": 3833.19,
+    "currency": "USD",
+    "description": "Vehemens sophismata tersus defetiscor quod.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0023",
+    "posting_date": "2024-03-26",
+    "account": "2100-AR",
+    "amount": -5745.45,
+    "currency": "EUR",
+    "description": "Adversus tredecim clarus decor acer coerceo desolo adstringo deprecator vestigium.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0024",
+    "posting_date": "2024-08-02",
+    "account": "2100-AR",
+    "amount": 15517.37,
+    "currency": "USD",
+    "description": "Arto aeneus audax sonitus.",
+    "status": "pending"
+  },
+  {
+    "id": "ID-0025",
+    "posting_date": "2024-11-19",
+    "account": "4000-Expense",
+    "amount": -38956.82,
+    "currency": "USD",
+    "description": "Carus dolorum facilis consuasor considero.",
+    "status": "pending"
+  },
+  {
+    "id": "ID-0026",
+    "posting_date": "2024-09-26",
+    "account": "2000-AP",
+    "amount": 41378.85,
+    "currency": "GBP",
+    "description": "Conspergo dicta vilis utor ambulo.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0027",
+    "posting_date": "2023-04-27",
+    "account": "3000-Revenue",
+    "amount": -30613.7,
+    "currency": "GBP",
+    "description": "Tum una tamisium decens pel arto speculum attero.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0028",
+    "posting_date": "2021-05-18",
+    "account": "1000-Cash",
+    "amount": -33471.55,
+    "currency": "USD",
+    "description": "Synagoga dolorum arx agnosco accusantium asperiores validus carbo.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0029",
+    "posting_date": "2020-08-18",
+    "account": "2000-AP",
+    "amount": 1922.46,
+    "currency": "EUR",
+    "description": "Adsuesco crinis canis bonus.",
+    "status": "reversed"
+  },
+  {
+    "id": "ID-0030",
+    "posting_date": "2023-09-12",
+    "account": "3000-Revenue",
+    "amount": -8422.49,
+    "currency": "EUR",
+    "description": "Subito subvenio astrum desidero cupiditas usus quos.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0031",
+    "posting_date": "2020-09-09",
+    "account": "3000-Revenue",
+    "amount": -38279.61,
+    "currency": "EUR",
+    "description": "Stultus beatae cruciamentum vehemens.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0032",
+    "posting_date": "2023-01-18",
+    "account": "2100-AR",
+    "amount": -48187.6,
+    "currency": "GBP",
+    "description": "Demitto laudantium quisquam.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0033",
+    "posting_date": "2021-07-09",
+    "account": "1000-Cash",
+    "amount": 22344.37,
+    "currency": "EUR",
+    "description": "Trado turpis deorsum concido textilis defendo auctus umbra vaco.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0034",
+    "posting_date": "2020-06-14",
+    "account": "2100-AR",
+    "amount": 30353.77,
+    "currency": "GBP",
+    "description": "Aeger utpote cribro id.",
+    "status": "reversed"
+  },
+  {
+    "id": "ID-0035",
+    "posting_date": "2020-05-25",
+    "account": "3000-Revenue",
+    "amount": -42589.46,
+    "currency": "EUR",
+    "description": "Damno vulpes laboriosam commemoro bonus consequatur corroboro aegrotatio corpus.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0036",
+    "posting_date": "2024-05-03",
+    "account": "3000-Revenue",
+    "amount": 20876.57,
+    "currency": "USD",
+    "description": "Somniculosus denuo abscido thymum.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0037",
+    "posting_date": "2023-04-17",
+    "account": "1000-Cash",
+    "amount": 26651.51,
+    "currency": "EUR",
+    "description": "Tantillus thymbra eaque aqua speciosus quam talis assentator autem.",
+    "status": "pending"
+  },
+  {
+    "id": "ID-0038",
+    "posting_date": "2024-07-01",
+    "account": "5000-COGS",
+    "amount": 25871.53,
+    "currency": "EUR",
+    "description": "Valetudo nihil ratione aro demitto sumptus cerno balbus.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0039",
+    "posting_date": "2021-06-13",
+    "account": "2000-AP",
+    "amount": -7514.92,
+    "currency": "GBP",
+    "description": "Audeo aestus subito crebro traho soluta theca.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0040",
+    "posting_date": "2024-02-26",
+    "account": "2000-AP",
+    "amount": 43906.85,
+    "currency": "EUR",
+    "description": "Centum aufero suasoria blanditiis pariatur.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0041",
+    "posting_date": "2023-12-22",
+    "account": "4000-Expense",
+    "amount": 27802.53,
+    "currency": "GBP",
+    "description": "Alienus subnecto corona custodia.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0042",
+    "posting_date": "2021-07-22",
+    "account": "1000-Cash",
+    "amount": 37918.58,
+    "currency": "USD",
+    "description": "Adficio sopor commodi velociter valeo communis venia.",
+    "status": "reversed"
+  },
+  {
+    "id": "ID-0043",
+    "posting_date": "2024-12-14",
+    "account": "5000-COGS",
+    "amount": -25099.13,
+    "currency": "EUR",
+    "description": "Alius vulticulus compello.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0044",
+    "posting_date": "2024-11-03",
+    "account": "5000-COGS",
+    "amount": 49762.83,
+    "currency": "USD",
+    "description": "Cunctatio aperio acerbitas.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0045",
+    "posting_date": "2024-09-13",
+    "account": "3000-Revenue",
+    "amount": -18722.2,
+    "currency": "EUR",
+    "description": "Accedo tendo quia tempus.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0046",
+    "posting_date": "2025-01-08",
+    "account": "3000-Revenue",
+    "amount": 6339.54,
+    "currency": "EUR",
+    "description": "Ocer nobis vulariter temperantia decimus suffragium creta calco patria.",
+    "status": "pending"
+  },
+  {
+    "id": "ID-0047",
+    "posting_date": "2025-07-29",
+    "account": "2100-AR",
+    "amount": 2767.75,
+    "currency": "USD",
+    "description": "Vomica sodalitas thymum sumo optio adnuo deficio spero spiculum corroboro.",
+    "status": "pending"
+  },
+  {
+    "id": "ID-0048",
+    "posting_date": "2021-01-01",
+    "account": "3000-Revenue",
+    "amount": 19088.4,
+    "currency": "GBP",
+    "description": "Cetera aro repellat patruus attero sufficio deficio sordeo.",
+    "status": "pending"
+  },
+  {
+    "id": "ID-0049",
+    "posting_date": "2021-01-07",
+    "account": "1000-Cash",
+    "amount": 27910.26,
+    "currency": "EUR",
+    "description": "Tum thymbra vitium facilis deporto cuius arguo nam.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0050",
+    "posting_date": "2025-07-12",
+    "account": "3000-Revenue",
+    "amount": 9284.02,
+    "currency": "EUR",
+    "description": "Addo curo ago.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0051",
+    "posting_date": "2025-04-15",
+    "account": "5000-COGS",
+    "amount": 15904.54,
+    "currency": "USD",
+    "description": "Valde auxilium tabula cito thorax vulpes adamo velit qui.",
+    "status": "reversed"
+  },
+  {
+    "id": "ID-0052",
+    "posting_date": "2022-10-16",
+    "account": "5000-COGS",
+    "amount": -43760.6,
+    "currency": "EUR",
+    "description": "Voluptates totidem ulterius.",
+    "status": "pending"
+  },
+  {
+    "id": "ID-0053",
+    "posting_date": "2020-07-05",
+    "account": "2100-AR",
+    "amount": -42896.52,
+    "currency": "USD",
+    "description": "Delicate censura amaritudo aspicio.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0054",
+    "posting_date": "2025-11-02",
+    "account": "4000-Expense",
+    "amount": 46776.15,
+    "currency": "EUR",
+    "description": "Theologus comparo coepi candidus aperio.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0055",
+    "posting_date": "2022-02-17",
+    "account": "4000-Expense",
+    "amount": -43743.52,
+    "currency": "USD",
+    "description": "Arca conicio urbs arma agnitio deorsum cognatus magnam thymum.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0056",
+    "posting_date": "2023-06-26",
+    "account": "3000-Revenue",
+    "amount": -35592.12,
+    "currency": "EUR",
+    "description": "Depopulo agnitio degero cohibeo traho.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0057",
+    "posting_date": "2022-07-06",
+    "account": "2100-AR",
+    "amount": 22500.61,
+    "currency": "EUR",
+    "description": "Tergiversatio unus combibo fugiat tunc vox valetudo corrigo.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0058",
+    "posting_date": "2022-12-08",
+    "account": "4000-Expense",
+    "amount": -743.09,
+    "currency": "EUR",
+    "description": "Conturbo unde cum complectus defetiscor tempus antea auxilium virgo.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0059",
+    "posting_date": "2023-05-29",
+    "account": "3000-Revenue",
+    "amount": -1037.55,
+    "currency": "EUR",
+    "description": "Ipsum corrigo somniculosus ara.",
+    "status": "posted"
+  },
+  {
+    "id": "ID-0060",
+    "posting_date": "2021-02-10",
+    "account": "2000-AP",
+    "amount": -28129.02,
+    "currency": "USD",
+    "description": "Circumvenio vestigium volubilis molestias aranea corrupti thema corona aiunt.",
+    "status": "posted"
+  }
+]

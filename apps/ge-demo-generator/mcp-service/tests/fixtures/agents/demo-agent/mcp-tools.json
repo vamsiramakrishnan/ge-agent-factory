@@ -1,0 +1,8 @@
+{
+  "id": "demo_agent_mcp_tools",
+  "transport": "http",
+  "tools": [
+    { "name": "list_systems", "description": "List tables.", "inputSchema": { "type": "object", "properties": {} } },
+    { "name": "query_invoices", "description": "Query invoices.", "inputSchema": { "type": "object", "properties": { "limit": { "type": "integer" } } } }
+  ]
+}

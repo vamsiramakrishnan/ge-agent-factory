@@ -1,0 +1,58 @@
+{
+  "projects": [
+    {
+      "project_id": "PROJECT-ID-001",
+      "name": "sample_name",
+      "status": "sample_status",
+      "owner": "sample_owner",
+      "department": "sample_department"
+    }
+  ],
+  "issues": [
+    {
+      "issue_id": "ISSUE-ID-001",
+      "project_id": "PROJECT-ID-001",
+      "status": "sample_status",
+      "priority": "sample_priority",
+      "assignee": "sample_assignee",
+      "summary": "sample_summary"
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "TASK-ID-001",
+      "issue_id": "ISSUE-ID-001",
+      "status": "sample_status",
+      "assignee": "sample_assignee",
+      "due_date": "sample_due_date"
+    }
+  ],
+  "sprints": [
+    {
+      "sprint_id": "SPRINT-ID-001",
+      "project_id": "PROJECT-ID-001",
+      "state": "sample_state",
+      "start_date": "sample_start_date",
+      "end_date": "sample_end_date"
+    }
+  ],
+  "releases": [
+    {
+      "release_id": "RELEASE-ID-001",
+      "project_id": "PROJECT-ID-001",
+      "status": "sample_status",
+      "version": "sample_version",
+      "release_date": "sample_release_date"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APPROVAL-ID-001",
+      "source_record_id": "SOURCE-RECORD-ID-001",
+      "approver": "sample_approver",
+      "state": "sample_state",
+      "reason": "sample_reason"
+    }
+  ],
+  "audit_events": []
+}

@@ -1,0 +1,872 @@
+{
+  "id": "coupa_materialization",
+  "version": 2,
+  "collections": {
+    "suppliers": {
+      "primaryKey": "supplier_id",
+      "fieldAliases": {
+        "supplier_id": [
+          "supplier_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "legal_name": [
+          "legal_name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "risk_tier": [
+          "risk_tier",
+          "id",
+          "source_record_id"
+        ],
+        "risk_score": [
+          "risk_score",
+          "id",
+          "source_record_id"
+        ],
+        "category": [
+          "category",
+          "id",
+          "source_record_id"
+        ],
+        "commodity_code": [
+          "commodity_code",
+          "id",
+          "source_record_id"
+        ],
+        "country": [
+          "country",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "tax_id": [
+          "tax_id",
+          "id",
+          "source_record_id"
+        ],
+        "duns": [
+          "duns",
+          "id",
+          "source_record_id"
+        ],
+        "payment_terms": [
+          "payment_terms",
+          "id",
+          "source_record_id"
+        ],
+        "preferred": [
+          "preferred",
+          "id",
+          "source_record_id"
+        ],
+        "diversity_classification": [
+          "diversity_classification",
+          "id",
+          "source_record_id"
+        ],
+        "certifications": [
+          "certifications",
+          "id",
+          "source_record_id"
+        ],
+        "primary_contact_email": [
+          "primary_contact_email",
+          "id",
+          "source_record_id"
+        ],
+        "owning_buyer": [
+          "owning_buyer",
+          "id",
+          "source_record_id"
+        ],
+        "category_manager": [
+          "category_manager",
+          "id",
+          "source_record_id"
+        ],
+        "onboarded_date": [
+          "onboarded_date",
+          "id",
+          "source_record_id"
+        ],
+        "last_assessed_date": [
+          "last_assessed_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "supplier_scorecards": {
+      "primaryKey": "scorecard_id",
+      "fieldAliases": {
+        "scorecard_id": [
+          "scorecard_id",
+          "id",
+          "source_record_id"
+        ],
+        "supplier_id": [
+          "supplier_id",
+          "id",
+          "source_record_id"
+        ],
+        "period": [
+          "period",
+          "id",
+          "source_record_id"
+        ],
+        "overall_score": [
+          "overall_score",
+          "id",
+          "source_record_id"
+        ],
+        "quality_score": [
+          "quality_score",
+          "id",
+          "source_record_id"
+        ],
+        "delivery_score": [
+          "delivery_score",
+          "id",
+          "source_record_id"
+        ],
+        "cost_score": [
+          "cost_score",
+          "id",
+          "source_record_id"
+        ],
+        "compliance_score": [
+          "compliance_score",
+          "id",
+          "source_record_id"
+        ],
+        "rating": [
+          "rating",
+          "id",
+          "source_record_id"
+        ],
+        "reviewer": [
+          "reviewer",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "published_date": [
+          "published_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "draft"
+      }
+    },
+    "requisitions": {
+      "primaryKey": "requisition_id",
+      "fieldAliases": {
+        "requisition_id": [
+          "requisition_id",
+          "id",
+          "source_record_id"
+        ],
+        "title": [
+          "title",
+          "id",
+          "source_record_id"
+        ],
+        "requester": [
+          "requester",
+          "id",
+          "source_record_id"
+        ],
+        "requester_email": [
+          "requester_email",
+          "id",
+          "source_record_id"
+        ],
+        "supplier_id": [
+          "supplier_id",
+          "id",
+          "source_record_id"
+        ],
+        "contract_id": [
+          "contract_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "cost_center": [
+          "cost_center",
+          "id",
+          "source_record_id"
+        ],
+        "company_code": [
+          "company_code",
+          "id",
+          "source_record_id"
+        ],
+        "gl_account": [
+          "gl_account",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "total_amount": [
+          "total_amount",
+          "id",
+          "source_record_id"
+        ],
+        "need_by_date": [
+          "need_by_date",
+          "id",
+          "source_record_id"
+        ],
+        "justification": [
+          "justification",
+          "id",
+          "source_record_id"
+        ],
+        "approval_chain": [
+          "approval_chain",
+          "id",
+          "source_record_id"
+        ],
+        "current_approver": [
+          "current_approver",
+          "id",
+          "source_record_id"
+        ],
+        "po_id": [
+          "po_id",
+          "id",
+          "source_record_id"
+        ],
+        "created_date": [
+          "created_date",
+          "id",
+          "source_record_id"
+        ],
+        "submitted_date": [
+          "submitted_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "draft"
+      }
+    },
+    "requisition_lines": {
+      "primaryKey": "line_id",
+      "fieldAliases": {
+        "line_id": [
+          "line_id",
+          "id",
+          "source_record_id"
+        ],
+        "requisition_id": [
+          "requisition_id",
+          "id",
+          "source_record_id"
+        ],
+        "line_number": [
+          "line_number",
+          "id",
+          "source_record_id"
+        ],
+        "description": [
+          "description",
+          "id",
+          "source_record_id"
+        ],
+        "commodity_code": [
+          "commodity_code",
+          "id",
+          "source_record_id"
+        ],
+        "quantity": [
+          "quantity",
+          "id",
+          "source_record_id"
+        ],
+        "unit": [
+          "unit",
+          "id",
+          "source_record_id"
+        ],
+        "unit_price": [
+          "unit_price",
+          "id",
+          "source_record_id"
+        ],
+        "line_amount": [
+          "line_amount",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "supplier_part_number": [
+          "supplier_part_number",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "open"
+      }
+    },
+    "purchase_orders": {
+      "primaryKey": "po_id",
+      "fieldAliases": {
+        "po_id": [
+          "po_id",
+          "id",
+          "source_record_id"
+        ],
+        "po_number": [
+          "po_number",
+          "id",
+          "source_record_id"
+        ],
+        "supplier_id": [
+          "supplier_id",
+          "id",
+          "source_record_id"
+        ],
+        "requisition_id": [
+          "requisition_id",
+          "id",
+          "source_record_id"
+        ],
+        "contract_id": [
+          "contract_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "buyer": [
+          "buyer",
+          "id",
+          "source_record_id"
+        ],
+        "cost_center": [
+          "cost_center",
+          "id",
+          "source_record_id"
+        ],
+        "company_code": [
+          "company_code",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "total_amount": [
+          "total_amount",
+          "id",
+          "source_record_id"
+        ],
+        "received_amount": [
+          "received_amount",
+          "id",
+          "source_record_id"
+        ],
+        "invoiced_amount": [
+          "invoiced_amount",
+          "id",
+          "source_record_id"
+        ],
+        "order_date": [
+          "order_date",
+          "id",
+          "source_record_id"
+        ],
+        "promised_date": [
+          "promised_date",
+          "id",
+          "source_record_id"
+        ],
+        "ship_to_location": [
+          "ship_to_location",
+          "id",
+          "source_record_id"
+        ],
+        "payment_terms": [
+          "payment_terms",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "draft"
+      }
+    },
+    "po_lines": {
+      "primaryKey": "po_line_id",
+      "fieldAliases": {
+        "po_line_id": [
+          "po_line_id",
+          "id",
+          "source_record_id"
+        ],
+        "po_id": [
+          "po_id",
+          "id",
+          "source_record_id"
+        ],
+        "line_number": [
+          "line_number",
+          "id",
+          "source_record_id"
+        ],
+        "description": [
+          "description",
+          "id",
+          "source_record_id"
+        ],
+        "commodity_code": [
+          "commodity_code",
+          "id",
+          "source_record_id"
+        ],
+        "quantity": [
+          "quantity",
+          "id",
+          "source_record_id"
+        ],
+        "received_quantity": [
+          "received_quantity",
+          "id",
+          "source_record_id"
+        ],
+        "unit": [
+          "unit",
+          "id",
+          "source_record_id"
+        ],
+        "unit_price": [
+          "unit_price",
+          "id",
+          "source_record_id"
+        ],
+        "line_amount": [
+          "line_amount",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "open"
+      }
+    },
+    "receipts": {
+      "primaryKey": "receipt_id",
+      "fieldAliases": {
+        "receipt_id": [
+          "receipt_id",
+          "id",
+          "source_record_id"
+        ],
+        "po_id": [
+          "po_id",
+          "id",
+          "source_record_id"
+        ],
+        "po_line_id": [
+          "po_line_id",
+          "id",
+          "source_record_id"
+        ],
+        "supplier_id": [
+          "supplier_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "received_by": [
+          "received_by",
+          "id",
+          "source_record_id"
+        ],
+        "received_date": [
+          "received_date",
+          "id",
+          "source_record_id"
+        ],
+        "quantity_received": [
+          "quantity_received",
+          "id",
+          "source_record_id"
+        ],
+        "unit": [
+          "unit",
+          "id",
+          "source_record_id"
+        ],
+        "condition": [
+          "condition",
+          "id",
+          "source_record_id"
+        ],
+        "notes": [
+          "notes",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "draft"
+      }
+    },
+    "invoices": {
+      "primaryKey": "invoice_id",
+      "fieldAliases": {
+        "invoice_id": [
+          "invoice_id",
+          "id",
+          "source_record_id"
+        ],
+        "invoice_number": [
+          "invoice_number",
+          "id",
+          "source_record_id"
+        ],
+        "supplier_id": [
+          "supplier_id",
+          "id",
+          "source_record_id"
+        ],
+        "po_id": [
+          "po_id",
+          "id",
+          "source_record_id"
+        ],
+        "contract_id": [
+          "contract_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "match_status": [
+          "match_status",
+          "id",
+          "source_record_id"
+        ],
+        "amount": [
+          "amount",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "tax_amount": [
+          "tax_amount",
+          "id",
+          "source_record_id"
+        ],
+        "invoice_date": [
+          "invoice_date",
+          "id",
+          "source_record_id"
+        ],
+        "due_date": [
+          "due_date",
+          "id",
+          "source_record_id"
+        ],
+        "cost_center": [
+          "cost_center",
+          "id",
+          "source_record_id"
+        ],
+        "exception_reason": [
+          "exception_reason",
+          "id",
+          "source_record_id"
+        ],
+        "approver": [
+          "approver",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "received"
+      }
+    },
+    "contracts": {
+      "primaryKey": "contract_id",
+      "fieldAliases": {
+        "contract_id": [
+          "contract_id",
+          "id",
+          "source_record_id"
+        ],
+        "contract_number": [
+          "contract_number",
+          "id",
+          "source_record_id"
+        ],
+        "title": [
+          "title",
+          "id",
+          "source_record_id"
+        ],
+        "supplier_id": [
+          "supplier_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "contract_type": [
+          "contract_type",
+          "id",
+          "source_record_id"
+        ],
+        "category": [
+          "category",
+          "id",
+          "source_record_id"
+        ],
+        "coverage_scope": [
+          "coverage_scope",
+          "id",
+          "source_record_id"
+        ],
+        "pricing_model": [
+          "pricing_model",
+          "id",
+          "source_record_id"
+        ],
+        "total_contract_value": [
+          "total_contract_value",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ],
+        "discount_pct": [
+          "discount_pct",
+          "id",
+          "source_record_id"
+        ],
+        "effective_date": [
+          "effective_date",
+          "id",
+          "source_record_id"
+        ],
+        "expiration_date": [
+          "expiration_date",
+          "id",
+          "source_record_id"
+        ],
+        "auto_renew": [
+          "auto_renew",
+          "id",
+          "source_record_id"
+        ],
+        "renewal_notice_days": [
+          "renewal_notice_days",
+          "id",
+          "source_record_id"
+        ],
+        "owner": [
+          "owner",
+          "id",
+          "source_record_id"
+        ],
+        "approval_chain": [
+          "approval_chain",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "draft"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fieldAliases": {
+        "approval_id": [
+          "approval_id",
+          "id",
+          "source_record_id"
+        ],
+        "source_collection": [
+          "source_collection",
+          "id",
+          "source_record_id"
+        ],
+        "source_record_id": [
+          "source_record_id",
+          "id",
+          "source_record_id"
+        ],
+        "approver": [
+          "approver",
+          "id",
+          "source_record_id"
+        ],
+        "approver_role": [
+          "approver_role",
+          "id",
+          "source_record_id"
+        ],
+        "sequence": [
+          "sequence",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "reason": [
+          "reason",
+          "id",
+          "source_record_id"
+        ],
+        "requested_date": [
+          "requested_date",
+          "id",
+          "source_record_id"
+        ],
+        "resolved_date": [
+          "resolved_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "requested"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "actor": [
+          "actor",
+          "id",
+          "source_record_id"
+        ],
+        "role": [
+          "role",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ],
+        "detail": [
+          "detail",
+          "id",
+          "source_record_id"
+        ],
+        "timestamp": [
+          "timestamp",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

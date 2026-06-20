@@ -1,0 +1,79 @@
+{
+  "id": "onetrust_schema",
+  "version": 1,
+  "collections": {
+    "risks": {
+      "primaryKey": "risk_id",
+      "fields": {
+        "risk_id": "string",
+        "name": "string",
+        "status": "string",
+        "severity": "string",
+        "owner": "string",
+        "domain": "string"
+      }
+    },
+    "controls": {
+      "primaryKey": "control_id",
+      "fields": {
+        "control_id": "string",
+        "risk_id": "string",
+        "name": "string",
+        "status": "string",
+        "owner": "string",
+        "framework": "string"
+      }
+    },
+    "issues": {
+      "primaryKey": "issue_id",
+      "fields": {
+        "issue_id": "string",
+        "control_id": "string",
+        "status": "string",
+        "severity": "string",
+        "remediation_owner": "string",
+        "due_date": "string"
+      }
+    },
+    "policies": {
+      "primaryKey": "policy_id",
+      "fields": {
+        "policy_id": "string",
+        "name": "string",
+        "status": "string",
+        "owner": "string",
+        "effective_date": "string"
+      }
+    },
+    "assessments": {
+      "primaryKey": "assessment_id",
+      "fields": {
+        "assessment_id": "string",
+        "risk_id": "string",
+        "status": "string",
+        "assessor": "string",
+        "period": "string"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": "string",
+        "source_record_id": "string",
+        "approver": "string",
+        "state": "string",
+        "reason": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string"
+      }
+    }
+  }
+}

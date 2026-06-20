@@ -1,0 +1,849 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { PieChart, Download, BarChart, Calculator, Target } from "lucide-react";
+
+const flow: FlowStep[] = [
+  { label: "Carrier Data", icon: Download, description: "Claims, enrollment, utilization from all carriers.", trigger: "Monthly", systems: ["Carriers"] },
+  { label: "Utilization Analysis", icon: BarChart, description: "Usage patterns, cost trends, outliers identified.", systems: ["Gemini", "BigQuery"], integration: "Data Agent" },
+  { label: "Cost Modeling", icon: Calculator, description: "Predictive cost modeling for renewal negotiations." },
+  { label: "Action Items", icon: Target, description: "Communication plans for underutilized benefits.", output: "Benefits Report" },
+];
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "trigger", label: "Carrier Data", lane: "system", type: "trigger" },
+    { id: "util", label: "Utilization Analysis", lane: "agent", type: "action" },
+    { id: "cost", label: "Cost Modeling", lane: "agent", type: "action" },
+    { id: "output", label: "Benefits Report", lane: "agent", type: "output" },
+  ],
+  connections: [["trigger", "util"], ["util", "cost"], ["cost", "output"]],
+};
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Workday", description: "Employee enrollment data, demographics, plan elections", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "Benefits Carrier Data", description: "Claims data, utilization reports, cost summaries from all carriers", direction: "read", protocol: "SFTP/REST API", category: "erp" },
+    { system: "BigQuery", description: "Unified benefits data warehouse, trend analytics, predictive models", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Looker", description: "Interactive utilization dashboards, cost trend visualizations", direction: "write", protocol: "Looker API", category: "analytics" },
+  ],
+  pipeline: [
+    { label: "Carrier Data Aggregation", description: "Ingest claims, enrollment, and utilization data from all benefits carriers. Normalize across carrier formats and merge with Workday enrollment records.", systems: ["Benefits Carrier Data", "Workday"], layer: "integration", dataIn: "Raw carrier reports + enrollment records", dataOut: "Unified benefits utilization dataset" },
+    { label: "Utilization & Cost Analysis", description: "Analyze usage patterns, cost trends, and outliers across plan types. Identify underutilized high-value benefits and cost drivers by population segment.", systems: ["BigQuery"], layer: "ml", dataIn: "Unified utilization dataset", dataOut: "Utilization patterns with cost trend analysis" },
+    { label: "Predictive Cost Modeling", description: "Build predictive models for renewal cost forecasting. Model plan design changes and their impact on cost and utilization rates.", systems: ["BigQuery", "Looker"], layer: "ml", dataIn: "Historical cost trends + utilization patterns", dataOut: "12-month cost forecast with plan design scenarios" },
+    { label: "Reporting & Action Planning", description: "Interactive dashboards for Benefits Manager with drill-down by plan type, geography, and demographic. Communication plans for underutilized benefits.", systems: ["Looker"], layer: "integration", dataIn: "Analysis results + forecasts", dataOut: "Benefits utilization report with action items" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Benefits Manager agent for the Benefits Utilization & Cost Analyzer workflow",
+  primaryObjective: "Unified benefits utilization dashboard consolidating all carrier data. Predictive cost modeling for renewals with plan design optimization. so the Benefits Manager can move the Utilization visibility KPI.",
+  inScope: [
+    "Unified benefits utilization dashboard consolidating all carrier data",
+    "Predictive cost modeling for renewals with plan design optimization",
+    "Targeted communications driving adoption of underutilized high-value benefits",
+  ],
+  outOfScope: [
+    "Final hiring, termination, or compensation decisions (HRBP/leadership retains authority)",
+    "Performance management adjudication and disciplinary action",
+    "Legal interpretation of employment law in ambiguous jurisdictions",
+  ],
+  toolIntents: [
+    {
+      name: "query_benefits_platform_benefit_plans",
+      kind: "query",
+      sourceSystemId: "benefits_platform",
+      description: "Retrieve benefit plans from Benefits Platform for the Benefits Utilization & Cost Analyzer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "benefit_plans_records",
+        "benefit_plans_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_carrier_reports_carrier_reports_records",
+      kind: "query",
+      sourceSystemId: "carrier_reports",
+      description: "Retrieve carrier reports records from Carrier Reports for the Benefits Utilization & Cost Analyzer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "carrier_reports_records_records",
+        "carrier_reports_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_google_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "google_bigquery",
+      description: "Retrieve analytics events from Google BigQuery for the Benefits Utilization & Cost Analyzer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_benefits_utilization_cost_analyzer_policy_handbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "google_bigquery",
+      description: "Look up sections of the Benefits Utilization & Cost Analyzer Policy Handbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Utilization visibility moved from Annual toward Monthly",
+      mustCite: [
+        "benefits_platform.benefit_plans",
+        "carrier_reports.carrier_reports_records",
+      ],
+      sourceSystemIds: [
+        "benefits_platform",
+        "carrier_reports",
+      ],
+    },
+    {
+      claim: "Cost prediction moved from Renewal surprise toward 12-month forecast",
+      mustCite: [
+        "benefits_platform.benefit_plans",
+        "carrier_reports.carrier_reports_records",
+      ],
+      sourceSystemIds: [
+        "benefits_platform",
+        "carrier_reports",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Utilization visibility regresses past the Annual baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Benefits Manager",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from Benefits Platform (and other named systems) entities.",
+    "Never bypass Benefits Manager approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "benefits-utilization-cost-analyzer-end-to-end",
+      prompt: "Run the Benefits Utilization & Cost Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_benefits_platform_benefit_plans",
+        "query_carrier_reports_carrier_reports_records",
+        "query_google_bigquery_analytics_events",
+        "lookup_benefits_utilization_cost_analyzer_policy_handbook",
+      ],
+      mustReferenceEntities: [
+        "benefit_plans",
+        "carrier_reports_records",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "benefits-utilization-cost-analyzer-policy-handbook",
+      ],
+      expectedActionOutcome: "Benefits Manager receives a fully-cited recommendation; no external state change without explicit approval.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not act on single-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Benefits Utilization & Cost Analyzer so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "benefits_platform",
+      name: "Benefits Platform",
+      owns: [
+        "benefit_plans",
+        "enrollments",
+        "eligibility_rules",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_benefits_platform_benefit_plans",
+        "query_benefits_platform_enrollments",
+        "query_benefits_platform_eligibility_rules",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "carrier_reports",
+      name: "Carrier Reports",
+      owns: [
+        "carrier_reports_records",
+        "carrier_reports_events",
+        "carrier_reports_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_carrier_reports_carrier_reports_records",
+        "query_carrier_reports_carrier_reports_events",
+        "query_carrier_reports_carrier_reports_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "google_bigquery",
+      name: "Google BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_google_bigquery_analytics_events",
+        "query_google_bigquery_historical_metrics",
+        "query_google_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "benefit_plans",
+      sourceSystemId: "benefits_platform",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "enrollments",
+      sourceSystemId: "benefits_platform",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "eligibility_rules",
+      sourceSystemId: "benefits_platform",
+      datastore: "alloydb",
+      rowCount: 30,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "compliance",
+            "operational",
+            "financial",
+            "security",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "draft",
+            "retired",
+          ],
+          required: true,
+        },
+        {
+          name: "last_updated",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "carrier_reports_records",
+      sourceSystemId: "carrier_reports",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "carrier_reports_events",
+      sourceSystemId: "carrier_reports",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "carrier_reports_record_id",
+          type: "ref",
+          ref: "carrier_reports_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "carrier_reports_audit_trail",
+      sourceSystemId: "carrier_reports",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "google_bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "google_bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "google_bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "carrier_reports_events.carrier_reports_record_id",
+      to: "carrier_reports_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "benefits-utilization-cost-analyzer-policy-handbook",
+      sourceSystemId: "google_bigquery",
+      type: "policy",
+      title: "Benefits Utilization & Cost Analyzer Policy Handbook",
+      requiredSections: [
+        "Eligibility and scope",
+        "Workflow steps",
+        "Manager responsibilities",
+        "Compliance and audit",
+        "Sensitive-data handling",
+      ],
+      linkedEntities: [
+        "benefit_plans",
+        "enrollments",
+        "eligibility_rules",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "eligibility",
+        "workflow",
+        "compliance",
+        "sensitive-data",
+      ],
+    },
+  ],
+  apis: [],
+  anomalies: [
+    {
+      id: "benefits-utilization-cost-analyzer-baseline-gap",
+      description: "Seed a realistic gap where Utilization visibility sits between Annual and Monthly, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "benefit_plans",
+        "enrollments",
+      ],
+      discoveryPath: [
+        "Inspect Benefits Platform records for the affected entities",
+        "Compare against Carrier Reports historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Benefits Manager action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "benefits_utilization_cost_analyzer",
+      schemas: [
+        "benefits_platform",
+        "carrier_reports",
+      ],
+    },
+    bigquery: {
+      dataset: "hr_benefits_utilization_cost_analyzer",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "benefits-utilization-cost-analyzer-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "benefits-utilization-cost-analyzer-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Benefits Utilization & Cost Analyzer workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const BenefitsUtilizationAnalyzer = () => (
+  <UseCaseSlide
+    title="Benefits Utilization & Cost Analyzer"
+    subtitle="A-407 • Total Rewards"
+    icon={PieChart}
+    domainId="domain-4"
+    layer="Layer 4: Data Agent"
+    persona="Benefits Manager"
+    systems={["Benefits Platform", "Carrier Reports", "Google BigQuery"]}
+    kpis={[
+      { label: "Utilization visibility", before: "Annual", after: "Monthly" },
+      { label: "Cost prediction", before: "Renewal surprise", after: "12-month forecast" },
+      { label: "Underutilized programs", before: "Unknown", after: "Auto-detected" },
+    ]}
+    flow={flow}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    architecture={architecture}
+    statusQuo={[
+      "Benefits utilization data scattered across multiple carrier reports.",
+      "Cost trends analyzed only annually at renewal, missing optimization windows.",
+      "Employee awareness of underutilized benefits remains persistently low."
+    ]}
+    agentification={[
+      "Unified benefits utilization dashboard consolidating all carrier data.",
+      "Predictive cost modeling for renewals with plan design optimization.",
+      "Targeted communications driving adoption of underutilized high-value benefits."
+    ]}
+  />
+);

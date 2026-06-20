@@ -1,0 +1,364 @@
+{
+  "id": "workday_tools",
+  "version": 2,
+  "tools": [
+    {
+      "name": "search_workers",
+      "description": "Search Workday workers.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "supervisory_org_id": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "cost_center": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "workers"
+      }
+    },
+    {
+      "name": "get_worker",
+      "description": "Get one worker.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "worker_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "worker_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "workers",
+        "primaryKey": "worker_id"
+      }
+    },
+    {
+      "name": "search_positions",
+      "description": "Search Workday positions.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "cost_center": {
+            "type": "string"
+          },
+          "supervisory_org_id": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "positions"
+      }
+    },
+    {
+      "name": "get_position",
+      "description": "Get one position.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "position_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "position_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "positions",
+        "primaryKey": "position_id"
+      }
+    },
+    {
+      "name": "list_supervisory_orgs",
+      "description": "List Workday supervisory organizations.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "manager_id": {
+            "type": "string"
+          },
+          "parent_org_id": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_supervisory_org",
+      "description": "Get one supervisory org.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "org_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "org_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "supervisory_orgs",
+        "primaryKey": "org_id"
+      }
+    },
+    {
+      "name": "search_job_profiles",
+      "description": "Search Workday job profiles.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "job_family": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "job_profiles"
+      }
+    },
+    {
+      "name": "get_job_profile",
+      "description": "Get one job profile.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "job_profile_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_profile_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "job_profiles",
+        "primaryKey": "job_profile_id"
+      }
+    },
+    {
+      "name": "search_compensation_records",
+      "description": "Search Workday compensation records.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "worker_id": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "compensation_records"
+      }
+    },
+    {
+      "name": "get_compensation_record",
+      "description": "Get one compensation record.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "compensation_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "compensation_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "compensation_records",
+        "primaryKey": "compensation_id"
+      }
+    },
+    {
+      "name": "search_absence_requests",
+      "description": "Search Workday absence requests.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "worker_id": {
+            "type": "string"
+          },
+          "absence_type": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "absence_requests"
+      }
+    },
+    {
+      "name": "get_absence_request",
+      "description": "Get one absence request.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "absence_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "absence_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "absence_requests",
+        "primaryKey": "absence_id"
+      }
+    },
+    {
+      "name": "list_business_processes",
+      "description": "List Workday business process instances by worker, type, or status.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "worker_id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_business_process",
+      "description": "Get one business process.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "business_process_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "business_process_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "business_processes",
+        "primaryKey": "business_process_id"
+      }
+    },
+    {
+      "name": "submit_worker_change",
+      "description": "Submit a controlled state update for worker change.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "worker_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "worker_id"
+        ]
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List Workday simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

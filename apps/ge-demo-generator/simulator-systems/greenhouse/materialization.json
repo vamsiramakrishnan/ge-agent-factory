@@ -1,0 +1,259 @@
+{
+  "id": "greenhouse_materialization",
+  "version": 1,
+  "collections": {
+    "candidates": {
+      "primaryKey": "candidate_id",
+      "fieldAliases": {
+        "candidate_id": [
+          "candidate_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "email": [
+          "email",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "location": [
+          "location",
+          "id",
+          "source_record_id"
+        ],
+        "source": [
+          "source",
+          "id",
+          "source_record_id"
+        ],
+        "current_employer": [
+          "current_employer",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "jobs": {
+      "primaryKey": "job_id",
+      "fieldAliases": {
+        "job_id": [
+          "job_id",
+          "id",
+          "source_record_id"
+        ],
+        "title": [
+          "title",
+          "id",
+          "source_record_id"
+        ],
+        "department": [
+          "department",
+          "id",
+          "source_record_id"
+        ],
+        "location": [
+          "location",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "hiring_manager": [
+          "hiring_manager",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "applications": {
+      "primaryKey": "application_id",
+      "fieldAliases": {
+        "application_id": [
+          "application_id",
+          "id",
+          "source_record_id"
+        ],
+        "candidate_id": [
+          "candidate_id",
+          "id",
+          "source_record_id"
+        ],
+        "job_id": [
+          "job_id",
+          "id",
+          "source_record_id"
+        ],
+        "stage": [
+          "stage",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "recruiter": [
+          "recruiter",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "interviews": {
+      "primaryKey": "interview_id",
+      "fieldAliases": {
+        "interview_id": [
+          "interview_id",
+          "id",
+          "source_record_id"
+        ],
+        "application_id": [
+          "application_id",
+          "id",
+          "source_record_id"
+        ],
+        "interviewer": [
+          "interviewer",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "scheduled_at": [
+          "scheduled_at",
+          "id",
+          "source_record_id"
+        ],
+        "feedback_state": [
+          "feedback_state",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "offers": {
+      "primaryKey": "offer_id",
+      "fieldAliases": {
+        "offer_id": [
+          "offer_id",
+          "id",
+          "source_record_id"
+        ],
+        "application_id": [
+          "application_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "salary_band": [
+          "salary_band",
+          "id",
+          "source_record_id"
+        ],
+        "start_date": [
+          "start_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fieldAliases": {
+        "approval_id": [
+          "approval_id",
+          "id",
+          "source_record_id"
+        ],
+        "source_record_id": [
+          "source_record_id",
+          "id"
+        ],
+        "approver": [
+          "approver",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "reason": [
+          "reason",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "active"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

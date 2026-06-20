@@ -1,0 +1,137 @@
+{
+  "id": "github_schema",
+  "version": 3,
+  "apiProfile": {
+    "style": "rest-json",
+    "security": [
+      "fine_grained_pat",
+      "github_app",
+      "oauth2",
+      "bearerAuth"
+    ],
+    "pagination": {
+      "styles": [
+        "page-number",
+        "cursor",
+        "link-header"
+      ],
+      "params": [
+        "per_page",
+        "page",
+        "before",
+        "after",
+        "cursor"
+      ]
+    },
+    "commonErrors": [
+      304,
+      400,
+      401,
+      403,
+      404,
+      409,
+      422,
+      429,
+      500,
+      503
+    ]
+  },
+  "collections": {
+    "repositories": {
+      "primaryKey": "repo_id",
+      "description": "GitHub repository.",
+      "fields": {
+        "repo_id": "string",
+        "owner": "string",
+        "repo": "string",
+        "full_name": "string",
+        "visibility": "enum:public|private|internal",
+        "default_branch": "string",
+        "open_issues": "number",
+        "archived": "boolean"
+      }
+    },
+    "issues": {
+      "primaryKey": "issue_id",
+      "description": "GitHub issue with open/closed lifecycle.",
+      "fields": {
+        "issue_id": "string",
+        "number": "number",
+        "owner": "string",
+        "repo": "string",
+        "title": "string",
+        "state": "enum:open|closed",
+        "state_reason": "enum:completed|not_planned|reopened",
+        "assignee": "string",
+        "labels": "array:string",
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "pulls": {
+      "primaryKey": "pull_id",
+      "description": "GitHub pull request.",
+      "fields": {
+        "pull_id": "string",
+        "number": "number",
+        "owner": "string",
+        "repo": "string",
+        "title": "string",
+        "state": "enum:open|closed",
+        "draft": "boolean",
+        "base": "string",
+        "head": "string",
+        "merged": "boolean",
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "workflow_runs": {
+      "primaryKey": "run_id",
+      "description": "GitHub Actions workflow run.",
+      "fields": {
+        "run_id": "string",
+        "owner": "string",
+        "repo": "string",
+        "name": "string",
+        "status": "enum:queued|in_progress|completed",
+        "conclusion": "enum:success|failure|cancelled|null",
+        "head_branch": "string",
+        "event": "string",
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "description": "Simulator audit log.",
+      "fields": {
+        "event_id": "string",
+        "actor": "string",
+        "role": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string",
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

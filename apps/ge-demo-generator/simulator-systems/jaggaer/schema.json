@@ -1,0 +1,68 @@
+{
+  "id": "jaggaer_schema",
+  "version": 1,
+  "collections": {
+    "suppliers": {
+      "primaryKey": "supplier_id",
+      "fields": {
+        "supplier_id": "string",
+        "name": "string",
+        "status": "string",
+        "risk_tier": "string",
+        "country": "string",
+        "category": "string"
+      }
+    },
+    "purchase_orders": {
+      "primaryKey": "po_id",
+      "fields": {
+        "po_id": "string",
+        "supplier_id": "string",
+        "status": "string",
+        "amount": "string",
+        "currency": "string",
+        "requester": "string"
+      }
+    },
+    "requisitions": {
+      "primaryKey": "requisition_id",
+      "fields": {
+        "requisition_id": "string",
+        "supplier_id": "string",
+        "status": "string",
+        "amount": "string",
+        "cost_center": "string"
+      }
+    },
+    "contracts": {
+      "primaryKey": "contract_id",
+      "fields": {
+        "contract_id": "string",
+        "supplier_id": "string",
+        "status": "string",
+        "effective_date": "string",
+        "expiration_date": "string"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": "string",
+        "source_record_id": "string",
+        "approver": "string",
+        "state": "string",
+        "reason": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string"
+      }
+    }
+  }
+}

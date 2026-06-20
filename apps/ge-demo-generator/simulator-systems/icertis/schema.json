@@ -1,0 +1,66 @@
+{
+  "id": "icertis_schema",
+  "version": 1,
+  "collections": {
+    "agreements": {
+      "primaryKey": "agreement_id",
+      "fields": {
+        "agreement_id": "string",
+        "name": "string",
+        "counterparty": "string",
+        "status": "string",
+        "effective_date": "string",
+        "expiration_date": "string"
+      }
+    },
+    "clauses": {
+      "primaryKey": "clause_id",
+      "fields": {
+        "clause_id": "string",
+        "agreement_id": "string",
+        "clause_type": "string",
+        "risk_level": "string",
+        "text": "string"
+      }
+    },
+    "obligations": {
+      "primaryKey": "obligation_id",
+      "fields": {
+        "obligation_id": "string",
+        "agreement_id": "string",
+        "owner": "string",
+        "status": "string",
+        "due_date": "string"
+      }
+    },
+    "amendments": {
+      "primaryKey": "amendment_id",
+      "fields": {
+        "amendment_id": "string",
+        "agreement_id": "string",
+        "status": "string",
+        "effective_date": "string"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": "string",
+        "source_record_id": "string",
+        "approver": "string",
+        "state": "string",
+        "reason": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string"
+      }
+    }
+  }
+}

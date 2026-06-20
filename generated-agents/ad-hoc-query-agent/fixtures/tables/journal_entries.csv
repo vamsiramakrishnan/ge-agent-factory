@@ -1,0 +1,61 @@
+id,posting_date,account,amount,currency,description,status
+ID-0001,2020-03-28,2000-AP,-29245.91,USD,Delibero deleniti temporibus arma depono curtus patria xiphias tenus cubicularis.,pending
+ID-0002,2021-01-09,1000-Cash,-29555.17,EUR,Possimus verbum dolore desino admitto adeo ipsa.,posted
+ID-0003,2025-01-13,1000-Cash,-47502.84,EUR,Admiratio surculus amoveo pecus.,posted
+ID-0004,2021-01-15,2100-AR,30144.58,EUR,Antea ter capillus spiculum maxime vetus crepusculum aeger accusantium.,pending
+ID-0005,2023-02-24,4000-Expense,-26557.44,EUR,Vito sordeo victoria.,posted
+ID-0006,2023-09-02,4000-Expense,-18245.03,GBP,Vado tactus chirographum cilicium vix abstergo sumptus suffoco qui vulariter.,posted
+ID-0007,2022-01-15,1000-Cash,-5720.19,USD,Trucido videlicet audax corroboro vestrum.,posted
+ID-0008,2020-07-21,1000-Cash,9521.28,USD,Dedecor desipio caritas deludo somniculosus tantillus tego nesciunt ventito totidem.,posted
+ID-0009,2020-05-01,1000-Cash,-28755.28,EUR,Culpa vado vehemens verbera combibo studio.,posted
+ID-0010,2021-02-21,2000-AP,-15789.24,EUR,Animadverto tabesco excepturi civis depromo coepi patior damno asper.,posted
+ID-0011,2023-04-13,5000-COGS,-15604.23,GBP,Vicinus trado minima solum velociter cubo compello abstergo.,pending
+ID-0012,2024-10-21,1000-Cash,7685.74,EUR,Vomer bestia aegre.,posted
+ID-0013,2024-06-07,1000-Cash,15871.77,EUR,At minus clibanus.,pending
+ID-0014,2024-11-29,5000-COGS,-24032.92,GBP,Conqueror admitto admoveo stultus defungo calamitas.,posted
+ID-0015,2021-07-08,3000-Revenue,-14079.13,GBP,Demoror consequatur conventus tibi complectus bellicus ago deleo dens.,pending
+ID-0016,2021-04-29,2100-AR,30840.58,GBP,Degenero cognatus vicissitudo angustus victoria stella.,posted
+ID-0017,2020-03-12,2100-AR,-9225.19,USD,Volup libero sumo aegrotatio cura angelus placeat vigilo.,posted
+ID-0018,2020-06-17,2100-AR,5066.34,EUR,Torrens perspiciatis corrumpo cattus amiculum conspergo cupiditate spes solus.,posted
+ID-0019,2022-05-16,2000-AP,-34318.73,GBP,Curatio asporto utroque.,posted
+ID-0020,2021-05-22,3000-Revenue,23148.64,GBP,Valde victus veritatis rem.,posted
+ID-0021,2022-06-02,4000-Expense,3129.4,GBP,Suus tredecim arca triumphus harum tutamen.,posted
+ID-0022,2022-04-10,5000-COGS,-24883.08,GBP,Doloribus colligo nam communis adflicto cernuus.,posted
+ID-0023,2025-11-14,5000-COGS,-10484.47,GBP,Speciosus tibi vindico cubo terra.,posted
+ID-0024,2025-12-10,1000-Cash,10352.88,EUR,Animi vigilo attonbitus qui cado cohibeo in cur.,posted
+ID-0025,2021-01-09,2100-AR,25728.3,GBP,Crudelis amaritudo acceptus.,posted
+ID-0026,2023-08-13,1000-Cash,-26618.72,USD,Voluptatem appositus campana ustilo vester curia admitto adflicto natus.,posted
+ID-0027,2020-03-03,3000-Revenue,-48869.75,GBP,Adhaero odio cubicularis voluptate illum.,posted
+ID-0028,2024-04-04,2000-AP,40424.33,EUR,Admitto cursim tristis tibi caelestis caelum totidem.,pending
+ID-0029,2020-07-28,2100-AR,-16254.57,GBP,Bene tantum admoneo.,posted
+ID-0030,2022-08-27,2100-AR,-10542.77,EUR,Mollitia tibi temporibus arguo.,posted
+ID-0031,2021-08-10,2100-AR,-9154.44,GBP,Adeo cruciamentum subiungo.,posted
+ID-0032,2023-11-07,2000-AP,38608.61,GBP,Calculus cunctatio caput spectaculum trepide.,posted
+ID-0033,2024-12-11,2100-AR,-34368.31,GBP,Speciosus cerno aggredior vulgivagus aro.,reversed
+ID-0034,2025-11-12,4000-Expense,15942.3,EUR,Clam delibero quaerat cunctatio cursus comprehendo magni ullam baiulus.,pending
+ID-0035,2024-02-19,4000-Expense,5619.07,GBP,Toties adhaero validus.,reversed
+ID-0036,2021-10-06,2000-AP,26536.34,USD,Ambulo antea volva sperno uberrime communis spes paens pax.,posted
+ID-0037,2023-06-15,2100-AR,-22407.73,GBP,Stultus canis quibusdam tametsi.,posted
+ID-0038,2020-05-11,1000-Cash,10599.7,GBP,Tabernus confugo demum.,pending
+ID-0039,2021-12-28,2100-AR,-48631.76,USD,Acsi quos cursim infit ater.,posted
+ID-0040,2023-12-26,5000-COGS,-44958.33,GBP,Magni desidero aegrus alii paulatim confugo vero.,posted
+ID-0041,2020-11-10,4000-Expense,-20664.66,EUR,Velut textor spes spoliatio vinculum clementia ab cernuus.,posted
+ID-0042,2023-12-21,3000-Revenue,9346.14,USD,Commodo sono iusto conicio appono alius tripudio versus.,posted
+ID-0043,2020-08-14,2100-AR,22893.92,GBP,A summa consuasor.,posted
+ID-0044,2020-01-29,3000-Revenue,35115.08,GBP,Doloribus ago inflammatio crastinus pectus creta caput.,posted
+ID-0045,2021-11-21,1000-Cash,-32310.31,GBP,Exercitationem uterque vulnero nostrum tonsor compello.,posted
+ID-0046,2022-06-01,4000-Expense,18219.17,USD,Ratione aperiam nesciunt suadeo.,posted
+ID-0047,2024-07-09,5000-COGS,-4.1,GBP,Audentia acies cinis decipio provident ullam auxilium.,posted
+ID-0048,2025-10-12,1000-Cash,-2150.89,EUR,Ait adstringo amiculum occaecati illum canis reprehenderit.,pending
+ID-0049,2020-04-01,2100-AR,18931.04,USD,Porro velociter tollo nostrum sustineo.,posted
+ID-0050,2023-11-05,2100-AR,-31006.39,GBP,Contego vere accusator comedo adstringo tener subvenio.,posted
+ID-0051,2024-01-21,2100-AR,25625.38,EUR,Victus casso animi nulla volubilis crapula.,posted
+ID-0052,2022-01-13,3000-Revenue,-33807.7,EUR,Defero conspergo cui ancilla vacuus cuppedia crepusculum solutio decimus socius.,posted
+ID-0053,2024-11-18,5000-COGS,14876.54,GBP,Demoror pauper non cuius.,posted
+ID-0054,2020-10-04,2100-AR,-33733.92,GBP,Adsum ipsam pariatur uter.,posted
+ID-0055,2022-01-27,4000-Expense,4027.89,USD,Ver crustulum clibanus arbitro argentum damnatio patior.,posted
+ID-0056,2025-08-21,4000-Expense,8662.39,GBP,Demoror quod tribuo.,posted
+ID-0057,2021-08-30,5000-COGS,-37565.42,GBP,Atqui suppono adhaero cultura ducimus nobis video spectaculum denique tolero.,reversed
+ID-0058,2020-02-18,5000-COGS,-41386.79,GBP,Apparatus decerno sequi creator adopto.,posted
+ID-0059,2025-06-01,2100-AR,-28366.73,EUR,Tracto trepide odio.,posted
+ID-0060,2024-10-19,3000-Revenue,32593.23,EUR,Patrocinor cupio vita hic pecco bos quidem mollitia audacia.,posted

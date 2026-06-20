@@ -1,0 +1,17 @@
+- object: SourceEntity
+  nickname: source_entity
+  fields:
+    id: "SRC-${{counter}}"
+    source_system: "<system>"
+    created_at:
+      date_between:
+        start_date: 2026-01-01
+        end_date: 2026-03-31
+
+- object: AuditTrail
+  fields:
+    id: "AUD-${{counter}}"
+    entity_id:
+      reference: source_entity
+    action: generated
+    evidence_type: generated_audit_trail

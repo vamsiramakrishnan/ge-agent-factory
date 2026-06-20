@@ -1,0 +1,51 @@
+{
+  "eval_set_id": "ge_behavior_contract",
+  "name": "GE Behavior Contract",
+  "description": "Behavior-contract evals for account_reconciliation_agent. Generated from the enriched use-case spec.",
+  "eval_cases": [
+    {
+      "eval_id": "account-reconciliation-agent-end-to-end",
+      "conversation": [
+        {
+          "invocation_id": "account-reconciliation-agent-end-to-end_turn_1",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Run the Account Reconciliation Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "query_sap_s_4hana_fi_gl_entries",
+                "args": {}
+              },
+              {
+                "name": "query_blackline_reconciliations",
+                "args": {}
+              },
+              {
+                "name": "query_bigquery_analytics_events",
+                "args": {}
+              },
+              {
+                "name": "lookup_account_reconciliation_agent_controls_playbook",
+                "args": {}
+              },
+              {
+                "name": "action_sap_s_4hana_fi_close",
+                "args": {}
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "app",
+        "user_id": "ge_eval_user",
+        "state": {}
+      }
+    }
+  ]
+}

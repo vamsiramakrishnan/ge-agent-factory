@@ -1,0 +1,72 @@
+{
+  "name": "audit_finding_tracker",
+  "domain": "finance",
+  "createdAt": "2026-06-11T08:59:58.034Z",
+  "steps": {
+    "init": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:58.034Z",
+      "name": "audit_finding_tracker",
+      "domain": "finance"
+    },
+    "schema": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:58.052Z",
+      "tables": 8,
+      "derived": true
+    },
+    "generate": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:58.090Z",
+      "tables": 8,
+      "totalRows": 480,
+      "seed": 42
+    },
+    "tools": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:58.101Z",
+      "output": "/tmp/regen2/audit-finding-tracker/app/tools.py",
+      "functions": 11,
+      "behaviorContract": "present",
+      "contractTools": 2,
+      "goldenEvals": 1,
+      "agentsCliEvalSet": "/tmp/regen2/audit-finding-tracker/tests/eval/evalsets/ge_behavior_contract.evalset.json"
+    },
+    "test": {
+      "status": "done",
+      "completedAt": "2026-06-11T09:00:02.354Z",
+      "output": "/tmp/regen2/audit-finding-tracker/tests/test_smoke.py",
+      "ran": true,
+      "passed": true,
+      "exitCode": 0
+    }
+  },
+  "currentStep": "test",
+  "useCase": {
+    "id": "audit-finding-tracker",
+    "title": "Audit Finding Tracker",
+    "department": "finance",
+    "systems": [
+      "AuditBoard",
+      "ServiceNow",
+      "Vertex AI"
+    ],
+    "kpis": [
+      {
+        "label": "Avg remediation time",
+        "before": "90-120 days",
+        "after": "30-45 days"
+      },
+      {
+        "label": "Overdue findings",
+        "before": "25-35%",
+        "after": "< 10%"
+      },
+      {
+        "label": "Recurrence rate",
+        "before": "20%",
+        "after": "< 5%"
+      }
+    ]
+  }
+}

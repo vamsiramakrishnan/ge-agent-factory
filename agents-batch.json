@@ -1,0 +1,6266 @@
+[
+  {
+    "id": "account-reconciliation-agent",
+    "name": "Account Reconciliation Agent",
+    "title": "Account Reconciliation Agent",
+    "useCaseId": "account-reconciliation-agent",
+    "workspaceId": "ws-account-reconciliation-agent",
+    "domain": "finance",
+    "goal": "A-2103 • GL & Close",
+    "systems": [
+      "SAP S/4HANA FI",
+      "BlackLine",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "accruals-deferrals-engine",
+    "name": "Accruals & Deferrals Engine",
+    "title": "Accruals & Deferrals Engine",
+    "useCaseId": "accruals-deferrals-engine",
+    "workspaceId": "ws-accruals-deferrals-engine",
+    "domain": "finance",
+    "goal": "A-2105 • GL & Close",
+    "systems": [
+      "SAP S/4HANA FI",
+      "BlackLine",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "ad-hoc-query-agent",
+    "name": "Ad-Hoc Query Agent",
+    "title": "Ad-Hoc Query Agent",
+    "useCaseId": "ad-hoc-query-agent",
+    "workspaceId": "ws-ad-hoc-query-agent",
+    "domain": "finance",
+    "goal": "A-2804 • Finance Analytics & Reporting",
+    "systems": [
+      "BigQuery",
+      "Looker",
+      "SAP S/4HANA",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "ap-aging-analyzer",
+    "name": "AP Aging Analyzer",
+    "title": "AP Aging Analyzer",
+    "useCaseId": "ap-aging-analyzer",
+    "workspaceId": "ws-ap-aging-analyzer",
+    "domain": "finance",
+    "goal": "A-2204 • Accounts Payable",
+    "systems": [
+      "SAP S/4HANA FI",
+      "BigQuery",
+      "Looker"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "ap-policy-compliance-monitor",
+    "name": "AP Policy Compliance Monitor",
+    "title": "AP Policy Compliance Monitor",
+    "useCaseId": "ap-policy-compliance-monitor",
+    "workspaceId": "ws-ap-policy-compliance-monitor",
+    "domain": "finance",
+    "goal": "A-2207 • Accounts Payable",
+    "systems": [
+      "SAP S/4HANA FI",
+      "Coupa",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "ar-aging-dso-analyzer",
+    "name": "AR Aging & DSO Analyzer",
+    "title": "AR Aging & DSO Analyzer",
+    "useCaseId": "ar-aging-dso-analyzer",
+    "workspaceId": "ws-ar-aging-dso-analyzer",
+    "domain": "finance",
+    "goal": "A-2305 - AR & Collections",
+    "systems": [
+      "SAP S/4HANA FI",
+      "BigQuery",
+      "Looker",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "asc-606-contract-analyzer",
+    "name": "ASC 606 Contract Analyzer",
+    "title": "ASC 606 Contract Analyzer",
+    "useCaseId": "asc-606-contract-analyzer",
+    "workspaceId": "ws-asc-606-contract-analyzer",
+    "domain": "finance",
+    "goal": "A-2705 • Revenue & Cost Accounting",
+    "systems": [
+      "SAP S/4HANA SD",
+      "Contract Repository",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "audit-finding-tracker",
+    "name": "Audit Finding Tracker",
+    "title": "Audit Finding Tracker",
+    "useCaseId": "audit-finding-tracker",
+    "workspaceId": "ws-audit-finding-tracker",
+    "domain": "finance",
+    "goal": "A-2603 • Internal Audit & Controls",
+    "systems": [
+      "AuditBoard",
+      "ServiceNow",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "audit-report-generator",
+    "name": "Audit Report Generator",
+    "title": "Audit Report Generator",
+    "useCaseId": "audit-report-generator",
+    "workspaceId": "ws-audit-report-generator",
+    "domain": "finance",
+    "goal": "A-2607 • Internal Audit & Controls",
+    "systems": [
+      "AuditBoard",
+      "Vertex AI",
+      "Google Docs"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "bank-reconciliation-agent",
+    "name": "Bank Reconciliation Agent",
+    "title": "Bank Reconciliation Agent",
+    "useCaseId": "bank-reconciliation-agent",
+    "workspaceId": "ws-bank-reconciliation-agent",
+    "domain": "finance",
+    "goal": "A-2402 - Treasury & Cash",
+    "systems": [
+      "Kyriba",
+      "SAP S/4HANA FI",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "board-deck-generator",
+    "name": "Board Deck Generator",
+    "title": "Board Deck Generator",
+    "useCaseId": "board-deck-generator",
+    "workspaceId": "ws-board-deck-generator",
+    "domain": "finance",
+    "goal": "A-2008 • FP&A",
+    "systems": [
+      "BigQuery",
+      "Looker",
+      "Google Slides",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "budget-builder-consolidation",
+    "name": "Budget Builder & Consolidation",
+    "title": "Budget Builder & Consolidation",
+    "useCaseId": "budget-builder-consolidation",
+    "workspaceId": "ws-budget-builder-consolidation",
+    "domain": "finance",
+    "goal": "A-2001 • FP&A",
+    "systems": [
+      "Anaplan",
+      "SAP BPC",
+      "Workday Adaptive",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "capital-expenditure-analyzer",
+    "name": "Capital Expenditure Analyzer",
+    "title": "Capital Expenditure Analyzer",
+    "useCaseId": "capital-expenditure-analyzer",
+    "workspaceId": "ws-capital-expenditure-analyzer",
+    "domain": "finance",
+    "goal": "A-2005 • FP&A",
+    "systems": [
+      "SAP S/4HANA",
+      "Anaplan",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "cash-application-agent",
+    "name": "Cash Application Agent",
+    "title": "Cash Application Agent",
+    "useCaseId": "cash-application-agent",
+    "workspaceId": "ws-cash-application-agent",
+    "domain": "finance",
+    "goal": "A-2301 - AR & Collections",
+    "systems": [
+      "HighRadius",
+      "SAP S/4HANA FI",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "cash-flow-forecaster",
+    "name": "Cash Flow Forecaster",
+    "title": "Cash Flow Forecaster",
+    "useCaseId": "cash-flow-forecaster",
+    "workspaceId": "ws-cash-flow-forecaster",
+    "domain": "finance",
+    "goal": "A-2401 - Treasury & Cash",
+    "systems": [
+      "Kyriba",
+      "SAP S/4HANA FI",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "close-checklist-orchestrator",
+    "name": "Close Checklist Orchestrator",
+    "title": "Close Checklist Orchestrator",
+    "useCaseId": "close-checklist-orchestrator",
+    "workspaceId": "ws-close-checklist-orchestrator",
+    "domain": "finance",
+    "goal": "A-2104 • GL & Close",
+    "systems": [
+      "BlackLine",
+      "SAP S/4HANA",
+      "ServiceNow",
+      "Slack",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "cogs-reconciliation-agent",
+    "name": "COGS Reconciliation Agent",
+    "title": "COGS Reconciliation Agent",
+    "useCaseId": "cogs-reconciliation-agent",
+    "workspaceId": "ws-cogs-reconciliation-agent",
+    "domain": "finance",
+    "goal": "A-2707 • Revenue & Cost Accounting",
+    "systems": [
+      "SAP S/4HANA CO/FI",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "collections-priority-engine",
+    "name": "Collections Priority Engine",
+    "title": "Collections Priority Engine",
+    "useCaseId": "collections-priority-engine",
+    "workspaceId": "ws-collections-priority-engine",
+    "domain": "finance",
+    "goal": "A-2302 - AR & Collections",
+    "systems": [
+      "HighRadius",
+      "SAP S/4HANA FI",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "consolidation-elimination-agent",
+    "name": "Consolidation & Elimination Agent",
+    "title": "Consolidation & Elimination Agent",
+    "useCaseId": "consolidation-elimination-agent",
+    "workspaceId": "ws-consolidation-elimination-agent",
+    "domain": "finance",
+    "goal": "A-2806 • Finance Analytics & Reporting",
+    "systems": [
+      "SAP S/4HANA FI",
+      "BlackLine",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "continuous-controls-monitor",
+    "name": "Continuous Controls Monitor",
+    "title": "Continuous Controls Monitor",
+    "useCaseId": "continuous-controls-monitor",
+    "workspaceId": "ws-continuous-controls-monitor",
+    "domain": "finance",
+    "goal": "A-2602 • Internal Audit & Controls",
+    "systems": [
+      "SAP GRC",
+      "SAP S/4HANA",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "cost-allocation-agent",
+    "name": "Cost Allocation Agent",
+    "title": "Cost Allocation Agent",
+    "useCaseId": "cost-allocation-agent",
+    "workspaceId": "ws-cost-allocation-agent",
+    "domain": "finance",
+    "goal": "A-2702 • Revenue & Cost Accounting",
+    "systems": [
+      "SAP S/4HANA CO",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "credit-risk-scorer",
+    "name": "Credit Risk Scorer",
+    "title": "Credit Risk Scorer",
+    "useCaseId": "credit-risk-scorer",
+    "workspaceId": "ws-credit-risk-scorer",
+    "domain": "finance",
+    "goal": "A-2304 - AR & Collections",
+    "systems": [
+      "D&B",
+      "Moody's",
+      "SAP S/4HANA FI",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "customer-payment-predictor",
+    "name": "Customer Payment Predictor",
+    "title": "Customer Payment Predictor",
+    "useCaseId": "customer-payment-predictor",
+    "workspaceId": "ws-customer-payment-predictor",
+    "domain": "finance",
+    "goal": "A-2307 - AR & Collections",
+    "systems": [
+      "SAP S/4HANA FI",
+      "BigQuery",
+      "Vertex AI",
+      "Kyriba"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "debt-covenant-tracker",
+    "name": "Debt Covenant Tracker",
+    "title": "Debt Covenant Tracker",
+    "useCaseId": "debt-covenant-tracker",
+    "workspaceId": "ws-debt-covenant-tracker",
+    "domain": "finance",
+    "goal": "A-2405 - Treasury & Cash",
+    "systems": [
+      "SAP S/4HANA FI",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "dispute-resolution-agent",
+    "name": "Dispute Resolution Agent",
+    "title": "Dispute Resolution Agent",
+    "useCaseId": "dispute-resolution-agent",
+    "workspaceId": "ws-dispute-resolution-agent",
+    "domain": "finance",
+    "goal": "A-2306 - AR & Collections",
+    "systems": [
+      "HighRadius",
+      "SAP S/4HANA FI",
+      "Salesforce",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "dunning-communication-drafter",
+    "name": "Dunning Communication Drafter",
+    "title": "Dunning Communication Drafter",
+    "useCaseId": "dunning-communication-drafter",
+    "workspaceId": "ws-dunning-communication-drafter",
+    "domain": "finance",
+    "goal": "A-2303 - AR & Collections",
+    "systems": [
+      "SAP S/4HANA FI",
+      "HighRadius",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "duplicate-invoice-detector",
+    "name": "Duplicate Invoice Detector",
+    "title": "Duplicate Invoice Detector",
+    "useCaseId": "duplicate-invoice-detector",
+    "workspaceId": "ws-duplicate-invoice-detector",
+    "domain": "finance",
+    "goal": "A-2203 • Accounts Payable",
+    "systems": [
+      "SAP S/4HANA FI",
+      "Coupa",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "early-payment-discount-agent",
+    "name": "Early Payment Discount Agent",
+    "title": "Early Payment Discount Agent",
+    "useCaseId": "early-payment-discount-agent",
+    "workspaceId": "ws-early-payment-discount-agent",
+    "domain": "finance",
+    "goal": "A-2206 • Accounts Payable",
+    "systems": [
+      "SAP S/4HANA FI",
+      "Taulia",
+      "C2FO",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "esg-sustainability-reporter",
+    "name": "ESG & Sustainability Reporter",
+    "title": "ESG & Sustainability Reporter",
+    "useCaseId": "esg-sustainability-reporter",
+    "workspaceId": "ws-esg-sustainability-reporter",
+    "domain": "finance",
+    "goal": "A-2807 • Finance Analytics & Reporting",
+    "systems": [
+      "Workiva",
+      "CDP",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "financial-statement-generator",
+    "name": "Financial Statement Generator",
+    "title": "Financial Statement Generator",
+    "useCaseId": "financial-statement-generator",
+    "workspaceId": "ws-financial-statement-generator",
+    "domain": "finance",
+    "goal": "A-2801 • Finance Analytics & Reporting",
+    "systems": [
+      "SAP S/4HANA FI",
+      "Workiva",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "fp-a-query-assistant",
+    "name": "FP&A Query Assistant",
+    "title": "FP&A Query Assistant",
+    "useCaseId": "fp-a-query-assistant",
+    "workspaceId": "ws-fp-a-query-assistant",
+    "domain": "finance",
+    "goal": "A-2009 • FP&A",
+    "systems": [
+      "BigQuery",
+      "Looker",
+      "Anaplan",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "fraud-detection-engine",
+    "name": "Fraud Detection Engine",
+    "title": "Fraud Detection Engine",
+    "useCaseId": "fraud-detection-engine",
+    "workspaceId": "ws-fraud-detection-engine",
+    "domain": "finance",
+    "goal": "A-2606 • Internal Audit & Controls",
+    "systems": [
+      "SAP S/4HANA",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "fx-exposure-monitor",
+    "name": "FX Exposure Monitor",
+    "title": "FX Exposure Monitor",
+    "useCaseId": "fx-exposure-monitor",
+    "workspaceId": "ws-fx-exposure-monitor",
+    "domain": "finance",
+    "goal": "A-2403 - Treasury & Cash",
+    "systems": [
+      "Kyriba",
+      "Bloomberg",
+      "SAP S/4HANA FI",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "gl-anomaly-detector",
+    "name": "GL Anomaly Detector",
+    "title": "GL Anomaly Detector",
+    "useCaseId": "gl-anomaly-detector",
+    "workspaceId": "ws-gl-anomaly-detector",
+    "domain": "finance",
+    "goal": "A-2108 • GL & Close",
+    "systems": [
+      "SAP S/4HANA FI",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "headcount-planning-agent",
+    "name": "Headcount Planning Agent",
+    "title": "Headcount Planning Agent",
+    "useCaseId": "headcount-planning-agent",
+    "workspaceId": "ws-headcount-planning-agent",
+    "domain": "finance",
+    "goal": "A-2006 • FP&A",
+    "systems": [
+      "Workday",
+      "Anaplan",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "intercompany-netting-agent",
+    "name": "Intercompany Netting Agent",
+    "title": "Intercompany Netting Agent",
+    "useCaseId": "intercompany-netting-agent",
+    "workspaceId": "ws-intercompany-netting-agent",
+    "domain": "finance",
+    "goal": "A-2406 - Treasury & Cash",
+    "systems": [
+      "Kyriba",
+      "SAP S/4HANA FI",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "intercompany-reconciliation",
+    "name": "Intercompany Reconciliation",
+    "title": "Intercompany Reconciliation",
+    "useCaseId": "intercompany-reconciliation",
+    "workspaceId": "ws-intercompany-reconciliation",
+    "domain": "finance",
+    "goal": "A-2102 • GL & Close",
+    "systems": [
+      "SAP S/4HANA FI",
+      "BlackLine",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "inventory-valuation-agent",
+    "name": "Inventory Valuation Agent",
+    "title": "Inventory Valuation Agent",
+    "useCaseId": "inventory-valuation-agent",
+    "workspaceId": "ws-inventory-valuation-agent",
+    "domain": "finance",
+    "goal": "A-2706 • Revenue & Cost Accounting",
+    "systems": [
+      "SAP S/4HANA MM/FI",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "investment-portfolio-optimizer",
+    "name": "Investment Portfolio Optimizer",
+    "title": "Investment Portfolio Optimizer",
+    "useCaseId": "investment-portfolio-optimizer",
+    "workspaceId": "ws-investment-portfolio-optimizer",
+    "domain": "finance",
+    "goal": "A-2404 - Treasury & Cash",
+    "systems": [
+      "Kyriba",
+      "Bloomberg",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "investor-relations-prep-agent",
+    "name": "Investor Relations Prep Agent",
+    "title": "Investor Relations Prep Agent",
+    "useCaseId": "investor-relations-prep-agent",
+    "workspaceId": "ws-investor-relations-prep-agent",
+    "domain": "finance",
+    "goal": "A-2808 • Finance Analytics & Reporting",
+    "systems": [
+      "Bloomberg",
+      "S&P Capital IQ",
+      "BigQuery",
+      "Google Slides",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "invoice-processing-matching",
+    "name": "Invoice Processing & Matching",
+    "title": "Invoice Processing & Matching",
+    "useCaseId": "invoice-processing-matching",
+    "workspaceId": "ws-invoice-processing-matching",
+    "domain": "finance",
+    "goal": "A-2201 • Accounts Payable",
+    "systems": [
+      "SAP S/4HANA",
+      "Coupa",
+      "Basware",
+      "Google Document AI",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "journal-entry-auto-posting",
+    "name": "Journal Entry Auto-Posting",
+    "title": "Journal Entry Auto-Posting",
+    "useCaseId": "journal-entry-auto-posting",
+    "workspaceId": "ws-journal-entry-auto-posting",
+    "domain": "finance",
+    "goal": "A-2101 • GL & Close",
+    "systems": [
+      "SAP S/4HANA FI",
+      "Oracle Financials",
+      "BlackLine",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "kpi-dashboard-builder",
+    "name": "KPI Dashboard Builder",
+    "title": "KPI Dashboard Builder",
+    "useCaseId": "kpi-dashboard-builder",
+    "workspaceId": "ws-kpi-dashboard-builder",
+    "domain": "finance",
+    "goal": "A-2803 • Finance Analytics & Reporting",
+    "systems": [
+      "BigQuery",
+      "Looker",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "liquidity-dashboard",
+    "name": "Liquidity Dashboard",
+    "title": "Liquidity Dashboard",
+    "useCaseId": "liquidity-dashboard",
+    "workspaceId": "ws-liquidity-dashboard",
+    "domain": "finance",
+    "goal": "A-2407 - Treasury & Cash",
+    "systems": [
+      "Kyriba",
+      "BigQuery",
+      "Looker",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "management-reporting-agent",
+    "name": "Management Reporting Agent",
+    "title": "Management Reporting Agent",
+    "useCaseId": "management-reporting-agent",
+    "workspaceId": "ws-management-reporting-agent",
+    "domain": "finance",
+    "goal": "A-2802 • Finance Analytics & Reporting",
+    "systems": [
+      "BigQuery",
+      "Looker",
+      "Google Slides",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "month-end-close-analytics",
+    "name": "Month-End Close Analytics",
+    "title": "Month-End Close Analytics",
+    "useCaseId": "month-end-close-analytics",
+    "workspaceId": "ws-month-end-close-analytics",
+    "domain": "finance",
+    "goal": "A-2107 • GL & Close",
+    "systems": [
+      "BlackLine",
+      "BigQuery",
+      "Looker",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "peer-benchmarking-agent",
+    "name": "Peer Benchmarking Agent",
+    "title": "Peer Benchmarking Agent",
+    "useCaseId": "peer-benchmarking-agent",
+    "workspaceId": "ws-peer-benchmarking-agent",
+    "domain": "finance",
+    "goal": "A-2805 • Finance Analytics & Reporting",
+    "systems": [
+      "S&P Capital IQ",
+      "Bloomberg",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "policy-compliance-scanner",
+    "name": "Policy Compliance Scanner",
+    "title": "Policy Compliance Scanner",
+    "useCaseId": "policy-compliance-scanner",
+    "workspaceId": "ws-policy-compliance-scanner",
+    "domain": "finance",
+    "goal": "A-2605 • Internal Audit & Controls",
+    "systems": [
+      "SharePoint/Google Drive",
+      "SAP S/4HANA",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "product-profitability-analyzer",
+    "name": "Product Profitability Analyzer",
+    "title": "Product Profitability Analyzer",
+    "useCaseId": "product-profitability-analyzer",
+    "workspaceId": "ws-product-profitability-analyzer",
+    "domain": "finance",
+    "goal": "A-2703 • Revenue & Cost Accounting",
+    "systems": [
+      "SAP S/4HANA CO",
+      "BigQuery",
+      "Looker",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "regulatory-change-monitor",
+    "name": "Regulatory Change Monitor",
+    "title": "Regulatory Change Monitor",
+    "useCaseId": "regulatory-change-monitor",
+    "workspaceId": "ws-regulatory-change-monitor",
+    "domain": "finance",
+    "goal": "A-2508 - Tax & Compliance",
+    "systems": [
+      "Bloomberg Tax",
+      "CCH AnswerConnect",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "regulatory-filing-orchestrator",
+    "name": "Regulatory Filing Orchestrator",
+    "title": "Regulatory Filing Orchestrator",
+    "useCaseId": "regulatory-filing-orchestrator",
+    "workspaceId": "ws-regulatory-filing-orchestrator",
+    "domain": "finance",
+    "goal": "A-2504 - Tax & Compliance",
+    "systems": [
+      "Workiva",
+      "SAP S/4HANA FI",
+      "SEC EDGAR",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "revenue-forecasting-agent",
+    "name": "Revenue Forecasting Agent",
+    "title": "Revenue Forecasting Agent",
+    "useCaseId": "revenue-forecasting-agent",
+    "workspaceId": "ws-revenue-forecasting-agent",
+    "domain": "finance",
+    "goal": "A-2007 • FP&A",
+    "systems": [
+      "Salesforce CRM",
+      "SAP S/4HANA SD",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "revenue-recognition-engine",
+    "name": "Revenue Recognition Engine",
+    "title": "Revenue Recognition Engine",
+    "useCaseId": "revenue-recognition-engine",
+    "workspaceId": "ws-revenue-recognition-engine",
+    "domain": "finance",
+    "goal": "A-2701 • Revenue & Cost Accounting",
+    "systems": [
+      "SAP S/4HANA SD/FI",
+      "RevPro/Zuora",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "risk-assessment-agent",
+    "name": "Risk Assessment Agent",
+    "title": "Risk Assessment Agent",
+    "useCaseId": "risk-assessment-agent",
+    "workspaceId": "ws-risk-assessment-agent",
+    "domain": "finance",
+    "goal": "A-2604 • Internal Audit & Controls",
+    "systems": [
+      "AuditBoard",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "rolling-forecast-engine",
+    "name": "Rolling Forecast Engine",
+    "title": "Rolling Forecast Engine",
+    "useCaseId": "rolling-forecast-engine",
+    "workspaceId": "ws-rolling-forecast-engine",
+    "domain": "finance",
+    "goal": "A-2002 • FP&A",
+    "systems": [
+      "SAP S/4HANA FI/CO",
+      "Anaplan",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "sales-use-tax-automation",
+    "name": "Sales & Use Tax Automation",
+    "title": "Sales & Use Tax Automation",
+    "useCaseId": "sales-use-tax-automation",
+    "workspaceId": "ws-sales-use-tax-automation",
+    "domain": "finance",
+    "goal": "A-2503 - Tax & Compliance",
+    "systems": [
+      "Avalara",
+      "Vertex Tax",
+      "SAP S/4HANA SD",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "scenario-modeling-sensitivity",
+    "name": "Scenario Modeling & Sensitivity",
+    "title": "Scenario Modeling & Sensitivity",
+    "useCaseId": "scenario-modeling-sensitivity",
+    "workspaceId": "ws-scenario-modeling-sensitivity",
+    "domain": "finance",
+    "goal": "A-2004 • FP&A",
+    "systems": [
+      "Anaplan",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "sox-control-testing-agent",
+    "name": "SOX Control Testing Agent",
+    "title": "SOX Control Testing Agent",
+    "useCaseId": "sox-control-testing-agent",
+    "workspaceId": "ws-sox-control-testing-agent",
+    "domain": "finance",
+    "goal": "A-2601 • Internal Audit & Controls",
+    "systems": [
+      "AuditBoard",
+      "SAP GRC",
+      "SAP S/4HANA",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "standard-cost-variance-agent",
+    "name": "Standard Cost Variance Agent",
+    "title": "Standard Cost Variance Agent",
+    "useCaseId": "standard-cost-variance-agent",
+    "workspaceId": "ws-standard-cost-variance-agent",
+    "domain": "finance",
+    "goal": "A-2704 • Revenue & Cost Accounting",
+    "systems": [
+      "SAP S/4HANA CO",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "tax-audit-prep-agent",
+    "name": "Tax Audit Prep Agent",
+    "title": "Tax Audit Prep Agent",
+    "useCaseId": "tax-audit-prep-agent",
+    "workspaceId": "ws-tax-audit-prep-agent",
+    "domain": "finance",
+    "goal": "A-2507 - Tax & Compliance",
+    "systems": [
+      "SAP S/4HANA FI",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "tax-provision-calculator",
+    "name": "Tax Provision Calculator",
+    "title": "Tax Provision Calculator",
+    "useCaseId": "tax-provision-calculator",
+    "workspaceId": "ws-tax-provision-calculator",
+    "domain": "finance",
+    "goal": "A-2501 - Tax & Compliance",
+    "systems": [
+      "SAP S/4HANA FI",
+      "Longview/OneSource",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "tax-research-assistant",
+    "name": "Tax Research Assistant",
+    "title": "Tax Research Assistant",
+    "useCaseId": "tax-research-assistant",
+    "workspaceId": "ws-tax-research-assistant",
+    "domain": "finance",
+    "goal": "A-2505 - Tax & Compliance",
+    "systems": [
+      "CCH AnswerConnect",
+      "Bloomberg Tax",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "transfer-pricing-monitor",
+    "name": "Transfer Pricing Monitor",
+    "title": "Transfer Pricing Monitor",
+    "useCaseId": "transfer-pricing-monitor",
+    "workspaceId": "ws-transfer-pricing-monitor",
+    "domain": "finance",
+    "goal": "A-2502 - Tax & Compliance",
+    "systems": [
+      "SAP S/4HANA FI",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "trial-balance-validator",
+    "name": "Trial Balance Validator",
+    "title": "Trial Balance Validator",
+    "useCaseId": "trial-balance-validator",
+    "workspaceId": "ws-trial-balance-validator",
+    "domain": "finance",
+    "goal": "A-2106 • GL & Close",
+    "systems": [
+      "SAP S/4HANA FI",
+      "BlackLine",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "variance-analysis-agent",
+    "name": "Variance Analysis Agent",
+    "title": "Variance Analysis Agent",
+    "useCaseId": "variance-analysis-agent",
+    "workspaceId": "ws-variance-analysis-agent",
+    "domain": "finance",
+    "goal": "A-2003 • FP&A",
+    "systems": [
+      "SAP S/4HANA FI/CO",
+      "Anaplan",
+      "BigQuery",
+      "Looker",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "vendor-master-data-manager",
+    "name": "Vendor Master Data Manager",
+    "title": "Vendor Master Data Manager",
+    "useCaseId": "vendor-master-data-manager",
+    "workspaceId": "ws-vendor-master-data-manager",
+    "domain": "finance",
+    "goal": "A-2205 • Accounts Payable",
+    "systems": [
+      "SAP S/4HANA",
+      "Coupa",
+      "D&B",
+      "IRS TIN Matching",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "vendor-payment-optimizer",
+    "name": "Vendor Payment Optimizer",
+    "title": "Vendor Payment Optimizer",
+    "useCaseId": "vendor-payment-optimizer",
+    "workspaceId": "ws-vendor-payment-optimizer",
+    "domain": "finance",
+    "goal": "A-2202 • Accounts Payable",
+    "systems": [
+      "SAP S/4HANA FI",
+      "Kyriba",
+      "Taulia",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "withholding-tax-agent",
+    "name": "Withholding Tax Agent",
+    "title": "Withholding Tax Agent",
+    "useCaseId": "withholding-tax-agent",
+    "workspaceId": "ws-withholding-tax-agent",
+    "domain": "finance",
+    "goal": "A-2506 - Tax & Compliance",
+    "systems": [
+      "SAP S/4HANA FI",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "1-1-meeting-prep",
+    "name": "1:1 Meeting Prep",
+    "title": "1:1 Meeting Prep",
+    "useCaseId": "1-1-meeting-prep",
+    "workspaceId": "ws-1-1-meeting-prep",
+    "domain": "hr",
+    "goal": "A-303 • Performance Mgmt",
+    "systems": [
+      "Google Calendar",
+      "Workday",
+      "Slack",
+      "Lattice"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "attrition-analytics-agent",
+    "name": "Attrition Analytics Agent",
+    "title": "Attrition Analytics Agent",
+    "useCaseId": "attrition-analytics-agent",
+    "workspaceId": "ws-attrition-analytics-agent",
+    "domain": "hr",
+    "goal": "A-809 • Offboarding",
+    "systems": [
+      "Workday",
+      "Google BigQuery",
+      "Culture Amp"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "attrition-prediction-intervention",
+    "name": "Attrition Prediction & Intervention",
+    "title": "Attrition Prediction & Intervention",
+    "useCaseId": "attrition-prediction-intervention",
+    "workspaceId": "ws-attrition-prediction-intervention",
+    "domain": "hr",
+    "goal": "A-1002 • People Analytics",
+    "systems": [
+      "Workday",
+      "Google BigQuery",
+      "Culture Amp",
+      "Google Cloud AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "benefits-q-a-enrollment",
+    "name": "Benefits Q&A & Enrollment",
+    "title": "Benefits Q&A & Enrollment",
+    "useCaseId": "benefits-q-a-enrollment",
+    "workspaceId": "ws-benefits-q-a-enrollment",
+    "domain": "hr",
+    "goal": "A-406 • Total Rewards",
+    "systems": [
+      "Workday",
+      "Benefits Platform",
+      "Google Chat"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "benefits-utilization-cost-analyzer",
+    "name": "Benefits Utilization & Cost Analyzer",
+    "title": "Benefits Utilization & Cost Analyzer",
+    "useCaseId": "benefits-utilization-cost-analyzer",
+    "workspaceId": "ws-benefits-utilization-cost-analyzer",
+    "domain": "hr",
+    "goal": "A-407 • Total Rewards",
+    "systems": [
+      "Benefits Platform",
+      "Carrier Reports",
+      "Google BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "calibration-analytics-agent",
+    "name": "Calibration Analytics Agent",
+    "title": "Calibration Analytics Agent",
+    "useCaseId": "calibration-analytics-agent",
+    "workspaceId": "ws-calibration-analytics-agent",
+    "domain": "hr",
+    "goal": "A-306 • Performance Mgmt",
+    "systems": [
+      "Workday",
+      "Google BigQuery",
+      "Google Sheets"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "candidate-sourcing-outreach-agent",
+    "name": "Candidate Sourcing & Outreach Agent",
+    "title": "Candidate Sourcing & Outreach Agent",
+    "useCaseId": "candidate-sourcing-outreach-agent",
+    "workspaceId": "ws-candidate-sourcing-outreach-agent",
+    "domain": "hr",
+    "goal": "A-203 • Sourcing & Candidate Pipeline",
+    "systems": [
+      "LinkedIn",
+      "Indeed",
+      "ATS",
+      "Gmail"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "change-communication-drafter",
+    "name": "Change Communication Drafter",
+    "title": "Change Communication Drafter",
+    "useCaseId": "change-communication-drafter",
+    "workspaceId": "ws-change-communication-drafter",
+    "domain": "hr",
+    "goal": "A-105 • Organization Design & Restructuring",
+    "systems": [
+      "Google Docs",
+      "Slack",
+      "Gmail",
+      "Workday"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "communication-reach-sentiment-analyzer",
+    "name": "Communication Reach & Sentiment Analyzer",
+    "title": "Communication Reach & Sentiment Analyzer",
+    "useCaseId": "communication-reach-sentiment-analyzer",
+    "workspaceId": "ws-communication-reach-sentiment-analyzer",
+    "domain": "hr",
+    "goal": "A-707 • Internal Communications",
+    "systems": [
+      "Slack",
+      "Gmail",
+      "Intranet",
+      "Google BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "compensation-letter-generator",
+    "name": "Compensation Letter Generator",
+    "title": "Compensation Letter Generator",
+    "useCaseId": "compensation-letter-generator",
+    "workspaceId": "ws-compensation-letter-generator",
+    "domain": "hr",
+    "goal": "A-405 • Total Rewards",
+    "systems": [
+      "Workday",
+      "Google Docs",
+      "Gmail"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "compensation-philosophy-communicator",
+    "name": "Compensation Philosophy Communicator",
+    "title": "Compensation Philosophy Communicator",
+    "useCaseId": "compensation-philosophy-communicator",
+    "workspaceId": "ws-compensation-philosophy-communicator",
+    "domain": "hr",
+    "goal": "A-402 • Total Rewards",
+    "systems": [
+      "Google Docs",
+      "Slack",
+      "LMS"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "compliance-tracking-escalation-agent",
+    "name": "Compliance Tracking & Escalation Agent",
+    "title": "Compliance Tracking & Escalation Agent",
+    "useCaseId": "compliance-tracking-escalation-agent",
+    "workspaceId": "ws-compliance-tracking-escalation-agent",
+    "domain": "hr",
+    "goal": "A-506 • L&D",
+    "systems": [
+      "LMS",
+      "Workday",
+      "Slack",
+      "ServiceNow"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "compliance-training-content-generator",
+    "name": "Compliance Training Content Generator",
+    "title": "Compliance Training Content Generator",
+    "useCaseId": "compliance-training-content-generator",
+    "workspaceId": "ws-compliance-training-content-generator",
+    "domain": "hr",
+    "goal": "A-505 • L&D",
+    "systems": [
+      "LMS",
+      "Legal DB",
+      "Google Docs"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "dei-communication-programming-assistant",
+    "name": "DEI Communication & Programming Assistant",
+    "title": "DEI Communication & Programming Assistant",
+    "useCaseId": "dei-communication-programming-assistant",
+    "workspaceId": "ws-dei-communication-programming-assistant",
+    "domain": "hr",
+    "goal": "A-903 • DEI Strategy & Programming",
+    "systems": [
+      "Google Docs",
+      "Slack",
+      "LMS",
+      "Intranet"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "dei-dashboard-reporting",
+    "name": "DEI Dashboard & Reporting",
+    "title": "DEI Dashboard & Reporting",
+    "useCaseId": "dei-dashboard-reporting",
+    "workspaceId": "ws-dei-dashboard-reporting",
+    "domain": "hr",
+    "goal": "A-901 • DEI & Belonging",
+    "systems": [
+      "Workday",
+      "Google BigQuery",
+      "Tableau"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "employee-communication-drafter",
+    "name": "Employee Communication Drafter",
+    "title": "Employee Communication Drafter",
+    "useCaseId": "employee-communication-drafter",
+    "workspaceId": "ws-employee-communication-drafter",
+    "domain": "hr",
+    "goal": "A-706 • Internal Communications",
+    "systems": [
+      "Google Docs",
+      "Slack",
+      "Gmail",
+      "Intranet"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "employee-data-change-orchestrator",
+    "name": "Employee Data Change Orchestrator",
+    "title": "Employee Data Change Orchestrator",
+    "useCaseId": "employee-data-change-orchestrator",
+    "workspaceId": "ws-employee-data-change-orchestrator",
+    "domain": "hr",
+    "goal": "A-802 • HR Operations",
+    "systems": [
+      "Workday",
+      "SAP SuccessFactors",
+      "ServiceNow",
+      "Active Directory"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "employee-query-resolution",
+    "name": "Employee Query Resolution",
+    "title": "Employee Query Resolution",
+    "useCaseId": "employee-query-resolution",
+    "workspaceId": "ws-employee-query-resolution",
+    "domain": "hr",
+    "goal": "A-803 • HR Operations",
+    "systems": [
+      "Google Chat",
+      "ServiceNow",
+      "Workday",
+      "Knowledge Base"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "engagement-insight-synthesizer",
+    "name": "Engagement Insight Synthesizer",
+    "title": "Engagement Insight Synthesizer",
+    "useCaseId": "engagement-insight-synthesizer",
+    "workspaceId": "ws-engagement-insight-synthesizer",
+    "domain": "hr",
+    "goal": "A-702 • Employee Engagement",
+    "systems": [
+      "Culture Amp",
+      "Qualtrics",
+      "Workday",
+      "Google BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "engagement-to-outcome-correlation-agent",
+    "name": "Engagement-to-Outcome Correlation Agent",
+    "title": "Engagement-to-Outcome Correlation Agent",
+    "useCaseId": "engagement-to-outcome-correlation-agent",
+    "workspaceId": "ws-engagement-to-outcome-correlation-agent",
+    "domain": "hr",
+    "goal": "A-703 • Employee Listening",
+    "systems": [
+      "Culture Amp",
+      "Workday",
+      "Google BigQuery",
+      "Finance System"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "equity-participant-communicator",
+    "name": "Equity Participant Communicator",
+    "title": "Equity Participant Communicator",
+    "useCaseId": "equity-participant-communicator",
+    "workspaceId": "ws-equity-participant-communicator",
+    "domain": "hr",
+    "goal": "A-409 • Total Rewards",
+    "systems": [
+      "E*Trade",
+      "Carta",
+      "Workday",
+      "Gmail"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "er-case-analytics-agent",
+    "name": "ER Case Analytics Agent",
+    "title": "ER Case Analytics Agent",
+    "useCaseId": "er-case-analytics-agent",
+    "workspaceId": "ws-er-case-analytics-agent",
+    "domain": "hr",
+    "goal": "A-602 • Employee Relations",
+    "systems": [
+      "ServiceNow",
+      "Workday",
+      "Google BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "er-case-intelligence",
+    "name": "ER Case Intelligence",
+    "title": "ER Case Intelligence",
+    "useCaseId": "er-case-intelligence",
+    "workspaceId": "ws-er-case-intelligence",
+    "domain": "hr",
+    "goal": "A-601 • Employee Relations",
+    "systems": [
+      "ServiceNow",
+      "Workday",
+      "Google BigQuery",
+      "Legal DB"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "erg-engagement-impact",
+    "name": "ERG Engagement & Impact",
+    "title": "ERG Engagement & Impact",
+    "useCaseId": "erg-engagement-impact",
+    "workspaceId": "ws-erg-engagement-impact",
+    "domain": "hr",
+    "goal": "A-904 • DEI & Belonging",
+    "systems": [
+      "Recognition Platform",
+      "Workday",
+      "Google BigQuery",
+      "Survey Platform"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "exit-interview-insight-synthesizer",
+    "name": "Exit Interview Insight Synthesizer",
+    "title": "Exit Interview Insight Synthesizer",
+    "useCaseId": "exit-interview-insight-synthesizer",
+    "workspaceId": "ws-exit-interview-insight-synthesizer",
+    "domain": "hr",
+    "goal": "A-808 • Offboarding",
+    "systems": [
+      "Survey Platform",
+      "Workday",
+      "Google Docs"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "feedback-trend-analyzer",
+    "name": "Feedback Trend Analyzer",
+    "title": "Feedback Trend Analyzer",
+    "useCaseId": "feedback-trend-analyzer",
+    "workspaceId": "ws-feedback-trend-analyzer",
+    "domain": "hr",
+    "goal": "A-304 • Performance Mgmt",
+    "systems": [
+      "Workday",
+      "Lattice",
+      "Google BigQuery",
+      "Survey Platform"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "goal-drafting-alignment-assistant",
+    "name": "Goal Drafting & Alignment Assistant",
+    "title": "Goal Drafting & Alignment Assistant",
+    "useCaseId": "goal-drafting-alignment-assistant",
+    "workspaceId": "ws-goal-drafting-alignment-assistant",
+    "domain": "hr",
+    "goal": "A-301 • Performance Mgmt",
+    "systems": [
+      "Workday",
+      "Google Docs",
+      "Lattice"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "hipo-development-journey-agent",
+    "name": "HiPo Development Journey Agent",
+    "title": "HiPo Development Journey Agent",
+    "useCaseId": "hipo-development-journey-agent",
+    "workspaceId": "ws-hipo-development-journey-agent",
+    "domain": "hr",
+    "goal": "A-311 • Performance Mgmt",
+    "systems": [
+      "Workday",
+      "LMS",
+      "Google Docs",
+      "Mentoring Platform"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "hipo-identification-nomination-agent",
+    "name": "HiPo Identification & Nomination Agent",
+    "title": "HiPo Identification & Nomination Agent",
+    "useCaseId": "hipo-identification-nomination-agent",
+    "workspaceId": "ws-hipo-identification-nomination-agent",
+    "domain": "hr",
+    "goal": "A-310 • Performance Mgmt",
+    "systems": [
+      "Workday",
+      "360 Platform",
+      "Google BigQuery",
+      "LMS"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "hr-data-lake-query",
+    "name": "HR Data Lake Query",
+    "title": "HR Data Lake Query",
+    "useCaseId": "hr-data-lake-query",
+    "workspaceId": "ws-hr-data-lake-query",
+    "domain": "hr",
+    "goal": "A-1001 • People Analytics",
+    "systems": [
+      "Google BigQuery",
+      "Workday",
+      "Looker",
+      "Google Cloud"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "hr-tech-stack-intelligence",
+    "name": "HR Tech Stack Intelligence",
+    "title": "HR Tech Stack Intelligence",
+    "useCaseId": "hr-tech-stack-intelligence",
+    "workspaceId": "ws-hr-tech-stack-intelligence",
+    "domain": "hr",
+    "goal": "A-1004 • HR Technology",
+    "systems": [
+      "Workday",
+      "ServiceNow",
+      "Google Admin",
+      "License Manager"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "hris-data-quality-monitor-agent",
+    "name": "HRIS Data Quality Monitor Agent",
+    "title": "HRIS Data Quality Monitor Agent",
+    "useCaseId": "hris-data-quality-monitor-agent",
+    "workspaceId": "ws-hris-data-quality-monitor-agent",
+    "domain": "hr",
+    "goal": "A-801 • HRIS & Data Management",
+    "systems": [
+      "Workday",
+      "SAP SuccessFactors",
+      "ServiceNow"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "inclusive-hiring-audit",
+    "name": "Inclusive Hiring Audit",
+    "title": "Inclusive Hiring Audit",
+    "useCaseId": "inclusive-hiring-audit",
+    "workspaceId": "ws-inclusive-hiring-audit",
+    "domain": "hr",
+    "goal": "A-902 • DEI & Belonging",
+    "systems": [
+      "ATS",
+      "Workday",
+      "Google BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "interview-question-scorecard-builder",
+    "name": "Interview Question & Scorecard Builder",
+    "title": "Interview Question & Scorecard Builder",
+    "useCaseId": "interview-question-scorecard-builder",
+    "workspaceId": "ws-interview-question-scorecard-builder",
+    "domain": "hr",
+    "goal": "A-206 • Interview & Selection",
+    "systems": [
+      "ATS",
+      "Google Docs",
+      "Google Calendar"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "interview-scheduling-coordination",
+    "name": "Interview Scheduling & Coordination",
+    "title": "Interview Scheduling & Coordination",
+    "useCaseId": "interview-scheduling-coordination",
+    "workspaceId": "ws-interview-scheduling-coordination",
+    "domain": "hr",
+    "goal": "A-207 • Talent Acquisition",
+    "systems": [
+      "Google Calendar",
+      "ATS",
+      "Slack",
+      "Zoom"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "job-architecture-sync-agent",
+    "name": "Job Architecture Sync Agent",
+    "title": "Job Architecture Sync Agent",
+    "useCaseId": "job-architecture-sync-agent",
+    "workspaceId": "ws-job-architecture-sync-agent",
+    "domain": "hr",
+    "goal": "A-108 • Job Architecture & Role Management",
+    "systems": [
+      "Workday",
+      "SAP SuccessFactors",
+      "Mercer",
+      "Google Sheets"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "job-description-generator-optimizer",
+    "name": "Job Description Generator & Optimizer",
+    "title": "Job Description Generator & Optimizer",
+    "useCaseId": "job-description-generator-optimizer",
+    "workspaceId": "ws-job-description-generator-optimizer",
+    "domain": "hr",
+    "goal": "A-107 • Job Architecture",
+    "systems": [
+      "Workday",
+      "LinkedIn",
+      "Textio",
+      "Google Docs"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "l-d-plan-narrative-drafter",
+    "name": "L&D Plan Narrative Drafter",
+    "title": "L&D Plan Narrative Drafter",
+    "useCaseId": "l-d-plan-narrative-drafter",
+    "workspaceId": "ws-l-d-plan-narrative-drafter",
+    "domain": "hr",
+    "goal": "A-502 • L&D",
+    "systems": [
+      "Google Docs",
+      "Google Slides",
+      "LMS"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "labor-market-intelligence",
+    "name": "Labor Market Intelligence",
+    "title": "Labor Market Intelligence",
+    "useCaseId": "labor-market-intelligence",
+    "workspaceId": "ws-labor-market-intelligence",
+    "domain": "hr",
+    "goal": "A-102 • Workforce Planning",
+    "systems": [
+      "LinkedIn Talent Insights",
+      "BLS Data",
+      "Lightcast",
+      "Google BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "leadership-program-design-assistant",
+    "name": "Leadership Program Design Assistant",
+    "title": "Leadership Program Design Assistant",
+    "useCaseId": "leadership-program-design-assistant",
+    "workspaceId": "ws-leadership-program-design-assistant",
+    "domain": "hr",
+    "goal": "A-507 • L&D",
+    "systems": [
+      "LMS",
+      "Google Docs",
+      "Assessment Platform"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "learning-content-summarizer-quiz-generator",
+    "name": "Learning Content Summarizer & Quiz Generator",
+    "title": "Learning Content Summarizer & Quiz Generator",
+    "useCaseId": "learning-content-summarizer-quiz-generator",
+    "workspaceId": "ws-learning-content-summarizer-quiz-generator",
+    "domain": "hr",
+    "goal": "A-503 • L&D",
+    "systems": [
+      "LMS",
+      "Google Docs",
+      "YouTube"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "learning-path-recommendation",
+    "name": "Learning Path Recommendation",
+    "title": "Learning Path Recommendation",
+    "useCaseId": "learning-path-recommendation",
+    "workspaceId": "ws-learning-path-recommendation",
+    "domain": "hr",
+    "goal": "A-504 • L&D",
+    "systems": [
+      "LMS",
+      "Workday",
+      "Udemy",
+      "Coursera"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "leave-accommodation-intake-agent",
+    "name": "Leave & Accommodation Intake Agent",
+    "title": "Leave & Accommodation Intake Agent",
+    "useCaseId": "leave-accommodation-intake-agent",
+    "workspaceId": "ws-leave-accommodation-intake-agent",
+    "domain": "hr",
+    "goal": "A-607 • Employee Relations",
+    "systems": [
+      "Workday",
+      "ServiceNow",
+      "Google Chat"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "leave-utilization-compliance-analyzer",
+    "name": "Leave Utilization & Compliance Analyzer",
+    "title": "Leave Utilization & Compliance Analyzer",
+    "useCaseId": "leave-utilization-compliance-analyzer",
+    "workspaceId": "ws-leave-utilization-compliance-analyzer",
+    "domain": "hr",
+    "goal": "A-608 • Employee Relations",
+    "systems": [
+      "Workday",
+      "Google BigQuery",
+      "Benefits Platform"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "market-benchmarking-analysis-agent",
+    "name": "Market Benchmarking Analysis Agent",
+    "title": "Market Benchmarking Analysis Agent",
+    "useCaseId": "market-benchmarking-analysis-agent",
+    "workspaceId": "ws-market-benchmarking-analysis-agent",
+    "domain": "hr",
+    "goal": "A-401 • Total Rewards",
+    "systems": [
+      "Mercer",
+      "Radford",
+      "Payscale",
+      "Google BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "merit-promotion-budget-modeler-agent",
+    "name": "Merit & Promotion Budget Modeler Agent",
+    "title": "Merit & Promotion Budget Modeler Agent",
+    "useCaseId": "merit-promotion-budget-modeler-agent",
+    "workspaceId": "ws-merit-promotion-budget-modeler-agent",
+    "domain": "hr",
+    "goal": "A-403 • Total Rewards",
+    "systems": [
+      "Workday",
+      "SAP BPC",
+      "Google Sheets",
+      "Google BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "new-hire-q-a-assistant",
+    "name": "New Hire Q&A Assistant",
+    "title": "New Hire Q&A Assistant",
+    "useCaseId": "new-hire-q-a-assistant",
+    "workspaceId": "ws-new-hire-q-a-assistant",
+    "domain": "hr",
+    "goal": "A-212 • Onboarding & Integration",
+    "systems": [
+      "Google Chat",
+      "Confluence",
+      "Workday",
+      "LMS"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "offboarding-orchestration",
+    "name": "Offboarding Orchestration",
+    "title": "Offboarding Orchestration",
+    "useCaseId": "offboarding-orchestration",
+    "workspaceId": "ws-offboarding-orchestration",
+    "domain": "hr",
+    "goal": "A-807 • HR Operations",
+    "systems": [
+      "Workday",
+      "Active Directory",
+      "ServiceNow",
+      "Google Workspace"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "offer-package-modeler-agent",
+    "name": "Offer Package Modeler Agent",
+    "title": "Offer Package Modeler Agent",
+    "useCaseId": "offer-package-modeler-agent",
+    "workspaceId": "ws-offer-package-modeler-agent",
+    "domain": "hr",
+    "goal": "A-209 • Offer & Pre-boarding",
+    "systems": [
+      "Workday",
+      "Mercer",
+      "Radford",
+      "Google Sheets"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "okr-progress-tracker-agent",
+    "name": "OKR Progress Tracker Agent",
+    "title": "OKR Progress Tracker Agent",
+    "useCaseId": "okr-progress-tracker-agent",
+    "workspaceId": "ws-okr-progress-tracker-agent",
+    "domain": "hr",
+    "goal": "A-302 • Performance Mgmt",
+    "systems": [
+      "Workday",
+      "Jira",
+      "Google Sheets",
+      "Slack"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "onboarding-effectiveness-analyzer",
+    "name": "Onboarding Effectiveness Analyzer",
+    "title": "Onboarding Effectiveness Analyzer",
+    "useCaseId": "onboarding-effectiveness-analyzer",
+    "workspaceId": "ws-onboarding-effectiveness-analyzer",
+    "domain": "hr",
+    "goal": "A-213 • Onboarding & Integration",
+    "systems": [
+      "Workday",
+      "LMS",
+      "Survey Platform",
+      "Google BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "onboarding-orchestration",
+    "name": "Onboarding Orchestration",
+    "title": "Onboarding Orchestration",
+    "useCaseId": "onboarding-orchestration",
+    "workspaceId": "ws-onboarding-orchestration",
+    "domain": "hr",
+    "goal": "A-211 • Talent Acquisition",
+    "systems": [
+      "Workday",
+      "LMS",
+      "ServiceNow",
+      "Slack",
+      "Google Workspace"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "org-structure-analyzer",
+    "name": "Org Structure Analyzer",
+    "title": "Org Structure Analyzer",
+    "useCaseId": "org-structure-analyzer",
+    "workspaceId": "ws-org-structure-analyzer",
+    "domain": "hr",
+    "goal": "A-104 • Org Design",
+    "systems": [
+      "Workday",
+      "SAP SuccessFactors",
+      "Visio",
+      "Google BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "pay-equity-audit",
+    "name": "Pay Equity Audit",
+    "title": "Pay Equity Audit",
+    "useCaseId": "pay-equity-audit",
+    "workspaceId": "ws-pay-equity-audit",
+    "domain": "hr",
+    "goal": "A-404 • Total Rewards",
+    "systems": [
+      "Workday",
+      "Google BigQuery",
+      "Syndio",
+      "Google Sheets"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "payroll-input-validation",
+    "name": "Payroll Input Validation",
+    "title": "Payroll Input Validation",
+    "useCaseId": "payroll-input-validation",
+    "workspaceId": "ws-payroll-input-validation",
+    "domain": "hr",
+    "goal": "A-805 • Payroll",
+    "systems": [
+      "ADP",
+      "Workday",
+      "Google BigQuery",
+      "Google Sheets"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "payroll-reconciliation-compliance-agent",
+    "name": "Payroll Reconciliation & Compliance Agent",
+    "title": "Payroll Reconciliation & Compliance Agent",
+    "useCaseId": "payroll-reconciliation-compliance-agent",
+    "workspaceId": "ws-payroll-reconciliation-compliance-agent",
+    "domain": "hr",
+    "goal": "A-806 • Payroll Processing",
+    "systems": [
+      "ADP",
+      "Workday",
+      "Google BigQuery",
+      "Tax Systems"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "performance-review-narrative-assistant",
+    "name": "Performance Review Narrative Assistant",
+    "title": "Performance Review Narrative Assistant",
+    "useCaseId": "performance-review-narrative-assistant",
+    "workspaceId": "ws-performance-review-narrative-assistant",
+    "domain": "hr",
+    "goal": "A-305 • Performance Mgmt",
+    "systems": [
+      "Workday",
+      "Google Docs",
+      "Lattice"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "pip-documentation-assistant",
+    "name": "PIP Documentation Assistant",
+    "title": "PIP Documentation Assistant",
+    "useCaseId": "pip-documentation-assistant",
+    "workspaceId": "ws-pip-documentation-assistant",
+    "domain": "hr",
+    "goal": "A-603 • Employee Relations",
+    "systems": [
+      "Workday",
+      "Google Docs",
+      "ServiceNow"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "policy-drafting-review-assistant",
+    "name": "Policy Drafting & Review Assistant",
+    "title": "Policy Drafting & Review Assistant",
+    "useCaseId": "policy-drafting-review-assistant",
+    "workspaceId": "ws-policy-drafting-review-assistant",
+    "domain": "hr",
+    "goal": "A-606 • Employee Relations",
+    "systems": [
+      "Google Docs",
+      "Legal DB",
+      "SharePoint"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "policy-q-a-assistant",
+    "name": "Policy Q&A Assistant",
+    "title": "Policy Q&A Assistant",
+    "useCaseId": "policy-q-a-assistant",
+    "workspaceId": "ws-policy-q-a-assistant",
+    "domain": "hr",
+    "goal": "A-605 • Employee Relations",
+    "systems": [
+      "Google Chat",
+      "Confluence",
+      "SharePoint",
+      "Workday"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "pre-boarding-orchestration-agent",
+    "name": "Pre-boarding Orchestration Agent",
+    "title": "Pre-boarding Orchestration Agent",
+    "useCaseId": "pre-boarding-orchestration-agent",
+    "workspaceId": "ws-pre-boarding-orchestration-agent",
+    "domain": "hr",
+    "goal": "A-210 • Offer & Pre-boarding",
+    "systems": [
+      "Workday",
+      "ServiceNow",
+      "Slack",
+      "Google Workspace"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "program-impact-evaluation-agent",
+    "name": "Program Impact Evaluation Agent",
+    "title": "Program Impact Evaluation Agent",
+    "useCaseId": "program-impact-evaluation-agent",
+    "workspaceId": "ws-program-impact-evaluation-agent",
+    "domain": "hr",
+    "goal": "A-508 • L&D",
+    "systems": [
+      "LMS",
+      "Workday",
+      "Survey Platform",
+      "Google BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "progressive-discipline-advisor-agent",
+    "name": "Progressive Discipline Advisor Agent",
+    "title": "Progressive Discipline Advisor Agent",
+    "useCaseId": "progressive-discipline-advisor-agent",
+    "workspaceId": "ws-progressive-discipline-advisor-agent",
+    "domain": "hr",
+    "goal": "A-604 • Employee Relations",
+    "systems": [
+      "ServiceNow",
+      "Workday",
+      "Legal DB"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "recognition-nudge-celebration",
+    "name": "Recognition Nudge & Celebration",
+    "title": "Recognition Nudge & Celebration",
+    "useCaseId": "recognition-nudge-celebration",
+    "workspaceId": "ws-recognition-nudge-celebration",
+    "domain": "hr",
+    "goal": "A-705 • Employee Engagement",
+    "systems": [
+      "Slack",
+      "Workday",
+      "Recognition Platform"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "recognition-program-analytics-agent",
+    "name": "Recognition Program Analytics Agent",
+    "title": "Recognition Program Analytics Agent",
+    "useCaseId": "recognition-program-analytics-agent",
+    "workspaceId": "ws-recognition-program-analytics-agent",
+    "domain": "hr",
+    "goal": "A-704 • Recognition & Rewards",
+    "systems": [
+      "Recognition Platform",
+      "Workday",
+      "Google BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "requisition-intake-validation",
+    "name": "Requisition Intake & Validation",
+    "title": "Requisition Intake & Validation",
+    "useCaseId": "requisition-intake-validation",
+    "workspaceId": "ws-requisition-intake-validation",
+    "domain": "hr",
+    "goal": "A-201 • Talent Acquisition",
+    "systems": [
+      "Workday",
+      "SAP SuccessFactors",
+      "Slack",
+      "ServiceNow"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "requisition-prioritization-agent",
+    "name": "Requisition Prioritization Agent",
+    "title": "Requisition Prioritization Agent",
+    "useCaseId": "requisition-prioritization-agent",
+    "workspaceId": "ws-requisition-prioritization-agent",
+    "domain": "hr",
+    "goal": "A-202 • Requisition & Approval",
+    "systems": [
+      "ATS",
+      "Workday",
+      "Google BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "restructuring-impact-assessment-agent",
+    "name": "Restructuring Impact Assessment Agent",
+    "title": "Restructuring Impact Assessment Agent",
+    "useCaseId": "restructuring-impact-assessment-agent",
+    "workspaceId": "ws-restructuring-impact-assessment-agent",
+    "domain": "hr",
+    "goal": "A-106 • Organization Design & Restructuring",
+    "systems": [
+      "Workday",
+      "SAP SuccessFactors",
+      "Skills DB",
+      "Google BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "resume-screening-shortlisting",
+    "name": "Resume Screening & Shortlisting",
+    "title": "Resume Screening & Shortlisting",
+    "useCaseId": "resume-screening-shortlisting",
+    "workspaceId": "ws-resume-screening-shortlisting",
+    "domain": "hr",
+    "goal": "A-204 • Talent Acquisition",
+    "systems": [
+      "ATS",
+      "Workday",
+      "Google Cloud AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "review-cycle-orchestration-agent",
+    "name": "Review Cycle Orchestration Agent",
+    "title": "Review Cycle Orchestration Agent",
+    "useCaseId": "review-cycle-orchestration-agent",
+    "workspaceId": "ws-review-cycle-orchestration-agent",
+    "domain": "hr",
+    "goal": "A-307 • Performance Mgmt",
+    "systems": [
+      "Workday",
+      "Slack",
+      "Gmail",
+      "Google Sheets"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "selection-debrief-summarizer",
+    "name": "Selection Debrief Summarizer",
+    "title": "Selection Debrief Summarizer",
+    "useCaseId": "selection-debrief-summarizer",
+    "workspaceId": "ws-selection-debrief-summarizer",
+    "domain": "hr",
+    "goal": "A-208 • Interview & Selection",
+    "systems": [
+      "ATS",
+      "Google Docs",
+      "Google Meet"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "service-delivery-analytics-agent",
+    "name": "Service Delivery Analytics Agent",
+    "title": "Service Delivery Analytics Agent",
+    "useCaseId": "service-delivery-analytics-agent",
+    "workspaceId": "ws-service-delivery-analytics-agent",
+    "domain": "hr",
+    "goal": "A-804 • HR Shared Services",
+    "systems": [
+      "ServiceNow",
+      "Workday",
+      "Google BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "skills-gap-analyzer",
+    "name": "Skills Gap Analyzer",
+    "title": "Skills Gap Analyzer",
+    "useCaseId": "skills-gap-analyzer",
+    "workspaceId": "ws-skills-gap-analyzer",
+    "domain": "hr",
+    "goal": "A-501 • L&D",
+    "systems": [
+      "Workday",
+      "Skills DB",
+      "LMS",
+      "Google BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "sourcing-channel-analytics-agent",
+    "name": "Sourcing Channel Analytics Agent",
+    "title": "Sourcing Channel Analytics Agent",
+    "useCaseId": "sourcing-channel-analytics-agent",
+    "workspaceId": "ws-sourcing-channel-analytics-agent",
+    "domain": "hr",
+    "goal": "A-205 • Sourcing & Candidate Pipeline",
+    "systems": [
+      "ATS",
+      "LinkedIn",
+      "Indeed",
+      "Google BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "succession-pipeline-dashboard-agent",
+    "name": "Succession Pipeline Dashboard Agent",
+    "title": "Succession Pipeline Dashboard Agent",
+    "useCaseId": "succession-pipeline-dashboard-agent",
+    "workspaceId": "ws-succession-pipeline-dashboard-agent",
+    "domain": "hr",
+    "goal": "A-309 • Performance Mgmt",
+    "systems": [
+      "Workday",
+      "Google BigQuery",
+      "Tableau"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "successor-readiness-assessment",
+    "name": "Successor Readiness Assessment",
+    "title": "Successor Readiness Assessment",
+    "useCaseId": "successor-readiness-assessment",
+    "workspaceId": "ws-successor-readiness-assessment",
+    "domain": "hr",
+    "goal": "A-308 • Talent Mgmt",
+    "systems": [
+      "Workday",
+      "Google BigQuery",
+      "Assessment Platform"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "survey-design-communication-agent",
+    "name": "Survey Design & Communication Agent",
+    "title": "Survey Design & Communication Agent",
+    "useCaseId": "survey-design-communication-agent",
+    "workspaceId": "ws-survey-design-communication-agent",
+    "domain": "hr",
+    "goal": "A-701 • Employee Listening",
+    "systems": [
+      "Qualtrics",
+      "Culture Amp",
+      "Slack",
+      "Gmail"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "total-rewards-optimizer",
+    "name": "Total Rewards Optimizer",
+    "title": "Total Rewards Optimizer",
+    "useCaseId": "total-rewards-optimizer",
+    "workspaceId": "ws-total-rewards-optimizer",
+    "domain": "hr",
+    "goal": "A-408 • Total Rewards",
+    "systems": [
+      "Workday",
+      "Mercer",
+      "E*Trade",
+      "Google BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "vendor-evaluation-assistant",
+    "name": "Vendor Evaluation Assistant",
+    "title": "Vendor Evaluation Assistant",
+    "useCaseId": "vendor-evaluation-assistant",
+    "workspaceId": "ws-vendor-evaluation-assistant",
+    "domain": "hr",
+    "goal": "A-1005 • HR Technology Management",
+    "systems": [
+      "Google Docs",
+      "Google Sheets",
+      "Web"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "workforce-cost-modeling",
+    "name": "Workforce Cost Modeling",
+    "title": "Workforce Cost Modeling",
+    "useCaseId": "workforce-cost-modeling",
+    "workspaceId": "ws-workforce-cost-modeling",
+    "domain": "hr",
+    "goal": "A-1003 • People Analytics",
+    "systems": [
+      "Workday",
+      "SAP BPC",
+      "Google BigQuery",
+      "Google Sheets"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "workforce-plan-document-drafter",
+    "name": "Workforce Plan Document Drafter",
+    "title": "Workforce Plan Document Drafter",
+    "useCaseId": "workforce-plan-document-drafter",
+    "workspaceId": "ws-workforce-plan-document-drafter",
+    "domain": "hr",
+    "goal": "A-103 • Workforce Planning",
+    "systems": [
+      "Google Docs",
+      "Google Slides",
+      "Workday"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "workforce-scenario-modeling",
+    "name": "Workforce Scenario Modeling",
+    "title": "Workforce Scenario Modeling",
+    "useCaseId": "workforce-scenario-modeling",
+    "workspaceId": "ws-workforce-scenario-modeling",
+    "domain": "hr",
+    "goal": "A-101 • Workforce Planning",
+    "systems": [
+      "Workday",
+      "SAP BPC",
+      "Anaplan",
+      "Google BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "access-provisioning-orchestrator",
+    "name": "Access Provisioning Orchestrator",
+    "title": "Access Provisioning Orchestrator",
+    "useCaseId": "access-provisioning-orchestrator",
+    "workspaceId": "ws-access-provisioning-orchestrator",
+    "domain": "it",
+    "goal": "A-4602 • End User Computing",
+    "systems": [
+      "Workday",
+      "Okta",
+      "Google Workspace",
+      "ServiceNow",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "adr-drafter",
+    "name": "ADR Drafter",
+    "title": "ADR Drafter",
+    "useCaseId": "adr-drafter",
+    "workspaceId": "ws-adr-drafter",
+    "domain": "it",
+    "goal": "A-4401 • Enterprise Architecture",
+    "systems": [
+      "Confluence",
+      "GitHub",
+      "ServiceNow CMDB",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "ai-ethics-bias-monitor",
+    "name": "AI Ethics & Bias Monitor",
+    "title": "AI Ethics & Bias Monitor",
+    "useCaseId": "ai-ethics-bias-monitor",
+    "workspaceId": "ws-ai-ethics-bias-monitor",
+    "domain": "it",
+    "goal": "IT6-07 • Data & AI Platform",
+    "systems": [
+      "Vertex AI",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "api-catalog-governance",
+    "name": "API Catalog & Governance",
+    "title": "API Catalog & Governance",
+    "useCaseId": "api-catalog-governance",
+    "workspaceId": "ws-api-catalog-governance",
+    "domain": "it",
+    "goal": "A-4402 • Enterprise Architecture",
+    "systems": [
+      "Apigee",
+      "GitHub",
+      "Ardoq",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "architecture-compliance-scanner",
+    "name": "Architecture Compliance Scanner",
+    "title": "Architecture Compliance Scanner",
+    "useCaseId": "architecture-compliance-scanner",
+    "workspaceId": "ws-architecture-compliance-scanner",
+    "domain": "it",
+    "goal": "A-4406 • Enterprise Architecture",
+    "systems": [
+      "GitHub",
+      "SonarQube",
+      "ServiceNow CMDB",
+      "Datadog",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "audit-evidence-collector",
+    "name": "Audit Evidence Collector",
+    "title": "Audit Evidence Collector",
+    "useCaseId": "audit-evidence-collector",
+    "workspaceId": "ws-audit-evidence-collector",
+    "domain": "it",
+    "goal": "A-4502 • IT Governance & Compliance",
+    "systems": [
+      "ServiceNow GRC",
+      "Google Drive",
+      "Jira",
+      "Slack",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "backup-dr-compliance-agent",
+    "name": "Backup & DR Compliance Agent",
+    "title": "Backup & DR Compliance Agent",
+    "useCaseId": "backup-dr-compliance-agent",
+    "workspaceId": "ws-backup-dr-compliance-agent",
+    "domain": "it",
+    "goal": "A-4008 • Infra & Cloud Ops",
+    "systems": [
+      "AWS Backup",
+      "GCP Cloud Storage",
+      "Terraform",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "capacity-planning-agent",
+    "name": "Capacity Planning Agent",
+    "title": "Capacity Planning Agent",
+    "useCaseId": "capacity-planning-agent",
+    "workspaceId": "ws-capacity-planning-agent",
+    "domain": "it",
+    "goal": "A-4002 • Infra & Cloud Ops",
+    "systems": [
+      "Kubernetes",
+      "Datadog",
+      "AWS CloudWatch",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "change-risk-assessor",
+    "name": "Change Risk Assessor",
+    "title": "Change Risk Assessor",
+    "useCaseId": "change-risk-assessor",
+    "workspaceId": "ws-change-risk-assessor",
+    "domain": "it",
+    "goal": "IT5-04 • IT Service Management",
+    "systems": [
+      "ServiceNow",
+      "Jira",
+      "GitHub",
+      "Datadog",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "ci-cd-pipeline-optimizer",
+    "name": "CI/CD Pipeline Optimizer",
+    "title": "CI/CD Pipeline Optimizer",
+    "useCaseId": "ci-cd-pipeline-optimizer",
+    "workspaceId": "ws-ci-cd-pipeline-optimizer",
+    "domain": "it",
+    "goal": "A-3901 • Software Engineering & DevOps",
+    "systems": [
+      "Jenkins",
+      "GitHub Actions",
+      "ArgoCD",
+      "Datadog",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "cloud-cost-optimizer",
+    "name": "Cloud Cost Optimizer",
+    "title": "Cloud Cost Optimizer",
+    "useCaseId": "cloud-cost-optimizer",
+    "workspaceId": "ws-cloud-cost-optimizer",
+    "domain": "it",
+    "goal": "A-4001 • Infra & Cloud Ops",
+    "systems": [
+      "AWS Cost Explorer",
+      "GCP Billing",
+      "Datadog",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "code-review-assistant",
+    "name": "Code Review Assistant",
+    "title": "Code Review Assistant",
+    "useCaseId": "code-review-assistant",
+    "workspaceId": "ws-code-review-assistant",
+    "domain": "it",
+    "goal": "A-3902 • Software Engineering & DevOps",
+    "systems": [
+      "GitHub",
+      "GitLab",
+      "SonarQube",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "compliance-posture-scanner",
+    "name": "Compliance Posture Scanner",
+    "title": "Compliance Posture Scanner",
+    "useCaseId": "compliance-posture-scanner",
+    "workspaceId": "ws-compliance-posture-scanner",
+    "domain": "it",
+    "goal": "IT4-06 • Cybersecurity & Threat Management",
+    "systems": [
+      "Qualys",
+      "CrowdStrike",
+      "AWS Security Hub",
+      "GCP Security Command Center",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "cost-per-query-optimizer",
+    "name": "Cost-per-Query Optimizer",
+    "title": "Cost-per-Query Optimizer",
+    "useCaseId": "cost-per-query-optimizer",
+    "workspaceId": "ws-cost-per-query-optimizer",
+    "domain": "it",
+    "goal": "IT6-05 • Data & AI Platform",
+    "systems": [
+      "BigQuery",
+      "Datadog",
+      "BigQuery Admin",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "data-catalog-lineage-agent",
+    "name": "Data Catalog & Lineage Agent",
+    "title": "Data Catalog & Lineage Agent",
+    "useCaseId": "data-catalog-lineage-agent",
+    "workspaceId": "ws-data-catalog-lineage-agent",
+    "domain": "it",
+    "goal": "IT6-06 • Data & AI Platform",
+    "systems": [
+      "Google Dataplex",
+      "dbt",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "data-pipeline-health-monitor",
+    "name": "Data Pipeline Health Monitor",
+    "title": "Data Pipeline Health Monitor",
+    "useCaseId": "data-pipeline-health-monitor",
+    "workspaceId": "ws-data-pipeline-health-monitor",
+    "domain": "it",
+    "goal": "IT6-01 • Data & AI Platform",
+    "systems": [
+      "Apache Airflow",
+      "dbt",
+      "BigQuery",
+      "Datadog",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "data-quality-scorecard",
+    "name": "Data Quality Scorecard",
+    "title": "Data Quality Scorecard",
+    "useCaseId": "data-quality-scorecard",
+    "workspaceId": "ws-data-quality-scorecard",
+    "domain": "it",
+    "goal": "IT6-02 • Data & AI Platform",
+    "systems": [
+      "dbt",
+      "BigQuery",
+      "Looker",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "database-performance-advisor",
+    "name": "Database Performance Advisor",
+    "title": "Database Performance Advisor",
+    "useCaseId": "database-performance-advisor",
+    "workspaceId": "ws-database-performance-advisor",
+    "domain": "it",
+    "goal": "A-4006 • Infra & Cloud Ops",
+    "systems": [
+      "CloudSQL",
+      "BigQuery",
+      "Datadog",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "dependency-vulnerability-scanner",
+    "name": "Dependency Vulnerability Scanner",
+    "title": "Dependency Vulnerability Scanner",
+    "useCaseId": "dependency-vulnerability-scanner",
+    "workspaceId": "ws-dependency-vulnerability-scanner",
+    "domain": "it",
+    "goal": "A-3906 • Software Engineering & DevOps",
+    "systems": [
+      "Snyk",
+      "GitHub Dependabot",
+      "NIST NVD",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "developer-experience-surveyor",
+    "name": "Developer Experience Surveyor",
+    "title": "Developer Experience Surveyor",
+    "useCaseId": "developer-experience-surveyor",
+    "workspaceId": "ws-developer-experience-surveyor",
+    "domain": "it",
+    "goal": "A-3908 • Software Engineering & DevOps",
+    "systems": [
+      "GitHub",
+      "Jira",
+      "Slack",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "device-lifecycle-manager",
+    "name": "Device Lifecycle Manager",
+    "title": "Device Lifecycle Manager",
+    "useCaseId": "device-lifecycle-manager",
+    "workspaceId": "ws-device-lifecycle-manager",
+    "domain": "it",
+    "goal": "A-4601 • End User Computing",
+    "systems": [
+      "ManageEngine",
+      "Google Workspace",
+      "Okta",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "digital-transformation-tracker",
+    "name": "Digital Transformation Tracker",
+    "title": "Digital Transformation Tracker",
+    "useCaseId": "digital-transformation-tracker",
+    "workspaceId": "ws-digital-transformation-tracker",
+    "domain": "it",
+    "goal": "A-3804 • IT Strategy & Portfolio",
+    "systems": [
+      "Jira",
+      "ServiceNow",
+      "BigQuery",
+      "Looker",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "endpoint-security-posture-agent",
+    "name": "Endpoint Security Posture Agent",
+    "title": "Endpoint Security Posture Agent",
+    "useCaseId": "endpoint-security-posture-agent",
+    "workspaceId": "ws-endpoint-security-posture-agent",
+    "domain": "it",
+    "goal": "A-4605 • End User Computing",
+    "systems": [
+      "CrowdStrike",
+      "ManageEngine",
+      "Okta",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "feature-flag-manager",
+    "name": "Feature Flag Manager",
+    "title": "Feature Flag Manager",
+    "useCaseId": "feature-flag-manager",
+    "workspaceId": "ws-feature-flag-manager",
+    "domain": "it",
+    "goal": "A-3907 • Software Engineering & DevOps",
+    "systems": [
+      "LaunchDarkly",
+      "GitHub",
+      "Datadog",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "feature-store-manager",
+    "name": "Feature Store Manager",
+    "title": "Feature Store Manager",
+    "useCaseId": "feature-store-manager",
+    "workspaceId": "ws-feature-store-manager",
+    "domain": "it",
+    "goal": "IT6-04 • Data & AI Platform",
+    "systems": [
+      "Vertex AI Feature Store",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "iac-drift-detector",
+    "name": "IaC Drift Detector",
+    "title": "IaC Drift Detector",
+    "useCaseId": "iac-drift-detector",
+    "workspaceId": "ws-iac-drift-detector",
+    "domain": "it",
+    "goal": "A-3909 • Software Engineering & DevOps",
+    "systems": [
+      "Terraform",
+      "AWS CloudFormation",
+      "GitHub",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "identity-access-anomaly-detector",
+    "name": "Identity & Access Anomaly Detector",
+    "title": "Identity & Access Anomaly Detector",
+    "useCaseId": "identity-access-anomaly-detector",
+    "workspaceId": "ws-identity-access-anomaly-detector",
+    "domain": "it",
+    "goal": "IT4-05 • Cybersecurity & Threat Management",
+    "systems": [
+      "Okta",
+      "Google Workspace",
+      "CrowdStrike",
+      "Chronicle",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "incident-auto-remediator",
+    "name": "Incident Auto-Remediator",
+    "title": "Incident Auto-Remediator",
+    "useCaseId": "incident-auto-remediator",
+    "workspaceId": "ws-incident-auto-remediator",
+    "domain": "it",
+    "goal": "A-4003 • Infra & Cloud Ops",
+    "systems": [
+      "PagerDuty",
+      "Datadog",
+      "Kubernetes",
+      "Terraform",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "incident-to-code-tracer",
+    "name": "Incident-to-Code Tracer",
+    "title": "Incident-to-Code Tracer",
+    "useCaseId": "incident-to-code-tracer",
+    "workspaceId": "ws-incident-to-code-tracer",
+    "domain": "it",
+    "goal": "A-3905 • Software Engineering & DevOps",
+    "systems": [
+      "PagerDuty",
+      "Datadog",
+      "GitHub",
+      "Jira",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "integration-pattern-advisor",
+    "name": "Integration Pattern Advisor",
+    "title": "Integration Pattern Advisor",
+    "useCaseId": "integration-pattern-advisor",
+    "workspaceId": "ws-integration-pattern-advisor",
+    "domain": "it",
+    "goal": "A-4405 • Enterprise Architecture",
+    "systems": [
+      "Confluence",
+      "Apigee",
+      "Pub/Sub",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "intelligent-ticket-router",
+    "name": "Intelligent Ticket Router",
+    "title": "Intelligent Ticket Router",
+    "useCaseId": "intelligent-ticket-router",
+    "workspaceId": "ws-intelligent-ticket-router",
+    "domain": "it",
+    "goal": "IT5-01 • IT Service Management",
+    "systems": [
+      "ServiceNow",
+      "Jira Service Mgmt",
+      "Slack",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "it-budget-forecast-agent",
+    "name": "IT Budget Forecast Agent",
+    "title": "IT Budget Forecast Agent",
+    "useCaseId": "it-budget-forecast-agent",
+    "workspaceId": "ws-it-budget-forecast-agent",
+    "domain": "it",
+    "goal": "A-3803 • IT Strategy & Portfolio",
+    "systems": [
+      "AWS Cost Explorer",
+      "GCP Billing",
+      "ServiceNow SPM",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "it-control-testing-agent",
+    "name": "IT Control Testing Agent",
+    "title": "IT Control Testing Agent",
+    "useCaseId": "it-control-testing-agent",
+    "workspaceId": "ws-it-control-testing-agent",
+    "domain": "it",
+    "goal": "A-4501 • IT Governance & Compliance",
+    "systems": [
+      "ServiceNow GRC",
+      "RSA Archer",
+      "OneTrust",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "it-grc-dashboard-reporter",
+    "name": "IT GRC Dashboard & Reporter",
+    "title": "IT GRC Dashboard & Reporter",
+    "useCaseId": "it-grc-dashboard-reporter",
+    "workspaceId": "ws-it-grc-dashboard-reporter",
+    "domain": "it",
+    "goal": "A-4507 • IT Governance & Compliance",
+    "systems": [
+      "ServiceNow GRC",
+      "RSA Archer",
+      "OneTrust",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "it-okr-kpi-dashboard",
+    "name": "IT OKR & KPI Dashboard",
+    "title": "IT OKR & KPI Dashboard",
+    "useCaseId": "it-okr-kpi-dashboard",
+    "workspaceId": "ws-it-okr-kpi-dashboard",
+    "domain": "it",
+    "goal": "A-3806 • IT Strategy & Portfolio",
+    "systems": [
+      "BigQuery",
+      "Looker",
+      "Jira",
+      "ServiceNow",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "itsm-analytics-dashboard",
+    "name": "ITSM Analytics Dashboard",
+    "title": "ITSM Analytics Dashboard",
+    "useCaseId": "itsm-analytics-dashboard",
+    "workspaceId": "ws-itsm-analytics-dashboard",
+    "domain": "it",
+    "goal": "IT5-08 • IT Service Management",
+    "systems": [
+      "ServiceNow",
+      "BigQuery",
+      "Looker",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "knowledge-base-auto-resolver",
+    "name": "Knowledge Base Auto-Resolver",
+    "title": "Knowledge Base Auto-Resolver",
+    "useCaseId": "knowledge-base-auto-resolver",
+    "workspaceId": "ws-knowledge-base-auto-resolver",
+    "domain": "it",
+    "goal": "IT5-02 • IT Service Management",
+    "systems": [
+      "ServiceNow",
+      "Confluence",
+      "Google Workspace",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "kubernetes-cluster-optimizer",
+    "name": "Kubernetes Cluster Optimizer",
+    "title": "Kubernetes Cluster Optimizer",
+    "useCaseId": "kubernetes-cluster-optimizer",
+    "workspaceId": "ws-kubernetes-cluster-optimizer",
+    "domain": "it",
+    "goal": "A-4005 • Infra & Cloud Ops",
+    "systems": [
+      "Kubernetes",
+      "Datadog",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "license-compliance-monitor",
+    "name": "License Compliance Monitor",
+    "title": "License Compliance Monitor",
+    "useCaseId": "license-compliance-monitor",
+    "workspaceId": "ws-license-compliance-monitor",
+    "domain": "it",
+    "goal": "A-4504 • IT Governance & Compliance",
+    "systems": [
+      "ServiceNow SAM",
+      "Zylo",
+      "Okta",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "major-incident-coordinator",
+    "name": "Major Incident Coordinator",
+    "title": "Major Incident Coordinator",
+    "useCaseId": "major-incident-coordinator",
+    "workspaceId": "ws-major-incident-coordinator",
+    "domain": "it",
+    "goal": "IT5-05 • IT Service Management",
+    "systems": [
+      "PagerDuty",
+      "ServiceNow",
+      "Slack",
+      "Zoom",
+      "Datadog",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "meeting-room-resource-optimizer",
+    "name": "Meeting Room & Resource Optimizer",
+    "title": "Meeting Room & Resource Optimizer",
+    "useCaseId": "meeting-room-resource-optimizer",
+    "workspaceId": "ws-meeting-room-resource-optimizer",
+    "domain": "it",
+    "goal": "A-4606 • End User Computing",
+    "systems": [
+      "Google Calendar",
+      "Google Workspace",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "ml-model-registry-monitor",
+    "name": "ML Model Registry & Monitor",
+    "title": "ML Model Registry & Monitor",
+    "useCaseId": "ml-model-registry-monitor",
+    "workspaceId": "ws-ml-model-registry-monitor",
+    "domain": "it",
+    "goal": "IT6-03 • Data & AI Platform",
+    "systems": [
+      "Vertex AI Model Registry",
+      "MLflow",
+      "BigQuery",
+      "Datadog",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "network-dns-health-monitor",
+    "name": "Network & DNS Health Monitor",
+    "title": "Network & DNS Health Monitor",
+    "useCaseId": "network-dns-health-monitor",
+    "workspaceId": "ws-network-dns-health-monitor",
+    "domain": "it",
+    "goal": "A-4007 • Infra & Cloud Ops",
+    "systems": [
+      "Datadog",
+      "AWS Route 53",
+      "Palo Alto",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "onboarding-tech-setup-orchestrator",
+    "name": "Onboarding Tech Setup Orchestrator",
+    "title": "Onboarding Tech Setup Orchestrator",
+    "useCaseId": "onboarding-tech-setup-orchestrator",
+    "workspaceId": "ws-onboarding-tech-setup-orchestrator",
+    "domain": "it",
+    "goal": "A-4607 • End User Computing",
+    "systems": [
+      "Workday",
+      "Okta",
+      "Google Workspace",
+      "ManageEngine",
+      "ServiceNow",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "penetration-test-findings-tracker",
+    "name": "Penetration Test Findings Tracker",
+    "title": "Penetration Test Findings Tracker",
+    "useCaseId": "penetration-test-findings-tracker",
+    "workspaceId": "ws-penetration-test-findings-tracker",
+    "domain": "it",
+    "goal": "IT4-07 • Cybersecurity & Threat Management",
+    "systems": [
+      "Jira",
+      "HackerOne",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "phishing-email-threat-analyzer",
+    "name": "Phishing & Email Threat Analyzer",
+    "title": "Phishing & Email Threat Analyzer",
+    "useCaseId": "phishing-email-threat-analyzer",
+    "workspaceId": "ws-phishing-email-threat-analyzer",
+    "domain": "it",
+    "goal": "IT4-04 • Cybersecurity & Threat Management",
+    "systems": [
+      "Google Workspace",
+      "CrowdStrike",
+      "Chronicle",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "policy-lifecycle-manager",
+    "name": "Policy Lifecycle Manager",
+    "title": "Policy Lifecycle Manager",
+    "useCaseId": "policy-lifecycle-manager",
+    "workspaceId": "ws-policy-lifecycle-manager",
+    "domain": "it",
+    "goal": "A-4503 • IT Governance & Compliance",
+    "systems": [
+      "Confluence",
+      "ServiceNow GRC",
+      "Google Workspace",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "portfolio-prioritization-engine",
+    "name": "Portfolio Prioritization Engine",
+    "title": "Portfolio Prioritization Engine",
+    "useCaseId": "portfolio-prioritization-engine",
+    "workspaceId": "ws-portfolio-prioritization-engine",
+    "domain": "it",
+    "goal": "A-3801 • IT Strategy & Portfolio",
+    "systems": [
+      "ServiceNow SPM",
+      "Jira Portfolio",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "problem-management-analyzer",
+    "name": "Problem Management Analyzer",
+    "title": "Problem Management Analyzer",
+    "useCaseId": "problem-management-analyzer",
+    "workspaceId": "ws-problem-management-analyzer",
+    "domain": "it",
+    "goal": "IT5-06 • IT Service Management",
+    "systems": [
+      "ServiceNow",
+      "BigQuery",
+      "Datadog",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "reference-architecture-generator",
+    "name": "Reference Architecture Generator",
+    "title": "Reference Architecture Generator",
+    "useCaseId": "reference-architecture-generator",
+    "workspaceId": "ws-reference-architecture-generator",
+    "domain": "it",
+    "goal": "A-4407 • Enterprise Architecture",
+    "systems": [
+      "Confluence",
+      "GitHub",
+      "LeanIX",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "regulatory-change-monitor-it",
+    "name": "Regulatory Change Monitor",
+    "title": "Regulatory Change Monitor",
+    "useCaseId": "regulatory-change-monitor-it",
+    "workspaceId": "ws-regulatory-change-monitor-it",
+    "domain": "it",
+    "goal": "A-4506 • IT Governance & Compliance",
+    "systems": [
+      "Thomson Reuters",
+      "OneTrust",
+      "ServiceNow GRC",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "release-notes-generator",
+    "name": "Release Notes Generator",
+    "title": "Release Notes Generator",
+    "useCaseId": "release-notes-generator",
+    "workspaceId": "ws-release-notes-generator",
+    "domain": "it",
+    "goal": "A-3904 • Software Engineering & DevOps",
+    "systems": [
+      "GitHub",
+      "Jira",
+      "Confluence",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "risk-register-agent",
+    "name": "Risk Register Agent",
+    "title": "Risk Register Agent",
+    "useCaseId": "risk-register-agent",
+    "workspaceId": "ws-risk-register-agent",
+    "domain": "it",
+    "goal": "A-4505 • IT Governance & Compliance",
+    "systems": [
+      "ServiceNow GRC",
+      "RSA Archer",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "security-incident-responder",
+    "name": "Security Incident Responder",
+    "title": "Security Incident Responder",
+    "useCaseId": "security-incident-responder",
+    "workspaceId": "ws-security-incident-responder",
+    "domain": "it",
+    "goal": "IT4-08 • Cybersecurity & Threat Management",
+    "systems": [
+      "CrowdStrike",
+      "Chronicle",
+      "PagerDuty",
+      "Splunk",
+      "Slack",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "self-service-it-bot",
+    "name": "Self-Service IT Bot",
+    "title": "Self-Service IT Bot",
+    "useCaseId": "self-service-it-bot",
+    "workspaceId": "ws-self-service-it-bot",
+    "domain": "it",
+    "goal": "A-4604 • End User Computing",
+    "systems": [
+      "Slack",
+      "ServiceNow",
+      "Okta",
+      "Google Workspace",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "service-catalog-recommender",
+    "name": "Service Catalog Recommender",
+    "title": "Service Catalog Recommender",
+    "useCaseId": "service-catalog-recommender",
+    "workspaceId": "ws-service-catalog-recommender",
+    "domain": "it",
+    "goal": "IT5-07 • IT Service Management",
+    "systems": [
+      "ServiceNow",
+      "Okta",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "shadow-it-detector",
+    "name": "Shadow IT Detector",
+    "title": "Shadow IT Detector",
+    "useCaseId": "shadow-it-detector",
+    "workspaceId": "ws-shadow-it-detector",
+    "domain": "it",
+    "goal": "A-4608 • End User Computing",
+    "systems": [
+      "Okta",
+      "Google Workspace",
+      "Palo Alto",
+      "CrowdStrike",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "siem-alert-triage-agent",
+    "name": "SIEM Alert Triage Agent",
+    "title": "SIEM Alert Triage Agent",
+    "useCaseId": "siem-alert-triage-agent",
+    "workspaceId": "ws-siem-alert-triage-agent",
+    "domain": "it",
+    "goal": "IT4-03 • Cybersecurity & Threat Management",
+    "systems": [
+      "Chronicle SIEM",
+      "CrowdStrike",
+      "Splunk",
+      "Okta",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "sla-breach-predictor",
+    "name": "SLA Breach Predictor",
+    "title": "SLA Breach Predictor",
+    "useCaseId": "sla-breach-predictor",
+    "workspaceId": "ws-sla-breach-predictor",
+    "domain": "it",
+    "goal": "IT5-03 • IT Service Management",
+    "systems": [
+      "ServiceNow",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "slo-sli-monitor-reporter",
+    "name": "SLO/SLI Monitor & Reporter",
+    "title": "SLO/SLI Monitor & Reporter",
+    "useCaseId": "slo-sli-monitor-reporter",
+    "workspaceId": "ws-slo-sli-monitor-reporter",
+    "domain": "it",
+    "goal": "A-4004 • Infra & Cloud Ops",
+    "systems": [
+      "Datadog",
+      "PagerDuty",
+      "BigQuery",
+      "Looker",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "strategic-initiative-q-a",
+    "name": "Strategic Initiative Q&A",
+    "title": "Strategic Initiative Q&A",
+    "useCaseId": "strategic-initiative-q-a",
+    "workspaceId": "ws-strategic-initiative-q-a",
+    "domain": "it",
+    "goal": "A-3807 • IT Strategy & Portfolio",
+    "systems": [
+      "Confluence",
+      "Jira",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "system-dependency-mapper",
+    "name": "System Dependency Mapper",
+    "title": "System Dependency Mapper",
+    "useCaseId": "system-dependency-mapper",
+    "workspaceId": "ws-system-dependency-mapper",
+    "domain": "it",
+    "goal": "A-4403 • Enterprise Architecture",
+    "systems": [
+      "Datadog APM",
+      "ServiceNow CMDB",
+      "GitHub",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "tech-debt-prioritizer",
+    "name": "Tech Debt Prioritizer",
+    "title": "Tech Debt Prioritizer",
+    "useCaseId": "tech-debt-prioritizer",
+    "workspaceId": "ws-tech-debt-prioritizer",
+    "domain": "it",
+    "goal": "A-3903 • Software Engineering & DevOps",
+    "systems": [
+      "SonarQube",
+      "GitHub",
+      "Jira",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "technology-lifecycle-manager",
+    "name": "Technology Lifecycle Manager",
+    "title": "Technology Lifecycle Manager",
+    "useCaseId": "technology-lifecycle-manager",
+    "workspaceId": "ws-technology-lifecycle-manager",
+    "domain": "it",
+    "goal": "A-4404 • Enterprise Architecture",
+    "systems": [
+      "ServiceNow CMDB",
+      "ServiceNow SAM",
+      "LeanIX",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "technology-radar-trend-scout",
+    "name": "Technology Radar & Trend Scout",
+    "title": "Technology Radar & Trend Scout",
+    "useCaseId": "technology-radar-trend-scout",
+    "workspaceId": "ws-technology-radar-trend-scout",
+    "domain": "it",
+    "goal": "A-3802 • IT Strategy & Portfolio",
+    "systems": [
+      "GitHub",
+      "Gartner API",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "threat-intelligence-aggregator",
+    "name": "Threat Intelligence Aggregator",
+    "title": "Threat Intelligence Aggregator",
+    "useCaseId": "threat-intelligence-aggregator",
+    "workspaceId": "ws-threat-intelligence-aggregator",
+    "domain": "it",
+    "goal": "IT4-01 • Cybersecurity & Threat Management",
+    "systems": [
+      "CrowdStrike Falcon",
+      "Chronicle SIEM",
+      "MITRE ATT&CK",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "vendor-rationalization-agent",
+    "name": "Vendor Rationalization Agent",
+    "title": "Vendor Rationalization Agent",
+    "useCaseId": "vendor-rationalization-agent",
+    "workspaceId": "ws-vendor-rationalization-agent",
+    "domain": "it",
+    "goal": "A-3805 • IT Strategy & Portfolio",
+    "systems": [
+      "ServiceNow SAM",
+      "Zylo",
+      "Okta",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "vulnerability-prioritization-agent",
+    "name": "Vulnerability Prioritization Agent",
+    "title": "Vulnerability Prioritization Agent",
+    "useCaseId": "vulnerability-prioritization-agent",
+    "workspaceId": "ws-vulnerability-prioritization-agent",
+    "domain": "it",
+    "goal": "IT4-02 • Cybersecurity & Threat Management",
+    "systems": [
+      "Qualys",
+      "Tenable",
+      "Snyk",
+      "CrowdStrike",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "workspace-analytics-agent",
+    "name": "Workspace Analytics Agent",
+    "title": "Workspace Analytics Agent",
+    "useCaseId": "workspace-analytics-agent",
+    "workspaceId": "ws-workspace-analytics-agent",
+    "domain": "it",
+    "goal": "A-4603 • End User Computing",
+    "systems": [
+      "Google Workspace",
+      "Microsoft 365",
+      "Slack",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "zero-trust-policy-evaluator",
+    "name": "Zero Trust Policy Evaluator",
+    "title": "Zero Trust Policy Evaluator",
+    "useCaseId": "zero-trust-policy-evaluator",
+    "workspaceId": "ws-zero-trust-policy-evaluator",
+    "domain": "it",
+    "goal": "IT4-09 • Cybersecurity & Threat Management",
+    "systems": [
+      "Okta",
+      "Palo Alto Prisma",
+      "Google BeyondCorp",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "a-b-test-analyzer",
+    "name": "A/B Test Analyzer",
+    "title": "A/B Test Analyzer",
+    "useCaseId": "a-b-test-analyzer",
+    "workspaceId": "ws-a-b-test-analyzer",
+    "domain": "marketing",
+    "goal": "A-3403 • Marketing Analytics & Attribution",
+    "systems": [
+      "Google Optimize",
+      "HubSpot",
+      "GA4",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "abm-campaign-manager",
+    "name": "ABM Campaign Manager",
+    "title": "ABM Campaign Manager",
+    "useCaseId": "abm-campaign-manager",
+    "workspaceId": "ws-abm-campaign-manager",
+    "domain": "marketing",
+    "goal": "A-3103 \\u2022 Demand Generation",
+    "systems": [
+      "Demandbase",
+      "6sense",
+      "Salesforce CRM",
+      "HubSpot",
+      "LinkedIn Ads",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "ad-copy-generator-tester",
+    "name": "Ad Copy Generator & Tester",
+    "title": "Ad Copy Generator & Tester",
+    "useCaseId": "ad-copy-generator-tester",
+    "workspaceId": "ws-ad-copy-generator-tester",
+    "domain": "marketing",
+    "goal": "A-3204 • Digital Marketing & SEO/SEM",
+    "systems": [
+      "Google Ads",
+      "Meta Ads Manager",
+      "LinkedIn Ads",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "analyst-influencer-relations-tracker",
+    "name": "Analyst & Influencer Relations Tracker",
+    "title": "Analyst & Influencer Relations Tracker",
+    "useCaseId": "analyst-influencer-relations-tracker",
+    "workspaceId": "ws-analyst-influencer-relations-tracker",
+    "domain": "marketing",
+    "goal": "A-3507 • Brand & Communications",
+    "systems": [
+      "Salesforce CRM",
+      "Cision",
+      "LinkedIn",
+      "Google Workspace",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "audience-segmentation-engine",
+    "name": "Audience Segmentation Engine",
+    "title": "Audience Segmentation Engine",
+    "useCaseId": "audience-segmentation-engine",
+    "workspaceId": "ws-audience-segmentation-engine",
+    "domain": "marketing",
+    "goal": "A-2905 \\u2022 Marketing Strategy",
+    "systems": [
+      "Salesforce CRM",
+      "HubSpot",
+      "6sense",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "brand-guidelines-enforcer",
+    "name": "Brand Guidelines Enforcer",
+    "title": "Brand Guidelines Enforcer",
+    "useCaseId": "brand-guidelines-enforcer",
+    "workspaceId": "ws-brand-guidelines-enforcer",
+    "domain": "marketing",
+    "goal": "A-3505 • Brand & Communications",
+    "systems": [
+      "Bynder",
+      "Figma",
+      "Google Drive",
+      "Vertex AI",
+      "Canva"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "brand-health-monitor",
+    "name": "Brand Health Monitor",
+    "title": "Brand Health Monitor",
+    "useCaseId": "brand-health-monitor",
+    "workspaceId": "ws-brand-health-monitor",
+    "domain": "marketing",
+    "goal": "A-3501 • Brand & Communications",
+    "systems": [
+      "Brandwatch",
+      "Sprout Social",
+      "Google Trends",
+      "SEMrush",
+      "BigQuery",
+      "Looker"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "brand-voice-checker",
+    "name": "Brand Voice Checker",
+    "title": "Brand Voice Checker",
+    "useCaseId": "brand-voice-checker",
+    "workspaceId": "ws-brand-voice-checker",
+    "domain": "marketing",
+    "goal": "A-3007 \\u2022 Content & Creative",
+    "systems": [
+      "Google Docs",
+      "WordPress",
+      "Contentful",
+      "HubSpot",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "budget-allocator-forecaster",
+    "name": "Budget Allocator & Forecaster",
+    "title": "Budget Allocator & Forecaster",
+    "useCaseId": "budget-allocator-forecaster",
+    "workspaceId": "ws-budget-allocator-forecaster",
+    "domain": "marketing",
+    "goal": "A-2902 \\u2022 Marketing Strategy",
+    "systems": [
+      "Anaplan",
+      "HubSpot",
+      "Google Ads",
+      "BigQuery",
+      "Looker"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "campaign-builder-orchestrator",
+    "name": "Campaign Builder & Orchestrator",
+    "title": "Campaign Builder & Orchestrator",
+    "useCaseId": "campaign-builder-orchestrator",
+    "workspaceId": "ws-campaign-builder-orchestrator",
+    "domain": "marketing",
+    "goal": "A-3101 \\u2022 Demand Generation",
+    "systems": [
+      "HubSpot",
+      "Marketo",
+      "Salesforce CRM",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "campaign-calendar-orchestrator",
+    "name": "Campaign Calendar Orchestrator",
+    "title": "Campaign Calendar Orchestrator",
+    "useCaseId": "campaign-calendar-orchestrator",
+    "workspaceId": "ws-campaign-calendar-orchestrator",
+    "domain": "marketing",
+    "goal": "A-2906 \\u2022 Marketing Strategy",
+    "systems": [
+      "Asana",
+      "HubSpot",
+      "Google Calendar",
+      "Salesforce CRM",
+      "Slack"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "campaign-ops-workflow-builder",
+    "name": "Campaign Ops Workflow Builder",
+    "title": "Campaign Ops Workflow Builder",
+    "useCaseId": "campaign-ops-workflow-builder",
+    "workspaceId": "ws-campaign-ops-workflow-builder",
+    "domain": "marketing",
+    "goal": "A-3603 • Marketing Operations",
+    "systems": [
+      "HubSpot",
+      "Marketo",
+      "Salesforce Marketing Cloud",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "campaign-roi-analyzer",
+    "name": "Campaign ROI Analyzer",
+    "title": "Campaign ROI Analyzer",
+    "useCaseId": "campaign-roi-analyzer",
+    "workspaceId": "ws-campaign-roi-analyzer",
+    "domain": "marketing",
+    "goal": "A-3108 \\u2022 Demand Generation",
+    "systems": [
+      "Salesforce CRM",
+      "HubSpot",
+      "Google Ads",
+      "BigQuery",
+      "Looker"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "community-engagement-responder",
+    "name": "Community Engagement Responder",
+    "title": "Community Engagement Responder",
+    "useCaseId": "community-engagement-responder",
+    "workspaceId": "ws-community-engagement-responder",
+    "domain": "marketing",
+    "goal": "A-3303 • Social Media & Community",
+    "systems": [
+      "Sprout Social",
+      "Hootsuite",
+      "Zendesk",
+      "Salesforce CRM",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "competitive-battle-card-generator",
+    "name": "Competitive Battle Card Generator",
+    "title": "Competitive Battle Card Generator",
+    "useCaseId": "competitive-battle-card-generator",
+    "workspaceId": "ws-competitive-battle-card-generator",
+    "domain": "marketing",
+    "goal": "A-3705 • Customer & Market Intelligence",
+    "systems": [
+      "Salesforce CRM",
+      "Gong",
+      "SEMrush",
+      "G2",
+      "Vertex AI",
+      "Highspot"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "competitive-intelligence-monitor",
+    "name": "Competitive Intelligence Monitor",
+    "title": "Competitive Intelligence Monitor",
+    "useCaseId": "competitive-intelligence-monitor",
+    "workspaceId": "ws-competitive-intelligence-monitor",
+    "domain": "marketing",
+    "goal": "A-2903 \\u2022 Marketing Strategy",
+    "systems": [
+      "SEMrush",
+      "Crayon",
+      "Google News API",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "content-brief-generator",
+    "name": "Content Brief Generator",
+    "title": "Content Brief Generator",
+    "useCaseId": "content-brief-generator",
+    "workspaceId": "ws-content-brief-generator",
+    "domain": "marketing",
+    "goal": "A-3001 \\u2022 Content & Creative",
+    "systems": [
+      "SEMrush",
+      "Ahrefs",
+      "Google Analytics 4",
+      "WordPress",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "content-performance-analyzer",
+    "name": "Content Performance Analyzer",
+    "title": "Content Performance Analyzer",
+    "useCaseId": "content-performance-analyzer",
+    "workspaceId": "ws-content-performance-analyzer",
+    "domain": "marketing",
+    "goal": "A-3004 \\u2022 Content & Creative",
+    "systems": [
+      "Google Analytics 4",
+      "HubSpot",
+      "SEMrush",
+      "BigQuery",
+      "Looker"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "content-repurposing-agent",
+    "name": "Content Repurposing Agent",
+    "title": "Content Repurposing Agent",
+    "useCaseId": "content-repurposing-agent",
+    "workspaceId": "ws-content-repurposing-agent",
+    "domain": "marketing",
+    "goal": "A-3006 \\u2022 Content & Creative",
+    "systems": [
+      "Google Docs",
+      "WordPress",
+      "Canva",
+      "HubSpot",
+      "LinkedIn",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "conversion-rate-optimization-agent",
+    "name": "Conversion Rate Optimization Agent",
+    "title": "Conversion Rate Optimization Agent",
+    "useCaseId": "conversion-rate-optimization-agent",
+    "workspaceId": "ws-conversion-rate-optimization-agent",
+    "domain": "marketing",
+    "goal": "A-3207 • Digital Marketing & SEO/SEM",
+    "systems": [
+      "GA4",
+      "Hotjar",
+      "Google Optimize",
+      "HubSpot",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "creative-asset-generator",
+    "name": "Creative Asset Generator",
+    "title": "Creative Asset Generator",
+    "useCaseId": "creative-asset-generator",
+    "workspaceId": "ws-creative-asset-generator",
+    "domain": "marketing",
+    "goal": "A-3003 \\u2022 Content & Creative",
+    "systems": [
+      "Figma",
+      "Canva",
+      "Bynder",
+      "Google Drive",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "crisis-communications-advisor",
+    "name": "Crisis Communications Advisor",
+    "title": "Crisis Communications Advisor",
+    "useCaseId": "crisis-communications-advisor",
+    "workspaceId": "ws-crisis-communications-advisor",
+    "domain": "marketing",
+    "goal": "A-3503 • Brand & Communications",
+    "systems": [
+      "Brandwatch",
+      "Sprout Social",
+      "Google News API",
+      "Vertex AI",
+      "Slack"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "customer-journey-mapper",
+    "name": "Customer Journey Mapper",
+    "title": "Customer Journey Mapper",
+    "useCaseId": "customer-journey-mapper",
+    "workspaceId": "ws-customer-journey-mapper",
+    "domain": "marketing",
+    "goal": "A-3404 • Marketing Analytics & Attribution",
+    "systems": [
+      "GA4",
+      "Salesforce CRM",
+      "HubSpot",
+      "6sense",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "customer-voice-review-monitor",
+    "name": "Customer Voice & Review Monitor",
+    "title": "Customer Voice & Review Monitor",
+    "useCaseId": "customer-voice-review-monitor",
+    "workspaceId": "ws-customer-voice-review-monitor",
+    "domain": "marketing",
+    "goal": "A-3703 • Customer & Market Intelligence",
+    "systems": [
+      "G2",
+      "Trustpilot",
+      "Gartner Peer Insights",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "dam-content-lifecycle-manager",
+    "name": "DAM & Content Lifecycle Manager",
+    "title": "DAM & Content Lifecycle Manager",
+    "useCaseId": "dam-content-lifecycle-manager",
+    "workspaceId": "ws-dam-content-lifecycle-manager",
+    "domain": "marketing",
+    "goal": "A-3008 \\u2022 Content & Creative",
+    "systems": [
+      "Bynder",
+      "Brandfolder",
+      "Google Drive",
+      "WordPress",
+      "Contentful"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "data-quality-governance-agent",
+    "name": "Data Quality & Governance Agent",
+    "title": "Data Quality & Governance Agent",
+    "useCaseId": "data-quality-governance-agent",
+    "workspaceId": "ws-data-quality-governance-agent",
+    "domain": "marketing",
+    "goal": "A-3408 • Marketing Analytics & Attribution",
+    "systems": [
+      "Salesforce CRM",
+      "HubSpot",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "email-copy-optimizer",
+    "name": "Email Copy Optimizer",
+    "title": "Email Copy Optimizer",
+    "useCaseId": "email-copy-optimizer",
+    "workspaceId": "ws-email-copy-optimizer",
+    "domain": "marketing",
+    "goal": "A-3005 \\u2022 Content & Creative",
+    "systems": [
+      "HubSpot",
+      "Marketo",
+      "Salesforce Marketing Cloud",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "email-deliverability-manager",
+    "name": "Email Deliverability Manager",
+    "title": "Email Deliverability Manager",
+    "useCaseId": "email-deliverability-manager",
+    "workspaceId": "ws-email-deliverability-manager",
+    "domain": "marketing",
+    "goal": "A-3605 • Marketing Operations",
+    "systems": [
+      "HubSpot",
+      "Marketo",
+      "Google Postmaster",
+      "Vertex AI",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "executive-thought-leadership-agent",
+    "name": "Executive Thought Leadership Agent",
+    "title": "Executive Thought Leadership Agent",
+    "useCaseId": "executive-thought-leadership-agent",
+    "workspaceId": "ws-executive-thought-leadership-agent",
+    "domain": "marketing",
+    "goal": "A-3504 • Brand & Communications",
+    "systems": [
+      "LinkedIn",
+      "Google Docs",
+      "WordPress",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "funnel-velocity-analyzer",
+    "name": "Funnel Velocity Analyzer",
+    "title": "Funnel Velocity Analyzer",
+    "useCaseId": "funnel-velocity-analyzer",
+    "workspaceId": "ws-funnel-velocity-analyzer",
+    "domain": "marketing",
+    "goal": "A-3406 • Marketing Analytics & Attribution",
+    "systems": [
+      "Salesforce CRM",
+      "HubSpot",
+      "BigQuery",
+      "Looker"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "gtm-launch-planner",
+    "name": "GTM Launch Planner",
+    "title": "GTM Launch Planner",
+    "useCaseId": "gtm-launch-planner",
+    "workspaceId": "ws-gtm-launch-planner",
+    "domain": "marketing",
+    "goal": "A-2904 \\u2022 Marketing Strategy",
+    "systems": [
+      "Asana",
+      "Google Workspace",
+      "Salesforce CRM",
+      "HubSpot",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "influencer-discovery-tracking",
+    "name": "Influencer Discovery & Tracking",
+    "title": "Influencer Discovery & Tracking",
+    "useCaseId": "influencer-discovery-tracking",
+    "workspaceId": "ws-influencer-discovery-tracking",
+    "domain": "marketing",
+    "goal": "A-3304 • Social Media & Community",
+    "systems": [
+      "Sprout Social",
+      "LinkedIn",
+      "YouTube",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "internal-communications-drafter",
+    "name": "Internal Communications Drafter",
+    "title": "Internal Communications Drafter",
+    "useCaseId": "internal-communications-drafter",
+    "workspaceId": "ws-internal-communications-drafter",
+    "domain": "marketing",
+    "goal": "A-3506 • Brand & Communications",
+    "systems": [
+      "Google Workspace",
+      "Slack",
+      "Salesforce",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "keyword-strategy-agent",
+    "name": "Keyword Strategy Agent",
+    "title": "Keyword Strategy Agent",
+    "useCaseId": "keyword-strategy-agent",
+    "workspaceId": "ws-keyword-strategy-agent",
+    "domain": "marketing",
+    "goal": "A-3202 • Digital Marketing & SEO/SEM",
+    "systems": [
+      "SEMrush",
+      "Ahrefs",
+      "Google Trends",
+      "Google Search Console",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "landing-page-optimizer",
+    "name": "Landing Page Optimizer",
+    "title": "Landing Page Optimizer",
+    "useCaseId": "landing-page-optimizer",
+    "workspaceId": "ws-landing-page-optimizer",
+    "domain": "marketing",
+    "goal": "A-3107 \\u2022 Demand Generation",
+    "systems": [
+      "WordPress",
+      "Unbounce",
+      "GA4",
+      "HubSpot",
+      "Google Optimize",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "lead-nurture-optimizer",
+    "name": "Lead Nurture Optimizer",
+    "title": "Lead Nurture Optimizer",
+    "useCaseId": "lead-nurture-optimizer",
+    "workspaceId": "ws-lead-nurture-optimizer",
+    "domain": "marketing",
+    "goal": "A-3106 \\u2022 Demand Generation",
+    "systems": [
+      "HubSpot",
+      "Marketo",
+      "Salesforce CRM",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "lead-routing-assignment-engine",
+    "name": "Lead Routing & Assignment Engine",
+    "title": "Lead Routing & Assignment Engine",
+    "useCaseId": "lead-routing-assignment-engine",
+    "workspaceId": "ws-lead-routing-assignment-engine",
+    "domain": "marketing",
+    "goal": "A-3602 • Marketing Operations",
+    "systems": [
+      "Salesforce CRM",
+      "HubSpot",
+      "LeanData",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "lead-scoring-qualification-agent",
+    "name": "Lead Scoring & Qualification Agent",
+    "title": "Lead Scoring & Qualification Agent",
+    "useCaseId": "lead-scoring-qualification-agent",
+    "workspaceId": "ws-lead-scoring-qualification-agent",
+    "domain": "marketing",
+    "goal": "A-3102 \\u2022 Demand Generation",
+    "systems": [
+      "HubSpot",
+      "Salesforce CRM",
+      "6sense",
+      "Demandbase",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "list-management-segmentation-agent",
+    "name": "List Management & Segmentation Agent",
+    "title": "List Management & Segmentation Agent",
+    "useCaseId": "list-management-segmentation-agent",
+    "workspaceId": "ws-list-management-segmentation-agent",
+    "domain": "marketing",
+    "goal": "A-3604 • Marketing Operations",
+    "systems": [
+      "HubSpot",
+      "Marketo",
+      "Salesforce CRM",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "long-form-content-drafter",
+    "name": "Long-Form Content Drafter",
+    "title": "Long-Form Content Drafter",
+    "useCaseId": "long-form-content-drafter",
+    "workspaceId": "ws-long-form-content-drafter",
+    "domain": "marketing",
+    "goal": "A-3002 \\u2022 Content & Creative",
+    "systems": [
+      "Google Docs",
+      "WordPress",
+      "Contentful",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "market-research-synthesizer",
+    "name": "Market Research Synthesizer",
+    "title": "Market Research Synthesizer",
+    "useCaseId": "market-research-synthesizer",
+    "workspaceId": "ws-market-research-synthesizer",
+    "domain": "marketing",
+    "goal": "A-3701 • Customer & Market Intelligence",
+    "systems": [
+      "Gartner",
+      "Forrester",
+      "G2",
+      "BigQuery",
+      "Vertex AI",
+      "Google Workspace"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "market-trend-signal-detector",
+    "name": "Market Trend & Signal Detector",
+    "title": "Market Trend & Signal Detector",
+    "useCaseId": "market-trend-signal-detector",
+    "workspaceId": "ws-market-trend-signal-detector",
+    "domain": "marketing",
+    "goal": "A-3707 • Customer & Market Intelligence",
+    "systems": [
+      "Google Trends",
+      "SEMrush",
+      "LinkedIn",
+      "Google News API",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "marketing-compliance-consent-manager",
+    "name": "Marketing Compliance & Consent Manager",
+    "title": "Marketing Compliance & Consent Manager",
+    "useCaseId": "marketing-compliance-consent-manager",
+    "workspaceId": "ws-marketing-compliance-consent-manager",
+    "domain": "marketing",
+    "goal": "A-3607 • Marketing Operations",
+    "systems": [
+      "OneTrust",
+      "HubSpot",
+      "Salesforce CRM",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "marketing-dashboard-generator",
+    "name": "Marketing Dashboard Generator",
+    "title": "Marketing Dashboard Generator",
+    "useCaseId": "marketing-dashboard-generator",
+    "workspaceId": "ws-marketing-dashboard-generator",
+    "domain": "marketing",
+    "goal": "A-3402 • Marketing Analytics & Attribution",
+    "systems": [
+      "GA4",
+      "Salesforce CRM",
+      "HubSpot",
+      "BigQuery",
+      "Looker"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "marketing-mix-modeler",
+    "name": "Marketing Mix Modeler",
+    "title": "Marketing Mix Modeler",
+    "useCaseId": "marketing-mix-modeler",
+    "workspaceId": "ws-marketing-mix-modeler",
+    "domain": "marketing",
+    "goal": "A-3405 • Marketing Analytics & Attribution",
+    "systems": [
+      "BigQuery",
+      "Google Ads",
+      "Meta Ads",
+      "Salesforce CRM",
+      "Looker",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "marketing-okr-tracker",
+    "name": "Marketing OKR Tracker",
+    "title": "Marketing OKR Tracker",
+    "useCaseId": "marketing-okr-tracker",
+    "workspaceId": "ws-marketing-okr-tracker",
+    "domain": "marketing",
+    "goal": "A-2907 \\u2022 Marketing Strategy",
+    "systems": [
+      "Salesforce CRM",
+      "HubSpot",
+      "Google Analytics 4",
+      "Looker",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "marketing-plan-generator",
+    "name": "Marketing Plan Generator",
+    "title": "Marketing Plan Generator",
+    "useCaseId": "marketing-plan-generator",
+    "workspaceId": "ws-marketing-plan-generator",
+    "domain": "marketing",
+    "goal": "A-2901 \\u2022 Marketing Strategy",
+    "systems": [
+      "Salesforce CRM",
+      "HubSpot",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "martech-stack-health-monitor",
+    "name": "MarTech Stack Health Monitor",
+    "title": "MarTech Stack Health Monitor",
+    "useCaseId": "martech-stack-health-monitor",
+    "workspaceId": "ws-martech-stack-health-monitor",
+    "domain": "marketing",
+    "goal": "A-3601 • Marketing Operations",
+    "systems": [
+      "HubSpot",
+      "Salesforce CRM",
+      "Google Analytics 4",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "multi-touch-attribution-engine",
+    "name": "Multi-Touch Attribution Engine",
+    "title": "Multi-Touch Attribution Engine",
+    "useCaseId": "multi-touch-attribution-engine",
+    "workspaceId": "ws-multi-touch-attribution-engine",
+    "domain": "marketing",
+    "goal": "A-3401 • Marketing Analytics & Attribution",
+    "systems": [
+      "GA4",
+      "Salesforce CRM",
+      "HubSpot",
+      "BigQuery",
+      "Looker"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "paid-media-optimizer",
+    "name": "Paid Media Optimizer",
+    "title": "Paid Media Optimizer",
+    "useCaseId": "paid-media-optimizer",
+    "workspaceId": "ws-paid-media-optimizer",
+    "domain": "marketing",
+    "goal": "A-3104 \\u2022 Demand Generation",
+    "systems": [
+      "Google Ads",
+      "Meta Ads",
+      "LinkedIn Ads",
+      "BigQuery",
+      "Looker"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "persona-icp-refiner",
+    "name": "Persona & ICP Refiner",
+    "title": "Persona & ICP Refiner",
+    "useCaseId": "persona-icp-refiner",
+    "workspaceId": "ws-persona-icp-refiner",
+    "domain": "marketing",
+    "goal": "A-3704 • Customer & Market Intelligence",
+    "systems": [
+      "Salesforce CRM",
+      "HubSpot",
+      "6sense",
+      "Clearbit",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "ppc-bid-management-agent",
+    "name": "PPC Bid Management Agent",
+    "title": "PPC Bid Management Agent",
+    "useCaseId": "ppc-bid-management-agent",
+    "workspaceId": "ws-ppc-bid-management-agent",
+    "domain": "marketing",
+    "goal": "A-3203 • Digital Marketing & SEO/SEM",
+    "systems": [
+      "Google Ads",
+      "Microsoft Ads",
+      "BigQuery",
+      "Looker",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "predictive-pipeline-forecaster",
+    "name": "Predictive Pipeline Forecaster",
+    "title": "Predictive Pipeline Forecaster",
+    "useCaseId": "predictive-pipeline-forecaster",
+    "workspaceId": "ws-predictive-pipeline-forecaster",
+    "domain": "marketing",
+    "goal": "A-3407 • Marketing Analytics & Attribution",
+    "systems": [
+      "Salesforce CRM",
+      "HubSpot",
+      "6sense",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "press-release-comms-drafter",
+    "name": "Press Release & Comms Drafter",
+    "title": "Press Release & Comms Drafter",
+    "useCaseId": "press-release-comms-drafter",
+    "workspaceId": "ws-press-release-comms-drafter",
+    "domain": "marketing",
+    "goal": "A-3502 • Brand & Communications",
+    "systems": [
+      "Google Docs",
+      "PR Newswire",
+      "Cision",
+      "Vertex AI",
+      "WordPress"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "sales-enablement-content-agent",
+    "name": "Sales Enablement Content Agent",
+    "title": "Sales Enablement Content Agent",
+    "useCaseId": "sales-enablement-content-agent",
+    "workspaceId": "ws-sales-enablement-content-agent",
+    "domain": "marketing",
+    "goal": "A-3706 • Customer & Market Intelligence",
+    "systems": [
+      "Salesforce CRM",
+      "Highspot",
+      "Google Workspace",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "seo-audit-recommendation-engine",
+    "name": "SEO Audit & Recommendation Engine",
+    "title": "SEO Audit & Recommendation Engine",
+    "useCaseId": "seo-audit-recommendation-engine",
+    "workspaceId": "ws-seo-audit-recommendation-engine",
+    "domain": "marketing",
+    "goal": "A-3201 • Digital Marketing & SEO/SEM",
+    "systems": [
+      "Ahrefs",
+      "SEMrush",
+      "Google Search Console",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "social-content-calendar-manager",
+    "name": "Social Content Calendar Manager",
+    "title": "Social Content Calendar Manager",
+    "useCaseId": "social-content-calendar-manager",
+    "workspaceId": "ws-social-content-calendar-manager",
+    "domain": "marketing",
+    "goal": "A-3301 • Social Media & Community",
+    "systems": [
+      "Sprout Social",
+      "Hootsuite",
+      "HubSpot",
+      "Canva",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "social-listening-sentiment-analyzer",
+    "name": "Social Listening & Sentiment Analyzer",
+    "title": "Social Listening & Sentiment Analyzer",
+    "useCaseId": "social-listening-sentiment-analyzer",
+    "workspaceId": "ws-social-listening-sentiment-analyzer",
+    "domain": "marketing",
+    "goal": "A-3302 • Social Media & Community",
+    "systems": [
+      "Sprout Social",
+      "Brandwatch",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "social-media-analytics-dashboard",
+    "name": "Social Media Analytics Dashboard",
+    "title": "Social Media Analytics Dashboard",
+    "useCaseId": "social-media-analytics-dashboard",
+    "workspaceId": "ws-social-media-analytics-dashboard",
+    "domain": "marketing",
+    "goal": "A-3305 • Social Media & Community",
+    "systems": [
+      "Sprout Social",
+      "Hootsuite",
+      "GA4",
+      "BigQuery",
+      "Looker"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "technical-seo-monitor",
+    "name": "Technical SEO Monitor",
+    "title": "Technical SEO Monitor",
+    "useCaseId": "technical-seo-monitor",
+    "workspaceId": "ws-technical-seo-monitor",
+    "domain": "marketing",
+    "goal": "A-3206 • Digital Marketing & SEO/SEM",
+    "systems": [
+      "Google Search Console",
+      "Ahrefs",
+      "Screaming Frog",
+      "Slack",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "ugc-advocacy-manager",
+    "name": "UGC & Advocacy Manager",
+    "title": "UGC & Advocacy Manager",
+    "useCaseId": "ugc-advocacy-manager",
+    "workspaceId": "ws-ugc-advocacy-manager",
+    "domain": "marketing",
+    "goal": "A-3306 • Social Media & Community",
+    "systems": [
+      "Sprout Social",
+      "HubSpot",
+      "Salesforce CRM",
+      "Google Drive",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "utm-tracking-governance-agent",
+    "name": "UTM & Tracking Governance Agent",
+    "title": "UTM & Tracking Governance Agent",
+    "useCaseId": "utm-tracking-governance-agent",
+    "workspaceId": "ws-utm-tracking-governance-agent",
+    "domain": "marketing",
+    "goal": "A-3606 • Marketing Operations",
+    "systems": [
+      "Google Analytics 4",
+      "HubSpot",
+      "Google Sheets",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "webinar-event-engine",
+    "name": "Webinar & Event Engine",
+    "title": "Webinar & Event Engine",
+    "useCaseId": "webinar-event-engine",
+    "workspaceId": "ws-webinar-event-engine",
+    "domain": "marketing",
+    "goal": "A-3105 \\u2022 Demand Generation",
+    "systems": [
+      "Zoom",
+      "HubSpot",
+      "Salesforce CRM",
+      "Google Calendar",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "website-personalization-engine",
+    "name": "Website Personalization Engine",
+    "title": "Website Personalization Engine",
+    "useCaseId": "website-personalization-engine",
+    "workspaceId": "ws-website-personalization-engine",
+    "domain": "marketing",
+    "goal": "A-3205 • Digital Marketing & SEO/SEM",
+    "systems": [
+      "Google Optimize",
+      "GA4",
+      "Salesforce CRM",
+      "HubSpot",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "win-loss-analysis-agent",
+    "name": "Win/Loss Analysis Agent",
+    "title": "Win/Loss Analysis Agent",
+    "useCaseId": "win-loss-analysis-agent",
+    "workspaceId": "ws-win-loss-analysis-agent",
+    "domain": "marketing",
+    "goal": "A-3702 • Customer & Market Intelligence",
+    "systems": [
+      "Salesforce CRM",
+      "Gong",
+      "Google Workspace",
+      "Vertex AI",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "agreement-hierarchy-tracker",
+    "name": "Agreement Hierarchy Tracker",
+    "title": "Agreement Hierarchy Tracker",
+    "useCaseId": "agreement-hierarchy-tracker",
+    "workspaceId": "ws-agreement-hierarchy-tracker",
+    "domain": "procurement",
+    "goal": "A-1407 • Contract Lifecycle",
+    "systems": [
+      "Icertis",
+      "DocuSign CLM",
+      "SAP Ariba",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "approval-workflow-optimizer",
+    "name": "Approval Workflow Optimizer",
+    "title": "Approval Workflow Optimizer",
+    "useCaseId": "approval-workflow-optimizer",
+    "workspaceId": "ws-approval-workflow-optimizer",
+    "domain": "procurement",
+    "goal": "A-1510 • Procure-to-Pay",
+    "systems": [
+      "Coupa/Ariba Workflow",
+      "SAP S/4HANA",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "auction-strategy-advisor",
+    "name": "Auction Strategy Advisor",
+    "title": "Auction Strategy Advisor",
+    "useCaseId": "auction-strategy-advisor",
+    "workspaceId": "ws-auction-strategy-advisor",
+    "domain": "procurement",
+    "goal": "A-1206 • Strategic Sourcing",
+    "systems": [
+      "SAP Ariba e-Auction",
+      "Coupa",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "audit-corrective-action-tracker",
+    "name": "Audit & Corrective Action Tracker",
+    "title": "Audit & Corrective Action Tracker",
+    "useCaseId": "audit-corrective-action-tracker",
+    "workspaceId": "ws-audit-corrective-action-tracker",
+    "domain": "procurement",
+    "goal": "A-1606 • Supplier Risk",
+    "systems": [
+      "SAP GRC",
+      "Audit Tools",
+      "Ariba SLP",
+      "CAPA Tracking"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "background-sanctions-screener",
+    "name": "Background & Sanctions Screener",
+    "title": "Background & Sanctions Screener",
+    "useCaseId": "background-sanctions-screener",
+    "workspaceId": "ws-background-sanctions-screener",
+    "domain": "procurement",
+    "goal": "A-1308 • Supplier Discovery",
+    "systems": [
+      "LexisNexis",
+      "OFAC/SDN",
+      "World-Check",
+      "D&B",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "benchmark-intelligence-agent",
+    "name": "Benchmark Intelligence Agent",
+    "title": "Benchmark Intelligence Agent",
+    "useCaseId": "benchmark-intelligence-agent",
+    "workspaceId": "ws-benchmark-intelligence-agent",
+    "domain": "procurement",
+    "goal": "A-1909 • Spend Analytics",
+    "systems": [
+      "Hackett",
+      "CAPS",
+      "Gartner",
+      "Ardent Partners",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "bid-evaluation-scenario-analyzer",
+    "name": "Bid Evaluation & Scenario Analyzer",
+    "title": "Bid Evaluation & Scenario Analyzer",
+    "useCaseId": "bid-evaluation-scenario-analyzer",
+    "workspaceId": "ws-bid-evaluation-scenario-analyzer",
+    "domain": "procurement",
+    "goal": "A-1205 • Strategic Sourcing",
+    "systems": [
+      "SAP Ariba",
+      "Coupa",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "business-review-prep-agent",
+    "name": "Business Review Prep Agent",
+    "title": "Business Review Prep Agent",
+    "useCaseId": "business-review-prep-agent",
+    "workspaceId": "ws-business-review-prep-agent",
+    "domain": "procurement",
+    "goal": "A-1704 • Supplier Performance",
+    "systems": [
+      "Scorecard Data",
+      "Contract Data",
+      "Market Intelligence",
+      "Vertex AI",
+      "Google Slides"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "capability-assessment-agent",
+    "name": "Capability Assessment Agent",
+    "title": "Capability Assessment Agent",
+    "useCaseId": "capability-assessment-agent",
+    "workspaceId": "ws-capability-assessment-agent",
+    "domain": "procurement",
+    "goal": "A-1306 • Supplier Discovery",
+    "systems": [
+      "Ariba SLP",
+      "Jaggaer",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "catalog-curation-recommendation",
+    "name": "Catalog Curation & Recommendation",
+    "title": "Catalog Curation & Recommendation",
+    "useCaseId": "catalog-curation-recommendation",
+    "workspaceId": "ws-catalog-curation-recommendation",
+    "domain": "procurement",
+    "goal": "A-1802 • Indirect & Tail Spend",
+    "systems": [
+      "Coupa catalog",
+      "Amazon Business",
+      "Punchout catalogs",
+      "Ariba"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "category-roadmap-planner",
+    "name": "Category Roadmap Planner",
+    "title": "Category Roadmap Planner",
+    "useCaseId": "category-roadmap-planner",
+    "workspaceId": "ws-category-roadmap-planner",
+    "domain": "procurement",
+    "goal": "A-1210 • Strategic Sourcing",
+    "systems": [
+      "Category strategy docs",
+      "Savings pipeline",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "category-spend-dashboard",
+    "name": "Category Spend Dashboard",
+    "title": "Category Spend Dashboard",
+    "useCaseId": "category-spend-dashboard",
+    "workspaceId": "ws-category-spend-dashboard",
+    "domain": "procurement",
+    "goal": "A-1208 • Strategic Sourcing",
+    "systems": [
+      "Coupa Analytics",
+      "SAP Ariba Analytics",
+      "BigQuery",
+      "Looker"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "category-strategy-generator",
+    "name": "Category Strategy Generator",
+    "title": "Category Strategy Generator",
+    "useCaseId": "category-strategy-generator",
+    "workspaceId": "ws-category-strategy-generator",
+    "domain": "procurement",
+    "goal": "A-1101 • Procurement Strategy",
+    "systems": [
+      "SAP Ariba Category Mgmt",
+      "Coupa",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "clause-risk-analyzer",
+    "name": "Clause Risk Analyzer",
+    "title": "Clause Risk Analyzer",
+    "useCaseId": "clause-risk-analyzer",
+    "workspaceId": "ws-clause-risk-analyzer",
+    "domain": "procurement",
+    "goal": "A-1402 • Contract Lifecycle",
+    "systems": [
+      "Icertis",
+      "DocuSign CLM",
+      "Legal Playbook",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "commodity-price-forecaster",
+    "name": "Commodity Price Forecaster",
+    "title": "Commodity Price Forecaster",
+    "useCaseId": "commodity-price-forecaster",
+    "workspaceId": "ws-commodity-price-forecaster",
+    "domain": "procurement",
+    "goal": "A-1903 • Spend Analytics",
+    "systems": [
+      "S&P Global Platts",
+      "ICIS",
+      "Mintec",
+      "LME",
+      "CBOT",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "concentration-risk-analyzer",
+    "name": "Concentration Risk Analyzer",
+    "title": "Concentration Risk Analyzer",
+    "useCaseId": "concentration-risk-analyzer",
+    "workspaceId": "ws-concentration-risk-analyzer",
+    "domain": "procurement",
+    "goal": "A-1607 • Supplier Risk",
+    "systems": [
+      "Spend Data",
+      "Supplier Master",
+      "Contract Data",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "contract-analytics-dashboard",
+    "name": "Contract Analytics Dashboard",
+    "title": "Contract Analytics Dashboard",
+    "useCaseId": "contract-analytics-dashboard",
+    "workspaceId": "ws-contract-analytics-dashboard",
+    "domain": "procurement",
+    "goal": "A-1408 • Contract Lifecycle",
+    "systems": [
+      "Icertis Analytics",
+      "BigQuery",
+      "Looker"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "contract-authoring-agent",
+    "name": "Contract Authoring Agent",
+    "title": "Contract Authoring Agent",
+    "useCaseId": "contract-authoring-agent",
+    "workspaceId": "ws-contract-authoring-agent",
+    "domain": "procurement",
+    "goal": "A-1401 • Contract Lifecycle",
+    "systems": [
+      "Icertis",
+      "DocuSign CLM",
+      "Agiloft",
+      "SAP Ariba Contracts",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "contract-compliance-auditor",
+    "name": "Contract Compliance Auditor",
+    "title": "Contract Compliance Auditor",
+    "useCaseId": "contract-compliance-auditor",
+    "workspaceId": "ws-contract-compliance-auditor",
+    "domain": "procurement",
+    "goal": "A-1406 • Contract Lifecycle",
+    "systems": [
+      "Icertis",
+      "SAP S/4HANA",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "delivery-performance-monitor",
+    "name": "Delivery Performance Monitor",
+    "title": "Delivery Performance Monitor",
+    "useCaseId": "delivery-performance-monitor",
+    "workspaceId": "ws-delivery-performance-monitor",
+    "domain": "procurement",
+    "goal": "A-1703 • Supplier Performance",
+    "systems": [
+      "SAP S/4HANA MM",
+      "TMS",
+      "ASN Data",
+      "IoT/GPS Tracking"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "demand-forecasting-aggregation",
+    "name": "Demand Forecasting & Aggregation",
+    "title": "Demand Forecasting & Aggregation",
+    "useCaseId": "demand-forecasting-aggregation",
+    "workspaceId": "ws-demand-forecasting-aggregation",
+    "domain": "procurement",
+    "goal": "A-1102 • Procurement Strategy",
+    "systems": [
+      "SAP S/4HANA MM/PP",
+      "Oracle ERP",
+      "Coupa",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "demand-pattern-analyzer",
+    "name": "Demand Pattern Analyzer",
+    "title": "Demand Pattern Analyzer",
+    "useCaseId": "demand-pattern-analyzer",
+    "workspaceId": "ws-demand-pattern-analyzer",
+    "domain": "procurement",
+    "goal": "A-1908 • Spend Analytics",
+    "systems": [
+      "SAP S/4HANA",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "duplicate-payment-detector",
+    "name": "Duplicate Payment Detector",
+    "title": "Duplicate Payment Detector",
+    "useCaseId": "duplicate-payment-detector",
+    "workspaceId": "ws-duplicate-payment-detector",
+    "domain": "procurement",
+    "goal": "A-1505 • Procure-to-Pay",
+    "systems": [
+      "SAP S/4HANA FI",
+      "Coupa Pay",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "financial-health-assessor",
+    "name": "Financial Health Assessor",
+    "title": "Financial Health Assessor",
+    "useCaseId": "financial-health-assessor",
+    "workspaceId": "ws-financial-health-assessor",
+    "domain": "procurement",
+    "goal": "A-1303 • Supplier Discovery",
+    "systems": [
+      "RapidRatings",
+      "D&B",
+      "Moody's",
+      "SEC EDGAR",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "force-majeure-advisor",
+    "name": "Force Majeure Advisor",
+    "title": "Force Majeure Advisor",
+    "useCaseId": "force-majeure-advisor",
+    "workspaceId": "ws-force-majeure-advisor",
+    "domain": "procurement",
+    "goal": "A-1409 • Contract Lifecycle",
+    "systems": [
+      "Contract Repository",
+      "Legal Knowledge Base",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "goods-receipt-service-entry-validator",
+    "name": "Goods Receipt & Service Entry Validator",
+    "title": "Goods Receipt & Service Entry Validator",
+    "useCaseId": "goods-receipt-service-entry-validator",
+    "workspaceId": "ws-goods-receipt-service-entry-validator",
+    "domain": "procurement",
+    "goal": "A-1508 • Procure-to-Pay",
+    "systems": [
+      "SAP S/4HANA MM (MIGO)",
+      "WMS",
+      "IoT/RFID"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "innovation-value-engineering-tracker",
+    "name": "Innovation & Value Engineering Tracker",
+    "title": "Innovation & Value Engineering Tracker",
+    "useCaseId": "innovation-value-engineering-tracker",
+    "workspaceId": "ws-innovation-value-engineering-tracker",
+    "domain": "procurement",
+    "goal": "A-1707 • Supplier Performance",
+    "systems": [
+      "Supplier Portal",
+      "Innovation Management",
+      "Contract Data",
+      "Engineering Change Orders"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "insurance-liability-monitor",
+    "name": "Insurance & Liability Monitor",
+    "title": "Insurance & Liability Monitor",
+    "useCaseId": "insurance-liability-monitor",
+    "workspaceId": "ws-insurance-liability-monitor",
+    "domain": "procurement",
+    "goal": "A-1608 • Supplier Risk",
+    "systems": [
+      "Insurance Cert Management",
+      "Contract System",
+      "Supplier Portal",
+      "Google Document AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "invoice-data-extraction",
+    "name": "Invoice Data Extraction",
+    "title": "Invoice Data Extraction",
+    "useCaseId": "invoice-data-extraction",
+    "workspaceId": "ws-invoice-data-extraction",
+    "domain": "procurement",
+    "goal": "A-1504 • Procure-to-Pay",
+    "systems": [
+      "Kofax/Tungsten",
+      "Basware",
+      "Google Document AI",
+      "SAP S/4HANA",
+      "Coupa"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "make-vs-buy-analyzer",
+    "name": "Make-vs-Buy Analyzer",
+    "title": "Make-vs-Buy Analyzer",
+    "useCaseId": "make-vs-buy-analyzer",
+    "workspaceId": "ws-make-vs-buy-analyzer",
+    "domain": "procurement",
+    "goal": "A-1103 • Procurement Strategy",
+    "systems": [
+      "SAP S/4HANA",
+      "Market Benchmarks",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "market-intelligence-monitor",
+    "name": "Market Intelligence Monitor",
+    "title": "Market Intelligence Monitor",
+    "useCaseId": "market-intelligence-monitor",
+    "workspaceId": "ws-market-intelligence-monitor",
+    "domain": "procurement",
+    "goal": "A-1202 • Strategic Sourcing",
+    "systems": [
+      "S&P Global Platts",
+      "ICIS",
+      "Mintec",
+      "Google News API",
+      "Dun & Bradstreet",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "maverick-spend-detector-nudge",
+    "name": "Maverick Spend Detector & Nudge",
+    "title": "Maverick Spend Detector & Nudge",
+    "useCaseId": "maverick-spend-detector-nudge",
+    "workspaceId": "ws-maverick-spend-detector-nudge",
+    "domain": "procurement",
+    "goal": "A-1506 • Procure-to-Pay",
+    "systems": [
+      "Coupa/Ariba Catalog",
+      "SAP S/4HANA",
+      "Slack/Email"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "mro-facilities-optimization",
+    "name": "MRO & Facilities Optimization",
+    "title": "MRO & Facilities Optimization",
+    "useCaseId": "mro-facilities-optimization",
+    "workspaceId": "ws-mro-facilities-optimization",
+    "domain": "procurement",
+    "goal": "A-1804 • Indirect & Tail Spend",
+    "systems": [
+      "SAP S/4HANA MM",
+      "Maximo",
+      "eMaint",
+      "Coupa",
+      "VMI systems"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "negotiation-prep-agent",
+    "name": "Negotiation Prep Agent",
+    "title": "Negotiation Prep Agent",
+    "useCaseId": "negotiation-prep-agent",
+    "workspaceId": "ws-negotiation-prep-agent",
+    "domain": "procurement",
+    "goal": "A-1207 • Strategic Sourcing",
+    "systems": [
+      "Icertis",
+      "DocuSign CLM",
+      "Spend data",
+      "Market intel",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "obligation-mining-tracking",
+    "name": "Obligation Mining & Tracking",
+    "title": "Obligation Mining & Tracking",
+    "useCaseId": "obligation-mining-tracking",
+    "workspaceId": "ws-obligation-mining-tracking",
+    "domain": "procurement",
+    "goal": "A-1403 • Contract Lifecycle",
+    "systems": [
+      "Icertis",
+      "DocuSign CLM",
+      "Google Calendar",
+      "Asana/Jira",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "p-card-reconciliation-agent",
+    "name": "P-Card Reconciliation Agent",
+    "title": "P-Card Reconciliation Agent",
+    "useCaseId": "p-card-reconciliation-agent",
+    "workspaceId": "ws-p-card-reconciliation-agent",
+    "domain": "procurement",
+    "goal": "A-1511 • Procure-to-Pay",
+    "systems": [
+      "Citibank/JP Morgan Commercial Card",
+      "SAP Concur",
+      "Coupa"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "p2p-cycle-time-analyzer",
+    "name": "P2P Cycle Time Analyzer",
+    "title": "P2P Cycle Time Analyzer",
+    "useCaseId": "p2p-cycle-time-analyzer",
+    "workspaceId": "ws-p2p-cycle-time-analyzer",
+    "domain": "procurement",
+    "goal": "A-1509 • Procure-to-Pay",
+    "systems": [
+      "SAP S/4HANA",
+      "Coupa",
+      "Celonis",
+      "BigQuery",
+      "Looker"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "payment-optimization-agent",
+    "name": "Payment Optimization Agent",
+    "title": "Payment Optimization Agent",
+    "useCaseId": "payment-optimization-agent",
+    "workspaceId": "ws-payment-optimization-agent",
+    "domain": "procurement",
+    "goal": "A-1507 • Procure-to-Pay",
+    "systems": [
+      "SAP S/4HANA FI (F110)",
+      "Taulia",
+      "C2FO",
+      "Treasury Systems"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "price-variance-analyzer",
+    "name": "Price Variance Analyzer",
+    "title": "Price Variance Analyzer",
+    "useCaseId": "price-variance-analyzer",
+    "workspaceId": "ws-price-variance-analyzer",
+    "domain": "procurement",
+    "goal": "A-1907 • Spend Analytics",
+    "systems": [
+      "SAP S/4HANA",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "procurement-kpi-dashboard",
+    "name": "Procurement KPI Dashboard",
+    "title": "Procurement KPI Dashboard",
+    "useCaseId": "procurement-kpi-dashboard",
+    "workspaceId": "ws-procurement-kpi-dashboard",
+    "domain": "procurement",
+    "goal": "A-1904 • Spend Analytics",
+    "systems": [
+      "BigQuery",
+      "Looker",
+      "Coupa",
+      "SAP Ariba"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "procurement-maturity-assessor",
+    "name": "Procurement Maturity Assessor",
+    "title": "Procurement Maturity Assessor",
+    "useCaseId": "procurement-maturity-assessor",
+    "workspaceId": "ws-procurement-maturity-assessor",
+    "domain": "procurement",
+    "goal": "A-1106 • Procurement Strategy",
+    "systems": [
+      "Survey Tools",
+      "Internal Process Metrics",
+      "Benchmark Databases",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "procurement-policy-assistant",
+    "name": "Procurement Policy Assistant",
+    "title": "Procurement Policy Assistant",
+    "useCaseId": "procurement-policy-assistant",
+    "workspaceId": "ws-procurement-policy-assistant",
+    "domain": "procurement",
+    "goal": "A-1104 • Procurement Strategy",
+    "systems": [
+      "SharePoint/Google Drive",
+      "Coupa",
+      "SAP Ariba",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "procurement-value-reporter",
+    "name": "Procurement Value Reporter",
+    "title": "Procurement Value Reporter",
+    "useCaseId": "procurement-value-reporter",
+    "workspaceId": "ws-procurement-value-reporter",
+    "domain": "procurement",
+    "goal": "A-1906 • Spend Analytics",
+    "systems": [
+      "BigQuery",
+      "Looker",
+      "Google Slides",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "purchase-order-auto-generation",
+    "name": "Purchase Order Auto-Generation",
+    "title": "Purchase Order Auto-Generation",
+    "useCaseId": "purchase-order-auto-generation",
+    "workspaceId": "ws-purchase-order-auto-generation",
+    "domain": "procurement",
+    "goal": "A-1502 • Procure-to-Pay",
+    "systems": [
+      "SAP S/4HANA MM (ME21N)",
+      "Coupa",
+      "Ariba"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "quality-incident-analyzer",
+    "name": "Quality Incident Analyzer",
+    "title": "Quality Incident Analyzer",
+    "useCaseId": "quality-incident-analyzer",
+    "workspaceId": "ws-quality-incident-analyzer",
+    "domain": "procurement",
+    "goal": "A-1702 • Supplier Performance",
+    "systems": [
+      "SAP QM (QM01/QM02)",
+      "Quality Management Systems",
+      "CAPA Tools",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "redline-comparison-agent",
+    "name": "Redline Comparison Agent",
+    "title": "Redline Comparison Agent",
+    "useCaseId": "redline-comparison-agent",
+    "workspaceId": "ws-redline-comparison-agent",
+    "domain": "procurement",
+    "goal": "A-1405 • Contract Lifecycle",
+    "systems": [
+      "Icertis",
+      "DocuSign CLM",
+      "Microsoft Word",
+      "Google Docs",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "regulatory-compliance-tracker",
+    "name": "Regulatory Compliance Tracker",
+    "title": "Regulatory Compliance Tracker",
+    "useCaseId": "regulatory-compliance-tracker",
+    "workspaceId": "ws-regulatory-compliance-tracker",
+    "domain": "procurement",
+    "goal": "A-1604 • Supplier Risk",
+    "systems": [
+      "MetricStream",
+      "SAP GRC",
+      "Regulatory Feeds",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "relationship-health-analyzer",
+    "name": "Relationship Health Analyzer",
+    "title": "Relationship Health Analyzer",
+    "useCaseId": "relationship-health-analyzer",
+    "workspaceId": "ws-relationship-health-analyzer",
+    "domain": "procurement",
+    "goal": "A-1706 • Supplier Performance",
+    "systems": [
+      "Email Metadata",
+      "Meeting Logs",
+      "Escalation Records",
+      "Survey Data",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "renewal-expiry-monitor",
+    "name": "Renewal & Expiry Monitor",
+    "title": "Renewal & Expiry Monitor",
+    "useCaseId": "renewal-expiry-monitor",
+    "workspaceId": "ws-renewal-expiry-monitor",
+    "domain": "procurement",
+    "goal": "A-1404 • Contract Lifecycle",
+    "systems": [
+      "Icertis",
+      "SAP Ariba Contracts",
+      "SAP S/4HANA",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "requisition-intake-smart-routing",
+    "name": "Requisition Intake & Smart Routing",
+    "title": "Requisition Intake & Smart Routing",
+    "useCaseId": "requisition-intake-smart-routing",
+    "workspaceId": "ws-requisition-intake-smart-routing",
+    "domain": "procurement",
+    "goal": "A-1501 • Procure-to-Pay",
+    "systems": [
+      "SAP S/4HANA MM (ME51N)",
+      "Coupa",
+      "Oracle"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "rfx-builder-orchestrator",
+    "name": "RFx Builder & Orchestrator",
+    "title": "RFx Builder & Orchestrator",
+    "useCaseId": "rfx-builder-orchestrator",
+    "workspaceId": "ws-rfx-builder-orchestrator",
+    "domain": "procurement",
+    "goal": "A-1204 • Strategic Sourcing",
+    "systems": [
+      "SAP Ariba Sourcing",
+      "Jaggaer",
+      "Coupa Sourcing",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "sanctions-watchlist-screener",
+    "name": "Sanctions & Watchlist Screener",
+    "title": "Sanctions & Watchlist Screener",
+    "useCaseId": "sanctions-watchlist-screener",
+    "workspaceId": "ws-sanctions-watchlist-screener",
+    "domain": "procurement",
+    "goal": "A-1603 • Supplier Risk",
+    "systems": [
+      "OFAC/SDN",
+      "EU Sanctions",
+      "World-Check",
+      "LexisNexis",
+      "Dow Jones Risk & Compliance"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "savings-pipeline-tracker",
+    "name": "Savings Pipeline Tracker",
+    "title": "Savings Pipeline Tracker",
+    "useCaseId": "savings-pipeline-tracker",
+    "workspaceId": "ws-savings-pipeline-tracker",
+    "domain": "procurement",
+    "goal": "A-1105 • Procurement Strategy",
+    "systems": [
+      "Coupa",
+      "SAP Ariba",
+      "BigQuery",
+      "Looker"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "savings-realization-tracker",
+    "name": "Savings Realization Tracker",
+    "title": "Savings Realization Tracker",
+    "useCaseId": "savings-realization-tracker",
+    "workspaceId": "ws-savings-realization-tracker",
+    "domain": "procurement",
+    "goal": "A-1902 • Spend Analytics",
+    "systems": [
+      "Coupa",
+      "SAP Ariba",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "services-procurement-sow-manager",
+    "name": "Services Procurement & SOW Manager",
+    "title": "Services Procurement & SOW Manager",
+    "useCaseId": "services-procurement-sow-manager",
+    "workspaceId": "ws-services-procurement-sow-manager",
+    "domain": "procurement",
+    "goal": "A-1806 • Indirect & Tail Spend",
+    "systems": [
+      "SAP Fieldglass",
+      "Beeline",
+      "VMS platforms",
+      "Coupa",
+      "Contract system"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "should-cost-modeler",
+    "name": "Should-Cost Modeler",
+    "title": "Should-Cost Modeler",
+    "useCaseId": "should-cost-modeler",
+    "workspaceId": "ws-should-cost-modeler",
+    "domain": "procurement",
+    "goal": "A-1203 • Strategic Sourcing",
+    "systems": [
+      "SAP S/4HANA (BOM/routing)",
+      "Commodity price feeds",
+      "Industry benchmarks",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "sole-single-source-justification-drafter",
+    "name": "Sole/Single Source Justification Drafter",
+    "title": "Sole/Single Source Justification Drafter",
+    "useCaseId": "sole-single-source-justification-drafter",
+    "workspaceId": "ws-sole-single-source-justification-drafter",
+    "domain": "procurement",
+    "goal": "A-1209 • Strategic Sourcing",
+    "systems": [
+      "Policy docs",
+      "Supplier databases",
+      "Market research",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "sourcing-channel-optimizer",
+    "name": "Sourcing Channel Optimizer",
+    "title": "Sourcing Channel Optimizer",
+    "useCaseId": "sourcing-channel-optimizer",
+    "workspaceId": "ws-sourcing-channel-optimizer",
+    "domain": "procurement",
+    "goal": "A-1212 • Strategic Sourcing",
+    "systems": [
+      "Coupa catalog",
+      "Amazon Business",
+      "SAP Ariba",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "specification-standardization-agent",
+    "name": "Specification Standardization Agent",
+    "title": "Specification Standardization Agent",
+    "useCaseId": "specification-standardization-agent",
+    "workspaceId": "ws-specification-standardization-agent",
+    "domain": "procurement",
+    "goal": "A-1211 • Strategic Sourcing",
+    "systems": [
+      "SAP S/4HANA Material Master",
+      "PLM systems",
+      "Engineering drawings",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "spend-classification-enrichment",
+    "name": "Spend Classification & Enrichment",
+    "title": "Spend Classification & Enrichment",
+    "useCaseId": "spend-classification-enrichment",
+    "workspaceId": "ws-spend-classification-enrichment",
+    "domain": "procurement",
+    "goal": "A-1201 • Strategic Sourcing",
+    "systems": [
+      "SAP S/4HANA FI/MM",
+      "Coupa",
+      "SpendHQ",
+      "Sievo",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "spend-cube-builder-enrichment",
+    "name": "Spend Cube Builder & Enrichment",
+    "title": "Spend Cube Builder & Enrichment",
+    "useCaseId": "spend-cube-builder-enrichment",
+    "workspaceId": "ws-spend-cube-builder-enrichment",
+    "domain": "procurement",
+    "goal": "A-1901 • Spend Analytics",
+    "systems": [
+      "SAP S/4HANA",
+      "Coupa",
+      "Ariba",
+      "SpendHQ",
+      "Sievo",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "spot-buy-negotiation-agent",
+    "name": "Spot Buy Negotiation Agent",
+    "title": "Spot Buy Negotiation Agent",
+    "useCaseId": "spot-buy-negotiation-agent",
+    "workspaceId": "ws-spot-buy-negotiation-agent",
+    "domain": "procurement",
+    "goal": "A-1803 • Indirect & Tail Spend",
+    "systems": [
+      "Coupa",
+      "Amazon Business",
+      "Supplier marketplaces",
+      "Email API"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "stakeholder-satisfaction-analyzer",
+    "name": "Stakeholder Satisfaction Analyzer",
+    "title": "Stakeholder Satisfaction Analyzer",
+    "useCaseId": "stakeholder-satisfaction-analyzer",
+    "workspaceId": "ws-stakeholder-satisfaction-analyzer",
+    "domain": "procurement",
+    "goal": "A-1107 • Procurement Strategy",
+    "systems": [
+      "Qualtrics",
+      "ServiceNow",
+      "Email Data",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "sub-tier-visibility-agent",
+    "name": "Sub-Tier Visibility Agent",
+    "title": "Sub-Tier Visibility Agent",
+    "useCaseId": "sub-tier-visibility-agent",
+    "workspaceId": "ws-sub-tier-visibility-agent",
+    "domain": "procurement",
+    "goal": "A-1605 • Supplier Risk",
+    "systems": [
+      "Resilinc",
+      "Everstream",
+      "CMRT/CRT Questionnaires",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "supplier-consolidation-analyzer",
+    "name": "Supplier Consolidation Analyzer",
+    "title": "Supplier Consolidation Analyzer",
+    "useCaseId": "supplier-consolidation-analyzer",
+    "workspaceId": "ws-supplier-consolidation-analyzer",
+    "domain": "procurement",
+    "goal": "A-1307 • Supplier Discovery",
+    "systems": [
+      "BigQuery",
+      "Vendor Master",
+      "Contract Data",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "supplier-development-planner",
+    "name": "Supplier Development Planner",
+    "title": "Supplier Development Planner",
+    "useCaseId": "supplier-development-planner",
+    "workspaceId": "ws-supplier-development-planner",
+    "domain": "procurement",
+    "goal": "A-1705 • Supplier Performance",
+    "systems": [
+      "Scorecard Data",
+      "Capability Assessments",
+      "Industry Benchmarks",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "supplier-discovery-matching",
+    "name": "Supplier Discovery & Matching",
+    "title": "Supplier Discovery & Matching",
+    "useCaseId": "supplier-discovery-matching",
+    "workspaceId": "ws-supplier-discovery-matching",
+    "domain": "procurement",
+    "goal": "A-1301 • Supplier Discovery",
+    "systems": [
+      "SAP Ariba Discovery",
+      "ThomasNet",
+      "D&B",
+      "Google Search API",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "supplier-diversity-tracker",
+    "name": "Supplier Diversity Tracker",
+    "title": "Supplier Diversity Tracker",
+    "useCaseId": "supplier-diversity-tracker",
+    "workspaceId": "ws-supplier-diversity-tracker",
+    "domain": "procurement",
+    "goal": "A-1304 • Supplier Discovery",
+    "systems": [
+      "Supplier.io",
+      "NMSDC",
+      "WBENC",
+      "SBA",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "supplier-onboarding-orchestrator",
+    "name": "Supplier Onboarding Orchestrator",
+    "title": "Supplier Onboarding Orchestrator",
+    "useCaseId": "supplier-onboarding-orchestrator",
+    "workspaceId": "ws-supplier-onboarding-orchestrator",
+    "domain": "procurement",
+    "goal": "A-1305 • Supplier Discovery",
+    "systems": [
+      "SAP S/4HANA (XK01)",
+      "Ariba SLP",
+      "Banking Systems",
+      "IRS TIN"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "supplier-pre-qualification-screener",
+    "name": "Supplier Pre-Qualification Screener",
+    "title": "Supplier Pre-Qualification Screener",
+    "useCaseId": "supplier-pre-qualification-screener",
+    "workspaceId": "ws-supplier-pre-qualification-screener",
+    "domain": "procurement",
+    "goal": "A-1302 • Supplier Discovery",
+    "systems": [
+      "Ariba SLP",
+      "Jaggaer",
+      "SAP S/4HANA",
+      "D&B"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "supplier-risk-scoring-engine",
+    "name": "Supplier Risk Scoring Engine",
+    "title": "Supplier Risk Scoring Engine",
+    "useCaseId": "supplier-risk-scoring-engine",
+    "workspaceId": "ws-supplier-risk-scoring-engine",
+    "domain": "procurement",
+    "goal": "A-1601 • Supplier Risk",
+    "systems": [
+      "D&B",
+      "RapidRatings",
+      "Resilinc",
+      "Moody's",
+      "BitSight",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "supplier-scorecard-generator",
+    "name": "Supplier Scorecard Generator",
+    "title": "Supplier Scorecard Generator",
+    "useCaseId": "supplier-scorecard-generator",
+    "workspaceId": "ws-supplier-scorecard-generator",
+    "domain": "procurement",
+    "goal": "A-1701 • Supplier Performance",
+    "systems": [
+      "SAP S/4HANA QM/MM",
+      "Coupa",
+      "Supplier Portal",
+      "BigQuery",
+      "Looker"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "supply-chain-disruption-monitor",
+    "name": "Supply Chain Disruption Monitor",
+    "title": "Supply Chain Disruption Monitor",
+    "useCaseId": "supply-chain-disruption-monitor",
+    "workspaceId": "ws-supply-chain-disruption-monitor",
+    "domain": "procurement",
+    "goal": "A-1602 • Supplier Risk",
+    "systems": [
+      "Resilinc",
+      "Everstream",
+      "Google News API",
+      "Weather APIs",
+      "Maritime AIS",
+      "BigQuery"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "tail-spend-classifier-opportunity-finder",
+    "name": "Tail Spend Classifier & Opportunity Finder",
+    "title": "Tail Spend Classifier & Opportunity Finder",
+    "useCaseId": "tail-spend-classifier-opportunity-finder",
+    "workspaceId": "ws-tail-spend-classifier-opportunity-finder",
+    "domain": "procurement",
+    "goal": "A-1801 • Indirect & Tail Spend",
+    "systems": [
+      "BigQuery",
+      "SAP S/4HANA",
+      "Coupa",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "three-way-match-exception-handler",
+    "name": "Three-Way Match Exception Handler",
+    "title": "Three-Way Match Exception Handler",
+    "useCaseId": "three-way-match-exception-handler",
+    "workspaceId": "ws-three-way-match-exception-handler",
+    "domain": "procurement",
+    "goal": "A-1503 • Procure-to-Pay",
+    "systems": [
+      "SAP S/4HANA (MIRO/MIR7)",
+      "Coupa Pay",
+      "Basware",
+      "Kofax"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "total-cost-of-ownership-modeler",
+    "name": "Total Cost of Ownership Modeler",
+    "title": "Total Cost of Ownership Modeler",
+    "useCaseId": "total-cost-of-ownership-modeler",
+    "workspaceId": "ws-total-cost-of-ownership-modeler",
+    "domain": "procurement",
+    "goal": "A-1905 • Spend Analytics",
+    "systems": [
+      "SAP S/4HANA",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "travel-expense-compliance-agent",
+    "name": "Travel & Expense Compliance Agent",
+    "title": "Travel & Expense Compliance Agent",
+    "useCaseId": "travel-expense-compliance-agent",
+    "workspaceId": "ws-travel-expense-compliance-agent",
+    "domain": "procurement",
+    "goal": "A-1805 • Indirect & Tail Spend",
+    "systems": [
+      "SAP Concur",
+      "Egencia/Navan",
+      "P-card data",
+      "Policy docs"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  },
+  {
+    "id": "what-if-scenario-simulator",
+    "name": "What-If Scenario Simulator",
+    "title": "What-If Scenario Simulator",
+    "useCaseId": "what-if-scenario-simulator",
+    "workspaceId": "ws-what-if-scenario-simulator",
+    "domain": "procurement",
+    "goal": "A-1910 • Spend Analytics",
+    "systems": [
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "targetStage": "publish_enterprise",
+    "rows": "48"
+  }
+]

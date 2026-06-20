@@ -1,0 +1,542 @@
+[
+  {
+    "id": "ID-0001",
+    "cost_center": "cognatus celebrer contigo",
+    "period": "month",
+    "budget_amount": 4685420,
+    "actual_amount": 3322813,
+    "variance_pct": -38.9,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0002",
+    "cost_center": "dedecor pauci ducimus",
+    "period": "year",
+    "budget_amount": 2489848,
+    "actual_amount": 5952949,
+    "variance_pct": 70.29,
+    "scenario": "baseline"
+  },
+  {
+    "id": "ID-0003",
+    "cost_center": "via angelus totidem",
+    "period": "quarter",
+    "budget_amount": 4391092,
+    "actual_amount": 5208341,
+    "variance_pct": 61.19,
+    "scenario": "downside"
+  },
+  {
+    "id": "ID-0004",
+    "cost_center": "cogo aggero culpa",
+    "period": "month",
+    "budget_amount": 3477806,
+    "actual_amount": 2076598,
+    "variance_pct": 95.13,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0005",
+    "cost_center": "traho apparatus unus",
+    "period": "year",
+    "budget_amount": 2440439,
+    "actual_amount": 3637518,
+    "variance_pct": 52.96,
+    "scenario": "baseline"
+  },
+  {
+    "id": "ID-0006",
+    "cost_center": "desolo cubitum arca",
+    "period": "quarter",
+    "budget_amount": 350179,
+    "actual_amount": 154871,
+    "variance_pct": -72.97,
+    "scenario": "downside"
+  },
+  {
+    "id": "ID-0007",
+    "cost_center": "inflammatio vociferor damnatio",
+    "period": "month",
+    "budget_amount": 2535648,
+    "actual_amount": 2637070,
+    "variance_pct": -78.87,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0008",
+    "cost_center": "bibo quaerat sol",
+    "period": "month",
+    "budget_amount": 316134,
+    "actual_amount": 4684570,
+    "variance_pct": -8.04,
+    "scenario": "baseline"
+  },
+  {
+    "id": "ID-0009",
+    "cost_center": "vulgus adsuesco sub",
+    "period": "year",
+    "budget_amount": 1203508,
+    "actual_amount": 853496,
+    "variance_pct": -75.73,
+    "scenario": "baseline"
+  },
+  {
+    "id": "ID-0010",
+    "cost_center": "amaritudo stultus advenio",
+    "period": "quarter",
+    "budget_amount": 4983518,
+    "actual_amount": 4883822,
+    "variance_pct": 23.05,
+    "scenario": "baseline"
+  },
+  {
+    "id": "ID-0011",
+    "cost_center": "quia et cursim",
+    "period": "month",
+    "budget_amount": 4434155,
+    "actual_amount": 2698708,
+    "variance_pct": -61.08,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0012",
+    "cost_center": "cupio tres tabella",
+    "period": "year",
+    "budget_amount": 65046,
+    "actual_amount": 2496924,
+    "variance_pct": -3.73,
+    "scenario": "baseline"
+  },
+  {
+    "id": "ID-0013",
+    "cost_center": "caveo temporibus approbo",
+    "period": "quarter",
+    "budget_amount": 1083857,
+    "actual_amount": 72724,
+    "variance_pct": -51.76,
+    "scenario": "downside"
+  },
+  {
+    "id": "ID-0014",
+    "cost_center": "thesis vitiosus depopulo",
+    "period": "month",
+    "budget_amount": 2744318,
+    "actual_amount": 2726264,
+    "variance_pct": 68.87,
+    "scenario": "baseline"
+  },
+  {
+    "id": "ID-0015",
+    "cost_center": "depopulo architecto communis",
+    "period": "year",
+    "budget_amount": 2385330,
+    "actual_amount": 2255330,
+    "variance_pct": -21.11,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0016",
+    "cost_center": "territo vapulus vis",
+    "period": "year",
+    "budget_amount": 1583880,
+    "actual_amount": 4128808,
+    "variance_pct": -12.48,
+    "scenario": "baseline"
+  },
+  {
+    "id": "ID-0017",
+    "cost_center": "turba adficio venia",
+    "period": "quarter",
+    "budget_amount": 3189636,
+    "actual_amount": 3956124,
+    "variance_pct": 79.03,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0018",
+    "cost_center": "porro aeger eaque",
+    "period": "month",
+    "budget_amount": 3689795,
+    "actual_amount": 3073332,
+    "variance_pct": 36.05,
+    "scenario": "baseline"
+  },
+  {
+    "id": "ID-0019",
+    "cost_center": "ago sumptus aequus",
+    "period": "month",
+    "budget_amount": 70421,
+    "actual_amount": 5739009,
+    "variance_pct": 47.5,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0020",
+    "cost_center": "clibanus consectetur teres",
+    "period": "quarter",
+    "budget_amount": 934126,
+    "actual_amount": 1044656,
+    "variance_pct": -80.32,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0021",
+    "cost_center": "tendo celo accusator",
+    "period": "month",
+    "budget_amount": 4839622,
+    "actual_amount": 1772668,
+    "variance_pct": 53.85,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0022",
+    "cost_center": "creber basium animus",
+    "period": "quarter",
+    "budget_amount": 3875423,
+    "actual_amount": 3863426,
+    "variance_pct": 6.06,
+    "scenario": "baseline"
+  },
+  {
+    "id": "ID-0023",
+    "cost_center": "volo theologus clarus",
+    "period": "year",
+    "budget_amount": 3013389,
+    "actual_amount": 3494536,
+    "variance_pct": 49.62,
+    "scenario": "downside"
+  },
+  {
+    "id": "ID-0024",
+    "cost_center": "sollicito antiquus confero",
+    "period": "year",
+    "budget_amount": 1130832,
+    "actual_amount": 2233002,
+    "variance_pct": -13.59,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0025",
+    "cost_center": "placeat villa caput",
+    "period": "month",
+    "budget_amount": 995377,
+    "actual_amount": 5321550,
+    "variance_pct": 29.16,
+    "scenario": "baseline"
+  },
+  {
+    "id": "ID-0026",
+    "cost_center": "totam universe tyrannus",
+    "period": "year",
+    "budget_amount": 1268682,
+    "actual_amount": 4530252,
+    "variance_pct": -7.89,
+    "scenario": "downside"
+  },
+  {
+    "id": "ID-0027",
+    "cost_center": "suscipit tergeo sollicito",
+    "period": "month",
+    "budget_amount": 2729684,
+    "actual_amount": 5908019,
+    "variance_pct": 87.48,
+    "scenario": "baseline"
+  },
+  {
+    "id": "ID-0028",
+    "cost_center": "asper apostolus sursum",
+    "period": "year",
+    "budget_amount": 1075421,
+    "actual_amount": 3035116,
+    "variance_pct": 68.14,
+    "scenario": "downside"
+  },
+  {
+    "id": "ID-0029",
+    "cost_center": "id officia distinctio",
+    "period": "month",
+    "budget_amount": 2829460,
+    "actual_amount": 4133312,
+    "variance_pct": 74.67,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0030",
+    "cost_center": "temptatio artificiose deinde",
+    "period": "month",
+    "budget_amount": 1240927,
+    "actual_amount": 4358771,
+    "variance_pct": 98.37,
+    "scenario": "baseline"
+  },
+  {
+    "id": "ID-0031",
+    "cost_center": "cuius thesaurus barba",
+    "period": "quarter",
+    "budget_amount": 3668026,
+    "actual_amount": 3695913,
+    "variance_pct": -62.4,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0032",
+    "cost_center": "terreo iste abscido",
+    "period": "year",
+    "budget_amount": 186203,
+    "actual_amount": 4474403,
+    "variance_pct": -59.51,
+    "scenario": "downside"
+  },
+  {
+    "id": "ID-0033",
+    "cost_center": "corona compello arcesso",
+    "period": "month",
+    "budget_amount": 4384488,
+    "actual_amount": 5978007,
+    "variance_pct": -26.34,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0034",
+    "cost_center": "suppono valde optio",
+    "period": "quarter",
+    "budget_amount": 2068983,
+    "actual_amount": 4173709,
+    "variance_pct": -99.36,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0035",
+    "cost_center": "constans thalassinus aliquam",
+    "period": "quarter",
+    "budget_amount": 2410055,
+    "actual_amount": 3853953,
+    "variance_pct": -87.03,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0036",
+    "cost_center": "laudantium laudantium pax",
+    "period": "year",
+    "budget_amount": 4026895,
+    "actual_amount": 1618924,
+    "variance_pct": 65.01,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0037",
+    "cost_center": "aestus adsum concido",
+    "period": "year",
+    "budget_amount": 3541328,
+    "actual_amount": 4731690,
+    "variance_pct": 3.45,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0038",
+    "cost_center": "arceo complectus damno",
+    "period": "month",
+    "budget_amount": 1110853,
+    "actual_amount": 3589352,
+    "variance_pct": 47.13,
+    "scenario": "downside"
+  },
+  {
+    "id": "ID-0039",
+    "cost_center": "victoria sapiente curiositas",
+    "period": "quarter",
+    "budget_amount": 3930402,
+    "actual_amount": 710017,
+    "variance_pct": -18.02,
+    "scenario": "downside"
+  },
+  {
+    "id": "ID-0040",
+    "cost_center": "credo mollitia odio",
+    "period": "month",
+    "budget_amount": 1817555,
+    "actual_amount": 2007068,
+    "variance_pct": -94.77,
+    "scenario": "baseline"
+  },
+  {
+    "id": "ID-0041",
+    "cost_center": "tripudio certe eaque",
+    "period": "month",
+    "budget_amount": 4703990,
+    "actual_amount": 1555780,
+    "variance_pct": -14.07,
+    "scenario": "downside"
+  },
+  {
+    "id": "ID-0042",
+    "cost_center": "turbo audax thorax",
+    "period": "quarter",
+    "budget_amount": 2420015,
+    "actual_amount": 800879,
+    "variance_pct": -83.88,
+    "scenario": "downside"
+  },
+  {
+    "id": "ID-0043",
+    "cost_center": "derelinquo debilito suspendo",
+    "period": "year",
+    "budget_amount": 802951,
+    "actual_amount": 3661351,
+    "variance_pct": -72.93,
+    "scenario": "downside"
+  },
+  {
+    "id": "ID-0044",
+    "cost_center": "solum viscus aegrotatio",
+    "period": "month",
+    "budget_amount": 1418113,
+    "actual_amount": 1570234,
+    "variance_pct": -50.61,
+    "scenario": "downside"
+  },
+  {
+    "id": "ID-0045",
+    "cost_center": "carus cernuus tempore",
+    "period": "quarter",
+    "budget_amount": 3885786,
+    "actual_amount": 392197,
+    "variance_pct": -2.49,
+    "scenario": "baseline"
+  },
+  {
+    "id": "ID-0046",
+    "cost_center": "advenio ventus apud",
+    "period": "quarter",
+    "budget_amount": 2061367,
+    "actual_amount": 2084060,
+    "variance_pct": 79.97,
+    "scenario": "baseline"
+  },
+  {
+    "id": "ID-0047",
+    "cost_center": "sonitus vix laborum",
+    "period": "year",
+    "budget_amount": 270766,
+    "actual_amount": 2512760,
+    "variance_pct": -47.97,
+    "scenario": "downside"
+  },
+  {
+    "id": "ID-0048",
+    "cost_center": "vomica cauda solium",
+    "period": "month",
+    "budget_amount": 2830998,
+    "actual_amount": 2783595,
+    "variance_pct": 94.41,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0049",
+    "cost_center": "consectetur amplitudo argentum",
+    "period": "month",
+    "budget_amount": 1262323,
+    "actual_amount": 5103697,
+    "variance_pct": 12.25,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0050",
+    "cost_center": "amplus undique supra",
+    "period": "month",
+    "budget_amount": 3542097,
+    "actual_amount": 3261229,
+    "variance_pct": -83.66,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0051",
+    "cost_center": "deorsum asperiores vinculum",
+    "period": "year",
+    "budget_amount": 3348422,
+    "actual_amount": 2773773,
+    "variance_pct": -17.65,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0052",
+    "cost_center": "impedit advenio doloremque",
+    "period": "year",
+    "budget_amount": 2301607,
+    "actual_amount": 311739,
+    "variance_pct": 57.26,
+    "scenario": "baseline"
+  },
+  {
+    "id": "ID-0053",
+    "cost_center": "caute asper comprehendo",
+    "period": "year",
+    "budget_amount": 2601735,
+    "actual_amount": 1229287,
+    "variance_pct": 75.57,
+    "scenario": "downside"
+  },
+  {
+    "id": "ID-0054",
+    "cost_center": "usus capitulus defendo",
+    "period": "year",
+    "budget_amount": 3862343,
+    "actual_amount": 163004,
+    "variance_pct": -86.96,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0055",
+    "cost_center": "verbera fugit deripio",
+    "period": "month",
+    "budget_amount": 3287333,
+    "actual_amount": 4932619,
+    "variance_pct": -23.92,
+    "scenario": "downside"
+  },
+  {
+    "id": "ID-0056",
+    "cost_center": "vobis barba eos",
+    "period": "month",
+    "budget_amount": 3966344,
+    "actual_amount": 3465560,
+    "variance_pct": 26.92,
+    "scenario": "downside"
+  },
+  {
+    "id": "ID-0057",
+    "cost_center": "crustulum veritas expedita",
+    "period": "month",
+    "budget_amount": 3482537,
+    "actual_amount": 4759568,
+    "variance_pct": -36.65,
+    "scenario": "downside"
+  },
+  {
+    "id": "ID-0058",
+    "cost_center": "ventus charisma vorago",
+    "period": "month",
+    "budget_amount": 1018058,
+    "actual_amount": 1105349,
+    "variance_pct": 78.8,
+    "scenario": "stretch"
+  },
+  {
+    "id": "ID-0059",
+    "cost_center": "argentum decerno possimus",
+    "period": "month",
+    "budget_amount": 4413258,
+    "actual_amount": 4821622,
+    "variance_pct": 1.04,
+    "scenario": "downside"
+  },
+  {
+    "id": "ID-0060",
+    "cost_center": "cura vorax sordeo",
+    "period": "quarter",
+    "budget_amount": 838115,
+    "actual_amount": 5291567,
+    "variance_pct": -14.5,
+    "scenario": "baseline"
+  }
+]

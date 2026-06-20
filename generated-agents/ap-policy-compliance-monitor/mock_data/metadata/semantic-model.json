@@ -1,0 +1,978 @@
+{
+  "id": "ap_policy_compliance_monitor_semantic_model",
+  "generatedAt": "2026-06-11T08:59:44.277Z",
+  "dataset": "agent_ap_policy_compliance_monitor",
+  "primaryObjective": "100% of AP transactions scanned weekly against policy rules — no sampling gaps. Gemini detects split-purchasing patterns by analyzing same-vendor, same-day, below-threshold purchases. so the AP Manager can move the Violation detection rate KPI.",
+  "tables": [
+    {
+      "name": "gl_entries",
+      "sourceSystem": "SAP S/4HANA FI",
+      "description": "gl_entries, subledger_balances, open_items",
+      "grain": "one row per gl entrie",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "posting_date",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "account",
+          "type": "string",
+          "description": "Account number / GL account.",
+          "synonyms": [
+            "account",
+            "gl account"
+          ]
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "description": "Currency code (ISO 4217)."
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Human-readable label."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "subledger_balances",
+      "sourceSystem": "SAP S/4HANA FI",
+      "description": "gl_entries, subledger_balances, open_items",
+      "grain": "one row per subledger balance",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "posting_date",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "account",
+          "type": "string",
+          "description": "Account number / GL account.",
+          "synonyms": [
+            "account",
+            "gl account"
+          ]
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "description": "Currency code (ISO 4217)."
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Human-readable label."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "open_items",
+      "sourceSystem": "SAP S/4HANA FI",
+      "description": "gl_entries, subledger_balances, open_items",
+      "grain": "one row per open item",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "posting_date",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "account",
+          "type": "string",
+          "description": "Account number / GL account.",
+          "synonyms": [
+            "account",
+            "gl account"
+          ]
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "description": "Currency code (ISO 4217)."
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Human-readable label."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "requisitions",
+      "sourceSystem": "Coupa",
+      "description": "requisitions, purchase_orders, invoices",
+      "grain": "one row per requisition",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "source_record_id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ]
+        },
+        {
+          "name": "vendor",
+          "type": "string",
+          "description": "vendor (string)."
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "description": "Currency code (ISO 4217)."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "due_date",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "purchase_orders",
+      "sourceSystem": "Coupa",
+      "description": "requisitions, purchase_orders, invoices",
+      "grain": "one row per purchase order",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "source_record_id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ]
+        },
+        {
+          "name": "vendor",
+          "type": "string",
+          "description": "vendor (string)."
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "description": "Currency code (ISO 4217)."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "due_date",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "invoices",
+      "sourceSystem": "Coupa",
+      "description": "requisitions, purchase_orders, invoices",
+      "grain": "one row per invoice",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "source_record_id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ]
+        },
+        {
+          "name": "vendor",
+          "type": "string",
+          "description": "vendor (string)."
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "description": "Currency code (ISO 4217)."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "due_date",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "analytics_events",
+      "sourceSystem": "BigQuery",
+      "description": "analytics_events, historical_metrics, cached_aggregates",
+      "grain": "one row per analytics event",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "period",
+          "type": "string",
+          "description": "period (string)."
+        },
+        {
+          "name": "metric_name",
+          "type": "string",
+          "description": "Human-readable label."
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "variance_pct",
+          "type": "number",
+          "description": "variance pct (number)."
+        },
+        {
+          "name": "computed_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "historical_metric_id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "historical_metrics",
+      "sourceSystem": "BigQuery",
+      "description": "analytics_events, historical_metrics, cached_aggregates",
+      "grain": "one row per historical metric",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "period",
+          "type": "string",
+          "description": "period (string)."
+        },
+        {
+          "name": "metric_name",
+          "type": "string",
+          "description": "Human-readable label."
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "variance_pct",
+          "type": "number",
+          "description": "variance pct (number)."
+        },
+        {
+          "name": "computed_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cached_aggregates",
+      "sourceSystem": "BigQuery",
+      "description": "analytics_events, historical_metrics, cached_aggregates",
+      "grain": "one row per cached aggregate",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "period",
+          "type": "string",
+          "description": "period (string)."
+        },
+        {
+          "name": "metric_name",
+          "type": "string",
+          "description": "Human-readable label."
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "variance_pct",
+          "type": "number",
+          "description": "variance pct (number)."
+        },
+        {
+          "name": "computed_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        }
+      ]
+    }
+  ],
+  "joins": [
+    {
+      "left": "gl_entries.account",
+      "right": "subledger_balances.account",
+      "on": "account",
+      "type": "many-to-one"
+    },
+    {
+      "left": "subledger_balances.account",
+      "right": "open_items.account",
+      "on": "account",
+      "type": "many-to-one"
+    },
+    {
+      "left": "requisitions.source_record_id",
+      "right": "purchase_orders.source_record_id",
+      "on": "source_record_id",
+      "type": "many-to-one"
+    },
+    {
+      "left": "purchase_orders.source_record_id",
+      "right": "invoices.source_record_id",
+      "on": "source_record_id",
+      "type": "many-to-one"
+    }
+  ],
+  "measures": [],
+  "glossary": [
+    {
+      "term": "SAP S/4HANA FI",
+      "definition": "Source system: SAP S/4HANA FI.",
+      "maps_to": [
+        "gl_entries",
+        "subledger_balances",
+        "open_items"
+      ]
+    },
+    {
+      "term": "Coupa",
+      "definition": "Source system: Coupa.",
+      "maps_to": [
+        "requisitions",
+        "purchase_orders",
+        "invoices"
+      ]
+    },
+    {
+      "term": "BigQuery",
+      "definition": "Source system: BigQuery.",
+      "maps_to": [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates"
+      ]
+    }
+  ],
+  "bigquery": {
+    "tables": [
+      {
+        "table": "gl_entries",
+        "description": "gl_entries, subledger_balances, open_items",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "posting_date",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "account",
+            "description": "Account number / GL account."
+          },
+          {
+            "name": "amount",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "currency",
+            "description": "Currency code (ISO 4217)."
+          },
+          {
+            "name": "description",
+            "description": "Human-readable label."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          }
+        ]
+      },
+      {
+        "table": "subledger_balances",
+        "description": "gl_entries, subledger_balances, open_items",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "posting_date",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "account",
+            "description": "Account number / GL account."
+          },
+          {
+            "name": "amount",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "currency",
+            "description": "Currency code (ISO 4217)."
+          },
+          {
+            "name": "description",
+            "description": "Human-readable label."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          }
+        ]
+      },
+      {
+        "table": "open_items",
+        "description": "gl_entries, subledger_balances, open_items",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "posting_date",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "account",
+            "description": "Account number / GL account."
+          },
+          {
+            "name": "amount",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "currency",
+            "description": "Currency code (ISO 4217)."
+          },
+          {
+            "name": "description",
+            "description": "Human-readable label."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          }
+        ]
+      },
+      {
+        "table": "requisitions",
+        "description": "requisitions, purchase_orders, invoices",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "source_record_id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "vendor",
+            "description": "vendor (string)."
+          },
+          {
+            "name": "amount",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "currency",
+            "description": "Currency code (ISO 4217)."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "due_date",
+            "description": "Date/timestamp."
+          }
+        ]
+      },
+      {
+        "table": "purchase_orders",
+        "description": "requisitions, purchase_orders, invoices",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "source_record_id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "vendor",
+            "description": "vendor (string)."
+          },
+          {
+            "name": "amount",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "currency",
+            "description": "Currency code (ISO 4217)."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "due_date",
+            "description": "Date/timestamp."
+          }
+        ]
+      },
+      {
+        "table": "invoices",
+        "description": "requisitions, purchase_orders, invoices",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "source_record_id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "vendor",
+            "description": "vendor (string)."
+          },
+          {
+            "name": "amount",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "currency",
+            "description": "Currency code (ISO 4217)."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "due_date",
+            "description": "Date/timestamp."
+          }
+        ]
+      },
+      {
+        "table": "analytics_events",
+        "description": "analytics_events, historical_metrics, cached_aggregates",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "period",
+            "description": "period (string)."
+          },
+          {
+            "name": "metric_name",
+            "description": "Human-readable label."
+          },
+          {
+            "name": "value",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "variance_pct",
+            "description": "variance pct (number)."
+          },
+          {
+            "name": "computed_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "historical_metric_id",
+            "description": "Unique identifier."
+          }
+        ]
+      },
+      {
+        "table": "historical_metrics",
+        "description": "analytics_events, historical_metrics, cached_aggregates",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "period",
+            "description": "period (string)."
+          },
+          {
+            "name": "metric_name",
+            "description": "Human-readable label."
+          },
+          {
+            "name": "value",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "variance_pct",
+            "description": "variance pct (number)."
+          },
+          {
+            "name": "computed_at",
+            "description": "Date/timestamp."
+          }
+        ]
+      },
+      {
+        "table": "cached_aggregates",
+        "description": "analytics_events, historical_metrics, cached_aggregates",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "period",
+            "description": "period (string)."
+          },
+          {
+            "name": "metric_name",
+            "description": "Human-readable label."
+          },
+          {
+            "name": "value",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "variance_pct",
+            "description": "variance pct (number)."
+          },
+          {
+            "name": "computed_at",
+            "description": "Date/timestamp."
+          }
+        ]
+      }
+    ]
+  }
+}
