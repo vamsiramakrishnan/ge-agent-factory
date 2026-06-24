@@ -1,0 +1,12 @@
+bucket: "${GOOGLE_CLOUD_PROJECT}-ge-mock-data"
+prefix: "ge-mock/<workspace>/documents"
+objects:
+  - id: DOC-001
+    path: documents/DOC-001.md
+    mime_type: text/markdown
+    source_system: "<system>"
+    linked_entities: []
+    citation_anchors: []
+manifest:
+  ndjson: documents_manifest.ndjson
+  bigquery_table: documents_manifest

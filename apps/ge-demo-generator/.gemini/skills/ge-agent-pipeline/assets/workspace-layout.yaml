@@ -1,0 +1,19 @@
+workspace:
+  required:
+    - workspace.json
+    - mock_systems/pipeline.json
+    - mock_systems/schema.json
+    - fixtures/manifest.json
+    - app/agent.py
+    - app/tools.py
+    - tests/test_smoke.py
+  optional:
+    - mock_data/plan/data-plan.yaml
+    - mock_data/snowfakery/structured.recipe.yml
+    - artifacts/validation-report.json
+    - artifacts/preview-report.json
+    - artifacts/deploy-plan.json
+    - artifacts/publish-plan.json
+  agent_folders:
+    root_agent: "."
+    additional_agents: "agents/<agent-slug>/"

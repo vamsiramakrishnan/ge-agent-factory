@@ -1,0 +1,64 @@
+{
+  "id": "pagerduty_workflows",
+  "version": 2,
+  "primitives": [
+    "role_permission_gate",
+    "state_machine_update",
+    "approval_blocker",
+    "audit_trail",
+    "failure_injection",
+    "idempotency",
+    "rate_limit"
+  ],
+  "toolHandlers": {
+    "submit_incident_update": {
+      "primitive": "state_machine_update",
+      "collection": "incidents",
+      "primaryKey": "incident_id",
+      "roleArg": "role",
+      "allowedRoles": [
+        "responder",
+        "incident_commander",
+        "manager"
+      ],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "transitions": {
+        "*": [
+          "triggered",
+          "acknowledged",
+          "resolved"
+        ],
+        "triggered": [
+          "acknowledged",
+          "resolved"
+        ],
+        "acknowledged": [
+          "resolved",
+          "triggered"
+        ],
+        "resolved": [
+          "triggered"
+        ]
+      },
+      "rateLimit": {
+        "capacity": 8,
+        "refillPerSecond": 0.25,
+        "key": "agent:system"
+      },
+      "latency": {
+        "distribution": "uniform",
+        "min_ms": 25,
+        "max_ms": 90
+      },
+      "failureModes": {
+        "permission_denied": 0.08,
+        "validation_error": 0.07,
+        "rate_limited": 0.05,
+        "conflict": 0.03,
+        "timeout": 0.02
+      }
+    }
+  }
+}

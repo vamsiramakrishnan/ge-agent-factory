@@ -1,0 +1,89 @@
+id: benefits-test
+domain: hr
+systems:
+  - id: benefits-platform
+    type: api
+  - id: carrier-reports
+    type: data
+entities:
+  - name: enrollments
+    rows: 25
+    columns:
+      - name: enrollment_id
+        type: seq
+        pattern: "BEN-{seq:4}"
+      - name: employee_id
+        type: ref
+        ref: employees.id
+      - name: plan_name
+        type: enum
+        values: [PPO Gold, PPO Silver, HMO Basic, HDHP]
+        weights: [0.3, 0.3, 0.25, 0.15]
+      - name: monthly_premium
+        type: number
+        min: 200
+        max: 1800
+      - name: enrollment_date
+        type: date
+        min: "2024-01-01"
+        max: "2026-05-01"
+      - name: status
+        type: enum
+        values: [active, canceled, pending]
+        weights: [0.7, 0.15, 0.15]
+      - name: dependents
+        type: number
+        min: 0
+        max: 5
+  - name: employees
+    rows: 30
+    columns:
+      - name: id
+        type: seq
+        pattern: "EMP-{seq:4}"
+      - name: name
+        type: string
+      - name: email
+        type: email
+        from: name
+      - name: department
+        type: enum
+        values: [HR, Finance, IT, Marketing, Operations]
+      - name: region
+        type: enum
+        values: [North, South, East, West]
+      - name: salary
+        type: number
+        min: 55000
+        max: 180000
+  - name: carrier_reports
+    rows: 12
+    columns:
+      - name: report_id
+        type: seq
+        pattern: "CR-{seq:3}"
+      - name: carrier
+        type: enum
+        values: [Aetna, Cigna, UnitedHealth, Kaiser]
+      - name: month
+        type: date
+        min: "2025-01-01"
+        max: "2025-12-31"
+      - name: utilization_rate
+        type: number
+        min: 0.15
+        max: 0.92
+        decimals: 2
+      - name: total_claims
+        type: number
+        min: 50000
+        max: 500000
+      - name: avg_cost_per_claim
+        type: number
+        min: 200
+        max: 3500
+anomalies:
+  - id: underutilized-hdhp
+    description: HDHP plan has 60% lower utilization than PPO plans but 20% higher per-claim cost
+    evidence: enrollments,carrier_reports
+    expectedDiscoveryPath: query enrollments by plan,cross-reference carrier utilization,compare cost ratios

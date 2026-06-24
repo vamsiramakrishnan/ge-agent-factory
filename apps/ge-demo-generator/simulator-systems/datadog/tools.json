@@ -1,0 +1,407 @@
+{
+  "id": "datadog_tools",
+  "version": 2,
+  "tools": [
+    {
+      "name": "search_services",
+      "description": "Search Datadog service-catalog entries by text, status, team, tier, environment, and ownership.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "q": { "type": "string" },
+          "query": { "type": "string" },
+          "filter": { "type": "string" },
+          "status": { "type": "string" },
+          "team": { "type": "string" },
+          "tier": { "type": "string" },
+          "env": { "type": "string" },
+          "environment": { "type": "string" },
+          "include": { "type": "string" },
+          "fields": { "type": "string" },
+          "page_size": { "type": "integer" },
+          "per_page": { "type": "integer" },
+          "limit": { "type": "integer" },
+          "cursor": { "type": "string" },
+          "page_token": { "type": "string" },
+          "offset": { "type": "integer" },
+          "page": { "type": "integer" },
+          "sort": { "type": "string" },
+          "order": { "type": "string" }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "services",
+        "query": {
+          "textFields": ["name", "owner", "team", "environment", "repository"],
+          "filters": {
+            "filter": { "field": "name", "op": "contains" },
+            "status": { "field": "status", "op": "eq_ci" },
+            "team": { "field": "team", "op": "eq_ci" },
+            "tier": { "field": "tier", "op": "eq_ci" },
+            "env": { "field": "environment", "op": "eq_ci" },
+            "environment": { "field": "environment", "op": "eq_ci" }
+          },
+          "defaultSort": [{ "field": "name", "direction": "asc" }],
+          "pagination": { "defaultLimit": 25, "maxLimit": 100 }
+        }
+      }
+    },
+    {
+      "name": "get_service",
+      "description": "Get one Datadog service, optionally including monitors, incidents, and SLOs.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "service_id": { "type": "string" },
+          "include": { "type": "string" },
+          "includes": { "type": "array", "items": { "type": "string" } },
+          "include_monitors": { "type": "boolean" },
+          "include_incidents": { "type": "boolean" },
+          "include_slos": { "type": "boolean" }
+        },
+        "required": ["service_id"]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "services",
+        "primaryKey": "service_id"
+      }
+    },
+    {
+      "name": "search_monitors",
+      "description": "Search Datadog monitors by service, status, severity, type, query text, and tags.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "q": { "type": "string" },
+          "query": { "type": "string" },
+          "filter": { "type": "string" },
+          "service_id": { "type": "string" },
+          "status": { "type": "string" },
+          "severity": { "type": "string" },
+          "type": { "type": "string" },
+          "include": { "type": "string" },
+          "page_size": { "type": "integer" },
+          "limit": { "type": "integer" },
+          "cursor": { "type": "string" },
+          "offset": { "type": "integer" },
+          "sort": { "type": "string" },
+          "order": { "type": "string" }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "monitors",
+        "query": {
+          "textFields": ["name", "query", "type", "severity"],
+          "filters": {
+            "filter": { "field": "query", "op": "contains" },
+            "service_id": { "field": "service_id", "op": "eq" },
+            "status": { "field": "status", "op": "eq_ci" },
+            "severity": { "field": "severity", "op": "eq_ci" },
+            "type": { "field": "type", "op": "eq_ci" }
+          },
+          "defaultSort": [{ "field": "severity", "direction": "asc" }],
+          "pagination": { "defaultLimit": 25, "maxLimit": 100 }
+        }
+      }
+    },
+    {
+      "name": "get_monitor",
+      "description": "Get one Datadog monitor, optionally including its service and recent alerts.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "monitor_id": { "type": "string" },
+          "include": { "type": "string" },
+          "includes": { "type": "array", "items": { "type": "string" } },
+          "include_service": { "type": "boolean" },
+          "include_alerts": { "type": "boolean" }
+        },
+        "required": ["monitor_id"]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "monitors",
+        "primaryKey": "monitor_id"
+      }
+    },
+    {
+      "name": "search_alerts",
+      "description": "Search triggered/recovered Datadog alerts by monitor, service, state, severity, and scope.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "q": { "type": "string" },
+          "query": { "type": "string" },
+          "monitor_id": { "type": "string" },
+          "service_id": { "type": "string" },
+          "state": { "type": "string" },
+          "severity": { "type": "string" },
+          "scope": { "type": "string" },
+          "triggered_after": { "type": "string" },
+          "page_size": { "type": "integer" },
+          "limit": { "type": "integer" },
+          "cursor": { "type": "string" },
+          "sort": { "type": "string" },
+          "order": { "type": "string" }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "alerts",
+        "query": {
+          "textFields": ["summary", "scope", "correlation_key"],
+          "filters": {
+            "monitor_id": { "field": "monitor_id", "op": "eq" },
+            "service_id": { "field": "service_id", "op": "eq" },
+            "state": { "field": "state", "op": "eq_ci" },
+            "severity": { "field": "severity", "op": "eq_ci" },
+            "scope": { "field": "scope", "op": "contains" },
+            "triggered_after": { "field": "triggered_at", "op": "gte" }
+          },
+          "defaultSort": [{ "field": "triggered_at", "direction": "desc" }],
+          "pagination": { "defaultLimit": 25, "maxLimit": 100 }
+        }
+      }
+    },
+    {
+      "name": "search_incidents",
+      "description": "Search Datadog incidents by service, status, severity, commander, and impact.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "q": { "type": "string" },
+          "query": { "type": "string" },
+          "service_id": { "type": "string" },
+          "status": { "type": "string" },
+          "severity": { "type": "string" },
+          "commander": { "type": "string" },
+          "customer_impact": { "type": "boolean" },
+          "page_size": { "type": "integer" },
+          "limit": { "type": "integer" },
+          "cursor": { "type": "string" },
+          "sort": { "type": "string" },
+          "order": { "type": "string" }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "incidents",
+        "query": {
+          "textFields": ["title", "commander", "status", "severity"],
+          "filters": {
+            "service_id": { "field": "service_id", "op": "eq" },
+            "status": { "field": "status", "op": "eq_ci" },
+            "severity": { "field": "severity", "op": "eq_ci" },
+            "commander": { "field": "commander", "op": "contains" },
+            "customer_impact": { "field": "customer_impact", "op": "eq" }
+          },
+          "defaultSort": [{ "field": "started_at", "direction": "desc" }],
+          "pagination": { "defaultLimit": 25, "maxLimit": 100 }
+        }
+      }
+    },
+    {
+      "name": "get_incident",
+      "description": "Get one Datadog incident, optionally including the affected service.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "incident_id": { "type": "string" },
+          "include": { "type": "string" },
+          "includes": { "type": "array", "items": { "type": "string" } },
+          "include_service": { "type": "boolean" }
+        },
+        "required": ["incident_id"]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "incidents",
+        "primaryKey": "incident_id"
+      }
+    },
+    {
+      "name": "search_slos",
+      "description": "Search Datadog SLOs by service, status, window, and burn-rate thresholds.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "q": { "type": "string" },
+          "query": { "type": "string" },
+          "service_id": { "type": "string" },
+          "status": { "type": "string" },
+          "window": { "type": "string" },
+          "burn_rate_gte": { "type": "number" },
+          "page_size": { "type": "integer" },
+          "limit": { "type": "integer" },
+          "cursor": { "type": "string" },
+          "sort": { "type": "string" },
+          "order": { "type": "string" }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "slos",
+        "query": {
+          "textFields": ["name", "window", "status"],
+          "filters": {
+            "service_id": { "field": "service_id", "op": "eq" },
+            "status": { "field": "status", "op": "eq_ci" },
+            "window": { "field": "window", "op": "eq_ci" },
+            "burn_rate_gte": { "field": "burn_rate", "op": "gte" }
+          },
+          "defaultSort": [{ "field": "burn_rate", "direction": "desc" }],
+          "pagination": { "defaultLimit": 25, "maxLimit": 100 }
+        }
+      }
+    },
+    {
+      "name": "search_api_keys",
+      "description": "Search Datadog API/application keys by owner, category, status, and name.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "q": { "type": "string" },
+          "query": { "type": "string" },
+          "filter": { "type": "string" },
+          "status": { "type": "string" },
+          "category": { "type": "string" },
+          "owner": { "type": "string" },
+          "page_size": { "type": "integer" },
+          "limit": { "type": "integer" },
+          "cursor": { "type": "string" },
+          "sort": { "type": "string" },
+          "order": { "type": "string" }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "api_keys",
+        "query": {
+          "textFields": ["name", "owner", "category", "last4"],
+          "filters": {
+            "filter": { "field": "name", "op": "contains" },
+            "status": { "field": "status", "op": "eq_ci" },
+            "category": { "field": "category", "op": "eq_ci" },
+            "owner": { "field": "owner", "op": "contains" }
+          },
+          "defaultSort": [{ "field": "modified_at", "direction": "desc" }],
+          "pagination": { "defaultLimit": 25, "maxLimit": 100 }
+        }
+      }
+    },
+    {
+      "name": "submit_service_update",
+      "description": "Update a Datadog service status with role gates, idempotency, rate limits, and conflict/error simulation.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "service_id": { "type": "string" },
+          "status": { "type": "string" },
+          "note": { "type": "string" },
+          "role": { "type": "string" },
+          "idempotency_key": { "type": "string" },
+          "seed": { "type": "integer" }
+        },
+        "required": ["service_id"]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "services",
+        "primaryKey": "service_id"
+      }
+    },
+    {
+      "name": "submit_monitor_update",
+      "description": "Update a Datadog monitor lifecycle state, including mute/unmute and alert-state transitions.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "monitor_id": { "type": "string" },
+          "status": { "type": "string" },
+          "note": { "type": "string" },
+          "role": { "type": "string" },
+          "idempotency_key": { "type": "string" },
+          "seed": { "type": "integer" }
+        },
+        "required": ["monitor_id"]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "monitors",
+        "primaryKey": "monitor_id"
+      }
+    },
+    {
+      "name": "submit_incident_update",
+      "description": "Update a Datadog incident lifecycle state with incident-commander role gates and conflict simulation.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "incident_id": { "type": "string" },
+          "status": { "type": "string" },
+          "note": { "type": "string" },
+          "role": { "type": "string" },
+          "idempotency_key": { "type": "string" },
+          "seed": { "type": "integer" }
+        },
+        "required": ["incident_id"]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "incidents",
+        "primaryKey": "incident_id"
+      }
+    },
+    {
+      "name": "run_monitor_check",
+      "description": "Queue an asynchronous Datadog monitor run/check and poll it with poll_async_job.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "monitor_id": { "type": "string" },
+          "status": { "type": "string" },
+          "note": { "type": "string" },
+          "role": { "type": "string" },
+          "idempotency_key": { "type": "string" },
+          "seed": { "type": "integer" }
+        },
+        "required": ["monitor_id"]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "monitors",
+        "primaryKey": "monitor_id"
+      }
+    },
+    {
+      "name": "poll_async_job",
+      "description": "Poll a queued Datadog async job such as a monitor run or bulk operation.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "job_id": { "type": "string" }
+        },
+        "required": ["job_id"]
+      },
+      "binding": {
+        "op": "poll_async_job"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List Datadog simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": { "type": "integer" }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

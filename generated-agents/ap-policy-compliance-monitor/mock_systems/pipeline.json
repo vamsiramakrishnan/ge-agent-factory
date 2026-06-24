@@ -1,0 +1,73 @@
+{
+  "name": "ap_policy_compliance_monitor",
+  "domain": "finance",
+  "createdAt": "2026-06-11T08:59:44.394Z",
+  "steps": {
+    "init": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:44.394Z",
+      "name": "ap_policy_compliance_monitor",
+      "domain": "finance"
+    },
+    "schema": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:44.402Z",
+      "tables": 9,
+      "derived": true
+    },
+    "generate": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:44.448Z",
+      "tables": 9,
+      "totalRows": 540,
+      "seed": 42
+    },
+    "tools": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:44.458Z",
+      "output": "/tmp/regen2/ap-policy-compliance-monitor/app/tools.py",
+      "functions": 11,
+      "behaviorContract": "present",
+      "contractTools": 1,
+      "goldenEvals": 1,
+      "agentsCliEvalSet": "/tmp/regen2/ap-policy-compliance-monitor/tests/eval/evalsets/ge_behavior_contract.evalset.json"
+    },
+    "test": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:48.606Z",
+      "output": "/tmp/regen2/ap-policy-compliance-monitor/tests/test_smoke.py",
+      "ran": true,
+      "passed": true,
+      "exitCode": 0
+    }
+  },
+  "currentStep": "test",
+  "useCase": {
+    "id": "ap-policy-compliance-monitor",
+    "title": "AP Policy Compliance Monitor",
+    "department": "finance",
+    "systems": [
+      "SAP S/4HANA FI",
+      "Coupa",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "kpis": [
+      {
+        "label": "Violation detection rate",
+        "before": "30% (sample-based)",
+        "after": "100% (all transactions)"
+      },
+      {
+        "label": "Split-purchase detection",
+        "before": "Rarely caught",
+        "after": "Pattern-detected"
+      },
+      {
+        "label": "Policy compliance rate",
+        "before": "Unknown",
+        "after": "Scored by department"
+      }
+    ]
+  }
+}

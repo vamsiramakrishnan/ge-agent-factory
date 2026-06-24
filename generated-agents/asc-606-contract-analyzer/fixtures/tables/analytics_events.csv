@@ -1,0 +1,61 @@
+id,period,metric_name,value,variance_pct,computed_at,historical_metric_id
+ID-0001,week,close_cycle_days,101.88,-15.1,2026-05-25,ID-0001
+ID-0002,month,auto_certified_accounts,128.23,-6.4,2026-05-26,ID-0002
+ID-0003,quarter,reconciliation_exception_rate,158.16,2.7,2026-05-27,ID-0003
+ID-0004,week,working_capital_forecast_accuracy,190.32,11.3,2026-05-28,ID-0004
+ID-0005,month,demens calcar aspernatur,159.61,-15.1,2026-05-29,ID-0005
+ID-0006,quarter,deorsum atrox vallum,191.88,-6.4,2026-05-30,ID-0006
+ID-0007,week,alo suppellex cilicium,227.99,2.7,2026-05-25,ID-0007
+ID-0008,month,appono delibero pecto,266.01,11.3,2026-05-26,ID-0008
+ID-0009,quarter,tempus varietas damnatio,217.34,-15.1,2026-05-27,ID-0009
+ID-0010,week,varius condico possimus,255.53,-6.4,2026-05-28,ID-0010
+ID-0011,month,cibo vitae aranea,297.83,2.7,2026-05-29,ID-0011
+ID-0012,quarter,vulticulus adopto nesciunt,341.69,11.3,2026-05-30,ID-0012
+ID-0013,week,caute comes aiunt,275.08,-15.1,2026-05-25,ID-0013
+ID-0014,month,molestias verbera absconditus,319.18,-6.4,2026-05-26,ID-0014
+ID-0015,quarter,vitium fugiat accedo,367.67,2.7,2026-05-27,ID-0015
+ID-0016,week,vulnero civis fugiat,417.38,11.3,2026-05-28,ID-0016
+ID-0017,month,ultio deripio pax,332.81,-15.1,2026-05-29,ID-0017
+ID-0018,quarter,vulariter perferendis correptius,382.82,-6.4,2026-05-30,ID-0018
+ID-0019,week,custodia terminatio denuo,437.5,2.7,2026-05-25,ID-0019
+ID-0020,month,capitulus caelestis desparatus,493.06,11.3,2026-05-26,ID-0020
+ID-0021,quarter,decumbo volaticus molestias,390.54,-15.1,2026-05-27,ID-0021
+ID-0022,week,nostrum supellex corrigo,446.47,-6.4,2026-05-28,ID-0022
+ID-0023,month,careo voco vitae,507.34,2.7,2026-05-29,ID-0023
+ID-0024,quarter,decipio commemoro est,568.74,11.3,2026-05-30,ID-0024
+ID-0025,week,admiratio creptio considero,448.27,-15.1,2026-05-25,ID-0025
+ID-0026,month,collum voluptatem cunctatio,510.12,-6.4,2026-05-26,ID-0026
+ID-0027,quarter,stabilis sumptus pectus,577.17,2.7,2026-05-27,ID-0027
+ID-0028,week,tactus bene turba,644.43,11.3,2026-05-28,ID-0028
+ID-0029,month,appello viriliter aequus,506,-15.1,2026-05-29,ID-0029
+ID-0030,quarter,antea clam capitulus,573.77,-6.4,2026-05-30,ID-0030
+ID-0031,week,cornu crinis voluptatibus,647.01,2.7,2026-05-25,ID-0031
+ID-0032,month,comes cenaculum dicta,720.11,11.3,2026-05-26,ID-0032
+ID-0033,quarter,stips coma adulescens,563.74,-15.1,2026-05-27,ID-0033
+ID-0034,week,suadeo tener cognomen,637.42,-6.4,2026-05-28,ID-0034
+ID-0035,month,suadeo votum caelestis,716.85,2.7,2026-05-29,ID-0035
+ID-0036,quarter,tantum minus cervus,795.79,11.3,2026-05-30,ID-0036
+ID-0037,week,modi ratione earum,621.47,-15.1,2026-05-25,ID-0037
+ID-0038,month,attonbitus desparatus commodi,701.06,-6.4,2026-05-26,ID-0038
+ID-0039,quarter,usque suffragium amissio,786.68,2.7,2026-05-27,ID-0039
+ID-0040,week,sequi trucido neque,871.48,11.3,2026-05-28,ID-0040
+ID-0041,month,repudiandae aggredior dapifer,679.2,-15.1,2026-05-29,ID-0041
+ID-0042,quarter,theatrum ascit amicitia,764.71,-6.4,2026-05-30,ID-0042
+ID-0043,week,amissio sodalitas ustilo,856.52,2.7,2026-05-25,ID-0043
+ID-0044,month,admiratio causa appositus,947.16,11.3,2026-05-26,ID-0044
+ID-0045,quarter,truculenter sulum amplexus,736.93,-15.1,2026-05-27,ID-0045
+ID-0046,week,vulpes celer cibo,828.36,-6.4,2026-05-28,ID-0046
+ID-0047,month,tubineus voluptatem voluptates,926.35,2.7,2026-05-29,ID-0047
+ID-0048,quarter,aperiam sol vomito,1022.85,11.3,2026-05-30,ID-0048
+ID-0049,week,trepide substantia degenero,794.66,-15.1,2026-05-25,ID-0049
+ID-0050,month,saepe color esse,892.01,-6.4,2026-05-26,ID-0050
+ID-0051,quarter,conspergo statim somniculosus,996.19,2.7,2026-05-27,ID-0051
+ID-0052,week,sollers adflicto patrocinor,1098.53,11.3,2026-05-28,ID-0052
+ID-0053,month,aestus speciosus trado,852.4,-15.1,2026-05-29,ID-0053
+ID-0054,quarter,carcer ipsa aurum,955.66,-6.4,2026-05-30,ID-0054
+ID-0055,week,administratio turpis debitis,1066.03,2.7,2026-05-25,ID-0055
+ID-0056,month,non audentia audio,1174.21,11.3,2026-05-26,ID-0056
+ID-0057,quarter,accommodo administratio nam,910.13,-15.1,2026-05-27,ID-0057
+ID-0058,week,certus acquiro tabesco,1019.3,-6.4,2026-05-28,ID-0058
+ID-0059,month,basium conservo antea,1135.86,2.7,2026-05-29,ID-0059
+ID-0060,quarter,quisquam auctus amiculum,1249.9,11.3,2026-05-30,ID-0060

@@ -1,0 +1,40 @@
+{
+  "id": "c2fo_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into c2fo collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "finance"
+      ],
+      "realizedObjects": [
+        "vendors",
+        "invoices",
+        "journal_entries",
+        "payments"
+      ],
+      "simulatorCollection": "invoices",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "ledger"
+      ],
+      "realizedObjects": [
+        "journal_entries"
+      ],
+      "simulatorCollection": "journal_entries",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "approval"
+      ],
+      "realizedObjects": [
+        "approvals"
+      ],
+      "simulatorCollection": "approvals",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

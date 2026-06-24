@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "simulator-runtime"
+version = "0.1.0"
+description = "Feed a JSON pack corpus → a faithful, stateful MCP simulator (FK integrity, idempotency, throttle, webhooks, async jobs, audit; pluggable state backend)."
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+# Durable state backends + synthesis are optional — the engine runs fully in-memory
+# with zero third-party deps. Install an extra only when you need that backend.
+firestore = ["google-cloud-firestore>=2.18.0"]
+alloydb = ["psycopg[binary]>=3.2"]
+genai = ["google-genai>=0.3.0"]
+dev = ["pytest>=8.0.0"]
+
+[tool.setuptools.packages.find]
+include = ["simulator_runtime*"]
+
+[tool.pytest.ini_options]
+testpaths = ["simulator_runtime"]

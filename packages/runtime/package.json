@@ -1,0 +1,25 @@
+{
+  "name": "@ge/runtime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Standalone daemon/runtime event and task contract helpers for GE factory runners.",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.mjs"
+    },
+    "./events": {
+      "types": "./src/events.d.ts",
+      "default": "./src/events.mjs"
+    },
+    "./contract": {
+      "types": "./src/contract.d.ts",
+      "default": "./src/contract.mjs"
+    }
+  },
+  "scripts": {
+    "test": "node --test src/index.test.mjs",
+    "check": "node --check src/index.mjs"
+  }
+}

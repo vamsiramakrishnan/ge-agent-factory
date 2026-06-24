@@ -1,0 +1,394 @@
+{
+  "workers": [
+    {
+      "worker_id": "W-1001",
+      "employee_id": "1001001",
+      "universal_id": "GEA-1001001",
+      "name": "Avery Johnson",
+      "preferred_name": "Avery",
+      "email": "avery.johnson@example.com",
+      "status": "active",
+      "worker_type": "employee",
+      "position_id": "P-220",
+      "manager_id": "W-1003",
+      "supervisory_org_id": "ORG-HR-OPS",
+      "company": "GE Aerospace",
+      "company_code": "1000",
+      "business_unit": "Aerospace HR",
+      "cost_center": "HR-110",
+      "location": "Evendale, OH",
+      "country": "US",
+      "business_title": "Senior HR Operations Partner",
+      "job_profile_id": "JP-HR-003",
+      "job_profile": "HR Partner III",
+      "job_family": "Human Resources",
+      "management_level": "Professional",
+      "pay_group": "US-SALARIED",
+      "time_type": "full_time",
+      "fte": 1,
+      "hire_date": "2019-04-15",
+      "continuous_service_date": "2019-04-15",
+      "worker_subtype": "Regular",
+      "security_groups": [
+        "HR Partner",
+        "Worker Data View"
+      ],
+      "skills": [
+        "employee relations",
+        "org design",
+        "workday business process"
+      ]
+    },
+    {
+      "worker_id": "W-1002",
+      "employee_id": "1001002",
+      "universal_id": "GEV-1001002",
+      "name": "Mina Patel",
+      "preferred_name": "Mina",
+      "email": "mina.patel@example.com",
+      "status": "active",
+      "worker_type": "employee",
+      "position_id": "P-221",
+      "manager_id": "W-1003",
+      "supervisory_org_id": "ORG-FIN-TX",
+      "company": "GE Vernova",
+      "company_code": "2000",
+      "business_unit": "Finance Transformation",
+      "cost_center": "FIN-210",
+      "location": "Schenectady, NY",
+      "country": "US",
+      "business_title": "Finance Transformation Analyst",
+      "job_profile_id": "JP-FIN-002",
+      "job_profile": "Financial Analyst II",
+      "job_family": "Finance",
+      "management_level": "Professional",
+      "pay_group": "US-SALARIED",
+      "time_type": "full_time",
+      "fte": 1,
+      "hire_date": "2021-08-02",
+      "continuous_service_date": "2021-08-02",
+      "worker_subtype": "Regular",
+      "security_groups": [
+        "Employee Self Service"
+      ],
+      "skills": [
+        "fp&a",
+        "close management",
+        "erp migration"
+      ]
+    },
+    {
+      "worker_id": "W-1003",
+      "employee_id": "1001003",
+      "universal_id": "GEC-1001003",
+      "name": "Jordan Lee",
+      "preferred_name": "Jordan",
+      "email": "jordan.lee@example.com",
+      "status": "active",
+      "worker_type": "manager",
+      "position_id": "P-100",
+      "manager_id": null,
+      "supervisory_org_id": "ORG-EXEC",
+      "company": "GE Corporate",
+      "company_code": "0001",
+      "business_unit": "Enterprise Transformation",
+      "cost_center": "EXEC-001",
+      "location": "Boston, MA",
+      "country": "US",
+      "business_title": "VP, Enterprise Transformation",
+      "job_profile_id": "JP-EXEC-001",
+      "job_profile": "Executive Leader",
+      "job_family": "Executive",
+      "management_level": "Vice President",
+      "pay_group": "US-EXEC",
+      "time_type": "full_time",
+      "fte": 1,
+      "hire_date": "2015-01-05",
+      "continuous_service_date": "2015-01-05",
+      "worker_subtype": "Regular",
+      "security_groups": [
+        "Manager Self Service",
+        "Supervisory Org Manager"
+      ],
+      "skills": [
+        "transformation",
+        "operating model",
+        "shared services"
+      ]
+    }
+  ],
+  "positions": [
+    {
+      "position_id": "P-100",
+      "position_number": "POS-000100",
+      "title": "VP, Enterprise Transformation",
+      "job_profile_id": "JP-EXEC-001",
+      "job_profile": "Executive Leader",
+      "supervisory_org_id": "ORG-EXEC",
+      "cost_center": "EXEC-001",
+      "company": "GE Corporate",
+      "location": "Boston, MA",
+      "worker_type": "employee",
+      "availability_date": "2015-01-05",
+      "status": "filled",
+      "worker_id": "W-1003"
+    },
+    {
+      "position_id": "P-220",
+      "position_number": "POS-000220",
+      "title": "Senior HR Operations Partner",
+      "job_profile_id": "JP-HR-003",
+      "job_profile": "HR Partner III",
+      "supervisory_org_id": "ORG-HR-OPS",
+      "cost_center": "HR-110",
+      "company": "GE Aerospace",
+      "location": "Evendale, OH",
+      "worker_type": "employee",
+      "availability_date": "2019-04-15",
+      "status": "filled",
+      "worker_id": "W-1001"
+    },
+    {
+      "position_id": "P-450",
+      "position_number": "POS-000450",
+      "title": "Plant HR Manager",
+      "job_profile_id": "JP-HR-004",
+      "job_profile": "HR Manager",
+      "supervisory_org_id": "ORG-HR-OPS",
+      "cost_center": "HR-140",
+      "company": "GE Aerospace",
+      "location": "Lafayette, IN",
+      "worker_type": "employee",
+      "availability_date": "2026-07-01",
+      "status": "open",
+      "worker_id": null,
+      "position_restriction_reason": "backfill_pending_approval"
+    },
+    {
+      "position_id": "P-221",
+      "position_number": "POS-000221",
+      "title": "Finance Transformation Analyst",
+      "job_profile_id": "JP-FIN-002",
+      "job_profile": "Financial Analyst II",
+      "supervisory_org_id": "ORG-FIN-TX",
+      "cost_center": "FIN-210",
+      "company": "GE Vernova",
+      "location": "Schenectady, NY",
+      "worker_type": "employee",
+      "status": "filled",
+      "worker_id": "W-1002"
+    }
+  ],
+  "supervisory_orgs": [
+    {
+      "org_id": "ORG-EXEC",
+      "name": "Enterprise Transformation Office",
+      "manager_id": "W-1003",
+      "parent_org_id": null,
+      "organization_type": "Supervisory",
+      "cost_center": "EXEC-001",
+      "company": "GE Corporate",
+      "business_unit": "Enterprise Transformation",
+      "location": "Boston, MA",
+      "active": true
+    },
+    {
+      "org_id": "ORG-HR-OPS",
+      "name": "Aerospace HR Operations",
+      "manager_id": "W-1003",
+      "parent_org_id": "ORG-EXEC",
+      "organization_type": "Supervisory",
+      "cost_center": "HR-110",
+      "company": "GE Aerospace",
+      "business_unit": "Aerospace HR",
+      "location": "Evendale, OH",
+      "active": true
+    },
+    {
+      "org_id": "ORG-FIN-TX",
+      "name": "Finance Transformation",
+      "manager_id": "W-1003",
+      "parent_org_id": "ORG-EXEC",
+      "organization_type": "Supervisory",
+      "cost_center": "FIN-210",
+      "company": "GE Vernova",
+      "business_unit": "Finance Transformation",
+      "location": "Schenectady, NY",
+      "active": true
+    }
+  ],
+  "job_profiles": [
+    {
+      "job_profile_id": "JP-HR-003",
+      "job_code": "HRP3",
+      "name": "HR Partner III",
+      "job_family": "Human Resources",
+      "job_level": "P3",
+      "management_level": "Professional",
+      "exempt_status": "Exempt",
+      "worker_type": "employee",
+      "active": true
+    },
+    {
+      "job_profile_id": "JP-FIN-002",
+      "job_code": "FIN2",
+      "name": "Financial Analyst II",
+      "job_family": "Finance",
+      "job_level": "P2",
+      "management_level": "Professional",
+      "exempt_status": "Exempt",
+      "worker_type": "employee",
+      "active": true
+    },
+    {
+      "job_profile_id": "JP-EXEC-001",
+      "job_code": "EXEC1",
+      "name": "Executive Leader",
+      "job_family": "Executive",
+      "job_level": "E1",
+      "management_level": "Vice President",
+      "exempt_status": "Exempt",
+      "worker_type": "employee",
+      "active": true
+    },
+    {
+      "job_profile_id": "JP-HR-004",
+      "job_code": "HRP3",
+      "name": "HR Manager",
+      "job_family": "Human Resources",
+      "job_level": "P3",
+      "management_level": "Manager",
+      "exempt_status": "Exempt",
+      "worker_type": "employee",
+      "active": true
+    }
+  ],
+  "compensation_records": [
+    {
+      "compensation_id": "COMP-1001",
+      "worker_id": "W-1001",
+      "effective_date": "2026-01-01",
+      "currency": "USD",
+      "base_pay": 142000,
+      "salary_plan": "US Salary Plan",
+      "bonus_plan": "Professional Incentive",
+      "allowance_plan": null,
+      "pay_frequency": "Monthly",
+      "compa_ratio": 0.97,
+      "grade_profile": "P3-US",
+      "status": "active"
+    },
+    {
+      "compensation_id": "COMP-1002",
+      "worker_id": "W-1002",
+      "effective_date": "2026-01-01",
+      "currency": "USD",
+      "base_pay": 118000,
+      "salary_plan": "US Salary Plan",
+      "bonus_plan": "Finance Incentive",
+      "allowance_plan": null,
+      "pay_frequency": "Monthly",
+      "compa_ratio": 1.03,
+      "grade_profile": "P2-US",
+      "status": "active"
+    }
+  ],
+  "absence_requests": [
+    {
+      "absence_id": "ABS-3001",
+      "worker_id": "W-1002",
+      "absence_type": "Vacation",
+      "start_date": "2026-07-13",
+      "end_date": "2026-07-17",
+      "quantity": 5,
+      "unit": "days",
+      "status": "approved",
+      "approver": "jordan.lee@example.com",
+      "balance_before": 18,
+      "balance_after": 13
+    },
+    {
+      "absence_id": "ABS-3002",
+      "worker_id": "W-1001",
+      "absence_type": "Caregiver Leave",
+      "start_date": "2026-08-03",
+      "end_date": "2026-08-07",
+      "quantity": 5,
+      "unit": "days",
+      "status": "submitted",
+      "approver": "jordan.lee@example.com",
+      "balance_before": 10,
+      "balance_after": 5
+    }
+  ],
+  "business_processes": [
+    {
+      "business_process_id": "BP-7001",
+      "worker_id": "W-1001",
+      "type": "transfer",
+      "status": "pending_approval",
+      "initiated_by": "hr.partner@example.com",
+      "initiated_at": "2026-06-01T14:04:00Z",
+      "effective_date": "2026-07-01",
+      "current_step_id": "BPS-7001-2",
+      "tenant": "ge-workday-preview",
+      "reason": "cost_center_mismatch"
+    }
+  ],
+  "business_process_steps": [
+    {
+      "step_id": "BPS-7001-1",
+      "business_process_id": "BP-7001",
+      "sequence": 1,
+      "step_name": "Manager Review",
+      "approver_role": "manager",
+      "assignee": "jordan.lee@example.com",
+      "status": "approved",
+      "due_at": "2026-06-02T17:00:00Z"
+    },
+    {
+      "step_id": "BPS-7001-2",
+      "business_process_id": "BP-7001",
+      "sequence": 2,
+      "step_name": "Finance Partner Review",
+      "approver_role": "finance_partner",
+      "assignee": "finance.partner@example.com",
+      "status": "requested",
+      "due_at": "2026-06-07T17:00:00Z"
+    }
+  ],
+  "worker_events": [
+    {
+      "event_id": "E-9001",
+      "worker_id": "W-1001",
+      "event_type": "manager_transfer",
+      "status": "pending_approval",
+      "reason": "cost_center_mismatch",
+      "effective_date": "2026-07-01",
+      "target_manager_id": "W-1003",
+      "target_cost_center": "FIN-210",
+      "business_process_id": "BP-7001"
+    }
+  ],
+  "security_assignments": [
+    {
+      "assignment_id": "SEC-1001",
+      "worker_id": "W-1001",
+      "security_group": "HR Partner",
+      "domain": "Worker Data: Current Staffing Information",
+      "role": "view_edit",
+      "effective_date": "2019-04-15",
+      "status": "active"
+    },
+    {
+      "assignment_id": "SEC-1003",
+      "worker_id": "W-1003",
+      "security_group": "Manager Self Service",
+      "domain": "Staffing Actions",
+      "role": "initiate_approve",
+      "effective_date": "2015-01-05",
+      "status": "active"
+    }
+  ],
+  "audit_events": []
+}

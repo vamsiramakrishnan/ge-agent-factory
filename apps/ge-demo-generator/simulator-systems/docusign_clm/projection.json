@@ -1,0 +1,61 @@
+{
+  "id": "docusign_clm_projection",
+  "version": 2,
+  "materialization": "Project scenario graph concepts into DocuSign Agreement Manager collections; Snowfakery can realize larger contract corpora from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": ["contract", "agreement", "commercial_commitment"],
+      "realizedObjects": ["agreements", "parties", "documents", "clauses", "obligations", "amendments"],
+      "simulatorCollection": "agreements",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["contract_type", "document_model", "extraction_model"],
+      "realizedObjects": ["agreement_types"],
+      "simulatorCollection": "agreement_types",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["organization", "supplier", "customer", "legal_entity", "counterparty"],
+      "realizedObjects": ["parties"],
+      "simulatorCollection": "parties",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["document", "file", "upload", "repository_item"],
+      "realizedObjects": ["documents"],
+      "simulatorCollection": "documents",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["clause", "provision", "extraction_review", "risk_term"],
+      "realizedObjects": ["clauses"],
+      "simulatorCollection": "clauses",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["obligation", "control", "commitment", "due_date"],
+      "realizedObjects": ["obligations"],
+      "simulatorCollection": "obligations",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["amendment", "change_order", "side_letter"],
+      "realizedObjects": ["amendments"],
+      "simulatorCollection": "amendments",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["approval", "task", "workflow_step", "blocker"],
+      "realizedObjects": ["approvals"],
+      "simulatorCollection": "approvals",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["bulk_upload", "import_job", "async_job"],
+      "realizedObjects": ["bulk_jobs", "documents"],
+      "simulatorCollection": "bulk_jobs",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+id,period,metric_name,value,variance_pct,computed_at,historical_metric_id
+ID-0001,week,close_cycle_days,101.88,-15.1,2026-05-25,ID-0001
+ID-0002,month,auto_certified_accounts,128.23,-6.4,2026-05-26,ID-0002
+ID-0003,quarter,reconciliation_exception_rate,158.16,2.7,2026-05-27,ID-0003
+ID-0004,week,working_capital_forecast_accuracy,190.32,11.3,2026-05-28,ID-0004
+ID-0005,month,condico possimus vester,159.61,-15.1,2026-05-29,ID-0005
+ID-0006,quarter,vitae aranea nisi,191.88,-6.4,2026-05-30,ID-0006
+ID-0007,week,adopto nesciunt agnitio,227.99,2.7,2026-05-25,ID-0007
+ID-0008,month,comes aiunt cognatus,266.01,11.3,2026-05-26,ID-0008
+ID-0009,quarter,verbera absconditus tollo,217.34,-15.1,2026-05-27,ID-0009
+ID-0010,week,fugiat accedo causa,255.53,-6.4,2026-05-28,ID-0010
+ID-0011,month,civis fugiat expedita,297.83,2.7,2026-05-29,ID-0011
+ID-0012,quarter,deripio pax calcar,341.69,11.3,2026-05-30,ID-0012
+ID-0013,week,perferendis correptius ter,275.08,-15.1,2026-05-25,ID-0013
+ID-0014,month,terminatio denuo thalassinus,319.18,-6.4,2026-05-26,ID-0014
+ID-0015,quarter,caelestis desparatus cavus,367.67,2.7,2026-05-27,ID-0015
+ID-0016,week,volaticus molestias urbanus,417.38,11.3,2026-05-28,ID-0016
+ID-0017,month,supellex corrigo aliquam,332.81,-15.1,2026-05-29,ID-0017
+ID-0018,quarter,voco vitae carmen,382.82,-6.4,2026-05-30,ID-0018
+ID-0019,week,commemoro est sto,437.5,2.7,2026-05-25,ID-0019
+ID-0020,month,creptio considero comedo,493.06,11.3,2026-05-26,ID-0020
+ID-0021,quarter,voluptatem cunctatio decretum,390.54,-15.1,2026-05-27,ID-0021
+ID-0022,week,sumptus pectus alienus,446.47,-6.4,2026-05-28,ID-0022
+ID-0023,month,bene turba adaugeo,507.34,2.7,2026-05-29,ID-0023
+ID-0024,quarter,viriliter aequus avarus,568.74,11.3,2026-05-30,ID-0024
+ID-0025,week,clam capitulus benigne,448.27,-15.1,2026-05-25,ID-0025
+ID-0026,month,crinis voluptatibus virtus,510.12,-6.4,2026-05-26,ID-0026
+ID-0027,quarter,cenaculum dicta tergiversatio,577.17,2.7,2026-05-27,ID-0027
+ID-0028,week,coma adulescens substantia,644.43,11.3,2026-05-28,ID-0028
+ID-0029,month,tener cognomen tondeo,506,-15.1,2026-05-29,ID-0029
+ID-0030,quarter,votum caelestis somniculosus,573.77,-6.4,2026-05-30,ID-0030
+ID-0031,week,minus cervus demitto,647.01,2.7,2026-05-25,ID-0031
+ID-0032,month,ratione earum admoneo,720.11,11.3,2026-05-26,ID-0032
+ID-0033,quarter,desparatus commodi causa,563.74,-15.1,2026-05-27,ID-0033
+ID-0034,week,suffragium amissio tergeo,637.42,-6.4,2026-05-28,ID-0034
+ID-0035,month,trucido neque sint,716.85,2.7,2026-05-29,ID-0035
+ID-0036,quarter,aggredior dapifer clarus,795.79,11.3,2026-05-30,ID-0036
+ID-0037,week,ascit amicitia arbustum,621.47,-15.1,2026-05-25,ID-0037
+ID-0038,month,sodalitas ustilo tribuo,701.06,-6.4,2026-05-26,ID-0038
+ID-0039,quarter,causa appositus caveo,786.68,2.7,2026-05-27,ID-0039
+ID-0040,week,sulum amplexus tabgo,871.48,11.3,2026-05-28,ID-0040
+ID-0041,month,celer cibo via,679.2,-15.1,2026-05-29,ID-0041
+ID-0042,quarter,voluptatem voluptates aedificium,764.71,-6.4,2026-05-30,ID-0042
+ID-0043,week,sol vomito vere,856.52,2.7,2026-05-25,ID-0043
+ID-0044,month,substantia degenero adsidue,947.16,11.3,2026-05-26,ID-0044
+ID-0045,quarter,color esse aedificium,736.93,-15.1,2026-05-27,ID-0045
+ID-0046,week,statim somniculosus sumo,828.36,-6.4,2026-05-28,ID-0046
+ID-0047,month,adflicto patrocinor ustulo,926.35,2.7,2026-05-29,ID-0047
+ID-0048,quarter,speciosus trado caries,1022.85,11.3,2026-05-30,ID-0048
+ID-0049,week,ipsa aurum ambitus,794.66,-15.1,2026-05-25,ID-0049
+ID-0050,month,turpis debitis conicio,892.01,-6.4,2026-05-26,ID-0050
+ID-0051,quarter,audentia audio audacia,996.19,2.7,2026-05-27,ID-0051
+ID-0052,week,administratio nam totus,1098.53,11.3,2026-05-28,ID-0052
+ID-0053,month,acquiro tabesco quidem,852.4,-15.1,2026-05-29,ID-0053
+ID-0054,quarter,conservo antea aperio,955.66,-6.4,2026-05-30,ID-0054
+ID-0055,week,auctus amiculum torqueo,1066.03,2.7,2026-05-25,ID-0055
+ID-0056,month,trucido adstringo tametsi,1174.21,11.3,2026-05-26,ID-0056
+ID-0057,quarter,vitae ademptio nisi,910.13,-15.1,2026-05-27,ID-0057
+ID-0058,week,depulso vergo beneficium,1019.3,-6.4,2026-05-28,ID-0058
+ID-0059,month,arca sint candidus,1135.86,2.7,2026-05-29,ID-0059
+ID-0060,quarter,collum dedico cultura,1249.9,11.3,2026-05-30,ID-0060

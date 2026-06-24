@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "required": ["systemId", "displayName", "archetype", "realism", "objects", "workflows", "scale"],
+  "properties": {
+    "systemId": { "type": "string" },
+    "displayName": { "type": "string" },
+    "archetype": { "type": "string" },
+    "realism": { "type": "string" },
+    "objects": { "type": "array", "items": { "type": "string" } },
+    "workflows": { "type": "array", "items": { "type": "string" } },
+    "scale": { "type": "integer" },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "commands": { "type": "array", "items": { "type": "string" } }
+  }
+}

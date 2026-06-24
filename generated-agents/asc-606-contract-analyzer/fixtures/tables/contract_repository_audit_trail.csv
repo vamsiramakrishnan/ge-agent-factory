@@ -1,0 +1,61 @@
+id,counterparty,value,currency,start_date,end_date,status,auto_renew
+ID-0001,Turner - Beatty,2136345,GBP,2024-10-31,2021-05-06,negotiating,false
+ID-0002,"Hauck, Ebert and Kulas",2216114,EUR,2022-05-14,2023-03-07,draft,false
+ID-0003,"Cormier, Jast and Barton",1965634,GBP,2021-02-28,2023-11-07,negotiating,false
+ID-0004,"Jenkins, Shanahan and Hyatt",790021,GBP,2022-03-01,2024-01-11,negotiating,true
+ID-0005,"Wolff-Schimmel, Streich and Mosciski",2061840,EUR,2021-12-24,2023-05-21,terminated,true
+ID-0006,"Lynch, Schuppe and Zemlak",1477396,USD,2024-08-04,2021-07-08,terminated,true
+ID-0007,Stamm - Mertz,3019719,GBP,2023-06-15,2022-07-29,negotiating,false
+ID-0008,Muller - Beier,663559,EUR,2025-02-04,2020-04-08,expired,true
+ID-0009,Konopelski Group,417177,USD,2020-03-02,2023-10-15,active,false
+ID-0010,Wintheiser - Mayer,2823959,EUR,2020-06-01,2020-07-16,expired,true
+ID-0011,"Rau, Price and Padberg",3401370,GBP,2021-10-10,2020-01-03,negotiating,true
+ID-0012,Armstrong LLC,1624417,EUR,2023-05-05,2022-01-21,draft,true
+ID-0013,"Brakus, Satterfield and Rath",1789415,USD,2020-01-29,2023-03-30,terminated,false
+ID-0014,Lowe Inc,3039605,EUR,2021-06-10,2020-07-27,negotiating,true
+ID-0015,Lemke - McCullough-Schulist,1641436,USD,2022-06-01,2024-01-14,expired,true
+ID-0016,Mayert - Romaguera,4365569,EUR,2024-05-19,2023-09-19,draft,true
+ID-0017,Stark - Windler,549142,EUR,2023-07-07,2023-04-01,draft,true
+ID-0018,Feest - Bauch,2495668,GBP,2021-07-07,2021-11-05,expired,false
+ID-0019,"Hickle, Dickens and Herzog",4557583,USD,2021-11-23,2020-05-04,expired,false
+ID-0020,Roob - Weber,1261886,USD,2023-07-05,2025-10-25,negotiating,true
+ID-0021,Oberbrunner and Sons,2264180,EUR,2022-05-28,2020-09-09,terminated,true
+ID-0022,O'Conner Group,4070480,GBP,2023-11-23,2025-09-23,draft,true
+ID-0023,Hauck Group,1964795,USD,2024-05-28,2021-04-02,draft,false
+ID-0024,Hegmann and Sons,2705992,USD,2023-05-25,2025-06-13,negotiating,true
+ID-0025,Mertz - Roob,2937253,GBP,2020-06-24,2022-11-11,expired,false
+ID-0026,"Casper, Dare-Reichert and Larson",2907420,GBP,2024-01-13,2022-11-20,terminated,false
+ID-0027,Schultz - Kiehn,3223343,EUR,2020-04-29,2023-08-07,terminated,true
+ID-0028,Schuster - Hermann,4000919,EUR,2024-12-15,2023-10-16,expired,false
+ID-0029,Moen Group,3131998,EUR,2021-02-09,2020-05-10,expired,false
+ID-0030,Block Inc,825200,USD,2021-03-19,2022-04-27,draft,true
+ID-0031,Smitham Group,2533427,USD,2020-06-04,2023-06-11,active,false
+ID-0032,Boyle Group,934531,EUR,2023-11-16,2020-04-09,terminated,false
+ID-0033,Champlin - Franecki,1797117,GBP,2024-02-09,2025-09-11,draft,true
+ID-0034,Osinski LLC,2059836,EUR,2022-06-29,2020-02-22,negotiating,true
+ID-0035,Rempel - Ferry,493858,USD,2024-10-14,2024-01-25,active,true
+ID-0036,"Heller, Fisher-Swift and Jacobi",2054268,GBP,2021-01-31,2024-10-17,negotiating,false
+ID-0037,Schneider and Sons,307490,GBP,2020-11-02,2022-06-30,active,true
+ID-0038,Padberg Inc,673719,USD,2025-09-11,2025-04-12,terminated,false
+ID-0039,Kub - Medhurst,2882211,USD,2022-10-31,2023-04-28,active,true
+ID-0040,"Sauer, Powlowski and Rice",3054439,EUR,2020-10-18,2021-07-26,active,false
+ID-0041,Kunze Inc,3675696,USD,2023-07-05,2025-08-25,draft,true
+ID-0042,Jaskolski - Dietrich,122596,GBP,2023-06-19,2025-05-06,active,false
+ID-0043,Marquardt Group,1351300,USD,2021-06-25,2021-11-02,active,false
+ID-0044,Bogisich Group,2595207,USD,2021-09-12,2022-05-27,terminated,true
+ID-0045,Watsica Group,777380,GBP,2022-10-02,2023-05-22,expired,false
+ID-0046,"Grant, Feeney and Ernser",699245,GBP,2023-01-01,2024-01-19,negotiating,false
+ID-0047,"Ebert, Weber and Runolfsson",3461362,GBP,2022-05-12,2020-10-13,expired,false
+ID-0048,Hahn Inc,3229641,GBP,2021-05-24,2022-06-07,negotiating,true
+ID-0049,"Rolfson, Deckow and Hayes",321532,EUR,2020-08-26,2021-06-28,negotiating,false
+ID-0050,"Stiedemann, Pollich and Harris",2507891,EUR,2023-01-24,2020-09-19,negotiating,false
+ID-0051,"Harber-Olson, West and Cole",3528154,GBP,2024-01-25,2021-07-07,terminated,true
+ID-0052,Stanton - Smith,2749059,USD,2024-04-28,2023-01-25,expired,true
+ID-0053,"Braun, Predovic and Reinger",571826,EUR,2025-04-26,2020-04-13,terminated,false
+ID-0054,Weissnat Inc,3879772,EUR,2020-11-01,2020-01-24,active,false
+ID-0055,Lebsack Inc,4400774,EUR,2023-01-18,2020-10-30,terminated,true
+ID-0056,Johns - Dietrich,4103064,EUR,2022-07-07,2022-09-30,negotiating,false
+ID-0057,Ziemann Inc,4604251,EUR,2020-04-29,2021-03-23,active,true
+ID-0058,Roberts - Bergstrom,3622906,GBP,2022-08-01,2020-09-18,active,true
+ID-0059,Brown Group,4971709,USD,2020-04-27,2021-02-20,draft,true
+ID-0060,"Padberg, Streich and Koelpin",4944315,EUR,2025-12-03,2024-07-12,negotiating,false

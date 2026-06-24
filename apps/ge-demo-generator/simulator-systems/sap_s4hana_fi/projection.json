@@ -1,0 +1,67 @@
+{
+  "id": "sap_s4hana_fi_projection",
+  "version": 3,
+  "materialization": "Project finance / procure-to-pay / record-to-report rows into SAP S/4HANA FI document, master-data, and approval collections: company codes, vendors, GL accounts, cost/profit centers, purchase orders, goods receipts, supplier invoices (three-way match), journal entries (with reversals), payment runs, payments, and release approvals.",
+  "collectionMappings": [
+    {
+      "simulatorCollection": "company_codes",
+      "graphKinds": ["organization", "finance"],
+      "realizedObjects": ["company_codes", "legal_entities"]
+    },
+    {
+      "simulatorCollection": "vendors",
+      "graphKinds": ["supplier", "finance"],
+      "realizedObjects": ["vendors", "suppliers", "business_partners"]
+    },
+    {
+      "simulatorCollection": "gl_accounts",
+      "graphKinds": ["ledger", "finance"],
+      "realizedObjects": ["gl_accounts", "chart_of_accounts"]
+    },
+    {
+      "simulatorCollection": "cost_centers",
+      "graphKinds": ["controlling", "organization"],
+      "realizedObjects": ["cost_centers"]
+    },
+    {
+      "simulatorCollection": "profit_centers",
+      "graphKinds": ["controlling", "organization"],
+      "realizedObjects": ["profit_centers", "segments"]
+    },
+    {
+      "simulatorCollection": "purchase_orders",
+      "graphKinds": ["procurement", "finance"],
+      "realizedObjects": ["purchase_orders", "po_line_items"]
+    },
+    {
+      "simulatorCollection": "goods_receipts",
+      "graphKinds": ["procurement", "logistics"],
+      "realizedObjects": ["goods_receipts", "material_documents"]
+    },
+    {
+      "simulatorCollection": "invoices",
+      "graphKinds": ["finance", "invoice"],
+      "realizedObjects": ["invoices", "accounts_payable", "open_items"]
+    },
+    {
+      "simulatorCollection": "journal_entries",
+      "graphKinds": ["ledger", "finance"],
+      "realizedObjects": ["gl_entries", "journal_entries", "accounting_documents"]
+    },
+    {
+      "simulatorCollection": "payment_runs",
+      "graphKinds": ["payment", "finance"],
+      "realizedObjects": ["payment_runs", "payment_batches"]
+    },
+    {
+      "simulatorCollection": "payments",
+      "graphKinds": ["payment", "finance"],
+      "realizedObjects": ["payments", "clearing_documents"]
+    },
+    {
+      "simulatorCollection": "approvals",
+      "graphKinds": ["approval"],
+      "realizedObjects": ["approvals", "release_steps"]
+    }
+  ]
+}

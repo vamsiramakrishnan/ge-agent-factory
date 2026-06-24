@@ -1,0 +1,108 @@
+{
+  "id": "benefitfocus_tools",
+  "version": 1,
+  "tools": [
+    {
+      "name": "search_employees",
+      "description": "Search employees in benefitfocus.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "employees"
+      }
+    },
+    {
+      "name": "get_employee",
+      "description": "Get one employee in benefitfocus.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "employee_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "employee_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "employees",
+        "primaryKey": "employee_id"
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending benefitfocus approvals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": {
+            "type": "string"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_pending_approvals",
+        "collection": "approvals"
+      }
+    },
+    {
+      "name": "submit_employee_update",
+      "description": "Submit an update to one employee in benefitfocus.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "employee_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "employee_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "employees",
+        "primaryKey": "employee_id"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List benefitfocus simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

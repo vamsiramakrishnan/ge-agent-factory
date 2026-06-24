@@ -1,0 +1,153 @@
+{
+  "id": "coupa_workflows",
+  "version": 2,
+  "primitives": [
+    "role_permission_gate",
+    "state_machine",
+    "approval_blocker",
+    "audit_trail",
+    "failure_injection",
+    "idempotency"
+  ],
+  "toolHandlers": {
+    "submit_requisition_update": {
+      "primitive": "state_machine",
+      "collection": "requisitions",
+      "primaryKey": "requisition_id",
+      "roleArg": "role",
+      "allowedRoles": ["requester", "buyer", "category_manager", "approver"],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "transitions": {
+        "draft": ["submitted", "cancelled"],
+        "submitted": ["manager_approved", "rejected", "cancelled"],
+        "manager_approved": ["procurement_approved", "rejected", "cancelled"],
+        "procurement_approved": ["po_created", "cancelled"],
+        "rejected": ["draft", "submitted"],
+        "*": ["submitted", "manager_approved", "procurement_approved", "po_created", "rejected", "cancelled"]
+      },
+      "approvalBlockers": [
+        {
+          "collection": "approvals",
+          "sourceRecordField": "source_record_id",
+          "states": ["requested", "pending", "pending_approval"],
+          "blockedTargetStates": ["manager_approved", "procurement_approved", "po_created"]
+        }
+      ],
+      "failureModes": {
+        "validation_error": 0.05,
+        "conflict": 0.04,
+        "rate_limited": 0.03
+      }
+    },
+    "submit_purchase_order_update": {
+      "primitive": "state_machine",
+      "collection": "purchase_orders",
+      "primaryKey": "po_id",
+      "roleArg": "role",
+      "allowedRoles": ["buyer", "category_manager", "ap_specialist"],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "transitions": {
+        "draft": ["issued", "cancelled"],
+        "issued": ["acknowledged", "cancelled"],
+        "acknowledged": ["partially_received", "received", "cancelled"],
+        "partially_received": ["received", "cancelled"],
+        "received": ["invoiced", "closed"],
+        "invoiced": ["closed"],
+        "*": ["issued", "acknowledged", "partially_received", "received", "invoiced", "closed", "cancelled"]
+      },
+      "failureModes": {
+        "validation_error": 0.04,
+        "timeout": 0.03,
+        "rate_limited": 0.03
+      }
+    },
+    "submit_invoice_update": {
+      "primitive": "state_machine",
+      "collection": "invoices",
+      "primaryKey": "invoice_id",
+      "roleArg": "role",
+      "allowedRoles": ["ap_specialist", "approver", "category_manager"],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "transitions": {
+        "received": ["matched", "exception", "disputed", "cancelled"],
+        "matched": ["approved", "exception", "disputed"],
+        "exception": ["matched", "disputed", "cancelled"],
+        "approved": ["paid", "disputed"],
+        "disputed": ["matched", "cancelled"],
+        "*": ["matched", "exception", "approved", "disputed", "paid", "cancelled"]
+      },
+      "approvalBlockers": [
+        {
+          "collection": "approvals",
+          "sourceRecordField": "source_record_id",
+          "states": ["requested", "pending", "pending_approval"],
+          "blockedTargetStates": ["approved", "paid"]
+        }
+      ],
+      "failureModes": {
+        "validation_error": 0.05,
+        "conflict": 0.05,
+        "rate_limited": 0.02
+      }
+    },
+    "submit_contract_update": {
+      "primitive": "state_machine",
+      "collection": "contracts",
+      "primaryKey": "contract_id",
+      "roleArg": "role",
+      "allowedRoles": ["category_manager", "approver", "supplier_manager"],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "transitions": {
+        "draft": ["in_negotiation", "terminated"],
+        "in_negotiation": ["pending_approval", "draft", "terminated"],
+        "pending_approval": ["active", "in_negotiation", "terminated"],
+        "active": ["expiring", "expired", "terminated"],
+        "expiring": ["active", "expired", "terminated"],
+        "expired": ["terminated", "in_negotiation"],
+        "*": ["in_negotiation", "pending_approval", "active", "expiring", "expired", "terminated"]
+      },
+      "approvalBlockers": [
+        {
+          "collection": "approvals",
+          "sourceRecordField": "source_record_id",
+          "states": ["requested", "pending", "pending_approval"],
+          "blockedTargetStates": ["active"]
+        }
+      ],
+      "failureModes": {
+        "validation_error": 0.04,
+        "conflict": 0.04
+      }
+    },
+    "submit_supplier_update": {
+      "primitive": "state_machine",
+      "collection": "suppliers",
+      "primaryKey": "supplier_id",
+      "roleArg": "role",
+      "allowedRoles": ["buyer", "category_manager", "supplier_manager"],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "transitions": {
+        "onboarding": ["active", "risk_review", "inactive"],
+        "active": ["on_hold", "risk_review", "inactive", "terminated"],
+        "on_hold": ["active", "risk_review", "terminated"],
+        "risk_review": ["active", "on_hold", "terminated"],
+        "inactive": ["active", "terminated"],
+        "*": ["onboarding", "active", "on_hold", "risk_review", "inactive", "terminated"]
+      },
+      "failureModes": {
+        "forbidden": 0.03,
+        "validation_error": 0.04
+      }
+    }
+  }
+}

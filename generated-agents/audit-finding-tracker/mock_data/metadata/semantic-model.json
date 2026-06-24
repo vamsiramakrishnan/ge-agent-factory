@@ -1,0 +1,761 @@
+{
+  "id": "audit_finding_tracker_semantic_model",
+  "generatedAt": "2026-06-11T08:59:57.914Z",
+  "dataset": "agent_audit_finding_tracker",
+  "primaryObjective": "Automated deadline tracking with escalation ensures findings don't age without action. Gemini evaluates whether remediation plans address root cause or just treat symptoms. so the Chief Audit Executive can move the Avg remediation time KPI.",
+  "tables": [
+    {
+      "name": "auditboard_records",
+      "sourceSystem": "AuditBoard",
+      "description": "auditboard_records, auditboard_events, auditboard_audit_trail",
+      "grain": "one row per auditboard record",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "actor",
+          "type": "string",
+          "description": "actor (string)."
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "action (string)."
+        },
+        {
+          "name": "target_type",
+          "type": "string",
+          "description": "target type (string)."
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "notes (string)."
+        }
+      ]
+    },
+    {
+      "name": "auditboard_events",
+      "sourceSystem": "AuditBoard",
+      "description": "auditboard_records, auditboard_events, auditboard_audit_trail",
+      "grain": "one row per auditboard event",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "actor",
+          "type": "string",
+          "description": "actor (string)."
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "action (string)."
+        },
+        {
+          "name": "target_type",
+          "type": "string",
+          "description": "target type (string)."
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "notes (string)."
+        }
+      ]
+    },
+    {
+      "name": "auditboard_audit_trail",
+      "sourceSystem": "AuditBoard",
+      "description": "auditboard_records, auditboard_events, auditboard_audit_trail",
+      "grain": "one row per auditboard audit trail",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "actor",
+          "type": "string",
+          "description": "actor (string)."
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "action (string)."
+        },
+        {
+          "name": "target_type",
+          "type": "string",
+          "description": "target type (string)."
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "notes (string)."
+        }
+      ]
+    },
+    {
+      "name": "tickets",
+      "sourceSystem": "ServiceNow",
+      "description": "tickets, change_requests, incidents",
+      "grain": "one row per ticket",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "description": "Human-readable label."
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "description": "priority (string)."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "description": "assignee (string)."
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "description": "category (string)."
+        },
+        {
+          "name": "sla_met",
+          "type": "boolean",
+          "description": "sla met (boolean)."
+        }
+      ]
+    },
+    {
+      "name": "change_requests",
+      "sourceSystem": "ServiceNow",
+      "description": "tickets, change_requests, incidents",
+      "grain": "one row per change request",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "description": "Human-readable label."
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "description": "priority (string)."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "description": "assignee (string)."
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "description": "category (string)."
+        },
+        {
+          "name": "sla_met",
+          "type": "boolean",
+          "description": "sla met (boolean)."
+        }
+      ]
+    },
+    {
+      "name": "incidents",
+      "sourceSystem": "ServiceNow",
+      "description": "tickets, change_requests, incidents",
+      "grain": "one row per incident",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "description": "Human-readable label."
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "description": "priority (string)."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "description": "assignee (string)."
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "description": "category (string)."
+        },
+        {
+          "name": "sla_met",
+          "type": "boolean",
+          "description": "sla met (boolean)."
+        }
+      ]
+    },
+    {
+      "name": "finance_3_records",
+      "sourceSystem": "FINANCE 3",
+      "description": "finance_3_records, finance_3_events",
+      "grain": "one row per finance 3 record",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "source_record_id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "owner (string)."
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "notes (string)."
+        }
+      ]
+    },
+    {
+      "name": "finance_3_events",
+      "sourceSystem": "FINANCE 3",
+      "description": "finance_3_records, finance_3_events",
+      "grain": "one row per finance 3 event",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "actor",
+          "type": "string",
+          "description": "actor (string)."
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "action (string)."
+        },
+        {
+          "name": "target_type",
+          "type": "string",
+          "description": "target type (string)."
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "notes (string)."
+        },
+        {
+          "name": "finance_3_record_id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ]
+        }
+      ]
+    }
+  ],
+  "joins": [],
+  "measures": [],
+  "glossary": [
+    {
+      "term": "AuditBoard",
+      "definition": "Source system: AuditBoard.",
+      "maps_to": [
+        "auditboard_records",
+        "auditboard_events",
+        "auditboard_audit_trail"
+      ]
+    },
+    {
+      "term": "ServiceNow",
+      "definition": "Source system: ServiceNow.",
+      "maps_to": [
+        "tickets",
+        "change_requests",
+        "incidents"
+      ]
+    },
+    {
+      "term": "FINANCE 3",
+      "definition": "Source system: FINANCE 3.",
+      "maps_to": [
+        "finance_3_records",
+        "finance_3_events"
+      ]
+    }
+  ],
+  "bigquery": {
+    "tables": [
+      {
+        "table": "auditboard_records",
+        "description": "auditboard_records, auditboard_events, auditboard_audit_trail",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "actor",
+            "description": "actor (string)."
+          },
+          {
+            "name": "action",
+            "description": "action (string)."
+          },
+          {
+            "name": "target_type",
+            "description": "target type (string)."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "notes",
+            "description": "notes (string)."
+          }
+        ]
+      },
+      {
+        "table": "auditboard_events",
+        "description": "auditboard_records, auditboard_events, auditboard_audit_trail",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "actor",
+            "description": "actor (string)."
+          },
+          {
+            "name": "action",
+            "description": "action (string)."
+          },
+          {
+            "name": "target_type",
+            "description": "target type (string)."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "notes",
+            "description": "notes (string)."
+          }
+        ]
+      },
+      {
+        "table": "auditboard_audit_trail",
+        "description": "auditboard_records, auditboard_events, auditboard_audit_trail",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "actor",
+            "description": "actor (string)."
+          },
+          {
+            "name": "action",
+            "description": "action (string)."
+          },
+          {
+            "name": "target_type",
+            "description": "target type (string)."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "notes",
+            "description": "notes (string)."
+          }
+        ]
+      },
+      {
+        "table": "tickets",
+        "description": "tickets, change_requests, incidents",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "title",
+            "description": "Human-readable label."
+          },
+          {
+            "name": "priority",
+            "description": "priority (string)."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          },
+          {
+            "name": "assignee",
+            "description": "assignee (string)."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "category",
+            "description": "category (string)."
+          },
+          {
+            "name": "sla_met",
+            "description": "sla met (boolean)."
+          }
+        ]
+      },
+      {
+        "table": "change_requests",
+        "description": "tickets, change_requests, incidents",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "title",
+            "description": "Human-readable label."
+          },
+          {
+            "name": "priority",
+            "description": "priority (string)."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          },
+          {
+            "name": "assignee",
+            "description": "assignee (string)."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "category",
+            "description": "category (string)."
+          },
+          {
+            "name": "sla_met",
+            "description": "sla met (boolean)."
+          }
+        ]
+      },
+      {
+        "table": "incidents",
+        "description": "tickets, change_requests, incidents",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "title",
+            "description": "Human-readable label."
+          },
+          {
+            "name": "priority",
+            "description": "priority (string)."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          },
+          {
+            "name": "assignee",
+            "description": "assignee (string)."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "category",
+            "description": "category (string)."
+          },
+          {
+            "name": "sla_met",
+            "description": "sla met (boolean)."
+          }
+        ]
+      },
+      {
+        "table": "finance_3_records",
+        "description": "finance_3_records, finance_3_events",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "source_record_id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          },
+          {
+            "name": "owner",
+            "description": "owner (string)."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "notes",
+            "description": "notes (string)."
+          }
+        ]
+      },
+      {
+        "table": "finance_3_events",
+        "description": "finance_3_records, finance_3_events",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "actor",
+            "description": "actor (string)."
+          },
+          {
+            "name": "action",
+            "description": "action (string)."
+          },
+          {
+            "name": "target_type",
+            "description": "target type (string)."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "notes",
+            "description": "notes (string)."
+          },
+          {
+            "name": "finance_3_record_id",
+            "description": "Unique identifier."
+          }
+        ]
+      }
+    ]
+  }
+}

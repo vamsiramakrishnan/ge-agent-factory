@@ -1,0 +1,1240 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { BarChart3, Database, Calculator, Brain, FileText } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Daily ETL Refresh", lane: "system", type: "trigger" },
+    { id: "a1", label: "KPI Calculation", lane: "agent", type: "action" },
+    { id: "a2", label: "Anomaly Detection", lane: "agent", type: "action" },
+    { id: "a3", label: "Narrative Digest", lane: "agent", type: "action" },
+    { id: "a4", label: "Dashboard + Alerts", lane: "agent", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "a4"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Data Aggregation", icon: Database, description: "KPI source data refreshed daily from procurement and finance systems.", trigger: "Daily", systems: ["Coupa", "SAP Ariba", "BigQuery"] },
+  { label: "KPI Calculation", icon: Calculator, description: "Automated calculation: savings rate, cycle time, contract coverage, maverick spend, touchless PO rate.", systems: ["BigQuery", "Looker"], integration: "Data Agent" },
+  { label: "Root Cause Analysis", icon: Brain, description: "LLM generates narrative explaining why KPIs changed — distinguishes systemic shifts from one-time events.", systems: ["Vertex AI"] },
+  { label: "Tailored Distribution", icon: FileText, description: "CPO gets strategic summary; P2P Ops Manager gets operational detail; category managers get category view.", output: "KPI Dashboard" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "BigQuery", description: "KPI data warehouse, trend analytics, benchmark comparisons", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Looker", description: "Dashboard visualization, automated report distribution, alert triggers", direction: "bidirectional", protocol: "Looker API", category: "analytics" },
+    { system: "Coupa", description: "Procurement operational metrics — PO data, catalog usage, savings pipeline", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "SAP Ariba", description: "Sourcing metrics, contract coverage, supplier performance data", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "Vertex AI (Gemini)", description: "KPI narrative generation, root cause explanation, audience-tailored digests", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "KPI Data Aggregation", description: "Daily scheduled ETL from procurement and finance operational systems to BigQuery. Aggregate metrics across systems: savings rate, cycle time, contract coverage, maverick spend, touchless PO rate, supplier diversity.", systems: ["Coupa", "SAP Ariba", "BigQuery"], layer: "integration", dataIn: "Raw operational data from procurement systems", dataOut: "Aggregated KPI metrics in dimensional model" },
+    { label: "Automated KPI Calculation", description: "Calculate procurement KPIs with trend analysis and benchmark comparison against industry targets. Anomaly detection on KPI movements identifies significant changes requiring explanation.", systems: ["BigQuery", "Looker"], layer: "ml", dataIn: "Aggregated KPI data + benchmarks", dataOut: "KPI scorecard with anomaly flags" },
+    { label: "Narrative Digest Generation", description: "Gemini generates narrative digests explaining root causes of KPI changes — 'Touchless rate dropped due to new supplier without EDI, temporary.' Tailors narrative to audience: CPO gets strategic summary, P2P Ops Manager gets operational detail, category managers get category view.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "KPI scorecard + anomaly context", dataOut: "Audience-tailored narrative dashboard digest" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "CPO agent for the Procurement KPI Dashboard workflow",
+  primaryObjective: "Automated daily KPI calculation with threshold-based alerting on significant changes. LLM generates narrative digests explaining root causes: 'Touchless rate dropped due to new supplier onboarded without EDI — temporary, resolves in 2 weeks.' so the CPO can move the Dashboard refresh frequency KPI.",
+  inScope: [
+    "Automated daily KPI calculation with threshold-based alerting on significant changes",
+    "LLM generates narrative digests explaining root causes: 'Touchless rate dropped due to new supplier onboarded without EDI — temporary, resolves in 2 weeks.'",
+    "Tailored narratives for each audience: CPO sees strategic summary, operations sees actionable detail",
+  ],
+  outOfScope: [
+    "Contract execution without legal review",
+    "Supplier disqualification decisions (category lead retains authority)",
+    "Single-source justification overrides above policy threshold",
+  ],
+  toolIntents: [
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Procurement KPI Dashboard workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "query_looker_dashboards",
+      kind: "query",
+      sourceSystemId: "looker",
+      description: "Retrieve dashboards from Looker for the Procurement KPI Dashboard workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "dashboards_records",
+        "dashboards_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "query_coupa_requisitions",
+      kind: "query",
+      sourceSystemId: "coupa",
+      description: "Retrieve requisitions from Coupa for the Procurement KPI Dashboard workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "requisitions_records",
+        "requisitions_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_sap_ariba_suppliers",
+      kind: "query",
+      sourceSystemId: "sap_ariba",
+      description: "Retrieve suppliers from SAP Ariba for the Procurement KPI Dashboard workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "suppliers_records",
+        "suppliers_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_procurement_kpi_dashboard_policy_guide",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Procurement KPI Dashboard Procurement Policy Guide to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_coupa_generate",
+      kind: "action",
+      sourceSystemId: "coupa",
+      description: "Execute the generate step in Coupa after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Dashboard refresh frequency moved from Monthly manual toward Daily automated",
+      mustCite: [
+        "bigquery.analytics_events",
+        "looker.dashboards",
+      ],
+      sourceSystemIds: [
+        "bigquery",
+        "looker",
+      ],
+    },
+    {
+      claim: "Ad-hoc data requests moved from 10+ per week toward 80% self-served",
+      mustCite: [
+        "bigquery.analytics_events",
+        "looker.dashboards",
+      ],
+      sourceSystemIds: [
+        "bigquery",
+        "looker",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Dashboard refresh frequency regresses past the Monthly manual baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "CPO",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed generate action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from BigQuery (and other named systems) entities.",
+    "Never bypass CPO approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "procurement-kpi-dashboard-end-to-end",
+      prompt: "Run the Procurement KPI Dashboard workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_bigquery_analytics_events",
+        "query_looker_dashboards",
+        "query_coupa_requisitions",
+        "query_sap_ariba_suppliers",
+        "lookup_procurement_kpi_dashboard_policy_guide",
+        "action_coupa_generate",
+      ],
+      mustReferenceEntities: [
+        "analytics_events",
+        "dashboards",
+        "requisitions",
+        "suppliers",
+      ],
+      mustCiteDocuments: [
+        "procurement-kpi-dashboard-policy-guide",
+      ],
+      expectedActionOutcome: "Action generate executed against Coupa, with audit-trail entry and CPO notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute generate without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Procurement KPI Dashboard so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "looker",
+      name: "Looker",
+      owns: [
+        "dashboards",
+        "explore_queries",
+        "metric_definitions",
+      ],
+      protocol: "LookerML",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_looker_dashboards",
+        "query_looker_explore_queries",
+        "query_looker_metric_definitions",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "coupa",
+      name: "Coupa",
+      owns: [
+        "requisitions",
+        "purchase_orders",
+        "invoices",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_coupa_requisitions",
+        "query_coupa_purchase_orders",
+        "query_coupa_invoices",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "sap_ariba",
+      name: "SAP Ariba",
+      owns: [
+        "suppliers",
+        "sourcing_events",
+        "contracts",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sap_ariba_suppliers",
+        "query_sap_ariba_sourcing_events",
+        "query_sap_ariba_contracts",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "dashboards",
+      sourceSystemId: "looker",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "explore_queries",
+      sourceSystemId: "looker",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "metric_definitions",
+      sourceSystemId: "looker",
+      datastore: "bigquery",
+      rowCount: 30,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "requisitions",
+      sourceSystemId: "coupa",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "vendor",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: 100,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+            "JPY",
+          ],
+          weights: [
+            0.7,
+            0.15,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "pending",
+            "approved",
+            "paid",
+            "rejected",
+          ],
+          weights: [
+            0.1,
+            0.3,
+            0.3,
+            0.2,
+            0.1,
+          ],
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "due_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "purchase_orders",
+      sourceSystemId: "coupa",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "vendor",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: 100,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+            "JPY",
+          ],
+          weights: [
+            0.7,
+            0.15,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "pending",
+            "approved",
+            "paid",
+            "rejected",
+          ],
+          weights: [
+            0.1,
+            0.3,
+            0.3,
+            0.2,
+            0.1,
+          ],
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "due_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "invoices",
+      sourceSystemId: "coupa",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "vendor",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: 100,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+            "JPY",
+          ],
+          weights: [
+            0.7,
+            0.15,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "pending",
+            "approved",
+            "paid",
+            "rejected",
+          ],
+          weights: [
+            0.1,
+            0.3,
+            0.3,
+            0.2,
+            0.1,
+          ],
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "due_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "suppliers",
+      sourceSystemId: "sap_ariba",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "IT",
+            "Consulting",
+            "Manufacturing",
+            "Logistics",
+            "Facilities",
+            "Marketing",
+          ],
+          required: true,
+        },
+        {
+          name: "rating",
+          type: "number",
+          min: 1,
+          max: 5,
+          required: true,
+        },
+        {
+          name: "annual_spend",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "risk_score",
+          type: "enum",
+          values: [
+            "low",
+            "medium",
+            "high",
+          ],
+          weights: [
+            0.5,
+            0.35,
+            0.15,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending_review",
+            "terminated",
+          ],
+          required: true,
+        },
+        {
+          name: "onboarded_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "sourcing_events",
+      sourceSystemId: "sap_ariba",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "counterparty",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "start_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "end_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "negotiating",
+            "active",
+            "expired",
+            "terminated",
+          ],
+          required: true,
+        },
+        {
+          name: "auto_renew",
+          type: "boolean",
+          trueRate: 0.4,
+        },
+        {
+          name: "supplier_id",
+          type: "ref",
+          ref: "suppliers.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "contracts",
+      sourceSystemId: "sap_ariba",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "counterparty",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "start_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "end_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "negotiating",
+            "active",
+            "expired",
+            "terminated",
+          ],
+          required: true,
+        },
+        {
+          name: "auto_renew",
+          type: "boolean",
+          trueRate: 0.4,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "sourcing_events.supplier_id",
+      to: "suppliers.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "procurement-kpi-dashboard-policy-guide",
+      sourceSystemId: "bigquery",
+      type: "policy",
+      title: "Procurement KPI Dashboard Procurement Policy Guide",
+      requiredSections: [
+        "Sourcing principles",
+        "Approval thresholds",
+        "Supplier risk requirements",
+        "Contract and compliance gates",
+        "Exception handling",
+      ],
+      linkedEntities: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "sourcing",
+        "approvals",
+        "supplier-risk",
+        "exceptions",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "coupa_generate_api",
+      sourceSystemId: "coupa",
+      method: "POST",
+      path: "/api/coupa/generate",
+      description: "Synchronous endpoint the agent calls to generate in Coupa after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "procurement-kpi-dashboard-baseline-gap",
+      description: "Seed a realistic gap where Dashboard refresh frequency sits between Monthly manual and Daily automated, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "analytics_events",
+        "historical_metrics",
+      ],
+      discoveryPath: [
+        "Inspect BigQuery records for the affected entities",
+        "Compare against Looker historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next CPO action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "procurement_kpi_dashboard",
+      schemas: [
+        "coupa",
+        "sap_ariba",
+      ],
+    },
+    bigquery: {
+      dataset: "procurement_procurement_kpi_dashboard",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "procurement-kpi-dashboard-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "procurement-kpi-dashboard-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Procurement KPI Dashboard workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const ProcurementKPIDashboard = () => (
+  <UseCaseSlide
+    title="Procurement KPI Dashboard"
+    subtitle="A-1904 • Spend Analytics"
+    icon={BarChart3}
+    domainId="domain-19"
+    layer="Layer 4: Data Agent"
+    persona="CPO"
+    systems={["BigQuery", "Looker", "Coupa", "SAP Ariba"]}
+    kpis={[
+      { label: "Dashboard refresh frequency", before: "Monthly manual", after: "Daily automated" },
+      { label: "Ad-hoc data requests", before: "10+ per week", after: "80% self-served" },
+      { label: "Root cause explanation", before: "None — just numbers", after: "AI-generated narrative" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    statusQuo={[
+      "KPI dashboards refreshed monthly with significant manual effort — stale by the time they reach leadership.",
+      "Category managers submit 10+ ad-hoc data requests per week to analytics team.",
+      "Dashboard shows numbers without context — 'touchless PO rate dropped to 74%' but nobody knows why."
+    ]}
+    agentification={[
+      "Automated daily KPI calculation with threshold-based alerting on significant changes.",
+      "LLM generates narrative digests explaining root causes: 'Touchless rate dropped due to new supplier onboarded without EDI — temporary, resolves in 2 weeks.'",
+      "Tailored narratives for each audience: CPO sees strategic summary, operations sees actionable detail."
+    ]}
+  />
+);

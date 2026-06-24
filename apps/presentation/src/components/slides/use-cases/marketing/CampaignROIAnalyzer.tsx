@@ -1,0 +1,509 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, AgentBehaviorContract, UseCaseGenerationSpec } from "../../../../types/architecture";
+import { BarChart3, Database, GitCompare, FileText, Send } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Weekly / Campaign End", lane: "system", type: "trigger" },
+    { id: "a1", label: "Cost & Revenue Match", lane: "agent", type: "action" },
+    { id: "a2", label: "Attribution Modeling", lane: "agent", type: "action" },
+    { id: "a3", label: "ROI Narrative", lane: "agent", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Cost Aggregation", icon: Database, description: "Campaign cost data from ad platforms and MAP matched to pipeline and revenue data in CRM.", trigger: "Weekly + Campaign end", systems: ["Google Ads", "HubSpot", "Salesforce CRM"] },
+  { label: "Attribution Analysis", icon: GitCompare, description: "Multi-touch attribution modeling with CAC calculation, pipeline velocity analysis, and cohort tracking.", systems: ["BigQuery", "Looker"], integration: "BigQuery ML" },
+  { label: "Performance Narrative", icon: FileText, description: "Gemini explains campaign ROI in business terms with comparative analysis and investment recommendations.", systems: ["Vertex AI"] },
+  { label: "Report Distribution", icon: Send, description: "Executive-ready campaign performance narrative distributed with investment reallocation recommendations.", output: "ROI Report" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Salesforce CRM", description: "Pipeline data, revenue attribution, deal velocity, campaign influence", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "HubSpot", description: "Campaign costs, lead source tracking, engagement data", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "Google Ads", description: "Ad spend data, conversion tracking, campaign cost breakdowns", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "BigQuery", description: "Unified cost/revenue data, attribution models, cohort analysis", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Looker", description: "Campaign ROI dashboards, comparative performance views", direction: "write", protocol: "REST API", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "ROI narrative generation, investment reasoning, comparative analysis", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Cost & Revenue Matching", description: "Pull campaign cost data from ad platforms and MAP. Match to pipeline and revenue data in Salesforce. Aggregate in BigQuery with proper attribution windows.", systems: ["Google Ads", "HubSpot", "Salesforce CRM", "BigQuery"], layer: "integration", dataIn: "Raw campaign costs + CRM pipeline/revenue", dataOut: "Matched cost-to-revenue dataset" },
+    { label: "Attribution Modeling", description: "Multi-touch attribution modeling (linear, time-decay, data-driven). CAC calculation by campaign. Pipeline velocity analysis. Cohort-based ROI tracking across campaign types.", systems: ["BigQuery ML"], layer: "ml", dataIn: "Matched cost-revenue data + touchpoint history", dataOut: "Attribution-weighted ROI by campaign + CAC metrics" },
+    { label: "ROI Narrative Generation", description: "Explain campaign ROI in business terms \u2014 not just pipeline generated but comparative CAC, velocity differences, and strategic implications. Generate investment reallocation recommendations with specific rationale.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Attribution results + campaign context + benchmarks", dataOut: "Executive-ready ROI narrative with recommendations" },
+    { label: "Reporting & Dashboards", description: "Campaign ROI reports generated in Looker. Executive narratives distributed to marketing leadership. Investment recommendations queued for budget review.", systems: ["Looker", "Email"], layer: "integration", dataIn: "ROI narratives + dashboard data", dataOut: "Distributed reports + updated dashboards" },
+  ],
+};
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Marketing ROI analyst supporting GE VP Marketing investment decisions and quarterly budget allocation",
+  primaryObjective: "Generate multi-touch attribution results with calculated CAC per campaign, deliver executive ROI narrative with investment reallocation recommendations, and refresh Looker dashboards \u2014 all grounded in Salesforce pipeline + spend evidence with no CAC invention.",
+  inScope: [
+    "Multi-touch attribution modeling (linear, time-decay, data-driven) on matched cost-to-revenue dataset",
+    "CAC calculation per campaign with pipeline velocity and cohort analysis",
+    "ROI narrative generation comparing campaigns on CAC, conversion efficiency, and pipeline contribution",
+    "Investment recommendation logic with >$100k reallocations escalated to CMO approval",
+    "Looker dashboard refresh and ROI report distribution to marketing leadership",
+    "Audit trail documentation of attribution model selection and assumptions",
+  ],
+  outOfScope: [
+    "Launching new campaigns or modifying active campaign spend without budget approval",
+    "Approving budget reallocations \u2014 recommendations must be escalated to CMO for >$100k",
+    "Creative changes or channel strategy outside the scope of data-driven attribution",
+    "Responding to individual lead inquiries or customer-facing revenue questions",
+  ],
+  toolIntents: [
+    {
+      name: "query_salesforce_crm_opportunities",
+      kind: "query",
+      sourceSystemId: "salesforce_crm",
+      description: "Retrieve pipeline opportunities linked to campaigns including stage, amount, first-touch and last-touch campaign IDs, and deal velocity for attribution weighting.",
+      requiredInputs: ["campaign_id"],
+      produces: ["opportunity_records", "pipeline_stage_weights"],
+      evidenceEmitted: ["sql_result", "source_system_record"],
+    },
+    {
+      name: "query_salesforce_crm_campaign_influence",
+      kind: "query",
+      sourceSystemId: "salesforce_crm",
+      description: "Retrieve campaign influence records showing attributed revenue, influence weights by model, and audit trail for multi-touch attribution validation.",
+      requiredInputs: ["campaign_id"],
+      produces: ["influence_records", "attributed_revenue"],
+      evidenceEmitted: ["sql_result", "source_system_record"],
+    },
+    {
+      name: "query_hubspot_campaigns",
+      kind: "query",
+      sourceSystemId: "hubspot",
+      description: "Query HubSpot campaigns including cost_to_date, start_date, channel, and lead count to establish cost basis for CAC calculation.",
+      requiredInputs: ["campaign_id"],
+      produces: ["campaign_record", "spend_data"],
+      evidenceEmitted: ["sql_result", "source_system_record"],
+    },
+    {
+      name: "query_hubspot_lead_touchpoints",
+      kind: "query",
+      sourceSystemId: "hubspot",
+      description: "Retrieve lead touchpoint history with touchpoint type (web_visit, email_click, ad_view, form_submit), timestamp, and weights for multi-touch attribution.",
+      requiredInputs: ["campaign_id"],
+      produces: ["touchpoint_records", "touchpoint_weights"],
+      evidenceEmitted: ["sql_result", "source_system_record"],
+    },
+    {
+      name: "query_google_ads_campaigns",
+      kind: "query",
+      sourceSystemId: "google_ads",
+      description: "Retrieve Google Ads campaign metadata including name, start date, channels, and performance metrics for cost attribution.",
+      requiredInputs: ["campaign_id"],
+      produces: ["campaign_metadata"],
+      evidenceEmitted: ["source_system_record"],
+    },
+    {
+      name: "query_google_ads_spend",
+      kind: "query",
+      sourceSystemId: "google_ads",
+      description: "Fetch spend breakdowns by campaign, channel, and date range for accurate CAC cost basis in attribution.",
+      requiredInputs: ["campaign_id", "date_range"],
+      produces: ["spend_records", "cost_by_channel"],
+      evidenceEmitted: ["sql_result", "source_system_record"],
+    },
+    {
+      name: "query_bigquery_attribution_results",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Query pre-computed multi-touch attribution results including model type, weighted revenue, CAC, and confidence metrics.",
+      requiredInputs: ["campaign_id"],
+      produces: ["attribution_results", "confidence_score"],
+      evidenceEmitted: ["sql_result"],
+    },
+    {
+      name: "action_looker_publish_roi_dashboard",
+      kind: "action",
+      sourceSystemId: "looker",
+      description: "Publish or refresh campaign ROI dashboard in Looker with attribution results, CAC trends, and comparative performance views.",
+      requiredInputs: ["dashboard_name", "attribution_results"],
+      produces: ["dashboard_url", "publish_timestamp"],
+      evidenceEmitted: ["api_response", "generated_audit_trail"],
+    },
+    {
+      name: "action_email_distribute_roi_report",
+      kind: "action",
+      sourceSystemId: "looker",
+      description: "Send executive-ready ROI report with narrative and recommendations to VP Marketing and stakeholders, including investment reallocation logic.",
+      requiredInputs: ["recipient_list", "roi_narrative", "recommendations"],
+      produces: ["email_id", "delivery_status"],
+      evidenceEmitted: ["api_response", "generated_audit_trail"],
+    },
+    {
+      name: "lookup_attribution_methodology_handbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Retrieve sections of the Attribution Methodology Handbook to cite model selection (multi-touch vs. last-touch), CAC formula, and confidence thresholds in the ROI narrative.",
+      requiredInputs: ["section_anchor"],
+      produces: ["handbook_section", "citation_anchor"],
+      evidenceEmitted: ["document_reference"],
+    },
+    {
+      name: "lookup_marketing_investment_governance_policy",
+      kind: "evidence_lookup",
+      sourceSystemId: "looker",
+      description: "Look up Marketing Investment Governance Policy sections to justify executive escalation, budget reallocation thresholds, and quarterly review distribution rules.",
+      requiredInputs: ["section_anchor"],
+      produces: ["policy_section", "approval_threshold"],
+      evidenceEmitted: ["document_reference"],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Campaign CAC is $X with Y confidence",
+      mustCite: ["attribution_results.model", "attribution_results.weighted_revenue", "campaigns.cost_to_date"],
+      sourceSystemIds: ["bigquery", "hubspot", "google_ads"],
+    },
+    {
+      claim: "Campaign generated Z pipeline revenue via multi-touch",
+      mustCite: ["opportunities.first_touch_campaign_id", "opportunities.last_touch_campaign_id", "lead_touchpoints.weights"],
+      sourceSystemIds: ["salesforce_crm", "hubspot"],
+    },
+    {
+      claim: "Investment reallocation of >$100k recommended",
+      mustCite: ["governance-policy-budget-thresholds", "attribution_results.weighted_revenue", "campaign-performance-benchmarks"],
+      sourceSystemIds: ["bigquery"],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Recommendation reallocates >$100k from one channel to another",
+      action: "escalate_to_human",
+      handoffTarget: "CMO for budget approval",
+      rationale: "Large reallocations require executive review and approval before publication to avoid unauthorized budget movement.",
+    },
+    {
+      trigger: "Attribution confidence <0.6 (high model uncertainty)",
+      action: "request_more_info",
+      rationale: "Low confidence indicates insufficient data or modeling ambiguity; request clarification on model assumptions or data quality before publishing narrative.",
+    },
+    {
+      trigger: "UTM tracking data missing on >30% of lead touchpoints",
+      action: "escalate_to_human",
+      handoffTarget: "Marketing Operations lead",
+      rationale: "UTM gaps prevent accurate multi-touch attribution; MarTech ops must remediate tracking or validate alternative attribution method.",
+    },
+    {
+      trigger: "Recommended budget reallocations conflict with locked annual budget or committed spend",
+      action: "refuse",
+      rationale: "Never recommend reallocations that violate signed annual commitments; escalate to CMO if conflict cannot be resolved through governance policy.",
+    },
+  ],
+  refusalRules: [
+    "Never invent CAC numbers \u2014 only publish numbers derived from bigquery.attribution_results.weighted_revenue + hubspot/google_ads.cost_to_date.",
+    "Never use last-touch attribution when multi-touch data is available; always cite the model selection logic in the narrative.",
+    "Never expose individual lead-level PII in reports \u2014 aggregate to campaign/channel level only.",
+    "Never recommend budget increases without corresponding pipeline-velocity or CAC-improvement evidence.",
+    "Never publish attribution results with confidence <0.6 without explicitly flagging uncertainty to CMO.",
+  ],
+  goldenEvals: [
+    {
+      id: "weekly-roi-narrative-full-workflow",
+      prompt: "Generate this week's ROI narrative for campaigns launched in Q1, including multi-touch attribution, CAC by channel, and investment recommendations if pipeline velocity falls below benchmark.",
+      expectedToolCalls: [
+        "query_salesforce_crm_opportunities",
+        "query_salesforce_crm_campaign_influence",
+        "query_hubspot_campaigns",
+        "query_hubspot_lead_touchpoints",
+        "query_google_ads_campaigns",
+        "query_google_ads_spend",
+        "query_bigquery_attribution_results",
+        "action_looker_publish_roi_dashboard",
+        "action_email_distribute_roi_report",
+      ],
+      mustReferenceEntities: ["campaigns", "lead_touchpoints", "opportunities", "attribution_results"],
+      mustCiteDocuments: ["attribution-methodology-handbook", "marketing-investment-governance-policy"],
+      expectedActionOutcome: "Looker dashboard refreshed, ROI narrative emitted via email with CAC comparisons and (if applicable) reallocation recommendations escalated to CMO.",
+      forbiddenBehaviors: [
+        "do not invent CAC numbers",
+        "do not use last-touch attribution without mentioning multi-touch alternative",
+        "do not recommend reallocations >$100k without escalating to CMO",
+      ],
+    },
+    {
+      id: "single-campaign-deep-dive",
+      prompt: "Analyze campaign CAM-2024-Q2-LinkedIn for true ROI: what was spent, how many leads, which ones became opportunities, and what is the actual CAC after multi-touch weighting?",
+      expectedToolCalls: [
+        "query_hubspot_campaigns",
+        "query_hubspot_lead_touchpoints",
+        "query_salesforce_crm_opportunities",
+        "query_google_ads_spend",
+        "query_bigquery_attribution_results",
+      ],
+      mustReferenceEntities: ["campaigns", "lead_touchpoints", "opportunities", "attribution_results"],
+      mustCiteDocuments: ["attribution-methodology-handbook"],
+      expectedActionOutcome: "Deep-dive report with spend, lead count, opportunity conversion, final CAC, and confidence metric; no budget recommendation unless new insight warrants escalation.",
+      forbiddenBehaviors: [
+        "do not use last-touch CAC as final answer when multi-touch available",
+        "do not claim attribution without weighted_revenue proof",
+      ],
+    },
+    {
+      id: "low-confidence-attribution-refusal",
+      prompt: "Our Salesforce data for May had a sync error and we lost 40% of the opportunity records. Can you still generate this month's ROI narrative?",
+      expectedToolCalls: [
+        "query_bigquery_attribution_results",
+      ],
+      mustCiteDocuments: ["attribution-methodology-handbook"],
+      expectedActionOutcome: "Refuse to publish; escalate to MarTech ops with specific data quality issues flagged (missing 40% of records, cannot meet minimum confidence threshold).",
+      forbiddenBehaviors: [
+        "do not publish with confidence <0.6",
+        "do not generate narrative with incomplete data",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Campaign ROI analysis needs sufficient campaigns, leads, and opportunities to demonstrate multi-touch attribution, CAC variance by channel, and cohort-level insights without simulating a production data warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "salesforce_crm",
+      name: "Salesforce CRM",
+      owns: ["opportunities", "campaigns_influence", "deals"],
+      protocol: "REST API",
+      localBacking: ["json-api", "alloydb"],
+      toolNames: ["query_salesforce_crm_opportunities", "query_salesforce_crm_campaign_influence"],
+      mcpToolNames: ["salesforce_query_opportunities", "salesforce_get_campaign_influence"],
+      evidence: ["source_system_record", "sql_result"],
+    },
+    {
+      id: "hubspot",
+      name: "HubSpot",
+      owns: ["campaigns", "lead_touchpoints", "lead_records"],
+      protocol: "REST API",
+      localBacking: ["json-api", "alloydb"],
+      toolNames: ["query_hubspot_campaigns", "query_hubspot_lead_touchpoints"],
+      mcpToolNames: ["hubspot_get_campaigns", "hubspot_list_lead_engagements"],
+      evidence: ["source_system_record", "sql_result"],
+    },
+    {
+      id: "google_ads",
+      name: "Google Ads",
+      owns: ["ad_campaigns", "spend_data", "conversion_tracking"],
+      protocol: "REST API",
+      localBacking: ["json-api", "alloydb"],
+      toolNames: ["query_google_ads_campaigns", "query_google_ads_spend"],
+      mcpToolNames: ["google_ads_get_campaigns", "google_ads_get_spend"],
+      evidence: ["source_system_record", "sql_result"],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: ["attribution_results", "cac_by_channel", "pipeline_velocity"],
+      protocol: "BigQuery SQL",
+      localBacking: ["bigquery"],
+      toolNames: ["query_bigquery_attribution_results"],
+      mcpToolNames: ["bigquery_query_attribution"],
+      evidence: ["sql_result"],
+    },
+    {
+      id: "looker",
+      name: "Looker",
+      owns: ["roi_dashboards", "report_templates"],
+      protocol: "REST API",
+      localBacking: ["json-api"],
+      toolNames: ["action_looker_publish_roi_dashboard", "action_email_distribute_roi_report"],
+      mcpToolNames: ["looker_dashboard_refresh", "looker_send_report"],
+      evidence: ["api_response", "generated_audit_trail"],
+    },
+  ],
+  entities: [
+    {
+      name: "campaigns",
+      sourceSystemId: "hubspot",
+      datastore: "alloydb",
+      rowCount: 35,
+      primaryKey: "id",
+      columns: [
+        { name: "id", type: "seq", required: true },
+        { name: "source_record_id", type: "seq", required: true },
+        { name: "campaign_name", type: "company.bs", required: true },
+        { name: "channel", type: "enum", values: ["email", "linkedin", "google_ads", "facebook", "content"], weights: [0.2, 0.25, 0.3, 0.15, 0.1], required: true },
+        { name: "cost_to_date", type: "number", min: 1000, max: 150000, required: true },
+        { name: "start_date", type: "date.past", required: true },
+      ],
+    },
+    {
+      name: "lead_touchpoints",
+      sourceSystemId: "hubspot",
+      datastore: "alloydb",
+      rowCount: 200,
+      primaryKey: "id",
+      columns: [
+        { name: "id", type: "seq", required: true },
+        { name: "campaign_id", type: "ref", ref: "campaigns.id", required: true },
+        { name: "lead_id", type: "seq", required: true },
+        { name: "touchpoint_type", type: "enum", values: ["web_visit", "email_click", "ad_view", "form_submit"], weights: [0.3, 0.25, 0.25, 0.2], required: true },
+        { name: "weight", type: "float", min: 0.1, max: 1.0, decimals: 2, required: true },
+        { name: "timestamp", type: "date.recent", required: true },
+      ],
+    },
+    {
+      name: "opportunities",
+      sourceSystemId: "salesforce_crm",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        { name: "id", type: "seq", required: true },
+        { name: "source_record_id", type: "seq", required: true },
+        { name: "account_id", type: "seq", required: true },
+        { name: "amount", type: "number", min: 5000, max: 500000, required: true },
+        { name: "stage", type: "enum", values: ["prospecting", "qualification", "proposal", "negotiation", "closed_won", "closed_lost"], weights: [0.15, 0.2, 0.25, 0.2, 0.15, 0.05], required: true },
+        { name: "first_touch_campaign_id", type: "ref", ref: "campaigns.id", required: true },
+        { name: "last_touch_campaign_id", type: "ref", ref: "campaigns.id", required: true },
+      ],
+    },
+    {
+      name: "attribution_results",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 35,
+      primaryKey: "id",
+      columns: [
+        { name: "id", type: "seq", required: true },
+        { name: "campaign_id", type: "ref", ref: "campaigns.id", required: true },
+        { name: "model", type: "enum", values: ["linear", "time_decay", "data_driven"], weights: [0.33, 0.33, 0.34], required: true },
+        { name: "weighted_revenue", type: "number", min: 0, max: 500000, required: true },
+        { name: "cac", type: "number", min: 10, max: 10000, required: true },
+        { name: "confidence", type: "float", min: 0.4, max: 1.0, decimals: 2, required: true },
+      ],
+    },
+    {
+      name: "roi_reports",
+      sourceSystemId: "looker",
+      datastore: "alloydb",
+      rowCount: 26,
+      primaryKey: "id",
+      columns: [
+        { name: "id", type: "seq", required: true },
+        { name: "period", type: "enum", values: ["week", "month", "quarter"], required: true },
+        { name: "top_campaign_id", type: "ref", ref: "campaigns.id", required: true },
+        { name: "narrative", type: "lorem.paragraphs", required: true },
+        { name: "recommendations", type: "lorem.sentences", required: true },
+        { name: "created_at", type: "date.recent", required: true },
+      ],
+    },
+  ],
+  relationships: [
+    { from: "lead_touchpoints.campaign_id", to: "campaigns.id", cardinality: "many-to-one", orphanPolicy: "none" },
+    { from: "opportunities.first_touch_campaign_id", to: "campaigns.id", cardinality: "many-to-one", orphanPolicy: "none" },
+    { from: "opportunities.last_touch_campaign_id", to: "campaigns.id", cardinality: "many-to-one", orphanPolicy: "none" },
+    { from: "attribution_results.campaign_id", to: "campaigns.id", cardinality: "many-to-one", orphanPolicy: "none" },
+    { from: "roi_reports.top_campaign_id", to: "campaigns.id", cardinality: "many-to-one", orphanPolicy: "none" },
+  ],
+  documents: [
+    {
+      id: "attribution-methodology-handbook",
+      sourceSystemId: "bigquery",
+      type: "knowledge_base",
+      title: "Attribution Methodology Handbook",
+      requiredSections: ["Multi-touch attribution models", "Linear vs. time-decay vs. data-driven", "CAC calculation formula", "Confidence scoring"],
+      linkedEntities: ["attribution_results", "campaigns", "opportunities"],
+      minimumWordCount: 600,
+      citationAnchors: ["attribution-models", "cac-formula", "confidence-thresholds"],
+    },
+    {
+      id: "marketing-investment-governance-policy",
+      sourceSystemId: "looker",
+      type: "policy",
+      title: "Marketing Investment Governance Policy",
+      requiredSections: ["Budget allocation approval thresholds", "Quarterly review cadence", "Executive escalation rules", "Data quality requirements"],
+      linkedEntities: ["roi_reports", "campaigns"],
+      minimumWordCount: 500,
+      citationAnchors: ["budget-thresholds", "executive-distribution", "approval-workflow"],
+    },
+  ],
+  apis: [
+    {
+      systemId: "looker",
+      operation: "refresh_roi_dashboard",
+      method: "POST",
+      path: "/systems/looker/dashboards/roi-refresh",
+      requestSchema: { dashboard_name: "string", attribution_results: "object", filters: "object" },
+      responseSchema: { dashboard_url: "string", publish_timestamp: "string", status: "string" },
+      fixture: "mock_data/apis/fixtures/looker_roi_dashboard_refresh.json",
+      mcpToolName: "looker_dashboard_refresh",
+    },
+    {
+      systemId: "looker",
+      operation: "distribute_roi_report",
+      method: "POST",
+      path: "/systems/email/roi-report-distribution",
+      requestSchema: { recipients: "array", roi_narrative: "string", recommendations: "array", attachments: "array" },
+      responseSchema: { email_id: "string", delivery_status: "string", timestamp: "string" },
+      fixture: "mock_data/apis/fixtures/email_roi_report_distribution.json",
+      mcpToolName: "email_distribute_report",
+    },
+  ],
+  anomalies: [
+    {
+      id: "first-touch-spend-without-attribution",
+      description: "Campaign has high spend ($50k+) and claims many first-touch leads, but attributed pipeline revenue is near zero (false attribution), indicating first-touch bias or data quality issue.",
+      affectedEntities: ["campaigns", "lead_touchpoints", "opportunities", "attribution_results"],
+      discoveryPath: ["Filter campaigns with cost_to_date >= $50k", "Count distinct lead_touchpoints where campaign_id = first touch", "Query attributed revenue from attribution_results", "Identify campaigns with >50 first-touch leads but <$5k attributed revenue"],
+      expectedEvidence: ["campaigns.cost_to_date", "lead_touchpoints records", "attribution_results.weighted_revenue", "BigQuery confidence metric"],
+      expectedRecommendation: "Investigate touchpoint attribution weighting; validate that first-touch leads convert to opportunities in later stages; consider time-decay or data-driven model to correct false attribution.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: { database: "marketing_campaigns", schemas: ["hubspot", "salesforce_crm", "looker"] },
+    bigquery: { dataset: "marketing_attribution", tables: ["attribution_results", "cac_by_channel", "pipeline_velocity"] },
+    cloudStorage: { bucketSuffix: "marketing-roi-evidence", prefixes: ["dashboards/roi", "reports/narratives"] },
+    apis: { serviceName: "marketing-roi-adapters", deploymentTarget: "cloud_run" },
+  },
+  behaviorContract,
+  validation: {
+    smokePrompt: "Generate this week's campaign ROI narrative including multi-touch attribution, CAC by channel, and recommended investment reallocations if pipeline velocity falls below Q2 benchmark.",
+    expectedAnswer: ["cites bigquery attribution_results", "calculates CAC from hubspot spend + salesforce pipeline", "includes multi-touch model justification", "identifies low-confidence anomalies", "escalates reallocation >$100k to CMO"],
+    assertions: ["all tool names use canonical source system IDs", "all entities properly foreign-keyed", "attribution results include model selection logic", "narrative includes governance policy citation"],
+  },
+};
+
+export const CampaignROIAnalyzer = () => (
+  <UseCaseSlide
+    title="Campaign ROI Analyzer"
+    subtitle="A-3108 \u2022 Demand Generation"
+    icon={BarChart3}
+    domainId="domain-31"
+    layer="Layer 4: Data Agent"
+    persona="VP Marketing"
+    systems={["Salesforce CRM", "HubSpot", "Google Ads", "BigQuery", "Looker"]}
+    kpis={[
+      { label: "ROI reporting time", before: "1-2 weeks", after: "Automated weekly" },
+      { label: "Attribution model sophistication", before: "Last-touch", after: "Multi-touch data-driven" },
+      { label: "Investment decision quality", before: "Lagging indicators", after: "Forward-looking recommendations" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    generationSpec={generationSpec}
+    statusQuo={[
+      "Campaign ROI reported weeks after completion using last-touch attribution that misrepresents channel value.",
+      "Cost and revenue data lives in separate systems requiring manual reconciliation for accurate CAC calculation.",
+      "ROI narratives limited to pipeline generated without comparative analysis or investment recommendations."
+    ]}
+    agentification={[
+      "Gemini explains campaign ROI in business terms with comparative CAC analysis, velocity differences, and strategic implications.",
+      "Multi-touch attribution modeling replaces last-touch for accurate channel value assessment.",
+      "Generates executive-ready performance narratives with forward-looking investment reallocation recommendations."
+    ]}
+  />
+);

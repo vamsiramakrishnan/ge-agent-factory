@@ -1,0 +1,127 @@
+{
+  "generatedAt": "2026-06-11T08:59:48.834Z",
+  "agentId": "ar_aging_dso_analyzer",
+  "role": "AR Manager agent for the AR Aging & DSO Analyzer workflow",
+  "primaryObjective": "Automated segment-level DSO analysis reveals that a 5-day DSO increase is driven entirely by 2 government contracts, not a systemic issue. Gemini generates narrative context that transforms numbers into actionable intelligence for the AR Manager. so the AR Manager can move the Reporting cycle KPI.",
+  "evals": [
+    {
+      "id": "ar-aging-dso-analyzer-end-to-end",
+      "prompt": "Run the AR Aging & DSO Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      "expectedToolCalls": [
+        "query_sap_s_4hana_fi_gl_entries",
+        "query_bigquery_analytics_events",
+        "query_looker_dashboards",
+        "lookup_ar_aging_dso_analyzer_controls_playbook",
+        "action_sap_s_4hana_fi_generate"
+      ],
+      "mustReferenceEntities": [
+        "gl_entries",
+        "analytics_events",
+        "dashboards"
+      ],
+      "mustCiteDocuments": [
+        "ar-aging-dso-analyzer-controls-playbook"
+      ],
+      "expectedActionOutcome": "Action generate executed against SAP S/4HANA FI, with audit-trail entry and AR Manager notified of outcomes.",
+      "forbiddenBehaviors": [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute generate without two-system evidence"
+      ]
+    }
+  ],
+  "packEvalHints": [
+    {
+      "packId": "system_analytics",
+      "expectedToolKinds": [
+        "query",
+        "calculation"
+      ],
+      "mustReferenceEntities": [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates"
+      ],
+      "successCriteria": [
+        "Derive metric claims from warehouse-backed rows.",
+        "Compare current values against historical or cached baselines.",
+        "Call out negative variance and stale computed_at dates."
+      ],
+      "refusalRules": [
+        "Do not invent metric values, trends, or forecast confidence when analytics rows are missing."
+      ]
+    },
+    {
+      "packId": "system_procurement_ops",
+      "expectedToolKinds": [
+        "query",
+        "evidence_lookup",
+        "action"
+      ],
+      "mustReferenceEntities": [
+        "suppliers",
+        "contracts",
+        "requisitions",
+        "purchase_orders",
+        "invoices"
+      ],
+      "successCriteria": [
+        "Cite vendor, amount, status, and due-date evidence for approval or sourcing recommendations.",
+        "Differentiate pending, approved, paid, and rejected spend records.",
+        "Escalate high-value or missing-contract cases before action."
+      ],
+      "refusalRules": [
+        "Do not approve, renew, or recommend supplier action without supplier/spend evidence."
+      ]
+    },
+    {
+      "packId": "system_finance_erp",
+      "expectedToolKinds": [
+        "query",
+        "calculation",
+        "action"
+      ],
+      "mustReferenceEntities": [
+        "gl_entries",
+        "subledger_balances",
+        "open_items",
+        "accounts_payable",
+        "accounts_receivable"
+      ],
+      "successCriteria": [
+        "Back close, cash, AP, AR, and control claims with ledger evidence.",
+        "Call out pending or reversed records as exceptions.",
+        "Preserve audit trail details for write-like finance actions."
+      ],
+      "refusalRules": [
+        "Do not certify, close, or post finance actions without ledger and exception evidence."
+      ]
+    }
+  ],
+  "refusalRules": [
+    "Never fabricate metric values; only publish numbers derived from SAP S/4HANA FI (and other named systems) entities.",
+    "Never bypass AR Manager approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+    "Do not invent metric values, trends, or forecast confidence when analytics rows are missing.",
+    "Do not approve, renew, or recommend supplier action without supplier/spend evidence.",
+    "Do not certify, close, or post finance actions without ledger and exception evidence."
+  ],
+  "escalationTriggers": [
+    {
+      "trigger": "Reporting cycle regresses past the Manual weekly baseline by more than 20%",
+      "action": "escalate_to_human",
+      "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+    },
+    {
+      "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      "action": "request_more_info",
+      "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+    },
+    {
+      "trigger": "Proposed generate action lacks supporting evidence from at least two systems",
+      "action": "refuse",
+      "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+    }
+  ]
+}

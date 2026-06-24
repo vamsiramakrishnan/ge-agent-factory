@@ -1,0 +1,1234 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { TrendingDown, Database, BarChart3, FileSearch, AlertCircle } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Quarterly Cycle", lane: "system", type: "trigger" },
+    { id: "a1", label: "Financial Data Pull", lane: "agent", type: "action" },
+    { id: "a2", label: "Distress Scoring", lane: "agent", type: "action" },
+    { id: "a3", label: "10-K Analysis", lane: "agent", type: "action" },
+    { id: "a4", label: "Risk Narrative", lane: "agent", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "a4"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Data Aggregation", icon: Database, description: "Financial data feeds ingested from RapidRatings, D&B, and Moody's into BigQuery time-series.", trigger: "Quarterly", systems: ["RapidRatings", "D&B", "Moody's"] },
+  { label: "Predictive Scoring", icon: BarChart3, description: "Altman Z-score augmented with ML on financial ratios, peer benchmarking, and credit signal anomalies.", systems: ["BigQuery"], integration: "ADK" },
+  { label: "Filing Analysis", icon: FileSearch, description: "LLM reads 10-K filings and MD&A sections for distress signals invisible to quantitative models.", systems: ["SEC EDGAR", "Vertex AI"] },
+  { label: "Risk Alert", icon: AlertCircle, description: "Synthesized risk narrative combining quantitative scores with qualitative signals delivered to sourcing.", output: "Financial Risk Assessment" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "RapidRatings", description: "Financial health ratings, predictive distress scores", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "Dun & Bradstreet", description: "Credit scores, company financials, payment behavior", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "Moody's", description: "Credit ratings, outlook changes, watchlist status", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "SEC EDGAR", description: "10-K/10-Q filings, management discussion & analysis", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "BigQuery", description: "Financial ratio time-series, peer benchmarks, alert history", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "10-K narrative interpretation, risk narrative synthesis", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Financial Data Aggregation", description: "Pull financial data feeds from RapidRatings, D&B, and Moody's. Ingest SEC filings for public companies. Store time-series in BigQuery with quarterly snapshots for trend analysis.", systems: ["RapidRatings", "Dun & Bradstreet", "Moody's", "SEC EDGAR", "BigQuery"], layer: "integration", dataIn: "Multi-source financial feeds + SEC filings", dataOut: "Unified financial profile per supplier in BigQuery" },
+    { label: "Predictive Distress Scoring", description: "Altman Z-score augmented with ML on financial ratios (current ratio, debt/equity, days cash on hand). Anomaly detection on credit signal changes. Peer benchmarking against industry cohorts.", systems: ["BigQuery"], layer: "ml", dataIn: "Financial ratio time-series + credit signals", dataOut: "Predictive distress score with trend trajectory" },
+    { label: "Filing Analysis & Risk Narrative", description: "LLM reads 10-K management discussion — 'exploring strategic alternatives' (likely up for sale) or 'going concern opinion from auditors' (distress signal). Synthesizes quantitative scores with qualitative signals into a risk narrative for sourcing teams.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Distress scores + SEC filing text + credit signals", dataOut: "Risk-rated financial health assessment with narrative" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Supplier Risk Analyst agent for the Financial Health Assessor workflow",
+  primaryObjective: "Altman Z-score augmented with ML detects deteriorating financial ratios before credit downgrades. LLM reads 10-K filings and flags 'exploring strategic alternatives' and going concern opinions as distress signals. so the Supplier Risk Analyst can move the Distress signal detection KPI.",
+  inScope: [
+    "Altman Z-score augmented with ML detects deteriorating financial ratios before credit downgrades",
+    "LLM reads 10-K filings and flags 'exploring strategic alternatives' and going concern opinions as distress signals",
+    "Synthesizes quantitative scores with qualitative signals into actionable risk narrative — stable score but declining margins plus auditor concerns equals elevated risk",
+  ],
+  outOfScope: [
+    "Contract execution without legal review",
+    "Supplier disqualification decisions (category lead retains authority)",
+    "Single-source justification overrides above policy threshold",
+  ],
+  toolIntents: [
+    {
+      name: "query_rapidratings_rapidratings_records",
+      kind: "query",
+      sourceSystemId: "rapidratings",
+      description: "Retrieve rapidratings records from RapidRatings for the Financial Health Assessor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "rapidratings_records_records",
+        "rapidratings_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_d_b_d_b_records",
+      kind: "query",
+      sourceSystemId: "d_b",
+      description: "Retrieve d b records from D&B for the Financial Health Assessor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "d_b_records_records",
+        "d_b_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_moody_s_moody_s_records",
+      kind: "query",
+      sourceSystemId: "moody_s",
+      description: "Retrieve moody s records from Moody's for the Financial Health Assessor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "moody_s_records_records",
+        "moody_s_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_sec_edgar_sec_edgar_records",
+      kind: "query",
+      sourceSystemId: "sec_edgar",
+      description: "Retrieve sec edgar records from SEC EDGAR for the Financial Health Assessor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "sec_edgar_records_records",
+        "sec_edgar_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_financial_health_assessor_policy_guide",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Financial Health Assessor Procurement Policy Guide to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Distress signal detection moved from Reactive (after default) toward 6-12 months early warning",
+      mustCite: [
+        "rapidratings.rapidratings_records",
+        "d_b.d_b_records",
+      ],
+      sourceSystemIds: [
+        "rapidratings",
+        "d_b",
+      ],
+    },
+    {
+      claim: "Suppliers monitored moved from Top 50 manual toward All active suppliers",
+      mustCite: [
+        "rapidratings.rapidratings_records",
+        "d_b.d_b_records",
+      ],
+      sourceSystemIds: [
+        "rapidratings",
+        "d_b",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Distress signal detection regresses past the Reactive (after default) baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Supplier Risk Analyst",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from RapidRatings (and other named systems) entities.",
+    "Never bypass Supplier Risk Analyst approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "financial-health-assessor-end-to-end",
+      prompt: "Run the Financial Health Assessor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_rapidratings_rapidratings_records",
+        "query_d_b_d_b_records",
+        "query_moody_s_moody_s_records",
+        "query_sec_edgar_sec_edgar_records",
+        "lookup_financial_health_assessor_policy_guide",
+      ],
+      mustReferenceEntities: [
+        "rapidratings_records",
+        "d_b_records",
+        "moody_s_records",
+        "sec_edgar_records",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "financial-health-assessor-policy-guide",
+      ],
+      expectedActionOutcome: "Supplier Risk Analyst receives a fully-cited recommendation; no external state change without explicit approval.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not act on single-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Financial Health Assessor so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "rapidratings",
+      name: "RapidRatings",
+      owns: [
+        "rapidratings_records",
+        "rapidratings_events",
+        "rapidratings_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_rapidratings_rapidratings_records",
+        "query_rapidratings_rapidratings_events",
+        "query_rapidratings_rapidratings_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "d_b",
+      name: "D&B",
+      owns: [
+        "d_b_records",
+        "d_b_events",
+        "d_b_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_d_b_d_b_records",
+        "query_d_b_d_b_events",
+        "query_d_b_d_b_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "moody_s",
+      name: "Moody's",
+      owns: [
+        "moody_s_records",
+        "moody_s_events",
+        "moody_s_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_moody_s_moody_s_records",
+        "query_moody_s_moody_s_events",
+        "query_moody_s_moody_s_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "sec_edgar",
+      name: "SEC EDGAR",
+      owns: [
+        "sec_edgar_records",
+        "sec_edgar_events",
+        "sec_edgar_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sec_edgar_sec_edgar_records",
+        "query_sec_edgar_sec_edgar_events",
+        "query_sec_edgar_sec_edgar_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "rapidratings_records",
+      sourceSystemId: "rapidratings",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "rapidratings_events",
+      sourceSystemId: "rapidratings",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "rapidratings_record_id",
+          type: "ref",
+          ref: "rapidratings_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "rapidratings_audit_trail",
+      sourceSystemId: "rapidratings",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "d_b_records",
+      sourceSystemId: "d_b",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "d_b_events",
+      sourceSystemId: "d_b",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "d_b_record_id",
+          type: "ref",
+          ref: "d_b_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "d_b_audit_trail",
+      sourceSystemId: "d_b",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "moody_s_records",
+      sourceSystemId: "moody_s",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "moody_s_events",
+      sourceSystemId: "moody_s",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "moody_s_record_id",
+          type: "ref",
+          ref: "moody_s_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "moody_s_audit_trail",
+      sourceSystemId: "moody_s",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "sec_edgar_records",
+      sourceSystemId: "sec_edgar",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "sec_edgar_events",
+      sourceSystemId: "sec_edgar",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "sec_edgar_record_id",
+          type: "ref",
+          ref: "sec_edgar_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "sec_edgar_audit_trail",
+      sourceSystemId: "sec_edgar",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "rapidratings_events.rapidratings_record_id",
+      to: "rapidratings_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "d_b_events.d_b_record_id",
+      to: "d_b_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "moody_s_events.moody_s_record_id",
+      to: "moody_s_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "sec_edgar_events.sec_edgar_record_id",
+      to: "sec_edgar_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "financial-health-assessor-policy-guide",
+      sourceSystemId: "bigquery",
+      type: "policy",
+      title: "Financial Health Assessor Procurement Policy Guide",
+      requiredSections: [
+        "Sourcing principles",
+        "Approval thresholds",
+        "Supplier risk requirements",
+        "Contract and compliance gates",
+        "Exception handling",
+      ],
+      linkedEntities: [
+        "rapidratings_records",
+        "rapidratings_events",
+        "rapidratings_audit_trail",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "sourcing",
+        "approvals",
+        "supplier-risk",
+        "exceptions",
+      ],
+    },
+  ],
+  apis: [],
+  anomalies: [
+    {
+      id: "financial-health-assessor-baseline-gap",
+      description: "Seed a realistic gap where Distress signal detection sits between Reactive (after default) and 6-12 months early warning, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "rapidratings_records",
+        "rapidratings_events",
+      ],
+      discoveryPath: [
+        "Inspect RapidRatings records for the affected entities",
+        "Compare against D&B historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Supplier Risk Analyst action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "financial_health_assessor",
+      schemas: [
+        "rapidratings",
+        "d_b",
+        "moody_s",
+        "sec_edgar",
+      ],
+    },
+    bigquery: {
+      dataset: "procurement_financial_health_assessor",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "financial-health-assessor-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "financial-health-assessor-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Financial Health Assessor workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const FinancialHealthAssessor = () => (
+  <UseCaseSlide
+    title="Financial Health Assessor"
+    subtitle="A-1303 • Supplier Discovery"
+    icon={TrendingDown}
+    domainId="domain-13"
+    layer="Layer 4: Data Agent"
+    persona="Supplier Risk Analyst"
+    systems={["RapidRatings", "D&B", "Moody's", "SEC EDGAR", "BigQuery"]}
+    kpis={[
+      { label: "Distress signal detection", before: "Reactive (after default)", after: "6-12 months early warning" },
+      { label: "Suppliers monitored", before: "Top 50 manual", after: "All active suppliers" },
+      { label: "Data sources synthesized", before: "1-2 per supplier", after: "5+ including filings" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    statusQuo={[
+      "Financial health reviews limited to top suppliers using D&B reports read quarterly.",
+      "10-K filings and management discussion sections are never read — only credit scores checked.",
+      "Qualitative distress signals like CFO departures or going concern opinions missed entirely."
+    ]}
+    agentification={[
+      "Altman Z-score augmented with ML detects deteriorating financial ratios before credit downgrades.",
+      "LLM reads 10-K filings and flags 'exploring strategic alternatives' and going concern opinions as distress signals.",
+      "Synthesizes quantitative scores with qualitative signals into actionable risk narrative — stable score but declining margins plus auditor concerns equals elevated risk."
+    ]}
+  />
+);

@@ -1,0 +1,11 @@
+{
+  "name": "@ge/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pure-TS shared shapes for GE front-ends and tools: the ge.journey.plan + fleet + artifact contracts. No fs/process/react/express.",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

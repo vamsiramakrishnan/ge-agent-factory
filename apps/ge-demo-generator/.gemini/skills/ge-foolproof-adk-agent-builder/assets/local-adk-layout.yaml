@@ -1,0 +1,19 @@
+project:
+  package_manager: uv
+  local_first: true
+  no_google_auth_required: true
+files:
+  - pyproject.toml
+  - README.md
+  - app/__init__.py
+  - app/agent.py
+  - app/tools.py
+  - fixtures/manifest.json
+  - fixtures/tables/<source>.json
+  - tests/test_smoke.py
+exports:
+  root_agent: app.agent:root_agent
+commands:
+  install: uv sync
+  test: uv run pytest
+  local_adk: uv run adk run app

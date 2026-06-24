@@ -1,0 +1,408 @@
+{
+  "suppliers": [
+    {
+      "supplier_id": "SUP-AR-1001",
+      "sm_vendor_id": "SMV-88421",
+      "anid": "AN01004520981",
+      "name": "Apex Turbine Services",
+      "status": "qualified",
+      "lifecycle_phase": "Preferred Supplier",
+      "risk_tier": "medium",
+      "country": "US",
+      "category": "Machined Components",
+      "diversity_status": "none",
+      "qualification_status": "current",
+      "preferred_supplier": true
+    },
+    {
+      "supplier_id": "SUP-AR-1002",
+      "sm_vendor_id": "SMV-88498",
+      "anid": "AN01007800442",
+      "name": "Northeast Precision Metals",
+      "status": "pending_approval",
+      "lifecycle_phase": "Qualification",
+      "risk_tier": "high",
+      "country": "US",
+      "category": "Raw Materials",
+      "diversity_status": "small_business",
+      "qualification_status": "bank_review_required",
+      "preferred_supplier": false
+    },
+    {
+      "supplier_id": "SUP-AR-1003",
+      "sm_vendor_id": "SMV-88531",
+      "anid": "AN01003345602",
+      "name": "Bharat Harness Systems",
+      "status": "preferred",
+      "lifecycle_phase": "Preferred Supplier",
+      "risk_tier": "low",
+      "country": "IN",
+      "category": "Electrical Components",
+      "diversity_status": "none",
+      "qualification_status": "current",
+      "preferred_supplier": true
+    },
+    {
+      "supplier_id": "SUP-AR-1004",
+      "sm_vendor_id": "SMV-88602",
+      "anid": "AN01008813004",
+      "name": "Vector Industrial Services",
+      "status": "suspended",
+      "lifecycle_phase": "Risk Hold",
+      "risk_tier": "critical",
+      "country": "US",
+      "category": "Field Services",
+      "diversity_status": "none",
+      "qualification_status": "sanctions_review",
+      "preferred_supplier": false
+    },
+    {
+      "supplier_id": "SUP-AR-1005",
+      "sm_vendor_id": "SMV-88640",
+      "anid": "AN01005009110",
+      "name": "Alpine Bearing Werke",
+      "status": "registered",
+      "lifecycle_phase": "Registered",
+      "risk_tier": "medium",
+      "country": "DE",
+      "category": "Bearings",
+      "diversity_status": "none",
+      "qualification_status": "required",
+      "preferred_supplier": false
+    },
+    {
+      "supplier_id": "SUP-AR-1006",
+      "sm_vendor_id": "SMV-88710",
+      "anid": "AN01009111245",
+      "name": "Cobalt Logistics Partners",
+      "status": "invited",
+      "lifecycle_phase": "Invitation",
+      "risk_tier": "medium",
+      "country": "US",
+      "category": "Logistics",
+      "diversity_status": "minority_owned",
+      "qualification_status": "required",
+      "preferred_supplier": false
+    }
+  ],
+  "supplier_questionnaires": [
+    {
+      "questionnaire_id": "SQ-7781",
+      "supplier_id": "SUP-AR-1002",
+      "template": "Banking and Sanctions Refresh",
+      "status": "submitted",
+      "risk_score": 78,
+      "submitted_at": "2026-06-02T11:20:00Z",
+      "expires_at": "2026-06-16T23:59:00Z",
+      "owner": "supplier.risk@example.com"
+    },
+    {
+      "questionnaire_id": "SQ-7782",
+      "supplier_id": "SUP-AR-1001",
+      "template": "Annual ESG Refresh",
+      "status": "approved",
+      "risk_score": 34,
+      "submitted_at": "2026-05-18T15:04:00Z",
+      "expires_at": "2027-05-18T23:59:00Z",
+      "owner": "sustainability@example.com"
+    },
+    {
+      "questionnaire_id": "SQ-7783",
+      "supplier_id": "SUP-AR-1004",
+      "template": "Sanctions Attestation",
+      "status": "rejected",
+      "risk_score": 96,
+      "submitted_at": "2026-06-01T09:30:00Z",
+      "expires_at": "2026-06-20T23:59:00Z",
+      "owner": "supplier.risk@example.com"
+    },
+    {
+      "questionnaire_id": "SQ-7784",
+      "supplier_id": "SUP-AR-1005",
+      "template": "Quality Capability Assessment",
+      "status": "sent",
+      "risk_score": 58,
+      "submitted_at": "",
+      "expires_at": "2026-07-15T23:59:00Z",
+      "owner": "quality.sourcing@example.com"
+    },
+    {
+      "questionnaire_id": "SQ-7785",
+      "supplier_id": "SUP-AR-1006",
+      "template": "New Supplier Onboarding",
+      "status": "draft",
+      "risk_score": 0,
+      "submitted_at": "",
+      "expires_at": "2026-07-30T23:59:00Z",
+      "owner": "supplier.enablement@example.com"
+    }
+  ],
+  "sourcing_events": [
+    {
+      "event_id": "SRC-2026-041",
+      "title": "Turbine blade casting dual-source event",
+      "event_type": "RFP",
+      "status": "open",
+      "category": "Machined Components",
+      "owner": "category.manager@example.com",
+      "open_date": "2026-06-01",
+      "close_date": "2026-06-15",
+      "currency": "USD",
+      "estimated_value": 4200000
+    },
+    {
+      "event_id": "SRC-2026-052",
+      "title": "Electrical harness regional supply event",
+      "event_type": "RFQ",
+      "status": "pending_award",
+      "category": "Electrical Components",
+      "owner": "supplyhub.buyer@example.com",
+      "open_date": "2026-05-20",
+      "close_date": "2026-06-05",
+      "currency": "USD",
+      "estimated_value": 850000
+    },
+    {
+      "event_id": "SRC-2026-060",
+      "title": "Bearing assembly spot buy",
+      "event_type": "Auction",
+      "status": "awarded",
+      "category": "Bearings",
+      "owner": "assembly.buyer@example.com",
+      "open_date": "2026-05-10",
+      "close_date": "2026-05-12",
+      "currency": "EUR",
+      "estimated_value": 120000
+    },
+    {
+      "event_id": "SRC-2026-071",
+      "title": "Logistics lane optimization RFI",
+      "event_type": "RFI",
+      "status": "draft",
+      "category": "Logistics",
+      "owner": "logistics.category@example.com",
+      "open_date": "2026-07-01",
+      "close_date": "2026-07-20",
+      "currency": "USD",
+      "estimated_value": 1500000
+    }
+  ],
+  "sourcing_bids": [
+    {
+      "bid_id": "BID-2026-041-01",
+      "event_id": "SRC-2026-041",
+      "supplier_id": "SUP-AR-1001",
+      "status": "submitted",
+      "rank": 1,
+      "bid_amount": 3980000,
+      "currency": "USD",
+      "submitted_at": "2026-06-04T15:00:00Z"
+    },
+    {
+      "bid_id": "BID-2026-041-02",
+      "event_id": "SRC-2026-041",
+      "supplier_id": "SUP-AR-1002",
+      "status": "shortlisted",
+      "rank": 2,
+      "bid_amount": 4075000,
+      "currency": "USD",
+      "submitted_at": "2026-06-05T12:11:00Z"
+    },
+    {
+      "bid_id": "BID-2026-052-01",
+      "event_id": "SRC-2026-052",
+      "supplier_id": "SUP-AR-1003",
+      "status": "awarded",
+      "rank": 1,
+      "bid_amount": 812000,
+      "currency": "USD",
+      "submitted_at": "2026-06-03T09:45:00Z"
+    },
+    {
+      "bid_id": "BID-2026-060-01",
+      "event_id": "SRC-2026-060",
+      "supplier_id": "SUP-AR-1005",
+      "status": "awarded",
+      "rank": 1,
+      "bid_amount": 116500,
+      "currency": "EUR",
+      "submitted_at": "2026-05-11T14:20:00Z"
+    },
+    {
+      "bid_id": "BID-2026-071-01",
+      "event_id": "SRC-2026-071",
+      "supplier_id": "SUP-AR-1006",
+      "status": "draft",
+      "rank": 0,
+      "bid_amount": 0,
+      "currency": "USD",
+      "submitted_at": ""
+    }
+  ],
+  "requisitions": [
+    {
+      "requisition_id": "REQ-AR-9001",
+      "requester": "planner@example.com",
+      "status": "composing",
+      "amount": 184250.4,
+      "currency": "USD",
+      "cost_center": "MFG-410",
+      "commodity_code": "321015",
+      "approval_state": "not_submitted",
+      "guided_buying_policy": "preferred_supplier_required"
+    },
+    {
+      "requisition_id": "REQ-AR-9002",
+      "requester": "assembly.buyer@example.com",
+      "status": "approved",
+      "amount": 151573.5,
+      "currency": "USD",
+      "cost_center": "ASM-420",
+      "commodity_code": "321016",
+      "approval_state": "approved",
+      "guided_buying_policy": "capex_review"
+    },
+    {
+      "requisition_id": "REQ-AR-9003",
+      "requester": "supplyhub.buyer@example.com",
+      "status": "ordered",
+      "amount": 70800,
+      "currency": "USD",
+      "cost_center": "ENG-530",
+      "commodity_code": "261216",
+      "approval_state": "approved",
+      "guided_buying_policy": "preferred_supplier_required"
+    },
+    {
+      "requisition_id": "REQ-AR-9004",
+      "requester": "field.services@example.com",
+      "status": "denied",
+      "amount": 4500,
+      "currency": "USD",
+      "cost_center": "SVC-410",
+      "commodity_code": "811017",
+      "approval_state": "denied",
+      "guided_buying_policy": "blocked_supplier"
+    }
+  ],
+  "purchase_orders": [
+    {
+      "po_id": "PO-AR-4500098123",
+      "supplier_id": "SUP-AR-1001",
+      "requisition_id": "REQ-AR-9001",
+      "status": "ordered",
+      "amount": 184250.4,
+      "currency": "USD",
+      "requester": "planner@example.com",
+      "network_status": "sent_to_supplier",
+      "order_method": "Ariba Network"
+    },
+    {
+      "po_id": "PO-AR-4503100440",
+      "supplier_id": "SUP-AR-1003",
+      "requisition_id": "REQ-AR-9003",
+      "status": "acknowledged",
+      "amount": 70800,
+      "currency": "USD",
+      "requester": "supplyhub.buyer@example.com",
+      "network_status": "acknowledged",
+      "order_method": "Ariba Network"
+    },
+    {
+      "po_id": "PO-AR-4500098704",
+      "supplier_id": "SUP-AR-1005",
+      "requisition_id": "REQ-AR-9002",
+      "status": "partially_invoiced",
+      "amount": 32523,
+      "currency": "EUR",
+      "requester": "assembly.buyer@example.com",
+      "network_status": "acknowledged",
+      "order_method": "ERP integrated PO"
+    }
+  ],
+  "contracts": [
+    {
+      "contract_id": "CW-2026-120",
+      "supplier_id": "SUP-AR-1001",
+      "workspace_id": "WS-AR-7782",
+      "status": "published",
+      "contract_type": "Master Services Agreement",
+      "effective_date": "2026-01-01",
+      "expiration_date": "2026-12-31",
+      "max_value": 2500000,
+      "currency": "USD"
+    },
+    {
+      "contract_id": "CW-2026-144",
+      "supplier_id": "SUP-AR-1003",
+      "workspace_id": "WS-AR-7810",
+      "status": "published",
+      "contract_type": "Supply Agreement",
+      "effective_date": "2026-02-01",
+      "expiration_date": "2027-01-31",
+      "max_value": 600000,
+      "currency": "USD"
+    },
+    {
+      "contract_id": "CW-2026-180",
+      "supplier_id": "SUP-AR-1004",
+      "workspace_id": "WS-AR-7888",
+      "status": "pending_approval",
+      "contract_type": "Field Services Agreement",
+      "effective_date": "2026-07-01",
+      "expiration_date": "2027-06-30",
+      "max_value": 300000,
+      "currency": "USD"
+    },
+    {
+      "contract_id": "CW-2025-222",
+      "supplier_id": "SUP-AR-1005",
+      "workspace_id": "WS-AR-6901",
+      "status": "expired",
+      "contract_type": "Spot Buy Terms",
+      "effective_date": "2025-05-01",
+      "expiration_date": "2026-04-30",
+      "max_value": 150000,
+      "currency": "EUR"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APR-AR-001",
+      "source_record_id": "SUP-AR-1002",
+      "approver": "supplier.risk@example.com",
+      "state": "requested",
+      "reason": "High-risk supplier questionnaire requires risk approval.",
+      "workflow_step": "Supplier Qualification",
+      "due_at": "2026-06-20T17:00:00Z"
+    },
+    {
+      "approval_id": "APR-AR-002",
+      "source_record_id": "SUP-AR-1004",
+      "approver": "compliance@example.com",
+      "state": "pending_approval",
+      "reason": "Sanctions attestation rejected.",
+      "workflow_step": "Supplier Risk Hold",
+      "due_at": "2026-06-21T12:00:00Z"
+    },
+    {
+      "approval_id": "APR-AR-003",
+      "source_record_id": "CW-2026-180",
+      "approver": "legal.procurement@example.com",
+      "state": "pending",
+      "reason": "Field services agreement uses non-standard indemnity.",
+      "workflow_step": "Contract Workspace Review",
+      "due_at": "2026-06-24T17:00:00Z"
+    },
+    {
+      "approval_id": "APR-AR-004",
+      "source_record_id": "REQ-AR-9002",
+      "approver": "capex.approver@example.com",
+      "state": "approved",
+      "reason": "CAPEX sourcing approved.",
+      "workflow_step": "Requisition Approval",
+      "due_at": "2026-06-10T17:00:00Z"
+    }
+  ],
+  "audit_events": []
+}

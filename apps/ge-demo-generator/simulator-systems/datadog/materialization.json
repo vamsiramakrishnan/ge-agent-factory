@@ -1,0 +1,136 @@
+{
+  "id": "datadog_materialization",
+  "version": 2,
+  "collections": {
+    "services": {
+      "primaryKey": "service_id",
+      "fieldAliases": {
+        "service_id": ["service_id", "id", "source_record_id"],
+        "name": ["name", "service_name"],
+        "status": ["status", "health", "state"],
+        "owner": ["owner", "service_owner"],
+        "team": ["team", "owning_team"],
+        "tier": ["tier", "criticality"],
+        "environment": ["environment", "env"],
+        "repository": ["repository", "repo"],
+        "service_catalog_url": ["service_catalog_url", "url"],
+        "last_deploy_at": ["last_deploy_at", "deployed_at"]
+      },
+      "defaults": {
+        "status": "operational",
+        "environment": "prod",
+        "tier": "tier_2"
+      }
+    },
+    "monitors": {
+      "primaryKey": "monitor_id",
+      "fieldAliases": {
+        "monitor_id": ["monitor_id", "id", "source_record_id"],
+        "service_id": ["service_id", "service"],
+        "name": ["name", "monitor_name"],
+        "type": ["type", "monitor_type"],
+        "status": ["status", "state"],
+        "severity": ["severity", "priority"],
+        "query": ["query", "metric_query"],
+        "tags": ["tags"],
+        "notification_channels": ["notification_channels", "channels"],
+        "evaluation_delay": ["evaluation_delay"],
+        "last_triggered_at": ["last_triggered_at", "triggered_at"]
+      },
+      "defaults": {
+        "type": "metric_alert",
+        "status": "ok",
+        "severity": "p3"
+      }
+    },
+    "alerts": {
+      "primaryKey": "alert_id",
+      "fieldAliases": {
+        "alert_id": ["alert_id", "id", "source_record_id"],
+        "monitor_id": ["monitor_id", "monitor"],
+        "service_id": ["service_id", "service"],
+        "state": ["state", "status"],
+        "severity": ["severity", "priority"],
+        "triggered_at": ["triggered_at", "opened_at"],
+        "recovered_at": ["recovered_at", "resolved_at"],
+        "summary": ["summary", "title", "description"],
+        "scope": ["scope", "tags"],
+        "correlation_key": ["correlation_key"]
+      },
+      "defaults": {
+        "state": "triggered",
+        "severity": "p3"
+      }
+    },
+    "incidents": {
+      "primaryKey": "incident_id",
+      "fieldAliases": {
+        "incident_id": ["incident_id", "id", "source_record_id"],
+        "service_id": ["service_id", "service"],
+        "title": ["title", "summary", "name"],
+        "status": ["status", "state"],
+        "severity": ["severity", "priority"],
+        "commander": ["commander", "incident_commander"],
+        "started_at": ["started_at", "opened_at"],
+        "resolved_at": ["resolved_at", "closed_at"],
+        "customer_impact": ["customer_impact", "impacting_customers"],
+        "timeline_url": ["timeline_url", "url"]
+      },
+      "defaults": {
+        "status": "active",
+        "severity": "sev3",
+        "customer_impact": false
+      }
+    },
+    "slos": {
+      "primaryKey": "slo_id",
+      "fieldAliases": {
+        "slo_id": ["slo_id", "id", "source_record_id"],
+        "service_id": ["service_id", "service"],
+        "name": ["name", "slo_name"],
+        "status": ["status", "state"],
+        "target": ["target"],
+        "window": ["window", "timeframe"],
+        "burn_rate": ["burn_rate"],
+        "error_budget_remaining": ["error_budget_remaining", "budget_remaining"],
+        "last_evaluated_at": ["last_evaluated_at", "evaluated_at"]
+      },
+      "defaults": {
+        "status": "green",
+        "window": "30d"
+      }
+    },
+    "api_keys": {
+      "primaryKey": "key_id",
+      "fieldAliases": {
+        "key_id": ["key_id", "id", "source_record_id"],
+        "name": ["name", "key_name"],
+        "status": ["status", "state"],
+        "category": ["category", "type"],
+        "owner": ["owner", "team"],
+        "created_at": ["created_at"],
+        "modified_at": ["modified_at", "updated_at"],
+        "last4": ["last4", "last_four"]
+      },
+      "defaults": {
+        "status": "active",
+        "category": "standard"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": ["event_id", "id", "source_record_id"],
+        "actor": ["actor"],
+        "role": ["role"],
+        "action": ["action"],
+        "entity": ["entity"],
+        "entity_id": ["entity_id"],
+        "outcome": ["outcome"],
+        "timestamp": ["timestamp"],
+        "detail": ["detail"]
+      },
+      "defaults": {}
+    }
+  }
+}

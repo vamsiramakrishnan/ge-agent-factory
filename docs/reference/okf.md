@@ -1,0 +1,140 @@
+---
+title: OKF
+parent: Reference
+nav_order: 4
+layout: default
+---
+
+# OKF — Open Knowledge Format
+
+OKF (Open Knowledge Format) v0.1 is the factory's **portable BRD format**: a
+plaintext *Knowledge Bundle* of Markdown "Concept" files, each with YAML
+frontmatter and a Markdown body. It lets a rich use-case spec be read, diffed,
+hand-edited, and exchanged as ordinary Markdown, then round-tripped back into a
+spec.
+
+The integration has three pieces, all under
+`apps/ge-demo-generator/scripts/`:
+
+- [`spec-to-okf.mjs`](https://github.com/vamsiramakrishnan/ge-agent-factory) — spec → OKF bundle (export)
+- [`okf-to-spec.mjs`](https://github.com/vamsiramakrishnan/ge-agent-factory) — OKF bundle → partial spec (ingest)
+- [`skills/authoring-okf-specs/SKILL.md`](https://github.com/vamsiramakrishnan/ge-agent-factory) — the operator skill that drives the boundary (composes `interviewing-specs`)
+
+The same bundle is also emitted into a generated agent at `app/knowledge/` (see
+[Agent generation](agent-generation.html)) and served live by the console at
+`GET /api/interviews/:id/okf` (see [Console & APIs](console-and-apis.html)).
+
+---
+
+## What a bundle looks like
+
+A bundle is a directory of `.md` concept files. Every concept's frontmatter has a
+non-empty `type`; relationships are bundle-absolute Markdown links (`[…](/path/…)`).
+Only the root `index.md` declares `okf_version: "0.1"`. Original spec ids are
+preserved in a `source_id` field so the round-trip is stable.
+
+```
+<bundle-id>/
+├── index.md            # type: Knowledge Bundle  (okf_version: "0.1")
+├── log.md              # type: Log
+├── playbook.md         # type: Playbook
+├── kpis.md             # type: KPIs
+├── evals.md            # type: Evals
+├── systems/index.md    # type: Index
+│   └── <id>.md         # type: Source System
+├── tables/index.md
+│   └── <entity>.md     # type: Data Entity
+├── tools/index.md
+│   └── <name>.md       # type: Agent Tool
+├── workflow/index.md   # (only if a workflow exists)
+│   └── <step>.md       # type: Workflow Stage
+├── documents/index.md
+│   └── <id>.md         # type: Source Document
+├── queries/index.md
+│   └── <id>.md         # type: Query Capability
+└── tests/index.md
+    └── <id>.md         # type: Eval Scenario
+```
+
+Each per-directory `index.md` (`type: Index`) gives progressive disclosure — index
+before detail.
+
+A concept file:
+
+```markdown
+---
+type: Agent Tool
+title: action_sap_s_4hana_fi_close
+tags: [tool, action]
+timestamp: 2026-06-20T00:00:00Z
+source_id: action_sap_s_4hana_fi_close
+---
+
+# action_sap_s_4hana_fi_close
+
+…
+```
+
+### Concept types
+
+The converter emits exactly these `type` strings (verified in `spec-to-okf.mjs`):
+
+`Knowledge Bundle` · `Log` · `Playbook` · `Index` · `Source System` ·
+`Data Entity` · `Agent Tool` · `Workflow Stage` · `Source Document` ·
+`Query Capability` · `Eval Scenario` · `KPIs` · `Evals`.
+
+These map back to the spec: **Source System** ← `sourceSystems[]`, **Data Entity**
+← `entities[]`, **Agent Tool** ← `toolIntents[]`, **Workflow Stage** ←
+`workflow.steps[]`, **Source Document** ← `documents[]`, **Query Capability** ←
+`answerableQueries` (or derived), **Eval Scenario** ← golden eval `mechanisms` (or
+derived). See [Spec schema](spec-schema.html) for those source fields.
+
+---
+
+## Converters
+
+### Export — `spec-to-okf.mjs`
+
+```bash
+# From the built catalog, by use-case id:
+node apps/ge-demo-generator/scripts/spec-to-okf.mjs --id <useCaseId> [--out <dir>]
+
+# From a spec JSON file directly:
+node apps/ge-demo-generator/scripts/spec-to-okf.mjs --spec <path/to/spec.json> [--out <dir>]
+```
+
+- Catalog input: `apps/ge-demo-generator/generated/use-cases.generated.json`.
+- Default output: `artifacts/okf/<id>/`.
+- Output: a conformant OKF v0.1 Knowledge Bundle.
+
+### Ingest — `okf-to-spec.mjs`
+
+```bash
+node apps/ge-demo-generator/scripts/okf-to-spec.mjs --bundle <dir>
+```
+
+Reads a bundle and prints a reconstructed **partial spec** as JSON to stdout —
+recovering `behaviorContract` (role, objective, scope, toolIntents, the workflow
+with ordering) and `generationSpec.{ sourceSystems, entities, documents }`.
+
+### Round-trip
+
+`spec → OKF → spec` is deterministic: tool names and system identities stay
+stable, and `source_id` preserves original ids across the boundary. The
+reconstructed spec is then re-enriched and registered through the
+`interviewing-specs` flow before a build.
+
+---
+
+## The `authoring-okf-specs` skill
+
+Source:
+[`skills/authoring-okf-specs/SKILL.md`](https://github.com/vamsiramakrishnan/ge-agent-factory).
+It moves a spec across the OKF boundary for portable, human-authored exchange and
+**composes** `interviewing-specs`.
+
+- **Input**: a catalog use-case id, a spec JSON path, or an OKF bundle directory.
+- **Output**: a conformant OKF v0.1 bundle under `artifacts/okf/<id>/`, or a
+  reconstructed partial spec JSON on stdout.
+- **Next step**: hand the bundle to a consumer/human, or feed an ingested spec
+  back through `interviewing-specs`.

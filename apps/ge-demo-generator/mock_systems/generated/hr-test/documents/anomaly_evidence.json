@@ -1,0 +1,21 @@
+[
+  {
+    "anomaly_id": "skills-gap-west",
+    "description": "West region has 3x the average skills gap in AI/ML certifications",
+    "affected_records": [
+      "EMP-0027",
+      "EMP-0003"
+    ],
+    "discovery_hint": "query employees by region,join skills,compare certification rates"
+  },
+  {
+    "anomaly_id": "incident-spike-q1",
+    "description": "Q1 2026 shows 40% more P1 incidents than any other quarter",
+    "affected_records": [
+      "EMP-0010",
+      "EMP-0009",
+      "EMP-0030"
+    ],
+    "discovery_hint": "query incidents by date,group by priority,compare to baseline"
+  }
+]

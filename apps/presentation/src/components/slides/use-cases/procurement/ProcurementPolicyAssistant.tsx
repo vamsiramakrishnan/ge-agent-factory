@@ -1,0 +1,1032 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { BookOpen, MessageSquare, Search, FileCheck, ArrowUpRight } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "h1", label: "Employee Asks", lane: "human", type: "trigger" },
+    { id: "a1", label: "Policy Retrieval", lane: "agent", type: "action" },
+    { id: "a2", label: "Context Reasoning", lane: "agent", type: "action" },
+    { id: "a3", label: "Answer with Citation", lane: "agent", type: "output" },
+    { id: "a4", label: "Escalation Router", lane: "agent", type: "action" },
+  ],
+  connections: [["h1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a2", "a4"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "User Query", icon: MessageSquare, description: "Employee asks a procurement policy question in natural language.", trigger: "On-demand" },
+  { label: "RAG Retrieval", icon: Search, description: "Relevant policy sections retrieved with semantic search over policy corpus.", systems: ["SharePoint/Google Drive", "Vertex AI"] },
+  { label: "Contextual Answer", icon: FileCheck, description: "Answer generated with direct citations, delegation rules, and threshold logic.", systems: ["Vertex AI"] },
+  { label: "Smart Escalation", icon: ArrowUpRight, description: "Novel or ambiguous questions routed to policy owners automatically.", output: "Policy Answer" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "SharePoint/Google Drive", description: "200-page procurement policy corpus indexed for semantic search", direction: "read", protocol: "Graph API / Drive API", category: "collaboration" },
+    { system: "Coupa", description: "Workflow rules, approval thresholds, and delegation of authority matrix", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "SAP Ariba", description: "Sourcing policies, contract templates, and process rules", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "Vertex AI (Gemini)", description: "RAG-based policy Q&A with contextual reasoning and citation generation", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Policy Corpus Indexing", description: "Index policy documents from SharePoint/Google Drive. Keep corpus in sync on updates. Route unanswered questions to policy owners for continuous knowledge improvement.", systems: ["SharePoint/Google Drive", "Coupa", "SAP Ariba"], layer: "integration", dataIn: "Policy documents, workflow rules, delegation matrices", dataOut: "Indexed policy knowledge base with embeddings" },
+    { label: "Intent Classification & Routing", description: "Classify query intent to route between policy domains — sourcing thresholds, travel policy, contract authority, expense limits. Minimal ML; primarily keyword and embedding similarity.", systems: ["Vertex AI"], layer: "ml", dataIn: "User query text", dataOut: "Domain-classified query with confidence score" },
+    { label: "Contextual Policy Reasoning", description: "Almost entirely LLM reasoning. Understand questions like 'I need to buy software — do I need 3 quotes?' and navigate complex delegation rules to determine that software under $25K with an existing EA is exempt. Provide answers with policy citations, not just keywords.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Classified query + relevant policy sections", dataOut: "Cited policy answer with threshold logic and exceptions" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "All Procurement Staff agent for the Procurement Policy Assistant workflow",
+  primaryObjective: "RAG over procurement policies with conversational Q&A and direct citations. LLM navigates complex delegation of authority rules — 'software under $25K with an existing EA is exempt from competitive bidding.' so the All Procurement Staff can move the Policy query resolution KPI.",
+  inScope: [
+    "RAG over procurement policies with conversational Q&A and direct citations",
+    "LLM navigates complex delegation of authority rules — 'software under $25K with an existing EA is exempt from competitive bidding.'",
+    "Routes genuinely novel questions to policy owners",
+  ],
+  outOfScope: [
+    "Contract execution without legal review",
+    "Supplier disqualification decisions (category lead retains authority)",
+    "Single-source justification overrides above policy threshold",
+  ],
+  toolIntents: [
+    {
+      name: "query_sharepoint_google_drive_documents",
+      kind: "query",
+      sourceSystemId: "sharepoint_google_drive",
+      description: "Retrieve documents from SharePoint/Google Drive for the Procurement Policy Assistant workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "documents_records",
+        "documents_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_coupa_requisitions",
+      kind: "query",
+      sourceSystemId: "coupa",
+      description: "Retrieve requisitions from Coupa for the Procurement Policy Assistant workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "requisitions_records",
+        "requisitions_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_sap_ariba_suppliers",
+      kind: "query",
+      sourceSystemId: "sap_ariba",
+      description: "Retrieve suppliers from SAP Ariba for the Procurement Policy Assistant workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "suppliers_records",
+        "suppliers_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_procurement_policy_assistant_policy_guide",
+      kind: "evidence_lookup",
+      sourceSystemId: "sharepoint_google_drive",
+      description: "Look up sections of the Procurement Policy Assistant Procurement Policy Guide to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_sharepoint_google_drive_route",
+      kind: "action",
+      sourceSystemId: "sharepoint_google_drive",
+      description: "Execute the route step in SharePoint/Google Drive after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Policy query resolution moved from Email to policy team toward Instant chat",
+      mustCite: [
+        "sharepoint_google_drive.documents",
+        "coupa.requisitions",
+      ],
+      sourceSystemIds: [
+        "sharepoint_google_drive",
+        "coupa",
+      ],
+    },
+    {
+      claim: "Query accuracy moved from Varies toward 95%+ with citations",
+      mustCite: [
+        "sharepoint_google_drive.documents",
+        "coupa.requisitions",
+      ],
+      sourceSystemIds: [
+        "sharepoint_google_drive",
+        "coupa",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Policy query resolution regresses past the Email to policy team baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "All Procurement Staff",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed route action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from SharePoint/Google Drive (and other named systems) entities.",
+    "Never bypass All Procurement Staff approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "procurement-policy-assistant-end-to-end",
+      prompt: "Run the Procurement Policy Assistant workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_sharepoint_google_drive_documents",
+        "query_coupa_requisitions",
+        "query_sap_ariba_suppliers",
+        "lookup_procurement_policy_assistant_policy_guide",
+        "action_sharepoint_google_drive_route",
+      ],
+      mustReferenceEntities: [
+        "documents",
+        "requisitions",
+        "suppliers",
+      ],
+      mustCiteDocuments: [
+        "procurement-policy-assistant-policy-guide",
+      ],
+      expectedActionOutcome: "Action route executed against SharePoint/Google Drive, with audit-trail entry and All Procurement Staff notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute route without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Procurement Policy Assistant so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "sharepoint_google_drive",
+      name: "SharePoint/Google Drive",
+      owns: [
+        "documents",
+        "folder_permissions",
+        "share_events",
+      ],
+      protocol: "Workspace API",
+      localBacking: [
+        "cloud-storage",
+      ],
+      toolNames: [
+        "query_sharepoint_google_drive_documents",
+        "query_sharepoint_google_drive_folder_permissions",
+        "query_sharepoint_google_drive_share_events",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "coupa",
+      name: "Coupa",
+      owns: [
+        "requisitions",
+        "purchase_orders",
+        "invoices",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_coupa_requisitions",
+        "query_coupa_purchase_orders",
+        "query_coupa_invoices",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "sap_ariba",
+      name: "SAP Ariba",
+      owns: [
+        "suppliers",
+        "sourcing_events",
+        "contracts",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sap_ariba_suppliers",
+        "query_sap_ariba_sourcing_events",
+        "query_sap_ariba_contracts",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "documents",
+      sourceSystemId: "sharepoint_google_drive",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "review",
+            "published",
+            "archived",
+          ],
+          required: true,
+        },
+        {
+          name: "last_updated",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "folder_permissions",
+      sourceSystemId: "sharepoint_google_drive",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "share_events",
+      sourceSystemId: "sharepoint_google_drive",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "document_id",
+          type: "ref",
+          ref: "documents.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "requisitions",
+      sourceSystemId: "coupa",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "vendor",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: 100,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+            "JPY",
+          ],
+          weights: [
+            0.7,
+            0.15,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "pending",
+            "approved",
+            "paid",
+            "rejected",
+          ],
+          weights: [
+            0.1,
+            0.3,
+            0.3,
+            0.2,
+            0.1,
+          ],
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "due_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "purchase_orders",
+      sourceSystemId: "coupa",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "vendor",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: 100,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+            "JPY",
+          ],
+          weights: [
+            0.7,
+            0.15,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "pending",
+            "approved",
+            "paid",
+            "rejected",
+          ],
+          weights: [
+            0.1,
+            0.3,
+            0.3,
+            0.2,
+            0.1,
+          ],
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "due_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "invoices",
+      sourceSystemId: "coupa",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "vendor",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: 100,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+            "JPY",
+          ],
+          weights: [
+            0.7,
+            0.15,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "pending",
+            "approved",
+            "paid",
+            "rejected",
+          ],
+          weights: [
+            0.1,
+            0.3,
+            0.3,
+            0.2,
+            0.1,
+          ],
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "due_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "suppliers",
+      sourceSystemId: "sap_ariba",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "IT",
+            "Consulting",
+            "Manufacturing",
+            "Logistics",
+            "Facilities",
+            "Marketing",
+          ],
+          required: true,
+        },
+        {
+          name: "rating",
+          type: "number",
+          min: 1,
+          max: 5,
+          required: true,
+        },
+        {
+          name: "annual_spend",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "risk_score",
+          type: "enum",
+          values: [
+            "low",
+            "medium",
+            "high",
+          ],
+          weights: [
+            0.5,
+            0.35,
+            0.15,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending_review",
+            "terminated",
+          ],
+          required: true,
+        },
+        {
+          name: "onboarded_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "sourcing_events",
+      sourceSystemId: "sap_ariba",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "counterparty",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "start_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "end_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "negotiating",
+            "active",
+            "expired",
+            "terminated",
+          ],
+          required: true,
+        },
+        {
+          name: "auto_renew",
+          type: "boolean",
+          trueRate: 0.4,
+        },
+        {
+          name: "supplier_id",
+          type: "ref",
+          ref: "suppliers.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "contracts",
+      sourceSystemId: "sap_ariba",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "counterparty",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "start_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "end_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "negotiating",
+            "active",
+            "expired",
+            "terminated",
+          ],
+          required: true,
+        },
+        {
+          name: "auto_renew",
+          type: "boolean",
+          trueRate: 0.4,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "share_events.document_id",
+      to: "documents.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "sourcing_events.supplier_id",
+      to: "suppliers.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "procurement-policy-assistant-policy-guide",
+      sourceSystemId: "sharepoint_google_drive",
+      type: "policy",
+      title: "Procurement Policy Assistant Procurement Policy Guide",
+      requiredSections: [
+        "Sourcing principles",
+        "Approval thresholds",
+        "Supplier risk requirements",
+        "Contract and compliance gates",
+        "Exception handling",
+      ],
+      linkedEntities: [
+        "documents",
+        "folder_permissions",
+        "share_events",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "sourcing",
+        "approvals",
+        "supplier-risk",
+        "exceptions",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "sharepoint_google_drive_route_api",
+      sourceSystemId: "sharepoint_google_drive",
+      method: "POST",
+      path: "/api/sharepoint_google_drive/route",
+      description: "Synchronous endpoint the agent calls to route in SharePoint/Google Drive after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "procurement-policy-assistant-baseline-gap",
+      description: "Seed a realistic gap where Policy query resolution sits between Email to policy team and Instant chat, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "documents",
+        "folder_permissions",
+      ],
+      discoveryPath: [
+        "Inspect SharePoint/Google Drive records for the affected entities",
+        "Compare against Coupa historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next All Procurement Staff action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "procurement_policy_assistant",
+      schemas: [
+        "sharepoint_google_drive",
+        "coupa",
+        "sap_ariba",
+      ],
+    },
+    bigquery: {
+      dataset: "procurement_procurement_policy_assistant",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "procurement-policy-assistant-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "procurement-policy-assistant-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Procurement Policy Assistant workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const ProcurementPolicyAssistant = () => (
+  <UseCaseSlide
+    title="Procurement Policy Assistant"
+    subtitle="A-1104 • Procurement Strategy"
+    icon={BookOpen}
+    domainId="domain-11"
+    layer="Layer 1: OOTB"
+    persona="All Procurement Staff"
+    systems={["SharePoint/Google Drive", "Coupa", "SAP Ariba", "Vertex AI"]}
+    kpis={[
+      { label: "Policy query resolution", before: "Email to policy team", after: "Instant chat" },
+      { label: "Query accuracy", before: "Varies", after: "95%+ with citations" },
+      { label: "Support tickets", before: "200+/month", after: "<30/month" },
+    ]}
+    triggerType="chat"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    statusQuo={[
+      "200-page procurement policy manual that nobody reads.",
+      "Employees email the procurement team for basic questions ('do I need 3 quotes?').",
+      "Inconsistent policy interpretation across regions and business units."
+    ]}
+    agentification={[
+      "RAG over procurement policies with conversational Q&A and direct citations.",
+      "LLM navigates complex delegation of authority rules — 'software under $25K with an existing EA is exempt from competitive bidding.'",
+      "Routes genuinely novel questions to policy owners."
+    ]}
+  />
+);

@@ -1,0 +1,154 @@
+{
+  "id": "servicenow_materialization",
+  "version": 2,
+  "collections": {
+    "incidents": {
+      "primaryKey": "incident_id",
+      "fieldAliases": {
+        "incident_id": ["incident_id", "number", "id", "source_record_id"],
+        "number": ["number", "incident_id", "id"],
+        "short_description": ["short_description", "description", "name"],
+        "state": ["state", "status"],
+        "priority": ["priority"],
+        "assignment_group_id": ["assignment_group_id", "assignment_group", "group_id"],
+        "configuration_item_id": ["configuration_item_id", "ci_id", "configuration_item"]
+      },
+      "defaults": {
+        "state": "new",
+        "impact": "3",
+        "urgency": "3",
+        "priority": "4",
+        "escalation": "normal",
+        "sla_state": "on_track",
+        "reassignment_count": 0,
+        "short_description": "Generated incident {id}"
+      }
+    },
+    "problems": {
+      "primaryKey": "problem_id",
+      "fieldAliases": {
+        "problem_id": ["problem_id", "number", "id", "source_record_id"],
+        "number": ["number", "problem_id", "id"],
+        "short_description": ["short_description", "description", "name"],
+        "state": ["state", "status"]
+      },
+      "defaults": {
+        "state": "new",
+        "impact": "3",
+        "urgency": "3",
+        "priority": "4",
+        "known_error": false
+      }
+    },
+    "change_requests": {
+      "primaryKey": "change_id",
+      "fieldAliases": {
+        "change_id": ["change_id", "number", "id", "source_record_id"],
+        "number": ["number", "change_id", "id"],
+        "short_description": ["short_description", "description", "name"],
+        "state": ["state", "status"],
+        "configuration_item_id": ["configuration_item_id", "ci_id", "configuration_item"]
+      },
+      "defaults": {
+        "type": "normal",
+        "state": "draft",
+        "risk": "moderate",
+        "impact": "3",
+        "priority": "4",
+        "cab_required": true,
+        "cab_decision": "pending"
+      }
+    },
+    "service_requests": {
+      "primaryKey": "request_id",
+      "fieldAliases": {
+        "request_id": ["request_id", "number", "id", "source_record_id"],
+        "number": ["number", "request_id", "id"],
+        "short_description": ["short_description", "description", "name"],
+        "state": ["state", "status"]
+      },
+      "defaults": {
+        "state": "requested",
+        "stage": "request",
+        "priority": "4",
+        "approval_state": "not_requested",
+        "price": 0
+      }
+    },
+    "assignment_groups": {
+      "primaryKey": "group_id",
+      "fieldAliases": {
+        "group_id": ["group_id", "id", "source_record_id"],
+        "name": ["name", "title"],
+        "support_tier": ["support_tier", "tier"]
+      },
+      "defaults": {
+        "support_tier": "tier_1",
+        "active": true
+      }
+    },
+    "configuration_items": {
+      "primaryKey": "ci_id",
+      "fieldAliases": {
+        "ci_id": ["ci_id", "id", "source_record_id"],
+        "name": ["name", "title"],
+        "ci_class": ["ci_class", "class", "type"],
+        "support_group_id": ["support_group_id", "assignment_group_id", "group_id"]
+      },
+      "defaults": {
+        "ci_class": "application",
+        "environment": "production",
+        "operational_status": "operational",
+        "criticality": "3"
+      }
+    },
+    "ci_relationships": {
+      "primaryKey": "relationship_id",
+      "fieldAliases": {
+        "relationship_id": ["relationship_id", "id", "source_record_id"],
+        "parent_ci_id": ["parent_ci_id", "parent", "ci_id"],
+        "child_ci_id": ["child_ci_id", "child"]
+      },
+      "defaults": {
+        "type": "depends_on"
+      }
+    },
+    "knowledge_articles": {
+      "primaryKey": "article_id",
+      "fieldAliases": {
+        "article_id": ["article_id", "number", "id", "source_record_id"],
+        "number": ["number", "article_id", "id"],
+        "title": ["title", "name", "short_description"],
+        "state": ["state", "status"]
+      },
+      "defaults": {
+        "state": "draft",
+        "knowledge_base": "IT Operations",
+        "view_count": 0
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fieldAliases": {
+        "approval_id": ["approval_id", "id", "source_record_id"],
+        "source_record_id": ["source_record_id", "ticket_id", "change_id", "request_id", "document_id"],
+        "state": ["state", "status"]
+      },
+      "defaults": {
+        "state": "requested",
+        "stage": "manager"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": ["event_id", "id", "source_record_id"],
+        "action": ["action"],
+        "entity": ["entity"],
+        "entity_id": ["entity_id"],
+        "outcome": ["outcome"]
+      },
+      "defaults": {}
+    }
+  }
+}

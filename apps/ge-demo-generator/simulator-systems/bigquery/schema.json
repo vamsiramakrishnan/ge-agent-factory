@@ -1,0 +1,107 @@
+{
+  "id": "bigquery_schema",
+  "version": 3,
+  "apiProfile": {
+    "style": "google-discovery-rest",
+    "security": [
+      "oauth2",
+      "service_account",
+      "bearerAuth"
+    ],
+    "pagination": {
+      "styles": [
+        "page-token",
+        "page-number"
+      ],
+      "params": [
+        "maxResults",
+        "pageToken",
+        "pageSize"
+      ]
+    },
+    "commonErrors": [
+      400,
+      401,
+      403,
+      404,
+      409,
+      412,
+      429,
+      500,
+      503
+    ]
+  },
+  "collections": {
+    "datasets": {
+      "primaryKey": "dataset_id",
+      "description": "BigQuery dataset.",
+      "fields": {
+        "dataset_id": "string",
+        "project_id": "string",
+        "location": "string",
+        "friendly_name": "string",
+        "default_table_expiration_ms": "integer"
+      }
+    },
+    "tables": {
+      "primaryKey": "table_id",
+      "description": "BigQuery table.",
+      "fields": {
+        "table_id": "string",
+        "dataset_id": "ref:datasets.dataset_id",
+        "project_id": "string",
+        "type": "enum:TABLE|VIEW|MATERIALIZED_VIEW|EXTERNAL",
+        "num_rows": "integer",
+        "num_bytes": "integer"
+      }
+    },
+    "jobs": {
+      "primaryKey": "job_id",
+      "description": "BigQuery job (query/load/extract/copy).",
+      "fields": {
+        "job_id": "string",
+        "project_id": "string",
+        "state": "enum:PENDING|RUNNING|DONE",
+        "job_type": "enum:QUERY|LOAD|EXTRACT|COPY",
+        "user_email": {
+          "type": "string",
+          "format": "email"
+        },
+        "total_bytes_processed": "integer",
+        "creation_time_ms": "integer",
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "routines": {
+      "primaryKey": "routine_id",
+      "description": "BigQuery routine (UDF / stored procedure).",
+      "fields": {
+        "routine_id": "string",
+        "dataset_id": "ref:datasets.dataset_id",
+        "project_id": "string",
+        "routine_type": "enum:SCALAR_FUNCTION|PROCEDURE|TABLE_VALUED_FUNCTION",
+        "language": "enum:SQL|JAVASCRIPT"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "description": "Simulator audit log.",
+      "fields": {
+        "event_id": "string",
+        "actor": "string",
+        "role": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string",
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

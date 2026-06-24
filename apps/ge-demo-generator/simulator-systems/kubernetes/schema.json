@@ -1,0 +1,100 @@
+{
+  "id": "kubernetes_schema",
+  "version": 3,
+  "apiProfile": {
+    "style": "kubernetes-json",
+    "security": [
+      "BearerToken",
+      "serviceAccountToken"
+    ],
+    "pagination": {
+      "styles": [
+        "continue-token"
+      ],
+      "params": [
+        "limit",
+        "continue"
+      ]
+    },
+    "commonErrors": [
+      400,
+      401,
+      403,
+      404,
+      409,
+      422,
+      429,
+      500,
+      503
+    ]
+  },
+  "collections": {
+    "pods": {
+      "primaryKey": "pod_id",
+      "description": "Kubernetes Pod.",
+      "fields": {
+        "pod_id": "string",
+        "name": "string",
+        "namespace": "string",
+        "node": "string",
+        "phase": "enum:Pending|Running|Succeeded|Failed|Unknown",
+        "restart_count": "integer",
+        "image": "string"
+      }
+    },
+    "deployments": {
+      "primaryKey": "deployment_id",
+      "description": "Kubernetes Deployment (apps/v1).",
+      "fields": {
+        "deployment_id": "string",
+        "name": "string",
+        "namespace": "string",
+        "phase": "enum:Progressing|Available|ReplicaFailure",
+        "replicas": "number",
+        "ready_replicas": "number",
+        "image": "string"
+      }
+    },
+    "services": {
+      "primaryKey": "service_id",
+      "description": "Kubernetes Service.",
+      "fields": {
+        "service_id": "string",
+        "name": "string",
+        "namespace": "string",
+        "type": "enum:ClusterIP|NodePort|LoadBalancer|ExternalName",
+        "cluster_ip": "string",
+        "ports": "array:string"
+      }
+    },
+    "nodes": {
+      "primaryKey": "node_id",
+      "description": "Kubernetes Node.",
+      "fields": {
+        "node_id": "string",
+        "name": "string",
+        "phase": "enum:Ready|NotReady|SchedulingDisabled",
+        "kubelet_version": "string",
+        "allocatable_cpu": "string",
+        "allocatable_memory": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "description": "Simulator audit log.",
+      "fields": {
+        "event_id": "string",
+        "actor": "string",
+        "role": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string",
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

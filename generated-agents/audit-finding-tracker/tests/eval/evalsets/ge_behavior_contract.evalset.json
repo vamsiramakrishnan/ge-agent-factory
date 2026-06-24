@@ -1,0 +1,51 @@
+{
+  "eval_set_id": "ge_behavior_contract",
+  "name": "GE Behavior Contract",
+  "description": "Behavior-contract evals for audit_finding_tracker. Generated from the enriched use-case spec.",
+  "eval_cases": [
+    {
+      "eval_id": "audit-finding-tracker-end-to-end",
+      "conversation": [
+        {
+          "invocation_id": "audit-finding-tracker-end-to-end_turn_1",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Run the Audit Finding Tracker workflow for the current period. Cite the relevant source-system evidence and surface any escalations required."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "query_auditboard_records",
+                "args": {}
+              },
+              {
+                "name": "query_servicenow_tickets",
+                "args": {}
+              },
+              {
+                "name": "query_finance_3_records",
+                "args": {}
+              },
+              {
+                "name": "lookup_audit_finding_tracker_controls_playbook",
+                "args": {}
+              },
+              {
+                "name": "action_auditboard_execute",
+                "args": {}
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "app",
+        "user_id": "ge_eval_user",
+        "state": {}
+      }
+    }
+  ]
+}

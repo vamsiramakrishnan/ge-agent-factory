@@ -1,0 +1,61 @@
+{
+  "leads": [
+    {
+      "lead_id": "LEAD-ID-001",
+      "name": "sample_name",
+      "email": "sample_email",
+      "status": "sample_status",
+      "score": "sample_score",
+      "source": "sample_source",
+      "account_id": "ACCOUNT-ID-001"
+    }
+  ],
+  "accounts": [
+    {
+      "account_id": "ACCOUNT-ID-001",
+      "name": "sample_name",
+      "industry": "sample_industry",
+      "segment": "sample_segment",
+      "status": "sample_status"
+    }
+  ],
+  "campaigns": [
+    {
+      "campaign_id": "CAMPAIGN-ID-001",
+      "name": "sample_name",
+      "status": "sample_status",
+      "channel": "sample_channel",
+      "budget": "sample_budget",
+      "owner": "sample_owner"
+    }
+  ],
+  "journeys": [
+    {
+      "journey_id": "JOURNEY-ID-001",
+      "campaign_id": "CAMPAIGN-ID-001",
+      "status": "sample_status",
+      "audience_size": "sample_audience_size",
+      "activation_date": "sample_activation_date"
+    }
+  ],
+  "email_events": [
+    {
+      "event_id": "EVENT-ID-001",
+      "lead_id": "LEAD-ID-001",
+      "campaign_id": "CAMPAIGN-ID-001",
+      "event_type": "sample_event_type",
+      "status": "sample_status",
+      "occurred_at": "sample_occurred_at"
+    }
+  ],
+  "segments": [
+    {
+      "segment_id": "SEGMENT-ID-001",
+      "name": "sample_name",
+      "status": "sample_status",
+      "criteria": "sample_criteria",
+      "member_count": "sample_member_count"
+    }
+  ],
+  "audit_events": []
+}

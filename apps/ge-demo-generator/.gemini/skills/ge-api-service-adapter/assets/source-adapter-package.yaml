@@ -1,0 +1,25 @@
+id: example_source_adapter_api
+mode: fixture_backed_service_adapter
+pattern: mc-systems-compatible
+deploymentTargets:
+  - local Express API
+  - MCP SSE server
+  - Cloud Run
+  - API Gateway
+artifacts:
+  openapi: mock_data/apis/openapi.json
+  adapterManifest: mock_data/apis/source-adapters.json
+  mcpManifest: mock_data/apis/mcp-tools.json
+  jsonFixtures: mock_data/apis/fixtures/
+  fixtureIndex: mock_data/apis/fixtures/index.json
+  mcpAdapter: mock_data/apis/mcp-adapter/
+  loadScript: mock_data/apis/deploy-adapter.sh
+sources:
+  - system: Workday
+    protocol: REST API
+    direction: read
+    method: GET
+    path: /systems/workday/read
+    evidence:
+      - source_system_record
+      - generated_audit_trail

@@ -1,0 +1,54 @@
+{
+  "tickets": [
+    {
+      "ticket_id": "TICKET-ID-001",
+      "type": "sample_type",
+      "short_description": "sample_short_description",
+      "state": "sample_state",
+      "priority": "sample_priority",
+      "assignment_group": "sample_assignment_group",
+      "requester": "sample_requester",
+      "configuration_item": "sample_configuration_item",
+      "sla": "sample_sla"
+    }
+  ],
+  "cmdb_items": [
+    {
+      "ci_id": "CI-ID-001",
+      "name": "sample_name",
+      "type": "sample_type",
+      "status": "sample_status",
+      "owner": "sample_owner",
+      "criticality": "sample_criticality"
+    }
+  ],
+  "changes": [
+    {
+      "change_id": "CHANGE-ID-001",
+      "ticket_id": "TICKET-ID-001",
+      "state": "sample_state",
+      "risk": "sample_risk",
+      "planned_start": "sample_planned_start",
+      "planned_end": "sample_planned_end"
+    }
+  ],
+  "slas": [
+    {
+      "sla_id": "SLA-ID-001",
+      "ticket_id": "TICKET-ID-001",
+      "state": "sample_state",
+      "target_time": "sample_target_time",
+      "breach_risk": "sample_breach_risk"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APPROVAL-ID-001",
+      "source_record_id": "SOURCE-RECORD-ID-001",
+      "approver": "sample_approver",
+      "state": "sample_state",
+      "reason": "sample_reason"
+    }
+  ],
+  "audit_events": []
+}

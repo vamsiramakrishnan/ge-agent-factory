@@ -1,0 +1,13 @@
+{
+  "name": "@ge/agent-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Standalone workspace contract helpers for generated GE agent workspaces.",
+  "exports": {
+    ".": "./src/index.mjs"
+  },
+  "scripts": {
+    "test": "bun test src/index.test.mjs"
+  }
+}

@@ -1,0 +1,231 @@
+{
+  "id": "jira_schema",
+  "version": 3,
+  "apiProfile": {
+    "style": "rest-json",
+    "security": [
+      "oauth2",
+      "basicAuth",
+      "api_token"
+    ],
+    "pagination": {
+      "styles": [
+        "offset",
+        "page-number"
+      ],
+      "params": [
+        "startAt",
+        "maxResults",
+        "limit",
+        "offset",
+        "page"
+      ]
+    },
+    "commonErrors": [
+      400,
+      401,
+      403,
+      404,
+      409,
+      422,
+      429,
+      500
+    ]
+  },
+  "collections": {
+    "projects": {
+      "primaryKey": "project_id",
+      "description": "Jira project: a top-level container for issues, components, boards, sprints, and releases, with a project key, lead, and project type.",
+      "fields": {
+        "project_id": "string",
+        "key": "string",
+        "name": "string",
+        "project_type_key": "enum:software|service_desk|business",
+        "lead_account_id": "string",
+        "lead": "string",
+        "category": "string",
+        "url": "string",
+        "default_assignee": "string",
+        "status": "enum:active|archived|deleted",
+        "department": "string"
+      }
+    },
+    "components": {
+      "primaryKey": "component_id",
+      "description": "Jira project component: a sub-section of a project used to group issues by area of the codebase or function, with a component lead.",
+      "fields": {
+        "component_id": "string",
+        "project_id": "ref:projects.project_id",
+        "name": "string",
+        "description": "string",
+        "lead_account_id": "string",
+        "lead": "string",
+        "assignee_type": "enum:project_lead|component_lead|project_default|unassigned",
+        "active": "boolean"
+      }
+    },
+    "epics": {
+      "primaryKey": "epic_id",
+      "description": "Jira epic: a large body of work grouping related stories, with a summary, status, color, and rolled-up story points.",
+      "fields": {
+        "epic_id": "string",
+        "key": "string",
+        "project_id": "ref:projects.project_id",
+        "summary": "string",
+        "status": "enum:to_do|in_progress|done",
+        "color": "string",
+        "story_points": "number",
+        "assignee_account_id": "string",
+        "assignee": "string",
+        "labels": "array:string",
+        "done": "boolean"
+      }
+    },
+    "issues": {
+      "primaryKey": "issue_id",
+      "description": "Jira issue (story, task, or bug): the core unit of work tracked on the board, with type, priority, status, assignee, story points, sprint, fix version, and parent epic.",
+      "fields": {
+        "issue_id": "string",
+        "key": "string",
+        "project_id": "ref:projects.project_id",
+        "epic_id": "ref:epics.epic_id",
+        "component_id": "ref:components.component_id",
+        "sprint_id": "ref:sprints.sprint_id",
+        "issue_type": "enum:story|task|bug|spike",
+        "summary": "string",
+        "description": "string",
+        "status": "enum:to_do|in_progress|in_review|done|blocked",
+        "resolution": "enum:unresolved|done|wont_do|duplicate|cannot_reproduce",
+        "priority": "enum:lowest|low|medium|high|highest",
+        "story_points": "number",
+        "assignee_account_id": "string",
+        "assignee": "string",
+        "reporter": "string",
+        "labels": "array:string",
+        "affected_versions": "array:string",
+        "fix_version_id": "ref:releases.release_id",
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "last_note": "string"
+      }
+    },
+    "subtasks": {
+      "primaryKey": "subtask_id",
+      "description": "Jira sub-task: a smaller unit of work belonging to a parent issue, with its own assignee, status, and time estimate.",
+      "fields": {
+        "subtask_id": "string",
+        "key": "string",
+        "issue_id": "ref:issues.issue_id",
+        "summary": "string",
+        "status": "enum:to_do|in_progress|in_review|done",
+        "assignee_account_id": "string",
+        "assignee": "string",
+        "original_estimate_hours": "number",
+        "remaining_estimate_hours": "number"
+      }
+    },
+    "sprints": {
+      "primaryKey": "sprint_id",
+      "description": "Jira sprint: a time-boxed iteration on a board, with state, goal, velocity target, and committed/completed story points.",
+      "fields": {
+        "sprint_id": "string",
+        "project_id": "ref:projects.project_id",
+        "name": "string",
+        "state": "enum:future|active|closed",
+        "goal": "string",
+        "start_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "end_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "complete_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "velocity_target": "number",
+        "committed_points": "number",
+        "completed_points": "number"
+      }
+    },
+    "releases": {
+      "primaryKey": "release_id",
+      "description": "Jira release (fix version): a named version that issues are scheduled into, with a release date, driver, and lifecycle status.",
+      "fields": {
+        "release_id": "string",
+        "project_id": "ref:projects.project_id",
+        "name": "string",
+        "version": "string",
+        "description": "string",
+        "status": "enum:unreleased|released|archived",
+        "release_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "start_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "driver": "string",
+        "released": "boolean",
+        "overdue": "boolean"
+      }
+    },
+    "board_transitions": {
+      "primaryKey": "transition_id",
+      "description": "Recorded workflow transition of an issue across board columns (to_do -> in_progress -> in_review -> done), capturing who moved it and when.",
+      "fields": {
+        "transition_id": "string",
+        "issue_id": "ref:issues.issue_id",
+        "from_status": "enum:to_do|in_progress|in_review|done|blocked",
+        "to_status": "enum:to_do|in_progress|in_review|done|blocked",
+        "actor": "string",
+        "actor_role": "string",
+        "transitioned_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "note": "string"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "description": "Approval gate attached to a source record (typically a release readiness sign-off or a blocked issue), used to gate state transitions.",
+      "fields": {
+        "approval_id": "string",
+        "source_record_id": "string",
+        "source_collection": "string",
+        "approver": "string",
+        "approver_role": "string",
+        "state": "enum:requested|pending_approval|approved|rejected",
+        "reason": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "description": "Simulator audit log of reads and writes performed against the Jira simulator.",
+      "fields": {
+        "event_id": "string",
+        "actor": "string",
+        "role": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string",
+        "detail": "string",
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

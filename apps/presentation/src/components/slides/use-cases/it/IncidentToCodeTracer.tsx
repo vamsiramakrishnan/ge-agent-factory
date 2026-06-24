@@ -1,0 +1,1305 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { Link, AlertTriangle, GitBranch, Search, CheckCircle } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Incident Created", lane: "system", type: "trigger" },
+    { id: "a1", label: "Deployment Correlation", lane: "agent", type: "action" },
+    { id: "a2", label: "Change Analysis", lane: "agent", type: "action" },
+    { id: "a3", label: "Root Cause Report", lane: "agent", type: "output" },
+    { id: "s2", label: "Incident Updated", lane: "system", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "s2"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Incident Intake", icon: AlertTriangle, description: "Incident created in PagerDuty — agent correlates with recent deployments and infrastructure events.", trigger: "Incident", systems: ["PagerDuty", "Datadog"] },
+  { label: "Deployment Correlation", icon: GitBranch, description: "Recent deployments matched against incident timeline with change risk scoring and blast radius estimation.", systems: ["GitHub", "BigQuery"], integration: "ADK" },
+  { label: "Root Cause Analysis", icon: Search, description: "Gemini traces incident to specific code changes with rollback vs. fix recommendation.", systems: ["Vertex AI"] },
+  { label: "Incident Update", icon: CheckCircle, description: "Root cause report attached to incident with recommended action and affected service map.", output: "Root Cause Report" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "PagerDuty", description: "Incident alerts, severity, affected services, timeline", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "Datadog", description: "APM traces, error rates, latency metrics, deployment markers", direction: "read", protocol: "REST API", category: "analytics" },
+    { system: "GitHub", description: "Recent deployments, commit diffs, code changes by service", direction: "read", protocol: "GraphQL API", category: "erp" },
+    { system: "BigQuery", description: "Historical incident-deployment correlations, change risk models", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Root cause reasoning, rollback vs. fix decision support", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+    { system: "Jira", description: "Incident ticket update with root cause and action items", direction: "write", protocol: "REST API", category: "collaboration" },
+  ],
+  pipeline: [
+    { label: "Incident & Deployment Correlation", description: "Receive incident alert from PagerDuty. Correlate incident timeline with recent deployments from GitHub and infrastructure events from Datadog deployment markers.", systems: ["PagerDuty", "Datadog", "GitHub"], layer: "integration", dataIn: "Incident alert + deployment history + APM data", dataOut: "Correlated timeline of changes near incident start" },
+    { label: "Change Risk Scoring", description: "Score each recent deployment by change risk — size of diff, number of services affected, and historical failure rate for the changed module. Estimate blast radius across dependent services.", systems: ["BigQuery"], layer: "ml", dataIn: "Deployment-incident correlation data", dataOut: "Risk-scored deployments with blast radius estimates" },
+    { label: "Root Cause Reasoning", description: "Gemini traces to root cause: 'Checkout latency spike started 23 minutes after deployment #4521 which changed the DB connection pool config. New pool size (5 to 50) is causing connection exhaustion. Recommend immediate rollback.'", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Risk-scored deployments + code diffs + metrics", dataOut: "Root cause report with rollback/fix recommendation" },
+    { label: "Incident Update", description: "Root cause report attached to PagerDuty incident and Jira ticket. Recommended action (rollback or hotfix) communicated to the incident response team.", systems: ["Jira", "PagerDuty"], layer: "integration", dataIn: "Root cause report", dataOut: "Incident updated with root cause and action plan" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "DevOps Lead agent for the Incident-to-Code Tracer workflow",
+  primaryObjective: "Gemini traces incidents to specific code changes within minutes, recommending rollback vs. hotfix based on context. Deployment-incident correlation history builds institutional knowledge that improves with every incident. so the DevOps Lead can move the Root cause identification KPI.",
+  inScope: [
+    "Gemini traces incidents to specific code changes within minutes, recommending rollback vs. hotfix based on context",
+    "Deployment-incident correlation history builds institutional knowledge that improves with every incident",
+    "Blast radius estimation immediately identifies which downstream services need monitoring during remediation",
+  ],
+  outOfScope: [
+    "Production deployments outside an approved change window",
+    "Irreversible destructive actions on shared infrastructure (DROP, force-delete, key rotation)",
+    "Security incident attribution requiring forensics",
+  ],
+  toolIntents: [
+    {
+      name: "query_pagerduty_incidents",
+      kind: "query",
+      sourceSystemId: "pagerduty",
+      description: "Retrieve incidents from PagerDuty for the Incident-to-Code Tracer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "incidents_records",
+        "incidents_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "query_datadog_alerts",
+      kind: "query",
+      sourceSystemId: "datadog",
+      description: "Retrieve alerts from Datadog for the Incident-to-Code Tracer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "alerts_records",
+        "alerts_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "query_github_pull_requests",
+      kind: "query",
+      sourceSystemId: "github",
+      description: "Retrieve pull requests from GitHub for the Incident-to-Code Tracer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "pull_requests_records",
+        "pull_requests_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_jira_issues",
+      kind: "query",
+      sourceSystemId: "jira",
+      description: "Retrieve issues from Jira for the Incident-to-Code Tracer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "issues_records",
+        "issues_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_incident_to_code_tracer_runbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "pagerduty",
+      description: "Look up sections of the Incident-to-Code Tracer Operations Runbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_github_recommend",
+      kind: "action",
+      sourceSystemId: "github",
+      description: "Execute the recommend step in GitHub after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Root cause identification moved from 1-4 hours toward <10 minutes",
+      mustCite: [
+        "pagerduty.incidents",
+        "datadog.alerts",
+      ],
+      sourceSystemIds: [
+        "pagerduty",
+        "datadog",
+      ],
+    },
+    {
+      claim: "Deployment-incident correlation moved from Manual investigation toward Automated",
+      mustCite: [
+        "pagerduty.incidents",
+        "datadog.alerts",
+      ],
+      sourceSystemIds: [
+        "pagerduty",
+        "datadog",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Root cause identification regresses past the 1-4 hours baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "DevOps Lead",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed recommend action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from PagerDuty (and other named systems) entities.",
+    "Never bypass DevOps Lead approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "incident-to-code-tracer-end-to-end",
+      prompt: "Run the Incident-to-Code Tracer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_pagerduty_incidents",
+        "query_datadog_alerts",
+        "query_github_pull_requests",
+        "query_jira_issues",
+        "lookup_incident_to_code_tracer_runbook",
+        "action_github_recommend",
+      ],
+      mustReferenceEntities: [
+        "incidents",
+        "alerts",
+        "pull_requests",
+        "issues",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "incident-to-code-tracer-runbook",
+      ],
+      expectedActionOutcome: "Action recommend executed against GitHub, with audit-trail entry and DevOps Lead notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute recommend without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Incident-to-Code Tracer so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "pagerduty",
+      name: "PagerDuty",
+      owns: [
+        "incidents",
+        "oncall_schedules",
+        "escalation_policies",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_pagerduty_incidents",
+        "query_pagerduty_oncall_schedules",
+        "query_pagerduty_escalation_policies",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "datadog",
+      name: "Datadog",
+      owns: [
+        "alerts",
+        "monitors",
+        "metrics_snapshots",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_datadog_alerts",
+        "query_datadog_monitors",
+        "query_datadog_metrics_snapshots",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "github",
+      name: "GitHub",
+      owns: [
+        "pull_requests",
+        "commits",
+        "workflow_runs",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_github_pull_requests",
+        "query_github_commits",
+        "query_github_workflow_runs",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "jira",
+      name: "Jira",
+      owns: [
+        "issues",
+        "sprints",
+        "epics",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_jira_issues",
+        "query_jira_sprints",
+        "query_jira_epics",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "incidents",
+      sourceSystemId: "pagerduty",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "oncall_schedules",
+      sourceSystemId: "pagerduty",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "escalation_policies",
+      sourceSystemId: "pagerduty",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "alerts",
+      sourceSystemId: "datadog",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "monitors",
+      sourceSystemId: "datadog",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "metrics_snapshots",
+      sourceSystemId: "datadog",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "pull_requests",
+      sourceSystemId: "github",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "commits",
+      sourceSystemId: "github",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "workflow_runs",
+      sourceSystemId: "github",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "pending",
+            "running",
+            "succeeded",
+            "failed",
+            "rolled_back",
+          ],
+          required: true,
+        },
+        {
+          name: "duration_seconds",
+          type: "number",
+          min: 5,
+          max: 7200,
+          required: true,
+        },
+        {
+          name: "started_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "environment",
+          type: "enum",
+          values: [
+            "dev",
+            "staging",
+            "prod",
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "issues",
+      sourceSystemId: "jira",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "sprints",
+      sourceSystemId: "jira",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "epics",
+      sourceSystemId: "jira",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "incident-to-code-tracer-runbook",
+      sourceSystemId: "pagerduty",
+      type: "runbook",
+      title: "Incident-to-Code Tracer Operations Runbook",
+      requiredSections: [
+        "Detection signals",
+        "Triage procedures",
+        "Remediation actions",
+        "Rollback criteria",
+        "Post-incident review",
+      ],
+      linkedEntities: [
+        "incidents",
+        "oncall_schedules",
+        "escalation_policies",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "detection",
+        "triage",
+        "remediation",
+        "rollback",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "github_recommend_api",
+      sourceSystemId: "github",
+      method: "POST",
+      path: "/api/github/recommend",
+      description: "Synchronous endpoint the agent calls to recommend in GitHub after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "incident-to-code-tracer-baseline-gap",
+      description: "Seed a realistic gap where Root cause identification sits between 1-4 hours and <10 minutes, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "incidents",
+        "oncall_schedules",
+      ],
+      discoveryPath: [
+        "Inspect PagerDuty records for the affected entities",
+        "Compare against Datadog historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next DevOps Lead action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "incident_to_code_tracer",
+      schemas: [
+        "github",
+        "jira",
+      ],
+    },
+    bigquery: {
+      dataset: "it_incident_to_code_tracer",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "incident-to-code-tracer-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "incident-to-code-tracer-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Incident-to-Code Tracer workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const IncidentToCodeTracer = () => (
+  <UseCaseSlide
+    title="Incident-to-Code Tracer"
+    subtitle="A-3905 • Software Engineering & DevOps"
+    icon={Link}
+    domainId="domain-39"
+    layer="Layer 3: Custom ADK"
+    persona="DevOps Lead"
+    systems={["PagerDuty", "Datadog", "GitHub", "Jira", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "Root cause identification", before: "1-4 hours", after: "<10 minutes" },
+      { label: "Deployment-incident correlation", before: "Manual investigation", after: "Automated" },
+      { label: "MTTR improvement", before: "Baseline", after: "65% reduction" },
+    ]}
+    triggerType="event"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    statusQuo={[
+      "Root cause investigation requires manually correlating incident timeline with deployment logs across systems.",
+      "Engineers spend 1-4 hours during incidents searching for which deployment caused the problem.",
+      "Blast radius unknown — teams cannot quickly determine which downstream services are affected."
+    ]}
+    agentification={[
+      "Gemini traces incidents to specific code changes within minutes, recommending rollback vs. hotfix based on context.",
+      "Deployment-incident correlation history builds institutional knowledge that improves with every incident.",
+      "Blast radius estimation immediately identifies which downstream services need monitoring during remediation."
+    ]}
+  />
+);

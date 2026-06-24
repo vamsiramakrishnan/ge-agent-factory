@@ -1,0 +1,67 @@
+{
+  "id": "c2fo_schema",
+  "version": 1,
+  "collections": {
+    "vendors": {
+      "primaryKey": "vendor_id",
+      "fields": {
+        "vendor_id": "string",
+        "name": "string",
+        "status": "string",
+        "country": "string",
+        "payment_terms": "string"
+      }
+    },
+    "invoices": {
+      "primaryKey": "invoice_id",
+      "fields": {
+        "invoice_id": "string",
+        "vendor_id": "string",
+        "status": "string",
+        "amount": "string",
+        "currency": "string",
+        "due_date": "string"
+      }
+    },
+    "journal_entries": {
+      "primaryKey": "journal_id",
+      "fields": {
+        "journal_id": "string",
+        "status": "string",
+        "ledger": "string",
+        "period": "string",
+        "amount": "string"
+      }
+    },
+    "payments": {
+      "primaryKey": "payment_id",
+      "fields": {
+        "payment_id": "string",
+        "invoice_id": "string",
+        "status": "string",
+        "payment_date": "string",
+        "amount": "string"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": "string",
+        "source_record_id": "string",
+        "approver": "string",
+        "state": "string",
+        "reason": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string"
+      }
+    }
+  }
+}

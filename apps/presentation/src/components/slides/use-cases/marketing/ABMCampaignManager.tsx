@@ -1,0 +1,1345 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { Building2, Search, Users, PenTool, CheckCircle } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Target Account / Weekly", lane: "system", type: "trigger" },
+    { id: "a1", label: "Account Research", lane: "agent", type: "action" },
+    { id: "a2", label: "Strategy Generation", lane: "agent", type: "action" },
+    { id: "a3", label: "Campaign Activation", lane: "agent", type: "output" },
+    { id: "h1", label: "Demand Gen Review", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Account Research", icon: Search, description: "Target account researched using annual reports, press releases, leadership changes, and tech stack data.", trigger: "Account identified + Weekly", systems: ["Demandbase", "6sense", "LinkedIn"] },
+  { label: "Stakeholder Mapping", icon: Users, description: "Buying committee mapped with engagement heat scoring across account stakeholders.", systems: ["Salesforce CRM", "BigQuery"], integration: "Analytics" },
+  { label: "Personalized Strategy", icon: PenTool, description: "Gemini generates personalized outreach strategies reasoning about which pain points resonate based on company context.", systems: ["Vertex AI"] },
+  { label: "Demand Gen Review", icon: CheckCircle, description: "Demand Gen Manager reviews account strategy and personalized campaign plan before activation.", output: "ABM Strategy" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Demandbase", description: "Account intent data, technographic profiles, buying stage signals", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "6sense", description: "Account propensity scores, anonymous visitor matching, intent topics", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "Salesforce CRM", description: "Account records, contact roles, opportunity history, engagement data", direction: "bidirectional", protocol: "REST API", category: "erp" },
+    { system: "HubSpot", description: "Email and content touches, engagement scoring, nurture enrollment", direction: "bidirectional", protocol: "REST API", category: "erp" },
+    { system: "LinkedIn Ads", description: "Account-targeted ad campaigns, matched audience creation", direction: "write", protocol: "REST API", category: "erp" },
+    { system: "Vertex AI (Gemini)", description: "Account research synthesis, pain point reasoning, outreach strategy generation", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Account Intelligence", description: "Sync target account lists from Demandbase/6sense. Research accounts using publicly available information \u2014 annual reports, press releases, leadership changes, technology stack.", systems: ["Demandbase", "6sense", "LinkedIn"], layer: "integration", dataIn: "Target account identifiers + public data", dataOut: "Account intelligence profiles" },
+    { label: "Engagement Scoring", description: "Account propensity scoring and buying stage prediction. Engagement heat mapping across account stakeholders. Channel effectiveness analysis by account tier.", systems: ["BigQuery ML", "Salesforce CRM"], layer: "ml", dataIn: "Account engagement data + stakeholder interactions", dataOut: "Buying stage predictions + stakeholder heat maps" },
+    { label: "Strategy Generation", description: "Gemini reasons about which pain points resonate based on industry, size, and recent initiatives. Generates personalized outreach strategies with specific messaging angles.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Account intelligence + engagement scores + competitive context", dataOut: "Personalized ABM strategy with messaging angles" },
+    { label: "Campaign Activation", description: "Create personalized ad campaigns in LinkedIn. Coordinate email and content touches in HubSpot. Update account engagement scores in Salesforce.", systems: ["LinkedIn Ads", "HubSpot", "Salesforce CRM"], layer: "integration", dataIn: "Approved ABM strategy", dataOut: "Active multi-channel ABM campaign" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Demand Gen Manager agent for the ABM Campaign Manager workflow",
+  primaryObjective: "Gemini researches target accounts and reasons about which pain points resonate based on industry, size, and recent initiatives. Generates personalized outreach strategies with specific messaging angles, not generic company-name personalization. so the Demand Gen Manager can move the Account research time KPI.",
+  inScope: [
+    "Gemini researches target accounts and reasons about which pain points resonate based on industry, size, and recent initiatives",
+    "Generates personalized outreach strategies with specific messaging angles, not generic company-name personalization",
+    "Coordinates multi-channel ABM campaigns across LinkedIn Ads, email, and content automatically",
+  ],
+  outOfScope: [
+    "Final approval of paid spend reallocations above the governance threshold",
+    "Trademark, legal, or regulated-industry claim approval",
+    "Crisis communications without comms-team sign-off",
+  ],
+  toolIntents: [
+    {
+      name: "query_demandbase_demandbase_records",
+      kind: "query",
+      sourceSystemId: "demandbase",
+      description: "Retrieve demandbase records from Demandbase for the ABM Campaign Manager workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "demandbase_records_records",
+        "demandbase_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_6sense_6sense_records",
+      kind: "query",
+      sourceSystemId: "6sense",
+      description: "Retrieve 6sense records from 6sense for the ABM Campaign Manager workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "6sense_records_records",
+        "6sense_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_salesforce_crm_accounts",
+      kind: "query",
+      sourceSystemId: "salesforce_crm",
+      description: "Retrieve accounts from Salesforce CRM for the ABM Campaign Manager workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "accounts_records",
+        "accounts_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_hubspot_contacts",
+      kind: "query",
+      sourceSystemId: "hubspot",
+      description: "Retrieve contacts from HubSpot for the ABM Campaign Manager workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "contacts_records",
+        "contacts_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_abm_campaign_manager_playbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "linkedin_ads",
+      description: "Look up sections of the ABM Campaign Manager Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_demandbase_generate",
+      kind: "action",
+      sourceSystemId: "demandbase",
+      description: "Execute the generate step in Demandbase after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Account research time moved from 4-6 hours/account toward 30 minutes",
+      mustCite: [
+        "demandbase.demandbase_records",
+        "6sense.6sense_records",
+      ],
+      sourceSystemIds: [
+        "demandbase",
+        "6sense",
+      ],
+    },
+    {
+      claim: "ABM pipeline contribution moved from 15% toward 35%",
+      mustCite: [
+        "demandbase.demandbase_records",
+        "6sense.6sense_records",
+      ],
+      sourceSystemIds: [
+        "demandbase",
+        "6sense",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Account research time regresses past the 4-6 hours/account baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Demand Gen Manager",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed generate action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from Demandbase (and other named systems) entities.",
+    "Never bypass Demand Gen Manager approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "abm-campaign-manager-end-to-end",
+      prompt: "Run the ABM Campaign Manager workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_demandbase_demandbase_records",
+        "query_6sense_6sense_records",
+        "query_salesforce_crm_accounts",
+        "query_hubspot_contacts",
+        "lookup_abm_campaign_manager_playbook",
+        "action_demandbase_generate",
+      ],
+      mustReferenceEntities: [
+        "demandbase_records",
+        "6sense_records",
+        "accounts",
+        "contacts",
+        "campaigns",
+      ],
+      mustCiteDocuments: [
+        "abm-campaign-manager-playbook",
+      ],
+      expectedActionOutcome: "Action generate executed against Demandbase, with audit-trail entry and Demand Gen Manager notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute generate without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for ABM Campaign Manager so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "demandbase",
+      name: "Demandbase",
+      owns: [
+        "demandbase_records",
+        "demandbase_events",
+        "demandbase_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_demandbase_demandbase_records",
+        "query_demandbase_demandbase_events",
+        "query_demandbase_demandbase_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "6sense",
+      name: "6sense",
+      owns: [
+        "6sense_records",
+        "6sense_events",
+        "6sense_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_6sense_6sense_records",
+        "query_6sense_6sense_events",
+        "query_6sense_6sense_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "salesforce_crm",
+      name: "Salesforce CRM",
+      owns: [
+        "accounts",
+        "opportunities",
+        "campaign_influence",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_salesforce_crm_accounts",
+        "query_salesforce_crm_opportunities",
+        "query_salesforce_crm_campaign_influence",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "hubspot",
+      name: "HubSpot",
+      owns: [
+        "contacts",
+        "deals",
+        "engagement_events",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_hubspot_contacts",
+        "query_hubspot_deals",
+        "query_hubspot_engagement_events",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "linkedin_ads",
+      name: "LinkedIn Ads",
+      owns: [
+        "campaigns",
+        "audience_segments",
+        "spend_records",
+      ],
+      protocol: "Ads API",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_linkedin_ads_campaigns",
+        "query_linkedin_ads_audience_segments",
+        "query_linkedin_ads_spend_records",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "demandbase_records",
+      sourceSystemId: "demandbase",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "demandbase_events",
+      sourceSystemId: "demandbase",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "demandbase_record_id",
+          type: "ref",
+          ref: "demandbase_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "demandbase_audit_trail",
+      sourceSystemId: "demandbase",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "6sense_records",
+      sourceSystemId: "6sense",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "6sense_events",
+      sourceSystemId: "6sense",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "6sense_record_id",
+          type: "ref",
+          ref: "6sense_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "6sense_audit_trail",
+      sourceSystemId: "6sense",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "accounts",
+      sourceSystemId: "salesforce_crm",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "account_name",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "number",
+          min: 5000,
+          max: 1000000,
+          required: true,
+        },
+        {
+          name: "stage",
+          type: "enum",
+          values: [
+            "prospecting",
+            "qualification",
+            "proposal",
+            "negotiation",
+            "closed_won",
+            "closed_lost",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "close_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "opportunities",
+      sourceSystemId: "salesforce_crm",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "campaign_influence",
+      sourceSystemId: "salesforce_crm",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "channel",
+          type: "enum",
+          values: [
+            "email",
+            "social",
+            "search",
+            "display",
+            "content",
+            "events",
+          ],
+          required: true,
+        },
+        {
+          name: "segment",
+          type: "enum",
+          values: [
+            "enterprise",
+            "mid_market",
+            "smb",
+          ],
+          required: true,
+        },
+        {
+          name: "impressions",
+          type: "number",
+          min: 1000,
+          max: 500000,
+          required: true,
+        },
+        {
+          name: "conversions",
+          type: "number",
+          min: 0,
+          max: 5000,
+          required: true,
+        },
+        {
+          name: "spend",
+          type: "number",
+          min: 1000,
+          max: 200000,
+          required: true,
+        },
+        {
+          name: "ctr",
+          type: "float",
+          min: 0.1,
+          max: 9.5,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "launched_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "contacts",
+      sourceSystemId: "hubspot",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "company",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "score",
+          type: "number",
+          min: 0,
+          max: 100,
+          required: true,
+        },
+        {
+          name: "stage",
+          type: "enum",
+          values: [
+            "new",
+            "qualified",
+            "engaged",
+            "opportunity",
+            "lost",
+          ],
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "deals",
+      sourceSystemId: "hubspot",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "account_name",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "number",
+          min: 5000,
+          max: 1000000,
+          required: true,
+        },
+        {
+          name: "stage",
+          type: "enum",
+          values: [
+            "prospecting",
+            "qualification",
+            "proposal",
+            "negotiation",
+            "closed_won",
+            "closed_lost",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "close_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "engagement_events",
+      sourceSystemId: "hubspot",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "company",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "score",
+          type: "number",
+          min: 0,
+          max: 100,
+          required: true,
+        },
+        {
+          name: "stage",
+          type: "enum",
+          values: [
+            "new",
+            "qualified",
+            "engaged",
+            "opportunity",
+            "lost",
+          ],
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "contact_id",
+          type: "ref",
+          ref: "contacts.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "campaigns",
+      sourceSystemId: "linkedin_ads",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "channel",
+          type: "enum",
+          values: [
+            "email",
+            "social",
+            "search",
+            "display",
+            "content",
+            "events",
+          ],
+          required: true,
+        },
+        {
+          name: "segment",
+          type: "enum",
+          values: [
+            "enterprise",
+            "mid_market",
+            "smb",
+          ],
+          required: true,
+        },
+        {
+          name: "impressions",
+          type: "number",
+          min: 1000,
+          max: 500000,
+          required: true,
+        },
+        {
+          name: "conversions",
+          type: "number",
+          min: 0,
+          max: 5000,
+          required: true,
+        },
+        {
+          name: "spend",
+          type: "number",
+          min: 1000,
+          max: 200000,
+          required: true,
+        },
+        {
+          name: "ctr",
+          type: "float",
+          min: 0.1,
+          max: 9.5,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "launched_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "audience_segments",
+      sourceSystemId: "linkedin_ads",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "channel",
+          type: "enum",
+          values: [
+            "email",
+            "social",
+            "search",
+            "display",
+            "content",
+            "events",
+          ],
+          required: true,
+        },
+        {
+          name: "segment",
+          type: "enum",
+          values: [
+            "enterprise",
+            "mid_market",
+            "smb",
+          ],
+          required: true,
+        },
+        {
+          name: "impressions",
+          type: "number",
+          min: 1000,
+          max: 500000,
+          required: true,
+        },
+        {
+          name: "conversions",
+          type: "number",
+          min: 0,
+          max: 5000,
+          required: true,
+        },
+        {
+          name: "spend",
+          type: "number",
+          min: 1000,
+          max: 200000,
+          required: true,
+        },
+        {
+          name: "ctr",
+          type: "float",
+          min: 0.1,
+          max: 9.5,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "launched_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "spend_records",
+      sourceSystemId: "linkedin_ads",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "service",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: 1,
+          max: 10000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+          ],
+          required: true,
+        },
+        {
+          name: "period_start",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "period_end",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "demandbase_events.demandbase_record_id",
+      to: "demandbase_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "6sense_events.6sense_record_id",
+      to: "6sense_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "engagement_events.contact_id",
+      to: "contacts.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "abm-campaign-manager-playbook",
+      sourceSystemId: "linkedin_ads",
+      type: "playbook",
+      title: "ABM Campaign Manager Playbook",
+      requiredSections: [
+        "Audience guidelines",
+        "Brand voice rules",
+        "Channel-specific guardrails",
+        "Measurement framework",
+        "Approval thresholds",
+      ],
+      linkedEntities: [
+        "demandbase_records",
+        "demandbase_events",
+        "demandbase_audit_trail",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "audience",
+        "brand-voice",
+        "channels",
+        "approvals",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "demandbase_generate_api",
+      sourceSystemId: "demandbase",
+      method: "POST",
+      path: "/api/demandbase/generate",
+      description: "Synchronous endpoint the agent calls to generate in Demandbase after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "abm-campaign-manager-baseline-gap",
+      description: "Seed a realistic gap where Account research time sits between 4-6 hours/account and 30 minutes, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "demandbase_records",
+        "demandbase_events",
+      ],
+      discoveryPath: [
+        "Inspect Demandbase records for the affected entities",
+        "Compare against 6sense historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Demand Gen Manager action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "abm_campaign_manager",
+      schemas: [
+        "demandbase",
+        "6sense",
+        "salesforce_crm",
+        "hubspot",
+      ],
+    },
+    bigquery: {
+      dataset: "marketing_abm_campaign_manager",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "abm-campaign-manager-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "abm-campaign-manager-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the ABM Campaign Manager workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const ABMCampaignManager = () => (
+  <UseCaseSlide
+    title="ABM Campaign Manager"
+    subtitle="A-3103 \u2022 Demand Generation"
+    icon={Building2}
+    domainId="domain-31"
+    layer="Layer 3: Custom ADK"
+    persona="Demand Gen Manager"
+    systems={["Demandbase", "6sense", "Salesforce CRM", "HubSpot", "LinkedIn Ads", "Vertex AI"]}
+    kpis={[
+      { label: "Account research time", before: "4-6 hours/account", after: "30 minutes" },
+      { label: "ABM pipeline contribution", before: "15%", after: "35%" },
+      { label: "Account engagement rate", before: "22%", after: "48%" },
+    ]}
+    triggerType="event"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "Demand Gen Manager", action: "Review ABM strategy", description: "Demand Gen Manager reviews account research, personalized messaging strategy, and multi-channel campaign plan before activation." }}
+    statusQuo={[
+      "ABM account research done manually with 4-6 hours per target account using generic company overviews.",
+      "Personalized messaging limited to company name insertion rather than genuine pain point alignment.",
+      "Multi-channel ABM coordination managed in spreadsheets with inconsistent execution across channels."
+    ]}
+    agentification={[
+      "Gemini researches target accounts and reasons about which pain points resonate based on industry, size, and recent initiatives.",
+      "Generates personalized outreach strategies with specific messaging angles, not generic company-name personalization.",
+      "Coordinates multi-channel ABM campaigns across LinkedIn Ads, email, and content automatically."
+    ]}
+  />
+);

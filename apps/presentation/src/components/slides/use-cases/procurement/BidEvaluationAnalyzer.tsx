@@ -1,0 +1,1012 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { BarChartHorizontal, Database, Cpu, Brain, Users } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Bid Deadline", lane: "system", type: "trigger" },
+    { id: "a1", label: "Normalize Bids", lane: "agent", type: "action" },
+    { id: "a2", label: "Weighted Scoring", lane: "agent", type: "action" },
+    { id: "a3", label: "Narrative Synthesis", lane: "agent", type: "output" },
+    { id: "h1", label: "Committee Decides", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Bid Collection", icon: Database, description: "Bids collected and normalized across formats — structured pricing sheets and unstructured narratives.", trigger: "Bid deadline", systems: ["SAP Ariba", "Coupa"] },
+  { label: "Multi-Criteria Scoring", icon: Cpu, description: "Weighted scoring across cost, quality, risk, and capacity with Pareto frontier analysis and award split scenarios.", systems: ["BigQuery"], integration: "ADK" },
+  { label: "Narrative Analysis", icon: Brain, description: "Gemini reads supplier narratives — 'investing $50M in new facility by Q2 2027' — and assesses credibility and relevance to award decision.", systems: ["Vertex AI"] },
+  { label: "Committee Review", icon: Users, description: "Sourcing committee reviews recommendation memo explaining why higher-priced Supplier B outperforms cheapest Supplier D on total value.", output: "Award Recommendation" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "SAP Ariba", description: "Bid submissions with structured pricing and technical responses", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "Coupa", description: "Bid responses and supplier qualification data from sourcing events", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "BigQuery", description: "Multi-criteria scoring engine, Pareto frontier analysis, scenario simulation", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Narrative response analysis, credibility assessment, award memo generation", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+    { system: "Excel Imports", description: "Offline bid submissions from suppliers not on sourcing platform", direction: "read", protocol: "File Import", category: "collaboration" },
+  ],
+  pipeline: [
+    { label: "Bid Collection & Normalization", description: "Collect bid submissions from Ariba and Coupa. Import offline Excel bids. Normalize pricing formats, currency, and unit-of-measure across all suppliers into a comparable structure.", systems: ["SAP Ariba", "Coupa", "Excel Imports"], layer: "integration", dataIn: "Raw bid submissions in varied formats", dataOut: "Normalized bid matrix across all suppliers and criteria" },
+    { label: "Multi-Criteria Scoring & Scenarios", description: "Weighted scoring across cost, quality, risk, and capacity dimensions. Pareto-optimal frontier analysis to identify non-dominated supplier combinations. What-if scenario simulation for volume shifts and award splits.", systems: ["BigQuery ML"], layer: "ml", dataIn: "Normalized bid matrix with evaluation weights", dataOut: "Scored bids with Pareto frontier and award scenarios" },
+    { label: "Narrative Synthesis & Recommendation", description: "Gemini reads supplier narrative responses that go beyond fill-in-the-blank fields. Assesses credibility of claims like 'investing $50M in new facility by Q2 2027.' Synthesizes 6 bids across 40 criteria into a recommendation narrative explaining why Supplier B's higher price is justified.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Scored bids + supplier narrative responses", dataOut: "Award recommendation memo with narrative justification" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Sourcing Committee agent for the Bid Evaluation & Scenario Analyzer workflow",
+  primaryObjective: "Gemini synthesizes 6 bids across 40 criteria into a narrative that explains why Supplier B's higher price is justified by quality track record and capacity headroom. LLM reads narrative responses to assess credibility: distinguishing marketing claims from substantiated capability commitments. so the Sourcing Committee can move the Evaluation cycle time KPI.",
+  inScope: [
+    "Gemini synthesizes 6 bids across 40 criteria into a narrative that explains why Supplier B's higher price is justified by quality track record and capacity headroom",
+    "LLM reads narrative responses to assess credibility: distinguishing marketing claims from substantiated capability commitments",
+    "Pareto frontier analysis reveals optimal cost-quality-risk trade-offs that manual comparison consistently misses",
+  ],
+  outOfScope: [
+    "Contract execution without legal review",
+    "Supplier disqualification decisions (category lead retains authority)",
+    "Single-source justification overrides above policy threshold",
+  ],
+  toolIntents: [
+    {
+      name: "query_sap_ariba_suppliers",
+      kind: "query",
+      sourceSystemId: "sap_ariba",
+      description: "Retrieve suppliers from SAP Ariba for the Bid Evaluation & Scenario Analyzer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "suppliers_records",
+        "suppliers_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_coupa_requisitions",
+      kind: "query",
+      sourceSystemId: "coupa",
+      description: "Retrieve requisitions from Coupa for the Bid Evaluation & Scenario Analyzer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "requisitions_records",
+        "requisitions_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Bid Evaluation & Scenario Analyzer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_bid_evaluation_scenario_analyzer_policy_guide",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Bid Evaluation & Scenario Analyzer Procurement Policy Guide to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Evaluation cycle time moved from 2-3 weeks toward 3 days",
+      mustCite: [
+        "sap_ariba.suppliers",
+        "coupa.requisitions",
+      ],
+      sourceSystemIds: [
+        "sap_ariba",
+        "coupa",
+      ],
+    },
+    {
+      claim: "Award scenarios modeled moved from 2-3 manual toward 20+ automated",
+      mustCite: [
+        "sap_ariba.suppliers",
+        "coupa.requisitions",
+      ],
+      sourceSystemIds: [
+        "sap_ariba",
+        "coupa",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Evaluation cycle time regresses past the 2-3 weeks baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Sourcing Committee",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from SAP Ariba (and other named systems) entities.",
+    "Never bypass Sourcing Committee approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "bid-evaluation-scenario-analyzer-end-to-end",
+      prompt: "Run the Bid Evaluation & Scenario Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_sap_ariba_suppliers",
+        "query_coupa_requisitions",
+        "query_bigquery_analytics_events",
+        "lookup_bid_evaluation_scenario_analyzer_policy_guide",
+      ],
+      mustReferenceEntities: [
+        "suppliers",
+        "requisitions",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "bid-evaluation-scenario-analyzer-policy-guide",
+      ],
+      expectedActionOutcome: "Sourcing Committee receives a fully-cited recommendation; no external state change without explicit approval.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not act on single-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Bid Evaluation & Scenario Analyzer so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "sap_ariba",
+      name: "SAP Ariba",
+      owns: [
+        "suppliers",
+        "sourcing_events",
+        "contracts",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sap_ariba_suppliers",
+        "query_sap_ariba_sourcing_events",
+        "query_sap_ariba_contracts",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "coupa",
+      name: "Coupa",
+      owns: [
+        "requisitions",
+        "purchase_orders",
+        "invoices",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_coupa_requisitions",
+        "query_coupa_purchase_orders",
+        "query_coupa_invoices",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "suppliers",
+      sourceSystemId: "sap_ariba",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "IT",
+            "Consulting",
+            "Manufacturing",
+            "Logistics",
+            "Facilities",
+            "Marketing",
+          ],
+          required: true,
+        },
+        {
+          name: "rating",
+          type: "number",
+          min: 1,
+          max: 5,
+          required: true,
+        },
+        {
+          name: "annual_spend",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "risk_score",
+          type: "enum",
+          values: [
+            "low",
+            "medium",
+            "high",
+          ],
+          weights: [
+            0.5,
+            0.35,
+            0.15,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending_review",
+            "terminated",
+          ],
+          required: true,
+        },
+        {
+          name: "onboarded_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "sourcing_events",
+      sourceSystemId: "sap_ariba",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "counterparty",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "start_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "end_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "negotiating",
+            "active",
+            "expired",
+            "terminated",
+          ],
+          required: true,
+        },
+        {
+          name: "auto_renew",
+          type: "boolean",
+          trueRate: 0.4,
+        },
+        {
+          name: "supplier_id",
+          type: "ref",
+          ref: "suppliers.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "contracts",
+      sourceSystemId: "sap_ariba",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "counterparty",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "start_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "end_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "negotiating",
+            "active",
+            "expired",
+            "terminated",
+          ],
+          required: true,
+        },
+        {
+          name: "auto_renew",
+          type: "boolean",
+          trueRate: 0.4,
+        },
+      ],
+    },
+    {
+      name: "requisitions",
+      sourceSystemId: "coupa",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "vendor",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: 100,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+            "JPY",
+          ],
+          weights: [
+            0.7,
+            0.15,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "pending",
+            "approved",
+            "paid",
+            "rejected",
+          ],
+          weights: [
+            0.1,
+            0.3,
+            0.3,
+            0.2,
+            0.1,
+          ],
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "due_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "purchase_orders",
+      sourceSystemId: "coupa",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "vendor",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: 100,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+            "JPY",
+          ],
+          weights: [
+            0.7,
+            0.15,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "pending",
+            "approved",
+            "paid",
+            "rejected",
+          ],
+          weights: [
+            0.1,
+            0.3,
+            0.3,
+            0.2,
+            0.1,
+          ],
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "due_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "invoices",
+      sourceSystemId: "coupa",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "vendor",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: 100,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+            "JPY",
+          ],
+          weights: [
+            0.7,
+            0.15,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "pending",
+            "approved",
+            "paid",
+            "rejected",
+          ],
+          weights: [
+            0.1,
+            0.3,
+            0.3,
+            0.2,
+            0.1,
+          ],
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "due_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "sourcing_events.supplier_id",
+      to: "suppliers.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "bid-evaluation-scenario-analyzer-policy-guide",
+      sourceSystemId: "bigquery",
+      type: "policy",
+      title: "Bid Evaluation & Scenario Analyzer Procurement Policy Guide",
+      requiredSections: [
+        "Sourcing principles",
+        "Approval thresholds",
+        "Supplier risk requirements",
+        "Contract and compliance gates",
+        "Exception handling",
+      ],
+      linkedEntities: [
+        "suppliers",
+        "sourcing_events",
+        "contracts",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "sourcing",
+        "approvals",
+        "supplier-risk",
+        "exceptions",
+      ],
+    },
+  ],
+  apis: [],
+  anomalies: [
+    {
+      id: "bid-evaluation-scenario-analyzer-baseline-gap",
+      description: "Seed a realistic gap where Evaluation cycle time sits between 2-3 weeks and 3 days, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "suppliers",
+        "sourcing_events",
+      ],
+      discoveryPath: [
+        "Inspect SAP Ariba records for the affected entities",
+        "Compare against Coupa historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Sourcing Committee action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "bid_evaluation_scenario_analyzer",
+      schemas: [
+        "sap_ariba",
+        "coupa",
+      ],
+    },
+    bigquery: {
+      dataset: "procurement_bid_evaluation_scenario_analyzer",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "bid-evaluation-scenario-analyzer-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "bid-evaluation-scenario-analyzer-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Bid Evaluation & Scenario Analyzer workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const BidEvaluationAnalyzer = () => (
+  <UseCaseSlide
+    title="Bid Evaluation & Scenario Analyzer"
+    subtitle="A-1205 • Strategic Sourcing"
+    icon={BarChartHorizontal}
+    domainId="domain-12"
+    layer="Layer 3: Custom ADK"
+    persona="Sourcing Committee"
+    systems={["SAP Ariba", "Coupa", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "Evaluation cycle time", before: "2-3 weeks", after: "3 days" },
+      { label: "Award scenarios modeled", before: "2-3 manual", after: "20+ automated" },
+      { label: "Total value captured", before: "Price-focused", after: "Multi-dimensional TCO" },
+    ]}
+    triggerType="event"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "Sourcing Committee", action: "Award decision", description: "Committee reviews multi-criteria evaluation, scenario analysis, and narrative recommendation memo before making award decision." }}
+    statusQuo={[
+      "Bid comparison done in Excel with ad-hoc weighting that changes mid-evaluation based on committee preferences.",
+      "Narrative supplier responses — the richest source of differentiation — are skimmed, not systematically analyzed.",
+      "Award memos are backward-justified after the decision is made, not data-driven inputs to the decision."
+    ]}
+    agentification={[
+      "Gemini synthesizes 6 bids across 40 criteria into a narrative that explains why Supplier B's higher price is justified by quality track record and capacity headroom.",
+      "LLM reads narrative responses to assess credibility: distinguishing marketing claims from substantiated capability commitments.",
+      "Pareto frontier analysis reveals optimal cost-quality-risk trade-offs that manual comparison consistently misses."
+    ]}
+  />
+);

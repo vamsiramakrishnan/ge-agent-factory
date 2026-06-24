@@ -1,0 +1,283 @@
+{
+  "id": "docusign_clm_schema",
+  "version": 2,
+  "apiProfile": {
+    "style": "odata-json",
+    "security": [
+      "accessToken:oauth2"
+    ],
+    "oauthScopes": [
+      "adm_store_unified_repo_read",
+      "adm_store_unified_repo_write",
+      "models_read",
+      "document_uploader_read",
+      "document_uploader_write",
+      "public_dms_document_read"
+    ],
+    "pagination": {
+      "styles": [
+        "continuation-token",
+        "limit"
+      ],
+      "params": [
+        "limit",
+        "ctoken"
+      ]
+    },
+    "query": {
+      "searchParam": "$search",
+      "filterParam": "$filter",
+      "sortParam": "sort",
+      "directionParam": "direction"
+    },
+    "commonErrors": [
+      400,
+      401,
+      403,
+      404,
+      422,
+      429,
+      500
+    ]
+  },
+  "collections": {
+    "agreements": {
+      "primaryKey": "agreement_id",
+      "description": "Agreement Manager agreement document with OData-searchable metadata, parties, provisions, review state, and source identifiers.",
+      "fields": {
+        "agreement_id": "string",
+        "account_id": "string",
+        "document_id": "ref:documents.document_id",
+        "title": "string",
+        "file_name": "string",
+        "type": "string",
+        "category": "string",
+        "summary": "string",
+        "status": "enum:DRAFT|PENDING|COMPLETE|INACTIVE|CANCELED|DELETED",
+        "review_status": "enum:PENDING|IN_REVIEW|ACCEPTED|NEEDS_REVIEW|COMPLETE",
+        "review_completed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "counterparty": "string",
+        "party_names": "array:string",
+        "effective_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "expiration_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "execution_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "term_length": "string",
+        "renewal_type": "enum:EVERGREEN|AUTO_RENEW|FIXED|NONE",
+        "payment_terms_due_date": "enum:UNDER_SEVEN_DAYS|SEVEN_DAYS|FIFTEEN_DAYS|THIRTY_DAYS|FORTY_FIVE_DAYS|SIXTY_DAYS|NINETY_DAYS|OVER_NINETY_DAYS|ON_RECEIPT|OTHER|SILENT",
+        "source_name": "string",
+        "source_id": "string",
+        "owner": "string",
+        "risk_level": "enum:low|medium|high|critical",
+        "jurisdiction": "string",
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "modified_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "relations": {
+        "parties": {
+          "collection": "parties",
+          "localField": "agreement_id",
+          "foreignField": "agreement_id",
+          "many": true
+        },
+        "clauses": {
+          "collection": "clauses",
+          "localField": "agreement_id",
+          "foreignField": "agreement_id",
+          "many": true
+        },
+        "obligations": {
+          "collection": "obligations",
+          "localField": "agreement_id",
+          "foreignField": "agreement_id",
+          "many": true
+        },
+        "amendments": {
+          "collection": "amendments",
+          "localField": "agreement_id",
+          "foreignField": "agreement_id",
+          "many": true
+        },
+        "approvals": {
+          "collection": "approvals",
+          "localField": "agreement_id",
+          "foreignField": "source_record_id",
+          "many": true
+        },
+        "documents": {
+          "collection": "documents",
+          "localField": "agreement_id",
+          "foreignField": "agreement_id",
+          "many": true
+        }
+      }
+    },
+    "agreement_types": {
+      "primaryKey": "type_id",
+      "description": "Agreement type catalog returned by the upstream agreement-types endpoint.",
+      "fields": {
+        "type_id": "string",
+        "name": "string",
+        "category": "string",
+        "status": "enum:active|deprecated|draft",
+        "schema_version": "string",
+        "extraction_model": "string"
+      }
+    },
+    "parties": {
+      "primaryKey": "party_id",
+      "fields": {
+        "party_id": "string",
+        "agreement_id": "ref:agreements.agreement_id",
+        "name_in_agreement": "string",
+        "legal_entity_name": "string",
+        "role": "enum:BUYER|SELLER|SUPPLIER|CUSTOMER|PARENT|GUARANTOR",
+        "country": "string",
+        "signature_status": "enum:NOT_REQUIRED|SENT|SIGNED|DECLINED"
+      }
+    },
+    "documents": {
+      "primaryKey": "document_id",
+      "fields": {
+        "document_id": "string",
+        "agreement_id": "ref:agreements.agreement_id",
+        "account_id": "string",
+        "file_name": "string",
+        "status": "enum:NOT_STARTED|IN_PROGRESS|CANCELED|SUCCEEDED|FAILED",
+        "content_type": "string",
+        "size_bytes": "integer",
+        "uploaded_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "source_name": "string",
+        "checksum": "string"
+      }
+    },
+    "clauses": {
+      "primaryKey": "clause_id",
+      "fields": {
+        "clause_id": "string",
+        "agreement_id": "ref:agreements.agreement_id",
+        "property_path": "string",
+        "clause_type": "string",
+        "risk_level": "enum:low|medium|high|critical",
+        "text": "string",
+        "modified_by_type": "enum:AI|USER",
+        "review_status": "enum:PENDING|ACCEPTED|NEEDS_REVIEW|REJECTED"
+      }
+    },
+    "obligations": {
+      "primaryKey": "obligation_id",
+      "fields": {
+        "obligation_id": "string",
+        "agreement_id": "ref:agreements.agreement_id",
+        "owner": "string",
+        "status": "enum:open|in_progress|satisfied|waived|overdue",
+        "due_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "obligation_type": "string",
+        "priority": "enum:low|medium|high|critical",
+        "source_clause_id": "ref:clauses.clause_id"
+      }
+    },
+    "amendments": {
+      "primaryKey": "amendment_id",
+      "fields": {
+        "amendment_id": "string",
+        "agreement_id": "ref:agreements.agreement_id",
+        "parent_agreement_id": "ref:agreements.agreement_id",
+        "status": "enum:draft|pending_approval|approved|executed|cancelled",
+        "effective_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "title": "string",
+        "change_summary": "string"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": "string",
+        "source_record_id": "string",
+        "approver": "string",
+        "state": "enum:requested|pending|pending_approval|approved|rejected",
+        "reason": "string",
+        "requested_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "role": "string"
+      }
+    },
+    "bulk_jobs": {
+      "primaryKey": "job_id",
+      "description": "Agreement Manager document uploader bulk job lifecycle.",
+      "fields": {
+        "job_id": "string",
+        "account_id": "string",
+        "external_job_id": "string",
+        "name": "string",
+        "status": "enum:OPEN|UPLOAD_COMPLETE|IN_PROGRESS|COMPLETE|FAILED|CANCELED",
+        "expected_number_of_docs": "integer",
+        "uploaded_docs": "integer",
+        "language": "string",
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "modified_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ttl_period": "string",
+        "message": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "actor": "string",
+        "role": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string",
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "detail": "string"
+      }
+    }
+  }
+}

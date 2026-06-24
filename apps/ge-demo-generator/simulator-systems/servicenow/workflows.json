@@ -1,0 +1,123 @@
+{
+  "id": "servicenow_workflows",
+  "version": 2,
+  "primitives": [
+    "role_permission_gate",
+    "state_machine",
+    "approval_blocker",
+    "audit_trail",
+    "failure_injection",
+    "idempotency"
+  ],
+  "toolHandlers": {
+    "submit_incident_update": {
+      "primitive": "state_machine",
+      "collection": "incidents",
+      "primaryKey": "incident_id",
+      "roleArg": "role",
+      "allowedRoles": ["resolver", "itil", "incident_manager", "service_owner"],
+      "stateField": "state",
+      "targetStateArg": "state",
+      "noteArg": "note",
+      "transitions": {
+        "new": ["in_progress", "cancelled"],
+        "in_progress": ["on_hold", "resolved", "cancelled"],
+        "on_hold": ["in_progress", "cancelled"],
+        "resolved": ["closed", "in_progress"],
+        "closed": [],
+        "cancelled": []
+      },
+      "failureModes": {
+        "rate_limited": 0.04,
+        "conflict": 0.04,
+        "timeout": 0.02
+      }
+    },
+    "submit_problem_update": {
+      "primitive": "state_machine",
+      "collection": "problems",
+      "primaryKey": "problem_id",
+      "roleArg": "role",
+      "allowedRoles": ["problem_manager", "itil", "service_owner"],
+      "stateField": "state",
+      "targetStateArg": "state",
+      "noteArg": "note",
+      "transitions": {
+        "new": ["assess", "closed"],
+        "assess": ["root_cause_analysis", "closed"],
+        "root_cause_analysis": ["fix_in_progress", "closed"],
+        "fix_in_progress": ["resolved", "root_cause_analysis"],
+        "resolved": ["closed", "fix_in_progress"],
+        "closed": []
+      },
+      "failureModes": {
+        "conflict": 0.05,
+        "validation_error": 0.03
+      }
+    },
+    "submit_change_request_update": {
+      "primitive": "state_machine",
+      "collection": "change_requests",
+      "primaryKey": "change_id",
+      "roleArg": "role",
+      "allowedRoles": ["change_manager", "cab_member", "release_manager"],
+      "stateField": "state",
+      "targetStateArg": "state",
+      "noteArg": "note",
+      "transitions": {
+        "draft": ["assess", "cancelled"],
+        "assess": ["authorize", "cancelled"],
+        "authorize": ["scheduled", "cancelled"],
+        "scheduled": ["implemented", "cancelled"],
+        "implemented": ["review", "cancelled"],
+        "review": ["closed"],
+        "closed": [],
+        "cancelled": []
+      },
+      "approvalBlockers": [
+        {
+          "collection": "approvals",
+          "sourceRecordField": "source_record_id",
+          "states": ["requested"],
+          "blockedTargetStates": ["scheduled"]
+        }
+      ],
+      "failureModes": {
+        "rate_limited": 0.03,
+        "conflict": 0.05,
+        "timeout": 0.02
+      }
+    },
+    "submit_service_request_update": {
+      "primitive": "state_machine",
+      "collection": "service_requests",
+      "primaryKey": "request_id",
+      "roleArg": "role",
+      "allowedRoles": ["fulfiller", "itil", "service_owner"],
+      "stateField": "state",
+      "targetStateArg": "state",
+      "noteArg": "note",
+      "transitions": {
+        "draft": ["requested", "cancelled"],
+        "requested": ["approval", "cancelled"],
+        "approval": ["in_progress", "cancelled"],
+        "in_progress": ["fulfilled", "cancelled"],
+        "fulfilled": ["closed"],
+        "closed": [],
+        "cancelled": []
+      },
+      "approvalBlockers": [
+        {
+          "collection": "approvals",
+          "sourceRecordField": "source_record_id",
+          "states": ["requested"],
+          "blockedTargetStates": ["in_progress"]
+        }
+      ],
+      "failureModes": {
+        "conflict": 0.04,
+        "validation_error": 0.03
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+[project]
+name = "ge-agent-factory-mcp"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+  "fastmcp>=2.0.0",
+  "google-cloud-storage>=2.18.0",
+  "google-cloud-bigquery>=3.25.0",
+  "google-cloud-firestore>=2.18.0",
+  "google-cloud-bigtable>=2.26.0",
+  "google-cloud-secret-manager>=2.20.0",
+  "psycopg[binary]>=3.2",
+  # The simulator engine now lives in its own in-repo package. mcp-service installs
+  # the durable-state extras (Firestore/AlloyDB) it already depends on at the app level.
+  "simulator-runtime[firestore,alloydb]",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0"]
+
+# uv resolves the simulator-runtime dependency from the in-repo path (no PyPI).
+# pip-based flows (e.g. the Dockerfile) install the package explicitly with `pip install -e`
+# before installing this app, so the dependency is already satisfied.
+[tool.uv.sources]
+simulator-runtime = { path = "../../../packages/simulator-runtime", editable = true }

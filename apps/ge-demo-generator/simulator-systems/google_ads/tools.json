@@ -1,0 +1,92 @@
+{
+  "id": "google_ads_tools",
+  "version": 1,
+  "tools": [
+    {
+      "name": "search_properties",
+      "description": "Search properties in google_ads.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "properties"
+      }
+    },
+    {
+      "name": "get_property",
+      "description": "Get one property in google_ads.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "property_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "property_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "properties",
+        "primaryKey": "property_id"
+      }
+    },
+    {
+      "name": "submit_property_update",
+      "description": "Submit an update to one property in google_ads.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "property_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "property_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "properties",
+        "primaryKey": "property_id"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List google_ads simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

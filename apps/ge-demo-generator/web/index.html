@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GE Agent Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <div id="app-root"></div>
+  <button class="theme-toggle" aria-label="Toggle dark mode" title="Toggle theme (Alt+T)"></button>
+  <script type="module" src="/src/app.js"></script>
+  <script>
+    // Theme toggle: persists choice in localStorage
+    (function() {
+      var h = document.documentElement;
+      var saved = localStorage.getItem('theme');
+      if (saved === 'dark') h.dataset.theme = 'dark';
+      document.querySelector('.theme-toggle').addEventListener('click', function() {
+        var next = h.dataset.theme === 'dark' ? '' : 'dark';
+        if (next) h.dataset.theme = next; else delete h.dataset.theme;
+        localStorage.setItem('theme', next);
+      });
+      document.addEventListener('keydown', function(e) {
+        if (e.altKey && e.key === 't') {
+          document.querySelector('.theme-toggle').click();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

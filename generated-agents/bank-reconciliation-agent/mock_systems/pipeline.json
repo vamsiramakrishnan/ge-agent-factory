@@ -1,0 +1,73 @@
+{
+  "name": "bank_reconciliation_agent",
+  "domain": "finance",
+  "createdAt": "2026-06-11T09:00:07.362Z",
+  "steps": {
+    "init": {
+      "status": "done",
+      "completedAt": "2026-06-11T09:00:07.362Z",
+      "name": "bank_reconciliation_agent",
+      "domain": "finance"
+    },
+    "schema": {
+      "status": "done",
+      "completedAt": "2026-06-11T09:00:07.387Z",
+      "tables": 9,
+      "derived": true
+    },
+    "generate": {
+      "status": "done",
+      "completedAt": "2026-06-11T09:00:07.472Z",
+      "tables": 9,
+      "totalRows": 540,
+      "seed": 42
+    },
+    "tools": {
+      "status": "done",
+      "completedAt": "2026-06-11T09:00:07.511Z",
+      "output": "/tmp/regen2/bank-reconciliation-agent/app/tools.py",
+      "functions": 12,
+      "behaviorContract": "present",
+      "contractTools": 2,
+      "goldenEvals": 1,
+      "agentsCliEvalSet": "/tmp/regen2/bank-reconciliation-agent/tests/eval/evalsets/ge_behavior_contract.evalset.json"
+    },
+    "test": {
+      "status": "done",
+      "completedAt": "2026-06-11T09:00:11.693Z",
+      "output": "/tmp/regen2/bank-reconciliation-agent/tests/test_smoke.py",
+      "ran": true,
+      "passed": true,
+      "exitCode": 0
+    }
+  },
+  "currentStep": "test",
+  "useCase": {
+    "id": "bank-reconciliation-agent",
+    "title": "Bank Reconciliation Agent",
+    "department": "finance",
+    "systems": [
+      "Kyriba",
+      "SAP S/4HANA FI",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "kpis": [
+      {
+        "label": "Auto-match rate",
+        "before": "70%",
+        "after": "96%"
+      },
+      {
+        "label": "Reconciliation time",
+        "before": "3 hours/day",
+        "after": "20 min review"
+      },
+      {
+        "label": "Unresolved items aging",
+        "before": "5-10 days",
+        "after": "1-2 days"
+      }
+    ]
+  }
+}

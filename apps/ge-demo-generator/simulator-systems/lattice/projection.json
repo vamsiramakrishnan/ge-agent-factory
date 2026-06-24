@@ -1,0 +1,40 @@
+{
+  "id": "lattice_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into lattice collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "worker"
+      ],
+      "realizedObjects": [
+        "workers",
+        "positions",
+        "supervisory_orgs"
+      ],
+      "simulatorCollection": "workers",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "requisition"
+      ],
+      "realizedObjects": [
+        "job_requisitions"
+      ],
+      "simulatorCollection": "job_requisitions",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "approval"
+      ],
+      "realizedObjects": [
+        "approvals",
+        "worker_events"
+      ],
+      "simulatorCollection": "worker_events",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

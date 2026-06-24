@@ -1,0 +1,67 @@
+{
+  "id": "sap_s4hana_mm_projection",
+  "version": 2,
+  "materialization": "Project procurement/supply-chain rows into SAP S/4HANA MM material, plant, requisition, PO, goods receipt, supplier, and release approval collections.",
+  "collectionMappings": [
+    {
+      "simulatorCollection": "suppliers",
+      "graphKinds": [
+        "supplier"
+      ],
+      "realizedObjects": [
+        "suppliers"
+      ]
+    },
+    {
+      "simulatorCollection": "materials",
+      "graphKinds": [
+        "material",
+        "inventory"
+      ],
+      "realizedObjects": [
+        "materials",
+        "inventory_positions"
+      ]
+    },
+    {
+      "simulatorCollection": "purchase_requisitions",
+      "graphKinds": [
+        "purchase_order",
+        "requisition"
+      ],
+      "realizedObjects": [
+        "requisitions",
+        "purchase_requisitions"
+      ]
+    },
+    {
+      "simulatorCollection": "purchase_orders",
+      "graphKinds": [
+        "purchase_order"
+      ],
+      "realizedObjects": [
+        "purchase_orders"
+      ]
+    },
+    {
+      "simulatorCollection": "goods_receipts",
+      "graphKinds": [
+        "shipment",
+        "receipt"
+      ],
+      "realizedObjects": [
+        "shipments",
+        "goods_receipts"
+      ]
+    },
+    {
+      "simulatorCollection": "approvals",
+      "graphKinds": [
+        "approval"
+      ],
+      "realizedObjects": [
+        "approvals"
+      ]
+    }
+  ]
+}

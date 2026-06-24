@@ -1,0 +1,259 @@
+{
+  "id": "absencesoft_materialization",
+  "version": 1,
+  "collections": {
+    "employees": {
+      "primaryKey": "employee_id",
+      "fieldAliases": {
+        "employee_id": [
+          "employee_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "email": [
+          "email",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "country": [
+          "country",
+          "id",
+          "source_record_id"
+        ],
+        "pay_group": [
+          "pay_group",
+          "id",
+          "source_record_id"
+        ],
+        "eligibility_group": [
+          "eligibility_group",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "dependents": {
+      "primaryKey": "dependent_id",
+      "fieldAliases": {
+        "dependent_id": [
+          "dependent_id",
+          "id",
+          "source_record_id"
+        ],
+        "employee_id": [
+          "employee_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "relationship": [
+          "relationship",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "verification_state": [
+          "verification_state",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "benefit_plans": {
+      "primaryKey": "plan_id",
+      "fieldAliases": {
+        "plan_id": [
+          "plan_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "plan_type": [
+          "plan_type",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "country": [
+          "country",
+          "id",
+          "source_record_id"
+        ],
+        "carrier": [
+          "carrier",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "enrollments": {
+      "primaryKey": "enrollment_id",
+      "fieldAliases": {
+        "enrollment_id": [
+          "enrollment_id",
+          "id",
+          "source_record_id"
+        ],
+        "employee_id": [
+          "employee_id",
+          "id",
+          "source_record_id"
+        ],
+        "plan_id": [
+          "plan_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "coverage_level": [
+          "coverage_level",
+          "id",
+          "source_record_id"
+        ],
+        "effective_date": [
+          "effective_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "life_events": {
+      "primaryKey": "life_event_id",
+      "fieldAliases": {
+        "life_event_id": [
+          "life_event_id",
+          "id",
+          "source_record_id"
+        ],
+        "employee_id": [
+          "employee_id",
+          "id",
+          "source_record_id"
+        ],
+        "event_type": [
+          "event_type",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "event_date": [
+          "event_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fieldAliases": {
+        "approval_id": [
+          "approval_id",
+          "id",
+          "source_record_id"
+        ],
+        "source_record_id": [
+          "source_record_id",
+          "id"
+        ],
+        "approver": [
+          "approver",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "reason": [
+          "reason",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "active"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

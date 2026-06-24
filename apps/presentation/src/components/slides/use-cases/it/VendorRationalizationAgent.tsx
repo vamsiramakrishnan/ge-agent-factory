@@ -1,0 +1,1158 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { Scissors, Database, Cpu, CheckCircle, FileText } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Quarterly Review", lane: "system", type: "trigger" },
+    { id: "a1", label: "Usage Telemetry", lane: "agent", type: "action" },
+    { id: "a2", label: "Overlap Detection", lane: "agent", type: "action" },
+    { id: "a3", label: "Consolidation Plan", lane: "agent", type: "output" },
+    { id: "h1", label: "Vendor Mgr Approval", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Usage Telemetry", icon: Database, description: "Software inventory, license data, usage telemetry, and SSO login frequency collected across tools.", trigger: "Quarterly", systems: ["ServiceNow SAM", "Zylo", "Okta"] },
+  { label: "Overlap Detection", icon: Cpu, description: "Usage clustering, tool overlap detection, cost-per-user analysis, and renewal timeline optimization.", systems: ["BigQuery", "Vertex AI"], integration: "ADK" },
+  { label: "Consolidation Plan", icon: FileText, description: "Gemini analyzes overlap and recommends standardization with migration plans and savings estimates.", systems: ["Vertex AI"] },
+  { label: "Vendor Manager Review", icon: CheckCircle, description: "IT Procurement/Vendor Manager validates recommendations and approves consolidation roadmap.", output: "Rationalization Plan" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "ServiceNow SAM", description: "Software asset inventory, license entitlements, contracts", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "Zylo", description: "SaaS management platform with spend and usage data", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "Okta", description: "SSO login frequency, last access dates, user counts", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "BigQuery", description: "Usage analytics, overlap scoring, cost-per-user calculations", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Overlap analysis reasoning, consolidation recommendations", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Telemetry Collection", description: "Pull software inventory from ServiceNow SAM, SaaS spend and usage from Zylo, and SSO login frequency from Okta. Build comprehensive view of tool landscape.", systems: ["ServiceNow SAM", "Zylo", "Okta"], layer: "integration", dataIn: "License data + usage telemetry + login records", dataOut: "Unified tool usage dataset with cost attribution" },
+    { label: "Overlap & Usage Analysis", description: "Usage clustering to identify functional duplicates, cost-per-user analysis across overlapping tools, renewal timeline optimization to align negotiation windows.", systems: ["BigQuery"], layer: "ml", dataIn: "Unified tool usage dataset", dataOut: "Overlap scores with savings potential by category" },
+    { label: "Consolidation Reasoning", description: "Gemini analyzes tool overlap: 'We have 4 project management tools across different teams — 40% of users have accounts in 2+. Recommend standardizing on Jira with a 6-month migration plan, saving $180K/year.'", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Overlap scores + usage patterns + contract terms", dataOut: "Consolidation recommendations with migration plans" },
+    { label: "Review & Execution", description: "Vendor Manager reviews consolidation recommendations, validates business impact, and approves the rationalization roadmap for execution.", systems: ["ServiceNow SAM"], layer: "integration", dataIn: "Consolidation plan", dataOut: "Approved rationalization roadmap" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "IT Procurement / Vendor Mgr agent for the Vendor Rationalization Agent workflow",
+  primaryObjective: "Gemini identifies functional duplicates across teams and recommends standardization with concrete migration plans. Usage telemetry from Okta SSO provides ground truth on actual tool adoption versus purchased licenses. so the IT Procurement / Vendor Mgr can move the Tool overlap identified KPI.",
+  inScope: [
+    "Gemini identifies functional duplicates across teams and recommends standardization with concrete migration plans",
+    "Usage telemetry from Okta SSO provides ground truth on actual tool adoption versus purchased licenses",
+    "Renewal timeline optimization aligns negotiation windows to maximize volume-based bargaining leverage",
+  ],
+  outOfScope: [
+    "Production deployments outside an approved change window",
+    "Irreversible destructive actions on shared infrastructure (DROP, force-delete, key rotation)",
+    "Security incident attribution requiring forensics",
+  ],
+  toolIntents: [
+    {
+      name: "query_servicenow_sam_tickets",
+      kind: "query",
+      sourceSystemId: "servicenow_sam",
+      description: "Retrieve tickets from ServiceNow SAM for the Vendor Rationalization Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "tickets_records",
+        "tickets_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_zylo_zylo_records",
+      kind: "query",
+      sourceSystemId: "zylo",
+      description: "Retrieve zylo records from Zylo for the Vendor Rationalization Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "zylo_records_records",
+        "zylo_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_okta_users",
+      kind: "query",
+      sourceSystemId: "okta",
+      description: "Retrieve users from Okta for the Vendor Rationalization Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "users_records",
+        "users_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Vendor Rationalization Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_vendor_rationalization_agent_runbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Vendor Rationalization Agent Operations Runbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_servicenow_sam_recommend",
+      kind: "action",
+      sourceSystemId: "servicenow_sam",
+      description: "Execute the recommend step in ServiceNow SAM after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Tool overlap identified moved from Ad hoc audits toward Continuous detection",
+      mustCite: [
+        "servicenow_sam.tickets",
+        "zylo.zylo_records",
+      ],
+      sourceSystemIds: [
+        "servicenow_sam",
+        "zylo",
+      ],
+    },
+    {
+      claim: "SaaS savings realized moved from $0 (no visibility) toward $180K+/year",
+      mustCite: [
+        "servicenow_sam.tickets",
+        "zylo.zylo_records",
+      ],
+      sourceSystemIds: [
+        "servicenow_sam",
+        "zylo",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Tool overlap identified regresses past the Ad hoc audits baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "IT Procurement / Vendor Mgr",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed recommend action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from ServiceNow SAM (and other named systems) entities.",
+    "Never bypass IT Procurement / Vendor Mgr approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "vendor-rationalization-agent-end-to-end",
+      prompt: "Run the Vendor Rationalization Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_servicenow_sam_tickets",
+        "query_zylo_zylo_records",
+        "query_okta_users",
+        "query_bigquery_analytics_events",
+        "lookup_vendor_rationalization_agent_runbook",
+        "action_servicenow_sam_recommend",
+      ],
+      mustReferenceEntities: [
+        "tickets",
+        "zylo_records",
+        "users",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "vendor-rationalization-agent-runbook",
+      ],
+      expectedActionOutcome: "Action recommend executed against ServiceNow SAM, with audit-trail entry and IT Procurement / Vendor Mgr notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute recommend without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Vendor Rationalization Agent so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "servicenow_sam",
+      name: "ServiceNow SAM",
+      owns: [
+        "tickets",
+        "change_requests",
+        "incidents",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_servicenow_sam_tickets",
+        "query_servicenow_sam_change_requests",
+        "query_servicenow_sam_incidents",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "zylo",
+      name: "Zylo",
+      owns: [
+        "zylo_records",
+        "zylo_events",
+        "zylo_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_zylo_zylo_records",
+        "query_zylo_zylo_events",
+        "query_zylo_zylo_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "okta",
+      name: "Okta",
+      owns: [
+        "users",
+        "groups",
+        "access_grants",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_okta_users",
+        "query_okta_groups",
+        "query_okta_access_grants",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "tickets",
+      sourceSystemId: "servicenow_sam",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "change_requests",
+      sourceSystemId: "servicenow_sam",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "incidents",
+      sourceSystemId: "servicenow_sam",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "zylo_records",
+      sourceSystemId: "zylo",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "zylo_events",
+      sourceSystemId: "zylo",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "zylo_record_id",
+          type: "ref",
+          ref: "zylo_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "zylo_audit_trail",
+      sourceSystemId: "zylo",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "users",
+      sourceSystemId: "okta",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "groups",
+      sourceSystemId: "okta",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "access_grants",
+      sourceSystemId: "okta",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "zylo_events.zylo_record_id",
+      to: "zylo_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "vendor-rationalization-agent-runbook",
+      sourceSystemId: "bigquery",
+      type: "runbook",
+      title: "Vendor Rationalization Agent Operations Runbook",
+      requiredSections: [
+        "Detection signals",
+        "Triage procedures",
+        "Remediation actions",
+        "Rollback criteria",
+        "Post-incident review",
+      ],
+      linkedEntities: [
+        "tickets",
+        "change_requests",
+        "incidents",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "detection",
+        "triage",
+        "remediation",
+        "rollback",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "servicenow_sam_recommend_api",
+      sourceSystemId: "servicenow_sam",
+      method: "POST",
+      path: "/api/servicenow_sam/recommend",
+      description: "Synchronous endpoint the agent calls to recommend in ServiceNow SAM after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "vendor-rationalization-agent-baseline-gap",
+      description: "Seed a realistic gap where Tool overlap identified sits between Ad hoc audits and Continuous detection, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "tickets",
+        "change_requests",
+      ],
+      discoveryPath: [
+        "Inspect ServiceNow SAM records for the affected entities",
+        "Compare against Zylo historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next IT Procurement / Vendor Mgr action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "vendor_rationalization_agent",
+      schemas: [
+        "servicenow_sam",
+        "zylo",
+        "okta",
+      ],
+    },
+    bigquery: {
+      dataset: "it_vendor_rationalization_agent",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "vendor-rationalization-agent-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "vendor-rationalization-agent-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Vendor Rationalization Agent workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const VendorRationalizationAgent = () => (
+  <UseCaseSlide
+    title="Vendor Rationalization Agent"
+    subtitle="A-3805 • IT Strategy & Portfolio"
+    icon={Scissors}
+    domainId="domain-38"
+    layer="Layer 3: Custom ADK"
+    persona="IT Procurement / Vendor Mgr"
+    systems={["ServiceNow SAM", "Zylo", "Okta", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "Tool overlap identified", before: "Ad hoc audits", after: "Continuous detection" },
+      { label: "SaaS savings realized", before: "$0 (no visibility)", after: "$180K+/year" },
+      { label: "License utilization", before: "Unknown", after: "95%+ tracked" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "IT Vendor Mgr", action: "Approve consolidation plan", description: "Vendor Manager validates consolidation recommendations, assesses migration risk, and approves the rationalization roadmap." }}
+    statusQuo={[
+      "SaaS sprawl invisible — teams adopt tools independently with no central visibility into overlap.",
+      "License reviews done annually via spreadsheet, missing 30-40% of SaaS subscriptions entirely.",
+      "Renewal negotiations reactive — no leverage from consolidated usage data across the organization."
+    ]}
+    agentification={[
+      "Gemini identifies functional duplicates across teams and recommends standardization with concrete migration plans.",
+      "Usage telemetry from Okta SSO provides ground truth on actual tool adoption versus purchased licenses.",
+      "Renewal timeline optimization aligns negotiation windows to maximize volume-based bargaining leverage."
+    ]}
+  />
+);

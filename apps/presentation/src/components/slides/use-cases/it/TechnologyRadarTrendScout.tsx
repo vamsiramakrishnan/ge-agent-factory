@@ -1,0 +1,897 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { Radar, Globe, Cpu, FileText, BarChart3 } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Monthly Scan", lane: "system", type: "trigger" },
+    { id: "a1", label: "Signal Collection", lane: "agent", type: "action" },
+    { id: "a2", label: "Trend Analysis", lane: "agent", type: "action" },
+    { id: "a3", label: "Radar Update", lane: "agent", type: "output" },
+    { id: "s2", label: "Published Radar", lane: "system", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "s2"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Signal Collection", icon: Globe, description: "Technology adoption trends gathered from GitHub, analyst reports, and internal codebase analysis.", trigger: "Monthly", systems: ["GitHub", "Gartner API"] },
+  { label: "Trend Analysis", icon: Cpu, description: "Adoption curve modeling, maturity scoring, and dependency risk analysis across technology landscape.", systems: ["BigQuery", "Vertex AI"], integration: "API" },
+  { label: "Radar Synthesis", icon: FileText, description: "Gemini synthesizes signals into actionable radar updates with adoption recommendations.", systems: ["Vertex AI"] },
+  { label: "Radar Publication", icon: BarChart3, description: "Updated technology radar published with movement explanations and pilot recommendations.", output: "Technology Radar" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "GitHub", description: "Internal codebase language/framework usage, dependency graphs", direction: "read", protocol: "GraphQL API", category: "erp" },
+    { system: "Gartner API", description: "Analyst research, Hype Cycle positioning, market forecasts", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "BigQuery", description: "Technology adoption metrics, usage trending, risk scores", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Signal synthesis, trend narrative generation, pilot recommendations", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+    { system: "Confluence", description: "Published technology radar and ADR repository", direction: "write", protocol: "REST API", category: "collaboration" },
+  ],
+  pipeline: [
+    { label: "Signal Collection", description: "Scan technology adoption trends from GitHub trending, StackShare data, Gartner research, and internal codebase analysis. Track open-source project health signals (stars, contributors, release cadence).", systems: ["GitHub", "Gartner API"], layer: "integration", dataIn: "Public tech signals + internal usage data", dataOut: "Raw signal corpus across technologies" },
+    { label: "Adoption Curve Modeling", description: "Technology maturity scoring based on adoption curves, internal usage trending, and dependency risk analysis. Identify technologies accelerating or decelerating in adoption.", systems: ["BigQuery"], layer: "ml", dataIn: "Raw signal corpus", dataOut: "Scored technologies with adoption trajectory" },
+    { label: "Radar Narrative Synthesis", description: "Gemini synthesizes signals from research reports, Hacker News, GitHub trending, and internal engineering feedback. Generates actionable radar updates — 'Rust adoption in infrastructure tooling increased 40% — recommend a pilot for CLI tooling.'", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Scored technologies + qualitative signals", dataOut: "Technology radar with movement narratives" },
+    { label: "Publication", description: "Updated radar published to Confluence with movement explanations, pilot recommendations, and links to internal champions.", systems: ["Confluence"], layer: "integration", dataIn: "Technology radar content", dataOut: "Published radar accessible to all engineering teams" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "CIO / CTO agent for the Technology Radar & Trend Scout workflow",
+  primaryObjective: "Gemini synthesizes signals from research reports, GitHub trending, and internal engineering feedback into coherent radar updates. Adoption curve modeling quantifies whether a technology is accelerating or decelerating — replacing subjective placement. so the CIO / CTO can move the Radar update frequency KPI.",
+  inScope: [
+    "Gemini synthesizes signals from research reports, GitHub trending, and internal engineering feedback into coherent radar updates",
+    "Adoption curve modeling quantifies whether a technology is accelerating or decelerating — replacing subjective placement",
+    "Internal codebase analysis surfaces organic technology adoption happening in engineering teams before leadership knows",
+  ],
+  outOfScope: [
+    "Production deployments outside an approved change window",
+    "Irreversible destructive actions on shared infrastructure (DROP, force-delete, key rotation)",
+    "Security incident attribution requiring forensics",
+  ],
+  toolIntents: [
+    {
+      name: "query_github_pull_requests",
+      kind: "query",
+      sourceSystemId: "github",
+      description: "Retrieve pull requests from GitHub for the Technology Radar & Trend Scout workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "pull_requests_records",
+        "pull_requests_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_gartner_api_gartner_api_records",
+      kind: "query",
+      sourceSystemId: "gartner_api",
+      description: "Retrieve gartner api records from Gartner API for the Technology Radar & Trend Scout workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "gartner_api_records_records",
+        "gartner_api_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Technology Radar & Trend Scout workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_technology_radar_trend_scout_runbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Technology Radar & Trend Scout Operations Runbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_github_update",
+      kind: "action",
+      sourceSystemId: "github",
+      description: "Execute the update step in GitHub after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Radar update frequency moved from Quarterly manual toward Monthly automated",
+      mustCite: [
+        "github.pull_requests",
+        "gartner_api.gartner_api_records",
+      ],
+      sourceSystemIds: [
+        "github",
+        "gartner_api",
+      ],
+    },
+    {
+      claim: "Technologies tracked moved from 25-30 toward 150+",
+      mustCite: [
+        "github.pull_requests",
+        "gartner_api.gartner_api_records",
+      ],
+      sourceSystemIds: [
+        "github",
+        "gartner_api",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Radar update frequency regresses past the Quarterly manual baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "CIO / CTO",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed update action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from GitHub (and other named systems) entities.",
+    "Never bypass CIO / CTO approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "technology-radar-trend-scout-end-to-end",
+      prompt: "Run the Technology Radar & Trend Scout workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_github_pull_requests",
+        "query_gartner_api_gartner_api_records",
+        "query_bigquery_analytics_events",
+        "lookup_technology_radar_trend_scout_runbook",
+        "action_github_update",
+      ],
+      mustReferenceEntities: [
+        "pull_requests",
+        "gartner_api_records",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "technology-radar-trend-scout-runbook",
+      ],
+      expectedActionOutcome: "Action update executed against GitHub, with audit-trail entry and CIO / CTO notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute update without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Technology Radar & Trend Scout so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "github",
+      name: "GitHub",
+      owns: [
+        "pull_requests",
+        "commits",
+        "workflow_runs",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_github_pull_requests",
+        "query_github_commits",
+        "query_github_workflow_runs",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "gartner_api",
+      name: "Gartner API",
+      owns: [
+        "gartner_api_records",
+        "gartner_api_events",
+        "gartner_api_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_gartner_api_gartner_api_records",
+        "query_gartner_api_gartner_api_events",
+        "query_gartner_api_gartner_api_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "pull_requests",
+      sourceSystemId: "github",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "commits",
+      sourceSystemId: "github",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "workflow_runs",
+      sourceSystemId: "github",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "pending",
+            "running",
+            "succeeded",
+            "failed",
+            "rolled_back",
+          ],
+          required: true,
+        },
+        {
+          name: "duration_seconds",
+          type: "number",
+          min: 5,
+          max: 7200,
+          required: true,
+        },
+        {
+          name: "started_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "environment",
+          type: "enum",
+          values: [
+            "dev",
+            "staging",
+            "prod",
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "gartner_api_records",
+      sourceSystemId: "gartner_api",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "gartner_api_events",
+      sourceSystemId: "gartner_api",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "gartner_api_record_id",
+          type: "ref",
+          ref: "gartner_api_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "gartner_api_audit_trail",
+      sourceSystemId: "gartner_api",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "gartner_api_events.gartner_api_record_id",
+      to: "gartner_api_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "technology-radar-trend-scout-runbook",
+      sourceSystemId: "bigquery",
+      type: "runbook",
+      title: "Technology Radar & Trend Scout Operations Runbook",
+      requiredSections: [
+        "Detection signals",
+        "Triage procedures",
+        "Remediation actions",
+        "Rollback criteria",
+        "Post-incident review",
+      ],
+      linkedEntities: [
+        "pull_requests",
+        "commits",
+        "workflow_runs",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "detection",
+        "triage",
+        "remediation",
+        "rollback",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "github_update_api",
+      sourceSystemId: "github",
+      method: "POST",
+      path: "/api/github/update",
+      description: "Synchronous endpoint the agent calls to update in GitHub after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "technology-radar-trend-scout-baseline-gap",
+      description: "Seed a realistic gap where Radar update frequency sits between Quarterly manual and Monthly automated, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "pull_requests",
+        "commits",
+      ],
+      discoveryPath: [
+        "Inspect GitHub records for the affected entities",
+        "Compare against Gartner API historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next CIO / CTO action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "technology_radar_trend_scout",
+      schemas: [
+        "github",
+        "gartner_api",
+      ],
+    },
+    bigquery: {
+      dataset: "it_technology_radar_trend_scout",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "technology-radar-trend-scout-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "technology-radar-trend-scout-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Technology Radar & Trend Scout workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const TechnologyRadarTrendScout = () => (
+  <UseCaseSlide
+    title="Technology Radar & Trend Scout"
+    subtitle="A-3802 • IT Strategy & Portfolio"
+    icon={Radar}
+    domainId="domain-38"
+    layer="Layer 4: Data Agent"
+    persona="CIO / CTO"
+    systems={["GitHub", "Gartner API", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "Radar update frequency", before: "Quarterly manual", after: "Monthly automated" },
+      { label: "Technologies tracked", before: "25-30", after: "150+" },
+      { label: "Time to pilot recommendation", before: "Months", after: "Days" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    statusQuo={[
+      "Technology radar updated quarterly by a senior architect spending 2 weeks reading reports and surveys.",
+      "Internal technology adoption unknown — teams adopt frameworks without visibility to leadership.",
+      "Pilot recommendations based on conference buzz rather than data-driven adoption analysis."
+    ]}
+    agentification={[
+      "Gemini synthesizes signals from research reports, GitHub trending, and internal engineering feedback into coherent radar updates.",
+      "Adoption curve modeling quantifies whether a technology is accelerating or decelerating — replacing subjective placement.",
+      "Internal codebase analysis surfaces organic technology adoption happening in engineering teams before leadership knows."
+    ]}
+  />
+);

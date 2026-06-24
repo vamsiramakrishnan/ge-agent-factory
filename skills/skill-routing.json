@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "skills": {
+    "authoring-okf-specs": {
+      "triggers": [
+        "okf",
+        "open knowledge format",
+        "knowledge bundle",
+        "export the spec",
+        "export to okf",
+        "okf bundle",
+        "author a brd",
+        "ingest okf",
+        "portable spec"
+      ],
+      "composes": [
+        "interviewing-specs"
+      ]
+    },
+    "building-simulators": {
+      "triggers": [
+        "mock data",
+        "mock.generate",
+        "snowfakery",
+        "simulator",
+        "simulator.seed",
+        "simulator.validate",
+        "materialize simulator",
+        "source-system simulator",
+        "scenario data"
+      ]
+    },
+    "deploying-the-control-plane": {
+      "triggers": [
+        "deploy the gateway",
+        "deploy the console",
+        "build the image",
+        "cloud run revision",
+        "ge infra apply",
+        "build-and-deploy",
+        "cloudbuild",
+        "control plane",
+        "self-service install"
+      ],
+      "composes": [
+        "guarding-the-factory",
+        "managing-access"
+      ]
+    },
+    "grounding-interviews-with-documents": {
+      "triggers": [
+        "brd",
+        "upload a document",
+        "parse the pdf",
+        "ground the interview",
+        "spec canvas",
+        "edit the spec",
+        "attach requirements"
+      ],
+      "composes": [
+        "interviewing-specs"
+      ]
+    },
+    "guarding-the-factory": {
+      "triggers": [
+        "is this safe",
+        "irreversible",
+        "cross-project",
+        "production deploy",
+        "destructive",
+        "readonly",
+        "needs approval",
+        "escalate"
+      ],
+      "composes": []
+    },
+    "managing-access": {
+      "triggers": [
+        "403",
+        "unauthorized",
+        "run.invoker",
+        "iap",
+        "firebase auth",
+        "sign-in",
+        "grant access",
+        "who can reach",
+        "single tenant"
+      ],
+      "composes": [
+        "guarding-the-factory"
+      ]
+    },
+    "operating-the-factory": {
+      "triggers": [
+        "operate the factory",
+        "drive the console",
+        "end to end",
+        "what is the next step",
+        "orchestrate",
+        "autopilot",
+        "run the whole pipeline"
+      ],
+      "composes": [
+        "guarding-the-factory",
+        "standing-up-the-platform",
+        "interviewing-specs",
+        "grounding-interviews-with-documents",
+        "planning-missions",
+        "running-factory",
+        "building-simulators",
+        "checking-workspaces",
+        "running-release",
+        "deploying-the-control-plane",
+        "triaging-runs",
+        "managing-access",
+        "recording-evidence"
+      ]
+    },
+    "standing-up-the-platform": {
+      "triggers": [
+        "ge doctor",
+        "readiness",
+        "plane is down",
+        "not deployed",
+        "stand up the platform",
+        "ge up",
+        "data up",
+        "mcp deploy",
+        "preflight failed"
+      ],
+      "composes": [
+        "guarding-the-factory",
+        "triaging-runs"
+      ]
+    },
+    "triaging-runs": {
+      "triggers": [
+        "run is blocked",
+        "run failed",
+        "stage error",
+        "stuck",
+        "resume the run",
+        "why did it fail",
+        "blocker"
+      ],
+      "composes": [
+        "recording-evidence",
+        "operating-console"
+      ]
+    }
+  }
+}

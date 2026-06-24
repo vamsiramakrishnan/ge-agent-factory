@@ -1,0 +1,315 @@
+{
+  "id": "sap_concur_tools",
+  "version": 2,
+  "tools": [
+    {
+      "name": "search_users",
+      "description": "Search Concur users.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "cost_center": {
+            "type": "string"
+          },
+          "company_code": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "users"
+      }
+    },
+    {
+      "name": "get_user",
+      "description": "Get one user.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "users",
+        "primaryKey": "user_id"
+      }
+    },
+    {
+      "name": "search_expense_reports",
+      "description": "Search Concur expense reports.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "approval_status": {
+            "type": "string"
+          },
+          "payment_status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "expense_reports"
+      }
+    },
+    {
+      "name": "get_expense_report",
+      "description": "Get one expense report.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "report_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "report_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "expense_reports",
+        "primaryKey": "report_id"
+      }
+    },
+    {
+      "name": "search_expense_entries",
+      "description": "Search Concur expense entries.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "report_id": {
+            "type": "string"
+          },
+          "expense_type": {
+            "type": "string"
+          },
+          "policy_status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "expense_entries"
+      }
+    },
+    {
+      "name": "get_expense_entry",
+      "description": "Get one expense entry.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "entry_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "entry_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "expense_entries",
+        "primaryKey": "entry_id"
+      }
+    },
+    {
+      "name": "search_card_transactions",
+      "description": "Search Concur card transactions.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "match_status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "card_transactions"
+      }
+    },
+    {
+      "name": "get_card_transaction",
+      "description": "Get one card transaction.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "transaction_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "transaction_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "card_transactions",
+        "primaryKey": "transaction_id"
+      }
+    },
+    {
+      "name": "search_trips",
+      "description": "Search Concur trips.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "trips"
+      }
+    },
+    {
+      "name": "get_trip",
+      "description": "Get one trip.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "trip_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "trip_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "trips",
+        "primaryKey": "trip_id"
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending Concur approvals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": {
+            "type": "string"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_pending_approvals",
+        "collection": "approvals"
+      }
+    },
+    {
+      "name": "submit_expense_report_update",
+      "description": "Submit a controlled state update for expense report.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "report_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "report_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "expense_reports",
+        "primaryKey": "report_id"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List Concur audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

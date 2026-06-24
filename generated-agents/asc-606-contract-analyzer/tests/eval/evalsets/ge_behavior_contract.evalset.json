@@ -1,0 +1,51 @@
+{
+  "eval_set_id": "ge_behavior_contract",
+  "name": "GE Behavior Contract",
+  "description": "Behavior-contract evals for asc_606_contract_analyzer. Generated from the enriched use-case spec.",
+  "eval_cases": [
+    {
+      "eval_id": "asc-606-contract-analyzer-end-to-end",
+      "conversation": [
+        {
+          "invocation_id": "asc-606-contract-analyzer-end-to-end_turn_1",
+          "user_content": {
+            "parts": [
+              {
+                "text": "Run the ASC 606 Contract Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [
+              {
+                "name": "query_sap_s_4hana_sd_sales_orders",
+                "args": {}
+              },
+              {
+                "name": "query_contract_repository_records",
+                "args": {}
+              },
+              {
+                "name": "query_bigquery_analytics_events",
+                "args": {}
+              },
+              {
+                "name": "lookup_asc_606_contract_analyzer_controls_playbook",
+                "args": {}
+              },
+              {
+                "name": "action_sap_s_4hana_sd_match",
+                "args": {}
+              }
+            ]
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "app",
+        "user_id": "ge_eval_user",
+        "state": {}
+      }
+    }
+  ]
+}

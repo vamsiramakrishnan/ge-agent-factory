@@ -1,0 +1,108 @@
+{
+  "id": "kyriba_tools",
+  "version": 1,
+  "tools": [
+    {
+      "name": "search_bank_accounts",
+      "description": "Search bank_accounts in kyriba.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "bank_accounts"
+      }
+    },
+    {
+      "name": "get_bank_account",
+      "description": "Get one bank_account in kyriba.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "bank_account_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "bank_account_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "bank_accounts",
+        "primaryKey": "bank_account_id"
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending kyriba approvals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": {
+            "type": "string"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_pending_approvals",
+        "collection": "approvals"
+      }
+    },
+    {
+      "name": "submit_bank_account_update",
+      "description": "Submit an update to one bank_account in kyriba.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "bank_account_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "bank_account_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "bank_accounts",
+        "primaryKey": "bank_account_id"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List kyriba simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

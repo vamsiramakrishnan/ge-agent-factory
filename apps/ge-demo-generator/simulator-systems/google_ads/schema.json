@@ -1,0 +1,69 @@
+{
+  "id": "google_ads_schema",
+  "version": 1,
+  "collections": {
+    "properties": {
+      "primaryKey": "property_id",
+      "fields": {
+        "property_id": "string",
+        "name": "string",
+        "status": "string",
+        "channel": "string",
+        "owner": "string"
+      }
+    },
+    "events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "property_id": "string",
+        "event_name": "string",
+        "status": "string",
+        "occurred_at": "string",
+        "count": "string"
+      }
+    },
+    "conversions": {
+      "primaryKey": "conversion_id",
+      "fields": {
+        "conversion_id": "string",
+        "property_id": "string",
+        "name": "string",
+        "status": "string",
+        "value": "string",
+        "currency": "string"
+      }
+    },
+    "audiences": {
+      "primaryKey": "audience_id",
+      "fields": {
+        "audience_id": "string",
+        "name": "string",
+        "status": "string",
+        "member_count": "string",
+        "source": "string"
+      }
+    },
+    "experiments": {
+      "primaryKey": "experiment_id",
+      "fields": {
+        "experiment_id": "string",
+        "property_id": "string",
+        "name": "string",
+        "status": "string",
+        "start_date": "string",
+        "end_date": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string"
+      }
+    }
+  }
+}

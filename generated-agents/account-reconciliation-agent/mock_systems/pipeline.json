@@ -1,0 +1,73 @@
+{
+  "name": "account_reconciliation_agent",
+  "domain": "finance",
+  "createdAt": "2026-06-11T08:59:25.725Z",
+  "steps": {
+    "init": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:25.725Z",
+      "name": "account_reconciliation_agent",
+      "domain": "finance"
+    },
+    "schema": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:25.743Z",
+      "tables": 9,
+      "derived": true
+    },
+    "generate": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:25.775Z",
+      "tables": 9,
+      "totalRows": 510,
+      "seed": 42
+    },
+    "tools": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:25.784Z",
+      "output": "/tmp/regen2/account-reconciliation-agent/app/tools.py",
+      "functions": 12,
+      "behaviorContract": "present",
+      "contractTools": 2,
+      "goldenEvals": 1,
+      "agentsCliEvalSet": "/tmp/regen2/account-reconciliation-agent/tests/eval/evalsets/ge_behavior_contract.evalset.json"
+    },
+    "test": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:30.394Z",
+      "output": "/tmp/regen2/account-reconciliation-agent/tests/test_smoke.py",
+      "ran": true,
+      "passed": true,
+      "exitCode": 0
+    }
+  },
+  "currentStep": "test",
+  "useCase": {
+    "id": "account-reconciliation-agent",
+    "title": "Account Reconciliation Agent",
+    "department": "finance",
+    "systems": [
+      "SAP S/4HANA FI",
+      "BlackLine",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "kpis": [
+      {
+        "label": "Auto-certified accounts",
+        "before": "20%",
+        "after": "85%"
+      },
+      {
+        "label": "Reconciliation cycle",
+        "before": "5 days",
+        "after": "1 day"
+      },
+      {
+        "label": "Missed amortization",
+        "before": "Discovered at audit",
+        "after": "Caught at close"
+      }
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+title: GE Agent Factory
+description: Turn enterprise use cases into generated, tested, deployable Gemini Enterprise agents.
+
+# Render with the just-the-docs theme directly from GitHub (no local build step):
+# sidebar navigation + client-side search out of the box.
+remote_theme: just-the-docs/just-the-docs
+plugins:
+  - jekyll-remote-theme
+
+# just-the-docs options
+search_enabled: true
+aux_links:
+  Source:
+    - "https://github.com/vamsiramakrishnan/ge-agent-factory"
+aux_links_new_tab: true
+
+# Keep repo-internal, non-site files out of the build.
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - .bundle/
+  - .jekyll-cache/
+  - vendor/
+  - adr/
+  - collateral/
+  - plans/
+  - runbooks/
+  - skills/
+  - superpowers/

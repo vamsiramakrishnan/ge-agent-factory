@@ -1,0 +1,30 @@
+{
+  "id": "qualtrics_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into qualtrics collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "analytics"
+      ],
+      "realizedObjects": [
+        "properties",
+        "events",
+        "conversions"
+      ],
+      "simulatorCollection": "events",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "audience"
+      ],
+      "realizedObjects": [
+        "audiences",
+        "experiments"
+      ],
+      "simulatorCollection": "audiences",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

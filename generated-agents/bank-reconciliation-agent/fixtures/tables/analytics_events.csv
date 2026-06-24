@@ -1,0 +1,61 @@
+id,period,metric_name,value,variance_pct,computed_at,historical_metric_id
+ID-0001,week,close_cycle_days,101.88,-15.1,2026-05-25,ID-0001
+ID-0002,month,auto_certified_accounts,128.23,-6.4,2026-05-26,ID-0002
+ID-0003,quarter,reconciliation_exception_rate,158.16,2.7,2026-05-27,ID-0003
+ID-0004,week,working_capital_forecast_accuracy,190.32,11.3,2026-05-28,ID-0004
+ID-0005,month,vinitor ara tenax,159.61,-15.1,2026-05-29,ID-0005
+ID-0006,quarter,conicio quisquam aureus,191.88,-6.4,2026-05-30,ID-0006
+ID-0007,week,quibusdam titulus aegrotatio,227.99,2.7,2026-05-25,ID-0007
+ID-0008,month,arcesso patior torrens,266.01,11.3,2026-05-26,ID-0008
+ID-0009,quarter,coepi sed paulatim,217.34,-15.1,2026-05-27,ID-0009
+ID-0010,week,delicate thesis attero,255.53,-6.4,2026-05-28,ID-0010
+ID-0011,month,acies strues comedo,297.83,2.7,2026-05-29,ID-0011
+ID-0012,quarter,aggero arceo coadunatio,341.69,11.3,2026-05-30,ID-0012
+ID-0013,week,anser cohors vester,275.08,-15.1,2026-05-25,ID-0013
+ID-0014,month,incidunt vado iste,319.18,-6.4,2026-05-26,ID-0014
+ID-0015,quarter,complectus corrigo temporibus,367.67,2.7,2026-05-27,ID-0015
+ID-0016,week,uxor admiratio cauda,417.38,11.3,2026-05-28,ID-0016
+ID-0017,month,curriculum congregatio vito,332.81,-15.1,2026-05-29,ID-0017
+ID-0018,quarter,modi tempus tondeo,382.82,-6.4,2026-05-30,ID-0018
+ID-0019,week,thalassinus vilis qui,437.5,2.7,2026-05-25,ID-0019
+ID-0020,month,admoneo cuius sperno,493.06,11.3,2026-05-26,ID-0020
+ID-0021,quarter,audentia tamquam in,390.54,-15.1,2026-05-27,ID-0021
+ID-0022,week,bibo volaticus sumo,446.47,-6.4,2026-05-28,ID-0022
+ID-0023,month,esse suffragium caste,507.34,2.7,2026-05-29,ID-0023
+ID-0024,quarter,adflicto voluptatum carcer,568.74,11.3,2026-05-30,ID-0024
+ID-0025,week,suscipit pauci suus,448.27,-15.1,2026-05-25,ID-0025
+ID-0026,month,socius aegrotatio velit,510.12,-6.4,2026-05-26,ID-0026
+ID-0027,quarter,cruentus demergo ultra,577.17,2.7,2026-05-27,ID-0027
+ID-0028,week,uberrime attonbitus curtus,644.43,11.3,2026-05-28,ID-0028
+ID-0029,month,auxilium beneficium adhuc,506,-15.1,2026-05-29,ID-0029
+ID-0030,quarter,dapifer viriliter super,573.77,-6.4,2026-05-30,ID-0030
+ID-0031,week,sursum animus cognatus,647.01,2.7,2026-05-25,ID-0031
+ID-0032,month,crastinus provident volubilis,720.11,11.3,2026-05-26,ID-0032
+ID-0033,quarter,aureus sopor qui,563.74,-15.1,2026-05-27,ID-0033
+ID-0034,week,earum avaritia tibi,637.42,-6.4,2026-05-28,ID-0034
+ID-0035,month,debitis charisma labore,716.85,2.7,2026-05-29,ID-0035
+ID-0036,quarter,complectus tabula adfectus,795.79,11.3,2026-05-30,ID-0036
+ID-0037,week,ipsum taedium deorsum,621.47,-15.1,2026-05-25,ID-0037
+ID-0038,month,capillus denuo curto,701.06,-6.4,2026-05-26,ID-0038
+ID-0039,quarter,autem despecto tenuis,786.68,2.7,2026-05-27,ID-0039
+ID-0040,week,admoveo trucido angulus,871.48,11.3,2026-05-28,ID-0040
+ID-0041,month,curis adflicto deduco,679.2,-15.1,2026-05-29,ID-0041
+ID-0042,quarter,amissio cornu alveus,764.71,-6.4,2026-05-30,ID-0042
+ID-0043,week,paulatim substantia cinis,856.52,2.7,2026-05-25,ID-0043
+ID-0044,month,cilicium cometes vesper,947.16,11.3,2026-05-26,ID-0044
+ID-0045,quarter,in carus conicio,736.93,-15.1,2026-05-27,ID-0045
+ID-0046,week,acceptus vix cotidie,828.36,-6.4,2026-05-28,ID-0046
+ID-0047,month,nemo antea non,926.35,2.7,2026-05-29,ID-0047
+ID-0048,quarter,velum qui apostolus,1022.85,11.3,2026-05-30,ID-0048
+ID-0049,week,spes coerceo auctus,794.66,-15.1,2026-05-25,ID-0049
+ID-0050,month,adhaero comparo delicate,892.01,-6.4,2026-05-26,ID-0050
+ID-0051,quarter,barba tenus cursim,996.19,2.7,2026-05-27,ID-0051
+ID-0052,week,totam vae aiunt,1098.53,11.3,2026-05-28,ID-0052
+ID-0053,month,appello videlicet tantillus,852.4,-15.1,2026-05-29,ID-0053
+ID-0054,quarter,cetera conatus substantia,955.66,-6.4,2026-05-30,ID-0054
+ID-0055,week,taceo adversus crepusculum,1066.03,2.7,2026-05-25,ID-0055
+ID-0056,month,sunt voluptatibus cotidie,1174.21,11.3,2026-05-26,ID-0056
+ID-0057,quarter,vinitor blanditiis comparo,910.13,-15.1,2026-05-27,ID-0057
+ID-0058,week,talis calco adsum,1019.3,-6.4,2026-05-28,ID-0058
+ID-0059,month,cubo adsuesco nostrum,1135.86,2.7,2026-05-29,ID-0059
+ID-0060,quarter,curatio substantia cunctatio,1249.9,11.3,2026-05-30,ID-0060

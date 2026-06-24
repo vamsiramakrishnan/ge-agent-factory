@@ -1,0 +1,30 @@
+{
+  "id": "workiva_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into workiva collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "document"
+      ],
+      "realizedObjects": [
+        "workspaces",
+        "documents",
+        "comments",
+        "tasks"
+      ],
+      "simulatorCollection": "documents",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "approval"
+      ],
+      "realizedObjects": [
+        "approvals"
+      ],
+      "simulatorCollection": "approvals",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

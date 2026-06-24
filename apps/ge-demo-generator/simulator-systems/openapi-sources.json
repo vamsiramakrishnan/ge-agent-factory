@@ -1,0 +1,399 @@
+{
+  "version": 1,
+  "description": "Official OpenAPI/Swagger source hints for simulator packs. Downloadable entries are cached under simulator-systems/_openapi; docs-only/manual entries are still recorded so simulator work has provenance instead of invented APIs.",
+  "sources": [
+    {
+      "systemId": "workday",
+      "displayName": "Workday",
+      "status": "auth_required",
+      "docs": "https://community.workday.com/sites/default/files/file-hosting/restapi/index.html",
+      "notes": "Workday has public REST API reference pages, but tenant-specific object availability, SOAP WSDLs, RaaS reports, and security domains are entitlement scoped. Use this docs cache as provenance and import tenant exports when available."
+    },
+    {
+      "systemId": "servicenow",
+      "displayName": "ServiceNow",
+      "status": "auth_required",
+      "docs": "https://developer.servicenow.com/dev.do#!/reference/api",
+      "notes": "ServiceNow API Explorer can generate instance-scoped specs."
+    },
+    {
+      "systemId": "sap_s4hana_fi",
+      "displayName": "SAP S/4HANA FI",
+      "status": "auth_required",
+      "docs": "https://api.sap.com/products/SAPS4HANACloud/apis/all",
+      "docsUrls": [
+        "https://help.sap.com/docs/SAP_S4HANA_CLOUD/0f69f8fb28ac4bf48d2b57b9637e81fa/1e60f14bdc224c2c975c8fa8bcfd7f3f.html",
+        "https://sap.github.io/cloud-sdk/docs/js/guides/api-business-hub-download-specification"
+      ],
+      "notes": "SAP Business Accelerator Hub is authoritative. SAP documents downloadable OData/OpenAPI specs, but the spec download flow requires login and exact service selection. Finance scope should prioritize business partner, supplier invoice, journal entry, payment, and cost center services."
+    },
+    {
+      "systemId": "coupa",
+      "displayName": "Coupa",
+      "status": "docs_only",
+      "docs": "https://compass.coupa.com/en-us/products/product-documentation/integration-technical-documentation/the-coupa-core-api",
+      "notes": "Public docs are canonical; downloadable OpenAPI may be customer or version scoped."
+    },
+    {
+      "systemId": "salesforce_crm",
+      "displayName": "Salesforce CRM",
+      "status": "auth_required",
+      "docs": "https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/",
+      "notes": "Salesforce REST resources and object schemas are org and API-version scoped."
+    },
+    {
+      "systemId": "bigquery",
+      "displayName": "BigQuery",
+      "status": "downloadable",
+      "format": "google_discovery",
+      "url": "https://bigquery.googleapis.com/$discovery/rest?version=v2",
+      "docs": "https://cloud.google.com/bigquery/docs/reference/rest"
+    },
+    {
+      "systemId": "okta",
+      "displayName": "Okta",
+      "status": "downloadable",
+      "format": "openapi_or_swagger",
+      "candidates": [
+        "https://raw.githubusercontent.com/okta/okta-management-openapi-spec/master/dist/spec.json",
+        "https://raw.githubusercontent.com/okta/okta-management-openapi-spec/master/dist/legacy-v1-swagger/spec.json"
+      ],
+      "docs": "https://developer.okta.com/docs/reference/"
+    },
+    {
+      "systemId": "hubspot",
+      "displayName": "HubSpot",
+      "status": "docs_only",
+      "docs": "https://developers.hubspot.com/docs/api/overview"
+    },
+    {
+      "systemId": "jira",
+      "displayName": "Jira",
+      "status": "downloadable",
+      "format": "openapi_or_swagger",
+      "candidates": [
+        "https://dac-static.atlassian.com/cloud/jira/platform/swagger-v3.v3.json",
+        "https://developer.atlassian.com/cloud/jira/platform/swagger-v3.v3.json"
+      ],
+      "docs": "https://developer.atlassian.com/cloud/jira/platform/rest/v3/"
+    },
+    {
+      "systemId": "datadog",
+      "displayName": "Datadog",
+      "status": "downloadable",
+      "format": "openapi",
+      "license": "Apache-2.0",
+      "candidates": [
+        "https://raw.githubusercontent.com/DataDog/datadog-api-client-go/master/.generator/schemas/v2/openapi.yaml",
+        "https://raw.githubusercontent.com/DataDog/datadog-api-client-go/master/.generator/schemas/v1/openapi.yaml"
+      ],
+      "docs": "https://docs.datadoghq.com/api/latest/",
+      "notes": "Official Datadog generated-client repository includes OpenAPI YAML inputs under .generator/schemas. Raw GitHub serves these as text/plain, so the downloader validates YAML by content."
+    },
+    {
+      "systemId": "greenhouse",
+      "displayName": "Greenhouse",
+      "status": "docs_only",
+      "docs": "https://developers.greenhouse.io/"
+    },
+    {
+      "systemId": "cornerstone",
+      "displayName": "Cornerstone",
+      "status": "docs_only",
+      "docs": "https://csod.dev/"
+    },
+    {
+      "systemId": "anaplan",
+      "displayName": "Anaplan",
+      "status": "docs_only",
+      "docs": "https://help.anaplan.com/anaplan-api-844c6d40-a21c-423d-8435-ebaaa0372b76"
+    },
+    {
+      "systemId": "icertis",
+      "displayName": "Icertis",
+      "status": "auth_required",
+      "docs": "https://iciwikiapac.icertis.com/ICIHelp8.2/index.php?title=API_Capabilities",
+      "notes": "Icertis documents a REST API Hub for Agreements, Masterdata, Users, Requests, Clauses, Templates, and related entities, but the API Dev Portal is deployed per ICI instance and requires an APIM Dev Portal role."
+    },
+    {
+      "systemId": "sap_ariba",
+      "displayName": "SAP Ariba",
+      "status": "auth_required",
+      "docs": "https://api.sap.com/package/SAPAriba/apis",
+      "docsUrls": [
+        "https://help.sap.com/docs/ARIBA_APIS",
+        "https://api.sap.com/package/SAPAribaOpenAPIs/rest"
+      ],
+      "notes": "SAP Ariba APIs are published through SAP API/Business Accelerator Hub; downloadable specs are package/API specific and may require SAP login."
+    },
+    {
+      "systemId": "kyriba",
+      "displayName": "Kyriba",
+      "status": "docs_only",
+      "docs": "https://developer.kyriba.com/"
+    },
+    {
+      "systemId": "blackline",
+      "displayName": "BlackLine",
+      "status": "docs_only",
+      "docs": "https://developer.blackline.com/"
+    },
+    {
+      "systemId": "marketo",
+      "displayName": "Marketo",
+      "status": "docs_only",
+      "docs": "https://experienceleague.adobe.com/docs/marketo-developer/marketo/rest/rest-api.html"
+    },
+    {
+      "systemId": "sap_s4hana_mm",
+      "displayName": "SAP S/4HANA MM",
+      "status": "auth_required",
+      "docs": "https://api.sap.com/products/SAPS4HANACloud/apis/all",
+      "docsUrls": [
+        "https://help.sap.com/docs/SAP_S4HANA_CLOUD/0f69f8fb28ac4bf48d2b57b9637e81fa/1e60f14bdc224c2c975c8fa8bcfd7f3f.html",
+        "https://sap.github.io/cloud-sdk/docs/js/guides/api-business-hub-download-specification"
+      ],
+      "notes": "SAP Business Accelerator Hub is authoritative. MM scope should prioritize material master, purchase order, purchase requisition, supplier, goods movement, and inventory services; exact OData EDMX/OpenAPI exports require login and service selection."
+    },
+    {
+      "systemId": "auditboard",
+      "displayName": "AuditBoard",
+      "status": "docs_only",
+      "docs": "https://docs.auditboard.com/"
+    },
+    {
+      "systemId": "highradius",
+      "displayName": "HighRadius",
+      "status": "manual_required",
+      "docs": "https://www.highradius.com/software/autonomous-receivables/"
+    },
+    {
+      "systemId": "taulia",
+      "displayName": "Taulia",
+      "status": "docs_only",
+      "docs": "https://api.taulia.com/"
+    },
+    {
+      "systemId": "basware",
+      "displayName": "Basware",
+      "status": "docs_only",
+      "docs": "https://developer.basware.com/"
+    },
+    {
+      "systemId": "lattice",
+      "displayName": "Lattice",
+      "status": "docs_only",
+      "docs": "https://developers.lattice.com/"
+    },
+    {
+      "systemId": "github",
+      "displayName": "GitHub",
+      "status": "downloadable",
+      "format": "openapi",
+      "url": "https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json",
+      "docs": "https://docs.github.com/en/rest"
+    },
+    {
+      "systemId": "manageengine",
+      "displayName": "ManageEngine",
+      "status": "docs_only",
+      "docs": "https://www.manageengine.com/products/service-desk/sdpod-v3-api/"
+    },
+    {
+      "systemId": "salesforce_marketing_cloud",
+      "displayName": "Salesforce Marketing Cloud",
+      "status": "auth_required",
+      "docs": "https://developer.salesforce.com/docs/marketing/marketing-cloud/guide/apis-overview.html"
+    },
+    {
+      "systemId": "docusign_clm",
+      "displayName": "DocuSign CLM",
+      "status": "downloadable",
+      "format": "openapi_or_swagger",
+      "license": "MIT",
+      "candidates": [
+        "https://raw.githubusercontent.com/docusign/OpenAPI-Specifications/master/agreementmanager.rest.swagger-1.0.0.json"
+      ],
+      "docs": "https://developers.docusign.com/docs/",
+      "docsUrls": [
+        "https://github.com/docusign/OpenAPI-Specifications"
+      ],
+      "notes": "Official Docusign OpenAPI-Specifications repository publishes REST API Swagger files. Agreement Manager is the closest public machine-readable contract for CLM-style agreement workflows."
+    },
+    {
+      "systemId": "pagerduty",
+      "displayName": "PagerDuty",
+      "status": "downloadable",
+      "format": "openapi",
+      "candidates": [
+        "https://raw.githubusercontent.com/PagerDuty/api-schema/main/reference/REST/openapiv3.json",
+        "https://raw.githubusercontent.com/PagerDuty/api-schema/main/reference/REST/openapiv3.yaml"
+      ],
+      "docs": "https://developer.pagerduty.com/api-reference/"
+    },
+    {
+      "systemId": "kubernetes",
+      "displayName": "Kubernetes",
+      "status": "downloadable",
+      "format": "openapi_or_swagger",
+      "candidates": [
+        "https://raw.githubusercontent.com/kubernetes/kubernetes/master/api/openapi-spec/swagger.json",
+        "https://raw.githubusercontent.com/kubernetes/kubernetes/master/api/openapi-spec/v3/api__v1_openapi.json"
+      ],
+      "docs": "https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.36/"
+    },
+    {
+      "systemId": "sap_concur",
+      "displayName": "SAP Concur",
+      "status": "docs_only",
+      "docs": "https://developer.concur.com/api-reference/",
+      "notes": "SAP Concur publishes public API reference docs; no stable public all-in-one OpenAPI URL is declared in this manifest yet."
+    },
+    {
+      "systemId": "workiva",
+      "displayName": "Workiva",
+      "status": "docs_only",
+      "docs": "https://developers.workiva.com/"
+    },
+    {
+      "systemId": "avalara",
+      "displayName": "Avalara",
+      "status": "docs_only",
+      "docs": "https://developer.avalara.com/api-reference/"
+    },
+    {
+      "systemId": "longview_onesource",
+      "displayName": "Longview OneSource",
+      "status": "manual_required",
+      "docs": "https://tax.thomsonreuters.com/en/onesource"
+    },
+    {
+      "systemId": "benefitfocus",
+      "displayName": "Benefitfocus",
+      "status": "manual_required",
+      "docs": "https://www.benefitfocus.com/"
+    },
+    {
+      "systemId": "absencesoft",
+      "displayName": "AbsenceSoft",
+      "status": "manual_required",
+      "docs": "https://www.absencesoft.com/"
+    },
+    {
+      "systemId": "qualtrics",
+      "displayName": "Qualtrics",
+      "status": "docs_only",
+      "docs": "https://api.qualtrics.com/"
+    },
+    {
+      "systemId": "apigee",
+      "displayName": "Apigee",
+      "status": "downloadable",
+      "format": "google_discovery",
+      "url": "https://apigee.googleapis.com/$discovery/rest?version=v1",
+      "docs": "https://cloud.google.com/apigee/docs/reference/apis/apigee/rest"
+    },
+    {
+      "systemId": "dbt",
+      "displayName": "dbt",
+      "status": "docs_only",
+      "docs": "https://docs.getdbt.com/dbt-cloud/api-v3#/overview"
+    },
+    {
+      "systemId": "terraform",
+      "displayName": "Terraform",
+      "status": "docs_only",
+      "docs": "https://developer.hashicorp.com/terraform/cloud-docs/api-docs"
+    },
+    {
+      "systemId": "crowdstrike",
+      "displayName": "CrowdStrike",
+      "status": "docs_only",
+      "docs": "https://falcon.crowdstrike.com/documentation/page/a2a7fc0e/apis"
+    },
+    {
+      "systemId": "leanix",
+      "displayName": "LeanIX",
+      "status": "docs_only",
+      "docs": "https://docs-eam.leanix.net/reference/"
+    },
+    {
+      "systemId": "zendesk",
+      "displayName": "Zendesk",
+      "status": "docs_only",
+      "docs": "https://developer.zendesk.com/api-reference/"
+    },
+    {
+      "systemId": "leandata",
+      "displayName": "LeanData",
+      "status": "manual_required",
+      "docs": "https://www.leandata.com/"
+    },
+    {
+      "systemId": "onetrust",
+      "displayName": "OneTrust",
+      "status": "docs_only",
+      "docs": "https://developer.onetrust.com/onetrust/reference/"
+    },
+    {
+      "systemId": "google_ads",
+      "displayName": "Google Ads",
+      "status": "docs_only",
+      "docs": "https://developers.google.com/google-ads/api/rest/overview",
+      "notes": "Google Ads REST uses discovery-like REST transcoding over proto definitions."
+    },
+    {
+      "systemId": "meta_ads_manager",
+      "displayName": "Meta Ads Manager",
+      "status": "docs_only",
+      "docs": "https://developers.facebook.com/docs/marketing-apis/"
+    },
+    {
+      "systemId": "capa_tracking",
+      "displayName": "CAPA Tracking",
+      "status": "manual_required",
+      "docs": "https://www.mastercontrol.com/quality/capa-software/"
+    },
+    {
+      "systemId": "innovation_management",
+      "displayName": "Innovation Management",
+      "status": "manual_required",
+      "docs": "https://www.planview.com/products-solutions/products/spigit/"
+    },
+    {
+      "systemId": "insurance_cert_management",
+      "displayName": "Insurance Certificate Management",
+      "status": "manual_required",
+      "docs": "https://www.mycoitracking.com/"
+    },
+    {
+      "systemId": "c2fo",
+      "displayName": "C2FO",
+      "status": "manual_required",
+      "docs": "https://www.c2fo.com/"
+    },
+    {
+      "systemId": "capa_tools",
+      "displayName": "CAPA Tools",
+      "status": "manual_required",
+      "docs": "https://www.etq.com/solutions/capa-management-software/"
+    },
+    {
+      "systemId": "jaggaer",
+      "displayName": "JAGGAER",
+      "status": "docs_only",
+      "docs": "https://developer.jaggaer.com/"
+    },
+    {
+      "systemId": "sap_fieldglass",
+      "displayName": "SAP Fieldglass",
+      "status": "auth_required",
+      "docs": "https://api.sap.com/package/SAPFieldglass/apis",
+      "docsUrls": [
+        "https://help.sap.com/doc/3921dd506108442f9ddc6350cb0628c3/cloud/en-US/SAPFieldglassBusinessAnalyticsAPISpecifications.pdf",
+        "https://help.sap.com/doc/9d09cb5196b64152bf3fcb745ab28136/cloud/en-US/SAPFieldglassAuditTrailAPITechnicalSpecifications.pdf"
+      ],
+      "notes": "SAP Fieldglass exposes package listings through SAP Business Accelerator Hub and technical API specifications through SAP Help PDFs; API package downloads may require SAP login."
+    }
+  ]
+}

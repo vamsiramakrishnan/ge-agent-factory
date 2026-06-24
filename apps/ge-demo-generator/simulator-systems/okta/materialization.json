@@ -1,0 +1,212 @@
+{
+  "id": "okta_materialization",
+  "version": 1,
+  "collections": {
+    "users": {
+      "primaryKey": "user_id",
+      "fieldAliases": {
+        "user_id": [
+          "user_id",
+          "id",
+          "source_record_id"
+        ],
+        "login": [
+          "login",
+          "id",
+          "source_record_id"
+        ],
+        "email": [
+          "email",
+          "id",
+          "source_record_id"
+        ],
+        "first_name": [
+          "first_name",
+          "id",
+          "source_record_id"
+        ],
+        "last_name": [
+          "last_name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "department": [
+          "department",
+          "id",
+          "source_record_id"
+        ],
+        "manager": [
+          "manager",
+          "id",
+          "source_record_id"
+        ],
+        "last_login": [
+          "last_login",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "STAGED"
+      }
+    },
+    "groups": {
+      "primaryKey": "group_id",
+      "fieldAliases": {
+        "group_id": [
+          "group_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "description": [
+          "description",
+          "id",
+          "source_record_id"
+        ],
+        "group_type": [
+          "group_type",
+          "id",
+          "source_record_id"
+        ],
+        "member_count": [
+          "member_count",
+          "id",
+          "source_record_id"
+        ],
+        "risk_tier": [
+          "risk_tier",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    },
+    "applications": {
+      "primaryKey": "application_id",
+      "fieldAliases": {
+        "application_id": [
+          "application_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "label": [
+          "label",
+          "id",
+          "source_record_id"
+        ],
+        "sign_on_mode": [
+          "sign_on_mode",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "criticality": [
+          "criticality",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "ACTIVE"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fieldAliases": {
+        "approval_id": [
+          "approval_id",
+          "id",
+          "source_record_id"
+        ],
+        "source_record_id": [
+          "source_record_id",
+          "id",
+          "source_record_id"
+        ],
+        "approver": [
+          "approver",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "reason": [
+          "reason",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "requested"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "actor": [
+          "actor",
+          "id",
+          "source_record_id"
+        ],
+        "role": [
+          "role",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ],
+        "timestamp": [
+          "timestamp",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

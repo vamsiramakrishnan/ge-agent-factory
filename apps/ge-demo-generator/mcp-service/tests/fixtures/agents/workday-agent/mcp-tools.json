@@ -1,0 +1,57 @@
+{
+  "id": "workday_agent_mcp_tools",
+  "transport": "http",
+  "tools": [
+    {
+      "name": "search_workers",
+      "description": "Search Workday workers.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string" },
+          "status": { "type": "string" },
+          "role": { "type": "string" }
+        }
+      },
+      "simulator": { "system_id": "workday", "tool": "search_workers" }
+    },
+    {
+      "name": "get_worker",
+      "description": "Get a Workday worker profile with related worker events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "worker_id": { "type": "string" },
+          "role": { "type": "string" }
+        },
+        "required": ["worker_id"]
+      },
+      "simulator": { "system_id": "workday", "tool": "get_worker" }
+    },
+    {
+      "name": "submit_worker_change",
+      "description": "Submit a Workday worker change request.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "worker_id": { "type": "string" },
+          "change_type": { "type": "string" },
+          "target_manager_id": { "type": "string" },
+          "target_cost_center": { "type": "string" },
+          "role": { "type": "string" }
+        },
+        "required": ["worker_id", "change_type"]
+      },
+      "simulator": { "system_id": "workday", "tool": "submit_worker_change" }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List Workday simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": { "limit": { "type": "integer" } }
+      },
+      "simulator": { "system_id": "workday", "tool": "list_audit_events" }
+    }
+  ]
+}

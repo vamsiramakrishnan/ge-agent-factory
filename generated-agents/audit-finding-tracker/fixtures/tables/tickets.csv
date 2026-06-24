@@ -1,0 +1,61 @@
+id,title,priority,status,assignee,created_at,category,sla_met
+ID-0001,Iusto adficio sopor commodi.,P4,active,Zion Sporer,2026-05-10,access,true
+ID-0002,Compello tamisium timidus una vulpes carbo adhaero cunctatio aperio acerbitas.,P3,pending,Marshall Ankunding,2026-05-11,policy,true
+ID-0003,Quaerat magnam quia urbs ocer nobis vulariter temperantia decimus.,P4,closed,Tod Heaney,2026-05-12,billing,false
+ID-0004,Thymum sumo optio adnuo deficio spero spiculum corroboro.,P4,active,Maryse Gorczany,2026-05-13,network,true
+ID-0005,Deficio sordeo tui assentator accusantium tergum pel subnecto.,P4,closed,Jerald Cremin,2021-08-30,billing,false
+ID-0006,Conspergo admoneo addo curo ago pectus uxor.,P4,resolved,Shanon Rippin,2024-10-25,billing,true
+ID-0007,Qui voluptate delego uberrime advenio conculco aeger voluptates totidem ulterius.,P4,open,Deanna Koss,2020-08-09,hardware,true
+ID-0008,Tempore volaticus decerno cibo theologus comparo coepi candidus aperio cauda.,P3,resolved,Miss Renee Heathcote,2022-11-28,hardware,false
+ID-0009,Apto nobis dicta arbitro quia certus depopulo agnitio degero.,P3,closed,Josefina Marvin,2024-08-30,billing,true
+ID-0010,Tunc vox valetudo corrigo autem deporto talio.,P3,in_progress,Santos Harber,2024-07-29,access,true
+ID-0011,Atque minus nihil depraedor similique calculus ipsum corrigo somniculosus ara.,P3,open,Claudia Grant DVM,2023-06-06,access,true
+ID-0012,Corona aiunt iusto tutis theca ater speculum bos blandior.,P4,triaged,Shelly Murazik,2020-11-29,software,true
+ID-0013,Depereo verumtamen adhaero.,P3,triaged,Jameson Rowe,2022-12-04,software,false
+ID-0014,Tenus cubicularis tres assumenda adaugeo bardus confugo dolorem possimus verbum.,P3,in_progress,Leah Smitham,2020-02-24,software,true
+ID-0015,Surculus amoveo pecus.,P3,open,Ms. Glennie Cassin,2023-05-25,billing,true
+ID-0016,Accusantium tres esse.,P4,triaged,Vera Watsica,2023-09-02,policy,true
+ID-0017,Vinitor vado tactus chirographum cilicium vix abstergo sumptus suffoco.,P4,closed,Belinda Gibson,2025-01-03,billing,true
+ID-0018,Vestrum aduro aliquam ascisco pariatur.,P2,closed,Doreen Olson,2024-07-10,network,false
+ID-0019,Templum adsidue absconditus benevolentia somnus cunctatio culpa vado vehemens.,P4,triaged,Conrad Heaney,2024-12-26,access,false
+ID-0020,Civis depromo coepi patior damno asper angelus.,P3,closed,Maci Schuster,2023-12-11,billing,true
+ID-0021,Abstergo trepide thesis amicitia neque.,P3,open,Arthur Ritchie,2023-12-14,network,true
+ID-0022,Minus clibanus vigilo toties.,P4,triaged,Fernando Bechtelar,2022-09-30,hardware,false
+ID-0023,Nesciunt contego trans tracto demoror.,P3,triaged,Damon Konopelski,2025-01-17,hardware,true
+ID-0024,Trans creo degenero cognatus vicissitudo angustus victoria stella exercitationem.,P1,in_progress,Marlene Macejkovic-Rau,2022-07-04,access,false
+ID-0025,Somniculosus aestus conspergo ipsa culpa triumphus torrens perspiciatis corrumpo cattus.,P2,triaged,Macey Huels,2020-12-09,policy,true
+ID-0026,Asporto utroque iusto campana desipio suus.,P4,triaged,Telly Murphy,2024-07-07,network,false
+ID-0027,Suus tredecim arca triumphus harum tutamen.,P3,triaged,Ryan Larkin,2023-06-10,hardware,true
+ID-0028,Absconditus volutabrum vociferor crur suscipit.,P3,resolved,Mr. Guadalupe Gleason V,2023-12-16,policy,true
+ID-0029,Attonbitus qui cado cohibeo in cur arto assumenda cura templum.,P4,open,Alicia Mills,2021-05-27,access,false
+ID-0030,Appositus campana ustilo vester curia admitto adflicto natus crudelis ad.,P3,open,Alvin Jacobi IV,2021-08-26,policy,true
+ID-0031,Corrupti inventore admitto cursim tristis tibi caelestis caelum totidem via.,P2,in_progress,Arjun Rolfson,2022-12-15,software,true
+ID-0032,Ex arx mollitia tibi temporibus arguo.,P2,triaged,Meghan Barton,2024-03-08,hardware,false
+ID-0033,Valde vehemens clibanus calculus cunctatio.,P3,resolved,Rebeka Crist,2022-03-01,policy,true
+ID-0034,Vulgivagus aro voveo.,P4,resolved,Sean Koss,2022-06-20,software,true
+ID-0035,Ullam baiulus victus strenuus trans iure tergum.,P1,closed,Zakary Ebert,2021-07-08,billing,true
+ID-0036,Volva sperno uberrime communis.,P4,in_progress,Mr. Khalil Gorczany,2024-02-26,hardware,false
+ID-0037,Blanditiis adulatio aperte pecto ulciscor adinventitias tabernus confugo.,P3,closed,Alice Gerlach,2023-10-15,software,false
+ID-0038,Clementia sonitus vociferor admitto.,P4,in_progress,Arturo Mills,2025-07-03,software,true
+ID-0039,Claudeo esse sublime velut textor spes spoliatio vinculum.,P3,open,Martha Medhurst,2024-05-16,hardware,false
+ID-0040,Conicio appono alius tripudio versus sol amet.,P3,resolved,Aaron Hermiston,2020-01-29,network,false
+ID-0041,Maxime doloribus ago inflammatio crastinus pectus creta caput alius comburo.,P2,open,Jordan Ziemann,2024-11-15,hardware,true
+ID-0042,Spectaculum statim comburo appello ratione aperiam.,P3,resolved,Savanah Renner,2021-02-13,access,true
+ID-0043,Provident ullam auxilium antea vix amita.,P3,in_progress,Anthony McDermott,2021-05-27,network,false
+ID-0044,Deripio strenuus casus.,P3,resolved,Koby Hickle,2022-10-18,hardware,false
+ID-0045,Contego vere accusator comedo adstringo tener subvenio.,P3,resolved,Jacinto Weber,2020-09-21,network,false
+ID-0046,Aduro confido dicta arx solus vulpes.,P3,triaged,Silvia Howell,2022-08-26,network,true
+ID-0047,Vilicus sodalitas virtus argentum demoror pauper non cuius confero.,P2,triaged,Cordell Lueilwitz,2025-03-26,network,true
+ID-0048,Harum ager maxime ver crustulum clibanus arbitro argentum damnatio.,P3,open,Kris Block,2023-10-13,policy,false
+ID-0049,Vilicus ante utique voluntarius atqui.,P4,open,Lola Osinski,2024-11-09,billing,true
+ID-0050,Aiunt torrens cicuta apparatus decerno sequi creator adopto patruus veniam.,P3,triaged,Rosa McKenzie,2024-10-19,network,false
+ID-0051,Terreo patrocinor cupio vita hic pecco bos quidem.,P3,open,Nikko Farrell,2020-06-24,software,true
+ID-0052,Balbus crepusculum admoneo cubicularis.,P3,in_progress,Bryon Berge,2023-06-11,network,false
+ID-0053,Vitiosus administratio alter adinventitias audax hic similique.,P1,closed,Ben Champlin,2023-02-10,hardware,true
+ID-0054,Stella vir aranea creber itaque aestus abeo spargo sapiente cunctatio.,P3,in_progress,Cindy Will,2024-05-16,hardware,true
+ID-0055,Alo atrox thema spiculum.,P3,in_progress,Mr. Dwayne Sawayn PhD,2024-12-25,hardware,true
+ID-0056,Volutabrum attollo thermae concido suus curia.,P3,closed,Amiya Connelly,2023-04-17,software,false
+ID-0057,Appositus spero crustulum apparatus articulus vir utroque venustas vulgaris bellicus.,P3,resolved,Grace Mayer,2022-10-31,network,false
+ID-0058,Talis acies conspergo termes.,P3,triaged,Rickey Monahan,2020-10-18,hardware,true
+ID-0059,Doloribus civis absconditus derelinquo circumvenio tabernus acervus.,P3,closed,Bethany Lubowitz,2023-02-16,billing,true
+ID-0060,Universe neque validus.,P3,closed,Tate Davis,2021-03-11,hardware,true

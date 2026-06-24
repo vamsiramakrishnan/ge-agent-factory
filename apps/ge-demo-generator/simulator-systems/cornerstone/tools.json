@@ -1,0 +1,92 @@
+{
+  "id": "cornerstone_tools",
+  "version": 1,
+  "tools": [
+    {
+      "name": "search_learners",
+      "description": "Search learners in cornerstone.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "learners"
+      }
+    },
+    {
+      "name": "get_learner",
+      "description": "Get one learner in cornerstone.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "learner_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "learner_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "learners",
+        "primaryKey": "learner_id"
+      }
+    },
+    {
+      "name": "submit_learner_update",
+      "description": "Submit an update to one learner in cornerstone.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "learner_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "learner_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "learners",
+        "primaryKey": "learner_id"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List cornerstone simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

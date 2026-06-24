@@ -1,0 +1,70 @@
+{
+  "id": "kyriba_schema",
+  "version": 1,
+  "collections": {
+    "bank_accounts": {
+      "primaryKey": "bank_account_id",
+      "fields": {
+        "bank_account_id": "string",
+        "name": "string",
+        "status": "string",
+        "bank": "string",
+        "currency": "string",
+        "country": "string"
+      }
+    },
+    "payment_batches": {
+      "primaryKey": "batch_id",
+      "fields": {
+        "batch_id": "string",
+        "bank_account_id": "string",
+        "status": "string",
+        "amount": "string",
+        "currency": "string",
+        "release_date": "string"
+      }
+    },
+    "cash_positions": {
+      "primaryKey": "cash_position_id",
+      "fields": {
+        "cash_position_id": "string",
+        "bank_account_id": "string",
+        "status": "string",
+        "as_of_date": "string",
+        "balance": "string",
+        "currency": "string"
+      }
+    },
+    "tax_filings": {
+      "primaryKey": "filing_id",
+      "fields": {
+        "filing_id": "string",
+        "jurisdiction": "string",
+        "period": "string",
+        "status": "string",
+        "due_date": "string",
+        "amount": "string"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": "string",
+        "source_record_id": "string",
+        "approver": "string",
+        "state": "string",
+        "reason": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string"
+      }
+    }
+  }
+}

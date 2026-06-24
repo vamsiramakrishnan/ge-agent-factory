@@ -1,0 +1,19 @@
+{
+  "name": "@ge/simulator-packs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Package facade for the GE simulator-system corpus used by generated mock agents.",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./manifest": "./manifest.json"
+  },
+  "bin": {
+    "ge-simulator-packs-validate": "./scripts/validate.mjs",
+    "ge-simulator-packs-manifest": "./scripts/print-manifest.mjs"
+  },
+  "scripts": {
+    "validate": "node scripts/validate.mjs",
+    "manifest": "node scripts/print-manifest.mjs"
+  }
+}

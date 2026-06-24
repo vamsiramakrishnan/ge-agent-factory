@@ -1,0 +1,38 @@
+{
+  "id": "workday_workflows",
+  "version": 1,
+  "primitives": [
+    "role_permission_gate",
+    "business_process_state_machine",
+    "approval_blocker",
+    "audit_trail"
+  ],
+  "toolHandlers": {
+    "submit_worker_change": {
+      "primitive": "business_process_state_machine",
+      "collection": "workers",
+      "primaryKey": "worker_id",
+      "roleArg": "role",
+      "allowedRoles": ["hr_partner", "manager"],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "reason",
+      "transitions": {
+        "*": ["active", "on_leave", "terminated"],
+        "active": ["on_leave", "terminated"],
+        "on_leave": ["active", "terminated"],
+        "pre_hire": ["active"]
+      },
+      "creates": [
+        {
+          "collection": "business_processes",
+          "status": "pending_approval"
+        },
+        {
+          "collection": "business_process_steps",
+          "status": "requested"
+        }
+      ]
+    }
+  }
+}

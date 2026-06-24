@@ -1,0 +1,73 @@
+{
+  "name": "asc_606_contract_analyzer",
+  "domain": "finance",
+  "createdAt": "2026-06-11T08:59:53.459Z",
+  "steps": {
+    "init": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:53.459Z",
+      "name": "asc_606_contract_analyzer",
+      "domain": "finance"
+    },
+    "schema": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:53.476Z",
+      "tables": 9,
+      "derived": true
+    },
+    "generate": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:53.512Z",
+      "tables": 9,
+      "totalRows": 540,
+      "seed": 42
+    },
+    "tools": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:53.521Z",
+      "output": "/tmp/regen2/asc-606-contract-analyzer/app/tools.py",
+      "functions": 12,
+      "behaviorContract": "present",
+      "contractTools": 2,
+      "goldenEvals": 1,
+      "agentsCliEvalSet": "/tmp/regen2/asc-606-contract-analyzer/tests/eval/evalsets/ge_behavior_contract.evalset.json"
+    },
+    "test": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:57.678Z",
+      "output": "/tmp/regen2/asc-606-contract-analyzer/tests/test_smoke.py",
+      "ran": true,
+      "passed": true,
+      "exitCode": 0
+    }
+  },
+  "currentStep": "test",
+  "useCase": {
+    "id": "asc-606-contract-analyzer",
+    "title": "ASC 606 Contract Analyzer",
+    "department": "finance",
+    "systems": [
+      "SAP S/4HANA SD",
+      "Contract Repository",
+      "BigQuery",
+      "Vertex AI"
+    ],
+    "kpis": [
+      {
+        "label": "Contract analysis time",
+        "before": "1-2 days",
+        "after": "2-3 hours"
+      },
+      {
+        "label": "Consistency across analysts",
+        "before": "Variable treatment",
+        "after": "Standardized with precedent matching"
+      },
+      {
+        "label": "Audit readiness",
+        "before": "Memos created ad-hoc",
+        "after": "Auto-generated with cited guidance"
+      }
+    ]
+  }
+}

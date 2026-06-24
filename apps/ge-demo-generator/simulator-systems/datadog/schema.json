@@ -1,0 +1,231 @@
+{
+  "id": "datadog_schema",
+  "version": 2,
+  "apiProfile": {
+    "style": "jsonapi",
+    "security": [
+      "apiKeyAuth",
+      "appKeyAuth",
+      "bearerAuth",
+      "oauth2"
+    ],
+    "pagination": {
+      "styles": [
+        "cursor",
+        "page-token",
+        "offset",
+        "page-number"
+      ],
+      "params": [
+        "page_size",
+        "limit",
+        "page",
+        "offset",
+        "cursor",
+        "page_token",
+        "per_page"
+      ]
+    },
+    "commonErrors": [
+      400,
+      401,
+      403,
+      404,
+      409,
+      422,
+      429,
+      500,
+      504
+    ]
+  },
+  "collections": {
+    "services": {
+      "primaryKey": "service_id",
+      "description": "Datadog service-catalog entry with owner, tier, environment, health state, and operational links.",
+      "fields": {
+        "service_id": "string",
+        "name": "string",
+        "status": "enum:operational|degraded|impaired|maintenance|retired",
+        "owner": "string",
+        "team": "string",
+        "tier": "enum:tier_0|tier_1|tier_2|tier_3",
+        "environment": "enum:prod|stage|dev",
+        "repository": "string",
+        "service_catalog_url": "string",
+        "last_deploy_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "relations": {
+        "monitors": {
+          "collection": "monitors",
+          "localField": "service_id",
+          "foreignField": "service_id",
+          "many": true
+        },
+        "incidents": {
+          "collection": "incidents",
+          "localField": "service_id",
+          "foreignField": "service_id",
+          "many": true
+        },
+        "slos": {
+          "collection": "slos",
+          "localField": "service_id",
+          "foreignField": "service_id",
+          "many": true
+        }
+      }
+    },
+    "monitors": {
+      "primaryKey": "monitor_id",
+      "description": "Datadog monitor definition with query, severity, notification channels, and lifecycle state.",
+      "fields": {
+        "monitor_id": "string",
+        "service_id": "ref:services.service_id",
+        "name": "string",
+        "type": "enum:metric_alert|query_alert|synthetics_alert|service_check",
+        "status": "enum:ok|warn|alert|no_data|muted",
+        "severity": "enum:p1|p2|p3|p4",
+        "query": "string",
+        "tags": "array:string",
+        "notification_channels": "array:string",
+        "evaluation_delay": "integer",
+        "last_triggered_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "relations": {
+        "service": {
+          "collection": "services",
+          "localField": "service_id",
+          "foreignField": "service_id",
+          "many": false
+        },
+        "alerts": {
+          "collection": "alerts",
+          "localField": "monitor_id",
+          "foreignField": "monitor_id",
+          "many": true
+        }
+      }
+    },
+    "alerts": {
+      "primaryKey": "alert_id",
+      "description": "Triggered monitor event that can be acknowledged, recovered, ignored, or correlated to an incident.",
+      "fields": {
+        "alert_id": "string",
+        "monitor_id": "ref:monitors.monitor_id",
+        "service_id": "ref:services.service_id",
+        "state": "enum:triggered|acknowledged|recovered|ignored",
+        "severity": "enum:p1|p2|p3|p4",
+        "triggered_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "recovered_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "summary": "string",
+        "scope": "string",
+        "correlation_key": "string"
+      }
+    },
+    "incidents": {
+      "primaryKey": "incident_id",
+      "description": "Datadog incident with severity, commander, customer impact, and operational status.",
+      "fields": {
+        "incident_id": "string",
+        "service_id": "ref:services.service_id",
+        "title": "string",
+        "status": "enum:active|stable|resolved|archived",
+        "severity": "enum:sev1|sev2|sev3|sev4",
+        "commander": "string",
+        "started_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "resolved_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "customer_impact": "boolean",
+        "timeline_url": "string"
+      },
+      "relations": {
+        "service": {
+          "collection": "services",
+          "localField": "service_id",
+          "foreignField": "service_id",
+          "many": false
+        }
+      }
+    },
+    "slos": {
+      "primaryKey": "slo_id",
+      "description": "Service level objective with target, time window, burn rate, and remaining error budget.",
+      "fields": {
+        "slo_id": "string",
+        "service_id": "ref:services.service_id",
+        "name": "string",
+        "status": "enum:green|yellow|red|paused",
+        "target": "number",
+        "window": "string",
+        "burn_rate": "number",
+        "error_budget_remaining": "number",
+        "last_evaluated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "relations": {
+        "service": {
+          "collection": "services",
+          "localField": "service_id",
+          "foreignField": "service_id",
+          "many": false
+        }
+      }
+    },
+    "api_keys": {
+      "primaryKey": "key_id",
+      "description": "Datadog API/application key inventory with owner and lifecycle state.",
+      "fields": {
+        "key_id": "string",
+        "name": "string",
+        "status": "enum:active|disabled|revoked",
+        "category": "enum:standard|remote_config|service_account",
+        "owner": "string",
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "modified_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "last4": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "actor": "string",
+        "role": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string",
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "detail": "string"
+      }
+    }
+  }
+}

@@ -1,0 +1,876 @@
+{
+  "id": "ad-hoc-query-agent",
+  "title": "Ad-Hoc Query Agent",
+  "department": "finance",
+  "rowPolicy": {
+    "requestedRows": 50,
+    "minimumRowsPerEntity": 25,
+    "defaultRowsPerEntity": 50
+  },
+  "systems": [
+    {
+      "id": "bigquery",
+      "name": "BigQuery",
+      "owns": [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates"
+      ],
+      "protocol": "BigQuery SQL",
+      "localBacking": [
+        "bigquery"
+      ],
+      "toolNames": [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates"
+      ],
+      "evidence": [
+        "source_system_record",
+        "generated_audit_trail"
+      ]
+    },
+    {
+      "id": "looker",
+      "name": "Looker",
+      "owns": [
+        "dashboards",
+        "explore_queries",
+        "metric_definitions"
+      ],
+      "protocol": "LookerML",
+      "localBacking": [
+        "bigquery"
+      ],
+      "toolNames": [
+        "query_looker_dashboards",
+        "query_looker_explore_queries",
+        "query_looker_metric_definitions"
+      ],
+      "evidence": [
+        "source_system_record",
+        "generated_audit_trail"
+      ]
+    },
+    {
+      "id": "sap_s_4hana",
+      "name": "SAP S/4HANA",
+      "owns": [
+        "transactions",
+        "journal_entries",
+        "master_data"
+      ],
+      "protocol": "RFC/BAPI",
+      "localBacking": [
+        "alloydb"
+      ],
+      "toolNames": [
+        "query_sap_s_4hana_transactions",
+        "query_sap_s_4hana_journal_entries",
+        "query_sap_s_4hana_master_data"
+      ],
+      "evidence": [
+        "source_system_record",
+        "generated_audit_trail"
+      ]
+    }
+  ],
+  "dataContracts": [
+    {
+      "entity": "analytics_events",
+      "sourceSystem": "BigQuery",
+      "sourceSystemId": "bigquery",
+      "sourceKind": "bigquery",
+      "rows": 60,
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "period",
+          "type": "enum",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "metric_name",
+          "type": "lorem.words",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "float",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "variance_pct",
+          "type": "float",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "computed_at",
+          "type": "date",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "historical_metric_id",
+          "type": "ref",
+          "ref": "historical_metrics.id",
+          "required": true
+        }
+      ]
+    },
+    {
+      "entity": "historical_metrics",
+      "sourceSystem": "BigQuery",
+      "sourceSystemId": "bigquery",
+      "sourceKind": "bigquery",
+      "rows": 60,
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "period",
+          "type": "enum",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "metric_name",
+          "type": "lorem.words",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "float",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "variance_pct",
+          "type": "float",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "computed_at",
+          "type": "date",
+          "ref": null,
+          "required": true
+        }
+      ]
+    },
+    {
+      "entity": "cached_aggregates",
+      "sourceSystem": "BigQuery",
+      "sourceSystemId": "bigquery",
+      "sourceKind": "bigquery",
+      "rows": 60,
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "period",
+          "type": "enum",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "metric_name",
+          "type": "lorem.words",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "float",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "variance_pct",
+          "type": "float",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "computed_at",
+          "type": "date",
+          "ref": null,
+          "required": true
+        }
+      ]
+    },
+    {
+      "entity": "dashboards",
+      "sourceSystem": "Looker",
+      "sourceSystemId": "looker",
+      "sourceKind": "bigquery",
+      "rows": 60,
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "period",
+          "type": "enum",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "metric_name",
+          "type": "lorem.words",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "float",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "variance_pct",
+          "type": "float",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "computed_at",
+          "type": "date",
+          "ref": null,
+          "required": true
+        }
+      ]
+    },
+    {
+      "entity": "explore_queries",
+      "sourceSystem": "Looker",
+      "sourceSystemId": "looker",
+      "sourceKind": "bigquery",
+      "rows": 60,
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "source_record_id",
+          "type": "seq",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "owner",
+          "type": "person.fullName",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "date",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "lorem.sentence",
+          "ref": null,
+          "required": true
+        }
+      ]
+    },
+    {
+      "entity": "metric_definitions",
+      "sourceSystem": "Looker",
+      "sourceSystemId": "looker",
+      "sourceKind": "bigquery",
+      "rows": 30,
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "period",
+          "type": "enum",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "metric_name",
+          "type": "lorem.words",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "float",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "variance_pct",
+          "type": "float",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "computed_at",
+          "type": "date",
+          "ref": null,
+          "required": true
+        }
+      ]
+    },
+    {
+      "entity": "transactions",
+      "sourceSystem": "SAP S/4HANA",
+      "sourceSystemId": "sap_s_4hana",
+      "sourceKind": "alloydb",
+      "rows": 60,
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "posting_date",
+          "type": "date",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "account",
+          "type": "enum",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "amount",
+          "type": "float",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "currency",
+          "type": "enum",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "lorem.sentence",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "ref": null,
+          "required": true
+        }
+      ]
+    },
+    {
+      "entity": "journal_entries",
+      "sourceSystem": "SAP S/4HANA",
+      "sourceSystemId": "sap_s_4hana",
+      "sourceKind": "alloydb",
+      "rows": 60,
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "posting_date",
+          "type": "date",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "account",
+          "type": "enum",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "amount",
+          "type": "float",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "currency",
+          "type": "enum",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "lorem.sentence",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "ref": null,
+          "required": true
+        }
+      ]
+    },
+    {
+      "entity": "master_data",
+      "sourceSystem": "SAP S/4HANA",
+      "sourceSystemId": "sap_s_4hana",
+      "sourceKind": "alloydb",
+      "rows": 60,
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "seq",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "source_record_id",
+          "type": "seq",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "enum",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "owner",
+          "type": "person.fullName",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "created_at",
+          "type": "date",
+          "ref": null,
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "lorem.sentence",
+          "ref": null,
+          "required": true
+        }
+      ]
+    }
+  ],
+  "evidenceRequired": [
+    "sql_result",
+    "source_system_record",
+    "document_reference",
+    "generated_audit_trail"
+  ],
+  "documentRequirements": [
+    "Ad-Hoc Query Agent Controls Playbook: Workflow scope, Materiality thresholds, Escalation triggers, Audit evidence requirements, Quarter-end variations"
+  ],
+  "integrityRules": [
+    "analytics_events.historical_metric_id -> historical_metrics.id; orphanPolicy=none"
+  ],
+  "apis": [],
+  "datastorePackaging": {
+    "alloydb": {
+      "database": "ad_hoc_query_agent",
+      "schemas": [
+        "sap_s_4hana"
+      ]
+    },
+    "bigquery": {
+      "dataset": "finance_ad_hoc_query_agent",
+      "tables": [
+        "kpi_summary",
+        "evidence_index"
+      ]
+    },
+    "cloudStorage": {
+      "bucketSuffix": "ad-hoc-query-agent-evidence",
+      "prefixes": [
+        "documents",
+        "audit-trails",
+        "exports"
+      ]
+    },
+    "apis": {
+      "serviceName": "ad-hoc-query-agent-source-adapters",
+      "deploymentTarget": "cloud_run"
+    }
+  },
+  "behaviorContract": {
+    "role": "FP&A Analyst agent for the Ad-Hoc Query Agent workflow",
+    "primaryObjective": "Natural language interface makes financial data accessible to any business user. Gemini interprets ambiguous questions and returns answers with business context and citations. so the FP&A Analyst can move the Query response time KPI.",
+    "inScope": [
+      "Natural language interface makes financial data accessible to any business user",
+      "Gemini interprets ambiguous questions and returns answers with business context and citations",
+      "Learning loop pre-computes frequently asked analyses for instant response"
+    ],
+    "outOfScope": [
+      "Final sign-off on materially significant journal entries (Controller retains authority)",
+      "Restatement of prior-period filings",
+      "Tax position changes that require external advisor review"
+    ],
+    "toolIntents": [
+      {
+        "name": "query_bigquery_analytics_events",
+        "kind": "query",
+        "sourceSystemId": "bigquery",
+        "description": "Retrieve analytics events from BigQuery for the Ad-Hoc Query Agent workflow.",
+        "requiredInputs": [
+          "lookup_key",
+          "date_range"
+        ],
+        "produces": [
+          "analytics_events_records",
+          "analytics_events_summary"
+        ],
+        "evidenceEmitted": [
+          "sql_result"
+        ]
+      },
+      {
+        "name": "query_looker_dashboards",
+        "kind": "query",
+        "sourceSystemId": "looker",
+        "description": "Retrieve dashboards from Looker for the Ad-Hoc Query Agent workflow.",
+        "requiredInputs": [
+          "lookup_key",
+          "date_range"
+        ],
+        "produces": [
+          "dashboards_records",
+          "dashboards_summary"
+        ],
+        "evidenceEmitted": [
+          "sql_result"
+        ]
+      },
+      {
+        "name": "query_sap_s_4hana_transactions",
+        "kind": "query",
+        "sourceSystemId": "sap_s_4hana",
+        "description": "Retrieve transactions from SAP S/4HANA for the Ad-Hoc Query Agent workflow.",
+        "requiredInputs": [
+          "lookup_key",
+          "date_range"
+        ],
+        "produces": [
+          "transactions_records",
+          "transactions_summary"
+        ],
+        "evidenceEmitted": [
+          "source_system_record"
+        ]
+      },
+      {
+        "name": "lookup_ad_hoc_query_agent_controls_playbook",
+        "kind": "evidence_lookup",
+        "sourceSystemId": "bigquery",
+        "description": "Look up sections of the Ad-Hoc Query Agent Controls Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+        "requiredInputs": [
+          "section_anchor"
+        ],
+        "produces": [
+          "document_section",
+          "citation_anchor"
+        ],
+        "evidenceEmitted": [
+          "document_reference"
+        ]
+      }
+    ],
+    "evidenceRequirements": [
+      {
+        "claim": "Query response time moved from Hours-days (manual pull) toward < 30 seconds",
+        "mustCite": [
+          "bigquery.analytics_events",
+          "looker.dashboards"
+        ],
+        "sourceSystemIds": [
+          "bigquery",
+          "looker"
+        ]
+      },
+      {
+        "claim": "Data accessibility moved from Requires SQL knowledge toward Natural language",
+        "mustCite": [
+          "bigquery.analytics_events",
+          "looker.dashboards"
+        ],
+        "sourceSystemIds": [
+          "bigquery",
+          "looker"
+        ]
+      }
+    ],
+    "escalationRules": [
+      {
+        "trigger": "Query response time regresses past the Hours-days (manual pull) baseline by more than 20%",
+        "action": "escalate_to_human",
+        "handoffTarget": "FP&A Analyst",
+        "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+      },
+      {
+        "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+        "action": "request_more_info",
+        "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+      }
+    ],
+    "refusalRules": [
+      "Never fabricate metric values; only publish numbers derived from BigQuery (and other named systems) entities.",
+      "Never bypass FP&A Analyst approval on escalation triggers, even when confidence is high.",
+      "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+      "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+      "Do not invent metric values, trends, or forecast confidence when analytics rows are missing.",
+      "Do not certify, close, or post finance actions without ledger and exception evidence."
+    ],
+    "goldenEvals": [
+      {
+        "id": "ad-hoc-query-agent-end-to-end",
+        "prompt": "Run the Ad-Hoc Query Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+        "expectedToolCalls": [
+          "query_bigquery_analytics_events",
+          "query_looker_dashboards",
+          "query_sap_s_4hana_transactions",
+          "lookup_ad_hoc_query_agent_controls_playbook"
+        ],
+        "mustReferenceEntities": [
+          "analytics_events",
+          "dashboards",
+          "transactions"
+        ],
+        "mustCiteDocuments": [
+          "ad-hoc-query-agent-controls-playbook"
+        ],
+        "expectedActionOutcome": "FP&A Analyst receives a fully-cited recommendation; no external state change without explicit approval.",
+        "forbiddenBehaviors": [
+          "do not invent KPI numbers",
+          "do not skip the evidence_lookup step before any recommendation",
+          "do not act on single-system evidence"
+        ]
+      }
+    ],
+    "simulatorEnrichment": {
+      "packBridges": [
+        {
+          "packId": "system_analytics",
+          "simulatorArchetypes": [
+            "data_platform",
+            "digital_analytics",
+            "planning_epm"
+          ],
+          "simulatorCollections": [
+            "datasets",
+            "tables",
+            "pipelines",
+            "jobs",
+            "quality_checks",
+            "events",
+            "conversions"
+          ],
+          "materializes": "analytics tables, metric rows, forecasts, freshness signals, and quality checks into simulator seed overlays"
+        },
+        {
+          "packId": "system_finance_erp",
+          "simulatorArchetypes": [
+            "erp_finance",
+            "tax_treasury",
+            "planning_epm"
+          ],
+          "simulatorCollections": [
+            "vendors",
+            "invoices",
+            "journal_entries",
+            "payments",
+            "bank_accounts",
+            "payment_batches",
+            "tax_filings",
+            "forecast_lines"
+          ],
+          "materializes": "ledger, AP/AR, invoice, payment, cash, tax, and close-control rows into finance simulator seeds"
+        }
+      ]
+    },
+    "evalEnrichment": {
+      "packHints": [
+        {
+          "packId": "system_analytics",
+          "expectedToolKinds": [
+            "query",
+            "calculation"
+          ],
+          "mustReferenceEntities": [
+            "analytics_events",
+            "historical_metrics",
+            "cached_aggregates"
+          ],
+          "successCriteria": [
+            "Derive metric claims from warehouse-backed rows.",
+            "Compare current values against historical or cached baselines.",
+            "Call out negative variance and stale computed_at dates."
+          ],
+          "refusalRules": [
+            "Do not invent metric values, trends, or forecast confidence when analytics rows are missing."
+          ]
+        },
+        {
+          "packId": "system_finance_erp",
+          "expectedToolKinds": [
+            "query",
+            "calculation",
+            "action"
+          ],
+          "mustReferenceEntities": [
+            "gl_entries",
+            "subledger_balances",
+            "open_items",
+            "accounts_payable",
+            "accounts_receivable"
+          ],
+          "successCriteria": [
+            "Back close, cash, AP, AR, and control claims with ledger evidence.",
+            "Call out pending or reversed records as exceptions.",
+            "Preserve audit trail details for write-like finance actions."
+          ],
+          "refusalRules": [
+            "Do not certify, close, or post finance actions without ledger and exception evidence."
+          ]
+        }
+      ]
+    }
+  },
+  "agentQualityPlan": {
+    "naming": {
+      "agentName": "ad_hoc_query_agent_agent",
+      "displayName": "Ad Hoc Query Agent",
+      "rule": "Use snake_case Python identifiers for agent and tools; use title case only for display labels.",
+      "toolNamePattern": "<verb>_<source_system_id>_<business_object>",
+      "forbiddenPatterns": [
+        "helper",
+        "do_task",
+        "process_data",
+        "tool1",
+        "generic_agent"
+      ]
+    },
+    "adkCapabilities": {
+      "agentClass": "google.adk.agents.Agent",
+      "model": "gemini-3.5-flash",
+      "generateContentConfig": {
+        "temperature": 0.2,
+        "maxOutputTokens": null,
+        "reason": "Output budget left to the model default; the harness review sets a bound only when the use case warrants one."
+      },
+      "outputKey": "last_response",
+      "callbacks": [
+        "before_agent_callback initializes session state from the generated spec.",
+        "before_tool_callback enforces idempotency keys for write-like tool intents.",
+        "after_tool_callback records tool evidence and audit trails in session state."
+      ],
+      "stateKeys": [
+        "scenario_id",
+        "primary_objective",
+        "expected_tools",
+        "evidence_log",
+        "audit_trails"
+      ],
+      "useSubAgentsWhen": "Split into source-specific researcher/verifier sub-agents when live APIs replace fixtures or when one prompt needs parallel evidence collection.",
+      "useAgentToolWhen": "Expose specialist agents through AgentTool when the coordinator must retain control over final synthesis.",
+      "useCodeExecutorWhen": "Not required unless future specs add deterministic calculation or modeling work.",
+      "useMemoryWhen": "Only persist user preferences or repeated workflow context after the user explicitly asks for memory; keep generated demos session-scoped by default."
+    },
+    "toolDesign": {
+      "expectedToolCount": 17,
+      "sourceAdapters": [
+        "bigquery",
+        "looker",
+        "sap_s_4hana"
+      ],
+      "writeSafety": "Read-only unless a behaviorContract tool intent explicitly declares an action or notification.",
+      "evidence": "Evidence lookup tools and document search must run before recommendations or write actions."
+    },
+    "evalPlan": {
+      "unitTests": [
+        "Import generated app.tools and app.agent.",
+        "Verify fixture tables exist and contain rows.",
+        "Verify generated agent instruction contains objective, tool playbook, and guardrails.",
+        "Statically verify advanced ADK config: callbacks, generate_content_config, output_key, and description."
+      ],
+      "agentEvals": [
+        "tool_trajectory_avg_score with ANY_ORDER for contract tool usage.",
+        "rubric_based_tool_use_quality_v1 for source-before-action reasoning.",
+        "rubric_based_final_response_quality_v1 for grounded final answers.",
+        "hallucinations_v1 and safety_v1 for cited evidence and guardrail adherence."
+      ],
+      "goldenEvalMinimum": 1,
+      "addMoreEvalsWhen": [
+        "A tool intent writes external state.",
+        "A source adapter has bidirectional sync semantics.",
+        "A workflow has escalation/refusal branches.",
+        "A document citation is mandatory for final answers."
+      ]
+    },
+    "mockDataQuality": {
+      "minimumRowsPerEntity": 25,
+      "requirements": [
+        "Every generated row has a stable primary key.",
+        "Foreign keys must resolve to generated parent rows.",
+        "Each table declares sourceSystem and sourceSystemId in fixtures/manifest.json.",
+        "Documents include citation anchors and linked entity ids when document evidence is needed.",
+        "Action-oriented workflows include at least one anomaly or edge-case fixture."
+      ]
+    }
+  }
+}

@@ -1,0 +1,172 @@
+{
+  "id": "sap_concur_schema",
+  "version": 2,
+  "collections": {
+    "users": {
+      "primaryKey": "user_id",
+      "fields": {
+        "user_id": "string",
+        "employee_id": "string",
+        "login_id": "string",
+        "name": "string",
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "country": "string",
+        "company_code": "string",
+        "cost_center": "string",
+        "manager_id": "string",
+        "ledger_code": "string",
+        "reimbursement_currency": "string",
+        "status": "string"
+      }
+    },
+    "expense_reports": {
+      "primaryKey": "report_id",
+      "fields": {
+        "report_id": "string",
+        "user_id": "string",
+        "report_name": "string",
+        "purpose": "string",
+        "status": "string",
+        "approval_status": "string",
+        "payment_status": "string",
+        "submitted_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "approved_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "total_amount": "number",
+        "approved_amount": "number",
+        "currency": "string",
+        "policy_exception_count": "integer",
+        "audit_required": "boolean"
+      }
+    },
+    "expense_entries": {
+      "primaryKey": "entry_id",
+      "fields": {
+        "entry_id": "string",
+        "report_id": "string",
+        "expense_type": "string",
+        "transaction_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "vendor": "string",
+        "city": "string",
+        "country": "string",
+        "amount": "number",
+        "currency": "string",
+        "payment_type": "string",
+        "receipt_required": "boolean",
+        "receipt_id": "string",
+        "attendee_count": "integer",
+        "allocation_id": "string",
+        "policy_status": "string",
+        "exception_code": "string"
+      }
+    },
+    "receipts": {
+      "primaryKey": "receipt_id",
+      "fields": {
+        "receipt_id": "string",
+        "entry_id": "string",
+        "image_url": "string",
+        "ocr_vendor": "string",
+        "ocr_amount": "number",
+        "ocr_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "match_status": "string",
+        "status": "string"
+      }
+    },
+    "card_transactions": {
+      "primaryKey": "transaction_id",
+      "fields": {
+        "transaction_id": "string",
+        "user_id": "string",
+        "entry_id": "string",
+        "card_last4": "string",
+        "merchant": "string",
+        "posted_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "amount": "number",
+        "currency": "string",
+        "match_status": "string",
+        "fraud_flag": "boolean"
+      }
+    },
+    "trips": {
+      "primaryKey": "trip_id",
+      "fields": {
+        "trip_id": "string",
+        "user_id": "string",
+        "purpose": "string",
+        "status": "string",
+        "start_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "end_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "destination": "string",
+        "booking_source": "string",
+        "estimated_cost": "number",
+        "currency": "string"
+      }
+    },
+    "cash_advances": {
+      "primaryKey": "cash_advance_id",
+      "fields": {
+        "cash_advance_id": "string",
+        "user_id": "string",
+        "trip_id": "string",
+        "status": "string",
+        "amount": "number",
+        "currency": "string",
+        "issued_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "remaining_balance": "number"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": "string",
+        "source_record_id": "string",
+        "approver": "string",
+        "state": "string",
+        "reason": "string",
+        "workflow_step": "string",
+        "due_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string",
+        "timestamp": "string"
+      }
+    }
+  }
+}

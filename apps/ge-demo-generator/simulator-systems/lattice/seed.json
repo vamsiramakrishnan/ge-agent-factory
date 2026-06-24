@@ -1,0 +1,70 @@
+{
+  "workers": [
+    {
+      "worker_id": "WORKER-ID-001",
+      "employee_id": "EMPLOYEE-ID-001",
+      "name": "sample_name",
+      "email": "sample_email",
+      "status": "sample_status",
+      "worker_type": "sample_worker_type",
+      "position_id": "POSITION-ID-001",
+      "manager_id": "MANAGER-ID-001",
+      "supervisory_org_id": "ORG-ID-001",
+      "cost_center": "sample_cost_center",
+      "location": "sample_location",
+      "country": "sample_country"
+    }
+  ],
+  "positions": [
+    {
+      "position_id": "POSITION-ID-001",
+      "title": "sample_title",
+      "job_profile": "sample_job_profile",
+      "status": "sample_status",
+      "supervisory_org_id": "ORG-ID-001",
+      "cost_center": "sample_cost_center",
+      "location": "sample_location",
+      "worker_id": "WORKER-ID-001"
+    }
+  ],
+  "supervisory_orgs": [
+    {
+      "org_id": "ORG-ID-001",
+      "name": "sample_name",
+      "manager_id": "MANAGER-ID-001",
+      "parent_org_id": "PARENT-ORG-ID-001",
+      "cost_center": "sample_cost_center",
+      "company": "sample_company"
+    }
+  ],
+  "job_requisitions": [
+    {
+      "requisition_id": "REQUISITION-ID-001",
+      "position_id": "POSITION-ID-001",
+      "status": "sample_status",
+      "recruiter": "sample_recruiter",
+      "hiring_manager_id": "HIRING-MANAGER-ID-001",
+      "target_start_date": "sample_target_start_date"
+    }
+  ],
+  "worker_events": [
+    {
+      "event_id": "EVENT-ID-001",
+      "worker_id": "WORKER-ID-001",
+      "event_type": "sample_event_type",
+      "status": "sample_status",
+      "reason": "sample_reason",
+      "effective_date": "sample_effective_date"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APPROVAL-ID-001",
+      "source_record_id": "SOURCE-RECORD-ID-001",
+      "approver": "sample_approver",
+      "state": "sample_state",
+      "reason": "sample_reason"
+    }
+  ],
+  "audit_events": []
+}

@@ -1,0 +1,1119 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { FolderOpen, Database, Cpu, Brain, UserCheck } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Filing Deadline", lane: "system", type: "trigger" },
+    { id: "a1", label: "Data Collection", lane: "agent", type: "action" },
+    { id: "a2", label: "XBRL Validation", lane: "agent", type: "action" },
+    { id: "a3", label: "Disclosure Review", lane: "agent", type: "output" },
+    { id: "h1", label: "Controller Approves", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Filing Calendar", icon: Database, description: "Filing deadlines tracked with data input requirements, review workflows, and submission windows.", trigger: "Filing deadline", systems: ["Workiva"] },
+  { label: "Data & XBRL Validation", icon: Cpu, description: "Financial data collected, validated against prior periods, and XBRL tags checked for accuracy and completeness.", systems: ["BigQuery"], integration: "ADK" },
+  { label: "Disclosure Review", icon: Brain, description: "Gemini reviews disclosures for completeness against ASC requirements -- checking contingent liability ranges, related party details, and subsequent events.", systems: ["Vertex AI"] },
+  { label: "Controller Sign-off", icon: UserCheck, description: "Controller reviews complete filing package, validates disclosures, and authorizes submission.", output: "Regulatory Filing" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Workiva", description: "Filing document assembly, XBRL tagging, workflow management", direction: "bidirectional", protocol: "REST API", category: "erp" },
+    { system: "SAP S/4HANA FI", description: "Financial statements, trial balance, supporting schedules", direction: "read", protocol: "RFC/BAPI", category: "erp" },
+    { system: "SEC EDGAR", description: "Filing submission, prior period comparisons, peer filing analysis", direction: "bidirectional", protocol: "REST API", category: "market-data" },
+    { system: "BigQuery", description: "Data validation rules, cross-period comparison, XBRL accuracy checking", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Disclosure completeness review, ASC requirement validation, narrative quality assessment", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Filing Calendar & Data Collection", description: "Track filing calendar with deadlines for 10-K, 10-Q, proxy, and other SEC filings. Collect required data inputs from financial statements, tax, legal, and management teams.", systems: ["Workiva", "SAP S/4HANA FI"], layer: "integration", dataIn: "Filing requirements + financial data from multiple teams", dataOut: "Assembled filing data package" },
+    { label: "Validation & XBRL", description: "Validate financial data against prior periods, check mathematical accuracy, and verify XBRL tag assignments. Flag inconsistencies between financial statements and footnotes.", systems: ["BigQuery", "Workiva"], layer: "ml", dataIn: "Filing data package + prior period filings", dataOut: "Validated filing with XBRL tags and exception flags" },
+    { label: "Disclosure Completeness Review", description: "Gemini reviews disclosures against ASC requirements: 'Contingent liability references patent litigation but does not mention range of potential loss as required by ASC 450. Draft additional disclosure language.' Checks for completeness across all required disclosures.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Draft filing + ASC disclosure requirements", dataOut: "Disclosure review with gap identification and draft language" },
+    { label: "Approval & Submission", description: "Route complete filing package through Controller and CFO approval workflow. Submit to SEC EDGAR upon authorization.", systems: ["Workiva", "SEC EDGAR"], layer: "integration", dataIn: "Approved filing package", dataOut: "Submitted regulatory filing" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Controller agent for the Regulatory Filing Orchestrator workflow",
+  primaryObjective: "Parallel data collection and automated validation cuts filing preparation from 4-6 weeks to 1-2 weeks. Gemini reviews disclosures against ASC requirements during assembly, catching gaps early when there is time to address them. so the Controller can move the Filing preparation time KPI.",
+  inScope: [
+    "Parallel data collection and automated validation cuts filing preparation from 4-6 weeks to 1-2 weeks",
+    "Gemini reviews disclosures against ASC requirements during assembly, catching gaps early when there is time to address them",
+    "Automated XBRL validation reduces tagging errors to near-zero, eliminating re-submission risk",
+  ],
+  outOfScope: [
+    "Final sign-off on materially significant journal entries (Controller retains authority)",
+    "Restatement of prior-period filings",
+    "Tax position changes that require external advisor review",
+  ],
+  toolIntents: [
+    {
+      name: "query_workiva_workiva_records",
+      kind: "query",
+      sourceSystemId: "workiva",
+      description: "Retrieve workiva records from Workiva for the Regulatory Filing Orchestrator workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "workiva_records_records",
+        "workiva_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_sap_s_4hana_fi_gl_entries",
+      kind: "query",
+      sourceSystemId: "sap_s_4hana_fi",
+      description: "Retrieve gl entries from SAP S/4HANA FI for the Regulatory Filing Orchestrator workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "gl_entries_records",
+        "gl_entries_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_sec_edgar_sec_edgar_records",
+      kind: "query",
+      sourceSystemId: "sec_edgar",
+      description: "Retrieve sec edgar records from SEC EDGAR for the Regulatory Filing Orchestrator workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "sec_edgar_records_records",
+        "sec_edgar_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Regulatory Filing Orchestrator workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_regulatory_filing_orchestrator_controls_playbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Regulatory Filing Orchestrator Controls Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Filing preparation time moved from 4-6 weeks toward 1-2 weeks",
+      mustCite: [
+        "workiva.workiva_records",
+        "sap_s_4hana_fi.gl_entries",
+      ],
+      sourceSystemIds: [
+        "workiva",
+        "sap_s_4hana_fi",
+      ],
+    },
+    {
+      claim: "Disclosure gaps found moved from At final review toward During assembly",
+      mustCite: [
+        "workiva.workiva_records",
+        "sap_s_4hana_fi.gl_entries",
+      ],
+      sourceSystemIds: [
+        "workiva",
+        "sap_s_4hana_fi",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Filing preparation time regresses past the 4-6 weeks baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Controller",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from Workiva (and other named systems) entities.",
+    "Never bypass Controller approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "regulatory-filing-orchestrator-end-to-end",
+      prompt: "Run the Regulatory Filing Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_workiva_workiva_records",
+        "query_sap_s_4hana_fi_gl_entries",
+        "query_sec_edgar_sec_edgar_records",
+        "query_bigquery_analytics_events",
+        "lookup_regulatory_filing_orchestrator_controls_playbook",
+      ],
+      mustReferenceEntities: [
+        "workiva_records",
+        "gl_entries",
+        "sec_edgar_records",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "regulatory-filing-orchestrator-controls-playbook",
+      ],
+      expectedActionOutcome: "Controller receives a fully-cited recommendation; no external state change without explicit approval.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not act on single-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Regulatory Filing Orchestrator so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "workiva",
+      name: "Workiva",
+      owns: [
+        "workiva_records",
+        "workiva_events",
+        "workiva_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_workiva_workiva_records",
+        "query_workiva_workiva_events",
+        "query_workiva_workiva_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "sap_s_4hana_fi",
+      name: "SAP S/4HANA FI",
+      owns: [
+        "gl_entries",
+        "subledger_balances",
+        "open_items",
+      ],
+      protocol: "RFC/BAPI",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sap_s_4hana_fi_gl_entries",
+        "query_sap_s_4hana_fi_subledger_balances",
+        "query_sap_s_4hana_fi_open_items",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "sec_edgar",
+      name: "SEC EDGAR",
+      owns: [
+        "sec_edgar_records",
+        "sec_edgar_events",
+        "sec_edgar_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sec_edgar_sec_edgar_records",
+        "query_sec_edgar_sec_edgar_events",
+        "query_sec_edgar_sec_edgar_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "workiva_records",
+      sourceSystemId: "workiva",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "workiva_events",
+      sourceSystemId: "workiva",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "workiva_record_id",
+          type: "ref",
+          ref: "workiva_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "workiva_audit_trail",
+      sourceSystemId: "workiva",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "gl_entries",
+      sourceSystemId: "sap_s_4hana_fi",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "subledger_balances",
+      sourceSystemId: "sap_s_4hana_fi",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "open_items",
+      sourceSystemId: "sap_s_4hana_fi",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "sec_edgar_records",
+      sourceSystemId: "sec_edgar",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "sec_edgar_events",
+      sourceSystemId: "sec_edgar",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "sec_edgar_record_id",
+          type: "ref",
+          ref: "sec_edgar_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "sec_edgar_audit_trail",
+      sourceSystemId: "sec_edgar",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "workiva_events.workiva_record_id",
+      to: "workiva_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "sec_edgar_events.sec_edgar_record_id",
+      to: "sec_edgar_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "regulatory-filing-orchestrator-controls-playbook",
+      sourceSystemId: "bigquery",
+      type: "policy",
+      title: "Regulatory Filing Orchestrator Controls Playbook",
+      requiredSections: [
+        "Workflow scope",
+        "Materiality thresholds",
+        "Escalation triggers",
+        "Audit evidence requirements",
+        "Quarter-end variations",
+      ],
+      linkedEntities: [
+        "workiva_records",
+        "workiva_events",
+        "workiva_audit_trail",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "scope",
+        "materiality",
+        "escalation",
+        "audit-evidence",
+      ],
+    },
+  ],
+  apis: [],
+  anomalies: [
+    {
+      id: "regulatory-filing-orchestrator-baseline-gap",
+      description: "Seed a realistic gap where Filing preparation time sits between 4-6 weeks and 1-2 weeks, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "workiva_records",
+        "workiva_events",
+      ],
+      discoveryPath: [
+        "Inspect Workiva records for the affected entities",
+        "Compare against SAP S/4HANA FI historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Controller action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "regulatory_filing_orchestrator",
+      schemas: [
+        "workiva",
+        "sap_s_4hana_fi",
+        "sec_edgar",
+      ],
+    },
+    bigquery: {
+      dataset: "finance_regulatory_filing_orchestrator",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "regulatory-filing-orchestrator-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "regulatory-filing-orchestrator-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Regulatory Filing Orchestrator workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const RegulatoryFilingOrchestrator = () => (
+  <UseCaseSlide
+    title="Regulatory Filing Orchestrator"
+    subtitle="A-2504 - Tax & Compliance"
+    icon={FolderOpen}
+    domainId="domain-25"
+    layer="Layer 3: Custom ADK"
+    persona="Controller"
+    systems={["Workiva", "SAP S/4HANA FI", "SEC EDGAR", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "Filing preparation time", before: "4-6 weeks", after: "1-2 weeks" },
+      { label: "Disclosure gaps found", before: "At final review", after: "During assembly" },
+      { label: "XBRL errors", before: "5-10 per filing", after: "< 1 per filing" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "Controller", action: "Approve filing package", description: "Controller reviews complete filing with disclosure completeness assessment and XBRL validation before authorizing submission." }}
+    statusQuo={[
+      "Filing preparation takes 4-6 weeks with manual data collection from 10+ teams and sequential review cycles.",
+      "Disclosure gaps discovered at the final review stage, requiring last-minute scrambling to draft missing language.",
+      "XBRL tagging errors require multiple re-submissions, risking SEC comment letters."
+    ]}
+    agentification={[
+      "Parallel data collection and automated validation cuts filing preparation from 4-6 weeks to 1-2 weeks.",
+      "Gemini reviews disclosures against ASC requirements during assembly, catching gaps early when there is time to address them.",
+      "Automated XBRL validation reduces tagging errors to near-zero, eliminating re-submission risk."
+    ]}
+  />
+);

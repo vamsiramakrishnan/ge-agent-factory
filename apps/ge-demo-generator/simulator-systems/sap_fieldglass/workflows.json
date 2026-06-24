@@ -1,0 +1,59 @@
+{
+  "id": "sap_fieldglass_workflows",
+  "version": 2,
+  "primitives": [
+    "role_permission_gate",
+    "state_machine",
+    "approval_blocker",
+    "idempotency_key",
+    "rate_limit",
+    "deterministic_failure_modes",
+    "audit_trail"
+  ],
+  "toolHandlers": {
+    "submit_work_order_update": {
+      "primitive": "state_machine_update",
+      "collection": "work_orders",
+      "primaryKey": "work_order_id",
+      "roleArg": "role",
+      "allowedRoles": ["manager", "hr_partner", "recruiter", "comp_partner"],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "transitions": {
+        "*": ["draft", "submitted", "approved", "activated", "paused", "closed", "cancelled"],
+        "draft": ["submitted", "cancelled"],
+        "submitted": ["approved", "cancelled"],
+        "approved": ["activated", "cancelled"],
+        "activated": ["paused", "closed"],
+        "paused": ["activated", "closed"],
+        "closed": [],
+        "cancelled": []
+      },
+      "approvalBlockers": [
+        {
+          "collection": "approvals",
+          "sourceRecordField": "source_record_id",
+          "states": ["requested", "pending", "pending_approval"],
+          "blockedTargetStates": ["approved", "activated", "closed", "cancelled"]
+        }
+      ],
+      "rateLimit": {
+        "capacity": 30,
+        "refillPerSecond": 0.4,
+        "scope": "agent_system"
+      },
+      "latency": {
+        "minMs": 10,
+        "maxMs": 40
+      },
+      "failureModes": {
+        "rate_limited": 0.04,
+        "validation_error": 0.03,
+        "conflict": 0.02,
+        "forbidden": 0.01,
+        "timeout": 0.01
+      }
+    }
+  }
+}

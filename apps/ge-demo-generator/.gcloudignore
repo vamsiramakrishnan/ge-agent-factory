@@ -1,0 +1,13 @@
+.git
+.gitignore
+.harness
+.harness-test
+.worktrees
+node_modules
+*.log
+.env
+.env.*
+__pycache__
+.pytest_cache
+.venv
+tmp

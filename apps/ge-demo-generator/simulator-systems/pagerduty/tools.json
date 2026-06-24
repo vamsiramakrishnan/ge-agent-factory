@@ -1,0 +1,609 @@
+{
+  "id": "pagerduty_tools",
+  "version": 3,
+  "tools": [
+    {
+      "name": "search_incidents",
+      "description": "[GET /incidents] List incidents",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text query across incident number, title, assignee, and service."
+          },
+          "Accept": {
+            "type": "string",
+            "description": "The `Accept` header is used as a versioning header."
+          },
+          "Content-Type": {
+            "type": "string"
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Offset to start pagination search results."
+          },
+          "total": {
+            "type": "boolean",
+            "description": "Set to true to request a populated total count."
+          },
+          "date_range": {
+            "type": "string",
+            "description": "When set to all, the since and until parameters and defaults are ignored."
+          },
+          "incident_key": {
+            "type": "string",
+            "description": "Incident de-duplication key."
+          },
+          "service_ids[]": {
+            "type": "string",
+            "description": "Returns only incidents associated with the passed service IDs."
+          },
+          "team_ids[]": {
+            "type": "string",
+            "description": "Array of team IDs. Account must have the teams ability."
+          },
+          "user_ids[]": {
+            "type": "string",
+            "description": "Returns only incidents currently assigned to the passed users."
+          },
+          "urgencies[]": {
+            "type": "string",
+            "description": "Array of incident urgencies to return."
+          },
+          "time_zone": {
+            "type": "string",
+            "description": "Time zone in which results are rendered."
+          },
+          "statuses[]": {
+            "type": "string",
+            "description": "Return only incidents with the given statuses."
+          },
+          "sort_by": {
+            "type": "string",
+            "description": "Sort field and direction, e.g. created_at:desc."
+          },
+          "include[]": {
+            "type": "string",
+            "description": "Array of additional details to include."
+          },
+          "since": {
+            "type": "string",
+            "description": "Start of the incident date range."
+          },
+          "until": {
+            "type": "string",
+            "description": "End of the incident date range."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max rows to return."
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "incidents",
+        "query": {
+          "textFields": [
+            "incident_id",
+            "incident_number",
+            "title",
+            "assignee",
+            "service_id"
+          ],
+          "filters": {
+            "incident_key": {
+              "field": "incident_id",
+              "op": "eq_ci"
+            },
+            "service_ids[]": {
+              "field": "service_id",
+              "op": "in"
+            },
+            "user_ids[]": {
+              "field": "assignee",
+              "op": "in"
+            },
+            "urgencies[]": {
+              "field": "urgency",
+              "op": "in"
+            },
+            "statuses[]": {
+              "field": "status",
+              "op": "in"
+            },
+            "since": {
+              "field": "created_at",
+              "op": "gte"
+            },
+            "until": {
+              "field": "created_at",
+              "op": "lte"
+            }
+          },
+          "defaultSort": [
+            {
+              "field": "created_at",
+              "direction": "desc"
+            }
+          ],
+          "pagination": {
+            "style": "offset",
+            "defaultLimit": 25,
+            "maxLimit": 100
+          }
+        }
+      }
+    },
+    {
+      "name": "get_incident",
+      "description": "[GET /incidents/{id}] Get an incident",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "incident_id": {
+            "type": "string",
+            "description": "incident primary key"
+          },
+          "Accept": {
+            "type": "string",
+            "description": "The `Accept` header is used as a versioning header."
+          },
+          "Content-Type": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "description": "The ID of the resource."
+          },
+          "include[]": {
+            "type": "string",
+            "description": "Array of additional details to include."
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Simulator include aliases such as service."
+          }
+        },
+        "required": [
+          "incident_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "incidents",
+        "primaryKey": "incident_id"
+      }
+    },
+    {
+      "name": "submit_incident_update",
+      "description": "[PUT /incidents/{id}] Update an incident",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "incident_id": {
+            "type": "string",
+            "description": "incident primary key"
+          },
+          "status": {
+            "type": "string",
+            "description": "Target status."
+          },
+          "note": {
+            "type": "string",
+            "description": "Reviewer note recorded on the change."
+          },
+          "role": {
+            "type": "string",
+            "description": "Acting role; gated by allowedRoles."
+          },
+          "idempotency_key": {
+            "type": "string",
+            "description": "Replays return the original result."
+          },
+          "Accept": {
+            "type": "string",
+            "description": "The `Accept` header is used as a versioning header."
+          },
+          "Content-Type": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "description": "The ID of the resource."
+          },
+          "From": {
+            "type": "string",
+            "description": "The email address of a valid user associated with the account making the request."
+          }
+        },
+        "required": [
+          "incident_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "incidents",
+        "primaryKey": "incident_id"
+      }
+    },
+    {
+      "name": "search_services",
+      "description": "[GET /services] List services",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text query across service fields."
+          },
+          "Accept": {
+            "type": "string",
+            "description": "The `Accept` header is used as a versioning header."
+          },
+          "Content-Type": {
+            "type": "string"
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Offset to start pagination search results."
+          },
+          "total": {
+            "type": "boolean",
+            "description": "Set to true to request a populated total count."
+          },
+          "team_ids[]": {
+            "type": "string",
+            "description": "Array of team IDs."
+          },
+          "time_zone": {
+            "type": "string",
+            "description": "Time zone in which results are rendered."
+          },
+          "sort_by": {
+            "type": "string",
+            "description": "Sort field and direction."
+          },
+          "include[]": {
+            "type": "string",
+            "description": "Array of additional details to include."
+          },
+          "name": {
+            "type": "string",
+            "description": "Filters results to services with matching names."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max rows to return."
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "services",
+        "query": {
+          "textFields": [
+            "service_id",
+            "name",
+            "description",
+            "status"
+          ],
+          "filters": {
+            "name": {
+              "field": "name",
+              "op": "contains"
+            }
+          },
+          "defaultSort": [
+            {
+              "field": "name",
+              "direction": "asc"
+            }
+          ],
+          "pagination": {
+            "style": "offset",
+            "defaultLimit": 25,
+            "maxLimit": 100
+          }
+        }
+      }
+    },
+    {
+      "name": "get_service",
+      "description": "[GET /services/{id}] Get a service",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "service_id": {
+            "type": "string",
+            "description": "service primary key"
+          },
+          "Accept": {
+            "type": "string",
+            "description": "The `Accept` header is used as a versioning header."
+          },
+          "Content-Type": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "description": "The ID of the resource."
+          },
+          "include[]": {
+            "type": "string",
+            "description": "Array of additional details to include."
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Simulator include aliases such as escalation_policy or incidents."
+          }
+        },
+        "required": [
+          "service_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "services",
+        "primaryKey": "service_id"
+      }
+    },
+    {
+      "name": "search_escalation_policies",
+      "description": "[GET /escalation_policies] List escalation policies",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text query across policy fields."
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Offset to start pagination search results."
+          },
+          "total": {
+            "type": "boolean",
+            "description": "Set to true to request a populated total count."
+          },
+          "Accept": {
+            "type": "string",
+            "description": "The `Accept` header is used as a versioning header."
+          },
+          "Content-Type": {
+            "type": "string"
+          },
+          "user_ids[]": {
+            "type": "string",
+            "description": "Filters to policies where users are targets."
+          },
+          "team_ids[]": {
+            "type": "string",
+            "description": "Array of team IDs."
+          },
+          "include[]": {
+            "type": "string",
+            "description": "Array of additional models to include."
+          },
+          "sort_by": {
+            "type": "string",
+            "description": "Sort field and direction."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max rows to return."
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "escalation_policies",
+        "query": {
+          "textFields": [
+            "policy_id",
+            "name",
+            "description"
+          ],
+          "defaultSort": [
+            {
+              "field": "name",
+              "direction": "asc"
+            }
+          ],
+          "pagination": {
+            "style": "offset",
+            "defaultLimit": 25,
+            "maxLimit": 100
+          }
+        }
+      }
+    },
+    {
+      "name": "get_escalation_policy",
+      "description": "[GET /escalation_policies/{id}] Get an escalation policy",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "policy_id": {
+            "type": "string",
+            "description": "escalation_policy primary key"
+          },
+          "Accept": {
+            "type": "string",
+            "description": "The `Accept` header is used as a versioning header."
+          },
+          "Content-Type": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "description": "The ID of the resource."
+          },
+          "include[]": {
+            "type": "string",
+            "description": "Array of additional models to include."
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Simulator include aliases such as services or oncalls."
+          }
+        },
+        "required": [
+          "policy_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "escalation_policies",
+        "primaryKey": "policy_id"
+      }
+    },
+    {
+      "name": "search_oncalls",
+      "description": "[GET /oncalls] List all of the on-calls",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Free-text query across on-call users and policies."
+          },
+          "Accept": {
+            "type": "string",
+            "description": "The `Accept` header is used as a versioning header."
+          },
+          "Content-Type": {
+            "type": "string"
+          },
+          "time_zone": {
+            "type": "string",
+            "description": "Time zone in which results are rendered."
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Offset to start pagination search results."
+          },
+          "total": {
+            "type": "boolean",
+            "description": "Set to true to request a populated total count."
+          },
+          "include[]": {
+            "type": "string",
+            "description": "Array of additional details to include."
+          },
+          "user_ids[]": {
+            "type": "string",
+            "description": "Filters to on-calls for the specified user IDs."
+          },
+          "escalation_policy_ids[]": {
+            "type": "string",
+            "description": "Filters to on-calls for the specified escalation policy IDs."
+          },
+          "schedule_ids[]": {
+            "type": "string",
+            "description": "Filters to on-calls for the specified schedule IDs."
+          },
+          "since": {
+            "type": "string",
+            "description": "Start of the time range."
+          },
+          "until": {
+            "type": "string",
+            "description": "End of the time range."
+          },
+          "earliest": {
+            "type": "boolean",
+            "description": "Only the earliest on-call for each policy, level, and user."
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Max rows to return."
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "oncalls",
+        "query": {
+          "textFields": [
+            "oncall_id",
+            "policy_id",
+            "user"
+          ],
+          "filters": {
+            "user_ids[]": {
+              "field": "user",
+              "op": "in"
+            },
+            "escalation_policy_ids[]": {
+              "field": "policy_id",
+              "op": "in"
+            },
+            "since": {
+              "field": "end",
+              "op": "gte"
+            },
+            "until": {
+              "field": "start",
+              "op": "lte"
+            }
+          },
+          "defaultSort": [
+            {
+              "field": "start",
+              "direction": "asc"
+            }
+          ],
+          "pagination": {
+            "style": "offset",
+            "defaultLimit": 25,
+            "maxLimit": 100
+          }
+        }
+      }
+    },
+    {
+      "name": "poll_async_job",
+      "description": "Poll a queued asynchronous simulator job.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id"
+        ]
+      },
+      "binding": {
+        "op": "poll_async_job"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List PagerDuty simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

@@ -1,0 +1,1051 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { Copy, Database, Search, FileText, CheckCircle } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Pre-Payment Run", lane: "system", type: "trigger" },
+    { id: "a1", label: "Invoice Clustering", lane: "agent", type: "action" },
+    { id: "a2", label: "Duplicate Assessment", lane: "agent", type: "action" },
+    { id: "a3", label: "Flag Report", lane: "agent", type: "output" },
+    { id: "h1", label: "AP Manager Decides", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Invoice Scan", icon: Database, description: "Scan pending invoices for potential duplicates across entities and time windows.", trigger: "Pre-payment run", systems: ["SAP S/4HANA FI", "Coupa"] },
+  { label: "ML Clustering", icon: Search, description: "ML clustering on invoice features — amount, date, vendor, invoice number patterns — with fuzzy matching.", systems: ["BigQuery"], integration: "ADK" },
+  { label: "Contextual Assessment", icon: FileText, description: "Distinguish true duplicates from legitimate similar invoices by reading line item details.", systems: ["Vertex AI"] },
+  { label: "AP Review", icon: CheckCircle, description: "AP Manager reviews flagged items with duplicate probability and explanation.", output: "Duplicate Report" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "SAP S/4HANA FI", description: "Pending invoices, historical invoice data, payment blocks", direction: "bidirectional", protocol: "RFC/BAPI", category: "erp" },
+    { system: "Coupa", description: "Invoice data from procurement channel, PO references", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "BigQuery", description: "Invoice feature vectors, clustering models, historical duplicate patterns", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Line item interpretation, duplicate vs. legitimate assessment", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Invoice Aggregation", description: "Aggregate pending invoices from SAP and Coupa across all entities. Expand the time window to catch duplicates submitted weeks apart.", systems: ["SAP S/4HANA FI", "Coupa"], layer: "integration", dataIn: "Pending invoices across entities", dataOut: "Consolidated invoice dataset" },
+    { label: "ML Clustering & Fuzzy Matching", description: "Cluster invoices by features — amount, date, vendor, invoice number patterns. Apply fuzzy matching to catch near-duplicates with slight variations. Score duplicate probability.", systems: ["BigQuery"], layer: "ml", dataIn: "Invoice dataset with features", dataOut: "Potential duplicate clusters with probability scores" },
+    { label: "Contextual Differentiation", description: "Gemini reads line item details on flagged clusters to distinguish true duplicates from legitimate similar invoices — e.g., monthly maintenance invoices for different periods.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Flagged clusters + line item details", dataOut: "Verified duplicates vs. legitimate invoices" },
+    { label: "Hold & Report", description: "Place payment holds on verified duplicates. Deliver report to AP Manager with explanations for each flagged pair.", systems: ["SAP S/4HANA FI", "Email"], layer: "integration", dataIn: "Verified duplicate assessments", dataOut: "Payment holds + duplicate report" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "AP Manager agent for the Duplicate Invoice Detector workflow",
+  primaryObjective: "ML clustering detects near-duplicates across entities using fuzzy matching on multiple features. Gemini reads line items to distinguish true duplicates from legitimate recurring invoices. so the AP Manager can move the Duplicate detection rate KPI.",
+  inScope: [
+    "ML clustering detects near-duplicates across entities using fuzzy matching on multiple features",
+    "Gemini reads line items to distinguish true duplicates from legitimate recurring invoices",
+    "Near-zero false positives — vendors aren't blocked unnecessarily while genuine duplicates are caught",
+  ],
+  outOfScope: [
+    "Final sign-off on materially significant journal entries (Controller retains authority)",
+    "Restatement of prior-period filings",
+    "Tax position changes that require external advisor review",
+  ],
+  toolIntents: [
+    {
+      name: "query_sap_s_4hana_fi_gl_entries",
+      kind: "query",
+      sourceSystemId: "sap_s_4hana_fi",
+      description: "Retrieve gl entries from SAP S/4HANA FI for the Duplicate Invoice Detector workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "gl_entries_records",
+        "gl_entries_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_coupa_requisitions",
+      kind: "query",
+      sourceSystemId: "coupa",
+      description: "Retrieve requisitions from Coupa for the Duplicate Invoice Detector workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "requisitions_records",
+        "requisitions_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Duplicate Invoice Detector workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_duplicate_invoice_detector_controls_playbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Duplicate Invoice Detector Controls Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_sap_s_4hana_fi_block",
+      kind: "action",
+      sourceSystemId: "sap_s_4hana_fi",
+      description: "Execute the block step in SAP S/4HANA FI after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Duplicate detection rate moved from 60% (manual) toward 99%",
+      mustCite: [
+        "sap_s_4hana_fi.gl_entries",
+        "coupa.requisitions",
+      ],
+      sourceSystemIds: [
+        "sap_s_4hana_fi",
+        "coupa",
+      ],
+    },
+    {
+      claim: "False positives moved from High (blocks legit) toward < 5%",
+      mustCite: [
+        "sap_s_4hana_fi.gl_entries",
+        "coupa.requisitions",
+      ],
+      sourceSystemIds: [
+        "sap_s_4hana_fi",
+        "coupa",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Duplicate detection rate regresses past the 60% (manual) baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "AP Manager",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed block action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from SAP S/4HANA FI (and other named systems) entities.",
+    "Never bypass AP Manager approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "duplicate-invoice-detector-end-to-end",
+      prompt: "Run the Duplicate Invoice Detector workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_sap_s_4hana_fi_gl_entries",
+        "query_coupa_requisitions",
+        "query_bigquery_analytics_events",
+        "lookup_duplicate_invoice_detector_controls_playbook",
+        "action_sap_s_4hana_fi_block",
+      ],
+      mustReferenceEntities: [
+        "gl_entries",
+        "requisitions",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "duplicate-invoice-detector-controls-playbook",
+      ],
+      expectedActionOutcome: "Action block executed against SAP S/4HANA FI, with audit-trail entry and AP Manager notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute block without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Duplicate Invoice Detector so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "sap_s_4hana_fi",
+      name: "SAP S/4HANA FI",
+      owns: [
+        "gl_entries",
+        "subledger_balances",
+        "open_items",
+      ],
+      protocol: "RFC/BAPI",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sap_s_4hana_fi_gl_entries",
+        "query_sap_s_4hana_fi_subledger_balances",
+        "query_sap_s_4hana_fi_open_items",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "coupa",
+      name: "Coupa",
+      owns: [
+        "requisitions",
+        "purchase_orders",
+        "invoices",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_coupa_requisitions",
+        "query_coupa_purchase_orders",
+        "query_coupa_invoices",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "gl_entries",
+      sourceSystemId: "sap_s_4hana_fi",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "subledger_balances",
+      sourceSystemId: "sap_s_4hana_fi",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "open_items",
+      sourceSystemId: "sap_s_4hana_fi",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "requisitions",
+      sourceSystemId: "coupa",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "vendor",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: 100,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+            "JPY",
+          ],
+          weights: [
+            0.7,
+            0.15,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "pending",
+            "approved",
+            "paid",
+            "rejected",
+          ],
+          weights: [
+            0.1,
+            0.3,
+            0.3,
+            0.2,
+            0.1,
+          ],
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "due_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "purchase_orders",
+      sourceSystemId: "coupa",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "vendor",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: 100,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+            "JPY",
+          ],
+          weights: [
+            0.7,
+            0.15,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "pending",
+            "approved",
+            "paid",
+            "rejected",
+          ],
+          weights: [
+            0.1,
+            0.3,
+            0.3,
+            0.2,
+            0.1,
+          ],
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "due_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "invoices",
+      sourceSystemId: "coupa",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "vendor",
+          type: "company.name",
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: 100,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+            "JPY",
+          ],
+          weights: [
+            0.7,
+            0.15,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "pending",
+            "approved",
+            "paid",
+            "rejected",
+          ],
+          weights: [
+            0.1,
+            0.3,
+            0.3,
+            0.2,
+            0.1,
+          ],
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "due_date",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "duplicate-invoice-detector-controls-playbook",
+      sourceSystemId: "bigquery",
+      type: "policy",
+      title: "Duplicate Invoice Detector Controls Playbook",
+      requiredSections: [
+        "Workflow scope",
+        "Materiality thresholds",
+        "Escalation triggers",
+        "Audit evidence requirements",
+        "Quarter-end variations",
+      ],
+      linkedEntities: [
+        "gl_entries",
+        "subledger_balances",
+        "open_items",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "scope",
+        "materiality",
+        "escalation",
+        "audit-evidence",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "sap_s_4hana_fi_block_api",
+      sourceSystemId: "sap_s_4hana_fi",
+      method: "POST",
+      path: "/api/sap_s_4hana_fi/block",
+      description: "Synchronous endpoint the agent calls to block in SAP S/4HANA FI after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "duplicate-invoice-detector-baseline-gap",
+      description: "Seed a realistic gap where Duplicate detection rate sits between 60% (manual) and 99%, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "gl_entries",
+        "subledger_balances",
+      ],
+      discoveryPath: [
+        "Inspect SAP S/4HANA FI records for the affected entities",
+        "Compare against Coupa historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next AP Manager action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "duplicate_invoice_detector",
+      schemas: [
+        "sap_s_4hana_fi",
+        "coupa",
+      ],
+    },
+    bigquery: {
+      dataset: "finance_duplicate_invoice_detector",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "duplicate-invoice-detector-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "duplicate-invoice-detector-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Duplicate Invoice Detector workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const DuplicateInvoiceDetector = () => (
+  <UseCaseSlide
+    title="Duplicate Invoice Detector"
+    subtitle="A-2203 • Accounts Payable"
+    icon={Copy}
+    domainId="domain-22"
+    layer="Layer 3: Custom ADK"
+    persona="AP Manager"
+    systems={["SAP S/4HANA FI", "Coupa", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "Duplicate detection rate", before: "60% (manual)", after: "99%" },
+      { label: "False positives", before: "High (blocks legit)", after: "< 5%" },
+      { label: "Duplicate payments prevented", before: "$200K/year leaked", after: "Near-zero" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "AP Manager", action: "Review flagged duplicates", description: "AP Manager reviews flagged potential duplicates with probability scores and contextual explanations, confirming which to block and which are legitimate." }}
+    statusQuo={[
+      "Duplicate detection relies on exact invoice number matching — misses duplicates with slight variations.",
+      "Manual scanning before payment runs catches obvious duplicates but misses cross-entity submissions.",
+      "Legitimate similar invoices (e.g., monthly services) frequently blocked, creating vendor friction."
+    ]}
+    agentification={[
+      "ML clustering detects near-duplicates across entities using fuzzy matching on multiple features.",
+      "Gemini reads line items to distinguish true duplicates from legitimate recurring invoices.",
+      "Near-zero false positives — vendors aren't blocked unnecessarily while genuine duplicates are caught."
+    ]}
+  />
+);

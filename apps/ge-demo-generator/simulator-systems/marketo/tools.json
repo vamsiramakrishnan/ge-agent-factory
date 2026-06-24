@@ -1,0 +1,92 @@
+{
+  "id": "marketo_tools",
+  "version": 1,
+  "tools": [
+    {
+      "name": "search_leads",
+      "description": "Search leads in marketo.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "leads"
+      }
+    },
+    {
+      "name": "get_lead",
+      "description": "Get one lead in marketo.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "lead_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "lead_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "leads",
+        "primaryKey": "lead_id"
+      }
+    },
+    {
+      "name": "submit_lead_update",
+      "description": "Submit an update to one lead in marketo.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "lead_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "lead_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "leads",
+        "primaryKey": "lead_id"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List marketo simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

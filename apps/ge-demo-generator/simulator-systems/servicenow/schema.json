@@ -1,0 +1,196 @@
+{
+  "id": "servicenow_schema",
+  "version": 2,
+  "collections": {
+    "incidents": {
+      "primaryKey": "incident_id",
+      "description": "ServiceNow ITIL incident record: an unplanned interruption or degradation of a service, scored by impact x urgency into a priority and routed to an assignment group.",
+      "fields": {
+        "incident_id": "string",
+        "number": "string",
+        "short_description": "string",
+        "description": "string",
+        "category": "enum:hardware|software|network|database|inquiry|security",
+        "subcategory": "string",
+        "state": "enum:new|in_progress|on_hold|resolved|closed|cancelled",
+        "impact": "enum:1|2|3",
+        "urgency": "enum:1|2|3",
+        "priority": "enum:1|2|3|4|5",
+        "assignment_group_id": "ref:assignment_groups.group_id",
+        "assigned_to": "string",
+        "caller": "string",
+        "configuration_item_id": "ref:configuration_items.ci_id",
+        "problem_id": "ref:problems.problem_id",
+        "knowledge_article_id": "ref:knowledge_articles.article_id",
+        "escalation": "enum:normal|moderate|high|overdue",
+        "sla_due": "string",
+        "sla_state": "enum:on_track|at_risk|breached|met",
+        "reassignment_count": "number",
+        "opened_at": "string",
+        "resolved_at": "string",
+        "resolution_code": "string",
+        "resolution_notes": "string",
+        "last_note": "string"
+      }
+    },
+    "problems": {
+      "primaryKey": "problem_id",
+      "description": "ServiceNow problem record: the root cause behind one or more incidents, tracked through investigation to a known error and resolution.",
+      "fields": {
+        "problem_id": "string",
+        "number": "string",
+        "short_description": "string",
+        "description": "string",
+        "state": "enum:new|assess|root_cause_analysis|fix_in_progress|resolved|closed",
+        "impact": "enum:1|2|3",
+        "urgency": "enum:1|2|3",
+        "priority": "enum:1|2|3|4|5",
+        "assignment_group_id": "ref:assignment_groups.group_id",
+        "assigned_to": "string",
+        "configuration_item_id": "ref:configuration_items.ci_id",
+        "known_error": "boolean",
+        "workaround": "string",
+        "root_cause": "string",
+        "related_change_id": "ref:change_requests.change_id",
+        "opened_at": "string",
+        "last_note": "string"
+      }
+    },
+    "change_requests": {
+      "primaryKey": "change_id",
+      "description": "ServiceNow change request: a controlled addition, modification, or removal of a configuration item, risk-assessed and gated by CAB (Change Advisory Board) approval before implementation.",
+      "fields": {
+        "change_id": "string",
+        "number": "string",
+        "short_description": "string",
+        "description": "string",
+        "type": "enum:standard|normal|emergency",
+        "state": "enum:draft|assess|authorize|scheduled|implemented|review|closed|cancelled",
+        "risk": "enum:low|moderate|high|very_high",
+        "impact": "enum:1|2|3",
+        "priority": "enum:1|2|3|4|5",
+        "assignment_group_id": "ref:assignment_groups.group_id",
+        "assigned_to": "string",
+        "requested_by": "string",
+        "configuration_item_id": "ref:configuration_items.ci_id",
+        "problem_id": "ref:problems.problem_id",
+        "cab_required": "boolean",
+        "cab_decision": "enum:pending|approved|rejected|not_required",
+        "planned_start": "string",
+        "planned_end": "string",
+        "implementation_plan": "string",
+        "backout_plan": "string",
+        "opened_at": "string",
+        "last_note": "string"
+      }
+    },
+    "service_requests": {
+      "primaryKey": "request_id",
+      "description": "ServiceNow service request (request fulfillment): a catalog-driven ask such as access provisioning or hardware, fulfilled through approval and task stages.",
+      "fields": {
+        "request_id": "string",
+        "number": "string",
+        "short_description": "string",
+        "catalog_item": "string",
+        "state": "enum:draft|requested|approval|in_progress|fulfilled|closed|cancelled",
+        "stage": "enum:request|approval|fulfillment|delivery|completed",
+        "priority": "enum:1|2|3|4|5",
+        "requested_for": "string",
+        "requested_by": "string",
+        "assignment_group_id": "ref:assignment_groups.group_id",
+        "configuration_item_id": "ref:configuration_items.ci_id",
+        "approval_state": "enum:not_requested|requested|approved|rejected",
+        "price": "number",
+        "opened_at": "string",
+        "last_note": "string"
+      }
+    },
+    "assignment_groups": {
+      "primaryKey": "group_id",
+      "description": "ServiceNow assignment group: a queue of fulfillers/resolvers owning a service or technology area, with on-call and manager metadata.",
+      "fields": {
+        "group_id": "string",
+        "name": "string",
+        "description": "string",
+        "manager": "string",
+        "on_call": "string",
+        "support_tier": "enum:tier_1|tier_2|tier_3",
+        "email": "string",
+        "active": "boolean"
+      }
+    },
+    "configuration_items": {
+      "primaryKey": "ci_id",
+      "description": "ServiceNow CMDB configuration item: a managed service, application, server, or other asset with lifecycle, environment, and ownership attributes.",
+      "fields": {
+        "ci_id": "string",
+        "name": "string",
+        "ci_class": "enum:business_service|application|server|database|network_gear|cloud_resource",
+        "environment": "enum:production|staging|development|dr",
+        "operational_status": "enum:operational|degraded|down|maintenance|retired",
+        "criticality": "enum:1|2|3|4",
+        "owned_by": "string",
+        "support_group_id": "ref:assignment_groups.group_id",
+        "location": "string",
+        "version": "string"
+      }
+    },
+    "ci_relationships": {
+      "primaryKey": "relationship_id",
+      "description": "ServiceNow CMDB relationship edge between two configuration items (depends_on, runs_on, hosted_on, connects_to) used for impact analysis.",
+      "fields": {
+        "relationship_id": "string",
+        "parent_ci_id": "ref:configuration_items.ci_id",
+        "child_ci_id": "ref:configuration_items.ci_id",
+        "type": "enum:depends_on|runs_on|hosted_on|connects_to|uses",
+        "description": "string"
+      }
+    },
+    "knowledge_articles": {
+      "primaryKey": "article_id",
+      "description": "ServiceNow knowledge base article: published guidance, known-error workarounds, and runbooks referenced from incidents and problems.",
+      "fields": {
+        "article_id": "string",
+        "number": "string",
+        "title": "string",
+        "short_description": "string",
+        "knowledge_base": "string",
+        "category": "string",
+        "state": "enum:draft|review|published|retired",
+        "author": "string",
+        "view_count": "number",
+        "configuration_item_id": "ref:configuration_items.ci_id"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "description": "ServiceNow approval record (sysapproval_approver): an approval requested from an approver against a source record, most notably CAB approval gating change implementation.",
+      "fields": {
+        "approval_id": "string",
+        "source_record_id": "string",
+        "source_table": "enum:change_request|service_request|problem",
+        "approver": "string",
+        "approver_group": "string",
+        "state": "enum:requested|approved|rejected|cancelled",
+        "stage": "enum:cab|manager|technical|business",
+        "comments": "string",
+        "requested_at": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "description": "Simulator audit log.",
+      "fields": {
+        "event_id": "string",
+        "actor": "string",
+        "role": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string",
+        "detail": "string",
+        "timestamp": "string"
+      }
+    }
+  }
+}

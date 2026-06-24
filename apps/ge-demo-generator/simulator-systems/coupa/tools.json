@@ -1,0 +1,628 @@
+{
+  "id": "coupa_tools",
+  "version": 2,
+  "tools": [
+    {
+      "name": "search_suppliers",
+      "description": "Search Coupa suppliers by name, status, risk tier, category, or country.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "risk_tier": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "preferred": {
+            "type": "boolean"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "suppliers"
+      }
+    },
+    {
+      "name": "get_supplier",
+      "description": "Get one Coupa supplier, optionally including scorecards and contracts.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "supplier_id": {
+            "type": "string"
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "supplier_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "suppliers",
+        "primaryKey": "supplier_id"
+      }
+    },
+    {
+      "name": "search_supplier_scorecards",
+      "description": "Search supplier performance scorecards by supplier, period, rating, or status.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "supplier_scorecards"
+      }
+    },
+    {
+      "name": "get_supplier_scorecard",
+      "description": "Get one supplier scorecard.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "scorecard_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "scorecard_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "supplier_scorecards",
+        "primaryKey": "scorecard_id"
+      }
+    },
+    {
+      "name": "search_requisitions",
+      "description": "Search purchase requisitions by status, cost center, requester, or supplier.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "cost_center": {
+            "type": "string"
+          },
+          "requester": {
+            "type": "string"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "current_approver": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "requisitions"
+      }
+    },
+    {
+      "name": "get_requisition",
+      "description": "Get one purchase requisition, optionally including its lines and approvals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "requisition_id": {
+            "type": "string"
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "requisition_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "requisitions",
+        "primaryKey": "requisition_id"
+      }
+    },
+    {
+      "name": "search_requisition_lines",
+      "description": "Search requisition line items by requisition or status.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "requisition_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "requisition_lines"
+      }
+    },
+    {
+      "name": "search_purchase_orders",
+      "description": "Search purchase orders by status, supplier, buyer, or cost center.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "buyer": {
+            "type": "string"
+          },
+          "cost_center": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "purchase_orders"
+      }
+    },
+    {
+      "name": "get_purchase_order",
+      "description": "Get one purchase order, optionally including lines and receipts.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "po_id": {
+            "type": "string"
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "po_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "purchase_orders",
+        "primaryKey": "po_id"
+      }
+    },
+    {
+      "name": "search_po_lines",
+      "description": "Search purchase order line items by PO or status.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "po_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "po_lines"
+      }
+    },
+    {
+      "name": "search_receipts",
+      "description": "Search goods/service receipts by PO, supplier, or status.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "po_id": {
+            "type": "string"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "receipts"
+      }
+    },
+    {
+      "name": "get_receipt",
+      "description": "Get one receipt.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "receipt_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "receipt_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "receipts",
+        "primaryKey": "receipt_id"
+      }
+    },
+    {
+      "name": "search_invoices",
+      "description": "Search supplier invoices by status, match status, supplier, or PO.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "match_status": {
+            "type": "string"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "po_id": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "invoices"
+      }
+    },
+    {
+      "name": "get_invoice",
+      "description": "Get one supplier invoice.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "invoice_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "invoice_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "invoices",
+        "primaryKey": "invoice_id"
+      }
+    },
+    {
+      "name": "search_contracts",
+      "description": "Search sourcing contracts by status, supplier, type, or category.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "contract_type": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "contracts"
+      }
+    },
+    {
+      "name": "get_contract",
+      "description": "Get one sourcing contract, optionally including supplier and approvals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "contract_id": {
+            "type": "string"
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "contract_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "contracts",
+        "primaryKey": "contract_id"
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending Coupa approvals (requisition, contract, or invoice) optionally scoped to one source record.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": {
+            "type": "string"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_pending_approvals",
+        "collection": "approvals"
+      }
+    },
+    {
+      "name": "submit_requisition_update",
+      "description": "Advance a requisition through its approval and PO-creation lifecycle (draft->submitted->manager_approved->procurement_approved->po_created). Blocked while approvals are pending.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "requisition_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "requisition_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "requisitions",
+        "primaryKey": "requisition_id"
+      }
+    },
+    {
+      "name": "submit_purchase_order_update",
+      "description": "Advance a purchase order through its lifecycle (draft->issued->acknowledged->received->invoiced->closed).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "po_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "po_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "purchase_orders",
+        "primaryKey": "po_id"
+      }
+    },
+    {
+      "name": "submit_invoice_update",
+      "description": "Advance a supplier invoice through match/approval/payment states (received->matched->approved->paid). Blocked while approvals are pending.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "invoice_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "invoice_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "invoices",
+        "primaryKey": "invoice_id"
+      }
+    },
+    {
+      "name": "submit_contract_update",
+      "description": "Advance a sourcing contract through its lifecycle (draft->in_negotiation->pending_approval->active->expiring->expired/terminated). Blocked while approvals are pending.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "contract_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "contract_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "contracts",
+        "primaryKey": "contract_id"
+      }
+    },
+    {
+      "name": "submit_supplier_update",
+      "description": "Update a supplier's lifecycle status (onboarding->active->on_hold/risk_review->inactive/terminated).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "supplier_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "supplier_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "suppliers",
+        "primaryKey": "supplier_id"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List Coupa simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

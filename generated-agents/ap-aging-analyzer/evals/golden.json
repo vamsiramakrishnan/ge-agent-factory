@@ -1,0 +1,103 @@
+{
+  "generatedAt": "2026-06-11T08:59:39.756Z",
+  "agentId": "ap_aging_analyzer",
+  "role": "AP Manager agent for the AP Aging Analyzer workflow",
+  "primaryObjective": "Auto-refreshed AP aging with DPO trending and vendor concentration analysis. Disputed invoices tracked with resolution timelines and working capital impact assessment. so the AP Manager can move the Aging report time KPI.",
+  "evals": [
+    {
+      "id": "ap-aging-analyzer-end-to-end",
+      "prompt": "Run the AP Aging Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      "expectedToolCalls": [
+        "query_sap_s_4hana_fi_gl_entries",
+        "query_bigquery_analytics_events",
+        "query_looker_dashboards",
+        "lookup_ap_aging_analyzer_controls_playbook",
+        "action_sap_s_4hana_fi_generate"
+      ],
+      "mustReferenceEntities": [
+        "gl_entries",
+        "analytics_events",
+        "dashboards"
+      ],
+      "mustCiteDocuments": [
+        "ap-aging-analyzer-controls-playbook"
+      ],
+      "expectedActionOutcome": "Action generate executed against SAP S/4HANA FI, with audit-trail entry and AP Manager notified of outcomes.",
+      "forbiddenBehaviors": [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute generate without two-system evidence"
+      ]
+    }
+  ],
+  "packEvalHints": [
+    {
+      "packId": "system_analytics",
+      "expectedToolKinds": [
+        "query",
+        "calculation"
+      ],
+      "mustReferenceEntities": [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates"
+      ],
+      "successCriteria": [
+        "Derive metric claims from warehouse-backed rows.",
+        "Compare current values against historical or cached baselines.",
+        "Call out negative variance and stale computed_at dates."
+      ],
+      "refusalRules": [
+        "Do not invent metric values, trends, or forecast confidence when analytics rows are missing."
+      ]
+    },
+    {
+      "packId": "system_finance_erp",
+      "expectedToolKinds": [
+        "query",
+        "calculation",
+        "action"
+      ],
+      "mustReferenceEntities": [
+        "gl_entries",
+        "subledger_balances",
+        "open_items",
+        "accounts_payable",
+        "accounts_receivable"
+      ],
+      "successCriteria": [
+        "Back close, cash, AP, AR, and control claims with ledger evidence.",
+        "Call out pending or reversed records as exceptions.",
+        "Preserve audit trail details for write-like finance actions."
+      ],
+      "refusalRules": [
+        "Do not certify, close, or post finance actions without ledger and exception evidence."
+      ]
+    }
+  ],
+  "refusalRules": [
+    "Never fabricate metric values; only publish numbers derived from SAP S/4HANA FI (and other named systems) entities.",
+    "Never bypass AP Manager approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+    "Do not invent metric values, trends, or forecast confidence when analytics rows are missing.",
+    "Do not certify, close, or post finance actions without ledger and exception evidence."
+  ],
+  "escalationTriggers": [
+    {
+      "trigger": "Aging report time regresses past the Half-day manual baseline by more than 20%",
+      "action": "escalate_to_human",
+      "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+    },
+    {
+      "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      "action": "request_more_info",
+      "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+    },
+    {
+      "trigger": "Proposed generate action lacks supporting evidence from at least two systems",
+      "action": "refuse",
+      "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+    }
+  ]
+}

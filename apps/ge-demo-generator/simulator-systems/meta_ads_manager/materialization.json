@@ -1,0 +1,217 @@
+{
+  "id": "meta_ads_manager_materialization",
+  "version": 1,
+  "collections": {
+    "properties": {
+      "primaryKey": "property_id",
+      "fieldAliases": {
+        "property_id": [
+          "property_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "channel": [
+          "channel",
+          "id",
+          "source_record_id"
+        ],
+        "owner": [
+          "owner",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "property_id": [
+          "property_id",
+          "id",
+          "source_record_id"
+        ],
+        "event_name": [
+          "event_name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "occurred_at": [
+          "occurred_at",
+          "id",
+          "source_record_id"
+        ],
+        "count": [
+          "count",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "conversions": {
+      "primaryKey": "conversion_id",
+      "fieldAliases": {
+        "conversion_id": [
+          "conversion_id",
+          "id",
+          "source_record_id"
+        ],
+        "property_id": [
+          "property_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "value": [
+          "value",
+          "id",
+          "source_record_id"
+        ],
+        "currency": [
+          "currency",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "audiences": {
+      "primaryKey": "audience_id",
+      "fieldAliases": {
+        "audience_id": [
+          "audience_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "member_count": [
+          "member_count",
+          "id",
+          "source_record_id"
+        ],
+        "source": [
+          "source",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "experiments": {
+      "primaryKey": "experiment_id",
+      "fieldAliases": {
+        "experiment_id": [
+          "experiment_id",
+          "id",
+          "source_record_id"
+        ],
+        "property_id": [
+          "property_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "start_date": [
+          "start_date",
+          "id",
+          "source_record_id"
+        ],
+        "end_date": [
+          "end_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

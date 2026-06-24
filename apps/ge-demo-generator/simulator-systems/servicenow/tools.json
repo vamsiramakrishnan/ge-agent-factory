@@ -1,0 +1,573 @@
+{
+  "id": "servicenow_tools",
+  "version": 2,
+  "tools": [
+    {
+      "name": "search_incidents",
+      "description": "Search ServiceNow incidents by free text plus ITIL filters (state, priority, impact, urgency, assignment group, CI, escalation, SLA state).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "impact": {
+            "type": "string"
+          },
+          "urgency": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "assignment_group_id": {
+            "type": "string"
+          },
+          "configuration_item_id": {
+            "type": "string"
+          },
+          "escalation": {
+            "type": "string"
+          },
+          "sla_state": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "incidents"
+      }
+    },
+    {
+      "name": "get_incident",
+      "description": "Get one ServiceNow incident by incident_id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "incident_id": {
+            "type": "string"
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "incident_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "incidents",
+        "primaryKey": "incident_id"
+      }
+    },
+    {
+      "name": "search_problems",
+      "description": "Search ServiceNow problem records by free text and state/priority/assignment-group filters.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "known_error": {
+            "type": "string"
+          },
+          "assignment_group_id": {
+            "type": "string"
+          },
+          "configuration_item_id": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "problems"
+      }
+    },
+    {
+      "name": "get_problem",
+      "description": "Get one ServiceNow problem by problem_id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "problem_id": {
+            "type": "string"
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "problem_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "problems",
+        "primaryKey": "problem_id"
+      }
+    },
+    {
+      "name": "search_change_requests",
+      "description": "Search ServiceNow change requests by free text plus state, type, risk, CAB decision, and assignment group filters.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "risk": {
+            "type": "string"
+          },
+          "cab_decision": {
+            "type": "string"
+          },
+          "assignment_group_id": {
+            "type": "string"
+          },
+          "configuration_item_id": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "change_requests"
+      }
+    },
+    {
+      "name": "get_change_request",
+      "description": "Get one ServiceNow change request by change_id, optionally including its approvals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "change_id": {
+            "type": "string"
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "change_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "change_requests",
+        "primaryKey": "change_id"
+      }
+    },
+    {
+      "name": "search_service_requests",
+      "description": "Search ServiceNow service (catalog) requests by free text plus state, stage, approval state, and requester filters.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "stage": {
+            "type": "string"
+          },
+          "approval_state": {
+            "type": "string"
+          },
+          "requested_for": {
+            "type": "string"
+          },
+          "assignment_group_id": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "service_requests"
+      }
+    },
+    {
+      "name": "get_service_request",
+      "description": "Get one ServiceNow service request by request_id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string"
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "request_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "service_requests",
+        "primaryKey": "request_id"
+      }
+    },
+    {
+      "name": "search_assignment_groups",
+      "description": "Search ServiceNow assignment groups by name/description and support tier.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "support_tier": {
+            "type": "string"
+          },
+          "active": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "assignment_groups"
+      }
+    },
+    {
+      "name": "get_assignment_group",
+      "description": "Get one ServiceNow assignment group by group_id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "group_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "group_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "assignment_groups",
+        "primaryKey": "group_id"
+      }
+    },
+    {
+      "name": "search_configuration_items",
+      "description": "Search the ServiceNow CMDB for configuration items by name plus class, environment, operational status, and criticality.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "ci_class": {
+            "type": "string"
+          },
+          "environment": {
+            "type": "string"
+          },
+          "operational_status": {
+            "type": "string"
+          },
+          "criticality": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "configuration_items"
+      }
+    },
+    {
+      "name": "get_configuration_item",
+      "description": "Get one CMDB configuration item by ci_id, optionally including its relationships.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ci_id": {
+            "type": "string"
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "ci_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "configuration_items",
+        "primaryKey": "ci_id"
+      }
+    },
+    {
+      "name": "search_knowledge_articles",
+      "description": "Search the ServiceNow knowledge base by title/short description, knowledge base, category, and state.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "knowledge_base": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "knowledge_articles"
+      }
+    },
+    {
+      "name": "get_knowledge_article",
+      "description": "Get one knowledge base article by article_id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "article_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "article_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "knowledge_articles",
+        "primaryKey": "article_id"
+      }
+    },
+    {
+      "name": "submit_incident_update",
+      "description": "Advance a ServiceNow incident through its lifecycle (new -> in_progress -> on_hold -> resolved -> closed). Requires a resolver/itil role.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "incident_id": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "incident_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "incidents",
+        "primaryKey": "incident_id"
+      }
+    },
+    {
+      "name": "submit_problem_update",
+      "description": "Advance a ServiceNow problem through investigation (new -> assess -> root_cause_analysis -> fix_in_progress -> resolved -> closed). Requires a problem-manager/itil role.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "problem_id": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "problem_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "problems",
+        "primaryKey": "problem_id"
+      }
+    },
+    {
+      "name": "submit_change_request_update",
+      "description": "Advance a ServiceNow change request (draft -> assess -> authorize -> scheduled -> implemented -> review -> closed). The transition to scheduled is blocked until CAB approval is granted. Requires a change-manager role.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "change_id": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "change_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "change_requests",
+        "primaryKey": "change_id"
+      }
+    },
+    {
+      "name": "submit_service_request_update",
+      "description": "Advance a ServiceNow service request through fulfillment (draft -> requested -> approval -> in_progress -> fulfilled -> closed). Blocked from in_progress while a manager approval is pending. Requires a fulfiller/itil role.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "request_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "service_requests",
+        "primaryKey": "request_id"
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List requested (pending) ServiceNow approvals, optionally scoped to one source record.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_pending_approvals",
+        "collection": "approvals"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List ServiceNow simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

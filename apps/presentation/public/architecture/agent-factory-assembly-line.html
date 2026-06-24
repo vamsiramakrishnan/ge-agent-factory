@@ -1,0 +1,1970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Agent Factory — Assembly Line</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EEF1F6;          /* off-white, cool */
+    --card:#FFFFFF;
+    --ink:#16243F;          /* dark navy — headings */
+    --ink-soft:#3C4860;     /* secondary text */
+    --blue:#1A73E8;         /* sober google cloud blue */
+    --blue-deep:#174EA6;    /* dark blue */
+    --green:#1E8E3E;        /* muted green */
+    --grey:#5F6368;
+    --grey-2:#80868B;
+    --line:#D5DAE3;
+    --soft:#EAEDF2;
+    --softer:#F4F6F9;
+    --shadow:0 1px 2px rgba(16,36,63,.06), 0 12px 32px rgba(16,36,63,.10);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Lexend",-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+  .mono{font-family:"IBM Plex Mono",monospace}
+
+  .deck{display:flex;flex-direction:column;align-items:center;gap:34px;padding:48px 24px 80px}
+
+  /* fixed 16:9 frame — screenshot one at a time */
+  .slide{
+    position:relative;width:1280px;height:720px;background:var(--card);
+    border-radius:18px;box-shadow:var(--shadow);overflow:hidden;
+    border:1px solid var(--line);
+  }
+  /* faint engineering grid — factory floor */
+  .slide::before{
+    content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+    background-image:linear-gradient(var(--soft) 1px,transparent 1px),
+                     linear-gradient(90deg,var(--soft) 1px,transparent 1px);
+    background-size:40px 40px;mask-image:linear-gradient(180deg,transparent,#000 18%,#000 88%,transparent);
+  }
+  .pad{position:absolute;inset:0;padding:60px 72px;display:flex;flex-direction:column}
+
+  /* top brand rail */
+  .rail{position:absolute;top:0;left:0;right:0;height:6px;display:flex}
+  .rail i{flex:1}
+  .rail i:nth-child(1){background:var(--blue-deep)}
+  .rail i:nth-child(2){background:var(--blue)}
+  .rail i:nth-child(3){background:var(--grey-2)}
+  .rail i:nth-child(4){background:var(--green)}
+
+  .kicker{font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--blue-deep);font-weight:600}
+  h1{font-size:54px;line-height:1.04;margin:14px 0 0;font-weight:600;letter-spacing:-.02em}
+  h2{font-size:34px;line-height:1.1;margin:8px 0 0;font-weight:600;letter-spacing:-.015em}
+  .sub{font-size:18px;color:var(--ink-soft);max-width:880px;line-height:1.5;margin-top:14px;font-weight:300}
+  .foot{position:absolute;bottom:22px;left:72px;right:72px;display:flex;justify-content:space-between;
+    align-items:center;font-size:12px;color:var(--grey-2);letter-spacing:.02em}
+  .pageno{font-weight:500}
+
+  .chip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;
+    padding:6px 13px;font-size:12.5px;color:var(--ink-soft);background:var(--softer);font-weight:500}
+  .dot{width:9px;height:9px;border-radius:50%}
+
+  /* ---- title slide ---- */
+  .hero{flex:1;display:flex;flex-direction:column;justify-content:center}
+  .stats{display:flex;gap:54px;margin-top:40px}
+  .stat .n{font-size:46px;font-weight:700;letter-spacing:-.02em;color:var(--blue-deep)}
+  .stat .n.g{color:var(--green)}
+  .stat .l{font-size:14px;color:var(--ink-soft);margin-top:2px;font-weight:300}
+  .pipe{height:46px;width:1px;background:var(--line);align-self:center}
+
+  /* ---- generic ---- */
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:18px}
+  .legend .chip{background:#fff}
+  .author{margin-top:26px;font-size:13px;color:var(--grey);font-weight:300}
+  .author strong{color:var(--ink);font-weight:600}
+  .author a{color:var(--blue);text-decoration:none;border-bottom:1px solid var(--line)}
+  .cap{font-size:13.5px;color:var(--grey);font-weight:300;line-height:1.5}
+  svg{display:block}
+  .hl{color:var(--blue-deep);font-weight:600}
+  .hg{color:var(--green);font-weight:600}
+  text{font-family:"Lexend",sans-serif}
+  .t-mono{font-family:"IBM Plex Mono",monospace}
+
+  /* ---- responsive scaling + print/export ---- */
+  :root{ --s:1 }
+  .frame{ width:calc(1280px * var(--s)); height:calc(720px * var(--s)); flex:0 0 auto }
+  .slide{ transform-origin:top left; transform:scale(var(--s)) }
+  .exportbar{ position:fixed; top:18px; right:18px; z-index:60; display:flex; gap:10px }
+  .exportbar button{ font-family:"Lexend",sans-serif; font-size:13px; font-weight:500; color:#fff;
+    background:var(--blue-deep); border:none; border-radius:999px; padding:10px 16px; cursor:pointer;
+    box-shadow:0 6px 18px rgba(16,36,63,.28); display:inline-flex; align-items:center; gap:8px }
+  .exportbar button:hover{ background:#103262 }
+  @media (max-width:560px){ .exportbar{ top:10px; right:10px } .exportbar button{ padding:8px 12px } }
+  @media print{
+    @page{ size:1280px 720px; margin:0 }
+    html,body{ background:#fff }
+    .exportbar{ display:none !important }
+    .deck{ padding:0; gap:0; display:block }
+    .frame{ width:1280px; height:720px }
+    .slide{ transform:none; box-shadow:none; border:1px solid #E3E7EE; border-radius:0; break-after:page; page-break-after:always }
+    .slide:last-child{ break-after:auto; page-break-after:auto }
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- ============== SLIDE 1 — TITLE ============== -->
+  <div class="frame">
+  <section class="slide" id="s1">
+    <div class="rail"><i></i><i></i><i></i><i></i></div>
+    <div class="pad">
+      <div class="hero">
+        <div class="kicker">Gemini Enterprise · Agent Platform</div>
+        <h1>The Agent Factory</h1>
+        <p class="sub">An assembly line that turns enterprise use cases into generated, tested, and
+          deployed Gemini Enterprise agents — built end-to-end on Google&rsquo;s own agent stack.
+          Stand up the plant once; every agent is manufactured the same way.</p>
+
+        <div class="stats">
+          <div class="stat"><div class="n">363</div><div class="l">use cases in catalog</div></div>
+          <div class="pipe"></div>
+          <div class="stat"><div class="n">5</div><div class="l">domains&nbsp;·&nbsp;HR, Finance, IT, Marketing, Procurement</div></div>
+          <div class="pipe"></div>
+          <div class="stat"><div class="n">14</div><div class="l">stations per agent, one graph</div></div>
+          <div class="pipe"></div>
+          <div class="stat"><div class="n g">1</div><div class="l">core · three surfaces (CLI · Console · MCP)</div></div>
+        </div>
+
+        <div class="legend">
+          <span class="chip"><span class="dot" style="background:var(--blue)"></span>Deterministic generation</span>
+          <span class="chip"><span class="dot" style="background:var(--grey-2)"></span>Per-agent data plane</span>
+          <span class="chip"><span class="dot" style="background:var(--blue-deep)"></span>Two-tier MCP tool plane</span>
+          <span class="chip"><span class="dot" style="background:var(--green)"></span>Published &amp; verified live</span>
+        </div>
+        <div class="author">Author — <strong>Vamsi Ramakrishnan</strong>&nbsp;·&nbsp;want to contribute?&nbsp;&nbsp;<a href="https://source.cloud.google.com/vital-octagon-19612/fde-agent-factory">source.cloud.google.com/vital-octagon-19612/fde-agent-factory</a></div>
+      </div>
+      <div class="foot"><span>GE Agent Factory</span><span class="pageno">01 / 21</span></div>
+    </div>
+  </section>
+  </div>
+
+  <!-- ============== SLIDE 2 — WHAT THIS SOLVES ============== -->
+  <div class="frame">
+  <section class="slide" id="s1b">
+    <div class="rail"><i></i><i></i><i></i><i></i></div>
+    <div class="pad">
+      <div class="kicker">What this solves</div>
+      <h2>Hundreds of enterprise use cases, no scalable path to real agents</h2>
+      <p class="sub" style="margin-top:8px">Enterprises can name hundreds of agent use cases, but turning each into a production-grade
+        Gemini Enterprise agent — with real data, tool integrations, tests, and deployment — does not scale by hand.</p>
+
+      <svg viewBox="0 0 1136 404" width="1136" height="404" style="margin-top:18px">
+        <defs>
+          <filter id="ds2a" x="-20%" y="-20%" width="140%" height="160%">
+            <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#16243F" flood-opacity="0.14"/>
+          </filter>
+          <filter id="ds2b" x="-40%" y="-40%" width="180%" height="200%">
+            <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#16243F" flood-opacity="0.16"/>
+          </filter>
+          <linearGradient id="gNavy2" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#21345B"/><stop offset="1" stop-color="#152339"/>
+          </linearGradient>
+          <linearGradient id="gBlue2" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#1A73E8"/><stop offset="1" stop-color="#174EA6"/>
+          </linearGradient>
+          <g id="ic-data2">
+            <ellipse cx="15" cy="10" rx="8" ry="3.2" fill="none" stroke="#fff" stroke-width="2"/>
+            <path d="M7,10 V20 M23,10 V20" stroke="#fff" stroke-width="2"/>
+            <path d="M7,20 A8,3.2 0 0 0 23,20" fill="none" stroke="#fff" stroke-width="2"/>
+          </g>
+          <g id="ic-plug2">
+            <rect x="9" y="13" width="12" height="9" rx="2" fill="none" stroke="#fff" stroke-width="2"/>
+            <path d="M13,13 V8 M17,13 V8 M15,22 V25" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          </g>
+          <g id="ic-check2">
+            <path d="M8,15 L13,20 L22,9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+          <g id="ic-shield2">
+            <path d="M15,7 L22,10 V15 C22,19.5 18.5,21.8 15,23 C11.5,21.8 8,19.5 8,15 V10 Z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+            <circle cx="15" cy="14" r="1.8" fill="#fff"/>
+          </g>
+          <g id="ic-up2"><path d="M15,7 L21,20 L15,16.5 L9,20 Z" fill="#fff"/></g>
+        </defs>
+
+        <!-- LEFT: the gap -->
+        <g filter="url(#ds2a)"><rect x="0" y="0" width="548" height="404" rx="16" fill="#fff" stroke="#E6E9EF"/></g>
+        <rect x="0" y="0" width="548" height="6" rx="3" fill="#80868B"/>
+        <text x="28" y="44" font-size="18" font-weight="600" fill="#16243F">The gap</text>
+
+        <!-- stacked backlog deck -->
+        <g filter="url(#ds2b)">
+          <rect x="40" y="78" width="160" height="44" rx="9" fill="#EAEDF2" stroke="#D5DAE3"/>
+          <rect x="52" y="90" width="160" height="44" rx="9" fill="#F1F3F7" stroke="#D5DAE3"/>
+          <rect x="64" y="102" width="160" height="44" rx="9" fill="#F7F8FA" stroke="#D5DAE3"/>
+          <rect x="76" y="114" width="160" height="44" rx="9" fill="#FFFFFF" stroke="#C7D0DD"/>
+          <text x="92" y="141" font-size="13" font-weight="600" fill="#16243F">Use case</text>
+          <circle cx="196" cy="136" r="4" fill="#1A73E8"/>
+          <circle cx="210" cy="136" r="4" fill="#1E8E3E"/>
+          <circle cx="224" cy="136" r="4" fill="#80868B"/>
+        </g>
+
+        <text x="300" y="118" font-size="52" font-weight="700" fill="#174EA6">363</text>
+        <text x="300" y="144" font-size="14" fill="#3C4860" font-weight="300">use cases</text>
+        <text x="300" y="164" font-size="13" fill="#5F6368" font-weight="300">across 5 departments</text>
+
+        <!-- dept chips -->
+        <g font-size="11.5" fill="#3C4860">
+          <rect x="28" y="190" width="52" height="26" rx="13" fill="#F4F6F9" stroke="#E1E6EE"/><circle cx="44" cy="203" r="4" fill="#1A73E8"/><text x="54" y="207">HR</text>
+          <rect x="88" y="190" width="86" height="26" rx="13" fill="#F4F6F9" stroke="#E1E6EE"/><circle cx="104" cy="203" r="4" fill="#16243F"/><text x="114" y="207">Finance</text>
+          <rect x="182" y="190" width="46" height="26" rx="13" fill="#F4F6F9" stroke="#E1E6EE"/><circle cx="198" cy="203" r="4" fill="#80868B"/><text x="208" y="207">IT</text>
+          <rect x="236" y="190" width="96" height="26" rx="13" fill="#F4F6F9" stroke="#E1E6EE"/><circle cx="252" cy="203" r="4" fill="#1E8E3E"/><text x="262" y="207">Marketing</text>
+          <rect x="340" y="190" width="118" height="26" rx="13" fill="#F4F6F9" stroke="#E1E6EE"/><circle cx="356" cy="203" r="4" fill="#174EA6"/><text x="366" y="207">Procurement</text>
+        </g>
+
+        <!-- pains -->
+        <g transform="translate(28,236)"><circle cx="13" cy="13" r="13" fill="#FDECEA" stroke="#E7B0A8"/><path d="M9,9 L17,17 M17,9 L9,17" stroke="#C5221F" stroke-width="2" stroke-linecap="round"/></g>
+        <text x="64" y="254" font-size="13.5" fill="#3C4860" font-weight="300">No connection to systems of record</text>
+        <g transform="translate(28,278)"><circle cx="13" cy="13" r="13" fill="#FDECEA" stroke="#E7B0A8"/><path d="M9,9 L17,17 M17,9 L9,17" stroke="#C5221F" stroke-width="2" stroke-linecap="round"/></g>
+        <text x="64" y="296" font-size="13.5" fill="#3C4860" font-weight="300">No test data, evals, or smoke tests</text>
+        <g transform="translate(28,320)"><circle cx="13" cy="13" r="13" fill="#FDECEA" stroke="#E7B0A8"/><path d="M9,9 L17,17 M17,9 L9,17" stroke="#C5221F" stroke-width="2" stroke-linecap="round"/></g>
+        <text x="64" y="338" font-size="13.5" fill="#3C4860" font-weight="300">Not deployable or governed</text>
+        <text x="28" y="378" font-size="11.5" fill="#80868B" font-weight="300">Hand-built: slow, inconsistent, and drifts agent-to-agent</text>
+
+        <!-- CENTER arrow -->
+        <path d="M558,184 L586,184 L586,172 L604,202 L586,232 L586,220 L558,220 Z" fill="url(#gBlue2)" filter="url(#ds2b)"/>
+
+        <!-- RIGHT: factory delivers -->
+        <g filter="url(#ds2a)"><rect x="612" y="0" width="524" height="404" rx="16" fill="url(#gNavy2)"/></g>
+        <rect x="612" y="0" width="524" height="6" rx="3" fill="#1E8E3E"/>
+        <text x="640" y="44" font-size="18" font-weight="600" fill="#fff">What the factory delivers</text>
+
+        <!-- capability pills -->
+        <rect x="640" y="72" width="472" height="40" rx="10" fill="#FFFFFF" fill-opacity="0.06" stroke="#33415E"/>
+        <rect x="650" y="77" width="30" height="30" rx="8" fill="#1E8E3E"/><use href="#ic-data2" x="650" y="77"/>
+        <text x="694" y="90" font-size="13" font-weight="600" fill="#fff">Per-agent data plane</text>
+        <text x="694" y="105" font-size="11" fill="#9DB4D8" font-weight="300">BigQuery · AlloyDB · Firestore · Bigtable · GCS</text>
+
+        <rect x="640" y="120" width="472" height="40" rx="10" fill="#FFFFFF" fill-opacity="0.06" stroke="#33415E"/>
+        <rect x="650" y="125" width="30" height="30" rx="8" fill="#1A73E8"/><use href="#ic-plug2" x="650" y="125"/>
+        <text x="694" y="138" font-size="13" font-weight="600" fill="#fff">Two-tier MCP tool plane</text>
+        <text x="694" y="153" font-size="11" fill="#9DB4D8" font-weight="300">1P Google MCP + custom Cloud Run</text>
+
+        <rect x="640" y="168" width="472" height="40" rx="10" fill="#FFFFFF" fill-opacity="0.06" stroke="#33415E"/>
+        <rect x="650" y="173" width="30" height="30" rx="8" fill="#1A73E8"/><use href="#ic-check2" x="650" y="173"/>
+        <text x="694" y="186" font-size="13" font-weight="600" fill="#fff">Evals + behavior-contract gates</text>
+        <text x="694" y="201" font-size="11" fill="#9DB4D8" font-weight="300">every stage, fail-closed</text>
+
+        <rect x="640" y="216" width="472" height="40" rx="10" fill="#FFFFFF" fill-opacity="0.06" stroke="#33415E"/>
+        <rect x="650" y="221" width="30" height="30" rx="8" fill="#3C5078"/><use href="#ic-shield2" x="650" y="221"/>
+        <text x="694" y="234" font-size="13" font-weight="600" fill="#fff">Agent identity + IAM</text>
+        <text x="694" y="249" font-size="11" fill="#9DB4D8" font-weight="300">auto-granted at register_tools</text>
+
+        <rect x="640" y="264" width="472" height="40" rx="10" fill="#FFFFFF" fill-opacity="0.06" stroke="#33415E"/>
+        <rect x="650" y="269" width="30" height="30" rx="8" fill="#1E8E3E"/><use href="#ic-up2" x="650" y="269"/>
+        <text x="694" y="282" font-size="13" font-weight="600" fill="#fff">Deployed + published</text>
+        <text x="694" y="297" font-size="11" fill="#9DB4D8" font-weight="300">Agent Runtime → Gemini Enterprise</text>
+
+        <line x1="640" y1="320" x2="1108" y2="320" stroke="#33415E"/>
+        <text x="640" y="356" font-size="30" font-weight="700" fill="#7BE0A0">×363</text>
+        <text x="728" y="356" font-size="14" fill="#C7D3E8" font-weight="300">one pipeline, every agent</text>
+        <text x="640" y="386" font-size="11" fill="#9DB4D8" font-weight="300">on Google&rsquo;s agent stack — ADK · Agent Runtime · Agent Registry · Gemini Enterprise</text>
+      </svg>
+
+      <div class="foot"><span>GE Agent Factory · what this solves</span><span class="pageno">02 / 21</span></div>
+    </div>
+  </section>
+  </div>
+
+  <!-- ============== SLIDE 20 — HORIZONTAL TODAY, VERTICAL NEXT ============== -->
+  <div class="frame">
+  <section class="slide" id="s7">
+    <div class="rail"><i></i><i></i><i></i><i></i></div>
+    <div class="pad">
+      <div class="kicker">Where this goes — the same pattern, any domain</div>
+      <h2>Horizontal today, vertical next</h2>
+      <p class="sub" style="margin-top:8px">The 363 use cases are <span class="hl">horizontal</span> — cross-industry business functions. They are a starting point.
+        The same factory produces <span class="hl">vertical, industry-specific</span> agents: only the packs and source systems change; the spec, pipeline, data plane, IAM, and gates are identical.</p>
+
+      <svg viewBox="0 0 1136 404" width="1136" height="404" style="margin-top:14px">
+        <defs>
+          <filter id="ds7" x="-20%" y="-20%" width="140%" height="160%">
+            <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#16243F" flood-opacity="0.14"/>
+          </filter>
+          <linearGradient id="gNavy7" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#21345B"/><stop offset="1" stop-color="#152339"/>
+          </linearGradient>
+          <marker id="arr7" markerWidth="12" markerHeight="12" refX="7" refY="6" orient="auto">
+            <path d="M0,0 L10,6 L0,12 z" fill="#80868B"/>
+          </marker>
+        </defs>
+
+        <!-- LEFT: horizontal -->
+        <g filter="url(#ds7)"><rect x="0" y="0" width="356" height="338" rx="14" fill="#fff" stroke="#E6E9EF"/></g>
+        <rect x="0" y="0" width="356" height="6" rx="3" fill="#1A73E8"/>
+        <text x="24" y="40" font-size="16" font-weight="600" fill="#16243F">Horizontal — today</text>
+        <text x="24" y="60" font-size="12" fill="#5F6368" font-weight="300">cross-industry functions · 363 use cases</text>
+        <g font-size="13" fill="#16243F">
+          <rect x="24" y="78" width="308" height="40" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/><circle cx="44" cy="98" r="4" fill="#1A73E8"/><text x="58" y="103">HR &mdash; <tspan fill="#5F6368" font-size="11.5">Workday</tspan></text>
+          <rect x="24" y="124" width="308" height="40" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/><circle cx="44" cy="144" r="4" fill="#16243F"/><text x="58" y="149">Finance &mdash; <tspan fill="#5F6368" font-size="11.5">SAP S/4HANA</tspan></text>
+          <rect x="24" y="170" width="308" height="40" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/><circle cx="44" cy="190" r="4" fill="#80868B"/><text x="58" y="195">IT &mdash; <tspan fill="#5F6368" font-size="11.5">ServiceNow</tspan></text>
+          <rect x="24" y="216" width="308" height="40" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/><circle cx="44" cy="236" r="4" fill="#1E8E3E"/><text x="58" y="241">Marketing &mdash; <tspan fill="#5F6368" font-size="11.5">CRM · CDP</tspan></text>
+          <rect x="24" y="262" width="308" height="40" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/><circle cx="44" cy="282" r="4" fill="#174EA6"/><text x="58" y="287">Procurement &mdash; <tspan fill="#5F6368" font-size="11.5">Coupa · Ariba</tspan></text>
+        </g>
+        <line x1="356" y1="169" x2="396" y2="169" stroke="#80868B" stroke-width="2.5" marker-end="url(#arr7)"/>
+
+        <!-- CENTER: same factory -->
+        <g filter="url(#ds7)"><rect x="402" y="0" width="332" height="338" rx="14" fill="url(#gNavy7)"/></g>
+        <rect x="402" y="0" width="332" height="6" rx="3" fill="#5F6368"/>
+        <text x="568" y="40" font-size="16" font-weight="600" fill="#fff" text-anchor="middle">The same factory</text>
+        <text x="568" y="60" font-size="11.5" fill="#9DB4D8" text-anchor="middle" font-weight="300">domain-agnostic core — unchanged</text>
+        <g font-size="12.5" fill="#C7D3E8" font-weight="300">
+          <text x="426" y="98"><tspan fill="#7BE0A0">·</tspan>&nbsp;&nbsp;same typed spec + behaviorContract</text>
+          <text x="426" y="126"><tspan fill="#7BE0A0">·</tspan>&nbsp;&nbsp;same 14-stage pipeline</text>
+          <text x="426" y="154"><tspan fill="#7BE0A0">·</tspan>&nbsp;&nbsp;same per-agent data plane</text>
+          <text x="426" y="182"><tspan fill="#7BE0A0">·</tspan>&nbsp;&nbsp;same MCP tool wrapping</text>
+          <text x="426" y="210"><tspan fill="#7BE0A0">·</tspan>&nbsp;&nbsp;same agent identity + IAM</text>
+          <text x="426" y="238"><tspan fill="#7BE0A0">·</tspan>&nbsp;&nbsp;same evals + contract gates</text>
+          <text x="426" y="266"><tspan fill="#7BE0A0">·</tspan>&nbsp;&nbsp;same publish to Gemini Enterprise</text>
+        </g>
+        <text x="426" y="306" font-size="11.5" fill="#FBC56B" font-weight="500">changes only: domain/system packs + use-case catalog</text>
+        <line x1="734" y1="169" x2="774" y2="169" stroke="#80868B" stroke-width="2.5" marker-end="url(#arr7)"/>
+
+        <!-- RIGHT: vertical -->
+        <g filter="url(#ds7)"><rect x="780" y="0" width="356" height="338" rx="14" fill="#fff" stroke="#E6E9EF"/></g>
+        <rect x="780" y="0" width="356" height="6" rx="3" fill="#1E8E3E"/>
+        <text x="804" y="40" font-size="16" font-weight="600" fill="#16243F">Vertical / industry — next</text>
+        <text x="804" y="60" font-size="12" fill="#5F6368" font-weight="300">same pattern · illustrative, extensible</text>
+        <g font-size="12.5" fill="#16243F">
+          <rect x="804" y="74" width="308" height="34" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/><circle cx="822" cy="91" r="4" fill="#1E8E3E"/><text x="836" y="95">Healthcare &mdash; <tspan fill="#5F6368" font-size="11">Epic · Cerner</tspan></text>
+          <rect x="804" y="114" width="308" height="34" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/><circle cx="822" cy="131" r="4" fill="#1A73E8"/><text x="836" y="135">Financial Services &mdash; <tspan fill="#5F6368" font-size="11">core banking · KYC/AML</tspan></text>
+          <rect x="804" y="154" width="308" height="34" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/><circle cx="822" cy="171" r="4" fill="#174EA6"/><text x="836" y="175">Retail / CPG &mdash; <tspan fill="#5F6368" font-size="11">merchandising · supply</tspan></text>
+          <rect x="804" y="194" width="308" height="34" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/><circle cx="822" cy="211" r="4" fill="#16243F"/><text x="836" y="215">Manufacturing &mdash; <tspan fill="#5F6368" font-size="11">MES · maintenance</tspan></text>
+          <rect x="804" y="234" width="308" height="34" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/><circle cx="822" cy="251" r="4" fill="#80868B"/><text x="836" y="255">Telco &mdash; <tspan fill="#5F6368" font-size="11">OSS/BSS · network ops</tspan></text>
+          <rect x="804" y="274" width="308" height="34" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/><circle cx="822" cy="291" r="4" fill="#1E8E3E"/><text x="836" y="295">Public Sector &mdash; <tspan fill="#5F6368" font-size="11">case management</tspan></text>
+        </g>
+
+        <!-- bottom statement -->
+        <g filter="url(#ds7)"><rect x="0" y="352" width="1136" height="52" rx="12" fill="#16243F"/></g>
+        <text x="24" y="384" font-size="14" fill="#fff" font-weight="300"><tspan fill="#7BE0A0" font-weight="600">What stays:</tspan> spec → factory → governed agent.&nbsp;&nbsp;&nbsp;<tspan fill="#FBC56B" font-weight="600">What changes:</tspan> the domain packs and systems. New vertical = new packs + use cases, same machine.</text>
+      </svg>
+
+      <div class="foot"><span>GE Agent Factory · horizontal today, vertical next</span><span class="pageno">03 / 21</span></div>
+    </div>
+  </section>
+  </div>
+
+  <!-- ============== SLIDE 3 — WHY CUSTOMERS CARE ============== -->
+  <div class="frame">
+  <section class="slide" id="s1c">
+    <div class="rail"><i></i><i></i><i></i><i></i></div>
+    <div class="pad">
+      <div class="kicker">Why customers care</div>
+      <h2>agents-cli builds one agent. Production needs everything around it.</h2>
+      <p class="sub" style="margin-top:8px">The Agent Development Kit and <span class="t-mono">agents-cli</span> scaffold and evaluate a single agent.
+        Shipping a fleet still means hand-building the data, tools, IAM, and tests for every one — the factory generates all of it.</p>
+
+      <svg viewBox="0 0 1136 396" width="1136" height="396" style="margin-top:16px">
+        <defs>
+          <filter id="dsH" x="-5%" y="-40%" width="110%" height="220%">
+            <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#16243F" flood-opacity="0.18"/>
+          </filter>
+          <g id="ic-code"><path d="M11,9 L7,15 L11,21" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M19,9 L23,15 L19,21" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M17,8 L13,22" stroke="#fff" stroke-width="2" stroke-linecap="round"/></g>
+          <g id="ic-list"><rect x="8" y="7" width="14" height="16" rx="2" fill="none" stroke="#fff" stroke-width="2"/><path d="M11,12 H19 M11,15.5 H19 M11,19 H16" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></g>
+          <g id="ic-test"><rect x="7" y="7" width="16" height="16" rx="3" fill="none" stroke="#fff" stroke-width="2"/><path d="M11,15 L14,18 L19,11" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+          <g id="ic-data"><ellipse cx="15" cy="10" rx="8" ry="3.2" fill="none" stroke="#fff" stroke-width="2"/><path d="M7,10 V20 M23,10 V20" stroke="#fff" stroke-width="2"/><path d="M7,20 A8,3.2 0 0 0 23,20" fill="none" stroke="#fff" stroke-width="2"/></g>
+          <g id="ic-plug"><rect x="9" y="13" width="12" height="9" rx="2" fill="none" stroke="#fff" stroke-width="2"/><path d="M13,13 V8 M17,13 V8 M15,22 V25" stroke="#fff" stroke-width="2" stroke-linecap="round"/></g>
+          <g id="ic-shield"><path d="M15,7 L22,10 V15 C22,19.5 18.5,21.8 15,23 C11.5,21.8 8,19.5 8,15 V10 Z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><circle cx="15" cy="14" r="1.8" fill="#fff"/></g>
+          <g id="ic-up"><path d="M15,7 L21,20 L15,16.5 L9,20 Z" fill="#fff"/></g>
+          <g id="ic-repeat"><path d="M21,11 A7,7 0 1 0 22,16.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M21.5,7 L22,11.5 L17.5,11 Z" fill="#fff"/></g>
+          <g id="mk-ok"><circle cx="12" cy="12" r="11" fill="#E6F4EA" stroke="#9CCFAE"/><path d="M7,12 L11,16 L17,8" fill="none" stroke="#1E8E3E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></g>
+          <g id="mk-no"><circle cx="12" cy="12" r="11" fill="#FDECEA" stroke="#E7B0A8"/><path d="M8,8 L16,16 M16,8 L8,16" stroke="#C5221F" stroke-width="2.4" stroke-linecap="round"/></g>
+          <g id="mk-part"><circle cx="12" cy="12" r="11" fill="#FEF7E0" stroke="#EAD79A"/><path d="M7,12 H17" stroke="#B06000" stroke-width="2.6" stroke-linecap="round"/></g>
+        </defs>
+
+        <!-- header band -->
+        <rect x="0" y="0" width="1136" height="44" rx="10" fill="#16243F" filter="url(#dsH)"/>
+        <text x="24" y="28" font-size="13.5" font-weight="600" fill="#fff">Per agent, you must&hellip;</text>
+        <text x="812" y="28" font-size="13" font-weight="600" fill="#9DB4D8" text-anchor="middle">agents-cli</text>
+        <text x="1012" y="28" font-size="13" font-weight="600" fill="#7BE0A0" text-anchor="middle">the factory</text>
+
+        <!-- rows -->
+        <rect x="0" y="56" width="1136" height="40" fill="#F7F8FA"/>
+        <rect x="14" y="61" width="30" height="30" rx="8" fill="#1A73E8"/><use href="#ic-code" x="14" y="61"/>
+        <text x="58" y="81" font-size="13" fill="#16243F">Agent code &mdash; <tspan class="t-mono" font-size="12">app/agent.py · app/tools.py</tspan></text>
+        <use href="#mk-part" x="800" y="64"/><use href="#mk-ok" x="1000" y="64"/>
+
+        <rect x="14" y="102" width="30" height="30" rx="8" fill="#1A73E8"/><use href="#ic-list" x="14" y="102"/>
+        <text x="58" y="122" font-size="13" fill="#16243F">Evals + scoring rubrics</text>
+        <use href="#mk-part" x="800" y="105"/><use href="#mk-ok" x="1000" y="105"/>
+
+        <rect x="0" y="138" width="1136" height="40" fill="#F7F8FA"/>
+        <rect x="14" y="143" width="30" height="30" rx="8" fill="#16243F"/><use href="#ic-test" x="14" y="143"/>
+        <text x="58" y="163" font-size="13" fill="#16243F">Smoke tests (ADK callback contracts)</text>
+        <use href="#mk-no" x="800" y="146"/><use href="#mk-ok" x="1000" y="146"/>
+
+        <rect x="14" y="184" width="30" height="30" rx="8" fill="#5F6368"/><use href="#ic-data" x="14" y="184"/>
+        <text x="58" y="204" font-size="13" fill="#16243F">Per-agent data &mdash; provision + load</text>
+        <use href="#mk-no" x="800" y="187"/><use href="#mk-ok" x="1000" y="187"/>
+
+        <rect x="0" y="220" width="1136" height="40" fill="#F7F8FA"/>
+        <rect x="14" y="225" width="30" height="30" rx="8" fill="#5F6368"/><use href="#ic-plug" x="14" y="225"/>
+        <text x="58" y="245" font-size="13" fill="#16243F">MCP tool services (Cloud Run) + Agent Registry</text>
+        <use href="#mk-no" x="800" y="228"/><use href="#mk-ok" x="1000" y="228"/>
+
+        <rect x="14" y="266" width="30" height="30" rx="8" fill="#16243F"/><use href="#ic-shield" x="14" y="266"/>
+        <text x="58" y="286" font-size="13" fill="#16243F">IAM: agent identity &rarr; tools <tspan class="t-mono" font-size="11" fill="#5F6368">(agentregistry.viewer · iap.egressor · mcp.toolUser)</tspan></text>
+        <use href="#mk-no" x="800" y="269"/><use href="#mk-ok" x="1000" y="269"/>
+
+        <rect x="0" y="302" width="1136" height="40" fill="#F7F8FA"/>
+        <rect x="14" y="307" width="30" height="30" rx="8" fill="#1E8E3E"/><use href="#ic-up" x="14" y="307"/>
+        <text x="58" y="327" font-size="13" fill="#16243F">Deploy &middot; poll &middot; publish to Gemini Enterprise</text>
+        <use href="#mk-no" x="800" y="310"/><use href="#mk-ok" x="1000" y="310"/>
+
+        <rect x="14" y="348" width="30" height="30" rx="8" fill="#1E8E3E"/><use href="#ic-repeat" x="14" y="348"/>
+        <text x="58" y="368" font-size="13" fill="#16243F">Repeat, consistently, across all 363</text>
+        <use href="#mk-no" x="800" y="351"/><use href="#mk-ok" x="1000" y="351"/>
+      </svg>
+      <p class="cap" style="margin-top:14px"><span style="color:var(--green);font-weight:600">&check;</span> automated&nbsp;&nbsp;&nbsp;<span style="color:#B06000;font-weight:600">&ndash;</span> partial (scaffold / run only)&nbsp;&nbsp;&nbsp;<span style="color:#C5221F;font-weight:600">&times;</span> manual&nbsp;&nbsp;&mdash;&nbsp;&nbsp;<span class="t-mono">agents-cli</span> is necessary but not sufficient; the factory adds the provisioning, IAM, data, tools, and tests around it.</p>
+
+      <div class="foot"><span>GE Agent Factory · why customers care</span><span class="pageno">04 / 21</span></div>
+    </div>
+  </section>
+  </div>
+
+  <!-- ============== SLIDE 2 — THE LINE AT A GLANCE ============== -->
+  <div class="frame">
+  <section class="slide" id="s2">
+    <div class="rail"><i></i><i></i><i></i><i></i></div>
+    <div class="pad">
+      <div class="kicker">The line at a glance</div>
+      <h2>Raw use cases in. Production agents out.</h2>
+      <p class="sub">The catalog is the raw material. The factory is one platform stood up once.
+        The finished good is a published Gemini Enterprise agent with its own data and tools.</p>
+
+      <svg viewBox="0 0 1136 360" width="1136" height="360" style="margin-top:26px">
+        <defs>
+          <marker id="arr" markerWidth="11" markerHeight="11" refX="7" refY="5" orient="auto">
+            <path d="M0,0 L9,5 L0,10 z" fill="#16243F"/>
+          </marker>
+          <linearGradient id="belt2" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#1A73E8"/><stop offset="1" stop-color="#174EA6"/>
+          </linearGradient>
+        </defs>
+
+        <!-- INPUT -->
+        <g>
+          <rect x="0" y="86" width="250" height="188" rx="14" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="0" y="86" width="250" height="46" rx="14" fill="#EAEDF2"/>
+          <rect x="0" y="110" width="250" height="22" fill="#EAEDF2"/>
+          <text x="20" y="115" font-size="15" font-weight="600" fill="#16243F">RAW MATERIAL</text>
+          <text x="20" y="166" font-size="34" font-weight="700" fill="#174EA6">363</text>
+          <text x="20" y="192" font-size="14" fill="#3C4860" font-weight="300">enterprise use cases</text>
+          <text x="20" y="226" font-size="13" fill="#5F6368" class="t-mono">HR · FIN · IT</text>
+          <text x="20" y="246" font-size="13" fill="#5F6368" class="t-mono">MKT · PROCURE</text>
+        </g>
+        <line x1="250" y1="180" x2="320" y2="180" stroke="#16243F" stroke-width="2" marker-end="url(#arr)"/>
+
+        <!-- FACTORY -->
+        <g>
+          <rect x="326" y="40" width="484" height="280" rx="16" fill="#16243F"/>
+          <text x="568" y="78" font-size="15" font-weight="600" fill="#9DB4D8" text-anchor="middle" letter-spacing="2">THE FACTORY</text>
+
+          <!-- conveyor belt -->
+          <rect x="360" y="150" width="416" height="26" rx="13" fill="url(#belt2)"/>
+          <g fill="#0F1A2E">
+            <circle cx="378" cy="194" r="11"/><circle cx="426" cy="194" r="11"/><circle cx="474" cy="194" r="11"/>
+            <circle cx="522" cy="194" r="11"/><circle cx="570" cy="194" r="11"/><circle cx="618" cy="194" r="11"/>
+            <circle cx="666" cy="194" r="11"/><circle cx="714" cy="194" r="11"/><circle cx="758" cy="194" r="11"/>
+          </g>
+          <!-- workpieces transforming along the belt -->
+          <rect x="392" y="150" width="22" height="22" rx="4" fill="#3C4860"/>
+          <rect x="500" y="150" width="22" height="22" rx="4" fill="#5F6368"/>
+          <rect x="608" y="150" width="22" height="22" rx="4" fill="#1A73E8"/>
+          <rect x="716" y="150" width="22" height="22" rx="4" fill="#1E8E3E"/>
+
+          <text x="568" y="232" font-size="14" fill="#C7D3E8" text-anchor="middle" font-weight="300">Phase 0 — plant stood up once (Terraform)</text>
+          <text x="568" y="256" font-size="14" fill="#C7D3E8" text-anchor="middle" font-weight="300">Phase 1 — each agent flows 14 identical stations</text>
+          <text x="568" y="290" font-size="12.5" fill="#7E93B6" text-anchor="middle" class="t-mono">ge up · ge data up · ge mcp deploy · ge agents build</text>
+        </g>
+        <line x1="810" y1="180" x2="880" y2="180" stroke="#16243F" stroke-width="2" marker-end="url(#arr)"/>
+
+        <!-- OUTPUT -->
+        <g>
+          <rect x="886" y="86" width="250" height="188" rx="14" fill="#fff" stroke="#BFE0C8"/>
+          <rect x="886" y="86" width="250" height="46" rx="14" fill="#E6F4EA"/>
+          <rect x="886" y="110" width="250" height="22" fill="#E6F4EA"/>
+          <text x="906" y="115" font-size="15" font-weight="600" fill="#1E8E3E">FINISHED GOOD</text>
+          <text x="906" y="160" font-size="20" font-weight="600" fill="#16243F">Published agent</text>
+          <text x="906" y="186" font-size="13.5" fill="#3C4860" font-weight="300">in Gemini Enterprise</text>
+          <text x="906" y="218" font-size="13" fill="#5F6368" class="t-mono">+ own data plane</text>
+          <text x="906" y="238" font-size="13" fill="#5F6368" class="t-mono">+ own MCP tools</text>
+          <text x="906" y="258" font-size="13" fill="#5F6368" class="t-mono">+ live-verified</text>
+        </g>
+      </svg>
+
+      <p class="cap" style="margin-top:18px">Hard <span class="hl">build boundary</span>: everything up to <span class="t-mono">preview</span> is pure
+        computation and runs anywhere; everything after touches Google Cloud. <span class="t-mono">ge agents ship</span> builds locally, then hands the post-boundary stages to the cloud factory.</p>
+      <div class="foot"><span>GE Agent Factory · the line at a glance</span><span class="pageno">05 / 21</span></div>
+    </div>
+  </section>
+  </div>
+
+  <!-- ============== SLIDE 3 — FUNCTIONAL VIEW: INTERVIEW → SPEC ============== -->
+  <div class="frame">
+  <section class="slide" id="s2a">
+    <div class="rail"><i></i><i></i><i></i><i></i></div>
+    <div class="pad">
+      <div class="kicker">Functional view — where a spec comes from</div>
+      <h2>An agentic harness interviews the owner, then writes the spec</h2>
+      <p class="sub" style="margin-top:8px">Before any code, a structured interview turns one stakeholder conversation into a complete, typed spec.
+        The pipeline consumes only the spec; the interview is the step that produces it.</p>
+
+      <svg viewBox="0 0 1136 420" width="1136" height="420" style="margin-top:14px">
+        <defs>
+          <marker id="arrF" markerWidth="11" markerHeight="11" refX="7" refY="5" orient="auto">
+            <path d="M0,0 L9,5 L0,10 z" fill="#16243F"/>
+          </marker>
+          <marker id="arrFg" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto">
+            <path d="M0,0 L8,5 L0,10 z" fill="#80868B"/>
+          </marker>
+        </defs>
+
+        <!-- actor -->
+        <g>
+          <circle cx="60" cy="60" r="22" fill="#fff" stroke="#1A73E8" stroke-width="2"/>
+          <circle cx="60" cy="52" r="8" fill="#1A73E8"/>
+          <path d="M44,76 a16,12 0 0 1 32,0 z" fill="#1A73E8"/>
+          <text x="96" y="52" font-size="15" font-weight="600" fill="#16243F">Domain owner / process SME</text>
+          <text x="96" y="72" font-size="12.5" fill="#5F6368" font-weight="300">the human who knows the workflow, systems, and rules</text>
+        </g>
+        <line x1="60" y1="84" x2="60" y2="116" stroke="#80868B" stroke-width="2" marker-end="url(#arrFg)"/>
+        <text x="74" y="106" font-size="11.5" fill="#5F6368" font-weight="300">answers</text>
+
+        <!-- main functional row -->
+        <!-- F1 interview -->
+        <g>
+          <rect x="0" y="120" width="250" height="158" rx="12" fill="#16243F"/>
+          <text x="20" y="150" font-size="15" font-weight="600" fill="#fff">1 · Agentic interview</text>
+          <text x="20" y="176" font-size="12.5" fill="#C7D3E8" font-weight="300">structured Q&amp;A, one topic</text>
+          <text x="20" y="193" font-size="12.5" fill="#C7D3E8" font-weight="300">at a time — asks the</text>
+          <text x="20" y="210" font-size="12.5" fill="#C7D3E8" font-weight="300">key questions (next slide)</text>
+          <text x="20" y="244" font-size="11.5" fill="#7E93B6" class="t-mono">harness: Gemini / Claude /</text>
+          <text x="20" y="260" font-size="11.5" fill="#7E93B6" class="t-mono">Antigravity adapters</text>
+          <!-- clarify loop -->
+          <path d="M40,120 C40,96 210,96 210,120" fill="none" stroke="#7BE0A0" stroke-width="2" marker-end="url(#arrF)"/>
+          <text x="125" y="92" font-size="11" fill="#1E8E3E" text-anchor="middle" font-weight="500">clarify until the topic is complete</text>
+        </g>
+        <line x1="250" y1="199" x2="284" y2="199" stroke="#16243F" stroke-width="2" marker-end="url(#arrF)"/>
+
+        <!-- F2 synthesis -->
+        <g>
+          <rect x="290" y="120" width="250" height="158" rx="12" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="290" y="120" width="250" height="6" rx="3" fill="#1A73E8"/>
+          <text x="310" y="152" font-size="15" font-weight="600" fill="#16243F">2 · Spec synthesis</text>
+          <text x="310" y="178" font-size="12.5" fill="#3C4860" font-weight="300">answers → typed objects</text>
+          <text x="310" y="206" font-size="12" fill="#174EA6" class="t-mono">generationSpec +</text>
+          <text x="310" y="223" font-size="12" fill="#174EA6" class="t-mono">behaviorContract</text>
+          <text x="310" y="252" font-size="12" fill="#3C4860" font-weight="300">the exact schema the</text>
+          <text x="310" y="269" font-size="12" fill="#3C4860" font-weight="300">catalog already uses</text>
+        </g>
+        <line x1="540" y1="199" x2="574" y2="199" stroke="#16243F" stroke-width="2" marker-end="url(#arrF)"/>
+
+        <!-- F3 validate -->
+        <g>
+          <rect x="580" y="120" width="250" height="158" rx="12" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="580" y="120" width="250" height="6" rx="3" fill="#5F6368"/>
+          <text x="600" y="152" font-size="15" font-weight="600" fill="#16243F">3 · Validate &amp; gap-check</text>
+          <text x="600" y="178" font-size="12.5" fill="#3C4860" font-weight="300">completeness + type checks</text>
+          <text x="600" y="206" font-size="12.5" fill="#3C4860" font-weight="300">flags missing fields as</text>
+          <text x="600" y="226" font-size="12" fill="#5F6368" class="t-mono">behaviorContract: null</text>
+          <text x="600" y="256" font-size="12" fill="#3C4860" font-weight="300">→ sends gaps back to the</text>
+          <text x="600" y="273" font-size="12" fill="#3C4860" font-weight="300">interview</text>
+        </g>
+        <line x1="830" y1="199" x2="864" y2="199" stroke="#16243F" stroke-width="2" marker-end="url(#arrF)"/>
+
+        <!-- F4 approve -->
+        <g>
+          <rect x="870" y="120" width="266" height="158" rx="12" fill="#fff" stroke="#BFE0C8"/>
+          <rect x="870" y="120" width="266" height="6" rx="3" fill="#1E8E3E"/>
+          <text x="890" y="152" font-size="15" font-weight="600" fill="#16243F">4 · Review &amp; approve</text>
+          <text x="890" y="178" font-size="12.5" fill="#3C4860" font-weight="300">SME reads back the spec</text>
+          <text x="890" y="198" font-size="12.5" fill="#3C4860" font-weight="300">in plain language &amp; signs off</text>
+          <text x="890" y="226" font-size="12.5" fill="#3C4860" font-weight="300">edit-in-place if needed —</text>
+          <text x="890" y="243" font-size="12.5" fill="#3C4860" font-weight="300">human stays in control</text>
+        </g>
+
+        <!-- gap loop F3 -> F1 -->
+        <path d="M600,278 C500,326 150,326 60,300" fill="none" stroke="#80868B" stroke-width="1.6" stroke-dasharray="5 5" marker-end="url(#arrFg)"/>
+        <text x="330" y="320" font-size="11.5" fill="#5F6368" font-weight="500">incomplete spec → ask more</text>
+
+        <!-- output bar -->
+        <line x1="1003" y1="278" x2="1003" y2="338" stroke="#1E8E3E" stroke-width="2" marker-end="url(#arrF)"/>
+        <rect x="0" y="342" width="1136" height="64" rx="12" fill="#16243F"/>
+        <text x="24" y="372" font-size="15" font-weight="600" fill="#fff">Validated spec → enters the catalog → factory ingestion &amp; blow-up</text>
+        <text x="24" y="393" font-size="12" fill="#9DB4D8" font-weight="300">the same artifact a human can also hand-author; the pipeline consumes only the spec</text>
+        <text x="1112" y="380" font-size="12" fill="#7BE0A0" text-anchor="end" class="t-mono">→ to the pipeline</text>
+      </svg>
+
+      <div class="foot"><span>GE Agent Factory · functional view — interview to spec</span><span class="pageno">06 / 21</span></div>
+    </div>
+  </section>
+  </div>
+
+  <!-- ============== SLIDE 4 — KEY QUESTIONS → SPEC FIELDS ============== -->
+  <div class="frame">
+  <section class="slide" id="s2b">
+    <div class="rail"><i></i><i></i><i></i><i></i></div>
+    <div class="pad">
+      <div class="kicker">The interview is the spec</div>
+      <h2>Every key question fills one part of the contract</h2>
+      <p class="sub" style="margin-top:8px">The interview is not free-form — it walks a fixed checklist, and each answer lands in a typed field.
+        When every field is filled, the spec is complete by construction.</p>
+
+      <svg viewBox="0 0 1136 412" width="1136" height="412" style="margin-top:12px">
+        <!-- headers -->
+        <text x="0" y="22" font-size="13" font-weight="600" fill="#16243F">Key interview question</text>
+        <text x="616" y="22" font-size="13" font-weight="600" fill="#174EA6">Spec field it populates</text>
+
+        <!-- rows: y0=36, h=44, gap=2 (step 46) -->
+        <!-- row template -->
+        <!-- 1 -->
+        <g>
+          <rect x="0" y="36" width="586" height="42" rx="9" fill="#fff" stroke="#D5DAE3"/>
+          <text x="18" y="62" font-size="13.5" fill="#16243F" font-weight="300">Who is the agent, and who does it serve?</text>
+          <line x1="586" y1="57" x2="612" y2="57" stroke="#C7D0DD" stroke-width="2"/>
+          <rect x="616" y="36" width="520" height="42" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/>
+          <text x="632" y="62" font-size="12.5" fill="#174EA6" class="t-mono">role · persona · department</text>
+        </g>
+        <!-- 2 -->
+        <g>
+          <rect x="0" y="82" width="586" height="42" rx="9" fill="#fff" stroke="#D5DAE3"/>
+          <text x="18" y="108" font-size="13.5" fill="#16243F" font-weight="300">What single outcome must it deliver?</text>
+          <line x1="586" y1="103" x2="612" y2="103" stroke="#C7D0DD" stroke-width="2"/>
+          <rect x="616" y="82" width="520" height="42" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/>
+          <text x="632" y="108" font-size="12.5" fill="#174EA6" class="t-mono">primaryObjective</text>
+        </g>
+        <!-- 3 -->
+        <g>
+          <rect x="0" y="128" width="586" height="42" rx="9" fill="#fff" stroke="#D5DAE3"/>
+          <text x="18" y="154" font-size="13.5" fill="#16243F" font-weight="300">What is in scope — and explicitly out?</text>
+          <line x1="586" y1="149" x2="612" y2="149" stroke="#C7D0DD" stroke-width="2"/>
+          <rect x="616" y="128" width="520" height="42" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/>
+          <text x="632" y="154" font-size="12.5" fill="#174EA6" class="t-mono">inScope[] · outOfScope[]</text>
+        </g>
+        <!-- 4 -->
+        <g>
+          <rect x="0" y="174" width="586" height="42" rx="9" fill="#fff" stroke="#D5DAE3"/>
+          <text x="18" y="200" font-size="13.5" fill="#16243F" font-weight="300">Which systems of record does it read or write?</text>
+          <line x1="586" y1="195" x2="612" y2="195" stroke="#C7D0DD" stroke-width="2"/>
+          <rect x="616" y="174" width="520" height="42" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/>
+          <text x="632" y="195" font-size="12.5" fill="#174EA6" class="t-mono">sourceSystems[]</text>
+          <text x="632" y="210" font-size="10.5" fill="#5F6368">Workday · ServiceNow · SAP · Coupa &hellip;</text>
+        </g>
+        <!-- 5 -->
+        <g>
+          <rect x="0" y="220" width="586" height="42" rx="9" fill="#fff" stroke="#D5DAE3"/>
+          <text x="18" y="246" font-size="13.5" fill="#16243F" font-weight="300">What lookups, calculations, and actions are needed?</text>
+          <line x1="586" y1="241" x2="612" y2="241" stroke="#C7D0DD" stroke-width="2"/>
+          <rect x="616" y="220" width="520" height="42" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/>
+          <text x="632" y="241" font-size="12.5" fill="#174EA6" class="t-mono">toolIntents[]</text>
+          <text x="632" y="256" font-size="10.5" fill="#5F6368">kind · requiredInputs · produces · evidenceEmitted</text>
+        </g>
+        <!-- 6 -->
+        <g>
+          <rect x="0" y="266" width="586" height="42" rx="9" fill="#fff" stroke="#D5DAE3"/>
+          <text x="18" y="292" font-size="13.5" fill="#16243F" font-weight="300">What must every answer be backed by?</text>
+          <line x1="586" y1="287" x2="612" y2="287" stroke="#C7D0DD" stroke-width="2"/>
+          <rect x="616" y="266" width="520" height="42" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/>
+          <text x="632" y="292" font-size="12.5" fill="#174EA6" class="t-mono">evidenceRequirements[] · claim · mustCite</text>
+        </g>
+        <!-- 7 -->
+        <g>
+          <rect x="0" y="312" width="586" height="42" rx="9" fill="#fff" stroke="#D5DAE3"/>
+          <text x="18" y="338" font-size="13.5" fill="#16243F" font-weight="300">When must it escalate to a human or refuse?</text>
+          <line x1="586" y1="333" x2="612" y2="333" stroke="#C7D0DD" stroke-width="2"/>
+          <rect x="616" y="312" width="520" height="42" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/>
+          <text x="632" y="338" font-size="12.5" fill="#174EA6" class="t-mono">escalationRules[] · refusalRules[]</text>
+        </g>
+        <!-- 8 (acceptance) -->
+        <g>
+          <rect x="0" y="358" width="586" height="42" rx="9" fill="#fff" stroke="#BFE0C8"/>
+          <text x="18" y="384" font-size="13.5" fill="#16243F" font-weight="300">Show three examples of a great interaction.</text>
+          <line x1="586" y1="379" x2="612" y2="379" stroke="#BFE0C8" stroke-width="2"/>
+          <rect x="616" y="358" width="520" height="42" rx="9" fill="#E6F4EA" stroke="#BFE0C8"/>
+          <text x="632" y="379" font-size="12.5" fill="#1E8E3E" class="t-mono">goldenEvals[]</text>
+          <text x="632" y="394" font-size="10.5" fill="#3C4860">prompt · expectedToolCalls · forbiddenBehaviors — the acceptance test</text>
+        </g>
+      </svg>
+
+      <div class="foot"><span>GE Agent Factory · key questions → spec fields</span><span class="pageno">07 / 21</span></div>
+    </div>
+  </section>
+  </div>
+
+  <!-- ============== SLIDE 5 — THE SPEC ENGINE (TWO GOVERNED PASSES) ============== -->
+  <div class="frame">
+  <section class="slide" id="s2c">
+    <div class="rail"><i></i><i></i><i></i><i></i></div>
+    <div class="pad">
+      <div class="kicker">The spec engine — two governed passes + your sign-off</div>
+      <h2>Two governed harness passes, then user confirmation</h2>
+      <p class="sub" style="margin-top:8px">The harness runs the coding agent twice — first to draft, then to enrich and critique — with guardrails
+        constraining both passes. Nothing reaches the pipeline until a human confirms.</p>
+
+      <svg viewBox="0 0 1136 422" width="1136" height="422" style="margin-top:16px">
+        <defs>
+          <marker id="arrE" markerWidth="11" markerHeight="11" refX="7" refY="5" orient="auto">
+            <path d="M0,0 L9,5 L0,10 z" fill="#16243F"/>
+          </marker>
+        </defs>
+
+        <!-- top + bottom guard rails -->
+        <rect x="0" y="40" width="1136" height="30" rx="15" fill="#16243F"/>
+        <text x="568" y="60" font-size="12.5" fill="#9DB4D8" text-anchor="middle" letter-spacing="1.5">GUARD RAILS&nbsp;&nbsp;·&nbsp;&nbsp;spec schema&nbsp;·&nbsp;allowed source systems&nbsp;·&nbsp;evidence &amp; refusal policy&nbsp;·&nbsp;tool taxonomy</text>
+        <rect x="0" y="352" width="1136" height="30" rx="15" fill="#16243F"/>
+        <text x="568" y="372" font-size="12.5" fill="#9DB4D8" text-anchor="middle" letter-spacing="1.5">GUARD RAILS&nbsp;&nbsp;·&nbsp;&nbsp;completeness gate&nbsp;·&nbsp;deterministic naming&nbsp;·&nbsp;token budget&nbsp;·&nbsp;no out-of-scope systems</text>
+
+        <!-- rail posts -->
+        <g stroke="#C7D0DD" stroke-width="2">
+          <line x1="90" y1="70" x2="90" y2="352"/><line x1="430" y1="70" x2="430" y2="352"/>
+          <line x1="770" y1="70" x2="770" y2="352"/><line x1="1046" y1="70" x2="1046" y2="352"/>
+        </g>
+
+        <!-- flow band y ~ 110..312 -->
+        <!-- interview -->
+        <g>
+          <rect x="0" y="150" width="120" height="120" rx="12" fill="#fff" stroke="#1A73E8" stroke-width="2"/>
+          <text x="60" y="200" font-size="13.5" font-weight="600" fill="#16243F" text-anchor="middle">Interview</text>
+          <text x="60" y="222" font-size="11" fill="#5F6368" text-anchor="middle" font-weight="300">key questions</text>
+          <text x="60" y="238" font-size="11" fill="#5F6368" text-anchor="middle" font-weight="300">to the SME</text>
+        </g>
+        <line x1="120" y1="210" x2="152" y2="210" stroke="#16243F" stroke-width="2" marker-end="url(#arrE)"/>
+
+        <!-- engine 1 -->
+        <g>
+          <rect x="158" y="130" width="190" height="160" rx="12" fill="#16243F"/>
+          <text x="253" y="160" font-size="14" font-weight="600" fill="#fff" text-anchor="middle">Harness + Guardrails</text>
+          <text x="253" y="180" font-size="11.5" fill="#7BE0A0" text-anchor="middle">Pass 1 · draft</text>
+          <text x="253" y="210" font-size="11.5" fill="#C7D3E8" text-anchor="middle" font-weight="300">templating →</text>
+          <text x="253" y="227" font-size="11.5" fill="#C7D3E8" text-anchor="middle" font-weight="300">spec skeleton</text>
+          <text x="253" y="252" font-size="11.5" fill="#C7D3E8" text-anchor="middle" font-weight="300">filled from answers</text>
+          <text x="253" y="276" font-size="10.5" fill="#7E93B6" text-anchor="middle" class="t-mono">gemini-cli / antigravity</text>
+        </g>
+        <line x1="348" y1="210" x2="380" y2="210" stroke="#16243F" stroke-width="2" marker-end="url(#arrE)"/>
+
+        <!-- spec doc -->
+        <g>
+          <rect x="386" y="160" width="96" height="100" rx="9" fill="#fff" stroke="#D5DAE3"/>
+          <path d="M386,160 h70 l26,26 v74 a9,9 0 0 1 -9,9 h-78 a9,9 0 0 1 -9,-9 v-91 a9,9 0 0 1 9,-9 z" fill="#fff" stroke="#D5DAE3"/>
+          <text x="434" y="206" font-size="13" font-weight="600" fill="#16243F" text-anchor="middle">Spec</text>
+          <text x="434" y="226" font-size="10" fill="#5F6368" text-anchor="middle" font-weight="300">draft, typed</text>
+        </g>
+        <line x1="482" y1="210" x2="514" y2="210" stroke="#16243F" stroke-width="2" marker-end="url(#arrE)"/>
+
+        <!-- engine 2 -->
+        <g>
+          <rect x="520" y="130" width="190" height="160" rx="12" fill="#16243F"/>
+          <text x="615" y="160" font-size="14" font-weight="600" fill="#fff" text-anchor="middle">Harness + Guardrails</text>
+          <text x="615" y="180" font-size="11.5" fill="#7BE0A0" text-anchor="middle">Pass 2 · enrich + critique</text>
+          <text x="615" y="210" font-size="11.5" fill="#C7D3E8" text-anchor="middle" font-weight="300">packs add canonical data</text>
+          <text x="615" y="231" font-size="11.5" fill="#C7D3E8" text-anchor="middle" font-weight="300">critique fills gaps,</text>
+          <text x="615" y="248" font-size="11.5" fill="#C7D3E8" text-anchor="middle" font-weight="300">adds evidence + evals</text>
+          <text x="615" y="274" font-size="10.5" fill="#7E93B6" text-anchor="middle" font-weight="300">re-checked vs guardrails</text>
+        </g>
+        <line x1="710" y1="210" x2="742" y2="210" stroke="#16243F" stroke-width="2" marker-end="url(#arrE)"/>
+
+        <!-- enriched spec doc -->
+        <g>
+          <path d="M748,160 h70 l26,26 v74 a9,9 0 0 1 -9,9 h-78 a9,9 0 0 1 -9,-9 v-91 a9,9 0 0 1 9,-9 z" fill="#fff" stroke="#BFE0C8" stroke-width="1.5"/>
+          <text x="796" y="200" font-size="12.5" font-weight="600" fill="#16243F" text-anchor="middle">Enriched</text>
+          <text x="796" y="217" font-size="12.5" font-weight="600" fill="#16243F" text-anchor="middle">spec</text>
+          <text x="796" y="237" font-size="10" fill="#1E8E3E" text-anchor="middle">complete</text>
+        </g>
+        <line x1="844" y1="210" x2="876" y2="210" stroke="#16243F" stroke-width="2" marker-end="url(#arrE)"/>
+
+        <!-- confirm gate -->
+        <g>
+          <rect x="882" y="150" width="150" height="120" rx="12" fill="#E6F4EA" stroke="#1E8E3E" stroke-width="1.5"/>
+          <circle cx="957" cy="188" r="16" fill="#1E8E3E"/>
+          <path d="M950,188 l5,5 l9,-11" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="957" y="228" font-size="13" font-weight="600" fill="#16243F" text-anchor="middle">User confirms</text>
+          <text x="957" y="248" font-size="10.5" fill="#3C4860" text-anchor="middle" font-weight="300">plain-language readback</text>
+          <text x="957" y="262" font-size="10.5" fill="#3C4860" text-anchor="middle" font-weight="300">approve / edit</text>
+        </g>
+        <line x1="1032" y1="210" x2="1062" y2="210" stroke="#16243F" stroke-width="2" marker-end="url(#arrE)"/>
+
+        <!-- pipeline handoff -->
+        <g>
+          <rect x="1068" y="150" width="68" height="120" rx="12" fill="#1A73E8"/>
+          <text x="1102" y="200" font-size="12" font-weight="600" fill="#fff" text-anchor="middle">Pipe-</text>
+          <text x="1102" y="216" font-size="12" font-weight="600" fill="#fff" text-anchor="middle">line</text>
+          <text x="1102" y="240" font-size="9.5" fill="#CFE0FB" text-anchor="middle">build</text>
+          <text x="1102" y="252" font-size="9.5" fill="#CFE0FB" text-anchor="middle">stages</text>
+        </g>
+      </svg>
+
+      <div class="foot"><span>GE Agent Factory · spec engine — two passes and confirmation</span><span class="pageno">08 / 21</span></div>
+    </div>
+  </section>
+  </div>
+
+  <!-- ============== SLIDE 6 — CODING AGENT → AGENT FACTORY (THESIS) ============== -->
+  <div class="frame">
+  <section class="slide" id="s2d">
+    <div class="rail"><i></i><i></i><i></i><i></i></div>
+    <div class="pad">
+      <div class="kicker">The core idea</div>
+      <h2>How a coding agent becomes an agent-building system</h2>
+      <p class="sub" style="margin-top:8px">A general coding agent produces free-form, non-deterministic output. Four control layers make its output deterministic and gated:
+        <span class="hl">harness</span>, <span class="hl">templating</span>, <span class="hl">pipeline checks</span>, and <span class="hl">critique</span>.</p>
+
+      <svg viewBox="0 0 1136 426" width="1136" height="426" style="margin-top:14px">
+        <defs>
+          <marker id="arrT" markerWidth="13" markerHeight="13" refX="7" refY="6" orient="auto">
+            <path d="M0,0 L11,6 L0,12 z" fill="#80868B"/>
+          </marker>
+        </defs>
+
+        <!-- left: raw agent -->
+        <g>
+          <rect x="0" y="40" width="248" height="346" rx="14" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="0" y="40" width="248" height="6" rx="3" fill="#80868B"/>
+          <text x="24" y="78" font-size="17" font-weight="600" fill="#16243F">Raw coding agent</text>
+          <text x="24" y="100" font-size="12.5" fill="#5F6368" class="t-mono">gemini-cli · Antigravity</text>
+          <g font-size="12.5" fill="#3C4860" font-weight="300">
+            <text x="24" y="146">+ writes code, calls tools</text>
+            <text x="24" y="172">+ broad capability</text>
+            <text x="24" y="210" fill="#B3261E">– freeform, nondeterministic</text>
+            <text x="24" y="236" fill="#B3261E">– no acceptance contract</text>
+            <text x="24" y="262" fill="#B3261E">– unverified output</text>
+            <text x="24" y="288" fill="#B3261E">– won't scale to 363 safely</text>
+          </g>
+          <text x="24" y="344" font-size="12" fill="#5F6368" font-weight="300">general-purpose;</text>
+          <text x="24" y="362" font-size="12" fill="#5F6368" font-weight="300">not deterministic on its own</text>
+        </g>
+        <line x1="248" y1="213" x2="286" y2="213" stroke="#80868B" stroke-width="2.5" marker-end="url(#arrT)"/>
+
+        <!-- middle: four control layers -->
+        <g>
+          <!-- layer 1 -->
+          <rect x="296" y="44" width="540" height="78" rx="11" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="296" y="44" width="8" height="78" rx="4" fill="#1A73E8"/>
+          <text x="324" y="74" font-size="15" font-weight="600" fill="#16243F">1 · Harness</text>
+          <text x="324" y="98" font-size="12.5" fill="#3C4860" font-weight="300">drives the model deterministically: structured I/O, retries, run journal,</text>
+          <text x="324" y="114" font-size="12.5" fill="#3C4860" font-weight="300">one core · three surfaces (CLI · console · MCP)</text>
+
+          <!-- layer 2 -->
+          <rect x="296" y="130" width="540" height="78" rx="11" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="296" y="130" width="8" height="78" rx="4" fill="#5F6368"/>
+          <text x="324" y="160" font-size="15" font-weight="600" fill="#16243F">2 · Templating</text>
+          <text x="324" y="184" font-size="12.5" fill="#3C4860" font-weight="300">deterministic ADK scaffold — <tspan class="t-mono" font-size="11.5">agent.py · tools.py · fixtures · naming</tspan>;</text>
+          <text x="324" y="200" font-size="12.5" fill="#3C4860" font-weight="300">the model fills constrained slots, it doesn't invent structure</text>
+
+          <!-- layer 3 -->
+          <rect x="296" y="216" width="540" height="78" rx="11" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="296" y="216" width="8" height="78" rx="4" fill="#174EA6"/>
+          <text x="324" y="246" font-size="15" font-weight="600" fill="#16243F">3 · Pipeline checks</text>
+          <text x="324" y="270" font-size="12.5" fill="#3C4860" font-weight="300">fail-closed gates — pytest smoke + <tspan font-weight="500">ADK callback-contract gate</tspan> +</text>
+          <text x="324" y="286" font-size="12.5" fill="#3C4860" font-weight="300"><tspan class="t-mono" font-size="11.5">agents-cli eval</tspan> against the golden evals from the spec</text>
+
+          <!-- layer 4 -->
+          <rect x="296" y="302" width="540" height="78" rx="11" fill="#fff" stroke="#BFE0C8"/>
+          <rect x="296" y="302" width="8" height="78" rx="4" fill="#1E8E3E"/>
+          <text x="324" y="332" font-size="15" font-weight="600" fill="#16243F">4 · Critique</text>
+          <text x="324" y="356" font-size="12.5" fill="#3C4860" font-weight="300">review → refine loop (Antigravity, best ADK skills) + adversarial self-check;</text>
+          <text x="324" y="372" font-size="12.5" fill="#3C4860" font-weight="300">degrades to deterministic code if the model is unavailable</text>
+        </g>
+        <line x1="836" y1="213" x2="874" y2="213" stroke="#80868B" stroke-width="2.5" marker-end="url(#arrT)"/>
+
+        <!-- right: factory -->
+        <g>
+          <rect x="884" y="40" width="252" height="346" rx="14" fill="#16243F"/>
+          <rect x="884" y="40" width="252" height="6" rx="3" fill="#1E8E3E"/>
+          <text x="908" y="78" font-size="17" font-weight="600" fill="#fff">Agent factory</text>
+          <text x="908" y="100" font-size="12.5" fill="#9DB4D8" font-weight="300">governed agent production</text>
+          <g font-size="12.5" fill="#C7D3E8" font-weight="300">
+            <text x="908" y="146">✓ reproducible (seed 42)</text>
+            <text x="908" y="174">✓ every agent gated &amp; cited</text>
+            <text x="908" y="202">✓ spec-driven, not prompt-driven</text>
+            <text x="908" y="230">✓ human-confirmed specs</text>
+            <text x="908" y="258">✓ 363 agents, one graph</text>
+            <text x="908" y="286">✓ resumable &amp; observable</text>
+          </g>
+          <line x1="908" y1="312" x2="1112" y2="312" stroke="#33415E"/>
+          <text x="908" y="340" font-size="12.5" fill="#7BE0A0" font-weight="500">all four layers applied to every run</text>
+        </g>
+      </svg>
+
+      <p class="cap" style="margin-top:16px">The <span class="hl">harness</span>, <span class="hl">templating</span>, <span class="hl">pipeline checks</span>, and <span class="hl">critique</span> constrain the
+        coding agent so its output is deterministic, schema-conformant, and gated — the conditions required to generate 363 agents reproducibly.</p>
+      <div class="foot"><span>GE Agent Factory · coding agent → agent-building system</span><span class="pageno">09 / 21</span></div>
+    </div>
+  </section>
+  </div>
+
+  <!-- ============== SLIDE 7 — HOW THE SPEC IS WRITTEN ============== -->
+  <div class="frame">
+  <section class="slide" id="s3a">
+    <div class="rail"><i></i><i></i><i></i><i></i></div>
+    <div class="pad">
+      <div class="kicker">The raw material — how a spec is written</div>
+      <h2>The spec is authored as code, inside the deck</h2>
+      <p class="sub">A domain expert writes the use case as typed TypeScript objects on a presentation slide.
+        A sync step extracts them into one machine catalog of 363 specs. The deck <em>is</em> the source of truth.</p>
+
+      <svg viewBox="0 0 1136 296" width="1136" height="296" style="margin-top:26px">
+        <defs>
+          <marker id="arrA" markerWidth="11" markerHeight="11" refX="7" refY="5" orient="auto">
+            <path d="M0,0 L9,5 L0,10 z" fill="#16243F"/>
+          </marker>
+        </defs>
+
+        <!-- authored -->
+        <g>
+          <rect x="0" y="20" width="356" height="220" rx="14" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="0" y="20" width="356" height="6" rx="3" fill="#1A73E8"/>
+          <text x="26" y="56" font-size="17" font-weight="600" fill="#16243F">1 · Authored in the deck</text>
+          <text x="26" y="80" font-size="12.5" fill="#5F6368" class="t-mono">apps/presentation/&hellip;/use-cases/&lt;dept&gt;/*.tsx</text>
+          <g font-size="12.5" fill="#16243F" class="t-mono">
+            <text x="26" y="118">const generationSpec:</text>
+            <text x="40" y="138">UseCaseGenerationSpec = {…}</text>
+            <text x="26" y="166">const behaviorContract:</text>
+            <text x="40" y="186">AgentBehaviorContract = {…}</text>
+          </g>
+          <text x="26" y="218" font-size="12" fill="#3C4860" font-weight="300">typed by hand by a domain expert,</text>
+          <text x="26" y="233" font-size="12" fill="#3C4860" font-weight="300">per department · one slide per use case</text>
+        </g>
+        <line x1="356" y1="130" x2="404" y2="130" stroke="#16243F" stroke-width="2" marker-end="url(#arrA)"/>
+
+        <!-- sync -->
+        <g>
+          <rect x="410" y="20" width="356" height="220" rx="14" fill="#16243F"/>
+          <text x="436" y="56" font-size="17" font-weight="600" fill="#fff">2 · Synced to a catalog</text>
+          <text x="436" y="80" font-size="12.5" fill="#9DB4D8" class="t-mono">sync-use-cases-from-slides.mjs</text>
+          <g font-size="13" fill="#C7D3E8" font-weight="300">
+            <text x="436" y="116">• scan every *.tsx use-case slide</text>
+            <text x="436" y="142">• extract the const objects</text>
+            <text x="452" y="160" font-size="12" fill="#7E93B6" class="t-mono">evalSlideConst()</text>
+            <text x="436" y="186">• synthesize a spec if one is missing</text>
+            <text x="436" y="212">• emit the catalog as JSON</text>
+          </g>
+        </g>
+        <line x1="766" y1="130" x2="814" y2="130" stroke="#16243F" stroke-width="2" marker-end="url(#arrA)"/>
+
+        <!-- catalog -->
+        <g>
+          <rect x="820" y="20" width="316" height="220" rx="14" fill="#fff" stroke="#BFE0C8"/>
+          <rect x="820" y="20" width="316" height="6" rx="3" fill="#1E8E3E"/>
+          <text x="846" y="56" font-size="17" font-weight="600" fill="#16243F">3 · The catalog</text>
+          <text x="846" y="80" font-size="12.5" fill="#5F6368" class="t-mono">src/use-cases.generated.js</text>
+          <text x="846" y="128" font-size="40" font-weight="700" fill="#1E8E3E">363</text>
+          <text x="846" y="154" font-size="13.5" fill="#16243F" font-weight="500">specs in <tspan class="t-mono" font-size="12">USE_CASES</tspan></text>
+          <text x="846" y="190" font-size="12" fill="#3C4860" font-weight="300">the single input the factory</text>
+          <text x="846" y="205" font-size="12" fill="#3C4860" font-weight="300">reads for every run</text>
+        </g>
+      </svg>
+
+      <p class="cap" style="margin-top:18px">Load-bearing signal: a slide that defines no explicit <span class="t-mono">generationSpec</span> is synced with
+        <span class="t-mono">behaviorContract: null</span> — a deliberate flag that the use case still needs enrichment before the factory will generate an ADK agent.</p>
+      <div class="foot"><span>GE Agent Factory · how a spec is written</span><span class="pageno">10 / 21</span></div>
+    </div>
+  </section>
+  </div>
+
+  <!-- ============== SLIDE 4 — ANATOMY OF A SPEC ============== -->
+  <div class="frame">
+  <section class="slide" id="s3b">
+    <div class="rail"><i></i><i></i><i></i><i></i></div>
+    <div class="pad">
+      <div class="kicker">Anatomy of a spec</div>
+      <h2>Three nested layers — the contract is the core</h2>
+      <p class="sub" style="margin-top:8px">Every field is explicit and typed. Almost every generated artifact is derived from the innermost
+        <span class="t-mono">behaviorContract</span>.</p>
+
+      <svg viewBox="0 0 1136 412" width="1136" height="412" style="margin-top:14px">
+        <!-- envelope -->
+        <rect x="0" y="0" width="1136" height="412" rx="16" fill="#F4F6F9" stroke="#D5DAE3"/>
+        <text x="24" y="30" font-size="14" font-weight="600" fill="#16243F">Use-case envelope</text>
+        <text x="24" y="52" font-size="12.5" fill="#3C4860" class="t-mono">id · title · department · persona · triggerType · systems · kpis · architecture · statusQuo</text>
+
+        <!-- generationSpec -->
+        <rect x="24" y="70" width="1088" height="324" rx="13" fill="#fff" stroke="#C7D0DD"/>
+        <text x="46" y="98" font-size="14" font-weight="600" fill="#174EA6">generationSpec</text>
+        <text x="46" y="120" font-size="12.5" fill="#3C4860" class="t-mono">version · rowPolicy{ seed: 42 } · sourceSystems[ owns · protocol · localBacking · toolNames ]</text>
+        <text x="46" y="140" font-size="12.5" fill="#3C4860" class="t-mono">entities[ name · datastore · primaryKey · columns{ type · required · values · ref · min/max } ] · documents · relationships · apis</text>
+
+        <!-- behaviorContract -->
+        <rect x="46" y="158" width="1044" height="216" rx="12" fill="#16243F"/>
+        <text x="70" y="188" font-size="15" font-weight="600" fill="#fff">behaviorContract <tspan font-size="12" fill="#7BE0A0" font-weight="500">— load-bearing</tspan></text>
+
+        <g font-size="12.5" fill="#C7D3E8" font-weight="300">
+          <!-- col 1 -->
+          <text x="70" y="218" font-size="12" fill="#9DB4D8" class="t-mono">role · primaryObjective</text>
+          <text x="70" y="240" font-size="12" fill="#9DB4D8" class="t-mono">inScope[] · outOfScope[]</text>
+          <text x="70" y="276" font-size="13" fill="#fff" font-weight="500">toolIntents[]</text>
+          <text x="70" y="296" class="t-mono" font-size="11.5">name · kind · sourceSystemId</text>
+          <text x="70" y="314" class="t-mono" font-size="11.5">requiredInputs[] · produces[]</text>
+          <text x="70" y="332" class="t-mono" font-size="11.5">evidenceEmitted[]</text>
+          <text x="70" y="356" font-size="11.5" fill="#7E93B6">query · action · calculation · notification · evidence_lookup</text>
+        </g>
+
+        <line x1="455" y1="210" x2="455" y2="358" stroke="#33415E" stroke-width="1"/>
+        <g font-size="12.5" fill="#C7D3E8" font-weight="300">
+          <text x="478" y="218" font-size="13" fill="#fff" font-weight="500">evidenceRequirements[]</text>
+          <text x="478" y="238" class="t-mono" font-size="11.5">claim · mustCite[] · sourceSystemIds[]</text>
+          <text x="478" y="270" font-size="13" fill="#fff" font-weight="500">escalationRules[]</text>
+          <text x="478" y="290" class="t-mono" font-size="11.5">trigger · action · handoffTarget</text>
+          <text x="478" y="322" font-size="13" fill="#fff" font-weight="500">refusalRules[]</text>
+          <text x="478" y="342" class="t-mono" font-size="11.5">guardrails the agent must obey</text>
+        </g>
+
+        <line x1="838" y1="210" x2="838" y2="358" stroke="#33415E" stroke-width="1"/>
+        <g font-size="12.5" fill="#C7D3E8" font-weight="300">
+          <text x="862" y="218" font-size="13" fill="#7BE0A0" font-weight="500">goldenEvals[]</text>
+          <text x="862" y="240" class="t-mono" font-size="11.5">prompt</text>
+          <text x="862" y="258" class="t-mono" font-size="11.5">expectedToolCalls[]</text>
+          <text x="862" y="276" class="t-mono" font-size="11.5">mustReferenceEntities[]</text>
+          <text x="862" y="294" class="t-mono" font-size="11.5">mustCiteDocuments[]</text>
+          <text x="862" y="312" class="t-mono" font-size="11.5">expectedActionOutcome</text>
+          <text x="862" y="330" class="t-mono" font-size="11.5">forbiddenBehaviors[]</text>
+          <text x="862" y="356" font-size="11.5" fill="#7E93B6">the acceptance test, written first</text>
+        </g>
+      </svg>
+
+      <div class="foot"><span>GE Agent Factory · anatomy of a spec</span><span class="pageno">11 / 21</span></div>
+    </div>
+  </section>
+  </div>
+
+  <!-- ============== SLIDE 5 — HOW THE SPEC IS INGESTED ============== -->
+  <div class="frame">
+  <section class="slide" id="s3c">
+    <div class="rail"><i></i><i></i><i></i><i></i></div>
+    <div class="pad">
+      <div class="kicker">Ingestion &amp; enrichment</div>
+      <h2>From catalog entry to an enriched, bound schema</h2>
+      <p class="sub" style="margin-top:8px"><span class="t-mono">ge-mock from-usecase</span> resolves the spec, maps it to a runtime schema, then lets
+        domain <em>packs</em> bind canonical data and harden the contract — all deterministically (seed 42).</p>
+
+      <svg viewBox="0 0 1136 400" width="1136" height="400" style="margin-top:14px">
+        <defs>
+          <marker id="arrC" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto">
+            <path d="M0,0 L8,5 L0,10 z" fill="#80868B"/>
+          </marker>
+        </defs>
+
+        <!-- pipeline column (left/center) -->
+        <text x="0" y="20" font-size="13" font-weight="600" fill="#16243F" class="t-mono">cmdFromUseCase()</text>
+
+        <g font-size="13.5">
+          <!-- step 1 -->
+          <rect x="0" y="36" width="700" height="74" rx="11" fill="#fff" stroke="#D5DAE3"/>
+          <circle cx="34" cy="73" r="15" fill="#1A73E8"/><text x="34" y="78" font-size="14" font-weight="600" fill="#fff" text-anchor="middle">1</text>
+          <text x="64" y="66" font-weight="600" fill="#16243F">Resolve the spec</text>
+          <text x="64" y="90" font-size="12.5" fill="#3C4860" font-weight="300">load <tspan class="t-mono" font-size="11.5">use-cases.generated.js</tspan>, find by id &nbsp;·&nbsp; <tspan class="t-mono" font-size="11.5">findUseCase()</tspan></text>
+
+          <line x1="34" y1="110" x2="34" y2="124" stroke="#80868B" stroke-width="2" marker-end="url(#arrC)"/>
+          <!-- step 2 -->
+          <rect x="0" y="128" width="700" height="80" rx="11" fill="#fff" stroke="#D5DAE3"/>
+          <circle cx="34" cy="168" r="15" fill="#1A73E8"/><text x="34" y="173" font-size="14" font-weight="600" fill="#fff" text-anchor="middle">2</text>
+          <text x="64" y="158" font-weight="600" fill="#16243F">Map spec → runtime schema</text>
+          <text x="64" y="181" font-size="12.5" fill="#3C4860" font-weight="300"><tspan class="t-mono" font-size="11.5">deriveSchemaFromUseCase()</tspan> · entities → tables, documents → docs,</text>
+          <text x="64" y="198" font-size="12.5" fill="#3C4860" font-weight="300">build <tspan class="t-mono" font-size="11.5">useCaseSpec</tspan> (systems · contracts · evidence · integrity rules)</text>
+
+          <line x1="34" y1="208" x2="34" y2="222" stroke="#80868B" stroke-width="2" marker-end="url(#arrC)"/>
+          <!-- step 3 -->
+          <rect x="0" y="226" width="700" height="80" rx="11" fill="#16243F"/>
+          <circle cx="34" cy="266" r="15" fill="#1E8E3E"/><text x="34" y="271" font-size="14" font-weight="600" fill="#fff" text-anchor="middle">3</text>
+          <text x="64" y="256" font-weight="600" fill="#fff">Enrich with domain packs</text>
+          <text x="64" y="279" font-size="12.5" fill="#C7D3E8" font-weight="300"><tspan class="t-mono" font-size="11.5">enrichScenarioSpec()</tspan> → <tspan class="t-mono" font-size="11.5">matchScenarioPacks()</tspan> →</text>
+          <text x="64" y="296" font-size="12.5" fill="#C7D3E8" font-weight="300"><tspan class="t-mono" font-size="11.5">pack.apply()</tspan> seeds fixtures · <tspan class="t-mono" font-size="11.5">pack.enrichContract()</tspan> hardens rules</text>
+
+          <line x1="34" y1="306" x2="34" y2="320" stroke="#80868B" stroke-width="2" marker-end="url(#arrC)"/>
+          <!-- step 4 -->
+          <rect x="0" y="324" width="700" height="64" rx="11" fill="#fff" stroke="#BFE0C8"/>
+          <circle cx="34" cy="356" r="15" fill="#1E8E3E"/><text x="34" y="361" font-size="14" font-weight="600" fill="#fff" text-anchor="middle">4</text>
+          <text x="64" y="350" font-weight="600" fill="#16243F">Persist the bound schema</text>
+          <text x="64" y="373" font-size="12.5" fill="#3C4860" font-weight="300">write <tspan class="t-mono" font-size="11.5">schema.json</tspan> + <tspan class="t-mono" font-size="11.5">usecase-spec.json</tspan> — input to every later stage</text>
+        </g>
+
+        <!-- what a pack is (right) -->
+        <g>
+          <rect x="740" y="36" width="396" height="352" rx="13" fill="#F4F6F9" stroke="#D5DAE3"/>
+          <rect x="740" y="36" width="396" height="6" rx="3" fill="#5F6368"/>
+          <text x="766" y="74" font-size="16" font-weight="600" fill="#16243F">What a pack is</text>
+          <text x="766" y="98" font-size="12.5" fill="#5F6368" font-weight="300">a domain / system recipe, e.g. HR&nbsp;benefits,</text>
+          <text x="766" y="115" font-size="12.5" fill="#5F6368" font-weight="300">employee&nbsp;records, ServiceNow&nbsp;incidents</text>
+
+          <text x="766" y="150" font-size="13" font-weight="600" fill="#174EA6">Selected by content, not name</text>
+          <text x="766" y="170" font-size="12" fill="#3C4860" font-weight="300" class="t-mono">match() regex over id · title ·</text>
+          <text x="766" y="186" font-size="12" fill="#3C4860" font-weight="300" class="t-mono">primaryObjective · toolIntent names</text>
+
+          <text x="766" y="220" font-size="13" font-weight="600" fill="#174EA6">Adds three things</text>
+          <text x="766" y="242" font-size="12.5" fill="#16243F" font-weight="300">• canonical entities &amp; capabilities</text>
+          <text x="766" y="263" font-size="12.5" fill="#16243F" font-weight="300">• <tspan font-weight="500">seeded fixture rows</tspan> with fixed IDs</text>
+          <text x="784" y="281" font-size="11.5" fill="#5F6368" class="t-mono">"PLAN-STANDARD-PPO-FAMILY"</text>
+          <text x="766" y="302" font-size="12.5" fill="#16243F" font-weight="300">• eval hints + extra refusal rules</text>
+          <text x="784" y="320" font-size="11.5" fill="#5F6368" class="t-mono">contract.evalEnrichment.packHints</text>
+
+          <rect x="766" y="338" width="344" height="34" rx="8" fill="#16243F"/>
+          <text x="786" y="360" font-size="12.5" fill="#7BE0A0" font-weight="500" class="t-mono">seed 42 → byte-identical every run</text>
+        </g>
+      </svg>
+
+      <div class="foot"><span>GE Agent Factory · ingestion &amp; enrichment</span><span class="pageno">12 / 21</span></div>
+    </div>
+  </section>
+  </div>
+
+  <!-- ============== SLIDE 6 — ONE SPEC, BLOWN UP ============== -->
+  <div class="frame">
+  <section class="slide" id="s3d">
+    <div class="rail"><i></i><i></i><i></i><i></i></div>
+    <div class="pad">
+      <div class="kicker">The blow-up — one spec, fanned into a working agent</div>
+      <h2>Each part of the contract drives a specific artifact</h2>
+      <p class="sub" style="margin-top:8px">One enriched schema is expanded deterministically into code, data, semantics, and tests; every output is derived from a spec field.</p>
+
+      <svg viewBox="0 0 1136 408" width="1136" height="408" style="margin-top:12px">
+        <!-- center source node -->
+        <rect x="398" y="0" width="340" height="92" rx="13" fill="#16243F"/>
+        <text x="568" y="34" font-size="16" font-weight="600" fill="#fff" text-anchor="middle">enriched schema + behaviorContract</text>
+        <text x="568" y="58" font-size="12" fill="#9DB4D8" text-anchor="middle" class="t-mono">+ manifest.json (tables · systems · seed 42)</text>
+        <text x="568" y="78" font-size="12" fill="#7E93B6" text-anchor="middle">cmdGenerate · cmdTools · cmdTest</text>
+
+        <!-- fan connectors -->
+        <g stroke="#C7D0DD" stroke-width="2" fill="none">
+          <path d="M568,92 C300,118 150,120 144,150"/>
+          <path d="M568,92 C460,124 430,128 424,150"/>
+          <path d="M568,92 C676,124 706,128 704,150"/>
+          <path d="M568,92 C840,118 986,120 992,150"/>
+        </g>
+
+        <!-- BIN 1 — agent -->
+        <g>
+          <rect x="10" y="150" width="268" height="246" rx="12" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="10" y="150" width="268" height="34" rx="12" fill="#1A73E8"/>
+          <rect x="10" y="168" width="268" height="16" fill="#1A73E8"/>
+          <text x="28" y="172" font-size="13.5" font-weight="600" fill="#fff">Agent</text>
+          <text x="28" y="208" font-size="12" fill="#16243F" class="t-mono">app/agent.py</text>
+          <text x="28" y="236" font-size="12" fill="#3C4860" font-weight="300">instruction, 9 sections:</text>
+          <text x="28" y="254" font-size="11.5" fill="#5F6368" font-weight="300">role · objective · scope ·</text>
+          <text x="28" y="270" font-size="11.5" fill="#5F6368" font-weight="300">tool playbook · evidence ·</text>
+          <text x="28" y="286" font-size="11.5" fill="#5F6368" font-weight="300">escalation · refusal</text>
+          <text x="28" y="314" font-size="12" fill="#3C4860" font-weight="300">3 ADK callbacks:</text>
+          <text x="28" y="332" font-size="11.5" fill="#5F6368" font-weight="300">init state · enforce contract ·</text>
+          <text x="28" y="348" font-size="11.5" fill="#5F6368" font-weight="300">capture evidence</text>
+          <text x="28" y="378" font-size="11" fill="#174EA6" class="t-mono">← role · objective · rules</text>
+        </g>
+
+        <!-- BIN 2 — tools + data -->
+        <g>
+          <rect x="290" y="150" width="268" height="246" rx="12" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="290" y="150" width="268" height="34" rx="12" fill="#1A73E8"/>
+          <rect x="290" y="168" width="268" height="16" fill="#1A73E8"/>
+          <text x="308" y="172" font-size="13.5" font-weight="600" fill="#fff">Tools &amp; data</text>
+          <text x="308" y="208" font-size="12" fill="#16243F" class="t-mono">app/tools.py</text>
+          <text x="308" y="234" font-size="11.5" fill="#5F6368" font-weight="300">query_&lt;sys&gt;_&lt;table&gt;() per entity</text>
+          <text x="308" y="252" font-size="11.5" fill="#5F6368" font-weight="300">action / calculation / notify tools</text>
+          <text x="308" y="270" font-size="11.5" fill="#5F6368" font-weight="300">required-input guards · deterministic IDs</text>
+          <text x="308" y="300" font-size="12" fill="#16243F" class="t-mono">fixtures/tables/*.json</text>
+          <text x="308" y="324" font-size="11.5" fill="#5F6368" font-weight="300">seed-42 rows + pack canonical IDs</text>
+          <text x="308" y="378" font-size="11" fill="#174EA6" class="t-mono">← entities · toolIntents</text>
+        </g>
+
+        <!-- BIN 3 — semantics -->
+        <g>
+          <rect x="570" y="150" width="268" height="246" rx="12" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="570" y="150" width="268" height="34" rx="12" fill="#5F6368"/>
+          <rect x="570" y="168" width="268" height="16" fill="#5F6368"/>
+          <text x="588" y="172" font-size="13.5" font-weight="600" fill="#fff">Semantics → NL→SQL</text>
+          <text x="588" y="208" font-size="12" fill="#16243F" class="t-mono">semantic-model.json</text>
+          <text x="588" y="234" font-size="11.5" fill="#5F6368" font-weight="300">column descriptions + synonyms</text>
+          <text x="588" y="252" font-size="11.5" fill="#5F6368" font-weight="300">joins (shared keys)</text>
+          <text x="588" y="270" font-size="11.5" fill="#5F6368" font-weight="300">measures (calculation intents)</text>
+          <text x="588" y="288" font-size="11.5" fill="#5F6368" font-weight="300">source-system glossary</text>
+          <text x="588" y="316" font-size="12" fill="#3C4860" font-weight="300">applied as BigQuery descriptions →</text>
+          <text x="588" y="334" font-size="11.5" fill="#1E8E3E" font-weight="500">grounded SQL via BigQuery MCP</text>
+          <text x="588" y="378" font-size="11" fill="#174EA6" class="t-mono">← tables · columns · measures</text>
+        </g>
+
+        <!-- BIN 4 — quality + wiring -->
+        <g>
+          <rect x="850" y="150" width="286" height="246" rx="12" fill="#fff" stroke="#BFE0C8"/>
+          <rect x="850" y="150" width="286" height="34" rx="12" fill="#1E8E3E"/>
+          <rect x="850" y="168" width="286" height="16" fill="#1E8E3E"/>
+          <text x="868" y="172" font-size="13.5" font-weight="600" fill="#fff">Quality &amp; wiring</text>
+          <text x="868" y="208" font-size="12" fill="#16243F" class="t-mono">evals/golden.json</text>
+          <text x="868" y="226" font-size="12" fill="#16243F" class="t-mono">*.evalset.json · eval_config</text>
+          <text x="868" y="244" font-size="11.5" fill="#5F6368" font-weight="300">trajectory + rubric thresholds</text>
+          <text x="868" y="272" font-size="12" fill="#16243F" class="t-mono">tests/test_smoke.py</text>
+          <text x="868" y="290" font-size="11.5" fill="#5F6368" font-weight="300">callback-contract gate (offline)</text>
+          <text x="868" y="318" font-size="12" fill="#16243F" class="t-mono">mcp-tools.json + bindings</text>
+          <text x="868" y="336" font-size="11.5" fill="#5F6368" font-weight="300">1P MCP vs custom adapter per system</text>
+          <text x="868" y="378" font-size="11" fill="#174EA6" class="t-mono">← goldenEvals · sourceSystems</text>
+        </g>
+      </svg>
+
+      <div class="foot"><span>Deterministic: identical spec and seed produce identical generated output</span><span class="pageno">13 / 21</span></div>
+    </div>
+  </section>
+  </div>
+
+  <!-- ============== SLIDE 11 — 3P SYSTEM SCHEMAS ============== -->
+  <div class="frame">
+  <section class="slide" id="s3e">
+    <div class="rail"><i></i><i></i><i></i><i></i></div>
+    <div class="pad">
+      <div class="kicker">Third-party systems as concrete schemas</div>
+      <h2>A system name becomes real entities, columns &amp; a store</h2>
+      <p class="sub" style="margin-top:8px">&ldquo;Workday&rdquo; or &ldquo;SAP&nbsp;S/4HANA&rdquo; isn&rsquo;t a label — the factory expands each into a typed relational schema,
+        then picks the right datastore class for it. No real third-party system is touched.</p>
+
+      <svg viewBox="0 0 1136 392" width="1136" height="392" style="margin-top:18px">
+        <!-- 4 system cards -->
+        <!-- Workday -->
+        <g>
+          <rect x="0" y="0" width="268" height="276" rx="12" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="0" y="0" width="268" height="40" rx="12" fill="#1A73E8"/>
+          <rect x="0" y="22" width="268" height="18" fill="#1A73E8"/>
+          <text x="18" y="26" font-size="14.5" font-weight="600" fill="#fff">Workday</text>
+          <text x="18" y="64" font-size="11.5" fill="#5F6368" font-weight="300">HR / HRIS</text>
+          <g font-size="12" fill="#16243F" class="t-mono">
+            <text x="18" y="98">employees</text>
+            <text x="18" y="122">employment_profiles</text>
+            <text x="18" y="146">life_events</text>
+            <text x="18" y="170">job_assignments</text>
+          </g>
+          <rect x="18" y="222" width="160" height="30" rx="8" fill="#EAF2FE"/>
+          <text x="32" y="242" font-size="11.5" fill="#174EA6" font-weight="500">AlloyDB · OLTP</text>
+        </g>
+        <!-- SAP S/4HANA -->
+        <g>
+          <rect x="286" y="0" width="268" height="276" rx="12" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="286" y="0" width="268" height="40" rx="12" fill="#16243F"/>
+          <rect x="286" y="22" width="268" height="18" fill="#16243F"/>
+          <text x="304" y="26" font-size="14.5" font-weight="600" fill="#fff">SAP S/4HANA</text>
+          <text x="304" y="64" font-size="11.5" fill="#5F6368" font-weight="300">Finance ERP</text>
+          <g font-size="12" fill="#16243F" class="t-mono">
+            <text x="304" y="98">vendors</text>
+            <text x="304" y="122">invoices</text>
+            <text x="304" y="146">journal_entries</text>
+            <text x="304" y="170">payments</text>
+          </g>
+          <rect x="304" y="222" width="160" height="30" rx="8" fill="#EAF2FE"/>
+          <text x="318" y="242" font-size="11.5" fill="#174EA6" font-weight="500">AlloyDB · OLTP</text>
+        </g>
+        <!-- ServiceNow -->
+        <g>
+          <rect x="572" y="0" width="268" height="276" rx="12" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="572" y="0" width="268" height="40" rx="12" fill="#5F6368"/>
+          <rect x="572" y="22" width="268" height="18" fill="#5F6368"/>
+          <text x="590" y="26" font-size="14.5" font-weight="600" fill="#fff">ServiceNow</text>
+          <text x="590" y="64" font-size="11.5" fill="#5F6368" font-weight="300">ITSM</text>
+          <g font-size="12" fill="#16243F" class="t-mono">
+            <text x="590" y="98">tickets</text>
+            <text x="590" y="122">cmdb_items</text>
+            <text x="590" y="146">incidents</text>
+            <text x="590" y="170">approvals</text>
+          </g>
+          <rect x="590" y="222" width="160" height="30" rx="8" fill="#EAF2FE"/>
+          <text x="604" y="242" font-size="11.5" fill="#174EA6" font-weight="500">AlloyDB · OLTP</text>
+        </g>
+        <!-- Coupa / Ariba -->
+        <g>
+          <rect x="858" y="0" width="278" height="276" rx="12" fill="#fff" stroke="#BFE0C8"/>
+          <rect x="858" y="0" width="278" height="40" rx="12" fill="#1E8E3E"/>
+          <rect x="858" y="22" width="278" height="18" fill="#1E8E3E"/>
+          <text x="876" y="26" font-size="14.5" font-weight="600" fill="#fff">Coupa / SAP Ariba</text>
+          <text x="876" y="64" font-size="11.5" fill="#5F6368" font-weight="300">Procurement</text>
+          <g font-size="12" fill="#16243F" class="t-mono">
+            <text x="876" y="98">suppliers</text>
+            <text x="876" y="122">purchase_orders</text>
+            <text x="876" y="146">contracts</text>
+            <text x="876" y="170">spend_facts</text>
+          </g>
+          <rect x="876" y="222" width="220" height="30" rx="8" fill="#E6F4EA"/>
+          <text x="890" y="242" font-size="11.5" fill="#1E8E3E" font-weight="500">AlloyDB · OLTP&nbsp;&nbsp;+&nbsp;&nbsp;BigQuery · OLAP</text>
+        </g>
+
+        <!-- mechanism strip -->
+        <rect x="0" y="292" width="1136" height="100" rx="12" fill="#F4F6F9" stroke="#E1E6EE"/>
+        <text x="22" y="320" font-size="13.5" font-weight="600" fill="#16243F">How a system becomes a schema</text>
+        <text x="22" y="344" font-size="12.5" fill="#3C4860" font-weight="300">system packs declare systems + capabilities&nbsp;&nbsp;→&nbsp;&nbsp;<tspan class="t-mono" font-size="11.5">entitiesFor()</tspan> maps system → entities&nbsp;&nbsp;→&nbsp;&nbsp;<tspan class="t-mono" font-size="11.5">columnSet()</tspan> gives columns&nbsp;&nbsp;→&nbsp;&nbsp;<tspan class="t-mono" font-size="11.5">targetFor()</tspan> classifies the store</text>
+        <text x="22" y="372" font-size="11.5" fill="#5F6368" font-weight="300">e.g. <tspan class="t-mono">employees</tspan> → id · source_record_id · name · email · department · region · status · life_event · dependents &nbsp;&nbsp;·&nbsp;&nbsp; OLTP→AlloyDB, OLAP→BigQuery, blobs→Cloud Storage</text>
+      </svg>
+
+      <div class="foot"><span>GE Agent Factory · third-party systems as concrete schemas</span><span class="pageno">14 / 21</span></div>
+    </div>
+  </section>
+  </div>
+
+  <!-- ============== SLIDE 12 — SYNTHETIC DATA + REFERENTIAL INTEGRITY ============== -->
+  <div class="frame">
+  <section class="slide" id="s3f">
+    <div class="rail"><i></i><i></i><i></i><i></i></div>
+    <div class="pad">
+      <div class="kicker">Synthetic data with real referential integrity</div>
+      <h2>Deterministic rows that actually join</h2>
+      <p class="sub" style="margin-top:8px">Every fixture is generated from seed 42 — byte-identical each run — and every foreign key resolves to a
+        real primary key, so joins work and the golden evals are always satisfiable.</p>
+
+      <svg viewBox="0 0 1136 400" width="1136" height="400" style="margin-top:16px">
+        <defs>
+          <marker id="fk" markerWidth="11" markerHeight="11" refX="8" refY="5" orient="auto">
+            <path d="M0,0 L9,5 L0,10 z" fill="#1E8E3E"/>
+          </marker>
+        </defs>
+
+        <!-- employees (parent) -->
+        <g>
+          <rect x="0" y="34" width="288" height="120" rx="11" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="0" y="34" width="288" height="30" rx="11" fill="#1A73E8"/>
+          <rect x="0" y="52" width="288" height="12" fill="#1A73E8"/>
+          <text x="16" y="55" font-size="13" font-weight="600" fill="#fff" class="t-mono">employees</text>
+          <g font-size="12" class="t-mono">
+            <text x="16" y="86" fill="#16243F" font-weight="600">id  🔑 PK</text>
+            <text x="16" y="108" fill="#3C4860">name · department</text>
+            <text x="16" y="130" fill="#3C4860">status · region</text>
+          </g>
+        </g>
+        <!-- benefit_plans (parent) -->
+        <g>
+          <rect x="0" y="246" width="288" height="120" rx="11" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="0" y="246" width="288" height="30" rx="11" fill="#1A73E8"/>
+          <rect x="0" y="264" width="288" height="12" fill="#1A73E8"/>
+          <text x="16" y="267" font-size="13" font-weight="600" fill="#fff" class="t-mono">benefit_plans</text>
+          <g font-size="12" class="t-mono">
+            <text x="16" y="298" fill="#16243F" font-weight="600">id  🔑 PK</text>
+            <text x="16" y="320" fill="#3C4860">plan_name</text>
+            <text x="16" y="342" fill="#3C4860">monthly_premium</text>
+          </g>
+        </g>
+        <!-- enrollments (child) -->
+        <g>
+          <rect x="360" y="138" width="300" height="124" rx="11" fill="#fff" stroke="#BFE0C8" stroke-width="1.5"/>
+          <rect x="360" y="138" width="300" height="30" rx="11" fill="#1E8E3E"/>
+          <rect x="360" y="156" width="300" height="12" fill="#1E8E3E"/>
+          <text x="376" y="159" font-size="13" font-weight="600" fill="#fff" class="t-mono">enrollments</text>
+          <g font-size="12" class="t-mono">
+            <text x="376" y="190" fill="#16243F" font-weight="600">id  🔑 PK</text>
+            <text x="376" y="212" fill="#1E8E3E">employee_id  ↗ FK</text>
+            <text x="376" y="234" fill="#1E8E3E">plan_id  ↗ FK</text>
+            <text x="376" y="254" fill="#3C4860">status · effective_date</text>
+          </g>
+        </g>
+        <!-- FK arrows -->
+        <path d="M376,206 C320,206 300,95 292,95" fill="none" stroke="#1E8E3E" stroke-width="2" marker-end="url(#fk)"/>
+        <path d="M376,228 C320,228 300,305 292,305" fill="none" stroke="#1E8E3E" stroke-width="2" marker-end="url(#fk)"/>
+        <text x="300" y="150" font-size="10.5" fill="#1E8E3E" class="t-mono">ref: employees.id</text>
+        <text x="300" y="360" font-size="10.5" fill="#1E8E3E" class="t-mono">ref: benefit_plans.id</text>
+
+        <!-- mechanism panel -->
+        <g>
+          <rect x="700" y="34" width="436" height="332" rx="12" fill="#16243F"/>
+          <text x="726" y="66" font-size="15" font-weight="600" fill="#fff">How integrity is guaranteed</text>
+          <g font-size="12.5" fill="#C7D3E8" font-weight="300">
+            <text x="726" y="100"><tspan fill="#7BE0A0" font-weight="600">1</tspan>&nbsp;&nbsp;seed 42 faker → identical rows every run</text>
+            <text x="726" y="130"><tspan fill="#7BE0A0" font-weight="600">2</tspan>&nbsp;&nbsp;parents generated before children</text>
+            <text x="726" y="160"><tspan fill="#7BE0A0" font-weight="600">3</tspan>&nbsp;&nbsp;FK columns typed <tspan class="t-mono" font-size="11">ref:&quot;employees.id&quot;</tspan></text>
+            <text x="726" y="190"><tspan fill="#7BE0A0" font-weight="600">4</tspan>&nbsp;&nbsp;<tspan class="t-mono" font-size="11">generateValue()</tspan> picks an existing PK</text>
+            <text x="726" y="220"><tspan fill="#7BE0A0" font-weight="600">5</tspan>&nbsp;&nbsp;<tspan class="t-mono" font-size="11">repairGeneratedReferences()</tspan> 2nd pass —</text>
+            <text x="752" y="240">no orphan FK survives</text>
+            <text x="726" y="270"><tspan fill="#7BE0A0" font-weight="600">6</tspan>&nbsp;&nbsp;scenario bindings seed canonical IDs</text>
+            <text x="752" y="290" class="t-mono" font-size="11">EMP-0007 · PLAN-STANDARD-PPO-FAMILY</text>
+            <text x="752" y="308" font-size="11.5">from the golden evals → evals satisfiable</text>
+          </g>
+          <line x1="726" y1="326" x2="1110" y2="326" stroke="#33415E"/>
+          <text x="726" y="350" font-size="11.5" fill="#9DB4D8" font-weight="300">Snowfakery recipe emits <tspan class="t-mono" font-size="11">reference('employees')</tspan> for scale-out</text>
+        </g>
+      </svg>
+
+      <div class="foot"><span>Every foreign key resolves to an existing primary key; output is deterministic</span><span class="pageno">15 / 21</span></div>
+    </div>
+  </section>
+  </div>
+
+  <!-- ============== SLIDE 13 — UTILITY WRAPPING / SOURCE-SYSTEM ENVELOPE ============== -->
+  <div class="frame">
+  <section class="slide" id="s3g">
+    <div class="rail"><i></i><i></i><i></i><i></i></div>
+    <div class="pad">
+      <div class="kicker">How the utilities are wrapped</div>
+      <h2>One multi-tenant service, per-system response shapes</h2>
+      <p class="sub" style="margin-top:8px">A single multi-tenant FastMCP image serves every agent. Each tool carries a <span class="t-mono">binding</span>; the service
+        turns it into a store operation and wraps the result in a source-system envelope matching the named system.</p>
+
+      <svg viewBox="0 0 1136 360" width="1136" height="360" style="margin-top:16px">
+        <defs>
+          <marker id="arrW" markerWidth="11" markerHeight="11" refX="7" refY="5" orient="auto">
+            <path d="M0,0 L9,5 L0,10 z" fill="#16243F"/>
+          </marker>
+        </defs>
+
+        <!-- A tool call -->
+        <g>
+          <rect x="0" y="40" width="214" height="120" rx="11" fill="#fff" stroke="#D5DAE3"/>
+          <text x="16" y="68" font-size="13" font-weight="600" fill="#16243F">1 · Tool call</text>
+          <text x="16" y="96" font-size="10.5" fill="#5F6368" class="t-mono">query_workday_</text>
+          <text x="16" y="112" font-size="10.5" fill="#5F6368" class="t-mono">employees(</text>
+          <text x="16" y="128" font-size="10.5" fill="#5F6368" class="t-mono">  employee_id=</text>
+          <text x="16" y="144" font-size="10.5" fill="#5F6368" class="t-mono">  "EMP-0007")</text>
+        </g>
+        <line x1="214" y1="100" x2="244" y2="100" stroke="#16243F" stroke-width="2" marker-end="url(#arrW)"/>
+
+        <!-- B binding -->
+        <g>
+          <rect x="250" y="40" width="232" height="120" rx="11" fill="#fff" stroke="#D5DAE3"/>
+          <text x="266" y="68" font-size="13" font-weight="600" fill="#16243F">2 · binding</text>
+          <g font-size="10.5" fill="#3C4860" class="t-mono">
+            <text x="266" y="92">op: read</text>
+            <text x="266" y="108">store: bigquery</text>
+            <text x="266" y="124">entity: employees</text>
+            <text x="266" y="140">sourceSystem: Workday</text>
+            <text x="266" y="156">shape: source_system_record</text>
+          </g>
+        </g>
+        <line x1="482" y1="100" x2="512" y2="100" stroke="#16243F" stroke-width="2" marker-end="url(#arrW)"/>
+
+        <!-- C plan_op + store -->
+        <g>
+          <rect x="518" y="40" width="232" height="120" rx="11" fill="#fff" stroke="#D5DAE3"/>
+          <text x="534" y="68" font-size="13" font-weight="600" fill="#16243F">3 · plan_op → store</text>
+          <text x="534" y="92" font-size="10.5" fill="#5F6368" font-weight="300">namespace <tspan class="t-mono">agent_&lt;id&gt;</tspan></text>
+          <text x="534" y="112" font-size="10.5" fill="#5F6368" class="t-mono">SELECT * FROM</text>
+          <text x="534" y="128" font-size="10.5" fill="#5F6368" class="t-mono">agent_&lt;id&gt;.employees</text>
+          <text x="534" y="148" font-size="10" fill="#80868B" font-weight="300">BigQuery · AlloyDB · Firestore · GCS</text>
+        </g>
+        <line x1="750" y1="100" x2="780" y2="100" stroke="#16243F" stroke-width="2" marker-end="url(#arrW)"/>
+
+        <!-- D envelope -->
+        <g>
+          <rect x="786" y="20" width="350" height="170" rx="12" fill="#16243F"/>
+          <text x="806" y="50" font-size="14" font-weight="600" fill="#fff">4 · source-system envelope</text>
+          <g font-size="11.5" class="t-mono">
+            <text x="806" y="80" fill="#9DB4D8">{</text>
+            <text x="820" y="100" fill="#7BE0A0">"source_system": "Workday",</text>
+            <text x="820" y="120" fill="#C7D3E8">"evidence_type": "source_system_record",</text>
+            <text x="820" y="140" fill="#C7D3E8">"audit_trail":</text>
+            <text x="834" y="156" fill="#9DB4D8">"Workday:employees:read:fixture_backed",</text>
+            <text x="820" y="176" fill="#C7D3E8">"data": [ … rows … ]</text>
+            <text x="806" y="190" fill="#9DB4D8">}</text>
+          </g>
+        </g>
+        <path d="M961,190 C961,224 480,224 215,210" fill="none" stroke="#1E8E3E" stroke-width="2" stroke-dasharray="5 5" marker-end="url(#arrW)"/>
+        <text x="560" y="244" font-size="11.5" fill="#1E8E3E" font-weight="500">returned to the agent in the source system&rsquo;s response shape</text>
+
+        <!-- mechanism strip -->
+        <rect x="0" y="270" width="1136" height="86" rx="12" fill="#F4F6F9" stroke="#E1E6EE"/>
+        <text x="22" y="298" font-size="13" font-weight="600" fill="#16243F">Properties</text>
+        <text x="22" y="322" font-size="12" fill="#3C4860" font-weight="300">one generic FastMCP image · multi-tenant via <tspan class="t-mono" font-size="11">?agent=&lt;id&gt;</tspan>&nbsp;&nbsp;·&nbsp;&nbsp;backend switch <tspan class="t-mono" font-size="11">GE_DATA_BACKEND = fixtures | mcp</tspan>&nbsp;&nbsp;·&nbsp;&nbsp;same tool, offline or cloud</text>
+        <text x="22" y="344" font-size="12" fill="#3C4860" font-weight="300">action tools get deterministic IDs <tspan class="t-mono" font-size="11">_deterministic_id() → ACTI-A3F8B2C1D5</tspan> (sha1) so audit trails are reproducible too</text>
+      </svg>
+
+      <div class="foot"><span>GE Agent Factory · the source-system envelope</span><span class="pageno">16 / 21</span></div>
+    </div>
+  </section>
+  </div>
+
+  <!-- ============== SLIDE — FOR THE FIELD / FDE REUSE ============== -->
+  <div class="frame">
+  <section class="slide" id="s3h">
+    <div class="rail"><i></i><i></i><i></i><i></i></div>
+    <div class="pad">
+      <div class="kicker">Built for the field</div>
+      <h2>Reusable by Forward Deployed Engineers</h2>
+      <p class="sub" style="margin-top:8px">The realistic, referentially-intact mock data and source-system envelopes are not only for the 363 — they are a
+        reusable field asset. An FDE can stand up a credible, customer-shaped demo with no real customer data and no live integrations.</p>
+
+      <svg viewBox="0 0 1136 408" width="1136" height="408" style="margin-top:14px">
+        <defs>
+          <filter id="dsF" x="-20%" y="-20%" width="140%" height="160%">
+            <feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#16243F" flood-opacity="0.13"/>
+          </filter>
+          <g id="f-data"><ellipse cx="15" cy="10" rx="8" ry="3.2" fill="none" stroke="#fff" stroke-width="2"/><path d="M7,10 V20 M23,10 V20" stroke="#fff" stroke-width="2"/><path d="M7,20 A8,3.2 0 0 0 23,20" fill="none" stroke="#fff" stroke-width="2"/></g>
+          <g id="f-plug"><rect x="9" y="13" width="12" height="9" rx="2" fill="none" stroke="#fff" stroke-width="2"/><path d="M13,13 V8 M17,13 V8 M15,22 V25" stroke="#fff" stroke-width="2" stroke-linecap="round"/></g>
+          <g id="f-repeat"><path d="M21,11 A7,7 0 1 0 22,16.5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M21.5,7 L22,11.5 L17.5,11 Z" fill="#fff"/></g>
+          <g id="f-check"><path d="M8,15 L13,20 L22,9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></g>
+          <g id="f-up"><path d="M15,7 L21,20 L15,16.5 L9,20 Z" fill="#fff"/></g>
+          <g id="f-list"><rect x="8" y="7" width="14" height="16" rx="2" fill="none" stroke="#fff" stroke-width="2"/><path d="M11,12 H19 M11,15.5 H19 M11,19 H16" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></g>
+        </defs>
+
+        <!-- field-value callout -->
+        <rect x="0" y="0" width="1136" height="44" rx="11" fill="#16243F"/>
+        <text x="24" y="28" font-size="13.5" fill="#fff" font-weight="300"><tspan fill="#7BE0A0" font-weight="600">Field value:</tspan>&nbsp;&nbsp;realistic mock data &middot; referential integrity &middot; deterministic (seed 42) &middot; source-system shapes &middot; <tspan fill="#7BE0A0">no real customer data</tspan></text>
+
+        <!-- ROW 1 -->
+        <!-- card 1 -->
+        <g filter="url(#dsF)"><rect x="0" y="62" width="360" height="158" rx="14" fill="#fff" stroke="#E6E9EF"/></g>
+        <rect x="0" y="62" width="360" height="5" rx="2" fill="#1A73E8"/>
+        <rect x="24" y="84" width="32" height="32" rx="8" fill="#1A73E8"/><use href="#f-data" x="25" y="85"/>
+        <text x="68" y="106" font-size="15" font-weight="600" fill="#16243F">Stand up a POC fast</text>
+        <text x="24" y="140" font-size="12.5" fill="#3C4860" font-weight="300">Generate a customer-shaped dataset with</text>
+        <text x="24" y="158" font-size="12.5" fill="#3C4860" font-weight="300">referential integrity in minutes —</text>
+        <text x="24" y="176" font-size="12.5" fill="#3C4860" font-weight="300">no PII, no scrubbing real data.</text>
+
+        <!-- card 2 -->
+        <g filter="url(#dsF)"><rect x="388" y="62" width="360" height="158" rx="14" fill="#fff" stroke="#E6E9EF"/></g>
+        <rect x="388" y="62" width="360" height="5" rx="2" fill="#5F6368"/>
+        <rect x="412" y="84" width="32" height="32" rx="8" fill="#5F6368"/><use href="#f-plug" x="413" y="85"/>
+        <text x="456" y="106" font-size="15" font-weight="600" fill="#16243F">Demo before integration</text>
+        <text x="412" y="140" font-size="12.5" fill="#3C4860" font-weight="300">Agents run on fixtures + source-system</text>
+        <text x="412" y="158" font-size="12.5" fill="#3C4860" font-weight="300">envelopes (Workday/SAP/ServiceNow),</text>
+        <text x="412" y="176" font-size="12.5" fill="#3C4860" font-weight="300">so you show working agents pre-access.</text>
+
+        <!-- card 3 -->
+        <g filter="url(#dsF)"><rect x="776" y="62" width="360" height="158" rx="14" fill="#fff" stroke="#E6E9EF"/></g>
+        <rect x="776" y="62" width="360" height="5" rx="2" fill="#174EA6"/>
+        <rect x="800" y="84" width="32" height="32" rx="8" fill="#174EA6"/><use href="#f-repeat" x="801" y="85"/>
+        <text x="844" y="106" font-size="15" font-weight="600" fill="#16243F">Reproduce &amp; share</text>
+        <text x="800" y="140" font-size="12.5" fill="#3C4860" font-weight="300">Seed 42 → identical data on any machine;</text>
+        <text x="800" y="158" font-size="12.5" fill="#3C4860" font-weight="300">portable, version-controlled scenarios</text>
+        <text x="800" y="176" font-size="12.5" fill="#3C4860" font-weight="300">for repeatable demos and bug repro.</text>
+
+        <!-- ROW 2 -->
+        <!-- card 4 -->
+        <g filter="url(#dsF)"><rect x="0" y="234" width="360" height="158" rx="14" fill="#fff" stroke="#E6E9EF"/></g>
+        <rect x="0" y="234" width="360" height="5" rx="2" fill="#1E8E3E"/>
+        <rect x="24" y="256" width="32" height="32" rx="8" fill="#1E8E3E"/><use href="#f-check" x="25" y="257"/>
+        <text x="68" y="278" font-size="15" font-weight="600" fill="#16243F">Prove it works</text>
+        <text x="24" y="312" font-size="12.5" fill="#3C4860" font-weight="300">Generated eval sets + smoke tests give</text>
+        <text x="24" y="330" font-size="12.5" fill="#3C4860" font-weight="300">acceptance criteria you can run live</text>
+        <text x="24" y="348" font-size="12.5" fill="#3C4860" font-weight="300">in front of the customer.</text>
+
+        <!-- card 5 -->
+        <g filter="url(#dsF)"><rect x="388" y="234" width="360" height="158" rx="14" fill="#fff" stroke="#E6E9EF"/></g>
+        <rect x="388" y="234" width="360" height="5" rx="2" fill="#1A73E8"/>
+        <rect x="412" y="256" width="32" height="32" rx="8" fill="#1A73E8"/><use href="#f-up" x="413" y="257"/>
+        <text x="456" y="278" font-size="15" font-weight="600" fill="#16243F">Graduate to production</text>
+        <text x="412" y="312" font-size="12.5" fill="#3C4860" font-weight="300">Flip <tspan class="t-mono" font-size="11.5">GE_DATA_BACKEND</tspan> from</text>
+        <text x="412" y="330" font-size="12.5" fill="#3C4860" font-weight="300">fixtures → live stores; the same agent</text>
+        <text x="412" y="348" font-size="12.5" fill="#3C4860" font-weight="300">and tools, no rewrite.</text>
+
+        <!-- card 6 -->
+        <g filter="url(#dsF)"><rect x="776" y="234" width="360" height="158" rx="14" fill="#fff" stroke="#E6E9EF"/></g>
+        <rect x="776" y="234" width="360" height="5" rx="2" fill="#5F6368"/>
+        <rect x="800" y="256" width="32" height="32" rx="8" fill="#5F6368"/><use href="#f-list" x="801" y="257"/>
+        <text x="844" y="278" font-size="15" font-weight="600" fill="#16243F">Reuse standalone</text>
+        <text x="800" y="312" font-size="12.5" fill="#3C4860" font-weight="300">The data generator + NL→SQL semantic</text>
+        <text x="800" y="330" font-size="12.5" fill="#3C4860" font-weight="300">model are usable on their own for</text>
+        <text x="800" y="348" font-size="12.5" fill="#3C4860" font-weight="300">data &amp; BigQuery analytics demos.</text>
+      </svg>
+
+      <div class="foot"><span>GE Agent Factory · built for the field (FDE)</span><span class="pageno">17 / 21</span></div>
+    </div>
+  </section>
+  </div>
+
+  <!-- ============== SLIDE 3 — PHASE 0: BUILD THE PLANT ============== -->
+  <div class="frame">
+  <section class="slide" id="s3">
+    <div class="rail"><i></i><i></i><i></i><i></i></div>
+    <div class="pad">
+      <div class="kicker">Phase 0 — build the plant (once per project)</div>
+      <h2>One command stands up three planes &amp; all IAM</h2>
+      <p class="sub">Terraform, reconcile-first. Re-running converges instead of duplicating.
+        <span class="t-mono">ge cutover</span> adopts a hand-built project by generating <span class="t-mono">import</span> blocks.</p>
+
+      <svg viewBox="0 0 1136 372" width="1136" height="372" style="margin-top:24px">
+        <defs>
+          <marker id="arr3" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto">
+            <path d="M0,0 L8,5 L0,10 z" fill="#80868B"/>
+          </marker>
+        </defs>
+
+        <!-- factory plane -->
+        <g>
+          <rect x="0" y="0" width="362" height="372" rx="14" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="0" y="0" width="362" height="6" rx="3" fill="#1A73E8"/>
+          <text x="26" y="44" font-size="18" font-weight="600" fill="#16243F">Factory plane</text>
+          <text x="26" y="68" font-size="13" fill="#5F6368" font-weight="300">runs the line</text>
+
+          <g font-size="14" fill="#16243F">
+            <rect x="26" y="92" width="310" height="40" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/>
+            <text x="42" y="117">Gateway — Cloud Run</text>
+            <rect x="26" y="142" width="310" height="40" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/>
+            <text x="42" y="167">Cloud Tasks queue (per stage)</text>
+            <rect x="26" y="192" width="310" height="40" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/>
+            <text x="42" y="217">Worker — Cloud Run</text>
+            <rect x="26" y="242" width="310" height="40" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/>
+            <text x="42" y="267">Cloud Build (release stages)</text>
+            <rect x="26" y="292" width="310" height="40" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/>
+            <text x="42" y="317">Artifact Registry · Pub/Sub · SAs</text>
+          </g>
+        </g>
+
+        <!-- data plane -->
+        <g>
+          <rect x="387" y="0" width="362" height="372" rx="14" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="387" y="0" width="362" height="6" rx="3" fill="#5F6368"/>
+          <text x="413" y="44" font-size="18" font-weight="600" fill="#16243F">Data plane</text>
+          <text x="413" y="68" font-size="13" fill="#5F6368" font-weight="300">shared stores · per-agent objects at load_data</text>
+
+          <g font-size="14" fill="#16243F">
+            <rect x="413" y="92" width="310" height="40" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/>
+            <text x="429" y="117">BigQuery — analytics facts</text>
+            <rect x="413" y="142" width="310" height="40" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/>
+            <text x="429" y="167">AlloyDB — OLTP records</text>
+            <rect x="413" y="192" width="310" height="40" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/>
+            <text x="429" y="217">Bigtable — high-volume events</text>
+            <rect x="413" y="242" width="310" height="40" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/>
+            <text x="429" y="267">Firestore — documents / events</text>
+            <rect x="413" y="292" width="310" height="40" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/>
+            <text x="429" y="317">Cloud Storage — blobs &amp; manifests</text>
+          </g>
+        </g>
+
+        <!-- tool plane -->
+        <g>
+          <rect x="774" y="0" width="362" height="372" rx="14" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="774" y="0" width="362" height="6" rx="3" fill="#1E8E3E"/>
+          <text x="800" y="44" font-size="18" font-weight="600" fill="#16243F">Tool plane</text>
+          <text x="800" y="68" font-size="13" fill="#5F6368" font-weight="300">two tiers · resolved via Agent Registry</text>
+
+          <g font-size="14" fill="#16243F">
+            <rect x="800" y="92" width="310" height="62" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/>
+            <text x="816" y="118">First-party Google MCP</text>
+            <text x="816" y="140" font-size="12.5" fill="#5F6368" class="t-mono">BigQuery · Drive · Gmail · Maps…</text>
+            <rect x="800" y="164" width="310" height="80" rx="9" fill="#F4F6F9" stroke="#E1E6EE"/>
+            <text x="816" y="190">Custom MCP — Cloud Run ×5</text>
+            <text x="816" y="212" font-size="12.5" fill="#5F6368" font-weight="300">one generic image, one per department</text>
+            <text x="816" y="232" font-size="12.5" fill="#5F6368" class="t-mono">Workday · ServiceNow · SAP · Coupa</text>
+            <rect x="800" y="254" width="310" height="78" rx="9" fill="#16243F"/>
+            <text x="816" y="280" font-size="14" fill="#fff" font-weight="600">All IAM, one apply</text>
+            <text x="816" y="302" font-size="12" fill="#9DB4D8" class="t-mono">mcp.toolUser · agentregistry.*</text>
+            <text x="816" y="320" font-size="12" fill="#9DB4D8" class="t-mono">iap.egressor · agent-identity principalSet</text>
+          </g>
+        </g>
+      </svg>
+
+      <div class="foot"><span class="t-mono">ge up&nbsp;&nbsp;→&nbsp;&nbsp;ge data up&nbsp;&nbsp;→&nbsp;&nbsp;ge mcp deploy&nbsp;&nbsp;→&nbsp;&nbsp;ge doctor</span><span class="pageno">18 / 21</span></div>
+    </div>
+  </section>
+  </div>
+
+  <!-- ============== SLIDE 4 — THE 14-STATION LINE (CENTERPIECE) ============== -->
+  <div class="frame">
+  <section class="slide" id="s4">
+    <div class="rail"><i></i><i></i><i></i><i></i></div>
+    <div class="pad">
+      <div class="kicker">Phase 1 — manufacture each agent (×363)</div>
+      <h2>The 14-station assembly line</h2>
+      <p class="sub" style="margin-top:8px">Six work cells over one conveyor. Each station self-enqueues the next, so the line is durable and resumable — a worker crash just redelivers the task.</p>
+
+      <svg viewBox="0 0 1136 392" width="1136" height="392" style="margin-top:14px">
+        <defs>
+          <linearGradient id="belt4" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#C7D0DD"/><stop offset="1" stop-color="#AEBACB"/>
+          </linearGradient>
+        </defs>
+
+        <!-- intake -->
+        <g>
+          <rect x="0" y="118" width="92" height="118" rx="12" fill="#16243F"/>
+          <text x="46" y="158" font-size="12" fill="#9DB4D8" text-anchor="middle" class="t-mono">intake</text>
+          <text x="46" y="184" font-size="13" fill="#fff" text-anchor="middle" font-weight="600">plan</text>
+          <text x="46" y="208" font-size="10.5" fill="#7E93B6" text-anchor="middle">control</text>
+          <text x="46" y="221" font-size="10.5" fill="#7E93B6" text-anchor="middle">plane</text>
+        </g>
+
+        <!-- the cells -->
+        <!-- helper visual repeated per cell -->
+        <!-- CELL 1 Generate (worker/blue) -->
+        <g>
+          <rect x="108" y="40" width="156" height="150" rx="12" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="108" y="40" width="156" height="34" rx="12" fill="#1A73E8"/>
+          <rect x="108" y="58" width="156" height="16" fill="#1A73E8"/>
+          <text x="120" y="62" font-size="13" font-weight="600" fill="#fff">1 · Generate</text>
+          <text x="120" y="98" font-size="11.5" fill="#16243F" class="t-mono">generate_workspace</text>
+          <text x="120" y="118" font-size="11.5" fill="#16243F" class="t-mono">generate_data</text>
+          <text x="120" y="138" font-size="11.5" fill="#16243F" class="t-mono">package_data</text>
+          <text x="120" y="170" font-size="11" fill="#5F6368" font-weight="300">ADK code · seed-42</text>
+          <text x="120" y="184" font-size="11" fill="#5F6368" font-weight="300">fixtures · NL→SQL model</text>
+        </g>
+
+        <!-- CELL 2 Refine + gate -->
+        <g>
+          <rect x="278" y="40" width="156" height="150" rx="12" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="278" y="40" width="156" height="34" rx="12" fill="#1A73E8"/>
+          <rect x="278" y="58" width="156" height="16" fill="#1A73E8"/>
+          <text x="290" y="62" font-size="13" font-weight="600" fill="#fff">2 · Refine + Gate</text>
+          <text x="290" y="98" font-size="11.5" fill="#16243F" class="t-mono">harness_refine</text>
+          <text x="290" y="118" font-size="11.5" fill="#174EA6" class="t-mono">validate</text>
+          <text x="290" y="138" font-size="11.5" fill="#174EA6" class="t-mono">preview</text>
+          <text x="290" y="170" font-size="11" fill="#5F6368" font-weight="300">Antigravity refine,</text>
+          <text x="290" y="184" font-size="11" fill="#5F6368" font-weight="300">re-gated by pytest+eval</text>
+        </g>
+
+        <!-- CELL 3 Provision data -->
+        <g>
+          <rect x="448" y="40" width="156" height="150" rx="12" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="448" y="40" width="156" height="34" rx="12" fill="#5F6368"/>
+          <rect x="448" y="58" width="156" height="16" fill="#5F6368"/>
+          <text x="460" y="62" font-size="13" font-weight="600" fill="#fff">3 · Provision data</text>
+          <text x="460" y="98" font-size="11.5" fill="#16243F" class="t-mono">plan_deploy</text>
+          <text x="460" y="118" font-size="11.5" fill="#1A73E8" class="t-mono">load_data</text>
+          <text x="460" y="170" font-size="11" fill="#5F6368" font-weight="300">per-agent BQ/Firestore/</text>
+          <text x="460" y="184" font-size="11" fill="#5F6368" font-weight="300">GCS + BQ descriptions</text>
+        </g>
+
+        <!-- CELL 4 Deploy -->
+        <g>
+          <rect x="618" y="40" width="156" height="150" rx="12" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="618" y="40" width="156" height="34" rx="12" fill="#174EA6"/>
+          <rect x="618" y="58" width="156" height="16" fill="#174EA6"/>
+          <text x="630" y="62" font-size="13" font-weight="600" fill="#fff">4 · Deploy</text>
+          <text x="630" y="98" font-size="11.5" fill="#174EA6" class="t-mono">deploy_runtime</text>
+          <text x="630" y="118" font-size="11.5" fill="#1E8E3E" class="t-mono">poll_runtime</text>
+          <text x="630" y="170" font-size="11" fill="#5F6368" font-weight="300">Agent Runtime, agent</text>
+          <text x="630" y="184" font-size="11" fill="#5F6368" font-weight="300">identity, GE_DATA_BACKEND=mcp</text>
+        </g>
+
+        <!-- CELL 5 Wire tools -->
+        <g>
+          <rect x="788" y="40" width="156" height="150" rx="12" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="788" y="40" width="156" height="34" rx="12" fill="#1A73E8"/>
+          <rect x="788" y="58" width="156" height="16" fill="#1A73E8"/>
+          <text x="800" y="62" font-size="13" font-weight="600" fill="#fff">5 · Wire tools</text>
+          <text x="800" y="98" font-size="11.5" fill="#16243F" class="t-mono">register_tools</text>
+          <text x="800" y="170" font-size="11" fill="#5F6368" font-weight="300">Agent Registry record +</text>
+          <text x="800" y="184" font-size="11" fill="#5F6368" font-weight="300">MCP server + iap.egressor</text>
+        </g>
+
+        <!-- CELL 6 Publish + verify -->
+        <g>
+          <rect x="958" y="40" width="156" height="150" rx="12" fill="#fff" stroke="#BFE0C8"/>
+          <rect x="958" y="40" width="156" height="34" rx="12" fill="#1E8E3E"/>
+          <rect x="958" y="58" width="156" height="16" fill="#1E8E3E"/>
+          <text x="970" y="62" font-size="13" font-weight="600" fill="#fff">6 · Publish + Verify</text>
+          <text x="970" y="98" font-size="11.5" fill="#174EA6" class="t-mono">publish_enterprise</text>
+          <text x="970" y="118" font-size="11.5" fill="#16243F" class="t-mono">verify_live</text>
+          <text x="970" y="170" font-size="11" fill="#5F6368" font-weight="300">register in Gemini</text>
+          <text x="970" y="184" font-size="11" fill="#5F6368" font-weight="300">Enterprise · live smoke</text>
+        </g>
+
+        <!-- legs from cells to belt -->
+        <g stroke="#C7D0DD" stroke-width="2">
+          <line x1="186" y1="190" x2="186" y2="232"/><line x1="356" y1="190" x2="356" y2="232"/>
+          <line x1="526" y1="190" x2="526" y2="232"/><line x1="696" y1="190" x2="696" y2="232"/>
+          <line x1="866" y1="190" x2="866" y2="232"/><line x1="1036" y1="190" x2="1036" y2="232"/>
+        </g>
+
+        <!-- conveyor belt -->
+        <rect x="100" y="236" width="1036" height="30" rx="15" fill="url(#belt4)"/>
+        <g fill="#8A97AB">
+          <!-- rollers -->
+          <circle cx="128" cy="285" r="12"/><circle cx="184" cy="285" r="12"/><circle cx="240" cy="285" r="12"/>
+          <circle cx="296" cy="285" r="12"/><circle cx="352" cy="285" r="12"/><circle cx="408" cy="285" r="12"/>
+          <circle cx="464" cy="285" r="12"/><circle cx="520" cy="285" r="12"/><circle cx="576" cy="285" r="12"/>
+          <circle cx="632" cy="285" r="12"/><circle cx="688" cy="285" r="12"/><circle cx="744" cy="285" r="12"/>
+          <circle cx="800" cy="285" r="12"/><circle cx="856" cy="285" r="12"/><circle cx="912" cy="285" r="12"/>
+          <circle cx="968" cy="285" r="12"/><circle cx="1024" cy="285" r="12"/><circle cx="1080" cy="285" r="12"/>
+        </g>
+        <!-- workpiece progression on belt -->
+        <rect x="150" y="237" width="26" height="28" rx="5" fill="#3C4860"/>
+        <rect x="490" y="237" width="26" height="28" rx="5" fill="#5F6368"/>
+        <rect x="830" y="237" width="26" height="28" rx="5" fill="#1A73E8"/>
+        <rect x="1040" y="237" width="26" height="28" rx="5" fill="#1E8E3E"/>
+
+        <!-- legend -->
+        <g font-size="12.5" fill="#3C4860">
+          <text x="0" y="338" font-weight="600" fill="#16243F">Runs on</text>
+          <rect x="74" y="328" width="12" height="12" rx="3" fill="#1A73E8"/><text x="92" y="338">Worker (Cloud Run)</text>
+          <rect x="232" y="328" width="12" height="12" rx="3" fill="#174EA6"/><text x="250" y="338">Cloud Build</text>
+          <rect x="356" y="328" width="12" height="12" rx="3" fill="#1E8E3E"/><text x="374" y="338">Cloud Tasks (poll)</text>
+          <rect x="516" y="328" width="12" height="12" rx="3" fill="#5F6368"/><text x="534" y="338">Control plane</text>
+        </g>
+        <g font-size="12.5" fill="#3C4860">
+          <text x="690" y="338" font-weight="600" fill="#16243F">Workpiece</text>
+          <rect x="790" y="328" width="12" height="12" rx="3" fill="#3C4860"/><text x="808" y="338">spec</text>
+          <rect x="852" y="328" width="12" height="12" rx="3" fill="#5F6368"/><text x="870" y="338">built</text>
+          <rect x="912" y="328" width="12" height="12" rx="3" fill="#1A73E8"/><text x="930" y="338">deployed</text>
+          <rect x="1000" y="328" width="12" height="12" rx="3" fill="#1E8E3E"/><text x="1018" y="338">live</text>
+        </g>
+      </svg>
+
+      <div class="foot"><span>Bounded by <span class="t-mono">targetStage</span> · per-stage retry classes make redelivery reconcile, never duplicate</span><span class="pageno">19 / 21</span></div>
+    </div>
+  </section>
+  </div>
+
+  <!-- ============== SLIDE 5 — THE STACK THE LINE RUNS ON ============== -->
+  <div class="frame">
+  <section class="slide" id="s5">
+    <div class="rail"><i></i><i></i><i></i><i></i></div>
+    <div class="pad">
+      <div class="kicker">What every agent runs on</div>
+      <h2>Google&rsquo;s agent stack, end to end</h2>
+      <p class="sub">No bespoke runtime. Generated agents resolve tools from Agent Registry <em>by name</em> under their own
+        agent identity — no hardcoded URLs, ADC supplies the credential.</p>
+
+      <svg viewBox="0 0 1136 380" width="1136" height="380" style="margin-top:22px">
+        <defs>
+          <marker id="arr5" markerWidth="11" markerHeight="11" refX="7" refY="5" orient="auto">
+            <path d="M0,0 L9,5 L0,10 z" fill="#174EA6"/>
+          </marker>
+        </defs>
+
+        <!-- top: serving layer -->
+        <rect x="0" y="0" width="1136" height="84" rx="14" fill="#16243F"/>
+        <text x="32" y="38" font-size="17" font-weight="600" fill="#fff">Gemini Enterprise</text>
+        <text x="32" y="62" font-size="13" fill="#9DB4D8" font-weight="300">published agents — the surface employees use</text>
+        <text x="1104" y="50" font-size="12.5" fill="#7E93B6" text-anchor="end" class="t-mono">publish_enterprise · verify_live</text>
+
+        <line x1="568" y1="84" x2="568" y2="116" stroke="#174EA6" stroke-width="2" marker-end="url(#arr5)"/>
+
+        <!-- middle: runtime + registry -->
+        <g>
+          <rect x="0" y="120" width="552" height="120" rx="14" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="0" y="120" width="552" height="6" rx="3" fill="#1A73E8"/>
+          <text x="28" y="158" font-size="16" font-weight="600" fill="#16243F">Agent Runtime · ADK agent</text>
+          <text x="28" y="184" font-size="13" fill="#3C4860" font-weight="300">runs under the agent identity (SPIFFE principalSet)</text>
+          <text x="28" y="212" font-size="12.5" fill="#5F6368" class="t-mono">get_mcp_toolset("mcpServers/&lt;id&gt;")</text>
+        </g>
+        <g>
+          <rect x="584" y="120" width="552" height="120" rx="14" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="584" y="120" width="552" height="6" rx="3" fill="#5F6368"/>
+          <text x="612" y="158" font-size="16" font-weight="600" fill="#16243F">Agent Registry</text>
+          <text x="612" y="184" font-size="13" fill="#3C4860" font-weight="300">resolves tool name → endpoint, governs access</text>
+          <text x="612" y="212" font-size="12.5" fill="#5F6368" class="t-mono">agentregistry.viewer + iap.egressor</text>
+        </g>
+
+        <line x1="276" y1="240" x2="276" y2="272" stroke="#174EA6" stroke-width="2" marker-end="url(#arr5)"/>
+        <line x1="860" y1="240" x2="860" y2="272" stroke="#174EA6" stroke-width="2" marker-end="url(#arr5)"/>
+
+        <!-- bottom: tool plane + data plane -->
+        <g>
+          <rect x="0" y="276" width="552" height="104" rx="14" fill="#F4F6F9" stroke="#E1E6EE"/>
+          <text x="28" y="306" font-size="15" font-weight="600" fill="#16243F">Two-tier MCP tool plane</text>
+          <text x="28" y="332" font-size="12.5" fill="#3C4860" font-weight="300">1P Google MCP (BigQuery / Drive / Gmail / Maps)</text>
+          <text x="28" y="354" font-size="12.5" fill="#3C4860" font-weight="300">+ custom Cloud Run MCP — Workday / ServiceNow / SAP / Coupa façades</text>
+        </g>
+        <g>
+          <rect x="584" y="276" width="552" height="104" rx="14" fill="#F4F6F9" stroke="#E1E6EE"/>
+          <text x="612" y="306" font-size="15" font-weight="600" fill="#16243F">Per-agent data plane</text>
+          <text x="612" y="332" font-size="12.5" fill="#3C4860" font-weight="300">BigQuery dataset · AlloyDB · Bigtable · Firestore · Cloud Storage</text>
+          <text x="612" y="354" font-size="12.5" fill="#1E8E3E" font-weight="500">NL→SQL via BigQuery MCP over generated semantic descriptions</text>
+        </g>
+      </svg>
+
+      <p class="cap" style="margin-top:18px">One generic MCP image serves <span class="hl">363 tenants</span>, each linked by name:
+        the agent code references <span class="t-mono">mcpServers/&lt;id&gt;</span>, the registry resolves it to the dept URL <span class="t-mono">?agent=&lt;id&gt;</span>, and the service loads that agent&rsquo;s manifest and stores.</p>
+      <div class="foot"><span>GE Agent Factory · the stack the line runs on</span><span class="pageno">20 / 21</span></div>
+    </div>
+  </section>
+  </div>
+
+  <!-- ============== SLIDE 6 — CONTROL PLANE / DURABILITY ============== -->
+  <div class="frame">
+  <section class="slide" id="s6">
+    <div class="rail"><i></i><i></i><i></i><i></i></div>
+    <div class="pad">
+      <div class="kicker">The control plane — one core, three surfaces</div>
+      <h2>Durable by construction, observable end to end</h2>
+      <p class="sub">CLI, web console, and MCP server all call the same <span class="t-mono">factory-core</span>.
+        A run is a chain of Cloud Tasks — one per stage — that each enqueue the next.</p>
+
+      <svg viewBox="0 0 1136 372" width="1136" height="372" style="margin-top:24px">
+        <defs>
+          <marker id="arr6" markerWidth="11" markerHeight="11" refX="7" refY="5" orient="auto">
+            <path d="M0,0 L9,5 L0,10 z" fill="#16243F"/>
+          </marker>
+        </defs>
+
+        <!-- three surfaces -->
+        <g font-size="13.5">
+          <rect x="0" y="20" width="220" height="46" rx="10" fill="#fff" stroke="#D5DAE3"/>
+          <text x="22" y="48" fill="#16243F" font-weight="500">ge CLI</text>
+          <text x="120" y="48" fill="#5F6368" class="t-mono" font-size="11.5">ge agents build</text>
+          <rect x="0" y="76" width="220" height="46" rx="10" fill="#fff" stroke="#D5DAE3"/>
+          <text x="22" y="104" fill="#16243F" font-weight="500">Web console</text>
+          <text x="120" y="104" fill="#5F6368" class="t-mono" font-size="11.5">/api/ge/*</text>
+          <rect x="0" y="132" width="220" height="46" rx="10" fill="#fff" stroke="#D5DAE3"/>
+          <text x="22" y="160" fill="#16243F" font-weight="500">MCP server</text>
+          <text x="120" y="160" fill="#5F6368" class="t-mono" font-size="11.5">factory_provision</text>
+        </g>
+        <path d="M220,99 L268,99" stroke="#16243F" stroke-width="2" marker-end="url(#arr6)"/>
+
+        <!-- gateway -->
+        <rect x="274" y="60" width="200" height="80" rx="12" fill="#1A73E8"/>
+        <text x="374" y="96" font-size="15" font-weight="600" fill="#fff" text-anchor="middle">Gateway</text>
+        <text x="374" y="118" font-size="11.5" fill="#CFE0FB" text-anchor="middle">tar spec → GCS, seed state,</text>
+        <text x="374" y="133" font-size="11.5" fill="#CFE0FB" text-anchor="middle">enqueue first stage</text>
+
+        <!-- tasks -->
+        <path d="M474,100 L522,100" stroke="#16243F" stroke-width="2" marker-end="url(#arr6)"/>
+        <rect x="528" y="66" width="150" height="68" rx="12" fill="#fff" stroke="#D5DAE3"/>
+        <text x="603" y="98" font-size="14" font-weight="600" fill="#16243F" text-anchor="middle">Cloud Tasks</text>
+        <text x="603" y="118" font-size="11" fill="#5F6368" text-anchor="middle">OIDC-authed, per stage</text>
+
+        <!-- worker with self-enqueue loop -->
+        <path d="M678,100 L726,100" stroke="#16243F" stroke-width="2" marker-end="url(#arr6)"/>
+        <rect x="732" y="50" width="220" height="100" rx="12" fill="#16243F"/>
+        <text x="842" y="84" font-size="15" font-weight="600" fill="#fff" text-anchor="middle">Worker</text>
+        <text x="842" y="106" font-size="11.5" fill="#9DB4D8" text-anchor="middle">restore workspace · run stage</text>
+        <text x="842" y="124" font-size="11.5" fill="#9DB4D8" text-anchor="middle">by owner (Cloud Run / Cloud Build)</text>
+        <text x="842" y="142" font-size="11.5" fill="#7BE0A0" text-anchor="middle">success → self-enqueue next</text>
+
+        <!-- self-enqueue arc back to Cloud Tasks -->
+        <path d="M842,150 C842,196 603,196 603,140" fill="none" stroke="#1E8E3E" stroke-width="2" stroke-dasharray="5 5" marker-end="url(#arr6)"/>
+        <text x="722" y="190" font-size="11.5" fill="#1E8E3E" font-weight="500">repeats until targetStage</text>
+
+        <!-- state + logs row -->
+        <g>
+          <rect x="0" y="244" width="556" height="112" rx="14" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="0" y="244" width="556" height="6" rx="3" fill="#5F6368"/>
+          <text x="28" y="282" font-size="16" font-weight="600" fill="#16243F">Firestore — source of truth</text>
+          <text x="28" y="308" font-size="13" fill="#3C4860" font-weight="300">run / item / stage status: queued → running → done / failed</text>
+          <text x="28" y="334" font-size="12.5" fill="#5F6368" font-weight="300">crash-safe: a redelivered task reconciles; restart resumes the chain</text>
+        </g>
+        <g>
+          <rect x="580" y="244" width="556" height="112" rx="14" fill="#fff" stroke="#D5DAE3"/>
+          <rect x="580" y="244" width="556" height="6" rx="3" fill="#1E8E3E"/>
+          <text x="608" y="282" font-size="16" font-weight="600" fill="#16243F">NDJSON log bus — live</text>
+          <text x="608" y="308" font-size="13" fill="#3C4860" font-weight="300">each stage tees stdout/stderr → GCS as it runs</text>
+          <text x="608" y="334" font-size="12.5" fill="#5F6368" font-weight="300">streamed to console LogStream &amp; <span>ge agents logs</span> via SSE</text>
+        </g>
+      </svg>
+
+      <div class="foot"><span>CLI and console return identical JSON from the same factory-core</span><span class="pageno">21 / 21</span></div>
+    </div>
+  </section>
+  </div>
+
+</div>
+  <div class="exportbar"><button id="btn-pdf">&#x2913;&nbsp; Export PDF</button></div>
+  <script src="vendor/jspdf.umd.min.js"></script>
+  <script src="vendor/html2canvas.min.js"></script>
+  <script>
+  (function(){
+    var root=document.documentElement;
+    function fit(){ var s=Math.min(1,(window.innerWidth-32)/1280); root.style.setProperty('--s', s.toFixed(4)); }
+    window.addEventListener('resize', fit, {passive:true}); fit();
+
+    var btn=document.getElementById('btn-pdf');
+    async function exportPDF(){
+      // HTML -> PDF entirely client-side: render each slide with html2canvas,
+      // place it on a 16:9 page with jsPDF, then download.
+      if(!(window.jspdf && window.html2canvas)){ window.print(); return; }
+      var label=btn.innerHTML; btn.disabled=true;
+      var prev=getComputedStyle(root).getPropertyValue('--s');
+      root.style.setProperty('--s','1');                 // capture at full 1280x720
+      window.scrollTo(0,0);
+      try{ if(document.fonts && document.fonts.ready){ await document.fonts.ready; } }catch(e){}
+      try{
+        var JsPDF=window.jspdf.jsPDF;
+        var pdf=new JsPDF({orientation:'landscape', unit:'px', format:[1280,720], compress:true});
+        var slides=Array.prototype.slice.call(document.querySelectorAll('.slide'));
+        for(var i=0;i<slides.length;i++){
+          btn.textContent='Rendering '+(i+1)+'/'+slides.length+'…';
+          var canvas=await window.html2canvas(slides[i],{scale:2, backgroundColor:'#ffffff', width:1280, height:720, windowWidth:1280, windowHeight:720, scrollX:0, scrollY:0, useCORS:true, logging:false});
+          var img=canvas.toDataURL('image/jpeg',0.92);
+          if(i>0) pdf.addPage([1280,720],'landscape');
+          pdf.addImage(img,'JPEG',0,0,1280,720,undefined,'FAST');
+        }
+        pdf.save('agent-factory-assembly-line.pdf');
+      }catch(err){ console.error('PDF export failed, falling back to print:', err); window.print(); }
+      finally{ root.style.setProperty('--s', (prev&&prev.trim())?prev.trim():'1'); fit(); btn.disabled=false; btn.innerHTML=label; }
+    }
+    if(btn) btn.addEventListener('click', exportPDF);
+  })();
+  </script>
+</body>
+</html>

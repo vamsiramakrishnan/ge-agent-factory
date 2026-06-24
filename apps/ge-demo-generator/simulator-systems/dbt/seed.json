@@ -1,0 +1,50 @@
+{
+  "datasets": [
+    {
+      "dataset_id": "DATASET-ID-001",
+      "name": "sample_name",
+      "status": "sample_status",
+      "owner": "sample_owner",
+      "domain": "sample_domain",
+      "classification": "sample_classification"
+    }
+  ],
+  "tables": [
+    {
+      "table_id": "TABLE-ID-001",
+      "dataset_id": "DATASET-ID-001",
+      "name": "sample_name",
+      "status": "sample_status",
+      "row_count": "sample_row_count",
+      "freshness": "sample_freshness"
+    }
+  ],
+  "pipelines": [
+    {
+      "pipeline_id": "PIPELINE-ID-001",
+      "dataset_id": "DATASET-ID-001",
+      "status": "sample_status",
+      "schedule": "sample_schedule",
+      "owner": "sample_owner"
+    }
+  ],
+  "jobs": [
+    {
+      "job_id": "JOB-ID-001",
+      "pipeline_id": "PIPELINE-ID-001",
+      "state": "sample_state",
+      "started_at": "sample_started_at",
+      "duration_seconds": "sample_duration_seconds"
+    }
+  ],
+  "quality_checks": [
+    {
+      "check_id": "CHECK-ID-001",
+      "table_id": "TABLE-ID-001",
+      "status": "sample_status",
+      "severity": "sample_severity",
+      "last_run_at": "sample_last_run_at"
+    }
+  ],
+  "audit_events": []
+}

@@ -1,0 +1,647 @@
+{
+  "id": "jira_tools",
+  "version": 2,
+  "tools": [
+    {
+      "name": "search_projects",
+      "description": "Search Jira projects by free text and domain filters (project type, status, category).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "project_type_key": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "projects"
+      }
+    },
+    {
+      "name": "get_project",
+      "description": "Get one Jira project by project_id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string"
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "project_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "projects",
+        "primaryKey": "project_id"
+      }
+    },
+    {
+      "name": "search_components",
+      "description": "Search Jira project components by free text and domain filters (project, assignee type).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "project_id": {
+            "type": "string"
+          },
+          "assignee_type": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "components"
+      }
+    },
+    {
+      "name": "get_component",
+      "description": "Get one Jira component by component_id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "component_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "component_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "components",
+        "primaryKey": "component_id"
+      }
+    },
+    {
+      "name": "search_epics",
+      "description": "Search Jira epics by free text and domain filters (project, status, assignee).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "project_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "assignee_account_id": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "epics"
+      }
+    },
+    {
+      "name": "get_epic",
+      "description": "Get one Jira epic by epic_id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "epic_id": {
+            "type": "string"
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "epic_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "epics",
+        "primaryKey": "epic_id"
+      }
+    },
+    {
+      "name": "search_issues",
+      "description": "Search Jira issues (stories, tasks, bugs) by free text and domain filters (project, epic, sprint, type, status, priority, assignee, fix version).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "project_id": {
+            "type": "string"
+          },
+          "epic_id": {
+            "type": "string"
+          },
+          "sprint_id": {
+            "type": "string"
+          },
+          "component_id": {
+            "type": "string"
+          },
+          "issue_type": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "assignee_account_id": {
+            "type": "string"
+          },
+          "fix_version_id": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "issues",
+        "query": {
+          "textFields": [
+            "key",
+            "summary",
+            "description",
+            "assignee",
+            "reporter",
+            "labels",
+            "status",
+            "priority"
+          ],
+          "filters": {
+            "project_id": {
+              "field": "project_id",
+              "op": "eq"
+            },
+            "epic_id": {
+              "field": "epic_id",
+              "op": "eq"
+            },
+            "sprint_id": {
+              "field": "sprint_id",
+              "op": "eq"
+            },
+            "component_id": {
+              "field": "component_id",
+              "op": "eq"
+            },
+            "issue_type": {
+              "field": "issue_type",
+              "op": "eq_ci"
+            },
+            "status": {
+              "field": "status",
+              "op": "eq_ci"
+            },
+            "priority": {
+              "field": "priority",
+              "op": "eq_ci"
+            },
+            "assignee_account_id": {
+              "field": "assignee_account_id",
+              "op": "eq"
+            },
+            "fix_version_id": {
+              "field": "fix_version_id",
+              "op": "eq"
+            }
+          },
+          "defaultSort": [
+            {
+              "field": "updated_at",
+              "direction": "desc"
+            }
+          ],
+          "pagination": {
+            "style": "offset",
+            "defaultLimit": 50,
+            "maxLimit": 100
+          }
+        }
+      }
+    },
+    {
+      "name": "get_issue",
+      "description": "Get one Jira issue by issue_id, optionally including subtasks and board transitions.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "issue_id": {
+            "type": "string"
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "issue_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "issues",
+        "primaryKey": "issue_id"
+      }
+    },
+    {
+      "name": "search_subtasks",
+      "description": "Search Jira sub-tasks by free text and domain filters (parent issue, status, assignee).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "issue_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "assignee_account_id": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "subtasks"
+      }
+    },
+    {
+      "name": "get_subtask",
+      "description": "Get one Jira sub-task by subtask_id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "subtask_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "subtask_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "subtasks",
+        "primaryKey": "subtask_id"
+      }
+    },
+    {
+      "name": "search_sprints",
+      "description": "Search Jira sprints by free text and domain filters (project, state).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "project_id": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "sprints"
+      }
+    },
+    {
+      "name": "get_sprint",
+      "description": "Get one Jira sprint by sprint_id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sprint_id": {
+            "type": "string"
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "sprint_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "sprints",
+        "primaryKey": "sprint_id"
+      }
+    },
+    {
+      "name": "search_releases",
+      "description": "Search Jira releases (fix versions) by free text and domain filters (project, status).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "project_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "releases"
+      }
+    },
+    {
+      "name": "get_release",
+      "description": "Get one Jira release (fix version) by release_id.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "release_id": {
+            "type": "string"
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "release_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "releases",
+        "primaryKey": "release_id"
+      }
+    },
+    {
+      "name": "search_board_transitions",
+      "description": "Search recorded board transitions by free text and domain filters (issue, target status).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "issue_id": {
+            "type": "string"
+          },
+          "to_status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "board_transitions"
+      }
+    },
+    {
+      "name": "submit_issue_update",
+      "description": "Transition a Jira issue across the board workflow (to_do -> in_progress -> in_review -> done, with blocked). Role-gated to developer/lead/qa; gated by approval blockers when a sign-off is pending. This is the issue-transition write tool.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "issue_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "issue_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "issues",
+        "primaryKey": "issue_id"
+      }
+    },
+    {
+      "name": "submit_subtask_update",
+      "description": "Transition a Jira sub-task across its workflow (to_do -> in_progress -> in_review -> done). Role-gated to developer/lead/qa.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "subtask_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "subtask_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "subtasks",
+        "primaryKey": "subtask_id"
+      }
+    },
+    {
+      "name": "submit_sprint_update",
+      "description": "Change a Jira sprint state (future -> active -> closed). Role-gated to scrum_master/lead.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sprint_id": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "sprint_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "sprints",
+        "primaryKey": "sprint_id"
+      }
+    },
+    {
+      "name": "submit_release_update",
+      "description": "Change a Jira release (fix version) status (unreleased -> released -> archived). Role-gated to release_manager/lead; a release sign-off approval is required before releasing.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "release_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "release_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "releases",
+        "primaryKey": "release_id"
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending approval gates, optionally filtered to a single source record.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_pending_approvals",
+        "collection": "approvals"
+      }
+    },
+    {
+      "name": "poll_async_job",
+      "description": "Poll a queued asynchronous simulator job.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_id"
+        ]
+      },
+      "binding": {
+        "op": "poll_async_job"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List Jira simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

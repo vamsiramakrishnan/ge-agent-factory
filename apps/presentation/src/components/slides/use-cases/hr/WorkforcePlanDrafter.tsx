@@ -1,0 +1,985 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { FileText, Download, Layers, Send } from "lucide-react";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "h1", label: "Request Plan", lane: "human", type: "trigger" },
+    { id: "a1", label: "Data Assembly", lane: "agent", type: "action" },
+    { id: "a2", label: "Narrative Generation", lane: "agent", type: "action" },
+    { id: "a3", label: "Draft Document", lane: "agent", type: "output" },
+    { id: "h2", label: "Review & Approve", lane: "human", type: "output" },
+  ],
+  connections: [["h1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h2"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Data Pull", icon: Download, description: "Workforce model outputs and org data gathered.", trigger: "On-demand", systems: ["HRIS", "Models"] },
+  { label: "Narrative Gen", icon: FileText, description: "Executive-ready narrative drafted from data.", systems: ["Gemini"], integration: "OOTB" },
+  { label: "Formatting", icon: Layers, description: "Branded templates applied with charts and tables." },
+  { label: "Review Ready", icon: Send, description: "Version-controlled draft shared for approval.", output: "Exec Document" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Workday", description: "Workforce data, org hierarchy, headcount snapshots", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "BigQuery", description: "Workforce model outputs, scenario analysis results", direction: "read", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Google Docs", description: "Executive workforce plan documents with embedded data", direction: "write", protocol: "Workspace API", category: "collaboration" },
+    { system: "Vertex AI (Gemini)", description: "Narrative generation from data, executive summary drafting", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Data Assembly", description: "Pull workforce model outputs, org data, and scenario results from Workday and BigQuery. Structure data into document-ready format with charts and tables.", systems: ["Workday", "BigQuery"], layer: "integration", dataIn: "Workforce models, org data, scenario outputs", dataOut: "Structured data package for narrative" },
+    { label: "Narrative Generation", description: "Gemini generates executive-ready workforce plan narratives from structured data. Includes recommendations, risk assessments, and data citations.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Structured data package + plan templates", dataOut: "Draft workforce plan document" },
+    { label: "Document Delivery", description: "Formatted document created in Google Docs with branded templates, embedded charts, and version-controlled collaboration features.", systems: ["Google Docs"], layer: "integration", dataIn: "Draft narrative + data visualizations", dataOut: "Executive workforce plan document" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "HRBP agent for the Workforce Plan Document Drafter workflow",
+  primaryObjective: "Auto-generates executive-ready workforce plan documents from scenario model outputs. Consistent formatting templates with embedded data visualizations and citations. so the HRBP can move the Draft time KPI.",
+  inScope: [
+    "Auto-generates executive-ready workforce plan documents from scenario model outputs",
+    "Consistent formatting templates with embedded data visualizations and citations",
+    "Version-controlled drafts with full audit trail linking every recommendation to its data source",
+  ],
+  outOfScope: [
+    "Final hiring, termination, or compensation decisions (HRBP/leadership retains authority)",
+    "Performance management adjudication and disciplinary action",
+    "Legal interpretation of employment law in ambiguous jurisdictions",
+  ],
+  toolIntents: [
+    {
+      name: "query_google_docs_documents",
+      kind: "query",
+      sourceSystemId: "google_docs",
+      description: "Retrieve documents from Google Docs for the Workforce Plan Document Drafter workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "documents_records",
+        "documents_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_google_slides_presentations",
+      kind: "query",
+      sourceSystemId: "google_slides",
+      description: "Retrieve presentations from Google Slides for the Workforce Plan Document Drafter workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "presentations_records",
+        "presentations_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_workday_employees",
+      kind: "query",
+      sourceSystemId: "workday",
+      description: "Retrieve employees from Workday for the Workforce Plan Document Drafter workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "employees_records",
+        "employees_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_workforce_plan_document_drafter_policy_handbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "google_docs",
+      description: "Look up sections of the Workforce Plan Document Drafter Policy Handbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_google_docs_recommend",
+      kind: "action",
+      sourceSystemId: "google_docs",
+      description: "Execute the recommend step in Google Docs after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Draft time moved from 3 weeks toward 30 min",
+      mustCite: [
+        "google_docs.documents",
+        "google_slides.presentations",
+      ],
+      sourceSystemIds: [
+        "google_docs",
+        "google_slides",
+      ],
+    },
+    {
+      claim: "Data citations moved from Manual toward Auto-linked",
+      mustCite: [
+        "google_docs.documents",
+        "google_slides.presentations",
+      ],
+      sourceSystemIds: [
+        "google_docs",
+        "google_slides",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Draft time regresses past the 3 weeks baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "HRBP",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed recommend action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from Google Docs (and other named systems) entities.",
+    "Never bypass HRBP approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "workforce-plan-document-drafter-end-to-end",
+      prompt: "Run the Workforce Plan Document Drafter workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_google_docs_documents",
+        "query_google_slides_presentations",
+        "query_workday_employees",
+        "lookup_workforce_plan_document_drafter_policy_handbook",
+        "action_google_docs_recommend",
+      ],
+      mustReferenceEntities: [
+        "documents",
+        "presentations",
+        "employees",
+      ],
+      mustCiteDocuments: [
+        "workforce-plan-document-drafter-policy-handbook",
+      ],
+      expectedActionOutcome: "Action recommend executed against Google Docs, with audit-trail entry and HRBP notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute recommend without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Workforce Plan Document Drafter so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "google_docs",
+      name: "Google Docs",
+      owns: [
+        "documents",
+        "comments",
+        "revision_history",
+      ],
+      protocol: "Workspace API",
+      localBacking: [
+        "cloud-storage",
+      ],
+      toolNames: [
+        "query_google_docs_documents",
+        "query_google_docs_comments",
+        "query_google_docs_revision_history",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "google_slides",
+      name: "Google Slides",
+      owns: [
+        "presentations",
+        "slide_assets",
+        "view_logs",
+      ],
+      protocol: "Workspace API",
+      localBacking: [
+        "cloud-storage",
+      ],
+      toolNames: [
+        "query_google_slides_presentations",
+        "query_google_slides_slide_assets",
+        "query_google_slides_view_logs",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "workday",
+      name: "Workday",
+      owns: [
+        "employees",
+        "positions",
+        "compensation_records",
+      ],
+      protocol: "Workday REST",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_workday_employees",
+        "query_workday_positions",
+        "query_workday_compensation_records",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "documents",
+      sourceSystemId: "google_docs",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "review",
+            "published",
+            "archived",
+          ],
+          required: true,
+        },
+        {
+          name: "last_updated",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "comments",
+      sourceSystemId: "google_docs",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "revision_history",
+      sourceSystemId: "google_docs",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "document_id",
+          type: "ref",
+          ref: "documents.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "presentations",
+      sourceSystemId: "google_slides",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "review",
+            "published",
+            "archived",
+          ],
+          required: true,
+        },
+        {
+          name: "last_updated",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "slide_assets",
+      sourceSystemId: "google_slides",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "view_logs",
+      sourceSystemId: "google_slides",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "presentation_id",
+          type: "ref",
+          ref: "presentations.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "employees",
+      sourceSystemId: "workday",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "department",
+          type: "enum",
+          values: [
+            "Finance",
+            "HR",
+            "IT",
+            "Marketing",
+            "Procurement",
+            "Engineering",
+            "Operations",
+          ],
+          required: true,
+        },
+        {
+          name: "region",
+          type: "enum",
+          values: [
+            "US",
+            "EMEA",
+            "APAC",
+            "LATAM",
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "on_leave",
+            "inactive",
+          ],
+          weights: [
+            0.85,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "level",
+          type: "enum",
+          values: [
+            "L3",
+            "L4",
+            "L5",
+            "L6",
+            "L7",
+          ],
+          required: true,
+        },
+        {
+          name: "hired_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "positions",
+      sourceSystemId: "workday",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "department",
+          type: "enum",
+          values: [
+            "Finance",
+            "HR",
+            "IT",
+            "Marketing",
+            "Procurement",
+            "Engineering",
+            "Operations",
+          ],
+          required: true,
+        },
+        {
+          name: "region",
+          type: "enum",
+          values: [
+            "US",
+            "EMEA",
+            "APAC",
+            "LATAM",
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "on_leave",
+            "inactive",
+          ],
+          weights: [
+            0.85,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "level",
+          type: "enum",
+          values: [
+            "L3",
+            "L4",
+            "L5",
+            "L6",
+            "L7",
+          ],
+          required: true,
+        },
+        {
+          name: "hired_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "compensation_records",
+      sourceSystemId: "workday",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "department",
+          type: "enum",
+          values: [
+            "Finance",
+            "HR",
+            "IT",
+            "Marketing",
+            "Procurement",
+            "Engineering",
+            "Operations",
+          ],
+          required: true,
+        },
+        {
+          name: "region",
+          type: "enum",
+          values: [
+            "US",
+            "EMEA",
+            "APAC",
+            "LATAM",
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "on_leave",
+            "inactive",
+          ],
+          weights: [
+            0.85,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "level",
+          type: "enum",
+          values: [
+            "L3",
+            "L4",
+            "L5",
+            "L6",
+            "L7",
+          ],
+          required: true,
+        },
+        {
+          name: "hired_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "revision_history.document_id",
+      to: "documents.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "view_logs.presentation_id",
+      to: "presentations.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "workforce-plan-document-drafter-policy-handbook",
+      sourceSystemId: "google_docs",
+      type: "policy",
+      title: "Workforce Plan Document Drafter Policy Handbook",
+      requiredSections: [
+        "Eligibility and scope",
+        "Workflow steps",
+        "Manager responsibilities",
+        "Compliance and audit",
+        "Sensitive-data handling",
+      ],
+      linkedEntities: [
+        "documents",
+        "comments",
+        "revision_history",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "eligibility",
+        "workflow",
+        "compliance",
+        "sensitive-data",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "google_docs_recommend_api",
+      sourceSystemId: "google_docs",
+      method: "POST",
+      path: "/api/google_docs/recommend",
+      description: "Synchronous endpoint the agent calls to recommend in Google Docs after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "workforce-plan-document-drafter-baseline-gap",
+      description: "Seed a realistic gap where Draft time sits between 3 weeks and 30 min, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "documents",
+        "comments",
+      ],
+      discoveryPath: [
+        "Inspect Google Docs records for the affected entities",
+        "Compare against Google Slides historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next HRBP action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "workforce_plan_document_drafter",
+      schemas: [
+        "google_docs",
+        "google_slides",
+        "workday",
+      ],
+    },
+    bigquery: {
+      dataset: "hr_workforce_plan_document_drafter",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "workforce-plan-document-drafter-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "workforce-plan-document-drafter-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Workforce Plan Document Drafter workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const WorkforcePlanDrafter = () => (
+  <UseCaseSlide
+    title="Workforce Plan Document Drafter"
+    subtitle="A-103 • Workforce Planning"
+    icon={FileText}
+    domainId="domain-1"
+    layer="Layer 1: OOTB"
+    persona="HRBP"
+    systems={["Google Docs", "Google Slides", "Workday"]}
+    kpis={[
+      { label: "Draft time", before: "3 weeks", after: "30 min" },
+      { label: "Data citations", before: "Manual", after: "Auto-linked" },
+      { label: "Versions managed", before: "Email chains", after: "Real-time" },
+    ]}
+    triggerType="chat"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    statusQuo={[
+      "Workforce plans drafted manually in documents and slide decks with inconsistent formatting.",
+      "Compiling data from multiple models into a cohesive narrative takes weeks of analyst time.",
+      "Plans lack traceability between recommendations and underlying workforce data."
+    ]}
+    agentification={[
+      "Auto-generates executive-ready workforce plan documents from scenario model outputs.",
+      "Consistent formatting templates with embedded data visualizations and citations.",
+      "Version-controlled drafts with full audit trail linking every recommendation to its data source."
+    ]}
+  />
+);

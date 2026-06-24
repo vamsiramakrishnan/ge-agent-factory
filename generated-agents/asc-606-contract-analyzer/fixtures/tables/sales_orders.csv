@@ -1,0 +1,61 @@
+id,source_record_id,vendor,amount,currency,status,created_at,due_date
+ID-0001,SOU-0001,Miller Group,15683.85,USD,paid,2023-08-10,2024-04-01
+ID-0002,SOU-0002,Effertz - Gutmann,52523.17,USD,pending,2023-09-03,2020-11-01
+ID-0003,SOU-0003,Schaden - Medhurst,4740.39,USD,pending,2020-05-22,2025-09-10
+ID-0004,SOU-0004,"Boyle, Cartwright and Vandervort",25952.12,USD,pending,2023-02-13,2023-04-13
+ID-0005,SOU-0005,Weimann - Walker,8940.4,USD,draft,2021-12-14,2022-05-01
+ID-0006,SOU-0006,Goyette - Schmitt,7547.61,JPY,paid,2021-03-11,2020-01-13
+ID-0007,SOU-0007,"Russel, Buckridge and Harris",6449.47,USD,pending,2024-05-18,2023-10-29
+ID-0008,SOU-0008,"Ratke, Russel and Keebler",2639.37,USD,draft,2023-10-27,2021-11-20
+ID-0009,SOU-0009,Jenkins and Sons,22956.93,USD,pending,2020-12-19,2025-07-30
+ID-0010,SOU-0010,"Schneider, Lindgren and Hamill",11094.18,USD,approved,2024-11-28,2025-03-01
+ID-0011,SOU-0011,Fadel - Weissnat,32387.97,USD,paid,2022-03-08,2025-10-31
+ID-0012,SOU-0012,"Gutkowski, Monahan and Gottlieb",90835.77,USD,pending,2022-12-08,2025-11-30
+ID-0013,SOU-0013,Ferry - Nader,63389.62,USD,draft,2025-01-04,2021-12-04
+ID-0014,SOU-0014,Pagac - Farrell,64552.76,USD,approved,2022-04-27,2025-08-15
+ID-0015,SOU-0015,Walsh - Okuneva,81740.5,USD,approved,2021-06-14,2020-07-23
+ID-0016,SOU-0016,"Hayes, Treutel and Nitzsche",8505.58,USD,paid,2023-08-22,2020-01-21
+ID-0017,SOU-0017,Crooks - O'Keefe,22504.5,EUR,pending,2021-12-14,2024-06-24
+ID-0018,SOU-0018,Mante Group,36834.81,USD,pending,2025-11-02,2022-05-11
+ID-0019,SOU-0019,"Kuvalis, Dietrich and Bailey",64582.68,USD,rejected,2025-09-22,2025-06-28
+ID-0020,SOU-0020,Keebler and Sons,96365.64,GBP,pending,2022-04-24,2025-02-08
+ID-0021,SOU-0021,Weber - Boyer,61539.22,JPY,pending,2023-02-10,2025-04-07
+ID-0022,SOU-0022,"Hessel, Schroeder and Langosh",50201.48,EUR,approved,2024-03-18,2024-10-10
+ID-0023,SOU-0023,"Botsford, Konopelski and McLaughlin",3146.97,USD,paid,2022-02-28,2020-10-05
+ID-0024,SOU-0024,Mueller Group,5263,USD,approved,2023-10-29,2024-05-10
+ID-0025,SOU-0025,"Schinner, Block and Smith-Predovic",40954.4,USD,pending,2021-07-02,2023-04-18
+ID-0026,SOU-0026,"Wilkinson, Moore and Hermiston",75808.83,USD,pending,2020-04-10,2020-03-30
+ID-0027,SOU-0027,"Boyle, Dach and Morissette",63545.86,USD,pending,2023-10-03,2023-01-07
+ID-0028,SOU-0028,"Bernier, McGlynn and Howell",64364.49,USD,approved,2025-08-25,2022-04-26
+ID-0029,SOU-0029,"Bernhard, Botsford and Hamill",84503.05,USD,paid,2021-09-09,2020-09-16
+ID-0030,SOU-0030,"Rice, Dare and Zboncak",41320.51,USD,paid,2022-01-17,2025-08-02
+ID-0031,SOU-0031,"Romaguera, Labadie and Tremblay",38981.25,USD,rejected,2020-07-19,2021-11-30
+ID-0032,SOU-0032,"Murray, Harber and Schiller",78982.86,USD,approved,2020-05-06,2023-04-19
+ID-0033,SOU-0033,Carroll Group,76174.91,USD,pending,2020-07-03,2024-03-16
+ID-0034,SOU-0034,Bode - Hirthe-Hilpert,81298.68,GBP,rejected,2024-07-09,2022-04-04
+ID-0035,SOU-0035,Kassulke - Kunde,1234.22,USD,draft,2020-09-17,2020-09-14
+ID-0036,SOU-0036,Windler Inc,28642.64,GBP,pending,2025-10-12,2020-01-27
+ID-0037,SOU-0037,"Legros, Lueilwitz and Murphy",69605.3,USD,approved,2023-07-04,2025-05-29
+ID-0038,SOU-0038,Toy-Klocko - Dibbert,46423.47,USD,approved,2020-06-19,2025-11-05
+ID-0039,SOU-0039,"Hagenes, Crooks and Wiegand",72599.38,USD,approved,2025-08-06,2025-03-13
+ID-0040,SOU-0040,Schroeder - Mertz,38151,JPY,paid,2025-01-11,2022-10-24
+ID-0041,SOU-0041,Streich and Sons,99971.8,JPY,approved,2024-08-12,2025-09-01
+ID-0042,SOU-0042,"Christiansen, Fay and Herzog",11444.4,USD,approved,2024-08-19,2023-02-14
+ID-0043,SOU-0043,"Terry, Barrows and Purdy",21375.12,USD,draft,2022-02-07,2023-07-17
+ID-0044,SOU-0044,Heidenreich LLC,78386.94,USD,approved,2025-03-05,2025-09-12
+ID-0045,SOU-0045,Gerlach - Kunde-Harber,63376.75,USD,draft,2020-10-09,2020-10-07
+ID-0046,SOU-0046,Deckow - Krajcik,66789.02,USD,pending,2020-03-30,2021-01-05
+ID-0047,SOU-0047,Cartwright - Hickle,50391.39,USD,draft,2024-10-18,2023-10-08
+ID-0048,SOU-0048,Beier - Rogahn,18533.65,USD,pending,2022-11-28,2023-09-17
+ID-0049,SOU-0049,Bashirian Inc,71363.63,GBP,approved,2023-03-12,2020-08-22
+ID-0050,SOU-0050,Glover Inc,2105.11,USD,pending,2021-12-18,2020-09-19
+ID-0051,SOU-0051,"Schamberger, Lind and Kemmer",12845.27,USD,pending,2023-11-16,2023-06-05
+ID-0052,SOU-0052,Ferry Group,15370.62,USD,pending,2021-02-12,2021-09-16
+ID-0053,SOU-0053,Leffler - Brown-Jacobi,96950.1,GBP,paid,2021-07-19,2021-01-09
+ID-0054,SOU-0054,"Marquardt, Dibbert and Lang",24316.73,USD,approved,2021-09-24,2023-06-28
+ID-0055,SOU-0055,Bechtelar - Berge,98997.03,USD,paid,2021-07-12,2024-02-02
+ID-0056,SOU-0056,"Jenkins, Simonis and Renner",93840.22,USD,draft,2024-06-12,2023-06-13
+ID-0057,SOU-0057,"Douglas, Schultz and Herzog",87732.34,USD,paid,2022-08-20,2022-04-06
+ID-0058,SOU-0058,Kuvalis Group,89967.5,USD,approved,2025-06-09,2023-09-30
+ID-0059,SOU-0059,Harvey - Mraz,53392.76,GBP,paid,2020-11-28,2021-11-14
+ID-0060,SOU-0060,Marks - Heaney,82143.61,USD,paid,2020-10-06,2022-05-20

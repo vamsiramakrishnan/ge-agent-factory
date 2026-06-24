@@ -1,0 +1,71 @@
+{
+  "id": "capa_tools_workflows",
+  "version": 1,
+  "primitives": [
+    "role_permission_gate",
+    "state_machine",
+    "approval_blocker",
+    "audit_trail"
+  ],
+  "toolHandlers": {
+    "submit_risk_update": {
+      "primitive": "state_machine_update",
+      "collection": "risks",
+      "primaryKey": "risk_id",
+      "roleArg": "role",
+      "allowedRoles": [
+        "risk_owner",
+        "control_owner",
+        "auditor",
+        "compliance_manager",
+        "approver"
+      ],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "transitions": {
+        "*": [
+          "active",
+          "pending_approval",
+          "inactive",
+          "cancelled",
+          "closed",
+          "approved",
+          "rejected"
+        ],
+        "active": [
+          "pending_approval",
+          "inactive",
+          "cancelled",
+          "closed"
+        ],
+        "pending_approval": [
+          "active",
+          "approved",
+          "rejected",
+          "cancelled"
+        ],
+        "approved": [
+          "closed",
+          "inactive"
+        ]
+      },
+      "approvalBlockers": [
+        {
+          "collection": "approvals",
+          "sourceRecordField": "source_record_id",
+          "states": [
+            "requested",
+            "pending",
+            "pending_approval"
+          ],
+          "blockedTargetStates": [
+            "closed",
+            "inactive",
+            "cancelled"
+          ]
+        }
+      ]
+    }
+  }
+}

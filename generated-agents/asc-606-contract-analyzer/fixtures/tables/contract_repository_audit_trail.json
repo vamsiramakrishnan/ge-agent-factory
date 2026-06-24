@@ -1,0 +1,602 @@
+[
+  {
+    "id": "ID-0001",
+    "counterparty": "Turner - Beatty",
+    "value": 2136345,
+    "currency": "GBP",
+    "start_date": "2024-10-31",
+    "end_date": "2021-05-06",
+    "status": "negotiating",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0002",
+    "counterparty": "Hauck, Ebert and Kulas",
+    "value": 2216114,
+    "currency": "EUR",
+    "start_date": "2022-05-14",
+    "end_date": "2023-03-07",
+    "status": "draft",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0003",
+    "counterparty": "Cormier, Jast and Barton",
+    "value": 1965634,
+    "currency": "GBP",
+    "start_date": "2021-02-28",
+    "end_date": "2023-11-07",
+    "status": "negotiating",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0004",
+    "counterparty": "Jenkins, Shanahan and Hyatt",
+    "value": 790021,
+    "currency": "GBP",
+    "start_date": "2022-03-01",
+    "end_date": "2024-01-11",
+    "status": "negotiating",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0005",
+    "counterparty": "Wolff-Schimmel, Streich and Mosciski",
+    "value": 2061840,
+    "currency": "EUR",
+    "start_date": "2021-12-24",
+    "end_date": "2023-05-21",
+    "status": "terminated",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0006",
+    "counterparty": "Lynch, Schuppe and Zemlak",
+    "value": 1477396,
+    "currency": "USD",
+    "start_date": "2024-08-04",
+    "end_date": "2021-07-08",
+    "status": "terminated",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0007",
+    "counterparty": "Stamm - Mertz",
+    "value": 3019719,
+    "currency": "GBP",
+    "start_date": "2023-06-15",
+    "end_date": "2022-07-29",
+    "status": "negotiating",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0008",
+    "counterparty": "Muller - Beier",
+    "value": 663559,
+    "currency": "EUR",
+    "start_date": "2025-02-04",
+    "end_date": "2020-04-08",
+    "status": "expired",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0009",
+    "counterparty": "Konopelski Group",
+    "value": 417177,
+    "currency": "USD",
+    "start_date": "2020-03-02",
+    "end_date": "2023-10-15",
+    "status": "active",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0010",
+    "counterparty": "Wintheiser - Mayer",
+    "value": 2823959,
+    "currency": "EUR",
+    "start_date": "2020-06-01",
+    "end_date": "2020-07-16",
+    "status": "expired",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0011",
+    "counterparty": "Rau, Price and Padberg",
+    "value": 3401370,
+    "currency": "GBP",
+    "start_date": "2021-10-10",
+    "end_date": "2020-01-03",
+    "status": "negotiating",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0012",
+    "counterparty": "Armstrong LLC",
+    "value": 1624417,
+    "currency": "EUR",
+    "start_date": "2023-05-05",
+    "end_date": "2022-01-21",
+    "status": "draft",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0013",
+    "counterparty": "Brakus, Satterfield and Rath",
+    "value": 1789415,
+    "currency": "USD",
+    "start_date": "2020-01-29",
+    "end_date": "2023-03-30",
+    "status": "terminated",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0014",
+    "counterparty": "Lowe Inc",
+    "value": 3039605,
+    "currency": "EUR",
+    "start_date": "2021-06-10",
+    "end_date": "2020-07-27",
+    "status": "negotiating",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0015",
+    "counterparty": "Lemke - McCullough-Schulist",
+    "value": 1641436,
+    "currency": "USD",
+    "start_date": "2022-06-01",
+    "end_date": "2024-01-14",
+    "status": "expired",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0016",
+    "counterparty": "Mayert - Romaguera",
+    "value": 4365569,
+    "currency": "EUR",
+    "start_date": "2024-05-19",
+    "end_date": "2023-09-19",
+    "status": "draft",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0017",
+    "counterparty": "Stark - Windler",
+    "value": 549142,
+    "currency": "EUR",
+    "start_date": "2023-07-07",
+    "end_date": "2023-04-01",
+    "status": "draft",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0018",
+    "counterparty": "Feest - Bauch",
+    "value": 2495668,
+    "currency": "GBP",
+    "start_date": "2021-07-07",
+    "end_date": "2021-11-05",
+    "status": "expired",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0019",
+    "counterparty": "Hickle, Dickens and Herzog",
+    "value": 4557583,
+    "currency": "USD",
+    "start_date": "2021-11-23",
+    "end_date": "2020-05-04",
+    "status": "expired",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0020",
+    "counterparty": "Roob - Weber",
+    "value": 1261886,
+    "currency": "USD",
+    "start_date": "2023-07-05",
+    "end_date": "2025-10-25",
+    "status": "negotiating",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0021",
+    "counterparty": "Oberbrunner and Sons",
+    "value": 2264180,
+    "currency": "EUR",
+    "start_date": "2022-05-28",
+    "end_date": "2020-09-09",
+    "status": "terminated",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0022",
+    "counterparty": "O'Conner Group",
+    "value": 4070480,
+    "currency": "GBP",
+    "start_date": "2023-11-23",
+    "end_date": "2025-09-23",
+    "status": "draft",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0023",
+    "counterparty": "Hauck Group",
+    "value": 1964795,
+    "currency": "USD",
+    "start_date": "2024-05-28",
+    "end_date": "2021-04-02",
+    "status": "draft",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0024",
+    "counterparty": "Hegmann and Sons",
+    "value": 2705992,
+    "currency": "USD",
+    "start_date": "2023-05-25",
+    "end_date": "2025-06-13",
+    "status": "negotiating",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0025",
+    "counterparty": "Mertz - Roob",
+    "value": 2937253,
+    "currency": "GBP",
+    "start_date": "2020-06-24",
+    "end_date": "2022-11-11",
+    "status": "expired",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0026",
+    "counterparty": "Casper, Dare-Reichert and Larson",
+    "value": 2907420,
+    "currency": "GBP",
+    "start_date": "2024-01-13",
+    "end_date": "2022-11-20",
+    "status": "terminated",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0027",
+    "counterparty": "Schultz - Kiehn",
+    "value": 3223343,
+    "currency": "EUR",
+    "start_date": "2020-04-29",
+    "end_date": "2023-08-07",
+    "status": "terminated",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0028",
+    "counterparty": "Schuster - Hermann",
+    "value": 4000919,
+    "currency": "EUR",
+    "start_date": "2024-12-15",
+    "end_date": "2023-10-16",
+    "status": "expired",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0029",
+    "counterparty": "Moen Group",
+    "value": 3131998,
+    "currency": "EUR",
+    "start_date": "2021-02-09",
+    "end_date": "2020-05-10",
+    "status": "expired",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0030",
+    "counterparty": "Block Inc",
+    "value": 825200,
+    "currency": "USD",
+    "start_date": "2021-03-19",
+    "end_date": "2022-04-27",
+    "status": "draft",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0031",
+    "counterparty": "Smitham Group",
+    "value": 2533427,
+    "currency": "USD",
+    "start_date": "2020-06-04",
+    "end_date": "2023-06-11",
+    "status": "active",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0032",
+    "counterparty": "Boyle Group",
+    "value": 934531,
+    "currency": "EUR",
+    "start_date": "2023-11-16",
+    "end_date": "2020-04-09",
+    "status": "terminated",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0033",
+    "counterparty": "Champlin - Franecki",
+    "value": 1797117,
+    "currency": "GBP",
+    "start_date": "2024-02-09",
+    "end_date": "2025-09-11",
+    "status": "draft",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0034",
+    "counterparty": "Osinski LLC",
+    "value": 2059836,
+    "currency": "EUR",
+    "start_date": "2022-06-29",
+    "end_date": "2020-02-22",
+    "status": "negotiating",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0035",
+    "counterparty": "Rempel - Ferry",
+    "value": 493858,
+    "currency": "USD",
+    "start_date": "2024-10-14",
+    "end_date": "2024-01-25",
+    "status": "active",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0036",
+    "counterparty": "Heller, Fisher-Swift and Jacobi",
+    "value": 2054268,
+    "currency": "GBP",
+    "start_date": "2021-01-31",
+    "end_date": "2024-10-17",
+    "status": "negotiating",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0037",
+    "counterparty": "Schneider and Sons",
+    "value": 307490,
+    "currency": "GBP",
+    "start_date": "2020-11-02",
+    "end_date": "2022-06-30",
+    "status": "active",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0038",
+    "counterparty": "Padberg Inc",
+    "value": 673719,
+    "currency": "USD",
+    "start_date": "2025-09-11",
+    "end_date": "2025-04-12",
+    "status": "terminated",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0039",
+    "counterparty": "Kub - Medhurst",
+    "value": 2882211,
+    "currency": "USD",
+    "start_date": "2022-10-31",
+    "end_date": "2023-04-28",
+    "status": "active",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0040",
+    "counterparty": "Sauer, Powlowski and Rice",
+    "value": 3054439,
+    "currency": "EUR",
+    "start_date": "2020-10-18",
+    "end_date": "2021-07-26",
+    "status": "active",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0041",
+    "counterparty": "Kunze Inc",
+    "value": 3675696,
+    "currency": "USD",
+    "start_date": "2023-07-05",
+    "end_date": "2025-08-25",
+    "status": "draft",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0042",
+    "counterparty": "Jaskolski - Dietrich",
+    "value": 122596,
+    "currency": "GBP",
+    "start_date": "2023-06-19",
+    "end_date": "2025-05-06",
+    "status": "active",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0043",
+    "counterparty": "Marquardt Group",
+    "value": 1351300,
+    "currency": "USD",
+    "start_date": "2021-06-25",
+    "end_date": "2021-11-02",
+    "status": "active",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0044",
+    "counterparty": "Bogisich Group",
+    "value": 2595207,
+    "currency": "USD",
+    "start_date": "2021-09-12",
+    "end_date": "2022-05-27",
+    "status": "terminated",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0045",
+    "counterparty": "Watsica Group",
+    "value": 777380,
+    "currency": "GBP",
+    "start_date": "2022-10-02",
+    "end_date": "2023-05-22",
+    "status": "expired",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0046",
+    "counterparty": "Grant, Feeney and Ernser",
+    "value": 699245,
+    "currency": "GBP",
+    "start_date": "2023-01-01",
+    "end_date": "2024-01-19",
+    "status": "negotiating",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0047",
+    "counterparty": "Ebert, Weber and Runolfsson",
+    "value": 3461362,
+    "currency": "GBP",
+    "start_date": "2022-05-12",
+    "end_date": "2020-10-13",
+    "status": "expired",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0048",
+    "counterparty": "Hahn Inc",
+    "value": 3229641,
+    "currency": "GBP",
+    "start_date": "2021-05-24",
+    "end_date": "2022-06-07",
+    "status": "negotiating",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0049",
+    "counterparty": "Rolfson, Deckow and Hayes",
+    "value": 321532,
+    "currency": "EUR",
+    "start_date": "2020-08-26",
+    "end_date": "2021-06-28",
+    "status": "negotiating",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0050",
+    "counterparty": "Stiedemann, Pollich and Harris",
+    "value": 2507891,
+    "currency": "EUR",
+    "start_date": "2023-01-24",
+    "end_date": "2020-09-19",
+    "status": "negotiating",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0051",
+    "counterparty": "Harber-Olson, West and Cole",
+    "value": 3528154,
+    "currency": "GBP",
+    "start_date": "2024-01-25",
+    "end_date": "2021-07-07",
+    "status": "terminated",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0052",
+    "counterparty": "Stanton - Smith",
+    "value": 2749059,
+    "currency": "USD",
+    "start_date": "2024-04-28",
+    "end_date": "2023-01-25",
+    "status": "expired",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0053",
+    "counterparty": "Braun, Predovic and Reinger",
+    "value": 571826,
+    "currency": "EUR",
+    "start_date": "2025-04-26",
+    "end_date": "2020-04-13",
+    "status": "terminated",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0054",
+    "counterparty": "Weissnat Inc",
+    "value": 3879772,
+    "currency": "EUR",
+    "start_date": "2020-11-01",
+    "end_date": "2020-01-24",
+    "status": "active",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0055",
+    "counterparty": "Lebsack Inc",
+    "value": 4400774,
+    "currency": "EUR",
+    "start_date": "2023-01-18",
+    "end_date": "2020-10-30",
+    "status": "terminated",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0056",
+    "counterparty": "Johns - Dietrich",
+    "value": 4103064,
+    "currency": "EUR",
+    "start_date": "2022-07-07",
+    "end_date": "2022-09-30",
+    "status": "negotiating",
+    "auto_renew": false
+  },
+  {
+    "id": "ID-0057",
+    "counterparty": "Ziemann Inc",
+    "value": 4604251,
+    "currency": "EUR",
+    "start_date": "2020-04-29",
+    "end_date": "2021-03-23",
+    "status": "active",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0058",
+    "counterparty": "Roberts - Bergstrom",
+    "value": 3622906,
+    "currency": "GBP",
+    "start_date": "2022-08-01",
+    "end_date": "2020-09-18",
+    "status": "active",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0059",
+    "counterparty": "Brown Group",
+    "value": 4971709,
+    "currency": "USD",
+    "start_date": "2020-04-27",
+    "end_date": "2021-02-20",
+    "status": "draft",
+    "auto_renew": true
+  },
+  {
+    "id": "ID-0060",
+    "counterparty": "Padberg, Streich and Koelpin",
+    "value": 4944315,
+    "currency": "EUR",
+    "start_date": "2025-12-03",
+    "end_date": "2024-07-12",
+    "status": "negotiating",
+    "auto_renew": false
+  }
+]

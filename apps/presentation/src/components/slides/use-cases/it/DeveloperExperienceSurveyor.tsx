@@ -1,0 +1,1058 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { Users, Database, Cpu, FileText, BarChart3 } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Monthly Cycle", lane: "system", type: "trigger" },
+    { id: "a1", label: "Metric Collection", lane: "agent", type: "action" },
+    { id: "a2", label: "DORA + Sentiment", lane: "agent", type: "action" },
+    { id: "a3", label: "DevEx Report", lane: "agent", type: "output" },
+    { id: "s2", label: "Published Report", lane: "system", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "s2"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Metric Collection", icon: Database, description: "DORA metrics, developer satisfaction signals, and tooling friction points aggregated.", trigger: "Monthly", systems: ["GitHub", "Jira", "Slack"] },
+  { label: "DORA & Sentiment Analysis", icon: Cpu, description: "DORA metrics calculated alongside developer sentiment from Slack channels and survey data.", systems: ["BigQuery", "Vertex AI"], integration: "API" },
+  { label: "DevEx Report", icon: FileText, description: "Gemini synthesizes quantitative metrics with qualitative feedback into actionable insights.", systems: ["Vertex AI"] },
+  { label: "Report Distribution", icon: BarChart3, description: "Developer experience report with improvement recommendations and trend analysis.", output: "DevEx Report" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "GitHub", description: "PR cycle time, review turnaround, deployment frequency", direction: "read", protocol: "GraphQL API", category: "erp" },
+    { system: "Jira", description: "Sprint velocity, backlog health, ticket cycle times", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "Slack", description: "Developer channel sentiment, tooling complaints, friction signals", direction: "read", protocol: "REST API", category: "collaboration" },
+    { system: "BigQuery", description: "DORA metrics, productivity scoring, trend analytics", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Sentiment analysis, metric-feedback synthesis, improvement recommendations", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Metric Collection", description: "Aggregate DORA metrics from GitHub (deployment frequency, lead time for changes, change failure rate, MTTR). Pull developer sentiment from Slack channels and survey platforms.", systems: ["GitHub", "Jira", "Slack"], layer: "integration", dataIn: "DevOps metrics + chat signals + survey data", dataOut: "Unified developer experience dataset" },
+    { label: "DORA & Sentiment Scoring", description: "Calculate DORA metrics with team-level breakdowns. Score developer productivity and satisfaction. Identify tooling friction points from Slack sentiment analysis.", systems: ["BigQuery"], layer: "ml", dataIn: "Unified DevEx dataset", dataOut: "DORA scores + sentiment scores + friction rankings" },
+    { label: "DevEx Synthesis", description: "Gemini synthesizes metrics with feedback: 'Deployment frequency improved 25% but developer satisfaction dropped — Slack analysis shows frustration with new approval workflow. The 2-hour wait negates CI/CD speed gains.'", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "DORA + sentiment + friction data", dataOut: "Actionable DevEx report with improvement priorities" },
+    { label: "Report Distribution", description: "Developer experience report published with DORA dashboard, sentiment trends, and prioritized improvement recommendations for VP Engineering.", systems: ["BigQuery"], layer: "integration", dataIn: "DevEx report content", dataOut: "Published monthly DevEx report" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "VP Engineering agent for the Developer Experience Surveyor workflow",
+  primaryObjective: "Gemini connects DORA metrics with developer sentiment — explaining why deployment frequency improved but satisfaction dropped. Slack sentiment analysis surfaces tooling friction in real-time rather than waiting for annual surveys. so the VP Engineering can move the DORA metrics visibility KPI.",
+  inScope: [
+    "Gemini connects DORA metrics with developer sentiment — explaining why deployment frequency improved but satisfaction dropped",
+    "Slack sentiment analysis surfaces tooling friction in real-time rather than waiting for annual surveys",
+    "Monthly reports give VP Engineering a leading indicator of developer attrition risk and improvement priorities",
+  ],
+  outOfScope: [
+    "Production deployments outside an approved change window",
+    "Irreversible destructive actions on shared infrastructure (DROP, force-delete, key rotation)",
+    "Security incident attribution requiring forensics",
+  ],
+  toolIntents: [
+    {
+      name: "query_github_pull_requests",
+      kind: "query",
+      sourceSystemId: "github",
+      description: "Retrieve pull requests from GitHub for the Developer Experience Surveyor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "pull_requests_records",
+        "pull_requests_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_jira_issues",
+      kind: "query",
+      sourceSystemId: "jira",
+      description: "Retrieve issues from Jira for the Developer Experience Surveyor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "issues_records",
+        "issues_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_slack_messages",
+      kind: "query",
+      sourceSystemId: "slack",
+      description: "Retrieve messages from Slack for the Developer Experience Surveyor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "messages_records",
+        "messages_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Developer Experience Surveyor workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_developer_experience_surveyor_runbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Developer Experience Surveyor Operations Runbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_github_deploy",
+      kind: "action",
+      sourceSystemId: "github",
+      description: "Execute the deploy step in GitHub after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "DORA metrics visibility moved from None toward Continuous tracking",
+      mustCite: [
+        "github.pull_requests",
+        "jira.issues",
+      ],
+      sourceSystemIds: [
+        "github",
+        "jira",
+      ],
+    },
+    {
+      claim: "Friction point detection moved from Annual survey toward Monthly automated",
+      mustCite: [
+        "github.pull_requests",
+        "jira.issues",
+      ],
+      sourceSystemIds: [
+        "github",
+        "jira",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "DORA metrics visibility regresses past the None baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "VP Engineering",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed deploy action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from GitHub (and other named systems) entities.",
+    "Never bypass VP Engineering approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "developer-experience-surveyor-end-to-end",
+      prompt: "Run the Developer Experience Surveyor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_github_pull_requests",
+        "query_jira_issues",
+        "query_slack_messages",
+        "query_bigquery_analytics_events",
+        "lookup_developer_experience_surveyor_runbook",
+        "action_github_deploy",
+      ],
+      mustReferenceEntities: [
+        "pull_requests",
+        "issues",
+        "messages",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "developer-experience-surveyor-runbook",
+      ],
+      expectedActionOutcome: "Action deploy executed against GitHub, with audit-trail entry and VP Engineering notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute deploy without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Developer Experience Surveyor so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "github",
+      name: "GitHub",
+      owns: [
+        "pull_requests",
+        "commits",
+        "workflow_runs",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_github_pull_requests",
+        "query_github_commits",
+        "query_github_workflow_runs",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "jira",
+      name: "Jira",
+      owns: [
+        "issues",
+        "sprints",
+        "epics",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_jira_issues",
+        "query_jira_sprints",
+        "query_jira_epics",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "slack",
+      name: "Slack",
+      owns: [
+        "messages",
+        "channels",
+        "thread_replies",
+      ],
+      protocol: "Slack API",
+      localBacking: [
+        "json-api",
+      ],
+      toolNames: [
+        "query_slack_messages",
+        "query_slack_channels",
+        "query_slack_thread_replies",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "pull_requests",
+      sourceSystemId: "github",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "commits",
+      sourceSystemId: "github",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "workflow_runs",
+      sourceSystemId: "github",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "pending",
+            "running",
+            "succeeded",
+            "failed",
+            "rolled_back",
+          ],
+          required: true,
+        },
+        {
+          name: "duration_seconds",
+          type: "number",
+          min: 5,
+          max: 7200,
+          required: true,
+        },
+        {
+          name: "started_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "environment",
+          type: "enum",
+          values: [
+            "dev",
+            "staging",
+            "prod",
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "issues",
+      sourceSystemId: "jira",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "sprints",
+      sourceSystemId: "jira",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "epics",
+      sourceSystemId: "jira",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "messages",
+      sourceSystemId: "slack",
+      datastore: "json-api",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "channel",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "author",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "body",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "sentiment",
+          type: "enum",
+          values: [
+            "positive",
+            "neutral",
+            "negative",
+          ],
+          weights: [
+            0.4,
+            0.4,
+            0.2,
+          ],
+          required: true,
+        },
+        {
+          name: "sent_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "channels",
+      sourceSystemId: "slack",
+      datastore: "json-api",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "thread_replies",
+      sourceSystemId: "slack",
+      datastore: "json-api",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "channel",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "author",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "body",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "sentiment",
+          type: "enum",
+          values: [
+            "positive",
+            "neutral",
+            "negative",
+          ],
+          weights: [
+            0.4,
+            0.4,
+            0.2,
+          ],
+          required: true,
+        },
+        {
+          name: "sent_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "developer-experience-surveyor-runbook",
+      sourceSystemId: "bigquery",
+      type: "runbook",
+      title: "Developer Experience Surveyor Operations Runbook",
+      requiredSections: [
+        "Detection signals",
+        "Triage procedures",
+        "Remediation actions",
+        "Rollback criteria",
+        "Post-incident review",
+      ],
+      linkedEntities: [
+        "pull_requests",
+        "commits",
+        "workflow_runs",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "detection",
+        "triage",
+        "remediation",
+        "rollback",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "github_deploy_api",
+      sourceSystemId: "github",
+      method: "POST",
+      path: "/api/github/deploy",
+      description: "Synchronous endpoint the agent calls to deploy in GitHub after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "developer-experience-surveyor-baseline-gap",
+      description: "Seed a realistic gap where DORA metrics visibility sits between None and Continuous tracking, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "pull_requests",
+        "commits",
+      ],
+      discoveryPath: [
+        "Inspect GitHub records for the affected entities",
+        "Compare against Jira historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next VP Engineering action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "developer_experience_surveyor",
+      schemas: [
+        "github",
+        "jira",
+        "slack",
+      ],
+    },
+    bigquery: {
+      dataset: "it_developer_experience_surveyor",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "developer-experience-surveyor-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "developer-experience-surveyor-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Developer Experience Surveyor workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const DeveloperExperienceSurveyor = () => (
+  <UseCaseSlide
+    title="Developer Experience Surveyor"
+    subtitle="A-3908 • Software Engineering & DevOps"
+    icon={Users}
+    domainId="domain-39"
+    layer="Layer 4: Data Agent"
+    persona="VP Engineering"
+    systems={["GitHub", "Jira", "Slack", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "DORA metrics visibility", before: "None", after: "Continuous tracking" },
+      { label: "Friction point detection", before: "Annual survey", after: "Monthly automated" },
+      { label: "DevEx improvement cycle", before: "Reactive", after: "Data-driven monthly" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    statusQuo={[
+      "Developer productivity measured by velocity points alone — no DORA metrics or satisfaction tracking.",
+      "Tooling friction discovered via annual surveys — by then the frustration has already caused attrition.",
+      "No connection between quantitative DevOps metrics and qualitative developer experience."
+    ]}
+    agentification={[
+      "Gemini connects DORA metrics with developer sentiment — explaining why deployment frequency improved but satisfaction dropped.",
+      "Slack sentiment analysis surfaces tooling friction in real-time rather than waiting for annual surveys.",
+      "Monthly reports give VP Engineering a leading indicator of developer attrition risk and improvement priorities."
+    ]}
+  />
+);

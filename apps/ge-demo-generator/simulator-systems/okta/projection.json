@@ -1,0 +1,47 @@
+{
+  "id": "okta_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into okta collections.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "okta"
+      ],
+      "realizedObjects": [
+        "users"
+      ],
+      "simulatorCollection": "users",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "okta"
+      ],
+      "realizedObjects": [
+        "groups"
+      ],
+      "simulatorCollection": "groups",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "okta"
+      ],
+      "realizedObjects": [
+        "applications"
+      ],
+      "simulatorCollection": "applications",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "approval"
+      ],
+      "realizedObjects": [
+        "approvals"
+      ],
+      "simulatorCollection": "approvals",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

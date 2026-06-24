@@ -1,0 +1,116 @@
+{
+  "id": "okta_schema",
+  "version": 3,
+  "apiProfile": {
+    "style": "rest-json",
+    "security": [
+      "api_token",
+      "oauth2",
+      "bearerAuth"
+    ],
+    "pagination": {
+      "styles": [
+        "cursor"
+      ],
+      "params": [
+        "after",
+        "limit",
+        "cursor"
+      ]
+    },
+    "commonErrors": [
+      400,
+      401,
+      403,
+      404,
+      409,
+      422,
+      429,
+      500
+    ]
+  },
+  "collections": {
+    "users": {
+      "primaryKey": "user_id",
+      "description": "Okta user (identity) with lifecycle status and profile.",
+      "fields": {
+        "user_id": "string",
+        "login": {
+          "type": "string",
+          "format": "email"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "first_name": "string",
+        "last_name": "string",
+        "status": "enum:STAGED|PROVISIONED|ACTIVE|SUSPENDED|DEPROVISIONED",
+        "department": "string",
+        "manager": {
+          "type": "string",
+          "format": "email"
+        },
+        "last_login": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "groups": {
+      "primaryKey": "group_id",
+      "description": "Okta group used for access assignment and rules.",
+      "fields": {
+        "group_id": "string",
+        "name": "string",
+        "description": "string",
+        "group_type": "enum:OKTA_GROUP|APP_GROUP|BUILT_IN",
+        "member_count": "integer",
+        "risk_tier": "enum:low|medium|high"
+      }
+    },
+    "applications": {
+      "primaryKey": "application_id",
+      "description": "Okta-integrated application (SSO/provisioning).",
+      "fields": {
+        "application_id": "string",
+        "name": "string",
+        "label": "string",
+        "sign_on_mode": "string",
+        "status": "enum:ACTIVE|INACTIVE",
+        "criticality": "enum:low|medium|high"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "description": "Pending approval records that block sensitive state transitions.",
+      "fields": {
+        "approval_id": "string",
+        "source_record_id": "string",
+        "approver": {
+          "type": "string",
+          "format": "email"
+        },
+        "state": "enum:requested|pending|approved|rejected",
+        "reason": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "description": "Simulator audit log.",
+      "fields": {
+        "event_id": "string",
+        "actor": "string",
+        "role": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string",
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

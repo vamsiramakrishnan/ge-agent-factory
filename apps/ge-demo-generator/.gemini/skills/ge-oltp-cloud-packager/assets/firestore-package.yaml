@@ -1,0 +1,14 @@
+id: firestore
+class: OLTP_NOSQL_FIRESTORE
+target: Google Cloud Firestore / Firebase
+source_systems: []
+files:
+  collections: collections.json
+  loader: load-firestore.sh
+env:
+  required:
+    - GOOGLE_CLOUD_PROJECT
+    - LOCATION
+evidence:
+  deterministic_document_ids: true
+  linked_entity_ids: true

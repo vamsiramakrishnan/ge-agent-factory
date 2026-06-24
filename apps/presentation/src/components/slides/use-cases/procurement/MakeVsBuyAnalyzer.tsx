@@ -1,0 +1,876 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { GitCompare, FileInput, Calculator, Brain, CheckCircle } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Business Case Trigger", lane: "system", type: "trigger" },
+    { id: "a1", label: "Cost Data Gathering", lane: "agent", type: "action" },
+    { id: "a2", label: "Monte Carlo TCO", lane: "agent", type: "action" },
+    { id: "a3", label: "Strategic Assessment", lane: "agent", type: "action" },
+    { id: "a4", label: "Recommendation", lane: "agent", type: "output" },
+    { id: "h1", label: "CPO & VP Review", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "a4"], ["a4", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Request Intake", icon: FileInput, description: "Make-vs-buy request with engineering specs and cost parameters ingested.", trigger: "On-demand", systems: ["SAP S/4HANA"] },
+  { label: "TCO Modeling", icon: Calculator, description: "Monte Carlo simulation on 25+ cost variables with sensitivity analysis.", systems: ["Vertex AI", "BigQuery"], integration: "ADK" },
+  { label: "Strategic Analysis", icon: Brain, description: "Qualitative factors — IP risk, lead time, strategic control — synthesized with TCO.", systems: ["Market Benchmarks"] },
+  { label: "Joint Approval", icon: CheckCircle, description: "CPO and Engineering VP review recommendation and commit to decision.", output: "Make-vs-Buy Decision" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "SAP S/4HANA", description: "Cost centers, BOMs, routings, and internal manufacturing cost data", direction: "read", protocol: "RFC/BAPI", category: "erp" },
+    { system: "Market Benchmarks", description: "External labor rates, material costs, and logistics benchmarks by geography", direction: "read", protocol: "REST API", category: "market-data" },
+    { system: "BigQuery", description: "TCO model storage, Monte Carlo simulation results, scenario comparisons", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Engineering spec interpretation and strategic recommendation narrative", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Cost Data Gathering", description: "Pull BOM and routing cost data from SAP S/4HANA. Fetch external labor rate and material cost benchmarks by geography. Deliver structured cost inputs to modeling stage.", systems: ["SAP S/4HANA", "Market Benchmarks"], layer: "integration", dataIn: "BOM/routing data + external benchmark feeds", dataOut: "Structured cost matrix (internal vs. external) by cost driver" },
+    { label: "TCO Modeling & Simulation", description: "Monte Carlo simulation on 25+ cost variables with sensitivity analysis on labor, material, and logistics. Break-even calculation across insource vs. outsource scenarios.", systems: ["BigQuery", "BigQuery ML"], layer: "ml", dataIn: "Structured cost matrix", dataOut: "Probabilistic TCO ranges with sensitivity rankings" },
+    { label: "Strategic Synthesis & Recommendation", description: "Gemini interprets engineering requirements documents and reasons about whether external suppliers can meet specs. Synthesizes quantitative TCO with qualitative factors — IP risk, lead time flexibility, strategic control — into a recommendation narrative that engineering and procurement can align on.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "TCO ranges + engineering specs + supplier capabilities", dataOut: "Make-vs-buy recommendation with strategic rationale" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "CPO agent for the Make-vs-Buy Analyzer workflow",
+  primaryObjective: "Monte Carlo simulation on 25+ cost variables with sensitivity analysis. LLM interprets engineering specs to assess external supplier capability fit. so the CPO can move the Analysis turnaround KPI.",
+  inScope: [
+    "Monte Carlo simulation on 25+ cost variables with sensitivity analysis",
+    "LLM interprets engineering specs to assess external supplier capability fit",
+    "Synthesizes quantitative TCO with qualitative factors (IP risk, lead time, strategic control) into a joint recommendation",
+  ],
+  outOfScope: [
+    "Contract execution without legal review",
+    "Supplier disqualification decisions (category lead retains authority)",
+    "Single-source justification overrides above policy threshold",
+  ],
+  toolIntents: [
+    {
+      name: "query_sap_s_4hana_transactions",
+      kind: "query",
+      sourceSystemId: "sap_s_4hana",
+      description: "Retrieve transactions from SAP S/4HANA for the Make-vs-Buy Analyzer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "transactions_records",
+        "transactions_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_market_benchmarks_market_benchmarks_records",
+      kind: "query",
+      sourceSystemId: "market_benchmarks",
+      description: "Retrieve market benchmarks records from Market Benchmarks for the Make-vs-Buy Analyzer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "market_benchmarks_records_records",
+        "market_benchmarks_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_procurement_3_procurement_3_records",
+      kind: "query",
+      sourceSystemId: "procurement_3",
+      description: "Retrieve procurement 3 records from PROCUREMENT 3 for the Make-vs-Buy Analyzer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "procurement_3_records_records",
+        "procurement_3_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_make_vs_buy_analyzer_policy_guide",
+      kind: "evidence_lookup",
+      sourceSystemId: "sap_s_4hana",
+      description: "Look up sections of the Make-vs-Buy Analyzer Procurement Policy Guide to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_sap_s_4hana_recommend",
+      kind: "action",
+      sourceSystemId: "sap_s_4hana",
+      description: "Execute the recommend step in SAP S/4HANA after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Analysis turnaround moved from 2-3 weeks toward 4 hours",
+      mustCite: [
+        "sap_s_4hana.transactions",
+        "market_benchmarks.market_benchmarks_records",
+      ],
+      sourceSystemIds: [
+        "sap_s_4hana",
+        "market_benchmarks",
+      ],
+    },
+    {
+      claim: "Cost factors modeled moved from 5-8 toward 25+",
+      mustCite: [
+        "sap_s_4hana.transactions",
+        "market_benchmarks.market_benchmarks_records",
+      ],
+      sourceSystemIds: [
+        "sap_s_4hana",
+        "market_benchmarks",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Analysis turnaround regresses past the 2-3 weeks baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "CPO",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed recommend action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from SAP S/4HANA (and other named systems) entities.",
+    "Never bypass CPO approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "make-vs-buy-analyzer-end-to-end",
+      prompt: "Run the Make-vs-Buy Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_sap_s_4hana_transactions",
+        "query_market_benchmarks_market_benchmarks_records",
+        "query_procurement_3_procurement_3_records",
+        "lookup_make_vs_buy_analyzer_policy_guide",
+        "action_sap_s_4hana_recommend",
+      ],
+      mustReferenceEntities: [
+        "transactions",
+        "market_benchmarks_records",
+        "procurement_3_records",
+      ],
+      mustCiteDocuments: [
+        "make-vs-buy-analyzer-policy-guide",
+      ],
+      expectedActionOutcome: "Action recommend executed against SAP S/4HANA, with audit-trail entry and CPO notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute recommend without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Make-vs-Buy Analyzer so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "sap_s_4hana",
+      name: "SAP S/4HANA",
+      owns: [
+        "transactions",
+        "journal_entries",
+        "master_data",
+      ],
+      protocol: "RFC/BAPI",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sap_s_4hana_transactions",
+        "query_sap_s_4hana_journal_entries",
+        "query_sap_s_4hana_master_data",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "market_benchmarks",
+      name: "Market Benchmarks",
+      owns: [
+        "market_benchmarks_records",
+        "market_benchmarks_events",
+        "market_benchmarks_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_market_benchmarks_market_benchmarks_records",
+        "query_market_benchmarks_market_benchmarks_events",
+        "query_market_benchmarks_market_benchmarks_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "procurement_3",
+      name: "PROCUREMENT 3",
+      owns: [
+        "procurement_3_records",
+        "procurement_3_events",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_procurement_3_records",
+      ],
+      evidence: [
+        "source_system_record",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "transactions",
+      sourceSystemId: "sap_s_4hana",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "journal_entries",
+      sourceSystemId: "sap_s_4hana",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "master_data",
+      sourceSystemId: "sap_s_4hana",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "market_benchmarks_records",
+      sourceSystemId: "market_benchmarks",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "market_benchmarks_events",
+      sourceSystemId: "market_benchmarks",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "market_benchmarks_record_id",
+          type: "ref",
+          ref: "market_benchmarks_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "market_benchmarks_audit_trail",
+      sourceSystemId: "market_benchmarks",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "procurement_3_records",
+      sourceSystemId: "procurement_3",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "procurement_3_events",
+      sourceSystemId: "procurement_3",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "procurement_3_record_id",
+          type: "ref",
+          ref: "procurement_3_records.id",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "market_benchmarks_events.market_benchmarks_record_id",
+      to: "market_benchmarks_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "procurement_3_events.procurement_3_record_id",
+      to: "procurement_3_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "make-vs-buy-analyzer-policy-guide",
+      sourceSystemId: "sap_s_4hana",
+      type: "policy",
+      title: "Make-vs-Buy Analyzer Procurement Policy Guide",
+      requiredSections: [
+        "Sourcing principles",
+        "Approval thresholds",
+        "Supplier risk requirements",
+        "Contract and compliance gates",
+        "Exception handling",
+      ],
+      linkedEntities: [
+        "transactions",
+        "journal_entries",
+        "master_data",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "sourcing",
+        "approvals",
+        "supplier-risk",
+        "exceptions",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "sap_s_4hana_recommend_api",
+      sourceSystemId: "sap_s_4hana",
+      method: "POST",
+      path: "/api/sap_s_4hana/recommend",
+      description: "Synchronous endpoint the agent calls to recommend in SAP S/4HANA after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "make-vs-buy-analyzer-baseline-gap",
+      description: "Seed a realistic gap where Analysis turnaround sits between 2-3 weeks and 4 hours, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "transactions",
+        "journal_entries",
+      ],
+      discoveryPath: [
+        "Inspect SAP S/4HANA records for the affected entities",
+        "Compare against Market Benchmarks historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next CPO action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "make_vs_buy_analyzer",
+      schemas: [
+        "sap_s_4hana",
+        "market_benchmarks",
+        "procurement_3",
+      ],
+    },
+    bigquery: {
+      dataset: "procurement_make_vs_buy_analyzer",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "make-vs-buy-analyzer-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "make-vs-buy-analyzer-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Make-vs-Buy Analyzer workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const MakeVsBuyAnalyzer = () => (
+  <UseCaseSlide
+    title="Make-vs-Buy Analyzer"
+    subtitle="A-1103 • Procurement Strategy"
+    icon={GitCompare}
+    domainId="domain-11"
+    layer="Layer 3: Custom ADK"
+    persona="CPO"
+    systems={["SAP S/4HANA", "Market Benchmarks", "Vertex AI"]}
+    kpis={[
+      { label: "Analysis turnaround", before: "2-3 weeks", after: "4 hours" },
+      { label: "Cost factors modeled", before: "5-8", after: "25+" },
+      { label: "Scenario coverage", before: "Single estimate", after: "Monte Carlo ranges" },
+    ]}
+    triggerType="event"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "CPO", action: "Approve make-vs-buy decision", description: "CPO and Engineering VP jointly review TCO analysis, strategic factors, and recommendation before committing to insource or outsource." }}
+    statusQuo={[
+      "Make-vs-buy decisions rely on incomplete cost data and gut feel.",
+      "Engineering and procurement rarely align on total cost factors.",
+      "Single-point estimates hide risk and uncertainty."
+    ]}
+    agentification={[
+      "Monte Carlo simulation on 25+ cost variables with sensitivity analysis.",
+      "LLM interprets engineering specs to assess external supplier capability fit.",
+      "Synthesizes quantitative TCO with qualitative factors (IP risk, lead time, strategic control) into a joint recommendation."
+    ]}
+  />
+);

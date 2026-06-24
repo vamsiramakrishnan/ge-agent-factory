@@ -1,0 +1,1150 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { TrendingUp, Database, Cpu, FileText, BarChart3 } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Monthly Cycle", lane: "system", type: "trigger" },
+    { id: "a1", label: "Status Aggregation", lane: "agent", type: "action" },
+    { id: "a2", label: "Health Scoring", lane: "agent", type: "action" },
+    { id: "a3", label: "Executive Narrative", lane: "agent", type: "output" },
+    { id: "s2", label: "DX Status Report", lane: "system", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "s2"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Status Aggregation", icon: Database, description: "Initiative status, KPI actuals, adoption metrics, and milestone completions pulled across programs.", trigger: "Monthly", systems: ["Jira", "ServiceNow"] },
+  { label: "Health Scoring", icon: Cpu, description: "Initiative health scoring, milestone slip prediction, and adoption curve analysis across pillars.", systems: ["BigQuery", "Vertex AI"], integration: "API" },
+  { label: "Executive Narrative", icon: FileText, description: "Gemini generates transformation status with pillar-level RAG ratings and actionable recommendations.", systems: ["Vertex AI"] },
+  { label: "Report Distribution", icon: BarChart3, description: "Executive transformation dashboard published with drill-down to initiative-level detail.", output: "DX Status Report" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Jira", description: "Initiative milestones, epic progress, team velocity", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "ServiceNow", description: "Program status updates, resource allocation, dependencies", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "BigQuery", description: "KPI actuals, adoption metrics, benefit realization data", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Status narrative generation, risk identification, recommendation synthesis", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+    { system: "Looker", description: "Executive transformation dashboard with drill-down", direction: "write", protocol: "REST API", category: "analytics" },
+  ],
+  pipeline: [
+    { label: "Status Aggregation", description: "Pull initiative status from Jira epics, KPI actuals from BigQuery, adoption metrics from telemetry, and milestone completions from ServiceNow across all transformation programs.", systems: ["Jira", "ServiceNow", "BigQuery"], layer: "integration", dataIn: "Multi-source program data", dataOut: "Unified transformation status dataset" },
+    { label: "Health Scoring & Prediction", description: "Initiative health scoring based on milestone delivery, adoption velocity, and benefit realization. Milestone slip prediction using historical delivery patterns. Adoption curve analysis against targets.", systems: ["BigQuery"], layer: "ml", dataIn: "Unified status dataset", dataOut: "Health scores with slip predictions by initiative" },
+    { label: "Executive Narrative Generation", description: "Gemini generates transformation status: '3 of 5 pillars are green. The API-first initiative is amber — 2 months behind on partner onboarding due to documentation gaps. Self-service analytics exceeded adoption targets by 30%.'", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Health scores + milestone data + adoption metrics", dataOut: "Executive narrative with RAG ratings and recommendations" },
+    { label: "Dashboard Publication", description: "Transformation dashboard published to Looker with pillar-level RAG ratings, drill-down to initiative detail, and trend visualization.", systems: ["Looker"], layer: "integration", dataIn: "Narrative + scored data", dataOut: "Published executive transformation dashboard" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "CIO / CTO agent for the Digital Transformation Tracker workflow",
+  primaryObjective: "Gemini generates pillar-level status narratives with RAG ratings and actionable root cause analysis. Milestone slip prediction identifies at-risk initiatives 4-6 weeks before they report delays. so the CIO / CTO can move the Status report prep time KPI.",
+  inScope: [
+    "Gemini generates pillar-level status narratives with RAG ratings and actionable root cause analysis",
+    "Milestone slip prediction identifies at-risk initiatives 4-6 weeks before they report delays",
+    "Continuous adoption curve tracking enables real-time course correction on underperforming programs",
+  ],
+  outOfScope: [
+    "Production deployments outside an approved change window",
+    "Irreversible destructive actions on shared infrastructure (DROP, force-delete, key rotation)",
+    "Security incident attribution requiring forensics",
+  ],
+  toolIntents: [
+    {
+      name: "query_jira_issues",
+      kind: "query",
+      sourceSystemId: "jira",
+      description: "Retrieve issues from Jira for the Digital Transformation Tracker workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "issues_records",
+        "issues_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_servicenow_tickets",
+      kind: "query",
+      sourceSystemId: "servicenow",
+      description: "Retrieve tickets from ServiceNow for the Digital Transformation Tracker workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "tickets_records",
+        "tickets_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Digital Transformation Tracker workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "query_looker_dashboards",
+      kind: "query",
+      sourceSystemId: "looker",
+      description: "Retrieve dashboards from Looker for the Digital Transformation Tracker workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "dashboards_records",
+        "dashboards_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_digital_transformation_tracker_runbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Digital Transformation Tracker Operations Runbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_jira_generate",
+      kind: "action",
+      sourceSystemId: "jira",
+      description: "Execute the generate step in Jira after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Status report prep time moved from 5 days toward Auto-generated",
+      mustCite: [
+        "jira.issues",
+        "servicenow.tickets",
+      ],
+      sourceSystemIds: [
+        "jira",
+        "servicenow",
+      ],
+    },
+    {
+      claim: "Milestone slip prediction moved from None toward 85% accuracy",
+      mustCite: [
+        "jira.issues",
+        "servicenow.tickets",
+      ],
+      sourceSystemIds: [
+        "jira",
+        "servicenow",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Status report prep time regresses past the 5 days baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "CIO / CTO",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed generate action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from Jira (and other named systems) entities.",
+    "Never bypass CIO / CTO approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "digital-transformation-tracker-end-to-end",
+      prompt: "Run the Digital Transformation Tracker workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_jira_issues",
+        "query_servicenow_tickets",
+        "query_bigquery_analytics_events",
+        "query_looker_dashboards",
+        "lookup_digital_transformation_tracker_runbook",
+        "action_jira_generate",
+      ],
+      mustReferenceEntities: [
+        "issues",
+        "tickets",
+        "analytics_events",
+        "dashboards",
+      ],
+      mustCiteDocuments: [
+        "digital-transformation-tracker-runbook",
+      ],
+      expectedActionOutcome: "Action generate executed against Jira, with audit-trail entry and CIO / CTO notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute generate without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Digital Transformation Tracker so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "jira",
+      name: "Jira",
+      owns: [
+        "issues",
+        "sprints",
+        "epics",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_jira_issues",
+        "query_jira_sprints",
+        "query_jira_epics",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "servicenow",
+      name: "ServiceNow",
+      owns: [
+        "tickets",
+        "change_requests",
+        "incidents",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_servicenow_tickets",
+        "query_servicenow_change_requests",
+        "query_servicenow_incidents",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "looker",
+      name: "Looker",
+      owns: [
+        "dashboards",
+        "explore_queries",
+        "metric_definitions",
+      ],
+      protocol: "LookerML",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_looker_dashboards",
+        "query_looker_explore_queries",
+        "query_looker_metric_definitions",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "issues",
+      sourceSystemId: "jira",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "sprints",
+      sourceSystemId: "jira",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "epics",
+      sourceSystemId: "jira",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "tickets",
+      sourceSystemId: "servicenow",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "change_requests",
+      sourceSystemId: "servicenow",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "incidents",
+      sourceSystemId: "servicenow",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "dashboards",
+      sourceSystemId: "looker",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "explore_queries",
+      sourceSystemId: "looker",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "metric_definitions",
+      sourceSystemId: "looker",
+      datastore: "bigquery",
+      rowCount: 30,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "digital-transformation-tracker-runbook",
+      sourceSystemId: "bigquery",
+      type: "runbook",
+      title: "Digital Transformation Tracker Operations Runbook",
+      requiredSections: [
+        "Detection signals",
+        "Triage procedures",
+        "Remediation actions",
+        "Rollback criteria",
+        "Post-incident review",
+      ],
+      linkedEntities: [
+        "issues",
+        "sprints",
+        "epics",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "detection",
+        "triage",
+        "remediation",
+        "rollback",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "jira_generate_api",
+      sourceSystemId: "jira",
+      method: "POST",
+      path: "/api/jira/generate",
+      description: "Synchronous endpoint the agent calls to generate in Jira after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "digital-transformation-tracker-baseline-gap",
+      description: "Seed a realistic gap where Status report prep time sits between 5 days and Auto-generated, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "issues",
+        "sprints",
+      ],
+      discoveryPath: [
+        "Inspect Jira records for the affected entities",
+        "Compare against ServiceNow historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next CIO / CTO action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "digital_transformation_tracker",
+      schemas: [
+        "jira",
+        "servicenow",
+      ],
+    },
+    bigquery: {
+      dataset: "it_digital_transformation_tracker",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "digital-transformation-tracker-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "digital-transformation-tracker-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Digital Transformation Tracker workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const DigitalTransformationTracker = () => (
+  <UseCaseSlide
+    title="Digital Transformation Tracker"
+    subtitle="A-3804 • IT Strategy & Portfolio"
+    icon={TrendingUp}
+    domainId="domain-38"
+    layer="Layer 4: Data Agent"
+    persona="CIO / CTO"
+    systems={["Jira", "ServiceNow", "BigQuery", "Looker", "Vertex AI"]}
+    kpis={[
+      { label: "Status report prep time", before: "5 days", after: "Auto-generated" },
+      { label: "Milestone slip prediction", before: "None", after: "85% accuracy" },
+      { label: "Benefit realization tracking", before: "Annual review", after: "Continuous" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    statusQuo={[
+      "Transformation status compiled manually from 5+ program managers into a PowerPoint deck over 5 days.",
+      "Milestone slips discovered in executive reviews, not predicted in advance.",
+      "Benefit realization measured annually, too late to course-correct underperforming initiatives."
+    ]}
+    agentification={[
+      "Gemini generates pillar-level status narratives with RAG ratings and actionable root cause analysis.",
+      "Milestone slip prediction identifies at-risk initiatives 4-6 weeks before they report delays.",
+      "Continuous adoption curve tracking enables real-time course correction on underperforming programs."
+    ]}
+  />
+);

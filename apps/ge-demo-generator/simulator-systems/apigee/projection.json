@@ -1,0 +1,47 @@
+{
+  "id": "apigee_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into apigee collections.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "apigee"
+      ],
+      "realizedObjects": [
+        "apis"
+      ],
+      "simulatorCollection": "apis",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "apigee"
+      ],
+      "realizedObjects": [
+        "apiproducts"
+      ],
+      "simulatorCollection": "apiproducts",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "apigee"
+      ],
+      "realizedObjects": [
+        "developers"
+      ],
+      "simulatorCollection": "developers",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "apigee"
+      ],
+      "realizedObjects": [
+        "envgroups"
+      ],
+      "simulatorCollection": "envgroups",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

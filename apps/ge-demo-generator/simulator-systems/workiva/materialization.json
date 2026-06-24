@@ -1,0 +1,206 @@
+{
+  "id": "workiva_materialization",
+  "version": 1,
+  "collections": {
+    "workspaces": {
+      "primaryKey": "workspace_id",
+      "fieldAliases": {
+        "workspace_id": [
+          "workspace_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "owner": [
+          "owner",
+          "id",
+          "source_record_id"
+        ],
+        "department": [
+          "department",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "documents": {
+      "primaryKey": "document_id",
+      "fieldAliases": {
+        "document_id": [
+          "document_id",
+          "id",
+          "source_record_id"
+        ],
+        "workspace_id": [
+          "workspace_id",
+          "id",
+          "source_record_id"
+        ],
+        "title": [
+          "title",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "owner": [
+          "owner",
+          "id",
+          "source_record_id"
+        ],
+        "modified_at": [
+          "modified_at",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "comments": {
+      "primaryKey": "comment_id",
+      "fieldAliases": {
+        "comment_id": [
+          "comment_id",
+          "id",
+          "source_record_id"
+        ],
+        "document_id": [
+          "document_id",
+          "id",
+          "source_record_id"
+        ],
+        "author": [
+          "author",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "created_at": [
+          "created_at",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "tasks": {
+      "primaryKey": "task_id",
+      "fieldAliases": {
+        "task_id": [
+          "task_id",
+          "id",
+          "source_record_id"
+        ],
+        "document_id": [
+          "document_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "assignee": [
+          "assignee",
+          "id",
+          "source_record_id"
+        ],
+        "due_date": [
+          "due_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fieldAliases": {
+        "approval_id": [
+          "approval_id",
+          "id",
+          "source_record_id"
+        ],
+        "source_record_id": [
+          "source_record_id",
+          "id"
+        ],
+        "approver": [
+          "approver",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "reason": [
+          "reason",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "active"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

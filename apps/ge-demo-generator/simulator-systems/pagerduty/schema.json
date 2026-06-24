@@ -1,0 +1,155 @@
+{
+  "id": "pagerduty_schema",
+  "version": 3,
+  "apiProfile": {
+    "style": "rest-json",
+    "security": [
+      "api_key",
+      "bearerAuth"
+    ],
+    "pagination": {
+      "styles": [
+        "offset",
+        "cursor"
+      ],
+      "params": [
+        "limit",
+        "offset",
+        "after",
+        "before",
+        "cursor"
+      ]
+    },
+    "commonErrors": [
+      400,
+      401,
+      402,
+      403,
+      404,
+      405,
+      409,
+      422,
+      429,
+      500
+    ]
+  },
+  "collections": {
+    "incidents": {
+      "primaryKey": "incident_id",
+      "description": "PagerDuty incident with assignment, service, urgency, and REST pagination/filter fields.",
+      "fields": {
+        "incident_id": "string",
+        "incident_number": "number",
+        "title": "string",
+        "status": "enum:triggered|acknowledged|resolved",
+        "urgency": "enum:high|low",
+        "service_id": "ref:services.service_id",
+        "assignee": "string",
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "relations": {
+        "service": {
+          "collection": "services",
+          "localField": "service_id",
+          "foreignField": "service_id",
+          "many": false
+        }
+      }
+    },
+    "services": {
+      "primaryKey": "service_id",
+      "description": "PagerDuty service (a monitored application).",
+      "fields": {
+        "service_id": "string",
+        "name": "string",
+        "status": "enum:active|warning|critical|maintenance|disabled",
+        "escalation_policy_id": "ref:escalation_policies.policy_id",
+        "description": "string"
+      },
+      "relations": {
+        "escalation_policy": {
+          "collection": "escalation_policies",
+          "localField": "escalation_policy_id",
+          "foreignField": "policy_id",
+          "many": false
+        },
+        "incidents": {
+          "collection": "incidents",
+          "localField": "service_id",
+          "foreignField": "service_id",
+          "many": true
+        }
+      }
+    },
+    "escalation_policies": {
+      "primaryKey": "policy_id",
+      "description": "PagerDuty escalation policy.",
+      "fields": {
+        "policy_id": "string",
+        "name": "string",
+        "num_loops": "number",
+        "description": "string"
+      },
+      "relations": {
+        "services": {
+          "collection": "services",
+          "localField": "policy_id",
+          "foreignField": "escalation_policy_id",
+          "many": true
+        },
+        "oncalls": {
+          "collection": "oncalls",
+          "localField": "policy_id",
+          "foreignField": "policy_id",
+          "many": true
+        }
+      }
+    },
+    "oncalls": {
+      "primaryKey": "oncall_id",
+      "description": "PagerDuty on-call assignment (derived).",
+      "fields": {
+        "oncall_id": "string",
+        "policy_id": "ref:escalation_policies.policy_id",
+        "user": "string",
+        "escalation_level": "number",
+        "start": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "end": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "relations": {
+        "escalation_policy": {
+          "collection": "escalation_policies",
+          "localField": "policy_id",
+          "foreignField": "policy_id",
+          "many": false
+        }
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "description": "Simulator audit log.",
+      "fields": {
+        "event_id": "string",
+        "actor": "string",
+        "role": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string",
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+node_modules
+dist
+.git
+.superpowers
+.claude
+.env
+.DS_Store
+coverage
+docs
+UseCasesFieldKitGeminiEnterpriseforHRPeopleOp.html

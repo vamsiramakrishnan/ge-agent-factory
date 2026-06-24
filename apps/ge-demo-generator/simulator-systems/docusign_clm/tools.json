@@ -1,0 +1,436 @@
+{
+  "id": "docusign_clm_tools",
+  "version": 2,
+  "tools": [
+    {
+      "name": "search_agreements",
+      "description": "Search Agreement Manager agreements with upstream-style OData search, filter, sort, and continuation-token paging.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "accountId": { "type": "string" },
+          "limit": { "type": "integer", "minimum": 1, "maximum": 100 },
+          "ctoken": { "type": "string" },
+          "$search": { "type": "string" },
+          "$filter": { "type": "string" },
+          "sort": { "type": "string" },
+          "direction": { "type": "string", "enum": ["asc", "desc"] },
+          "id": { "type": "string" },
+          "document_id": { "type": "string" },
+          "status": { "type": "string" },
+          "review_status": { "type": "string" },
+          "parties.name_in_agreement": { "type": "string" },
+          "metadata.created_at": { "type": "string" },
+          "title": { "type": "string" },
+          "provisions.effective_date": { "type": "string" },
+          "provisions.expiration_date": { "type": "string" },
+          "provisions.execution_date": { "type": "string" },
+          "provisions.term_length": { "type": "string" },
+          "source_name": { "type": "string" },
+          "source_id": { "type": "string" },
+          "include_linked_data": { "type": "boolean" }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "agreements",
+        "query": {
+          "textFields": ["title", "file_name", "summary", "type", "counterparty", "party_names"],
+          "filters": {
+            "id": { "field": "agreement_id", "op": "eq" },
+            "document_id": { "field": "document_id", "op": "eq" },
+            "status": { "field": "status", "op": "eq_ci" },
+            "review_status": { "field": "review_status", "op": "eq_ci" },
+            "parties.name_in_agreement": { "field": "party_names", "op": "contains" },
+            "metadata.created_at": { "field": "created_at", "op": "gte" },
+            "title": { "field": "title", "op": "contains" },
+            "provisions.effective_date": { "field": "effective_date", "op": "gte" },
+            "provisions.expiration_date": { "field": "expiration_date", "op": "lte" },
+            "provisions.execution_date": { "field": "execution_date", "op": "gte" },
+            "provisions.term_length": { "field": "term_length", "op": "eq_ci" },
+            "source_name": { "field": "source_name", "op": "eq_ci" },
+            "source_id": { "field": "source_id", "op": "eq" }
+          },
+          "defaultSort": [{ "field": "modified_at", "direction": "desc" }],
+          "pagination": { "style": "continuation-token", "defaultLimit": 10, "maxLimit": 100 }
+        }
+      }
+    },
+    {
+      "name": "get_agreement",
+      "description": "Get one Agreement Manager agreement and optionally include linked clauses, parties, obligations, approvals, amendments, and documents.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "accountId": { "type": "string" },
+          "agreement_id": { "type": "string" },
+          "include_linked_data": { "type": "boolean" },
+          "include": { "type": "string" },
+          "includes": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "include_parties": { "type": "boolean" },
+          "include_clauses": { "type": "boolean" },
+          "include_obligations": { "type": "boolean" },
+          "include_approvals": { "type": "boolean" },
+          "include_amendments": { "type": "boolean" },
+          "include_documents": { "type": "boolean" }
+        },
+        "required": ["agreement_id"]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "agreements",
+        "primaryKey": "agreement_id"
+      }
+    },
+    {
+      "name": "search_agreement_types",
+      "description": "List agreement type definitions available to the account.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string" },
+          "category": { "type": "string" },
+          "status": { "type": "string" },
+          "limit": { "type": "integer" }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "agreement_types",
+        "query": {
+          "textFields": ["name", "category", "extraction_model"],
+          "filters": {
+            "category": { "field": "category", "op": "eq_ci" },
+            "status": { "field": "status", "op": "eq_ci" }
+          },
+          "defaultSort": [{ "field": "name", "direction": "asc" }],
+          "pagination": { "defaultLimit": 20, "maxLimit": 100 }
+        }
+      }
+    },
+    {
+      "name": "search_documents",
+      "description": "Search uploaded repository documents that back Agreement Manager agreements.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string" },
+          "agreement_id": { "type": "string" },
+          "status": { "type": "string" },
+          "source_name": { "type": "string" },
+          "limit": { "type": "integer" },
+          "ctoken": { "type": "string" }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "documents",
+        "query": {
+          "textFields": ["file_name", "source_name", "checksum"],
+          "filters": {
+            "agreement_id": { "field": "agreement_id", "op": "eq" },
+            "status": { "field": "status", "op": "eq_ci" },
+            "source_name": { "field": "source_name", "op": "eq_ci" }
+          },
+          "defaultSort": [{ "field": "uploaded_at", "direction": "desc" }],
+          "pagination": { "style": "continuation-token", "defaultLimit": 10, "maxLimit": 100 }
+        }
+      }
+    },
+    {
+      "name": "get_document",
+      "description": "Get one repository document metadata record.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": { "type": "string" }
+        },
+        "required": ["document_id"]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "documents",
+        "primaryKey": "document_id"
+      }
+    },
+    {
+      "name": "search_clauses",
+      "description": "Search extracted provisions and clause review records.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string" },
+          "agreement_id": { "type": "string" },
+          "clause_type": { "type": "string" },
+          "risk_level": { "type": "string" },
+          "review_status": { "type": "string" },
+          "modified_by_type": { "type": "string" },
+          "limit": { "type": "integer" }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "clauses",
+        "query": {
+          "textFields": ["property_path", "clause_type", "text"],
+          "filters": {
+            "agreement_id": { "field": "agreement_id", "op": "eq" },
+            "clause_type": { "field": "clause_type", "op": "eq_ci" },
+            "risk_level": { "field": "risk_level", "op": "eq_ci" },
+            "review_status": { "field": "review_status", "op": "eq_ci" },
+            "modified_by_type": { "field": "modified_by_type", "op": "eq_ci" }
+          },
+          "pagination": { "defaultLimit": 20, "maxLimit": 100 }
+        }
+      }
+    },
+    {
+      "name": "search_obligations",
+      "description": "Search contractual obligations extracted from agreements.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string" },
+          "agreement_id": { "type": "string" },
+          "owner": { "type": "string" },
+          "status": { "type": "string" },
+          "priority": { "type": "string" },
+          "due_before": { "type": "string" },
+          "limit": { "type": "integer" }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "obligations",
+        "query": {
+          "textFields": ["owner", "obligation_type"],
+          "filters": {
+            "agreement_id": { "field": "agreement_id", "op": "eq" },
+            "owner": { "field": "owner", "op": "contains" },
+            "status": { "field": "status", "op": "eq_ci" },
+            "priority": { "field": "priority", "op": "eq_ci" },
+            "due_before": { "field": "due_date", "op": "lte" }
+          },
+          "defaultSort": [{ "field": "due_date", "direction": "asc" }],
+          "pagination": { "defaultLimit": 20, "maxLimit": 100 }
+        }
+      }
+    },
+    {
+      "name": "search_amendments",
+      "description": "Search agreement amendments and related agreement documents.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string" },
+          "agreement_id": { "type": "string" },
+          "status": { "type": "string" },
+          "limit": { "type": "integer" }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "amendments",
+        "query": {
+          "textFields": ["title", "change_summary"],
+          "filters": {
+            "agreement_id": { "field": "agreement_id", "op": "eq" },
+            "status": { "field": "status", "op": "eq_ci" }
+          },
+          "defaultSort": [{ "field": "effective_date", "direction": "desc" }],
+          "pagination": { "defaultLimit": 20, "maxLimit": 100 }
+        }
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending approval blockers for agreements, amendments, or obligations.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": { "type": "string" }
+        }
+      },
+      "binding": {
+        "op": "list_pending_approvals",
+        "collection": "approvals"
+      }
+    },
+    {
+      "name": "search_bulk_jobs",
+      "description": "Search Agreement Manager document uploader bulk jobs.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string" },
+          "accountId": { "type": "string" },
+          "status": { "type": "string" },
+          "external_job_id": { "type": "string" },
+          "limit": { "type": "integer" },
+          "ctoken": { "type": "string" }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "bulk_jobs",
+        "query": {
+          "textFields": ["name", "external_job_id", "message"],
+          "filters": {
+            "accountId": { "field": "account_id", "op": "eq" },
+            "status": { "field": "status", "op": "eq_ci" },
+            "external_job_id": { "field": "external_job_id", "op": "eq" }
+          },
+          "defaultSort": [{ "field": "modified_at", "direction": "desc" }],
+          "pagination": { "style": "continuation-token", "defaultLimit": 10, "maxLimit": 100 }
+        }
+      }
+    },
+    {
+      "name": "get_bulk_job",
+      "description": "Get one document uploader bulk job status.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "accountId": { "type": "string" },
+          "job_id": { "type": "string" }
+        },
+        "required": ["job_id"]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "bulk_jobs",
+        "primaryKey": "job_id"
+      }
+    },
+    {
+      "name": "create_bulk_upload_job",
+      "description": "Create a document uploader bulk job, mirroring POST /v1/accounts/{accountId}/upload/jobs.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "accountId": { "type": "string" },
+          "job_name": { "type": "string", "minLength": 1, "maxLength": 256 },
+          "expected_number_of_docs": { "type": "integer", "minimum": 1, "maximum": 10000 },
+          "language": { "type": "string" },
+          "external_job_id": { "type": "string" },
+          "role": { "type": "string" },
+          "idempotency_key": { "type": "string" },
+          "seed": { "type": "integer" }
+        },
+        "required": ["expected_number_of_docs"]
+      },
+      "binding": {
+        "op": "create",
+        "collection": "bulk_jobs",
+        "primaryKey": "job_id",
+        "idPrefix": "BULK-JOB",
+        "defaults": {
+          "status": "OPEN",
+          "uploaded_docs": 0,
+          "language": "en-US",
+          "ttl_period": "PT8H",
+          "message": "Files exceeding 100MB or more than 10,000 per job will be rejected."
+        },
+        "fieldMap": {
+          "job_name": "name",
+          "accountId": "account_id"
+        }
+      }
+    },
+    {
+      "name": "submit_agreement_update",
+      "description": "Patch an agreement status or review state, with approval and role gates.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "accountId": { "type": "string" },
+          "agreement_id": { "type": "string" },
+          "status": { "type": "string" },
+          "note": { "type": "string" },
+          "role": { "type": "string" },
+          "idempotency_key": { "type": "string" },
+          "seed": { "type": "integer" }
+        },
+        "required": ["agreement_id"]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "agreements",
+        "primaryKey": "agreement_id"
+      }
+    },
+    {
+      "name": "submit_obligation_update",
+      "description": "Update a contract obligation lifecycle state.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "obligation_id": { "type": "string" },
+          "status": { "type": "string" },
+          "note": { "type": "string" },
+          "role": { "type": "string" },
+          "idempotency_key": { "type": "string" },
+          "seed": { "type": "integer" }
+        },
+        "required": ["obligation_id"]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "obligations",
+        "primaryKey": "obligation_id"
+      }
+    },
+    {
+      "name": "submit_bulk_job_completion",
+      "description": "Mark a bulk upload job as upload-complete and queue downstream extraction processing.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "accountId": { "type": "string" },
+          "job_id": { "type": "string" },
+          "status": { "type": "string", "enum": ["UPLOAD_COMPLETE", "IN_PROGRESS", "COMPLETE", "FAILED", "CANCELED"] },
+          "note": { "type": "string" },
+          "role": { "type": "string" },
+          "idempotency_key": { "type": "string" },
+          "seed": { "type": "integer" }
+        },
+        "required": ["job_id", "status"]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "bulk_jobs",
+        "primaryKey": "job_id"
+      }
+    },
+    {
+      "name": "poll_async_job",
+      "description": "Poll a queued asynchronous simulator job.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "job_id": { "type": "string" }
+        },
+        "required": ["job_id"]
+      },
+      "binding": {
+        "op": "poll_async_job"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List DocuSign CLM simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": { "type": "integer" }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

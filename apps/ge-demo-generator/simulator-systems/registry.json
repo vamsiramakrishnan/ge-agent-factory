@@ -1,0 +1,4424 @@
+{
+  "version": 1,
+  "simulators": [
+    {
+      "id": "workday",
+      "displayName": "Workday",
+      "aliases": [
+        "Workday",
+        "Workday HCM",
+        "workday_hcm"
+      ],
+      "maturity": "domain_realistic",
+      "family": "hr-talent",
+      "entities": [
+        "worker",
+        "position",
+        "supervisory_org",
+        "job_profile",
+        "compensation_record",
+        "absence_request",
+        "business_process",
+        "security_assignment"
+      ],
+      "workflows": [
+        "hire",
+        "transfer",
+        "change_job",
+        "absence_request",
+        "compensation_change",
+        "termination",
+        "security_review"
+      ],
+      "roles": [
+        "employee",
+        "manager",
+        "hr_partner",
+        "finance_partner",
+        "comp_partner",
+        "security_admin"
+      ],
+      "tools": [
+        "search_workers",
+        "get_worker",
+        "search_positions",
+        "get_position",
+        "list_supervisory_orgs",
+        "get_supervisory_org",
+        "search_job_profiles",
+        "get_job_profile",
+        "search_compensation_records",
+        "get_compensation_record",
+        "search_absence_requests",
+        "get_absence_request",
+        "list_business_processes",
+        "get_business_process",
+        "submit_worker_change",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/workday/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/workday/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/workday/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/workday/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/workday/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/workday/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.simulators",
+        "handlerMap": "WORKDAY_TOOLS"
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "workers": "worker_id",
+          "positions": "position_id",
+          "supervisory_orgs": "org_id",
+          "job_profiles": "job_profile_id",
+          "compensation_records": "compensation_id",
+          "absence_requests": "absence_id",
+          "business_processes": "business_process_id",
+          "business_process_steps": "step_id",
+          "worker_events": "event_id",
+          "security_assignments": "assignment_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery",
+        "gcs"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "pending_approval",
+        "stale_read",
+        "validation_error",
+        "security_domain_denied",
+        "effective_date_conflict"
+      ],
+      "evalScenarios": [
+        "manager_transfer_pending_approval",
+        "cost_center_mismatch",
+        "absence_balance_exceeded",
+        "security_domain_filtered_worker"
+      ],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "servicenow",
+      "displayName": "ServiceNow",
+      "aliases": [
+        "ServiceNow",
+        "ServiceNow ITSM",
+        "service_now",
+        "servicenow_itsm"
+      ],
+      "maturity": "domain_realistic",
+      "family": "it-ops-security",
+      "entities": [
+        "incident",
+        "problem",
+        "change_request",
+        "service_request",
+        "assignment_group",
+        "configuration_item",
+        "ci_relationship",
+        "knowledge_article",
+        "approval"
+      ],
+      "workflows": [
+        "incident_lifecycle",
+        "problem_management",
+        "change_management_cab",
+        "request_fulfillment",
+        "cmdb_impact_analysis"
+      ],
+      "roles": [
+        "requester",
+        "fulfiller",
+        "resolver",
+        "itil",
+        "incident_manager",
+        "problem_manager",
+        "change_manager",
+        "cab_member",
+        "release_manager",
+        "service_owner"
+      ],
+      "tools": [
+        "search_incidents",
+        "get_incident",
+        "search_problems",
+        "get_problem",
+        "search_change_requests",
+        "get_change_request",
+        "search_service_requests",
+        "get_service_request",
+        "search_assignment_groups",
+        "get_assignment_group",
+        "search_configuration_items",
+        "get_configuration_item",
+        "search_knowledge_articles",
+        "get_knowledge_article",
+        "submit_incident_update",
+        "submit_problem_update",
+        "submit_change_request_update",
+        "submit_service_request_update",
+        "list_pending_approvals",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/servicenow/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/servicenow/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/servicenow/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/servicenow/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/servicenow/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/servicenow/seed.json",
+      "plugin": null,
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "incidents": "incident_id",
+          "problems": "problem_id",
+          "change_requests": "change_id",
+          "service_requests": "request_id",
+          "assignment_groups": "group_id",
+          "configuration_items": "ci_id",
+          "ci_relationships": "relationship_id",
+          "knowledge_articles": "article_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "not_found",
+        "missing_approval",
+        "invalid_state_transition",
+        "validation_error",
+        "rate_limited",
+        "conflict",
+        "timeout"
+      ],
+      "evalScenarios": [
+        "change_blocked_until_cab_approval",
+        "high_risk_change_pending_cab",
+        "p1_incident_resolution_path",
+        "access_request_pending_manager_approval",
+        "incident_invalid_transition_new_to_resolved",
+        "resolver_role_gate_enforced",
+        "cmdb_impact_via_ci_relationships",
+        "rate_limited_change_submission"
+      ],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      },
+      "stateBackend": "firestore"
+    },
+    {
+      "id": "sap_s4hana_fi",
+      "displayName": "SAP S/4HANA FI",
+      "aliases": [
+        "SAP S/4HANA FI",
+        "sap_s4hana_fi"
+      ],
+      "maturity": "domain_realistic",
+      "family": "finance-erp",
+      "entities": [
+        "company_code",
+        "vendor",
+        "gl_account",
+        "cost_center",
+        "profit_center",
+        "purchase_order",
+        "goods_receipt",
+        "invoice",
+        "journal_entry",
+        "payment_run",
+        "payment",
+        "approval"
+      ],
+      "workflows": [
+        "three_way_match_release",
+        "invoice_block_release",
+        "invoice_posting",
+        "journal_posting",
+        "journal_reversal",
+        "payment_run_execution",
+        "period_close"
+      ],
+      "roles": [
+        "ap_analyst",
+        "gl_accountant",
+        "controller",
+        "finance_manager",
+        "auditor"
+      ],
+      "tools": [
+        "search_company_codes",
+        "get_company_code",
+        "search_vendors",
+        "get_vendor",
+        "search_gl_accounts",
+        "get_gl_account",
+        "search_cost_centers",
+        "get_cost_center",
+        "search_profit_centers",
+        "get_profit_center",
+        "search_purchase_orders",
+        "get_purchase_order",
+        "search_goods_receipts",
+        "get_goods_receipt",
+        "search_invoices",
+        "get_invoice",
+        "search_journal_entries",
+        "get_journal_entry",
+        "search_payment_runs",
+        "get_payment_run",
+        "search_payments",
+        "get_payment",
+        "list_pending_approvals",
+        "submit_invoice_update",
+        "submit_journal_entry_update",
+        "submit_payment_run_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/sap_s4hana_fi/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/sap_s4hana_fi/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/sap_s4hana_fi/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/sap_s4hana_fi/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/sap_s4hana_fi/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/sap_s4hana_fi/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "company_codes": "company_code",
+          "vendors": "vendor_id",
+          "gl_accounts": "gl_account",
+          "cost_centers": "cost_center",
+          "profit_centers": "profit_center",
+          "purchase_orders": "purchase_order_id",
+          "goods_receipts": "goods_receipt_id",
+          "invoices": "invoice_id",
+          "journal_entries": "journal_id",
+          "payment_runs": "payment_run_id",
+          "payments": "payment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "not_found",
+        "missing_approval",
+        "invalid_state_transition",
+        "validation_error",
+        "conflict",
+        "forbidden",
+        "rate_limited",
+        "three_way_match_variance",
+        "posting_period_closed",
+        "payment_block"
+      ],
+      "evalScenarios": [
+        "blocked_invoice_due_to_quantity_variance",
+        "price_variance_invoice_requires_controller_release",
+        "payment_blocked_by_vendor_bank_change",
+        "payment_run_release_blocked_pending_approval",
+        "journal_posting_blocked_by_closed_period",
+        "manual_accrual_requires_controller_review",
+        "non_po_invoice_cost_center_coding",
+        "posted_journal_reversal"
+      ],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      },
+      "stateBackend": "firestore"
+    },
+    {
+      "id": "coupa",
+      "displayName": "Coupa",
+      "aliases": [
+        "Coupa",
+        "coupa"
+      ],
+      "maturity": "domain_realistic",
+      "family": "procurement",
+      "entities": [
+        "supplier",
+        "supplier_scorecard",
+        "requisition",
+        "requisition_line",
+        "purchase_order",
+        "po_line",
+        "receipt",
+        "invoice",
+        "contract",
+        "approval"
+      ],
+      "workflows": [
+        "requisition_approval",
+        "po_lifecycle",
+        "invoice_three_way_match",
+        "contract_lifecycle",
+        "supplier_lifecycle"
+      ],
+      "roles": [
+        "requester",
+        "buyer",
+        "category_manager",
+        "approver",
+        "supplier_manager",
+        "ap_specialist"
+      ],
+      "tools": [
+        "search_suppliers",
+        "get_supplier",
+        "search_supplier_scorecards",
+        "get_supplier_scorecard",
+        "search_requisitions",
+        "get_requisition",
+        "search_requisition_lines",
+        "search_purchase_orders",
+        "get_purchase_order",
+        "search_po_lines",
+        "search_receipts",
+        "get_receipt",
+        "search_invoices",
+        "get_invoice",
+        "search_contracts",
+        "get_contract",
+        "list_pending_approvals",
+        "submit_requisition_update",
+        "submit_purchase_order_update",
+        "submit_invoice_update",
+        "submit_contract_update",
+        "submit_supplier_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/coupa/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/coupa/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/coupa/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/coupa/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/coupa/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/coupa/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "suppliers": "supplier_id",
+          "supplier_scorecards": "scorecard_id",
+          "requisitions": "requisition_id",
+          "requisition_lines": "line_id",
+          "purchase_orders": "po_id",
+          "po_lines": "po_line_id",
+          "receipts": "receipt_id",
+          "invoices": "invoice_id",
+          "contracts": "contract_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "missing_approval",
+        "invalid_state_transition",
+        "validation_error",
+        "conflict",
+        "rate_limited",
+        "timeout",
+        "forbidden"
+      ],
+      "evalScenarios": [
+        "requisition_blocked_pending_manager_approval",
+        "requisition_threshold_routing_to_procurement",
+        "invoice_three_way_match_exception",
+        "invoice_approval_blocked_pending_review",
+        "contract_expiring_renewal",
+        "supplier_risk_review_hold",
+        "unauthorized_role_requisition_submit"
+      ],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      },
+      "stateBackend": "firestore"
+    },
+    {
+      "id": "salesforce_crm",
+      "displayName": "Salesforce CRM",
+      "aliases": [
+        "Salesforce CRM",
+        "salesforce_crm"
+      ],
+      "maturity": "starter",
+      "family": "crm",
+      "entities": [
+        "account",
+        "contact",
+        "opportunity",
+        "activity",
+        "campaign"
+      ],
+      "workflows": [
+        "account_search",
+        "opportunity_review",
+        "activity_logging",
+        "forecast_update"
+      ],
+      "roles": [
+        "seller",
+        "sales_manager",
+        "marketing_ops",
+        "revops"
+      ],
+      "tools": [
+        "search_accounts",
+        "get_account",
+        "submit_account_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/salesforce_crm/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/salesforce_crm/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/salesforce_crm/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/salesforce_crm/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/salesforce_crm/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/salesforce_crm/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "accounts": "account_id",
+          "contacts": "contact_id",
+          "opportunities": "opportunity_id",
+          "activities": "activity_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "bigquery",
+      "displayName": "BigQuery",
+      "aliases": [
+        "BigQuery",
+        "bigquery"
+      ],
+      "maturity": "domain_realistic",
+      "family": "data-platform",
+      "entities": [
+        "dataset",
+        "table",
+        "job",
+        "routine"
+      ],
+      "workflows": [
+        "query_jobs",
+        "dataset_browse",
+        "audit"
+      ],
+      "roles": [
+        "data_engineer",
+        "data_admin",
+        "data_owner",
+        "analyst"
+      ],
+      "tools": [
+        "search_datasets",
+        "get_dataset",
+        "search_tables",
+        "get_table",
+        "search_jobs",
+        "get_job",
+        "submit_job_update",
+        "search_routines",
+        "get_routine",
+        "poll_async_job",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/bigquery/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/bigquery/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/bigquery/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/bigquery/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/bigquery/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/bigquery/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "datasets": "dataset_id",
+          "tables": "table_id",
+          "jobs": "job_id",
+          "routines": "routine_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "rate_limited",
+        "conflict",
+        "timeout"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "okta",
+      "displayName": "Okta",
+      "aliases": [
+        "Okta",
+        "okta"
+      ],
+      "maturity": "domain_realistic",
+      "family": "identity-security",
+      "entities": [
+        "user",
+        "group",
+        "application",
+        "approval"
+      ],
+      "workflows": [
+        "user_lifecycle",
+        "access_approval",
+        "audit"
+      ],
+      "roles": [
+        "requester",
+        "manager",
+        "identity_admin",
+        "security_reviewer"
+      ],
+      "tools": [
+        "search_users",
+        "get_user",
+        "search_groups",
+        "get_group",
+        "search_applications",
+        "get_application",
+        "list_pending_approvals",
+        "submit_user_update",
+        "poll_async_job",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/okta/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/okta/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/okta/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/okta/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/okta/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/okta/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "users": "user_id",
+          "groups": "group_id",
+          "applications": "application_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "rate_limited",
+        "conflict",
+        "timeout"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "hubspot",
+      "displayName": "HubSpot",
+      "aliases": [
+        "HubSpot",
+        "hubspot"
+      ],
+      "maturity": "starter",
+      "family": "crm-marketing",
+      "entities": [
+        "lead",
+        "account",
+        "campaign",
+        "journey",
+        "email_event",
+        "segment"
+      ],
+      "workflows": [
+        "lead_search",
+        "campaign_review",
+        "journey_activation",
+        "segment_sync",
+        "audit"
+      ],
+      "roles": [
+        "marketing_ops",
+        "campaign_manager",
+        "revops",
+        "sales_owner"
+      ],
+      "tools": [
+        "search_leads",
+        "get_lead",
+        "submit_lead_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/hubspot/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/hubspot/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/hubspot/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/hubspot/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/hubspot/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/hubspot/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "leads": "lead_id",
+          "accounts": "account_id",
+          "campaigns": "campaign_id",
+          "journeys": "journey_id",
+          "email_events": "event_id",
+          "segments": "segment_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "jira",
+      "displayName": "Jira",
+      "aliases": [
+        "Jira",
+        "jira"
+      ],
+      "maturity": "domain_realistic",
+      "family": "work-management",
+      "entities": [
+        "project",
+        "component",
+        "epic",
+        "issue",
+        "subtask",
+        "sprint",
+        "release",
+        "board_transition",
+        "approval"
+      ],
+      "workflows": [
+        "issue_transition",
+        "subtask_progress",
+        "sprint_lifecycle",
+        "release_signoff",
+        "release_approval",
+        "board_audit"
+      ],
+      "roles": [
+        "developer",
+        "lead",
+        "qa",
+        "scrum_master",
+        "release_manager"
+      ],
+      "tools": [
+        "search_projects",
+        "get_project",
+        "search_components",
+        "get_component",
+        "search_epics",
+        "get_epic",
+        "search_issues",
+        "get_issue",
+        "search_subtasks",
+        "get_subtask",
+        "search_sprints",
+        "get_sprint",
+        "search_releases",
+        "get_release",
+        "search_board_transitions",
+        "submit_issue_update",
+        "submit_subtask_update",
+        "submit_sprint_update",
+        "submit_release_update",
+        "list_pending_approvals",
+        "poll_async_job",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/jira/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/jira/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/jira/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/jira/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/jira/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/jira/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "projects": "project_id",
+          "components": "component_id",
+          "epics": "epic_id",
+          "issues": "issue_id",
+          "subtasks": "subtask_id",
+          "sprints": "sprint_id",
+          "releases": "release_id",
+          "board_transitions": "transition_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "not_found",
+        "missing_approval",
+        "invalid_state_transition",
+        "validation_error",
+        "rate_limited",
+        "conflict",
+        "timeout"
+      ],
+      "evalScenarios": [
+        {
+          "id": "jira_transition_issue_to_review",
+          "prompt": "Move issue PLAT-101 (issue_id 40001) from in_progress to in_review and leave a note.",
+          "tool": "submit_issue_update",
+          "args": {
+            "issue_id": "40001",
+            "status": "in_review",
+            "note": "PR opened",
+            "role": "developer"
+          },
+          "expect": "ok"
+        },
+        {
+          "id": "jira_blocked_by_approval",
+          "prompt": "Try to close gateway rate-limit story PLAT-104 (issue_id 40004) as done while a capacity sign-off is still pending.",
+          "tool": "submit_issue_update",
+          "args": {
+            "issue_id": "40004",
+            "status": "done",
+            "role": "lead"
+          },
+          "expect": "missing_approval"
+        },
+        {
+          "id": "jira_release_signoff_gate",
+          "prompt": "Release Platform 1.5 (release_id 60001) before its readiness sign-off is approved.",
+          "tool": "submit_release_update",
+          "args": {
+            "release_id": "60001",
+            "status": "released",
+            "role": "release_manager"
+          },
+          "expect": "missing_approval"
+        },
+        {
+          "id": "jira_invalid_board_transition",
+          "prompt": "Move a to_do issue straight to done (issue_id 40006).",
+          "tool": "submit_issue_update",
+          "args": {
+            "issue_id": "40006",
+            "status": "done",
+            "role": "developer"
+          },
+          "expect": "invalid_state_transition"
+        },
+        {
+          "id": "jira_role_gate",
+          "prompt": "Attempt an issue transition as an unauthorized role.",
+          "tool": "submit_issue_update",
+          "args": {
+            "issue_id": "40002",
+            "status": "in_progress",
+            "role": "intern"
+          },
+          "expect": "permission_denied"
+        },
+        {
+          "id": "jira_start_sprint",
+          "prompt": "Start the next sprint (sprint_id 50002) by moving it from future to active.",
+          "tool": "submit_sprint_update",
+          "args": {
+            "sprint_id": "50002",
+            "state": "active",
+            "role": "scrum_master"
+          },
+          "expect": "ok"
+        }
+      ],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      },
+      "stateBackend": "firestore"
+    },
+    {
+      "id": "datadog",
+      "displayName": "Datadog",
+      "aliases": [
+        "Datadog",
+        "datadog"
+      ],
+      "maturity": "domain_realistic",
+      "family": "it-observability",
+      "entities": [
+        "service",
+        "monitor",
+        "alert",
+        "incident",
+        "slo",
+        "api_key"
+      ],
+      "workflows": [
+        "service_catalog_search",
+        "alert_triage",
+        "incident_status",
+        "slo_review",
+        "monitor_update",
+        "monitor_async_run",
+        "api_key_inventory",
+        "audit"
+      ],
+      "roles": [
+        "sre",
+        "service_owner",
+        "incident_commander",
+        "platform_admin"
+      ],
+      "tools": [
+        "search_services",
+        "get_service",
+        "search_monitors",
+        "get_monitor",
+        "search_alerts",
+        "search_incidents",
+        "get_incident",
+        "search_slos",
+        "search_api_keys",
+        "submit_service_update",
+        "submit_monitor_update",
+        "submit_incident_update",
+        "run_monitor_check",
+        "poll_async_job",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/datadog/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/datadog/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/datadog/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/datadog/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/datadog/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/datadog/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "services": "service_id",
+          "monitors": "monitor_id",
+          "alerts": "alert_id",
+          "incidents": "incident_id",
+          "slos": "slo_id",
+          "api_keys": "key_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "rate_limited",
+        "conflict",
+        "validation_error",
+        "timeout",
+        "unauthorized",
+        "forbidden"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "greenhouse",
+      "displayName": "Greenhouse",
+      "aliases": [
+        "Greenhouse",
+        "greenhouse"
+      ],
+      "maturity": "starter",
+      "family": "hr-talent",
+      "entities": [
+        "candidate",
+        "application",
+        "job",
+        "interview",
+        "offer",
+        "approval"
+      ],
+      "workflows": [
+        "candidate_search",
+        "application_review",
+        "interview_scheduling",
+        "offer_approval",
+        "audit"
+      ],
+      "roles": [
+        "recruiter",
+        "hiring_manager",
+        "interviewer",
+        "comp_partner",
+        "candidate_coordinator"
+      ],
+      "tools": [
+        "search_candidates",
+        "get_candidate",
+        "list_pending_approvals",
+        "submit_candidate_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/greenhouse/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/greenhouse/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/greenhouse/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/greenhouse/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/greenhouse/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/greenhouse/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "candidates": "candidate_id",
+          "jobs": "job_id",
+          "applications": "application_id",
+          "interviews": "interview_id",
+          "offers": "offer_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "cornerstone",
+      "displayName": "Cornerstone",
+      "aliases": [
+        "Cornerstone",
+        "cornerstone"
+      ],
+      "maturity": "starter",
+      "family": "hr-talent",
+      "entities": [
+        "learner",
+        "course",
+        "enrollment",
+        "certification",
+        "skill"
+      ],
+      "workflows": [
+        "course_search",
+        "enrollment_update",
+        "certification_tracking",
+        "skill_gap_review",
+        "audit"
+      ],
+      "roles": [
+        "learner",
+        "manager",
+        "learning_admin",
+        "compliance_owner"
+      ],
+      "tools": [
+        "search_learners",
+        "get_learner",
+        "submit_learner_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/cornerstone/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/cornerstone/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/cornerstone/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/cornerstone/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/cornerstone/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/cornerstone/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "learners": "learner_id",
+          "courses": "course_id",
+          "enrollments": "enrollment_id",
+          "certifications": "certification_id",
+          "skills": "skill_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "anaplan",
+      "displayName": "Anaplan",
+      "aliases": [
+        "Anaplan",
+        "anaplan"
+      ],
+      "maturity": "starter",
+      "family": "planning-epm",
+      "entities": [
+        "planning_model",
+        "scenario",
+        "forecast_line",
+        "budget_owner",
+        "approval"
+      ],
+      "workflows": [
+        "scenario_review",
+        "forecast_update",
+        "budget_approval",
+        "variance_audit"
+      ],
+      "roles": [
+        "planner",
+        "finance_manager",
+        "budget_owner",
+        "controller"
+      ],
+      "tools": [
+        "search_planning_models",
+        "get_planning_model",
+        "list_pending_approvals",
+        "submit_planning_model_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/anaplan/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/anaplan/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/anaplan/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/anaplan/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/anaplan/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/anaplan/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "planning_models": "model_id",
+          "scenarios": "scenario_id",
+          "forecast_lines": "forecast_line_id",
+          "budget_owners": "owner_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "icertis",
+      "displayName": "Icertis",
+      "aliases": [
+        "Icertis",
+        "icertis"
+      ],
+      "maturity": "starter",
+      "family": "contract-lifecycle",
+      "entities": [
+        "agreement",
+        "clause",
+        "obligation",
+        "amendment",
+        "approval"
+      ],
+      "workflows": [
+        "agreement_lookup",
+        "clause_review",
+        "obligation_tracking",
+        "approval"
+      ],
+      "roles": [
+        "contract_manager",
+        "legal_reviewer",
+        "business_owner",
+        "approver"
+      ],
+      "tools": [
+        "search_agreements",
+        "get_agreement",
+        "list_pending_approvals",
+        "submit_agreement_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/icertis/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/icertis/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/icertis/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/icertis/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/icertis/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/icertis/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "agreements": "agreement_id",
+          "clauses": "clause_id",
+          "obligations": "obligation_id",
+          "amendments": "amendment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "sap_ariba",
+      "displayName": "SAP Ariba",
+      "aliases": [
+        "SAP Ariba",
+        "sap_ariba"
+      ],
+      "maturity": "domain_realistic",
+      "family": "procurement",
+      "entities": [
+        "supplier",
+        "supplier_questionnaire",
+        "sourcing_event",
+        "sourcing_bid",
+        "requisition",
+        "purchase_order",
+        "contract_workspace",
+        "approval"
+      ],
+      "workflows": [
+        "supplier_qualification",
+        "questionnaire_review",
+        "sourcing_event_award",
+        "guided_buying_policy",
+        "contract_workspace_review"
+      ],
+      "roles": [
+        "buyer",
+        "category_manager",
+        "approver",
+        "supplier_manager"
+      ],
+      "tools": [
+        "search_suppliers",
+        "get_supplier",
+        "search_supplier_questionnaires",
+        "get_supplier_questionnaire",
+        "search_sourcing_events",
+        "get_sourcing_event",
+        "search_sourcing_bids",
+        "get_sourcing_bid",
+        "search_requisitions",
+        "get_requisition",
+        "list_pending_approvals",
+        "submit_supplier_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/sap_ariba/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/sap_ariba/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/sap_ariba/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/sap_ariba/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/sap_ariba/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/sap_ariba/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "suppliers": "supplier_id",
+          "supplier_questionnaires": "questionnaire_id",
+          "sourcing_events": "event_id",
+          "sourcing_bids": "bid_id",
+          "requisitions": "requisition_id",
+          "purchase_orders": "po_id",
+          "contracts": "contract_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval",
+        "supplier_not_qualified",
+        "questionnaire_expired",
+        "network_delivery_failed",
+        "rate_limited",
+        "conflict",
+        "timeout",
+        "forbidden"
+      ],
+      "evalScenarios": [
+        "high_risk_supplier_requires_questionnaire_review",
+        "preferred_supplier_required_by_guided_buying"
+      ],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "kyriba",
+      "displayName": "Kyriba",
+      "aliases": [
+        "Kyriba",
+        "kyriba"
+      ],
+      "maturity": "starter",
+      "family": "finance-treasury-tax",
+      "entities": [
+        "bank_account",
+        "payment_batch",
+        "cash_position",
+        "tax_filing",
+        "approval"
+      ],
+      "workflows": [
+        "cash_position_review",
+        "payment_release",
+        "tax_filing_status",
+        "bank_exception",
+        "audit"
+      ],
+      "roles": [
+        "treasury_analyst",
+        "tax_manager",
+        "controller",
+        "approver",
+        "auditor"
+      ],
+      "tools": [
+        "search_bank_accounts",
+        "get_bank_account",
+        "list_pending_approvals",
+        "submit_bank_account_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/kyriba/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/kyriba/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/kyriba/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/kyriba/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/kyriba/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/kyriba/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "bank_accounts": "bank_account_id",
+          "payment_batches": "batch_id",
+          "cash_positions": "cash_position_id",
+          "tax_filings": "filing_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "blackline",
+      "displayName": "BlackLine",
+      "aliases": [
+        "BlackLine",
+        "blackline"
+      ],
+      "maturity": "starter",
+      "family": "finance-erp",
+      "entities": [
+        "vendor",
+        "invoice",
+        "journal_entry",
+        "payment",
+        "cost_center",
+        "approval"
+      ],
+      "workflows": [
+        "invoice_review",
+        "journal_approval",
+        "payment_status",
+        "close_audit"
+      ],
+      "roles": [
+        "ap_analyst",
+        "controller",
+        "finance_manager",
+        "auditor"
+      ],
+      "tools": [
+        "search_vendors",
+        "get_vendor",
+        "list_pending_approvals",
+        "submit_vendor_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/blackline/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/blackline/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/blackline/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/blackline/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/blackline/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/blackline/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "vendors": "vendor_id",
+          "invoices": "invoice_id",
+          "journal_entries": "journal_id",
+          "payments": "payment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "marketo",
+      "displayName": "Marketo",
+      "aliases": [
+        "Marketo",
+        "marketo"
+      ],
+      "maturity": "starter",
+      "family": "crm-marketing",
+      "entities": [
+        "lead",
+        "account",
+        "campaign",
+        "journey",
+        "email_event",
+        "segment"
+      ],
+      "workflows": [
+        "lead_search",
+        "campaign_review",
+        "journey_activation",
+        "segment_sync",
+        "audit"
+      ],
+      "roles": [
+        "marketing_ops",
+        "campaign_manager",
+        "revops",
+        "sales_owner"
+      ],
+      "tools": [
+        "search_leads",
+        "get_lead",
+        "submit_lead_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/marketo/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/marketo/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/marketo/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/marketo/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/marketo/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/marketo/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "leads": "lead_id",
+          "accounts": "account_id",
+          "campaigns": "campaign_id",
+          "journeys": "journey_id",
+          "email_events": "event_id",
+          "segments": "segment_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "sap_s4hana_mm",
+      "displayName": "SAP S/4HANA MM",
+      "aliases": [
+        "SAP S/4HANA MM",
+        "sap_s4hana_mm"
+      ],
+      "maturity": "domain_realistic",
+      "family": "procurement",
+      "entities": [
+        "plant",
+        "material",
+        "supplier",
+        "purchase_requisition",
+        "purchase_order",
+        "goods_receipt",
+        "contract",
+        "approval"
+      ],
+      "workflows": [
+        "purchase_requisition_release",
+        "po_confirmation",
+        "goods_receipt_review",
+        "source_list_block",
+        "invoice_receipt_exception"
+      ],
+      "roles": [
+        "buyer",
+        "category_manager",
+        "approver",
+        "supplier_manager"
+      ],
+      "tools": [
+        "search_plants",
+        "search_suppliers",
+        "get_supplier",
+        "search_materials",
+        "get_material",
+        "search_purchase_requisitions",
+        "get_purchase_requisition",
+        "search_purchase_orders",
+        "get_purchase_order",
+        "search_goods_receipts",
+        "get_goods_receipt",
+        "search_contracts",
+        "get_contract",
+        "list_pending_approvals",
+        "submit_purchase_requisition_update",
+        "submit_purchase_order_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/sap_s4hana_mm/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/sap_s4hana_mm/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/sap_s4hana_mm/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/sap_s4hana_mm/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/sap_s4hana_mm/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/sap_s4hana_mm/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "plants": "plant",
+          "storage_locations": "storage_location_id",
+          "materials": "material_id",
+          "suppliers": "supplier_id",
+          "purchase_requisitions": "requisition_id",
+          "purchase_orders": "po_id",
+          "goods_receipts": "goods_receipt_id",
+          "contracts": "contract_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval",
+        "release_strategy_block",
+        "short_receipt",
+        "source_list_block",
+        "rate_limited",
+        "conflict",
+        "timeout",
+        "forbidden"
+      ],
+      "evalScenarios": [
+        "purchase_requisition_awaiting_release",
+        "po_short_received_blocks_invoice"
+      ],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "auditboard",
+      "displayName": "AuditBoard",
+      "aliases": [
+        "AuditBoard",
+        "auditboard"
+      ],
+      "maturity": "starter",
+      "family": "risk-grc",
+      "entities": [
+        "risk",
+        "control",
+        "issue",
+        "policy",
+        "assessment",
+        "approval"
+      ],
+      "workflows": [
+        "risk_review",
+        "control_attestation",
+        "issue_remediation",
+        "policy_exception",
+        "audit"
+      ],
+      "roles": [
+        "risk_owner",
+        "control_owner",
+        "auditor",
+        "compliance_manager",
+        "approver"
+      ],
+      "tools": [
+        "search_risks",
+        "get_risk",
+        "list_pending_approvals",
+        "submit_risk_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/auditboard/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/auditboard/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/auditboard/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/auditboard/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/auditboard/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/auditboard/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "risks": "risk_id",
+          "controls": "control_id",
+          "issues": "issue_id",
+          "policies": "policy_id",
+          "assessments": "assessment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "highradius",
+      "displayName": "HighRadius",
+      "aliases": [
+        "HighRadius",
+        "highradius"
+      ],
+      "maturity": "starter",
+      "family": "finance-erp",
+      "entities": [
+        "vendor",
+        "invoice",
+        "journal_entry",
+        "payment",
+        "cost_center",
+        "approval"
+      ],
+      "workflows": [
+        "invoice_review",
+        "journal_approval",
+        "payment_status",
+        "close_audit"
+      ],
+      "roles": [
+        "ap_analyst",
+        "controller",
+        "finance_manager",
+        "auditor"
+      ],
+      "tools": [
+        "search_vendors",
+        "get_vendor",
+        "list_pending_approvals",
+        "submit_vendor_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/highradius/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/highradius/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/highradius/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/highradius/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/highradius/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/highradius/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "vendors": "vendor_id",
+          "invoices": "invoice_id",
+          "journal_entries": "journal_id",
+          "payments": "payment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "taulia",
+      "displayName": "Taulia",
+      "aliases": [
+        "Taulia",
+        "taulia"
+      ],
+      "maturity": "starter",
+      "family": "finance-erp",
+      "entities": [
+        "vendor",
+        "invoice",
+        "journal_entry",
+        "payment",
+        "cost_center",
+        "approval"
+      ],
+      "workflows": [
+        "invoice_review",
+        "journal_approval",
+        "payment_status",
+        "close_audit"
+      ],
+      "roles": [
+        "ap_analyst",
+        "controller",
+        "finance_manager",
+        "auditor"
+      ],
+      "tools": [
+        "search_vendors",
+        "get_vendor",
+        "list_pending_approvals",
+        "submit_vendor_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/taulia/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/taulia/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/taulia/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/taulia/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/taulia/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/taulia/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "vendors": "vendor_id",
+          "invoices": "invoice_id",
+          "journal_entries": "journal_id",
+          "payments": "payment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "basware",
+      "displayName": "Basware",
+      "aliases": [
+        "Basware",
+        "basware"
+      ],
+      "maturity": "starter",
+      "family": "finance-erp",
+      "entities": [
+        "vendor",
+        "invoice",
+        "journal_entry",
+        "payment",
+        "cost_center",
+        "approval"
+      ],
+      "workflows": [
+        "invoice_review",
+        "journal_approval",
+        "payment_status",
+        "close_audit"
+      ],
+      "roles": [
+        "ap_analyst",
+        "controller",
+        "finance_manager",
+        "auditor"
+      ],
+      "tools": [
+        "search_vendors",
+        "get_vendor",
+        "list_pending_approvals",
+        "submit_vendor_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/basware/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/basware/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/basware/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/basware/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/basware/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/basware/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "vendors": "vendor_id",
+          "invoices": "invoice_id",
+          "journal_entries": "journal_id",
+          "payments": "payment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "lattice",
+      "displayName": "Lattice",
+      "aliases": [
+        "Lattice",
+        "lattice"
+      ],
+      "maturity": "starter",
+      "family": "hr-talent",
+      "entities": [
+        "worker",
+        "position",
+        "supervisory_org",
+        "job_requisition",
+        "worker_event",
+        "approval"
+      ],
+      "workflows": [
+        "worker_search",
+        "job_change",
+        "manager_approval",
+        "org_lookup",
+        "audit"
+      ],
+      "roles": [
+        "employee",
+        "manager",
+        "hr_partner",
+        "recruiter",
+        "comp_partner"
+      ],
+      "tools": [
+        "search_workers",
+        "get_worker",
+        "list_pending_approvals",
+        "submit_worker_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/lattice/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/lattice/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/lattice/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/lattice/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/lattice/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/lattice/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "workers": "worker_id",
+          "positions": "position_id",
+          "supervisory_orgs": "org_id",
+          "job_requisitions": "requisition_id",
+          "worker_events": "event_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "github",
+      "displayName": "GitHub",
+      "aliases": [
+        "GitHub",
+        "github"
+      ],
+      "maturity": "domain_realistic",
+      "family": "work-management",
+      "entities": [
+        "repository",
+        "issue",
+        "pull",
+        "workflow_run"
+      ],
+      "workflows": [
+        "issue_triage",
+        "pull_review",
+        "ci_audit",
+        "audit"
+      ],
+      "roles": [
+        "engineer",
+        "project_manager",
+        "maintainer",
+        "release_manager",
+        "product_owner",
+        "approver"
+      ],
+      "tools": [
+        "search_repositories",
+        "get_repository",
+        "search_issues",
+        "get_issue",
+        "submit_issue_update",
+        "search_pulls",
+        "get_pull",
+        "submit_pull_update",
+        "search_workflow_runs",
+        "get_workflow_run",
+        "poll_async_job",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/github/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/github/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/github/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/github/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/github/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/github/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "repositories": "repo_id",
+          "issues": "issue_id",
+          "pulls": "pull_id",
+          "workflow_runs": "run_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "rate_limited",
+        "conflict",
+        "timeout"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "manageengine",
+      "displayName": "ManageEngine",
+      "aliases": [
+        "ManageEngine",
+        "manageengine"
+      ],
+      "maturity": "starter",
+      "family": "it-ops-security",
+      "entities": [
+        "ticket",
+        "service_request",
+        "change_request",
+        "cmdb_ci",
+        "approval",
+        "sla"
+      ],
+      "workflows": [
+        "incident_triage",
+        "request_fulfillment",
+        "change_approval",
+        "sla_escalation",
+        "audit"
+      ],
+      "roles": [
+        "requester",
+        "resolver",
+        "change_manager",
+        "service_owner"
+      ],
+      "tools": [
+        "search_tickets",
+        "get_ticket",
+        "list_pending_approvals",
+        "submit_ticket_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/manageengine/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/manageengine/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/manageengine/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/manageengine/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/manageengine/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/manageengine/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "tickets": "ticket_id",
+          "cmdb_items": "ci_id",
+          "changes": "change_id",
+          "slas": "sla_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "salesforce_marketing_cloud",
+      "displayName": "Salesforce Marketing Cloud",
+      "aliases": [
+        "Salesforce Marketing Cloud",
+        "salesforce_marketing_cloud"
+      ],
+      "maturity": "starter",
+      "family": "crm-marketing",
+      "entities": [
+        "lead",
+        "account",
+        "campaign",
+        "journey",
+        "email_event",
+        "segment"
+      ],
+      "workflows": [
+        "lead_search",
+        "campaign_review",
+        "journey_activation",
+        "segment_sync",
+        "audit"
+      ],
+      "roles": [
+        "marketing_ops",
+        "campaign_manager",
+        "revops",
+        "sales_owner"
+      ],
+      "tools": [
+        "search_leads",
+        "get_lead",
+        "submit_lead_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/salesforce_marketing_cloud/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/salesforce_marketing_cloud/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/salesforce_marketing_cloud/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/salesforce_marketing_cloud/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/salesforce_marketing_cloud/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/salesforce_marketing_cloud/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "leads": "lead_id",
+          "accounts": "account_id",
+          "campaigns": "campaign_id",
+          "journeys": "journey_id",
+          "email_events": "event_id",
+          "segments": "segment_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "docusign_clm",
+      "displayName": "DocuSign CLM",
+      "aliases": [
+        "DocuSign CLM",
+        "docusign_clm"
+      ],
+      "maturity": "domain_realistic",
+      "family": "contract-lifecycle",
+      "entities": [
+        "agreement",
+        "agreement_type",
+        "party",
+        "document",
+        "clause",
+        "obligation",
+        "amendment",
+        "approval",
+        "bulk_job"
+      ],
+      "workflows": [
+        "agreement_odata_search",
+        "agreement_linked_data_lookup",
+        "clause_review",
+        "obligation_tracking",
+        "approval_blocking",
+        "bulk_upload_job_lifecycle",
+        "audit"
+      ],
+      "roles": [
+        "contract_manager",
+        "legal_reviewer",
+        "business_owner",
+        "approver",
+        "integration_admin"
+      ],
+      "tools": [
+        "search_agreements",
+        "get_agreement",
+        "search_agreement_types",
+        "search_documents",
+        "get_document",
+        "search_clauses",
+        "search_obligations",
+        "search_amendments",
+        "list_pending_approvals",
+        "search_bulk_jobs",
+        "get_bulk_job",
+        "create_bulk_upload_job",
+        "submit_agreement_update",
+        "submit_obligation_update",
+        "submit_bulk_job_completion",
+        "poll_async_job",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/docusign_clm/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/docusign_clm/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/docusign_clm/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/docusign_clm/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/docusign_clm/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/docusign_clm/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "agreements": "agreement_id",
+          "agreement_types": "type_id",
+          "parties": "party_id",
+          "documents": "document_id",
+          "clauses": "clause_id",
+          "obligations": "obligation_id",
+          "amendments": "amendment_id",
+          "approvals": "approval_id",
+          "bulk_jobs": "job_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "rate_limited",
+        "unauthorized",
+        "forbidden",
+        "permission_denied",
+        "validation_error",
+        "conflict",
+        "timeout",
+        "not_found",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "pagerduty",
+      "displayName": "PagerDuty",
+      "aliases": [
+        "PagerDuty",
+        "pagerduty"
+      ],
+      "maturity": "domain_realistic",
+      "family": "it-observability",
+      "entities": [
+        "incident",
+        "service",
+        "escalation_policy",
+        "oncall"
+      ],
+      "workflows": [
+        "incident_response",
+        "oncall_audit",
+        "audit"
+      ],
+      "roles": [
+        "responder",
+        "incident_commander",
+        "manager",
+        "service_owner"
+      ],
+      "tools": [
+        "search_incidents",
+        "get_incident",
+        "submit_incident_update",
+        "search_services",
+        "get_service",
+        "search_escalation_policies",
+        "get_escalation_policy",
+        "search_oncalls",
+        "poll_async_job",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/pagerduty/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/pagerduty/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/pagerduty/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/pagerduty/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/pagerduty/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/pagerduty/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "incidents": "incident_id",
+          "services": "service_id",
+          "escalation_policies": "policy_id",
+          "oncalls": "oncall_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "rate_limited",
+        "conflict",
+        "timeout"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "kubernetes",
+      "displayName": "Kubernetes",
+      "aliases": [
+        "Kubernetes",
+        "kubernetes"
+      ],
+      "maturity": "domain_realistic",
+      "family": "it-observability",
+      "entities": [
+        "pod",
+        "deployment",
+        "service",
+        "node"
+      ],
+      "workflows": [
+        "pod_lifecycle",
+        "deployment_rollout",
+        "audit"
+      ],
+      "roles": [
+        "sre",
+        "cluster_admin",
+        "release_manager",
+        "service_owner",
+        "platform_admin"
+      ],
+      "tools": [
+        "search_pods",
+        "get_pod",
+        "submit_pod_update",
+        "search_deployments",
+        "get_deployment",
+        "submit_deployment_update",
+        "search_services",
+        "get_service",
+        "search_nodes",
+        "get_node",
+        "poll_async_job",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/kubernetes/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/kubernetes/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/kubernetes/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/kubernetes/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/kubernetes/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/kubernetes/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "pods": "pod_id",
+          "deployments": "deployment_id",
+          "services": "service_id",
+          "nodes": "node_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "conflict",
+        "rate_limited",
+        "timeout"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "sap_concur",
+      "displayName": "SAP Concur",
+      "aliases": [
+        "SAP Concur",
+        "sap_concur"
+      ],
+      "maturity": "domain_realistic",
+      "family": "travel-expense",
+      "entities": [
+        "user",
+        "expense_report",
+        "expense_entry",
+        "receipt",
+        "card_transaction",
+        "trip",
+        "cash_advance",
+        "approval"
+      ],
+      "workflows": [
+        "expense_report_approval",
+        "policy_exception_audit",
+        "receipt_match",
+        "card_transaction_match",
+        "reimbursement_status"
+      ],
+      "roles": [
+        "employee",
+        "manager",
+        "expense_auditor",
+        "finance_partner"
+      ],
+      "tools": [
+        "search_users",
+        "get_user",
+        "search_expense_reports",
+        "get_expense_report",
+        "search_expense_entries",
+        "get_expense_entry",
+        "search_card_transactions",
+        "get_card_transaction",
+        "search_trips",
+        "get_trip",
+        "list_pending_approvals",
+        "submit_expense_report_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/sap_concur/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/sap_concur/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/sap_concur/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/sap_concur/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/sap_concur/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/sap_concur/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "users": "user_id",
+          "expense_reports": "report_id",
+          "expense_entries": "entry_id",
+          "receipts": "receipt_id",
+          "card_transactions": "transaction_id",
+          "trips": "trip_id",
+          "cash_advances": "cash_advance_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval",
+        "missing_receipt",
+        "policy_exception",
+        "duplicate_card_charge"
+      ],
+      "evalScenarios": [
+        "expense_report_has_missing_receipt_and_daily_rate_exception",
+        "card_transactions_match_report_entries"
+      ],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "workiva",
+      "displayName": "Workiva",
+      "aliases": [
+        "Workiva",
+        "workiva"
+      ],
+      "maturity": "starter",
+      "family": "collaboration-document",
+      "entities": [
+        "workspace",
+        "document",
+        "comment",
+        "task",
+        "approval"
+      ],
+      "workflows": [
+        "document_search",
+        "comment_review",
+        "task_update",
+        "approval",
+        "audit"
+      ],
+      "roles": [
+        "author",
+        "reviewer",
+        "approver",
+        "workspace_admin"
+      ],
+      "tools": [
+        "search_workspaces",
+        "get_workspace",
+        "list_pending_approvals",
+        "submit_workspace_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/workiva/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/workiva/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/workiva/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/workiva/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/workiva/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/workiva/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "workspaces": "workspace_id",
+          "documents": "document_id",
+          "comments": "comment_id",
+          "tasks": "task_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "avalara",
+      "displayName": "Avalara",
+      "aliases": [
+        "Avalara",
+        "avalara"
+      ],
+      "maturity": "starter",
+      "family": "finance-treasury-tax",
+      "entities": [
+        "bank_account",
+        "payment_batch",
+        "cash_position",
+        "tax_filing",
+        "approval"
+      ],
+      "workflows": [
+        "cash_position_review",
+        "payment_release",
+        "tax_filing_status",
+        "bank_exception",
+        "audit"
+      ],
+      "roles": [
+        "treasury_analyst",
+        "tax_manager",
+        "controller",
+        "approver",
+        "auditor"
+      ],
+      "tools": [
+        "search_bank_accounts",
+        "get_bank_account",
+        "list_pending_approvals",
+        "submit_bank_account_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/avalara/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/avalara/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/avalara/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/avalara/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/avalara/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/avalara/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "bank_accounts": "bank_account_id",
+          "payment_batches": "batch_id",
+          "cash_positions": "cash_position_id",
+          "tax_filings": "filing_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "longview_onesource",
+      "displayName": "Longview/OneSource",
+      "aliases": [
+        "Longview/OneSource",
+        "longview_onesource"
+      ],
+      "maturity": "starter",
+      "family": "planning-epm",
+      "entities": [
+        "planning_model",
+        "scenario",
+        "forecast_line",
+        "budget_owner",
+        "approval"
+      ],
+      "workflows": [
+        "scenario_review",
+        "forecast_update",
+        "budget_approval",
+        "variance_audit"
+      ],
+      "roles": [
+        "planner",
+        "finance_manager",
+        "budget_owner",
+        "controller"
+      ],
+      "tools": [
+        "search_planning_models",
+        "get_planning_model",
+        "list_pending_approvals",
+        "submit_planning_model_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/longview_onesource/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/longview_onesource/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/longview_onesource/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/longview_onesource/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/longview_onesource/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/longview_onesource/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "planning_models": "model_id",
+          "scenarios": "scenario_id",
+          "forecast_lines": "forecast_line_id",
+          "budget_owners": "owner_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "benefitfocus",
+      "displayName": "Benefitfocus",
+      "aliases": [
+        "Benefitfocus",
+        "benefitfocus"
+      ],
+      "maturity": "starter",
+      "family": "hr-benefits",
+      "entities": [
+        "employee",
+        "dependent",
+        "benefit_plan",
+        "enrollment",
+        "life_event",
+        "approval"
+      ],
+      "workflows": [
+        "eligibility_lookup",
+        "life_event_review",
+        "enrollment_update",
+        "dependent_verification",
+        "audit"
+      ],
+      "roles": [
+        "employee",
+        "benefits_admin",
+        "manager",
+        "auditor"
+      ],
+      "tools": [
+        "search_employees",
+        "get_employee",
+        "list_pending_approvals",
+        "submit_employee_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/benefitfocus/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/benefitfocus/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/benefitfocus/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/benefitfocus/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/benefitfocus/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/benefitfocus/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "employees": "employee_id",
+          "dependents": "dependent_id",
+          "benefit_plans": "plan_id",
+          "enrollments": "enrollment_id",
+          "life_events": "life_event_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "absencesoft",
+      "displayName": "AbsenceSoft",
+      "aliases": [
+        "AbsenceSoft",
+        "absencesoft"
+      ],
+      "maturity": "starter",
+      "family": "hr-benefits",
+      "entities": [
+        "employee",
+        "dependent",
+        "benefit_plan",
+        "enrollment",
+        "life_event",
+        "approval"
+      ],
+      "workflows": [
+        "eligibility_lookup",
+        "life_event_review",
+        "enrollment_update",
+        "dependent_verification",
+        "audit"
+      ],
+      "roles": [
+        "employee",
+        "benefits_admin",
+        "manager",
+        "auditor"
+      ],
+      "tools": [
+        "search_employees",
+        "get_employee",
+        "list_pending_approvals",
+        "submit_employee_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/absencesoft/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/absencesoft/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/absencesoft/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/absencesoft/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/absencesoft/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/absencesoft/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "employees": "employee_id",
+          "dependents": "dependent_id",
+          "benefit_plans": "plan_id",
+          "enrollments": "enrollment_id",
+          "life_events": "life_event_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "qualtrics",
+      "displayName": "Qualtrics",
+      "aliases": [
+        "Qualtrics",
+        "qualtrics"
+      ],
+      "maturity": "starter",
+      "family": "digital-analytics",
+      "entities": [
+        "property",
+        "event",
+        "conversion",
+        "audience",
+        "experiment"
+      ],
+      "workflows": [
+        "property_lookup",
+        "conversion_review",
+        "audience_update",
+        "experiment_status",
+        "audit"
+      ],
+      "roles": [
+        "analyst",
+        "marketing_ops",
+        "growth_manager",
+        "data_owner"
+      ],
+      "tools": [
+        "search_properties",
+        "get_property",
+        "submit_property_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/qualtrics/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/qualtrics/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/qualtrics/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/qualtrics/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/qualtrics/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/qualtrics/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "properties": "property_id",
+          "events": "event_id",
+          "conversions": "conversion_id",
+          "audiences": "audience_id",
+          "experiments": "experiment_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "apigee",
+      "displayName": "Apigee",
+      "aliases": [
+        "Apigee",
+        "apigee"
+      ],
+      "maturity": "domain_realistic",
+      "family": "data-platform",
+      "entities": [
+        "api",
+        "apiproduct",
+        "developer",
+        "envgroup"
+      ],
+      "workflows": [
+        "developer_lifecycle",
+        "api_catalog",
+        "audit"
+      ],
+      "roles": [
+        "api_admin",
+        "org_admin",
+        "data_engineer",
+        "analyst"
+      ],
+      "tools": [
+        "search_apis",
+        "get_api",
+        "search_apiproducts",
+        "get_apiproduct",
+        "search_developers",
+        "get_developer",
+        "submit_developer_update",
+        "search_envgroups",
+        "get_envgroup",
+        "poll_async_job",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/apigee/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/apigee/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/apigee/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/apigee/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/apigee/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/apigee/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "apis": "api_id",
+          "apiproducts": "apiproduct_id",
+          "developers": "developer_id",
+          "envgroups": "envgroup_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "rate_limited",
+        "conflict",
+        "timeout"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "dbt",
+      "displayName": "dbt",
+      "aliases": [
+        "dbt",
+        "dbt"
+      ],
+      "maturity": "starter",
+      "family": "data-platform",
+      "entities": [
+        "dataset",
+        "table",
+        "pipeline",
+        "job",
+        "data_quality_check"
+      ],
+      "workflows": [
+        "dataset_lookup",
+        "pipeline_update",
+        "job_status",
+        "quality_exception",
+        "audit"
+      ],
+      "roles": [
+        "data_engineer",
+        "data_owner",
+        "analyst",
+        "platform_admin"
+      ],
+      "tools": [
+        "search_datasets",
+        "get_dataset",
+        "submit_dataset_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/dbt/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/dbt/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/dbt/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/dbt/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/dbt/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/dbt/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "datasets": "dataset_id",
+          "tables": "table_id",
+          "pipelines": "pipeline_id",
+          "jobs": "job_id",
+          "quality_checks": "check_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "terraform",
+      "displayName": "Terraform",
+      "aliases": [
+        "Terraform",
+        "terraform"
+      ],
+      "maturity": "starter",
+      "family": "data-platform",
+      "entities": [
+        "dataset",
+        "table",
+        "pipeline",
+        "job",
+        "data_quality_check"
+      ],
+      "workflows": [
+        "dataset_lookup",
+        "pipeline_update",
+        "job_status",
+        "quality_exception",
+        "audit"
+      ],
+      "roles": [
+        "data_engineer",
+        "data_owner",
+        "analyst",
+        "platform_admin"
+      ],
+      "tools": [
+        "search_datasets",
+        "get_dataset",
+        "submit_dataset_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/terraform/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/terraform/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/terraform/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/terraform/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/terraform/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/terraform/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "datasets": "dataset_id",
+          "tables": "table_id",
+          "pipelines": "pipeline_id",
+          "jobs": "job_id",
+          "quality_checks": "check_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "crowdstrike",
+      "displayName": "CrowdStrike",
+      "aliases": [
+        "CrowdStrike",
+        "crowdstrike"
+      ],
+      "maturity": "starter",
+      "family": "it-security",
+      "entities": [
+        "asset",
+        "finding",
+        "incident",
+        "control",
+        "exception",
+        "approval"
+      ],
+      "workflows": [
+        "finding_triage",
+        "incident_update",
+        "exception_approval",
+        "control_review",
+        "audit"
+      ],
+      "roles": [
+        "security_analyst",
+        "incident_commander",
+        "control_owner",
+        "risk_approver"
+      ],
+      "tools": [
+        "search_assets",
+        "get_asset",
+        "list_pending_approvals",
+        "submit_asset_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/crowdstrike/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/crowdstrike/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/crowdstrike/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/crowdstrike/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/crowdstrike/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/crowdstrike/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "assets": "asset_id",
+          "findings": "finding_id",
+          "incidents": "incident_id",
+          "controls": "control_id",
+          "exceptions": "exception_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "leanix",
+      "displayName": "LeanIX",
+      "aliases": [
+        "LeanIX",
+        "leanix"
+      ],
+      "maturity": "starter",
+      "family": "risk-grc",
+      "entities": [
+        "risk",
+        "control",
+        "issue",
+        "policy",
+        "assessment",
+        "approval"
+      ],
+      "workflows": [
+        "risk_review",
+        "control_attestation",
+        "issue_remediation",
+        "policy_exception",
+        "audit"
+      ],
+      "roles": [
+        "risk_owner",
+        "control_owner",
+        "auditor",
+        "compliance_manager",
+        "approver"
+      ],
+      "tools": [
+        "search_risks",
+        "get_risk",
+        "list_pending_approvals",
+        "submit_risk_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/leanix/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/leanix/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/leanix/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/leanix/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/leanix/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/leanix/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "risks": "risk_id",
+          "controls": "control_id",
+          "issues": "issue_id",
+          "policies": "policy_id",
+          "assessments": "assessment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "zendesk",
+      "displayName": "Zendesk",
+      "aliases": [
+        "Zendesk",
+        "zendesk"
+      ],
+      "maturity": "starter",
+      "family": "it-ops-security",
+      "entities": [
+        "ticket",
+        "service_request",
+        "change_request",
+        "cmdb_ci",
+        "approval",
+        "sla"
+      ],
+      "workflows": [
+        "incident_triage",
+        "request_fulfillment",
+        "change_approval",
+        "sla_escalation",
+        "audit"
+      ],
+      "roles": [
+        "requester",
+        "resolver",
+        "change_manager",
+        "service_owner"
+      ],
+      "tools": [
+        "search_tickets",
+        "get_ticket",
+        "list_pending_approvals",
+        "submit_ticket_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/zendesk/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/zendesk/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/zendesk/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/zendesk/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/zendesk/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/zendesk/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "tickets": "ticket_id",
+          "cmdb_items": "ci_id",
+          "changes": "change_id",
+          "slas": "sla_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "leandata",
+      "displayName": "LeanData",
+      "aliases": [
+        "LeanData",
+        "leandata"
+      ],
+      "maturity": "starter",
+      "family": "crm",
+      "entities": [
+        "account",
+        "contact",
+        "opportunity",
+        "activity",
+        "campaign"
+      ],
+      "workflows": [
+        "account_search",
+        "opportunity_review",
+        "activity_logging",
+        "forecast_update"
+      ],
+      "roles": [
+        "seller",
+        "sales_manager",
+        "marketing_ops",
+        "revops"
+      ],
+      "tools": [
+        "search_accounts",
+        "get_account",
+        "submit_account_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/leandata/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/leandata/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/leandata/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/leandata/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/leandata/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/leandata/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "accounts": "account_id",
+          "contacts": "contact_id",
+          "opportunities": "opportunity_id",
+          "activities": "activity_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "onetrust",
+      "displayName": "OneTrust",
+      "aliases": [
+        "OneTrust",
+        "onetrust"
+      ],
+      "maturity": "starter",
+      "family": "risk-grc",
+      "entities": [
+        "risk",
+        "control",
+        "issue",
+        "policy",
+        "assessment",
+        "approval"
+      ],
+      "workflows": [
+        "risk_review",
+        "control_attestation",
+        "issue_remediation",
+        "policy_exception",
+        "audit"
+      ],
+      "roles": [
+        "risk_owner",
+        "control_owner",
+        "auditor",
+        "compliance_manager",
+        "approver"
+      ],
+      "tools": [
+        "search_risks",
+        "get_risk",
+        "list_pending_approvals",
+        "submit_risk_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/onetrust/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/onetrust/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/onetrust/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/onetrust/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/onetrust/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/onetrust/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "risks": "risk_id",
+          "controls": "control_id",
+          "issues": "issue_id",
+          "policies": "policy_id",
+          "assessments": "assessment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "google_ads",
+      "displayName": "Google Ads",
+      "aliases": [
+        "Google Ads",
+        "google_ads"
+      ],
+      "maturity": "starter",
+      "family": "digital-analytics",
+      "entities": [
+        "property",
+        "event",
+        "conversion",
+        "audience",
+        "experiment"
+      ],
+      "workflows": [
+        "property_lookup",
+        "conversion_review",
+        "audience_update",
+        "experiment_status",
+        "audit"
+      ],
+      "roles": [
+        "analyst",
+        "marketing_ops",
+        "growth_manager",
+        "data_owner"
+      ],
+      "tools": [
+        "search_properties",
+        "get_property",
+        "submit_property_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/google_ads/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/google_ads/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/google_ads/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/google_ads/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/google_ads/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/google_ads/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "properties": "property_id",
+          "events": "event_id",
+          "conversions": "conversion_id",
+          "audiences": "audience_id",
+          "experiments": "experiment_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "meta_ads_manager",
+      "displayName": "Meta Ads Manager",
+      "aliases": [
+        "Meta Ads Manager",
+        "meta_ads_manager"
+      ],
+      "maturity": "starter",
+      "family": "digital-analytics",
+      "entities": [
+        "property",
+        "event",
+        "conversion",
+        "audience",
+        "experiment"
+      ],
+      "workflows": [
+        "property_lookup",
+        "conversion_review",
+        "audience_update",
+        "experiment_status",
+        "audit"
+      ],
+      "roles": [
+        "analyst",
+        "marketing_ops",
+        "growth_manager",
+        "data_owner"
+      ],
+      "tools": [
+        "search_properties",
+        "get_property",
+        "submit_property_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/meta_ads_manager/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/meta_ads_manager/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/meta_ads_manager/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/meta_ads_manager/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/meta_ads_manager/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/meta_ads_manager/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "properties": "property_id",
+          "events": "event_id",
+          "conversions": "conversion_id",
+          "audiences": "audience_id",
+          "experiments": "experiment_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "capa_tracking",
+      "displayName": "CAPA Tracking",
+      "aliases": [
+        "CAPA Tracking",
+        "capa_tracking"
+      ],
+      "maturity": "starter",
+      "family": "risk-grc",
+      "entities": [
+        "risk",
+        "control",
+        "issue",
+        "policy",
+        "assessment",
+        "approval"
+      ],
+      "workflows": [
+        "risk_review",
+        "control_attestation",
+        "issue_remediation",
+        "policy_exception",
+        "audit"
+      ],
+      "roles": [
+        "risk_owner",
+        "control_owner",
+        "auditor",
+        "compliance_manager",
+        "approver"
+      ],
+      "tools": [
+        "search_risks",
+        "get_risk",
+        "list_pending_approvals",
+        "submit_risk_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/capa_tracking/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/capa_tracking/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/capa_tracking/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/capa_tracking/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/capa_tracking/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/capa_tracking/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "risks": "risk_id",
+          "controls": "control_id",
+          "issues": "issue_id",
+          "policies": "policy_id",
+          "assessments": "assessment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "innovation_management",
+      "displayName": "Innovation Management",
+      "aliases": [
+        "Innovation Management",
+        "innovation_management"
+      ],
+      "maturity": "starter",
+      "family": "work-management",
+      "entities": [
+        "project",
+        "issue",
+        "task",
+        "sprint",
+        "release",
+        "approval"
+      ],
+      "workflows": [
+        "issue_triage",
+        "task_update",
+        "release_approval",
+        "sprint_review",
+        "audit"
+      ],
+      "roles": [
+        "project_manager",
+        "engineer",
+        "product_owner",
+        "release_manager",
+        "approver"
+      ],
+      "tools": [
+        "search_projects",
+        "get_project",
+        "list_pending_approvals",
+        "submit_project_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/innovation_management/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/innovation_management/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/innovation_management/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/innovation_management/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/innovation_management/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/innovation_management/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "projects": "project_id",
+          "issues": "issue_id",
+          "tasks": "task_id",
+          "sprints": "sprint_id",
+          "releases": "release_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "insurance_cert_management",
+      "displayName": "Insurance Cert Management",
+      "aliases": [
+        "Insurance Cert Management",
+        "insurance_cert_management"
+      ],
+      "maturity": "starter",
+      "family": "risk-grc",
+      "entities": [
+        "risk",
+        "control",
+        "issue",
+        "policy",
+        "assessment",
+        "approval"
+      ],
+      "workflows": [
+        "risk_review",
+        "control_attestation",
+        "issue_remediation",
+        "policy_exception",
+        "audit"
+      ],
+      "roles": [
+        "risk_owner",
+        "control_owner",
+        "auditor",
+        "compliance_manager",
+        "approver"
+      ],
+      "tools": [
+        "search_risks",
+        "get_risk",
+        "list_pending_approvals",
+        "submit_risk_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/insurance_cert_management/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/insurance_cert_management/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/insurance_cert_management/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/insurance_cert_management/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/insurance_cert_management/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/insurance_cert_management/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "risks": "risk_id",
+          "controls": "control_id",
+          "issues": "issue_id",
+          "policies": "policy_id",
+          "assessments": "assessment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "c2fo",
+      "displayName": "C2FO",
+      "aliases": [
+        "C2FO",
+        "c2fo"
+      ],
+      "maturity": "starter",
+      "family": "finance-erp",
+      "entities": [
+        "vendor",
+        "invoice",
+        "journal_entry",
+        "payment",
+        "cost_center",
+        "approval"
+      ],
+      "workflows": [
+        "invoice_review",
+        "journal_approval",
+        "payment_status",
+        "close_audit"
+      ],
+      "roles": [
+        "ap_analyst",
+        "controller",
+        "finance_manager",
+        "auditor"
+      ],
+      "tools": [
+        "search_vendors",
+        "get_vendor",
+        "list_pending_approvals",
+        "submit_vendor_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/c2fo/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/c2fo/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/c2fo/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/c2fo/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/c2fo/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/c2fo/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "vendors": "vendor_id",
+          "invoices": "invoice_id",
+          "journal_entries": "journal_id",
+          "payments": "payment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "capa_tools",
+      "displayName": "CAPA Tools",
+      "aliases": [
+        "CAPA Tools",
+        "capa_tools"
+      ],
+      "maturity": "starter",
+      "family": "risk-grc",
+      "entities": [
+        "risk",
+        "control",
+        "issue",
+        "policy",
+        "assessment",
+        "approval"
+      ],
+      "workflows": [
+        "risk_review",
+        "control_attestation",
+        "issue_remediation",
+        "policy_exception",
+        "audit"
+      ],
+      "roles": [
+        "risk_owner",
+        "control_owner",
+        "auditor",
+        "compliance_manager",
+        "approver"
+      ],
+      "tools": [
+        "search_risks",
+        "get_risk",
+        "list_pending_approvals",
+        "submit_risk_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/capa_tools/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/capa_tools/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/capa_tools/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/capa_tools/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/capa_tools/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/capa_tools/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "risks": "risk_id",
+          "controls": "control_id",
+          "issues": "issue_id",
+          "policies": "policy_id",
+          "assessments": "assessment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "jaggaer",
+      "displayName": "Jaggaer",
+      "aliases": [
+        "Jaggaer",
+        "jaggaer"
+      ],
+      "maturity": "starter",
+      "family": "procurement",
+      "entities": [
+        "supplier",
+        "purchase_order",
+        "requisition",
+        "contract",
+        "approval",
+        "spend_fact"
+      ],
+      "workflows": [
+        "supplier_search",
+        "requisition_approval",
+        "po_review",
+        "contract_lookup",
+        "audit"
+      ],
+      "roles": [
+        "buyer",
+        "category_manager",
+        "approver",
+        "supplier_manager"
+      ],
+      "tools": [
+        "search_suppliers",
+        "get_supplier",
+        "list_pending_approvals",
+        "submit_supplier_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/jaggaer/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/jaggaer/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/jaggaer/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/jaggaer/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/jaggaer/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/jaggaer/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "suppliers": "supplier_id",
+          "purchase_orders": "po_id",
+          "requisitions": "requisition_id",
+          "contracts": "contract_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "sap_fieldglass",
+      "displayName": "SAP Fieldglass",
+      "aliases": [
+        "SAP Fieldglass",
+        "sap_fieldglass"
+      ],
+      "maturity": "domain_realistic",
+      "family": "contingent-workforce",
+      "entities": [
+        "supplier",
+        "job_posting",
+        "job_seeker",
+        "work_order",
+        "contingent_worker",
+        "time_sheet",
+        "statement_of_work",
+        "approval"
+      ],
+      "workflows": [
+        "job_posting_distribution",
+        "candidate_shortlist",
+        "work_order_activation",
+        "time_sheet_approval",
+        "sow_milestone_review"
+      ],
+      "roles": [
+        "manager",
+        "hr_partner",
+        "recruiter",
+        "comp_partner",
+        "program_office"
+      ],
+      "tools": [
+        "search_workers",
+        "get_worker",
+        "search_work_orders",
+        "get_work_order",
+        "search_job_postings",
+        "get_job_posting",
+        "search_time_sheets",
+        "get_time_sheet",
+        "search_statement_of_works",
+        "get_statement_of_work",
+        "list_pending_approvals",
+        "submit_work_order_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/ge-demo-generator/simulator-systems/sap_fieldglass/schema.json",
+      "toolsPath": "apps/ge-demo-generator/simulator-systems/sap_fieldglass/tools.json",
+      "projectionPath": "apps/ge-demo-generator/simulator-systems/sap_fieldglass/projection.json",
+      "materializationPath": "apps/ge-demo-generator/simulator-systems/sap_fieldglass/materialization.json",
+      "workflowsPath": "apps/ge-demo-generator/simulator-systems/sap_fieldglass/workflows.json",
+      "seedPath": "apps/ge-demo-generator/simulator-systems/sap_fieldglass/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "suppliers": "supplier_id",
+          "job_postings": "job_posting_id",
+          "job_seekers": "job_seeker_id",
+          "work_orders": "work_order_id",
+          "workers": "worker_id",
+          "time_sheets": "time_sheet_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id",
+          "statement_of_works": "sow_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval",
+        "tenure_limit",
+        "rate_card_exceeded",
+        "onboarding_incomplete",
+        "rate_limited",
+        "conflict",
+        "timeout",
+        "forbidden"
+      ],
+      "evalScenarios": [
+        "work_order_pending_program_office_approval",
+        "timesheet_submitted_not_invoiced"
+      ],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    }
+  ]
+}

@@ -1,0 +1,718 @@
+{
+  "id": "audit_report_generator_semantic_model",
+  "generatedAt": "2026-06-11T09:00:02.597Z",
+  "dataset": "agent_audit_report_generator",
+  "primaryObjective": "Gemini drafts comprehensive audit reports with executive summary, root cause analysis, and recommendations. Automatic tone adaptation — risk-focused summary for audit committee, remediation guidance for management. so the Chief Audit Executive can move the Report drafting time KPI.",
+  "tables": [
+    {
+      "name": "auditboard_records",
+      "sourceSystem": "AuditBoard",
+      "description": "auditboard_records, auditboard_events, auditboard_audit_trail",
+      "grain": "one row per auditboard record",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "actor",
+          "type": "string",
+          "description": "actor (string)."
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "action (string)."
+        },
+        {
+          "name": "target_type",
+          "type": "string",
+          "description": "target type (string)."
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "notes (string)."
+        }
+      ]
+    },
+    {
+      "name": "auditboard_events",
+      "sourceSystem": "AuditBoard",
+      "description": "auditboard_records, auditboard_events, auditboard_audit_trail",
+      "grain": "one row per auditboard event",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "actor",
+          "type": "string",
+          "description": "actor (string)."
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "action (string)."
+        },
+        {
+          "name": "target_type",
+          "type": "string",
+          "description": "target type (string)."
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "notes (string)."
+        }
+      ]
+    },
+    {
+      "name": "auditboard_audit_trail",
+      "sourceSystem": "AuditBoard",
+      "description": "auditboard_records, auditboard_events, auditboard_audit_trail",
+      "grain": "one row per auditboard audit trail",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "actor",
+          "type": "string",
+          "description": "actor (string)."
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "action (string)."
+        },
+        {
+          "name": "target_type",
+          "type": "string",
+          "description": "target type (string)."
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "notes (string)."
+        }
+      ]
+    },
+    {
+      "name": "documents",
+      "sourceSystem": "Google Docs",
+      "description": "documents, comments, revision_history",
+      "grain": "one row per document",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "description": "Human-readable label."
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "owner (string)."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        },
+        {
+          "name": "last_updated",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "comments",
+      "sourceSystem": "Google Docs",
+      "description": "documents, comments, revision_history",
+      "grain": "one row per comment",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "source_record_id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "owner (string)."
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "notes (string)."
+        }
+      ]
+    },
+    {
+      "name": "revision_history",
+      "sourceSystem": "Google Docs",
+      "description": "documents, comments, revision_history",
+      "grain": "one row per revision history",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "actor",
+          "type": "string",
+          "description": "actor (string)."
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "action (string)."
+        },
+        {
+          "name": "target_type",
+          "type": "string",
+          "description": "target type (string)."
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "notes (string)."
+        },
+        {
+          "name": "document_id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "finance_3_records",
+      "sourceSystem": "FINANCE 3",
+      "description": "finance_3_records, finance_3_events",
+      "grain": "one row per finance 3 record",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "source_record_id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "owner (string)."
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "notes (string)."
+        }
+      ]
+    },
+    {
+      "name": "finance_3_events",
+      "sourceSystem": "FINANCE 3",
+      "description": "finance_3_records, finance_3_events",
+      "grain": "one row per finance 3 event",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "actor",
+          "type": "string",
+          "description": "actor (string)."
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "description": "action (string)."
+        },
+        {
+          "name": "target_type",
+          "type": "string",
+          "description": "target type (string)."
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "notes (string)."
+        },
+        {
+          "name": "finance_3_record_id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ]
+        }
+      ]
+    }
+  ],
+  "joins": [
+    {
+      "left": "comments.source_record_id",
+      "right": "finance_3_records.source_record_id",
+      "on": "source_record_id",
+      "type": "many-to-one"
+    }
+  ],
+  "measures": [],
+  "glossary": [
+    {
+      "term": "AuditBoard",
+      "definition": "Source system: AuditBoard.",
+      "maps_to": [
+        "auditboard_records",
+        "auditboard_events",
+        "auditboard_audit_trail"
+      ]
+    },
+    {
+      "term": "Google Docs",
+      "definition": "Source system: Google Docs.",
+      "maps_to": [
+        "documents",
+        "comments",
+        "revision_history"
+      ]
+    },
+    {
+      "term": "FINANCE 3",
+      "definition": "Source system: FINANCE 3.",
+      "maps_to": [
+        "finance_3_records",
+        "finance_3_events"
+      ]
+    }
+  ],
+  "bigquery": {
+    "tables": [
+      {
+        "table": "auditboard_records",
+        "description": "auditboard_records, auditboard_events, auditboard_audit_trail",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "actor",
+            "description": "actor (string)."
+          },
+          {
+            "name": "action",
+            "description": "action (string)."
+          },
+          {
+            "name": "target_type",
+            "description": "target type (string)."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "notes",
+            "description": "notes (string)."
+          }
+        ]
+      },
+      {
+        "table": "auditboard_events",
+        "description": "auditboard_records, auditboard_events, auditboard_audit_trail",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "actor",
+            "description": "actor (string)."
+          },
+          {
+            "name": "action",
+            "description": "action (string)."
+          },
+          {
+            "name": "target_type",
+            "description": "target type (string)."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "notes",
+            "description": "notes (string)."
+          }
+        ]
+      },
+      {
+        "table": "auditboard_audit_trail",
+        "description": "auditboard_records, auditboard_events, auditboard_audit_trail",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "actor",
+            "description": "actor (string)."
+          },
+          {
+            "name": "action",
+            "description": "action (string)."
+          },
+          {
+            "name": "target_type",
+            "description": "target type (string)."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "notes",
+            "description": "notes (string)."
+          }
+        ]
+      },
+      {
+        "table": "documents",
+        "description": "documents, comments, revision_history",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "title",
+            "description": "Human-readable label."
+          },
+          {
+            "name": "owner",
+            "description": "owner (string)."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          },
+          {
+            "name": "last_updated",
+            "description": "Date/timestamp."
+          }
+        ]
+      },
+      {
+        "table": "comments",
+        "description": "documents, comments, revision_history",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "source_record_id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          },
+          {
+            "name": "owner",
+            "description": "owner (string)."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "notes",
+            "description": "notes (string)."
+          }
+        ]
+      },
+      {
+        "table": "revision_history",
+        "description": "documents, comments, revision_history",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "actor",
+            "description": "actor (string)."
+          },
+          {
+            "name": "action",
+            "description": "action (string)."
+          },
+          {
+            "name": "target_type",
+            "description": "target type (string)."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "notes",
+            "description": "notes (string)."
+          },
+          {
+            "name": "document_id",
+            "description": "Unique identifier."
+          }
+        ]
+      },
+      {
+        "table": "finance_3_records",
+        "description": "finance_3_records, finance_3_events",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "source_record_id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          },
+          {
+            "name": "owner",
+            "description": "owner (string)."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "notes",
+            "description": "notes (string)."
+          }
+        ]
+      },
+      {
+        "table": "finance_3_events",
+        "description": "finance_3_records, finance_3_events",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "actor",
+            "description": "actor (string)."
+          },
+          {
+            "name": "action",
+            "description": "action (string)."
+          },
+          {
+            "name": "target_type",
+            "description": "target type (string)."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "notes",
+            "description": "notes (string)."
+          },
+          {
+            "name": "finance_3_record_id",
+            "description": "Unique identifier."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,880 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { PieChart, Database, TrendingUp, CheckCircle, BarChart3 } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Monthly Close", lane: "system", type: "trigger" },
+    { id: "a1", label: "P&L Assembly", lane: "agent", type: "action" },
+    { id: "a2", label: "Margin Analysis", lane: "agent", type: "action" },
+    { id: "a3", label: "Profitability Report", lane: "agent", type: "output" },
+    { id: "h1", label: "Controller Reviews", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Revenue & Cost Merge", icon: Database, description: "Aggregate revenue and cost data by product and service line from SAP CO and SD modules.", trigger: "Monthly", systems: ["SAP S/4HANA CO", "SAP S/4HANA SD"] },
+  { label: "Margin Decomposition", icon: BarChart3, description: "Calculate contribution margins, fully-loaded P&L by product, trend decomposition, and mix analysis.", systems: ["BigQuery", "Looker"], integration: "ADK" },
+  { label: "Narrative Generation", icon: TrendingUp, description: "Gemini generates profitability narrative with root cause analysis for margin changes and pricing recommendations.", systems: ["Vertex AI"] },
+  { label: "Controller Review", icon: CheckCircle, description: "Controller reviews profitability insights and validates recommended pricing actions.", output: "Product Profitability Report" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "SAP S/4HANA CO", description: "Product cost reports, contribution margin analysis, overhead allocations", direction: "read", protocol: "OData", category: "erp" },
+    { system: "BigQuery", description: "Multi-dimensional profitability analytics, trend data, market benchmarks", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Looker", description: "Interactive profitability dashboards and drill-down analytics", direction: "write", protocol: "REST API", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Margin root cause analysis, pricing recommendation reasoning", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Data Assembly", description: "Merge revenue by product from SD with cost data from CO. Apply overhead allocations to build fully-loaded product P&L.", systems: ["SAP S/4HANA CO", "SAP S/4HANA SD"], layer: "integration", dataIn: "Revenue + cost by product/service line", dataOut: "Fully-loaded product P&L" },
+    { label: "Margin Analytics", description: "Calculate contribution margins at multiple levels (gross, operating, net). Decompose margin changes into price, volume, mix, and cost components. Identify trending products.", systems: ["BigQuery", "Looker"], layer: "ml", dataIn: "Product P&L data", dataOut: "Margin decomposition with trend analysis" },
+    { label: "Profitability Reasoning", description: "Gemini analyzes margin compression root causes: raw material cost increases, pricing lag, product mix shifts. Generates actionable recommendations with competitor context.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Margin analytics + market data", dataOut: "Profitability narrative with pricing recommendations" },
+    { label: "Dashboard Refresh", description: "Update interactive profitability dashboards in Looker. Distribute management summary with key insights.", systems: ["Looker"], layer: "integration", dataIn: "Profitability narrative + analytics", dataOut: "Refreshed dashboards + summary report" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Controller agent for the Product Profitability Analyzer workflow",
+  primaryObjective: "Fully-loaded product P&L assembled automatically from SAP CO and SD data on close day. Gemini decomposes margin changes into price, volume, mix, and cost components with root causes. so the Controller can move the Analysis turnaround KPI.",
+  inScope: [
+    "Fully-loaded product P&L assembled automatically from SAP CO and SD data on close day",
+    "Gemini decomposes margin changes into price, volume, mix, and cost components with root causes",
+    "Proactive pricing recommendations based on cost trends and competitor analysis",
+  ],
+  outOfScope: [
+    "Final sign-off on materially significant journal entries (Controller retains authority)",
+    "Restatement of prior-period filings",
+    "Tax position changes that require external advisor review",
+  ],
+  toolIntents: [
+    {
+      name: "query_sap_s_4hana_co_cost_centers",
+      kind: "query",
+      sourceSystemId: "sap_s_4hana_co",
+      description: "Retrieve cost centers from SAP S/4HANA CO for the Product Profitability Analyzer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "cost_centers_records",
+        "cost_centers_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Product Profitability Analyzer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "query_looker_dashboards",
+      kind: "query",
+      sourceSystemId: "looker",
+      description: "Retrieve dashboards from Looker for the Product Profitability Analyzer workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "dashboards_records",
+        "dashboards_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_product_profitability_analyzer_controls_playbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Product Profitability Analyzer Controls Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_sap_s_4hana_co_recommend",
+      kind: "action",
+      sourceSystemId: "sap_s_4hana_co",
+      description: "Execute the recommend step in SAP S/4HANA CO after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Analysis turnaround moved from 5-7 days post-close toward Same-day",
+      mustCite: [
+        "sap_s_4hana_co.cost_centers",
+        "bigquery.analytics_events",
+      ],
+      sourceSystemIds: [
+        "sap_s_4hana_co",
+        "bigquery",
+      ],
+    },
+    {
+      claim: "Margin root cause depth moved from Top-level only toward Price/volume/mix/cost decomposition",
+      mustCite: [
+        "sap_s_4hana_co.cost_centers",
+        "bigquery.analytics_events",
+      ],
+      sourceSystemIds: [
+        "sap_s_4hana_co",
+        "bigquery",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Analysis turnaround regresses past the 5-7 days post-close baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Controller",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed recommend action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from SAP S/4HANA CO (and other named systems) entities.",
+    "Never bypass Controller approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "product-profitability-analyzer-end-to-end",
+      prompt: "Run the Product Profitability Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_sap_s_4hana_co_cost_centers",
+        "query_bigquery_analytics_events",
+        "query_looker_dashboards",
+        "lookup_product_profitability_analyzer_controls_playbook",
+        "action_sap_s_4hana_co_recommend",
+      ],
+      mustReferenceEntities: [
+        "cost_centers",
+        "analytics_events",
+        "dashboards",
+      ],
+      mustCiteDocuments: [
+        "product-profitability-analyzer-controls-playbook",
+      ],
+      expectedActionOutcome: "Action recommend executed against SAP S/4HANA CO, with audit-trail entry and Controller notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute recommend without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Product Profitability Analyzer so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "sap_s_4hana_co",
+      name: "SAP S/4HANA CO",
+      owns: [
+        "cost_centers",
+        "internal_orders",
+        "cost_allocations",
+      ],
+      protocol: "RFC/BAPI",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sap_s_4hana_co_cost_centers",
+        "query_sap_s_4hana_co_internal_orders",
+        "query_sap_s_4hana_co_cost_allocations",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "looker",
+      name: "Looker",
+      owns: [
+        "dashboards",
+        "explore_queries",
+        "metric_definitions",
+      ],
+      protocol: "LookerML",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_looker_dashboards",
+        "query_looker_explore_queries",
+        "query_looker_metric_definitions",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "cost_centers",
+      sourceSystemId: "sap_s_4hana_co",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "internal_orders",
+      sourceSystemId: "sap_s_4hana_co",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "cost_allocations",
+      sourceSystemId: "sap_s_4hana_co",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "dashboards",
+      sourceSystemId: "looker",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "explore_queries",
+      sourceSystemId: "looker",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "metric_definitions",
+      sourceSystemId: "looker",
+      datastore: "bigquery",
+      rowCount: 30,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "product-profitability-analyzer-controls-playbook",
+      sourceSystemId: "bigquery",
+      type: "policy",
+      title: "Product Profitability Analyzer Controls Playbook",
+      requiredSections: [
+        "Workflow scope",
+        "Materiality thresholds",
+        "Escalation triggers",
+        "Audit evidence requirements",
+        "Quarter-end variations",
+      ],
+      linkedEntities: [
+        "cost_centers",
+        "internal_orders",
+        "cost_allocations",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "scope",
+        "materiality",
+        "escalation",
+        "audit-evidence",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "sap_s_4hana_co_recommend_api",
+      sourceSystemId: "sap_s_4hana_co",
+      method: "POST",
+      path: "/api/sap_s_4hana_co/recommend",
+      description: "Synchronous endpoint the agent calls to recommend in SAP S/4HANA CO after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "product-profitability-analyzer-baseline-gap",
+      description: "Seed a realistic gap where Analysis turnaround sits between 5-7 days post-close and Same-day, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "cost_centers",
+        "internal_orders",
+      ],
+      discoveryPath: [
+        "Inspect SAP S/4HANA CO records for the affected entities",
+        "Compare against BigQuery historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Controller action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "product_profitability_analyzer",
+      schemas: [
+        "sap_s_4hana_co",
+      ],
+    },
+    bigquery: {
+      dataset: "finance_product_profitability_analyzer",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "product-profitability-analyzer-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "product-profitability-analyzer-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Product Profitability Analyzer workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const ProductProfitabilityAnalyzer = () => (
+  <UseCaseSlide
+    title="Product Profitability Analyzer"
+    subtitle="A-2703 • Revenue & Cost Accounting"
+    icon={PieChart}
+    domainId="domain-27"
+    layer="Layer 4: Data Agent"
+    persona="Controller"
+    systems={["SAP S/4HANA CO", "BigQuery", "Looker", "Vertex AI"]}
+    kpis={[
+      { label: "Analysis turnaround", before: "5-7 days post-close", after: "Same-day", },
+      { label: "Margin root cause depth", before: "Top-level only", after: "Price/volume/mix/cost decomposition" },
+      { label: "Pricing action speed", before: "Quarterly review", after: "Monthly with recommendations" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "Controller", action: "Review profitability insights", description: "Controller validates margin analysis and approves pricing or cost optimization recommendations." }}
+    statusQuo={[
+      "Product profitability reports take a week to assemble from multiple SAP reports and spreadsheets.",
+      "Margin analysis shows the 'what' but not the 'why' — no automated root cause decomposition.",
+      "Pricing decisions based on quarterly reviews, missing real-time margin compression signals."
+    ]}
+    agentification={[
+      "Fully-loaded product P&L assembled automatically from SAP CO and SD data on close day.",
+      "Gemini decomposes margin changes into price, volume, mix, and cost components with root causes.",
+      "Proactive pricing recommendations based on cost trends and competitor analysis."
+    ]}
+  />
+);

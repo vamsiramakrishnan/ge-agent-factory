@@ -1,0 +1,62 @@
+{
+  "employees": [
+    {
+      "employee_id": "EMPLOYEE-ID-001",
+      "name": "sample_name",
+      "email": "sample_email",
+      "status": "sample_status",
+      "country": "sample_country",
+      "pay_group": "sample_pay_group",
+      "eligibility_group": "sample_eligibility_group"
+    }
+  ],
+  "dependents": [
+    {
+      "dependent_id": "DEPENDENT-ID-001",
+      "employee_id": "EMPLOYEE-ID-001",
+      "name": "sample_name",
+      "relationship": "sample_relationship",
+      "status": "sample_status",
+      "verification_state": "sample_verification_state"
+    }
+  ],
+  "benefit_plans": [
+    {
+      "plan_id": "PLAN-ID-001",
+      "name": "sample_name",
+      "plan_type": "sample_plan_type",
+      "status": "sample_status",
+      "country": "sample_country",
+      "carrier": "sample_carrier"
+    }
+  ],
+  "enrollments": [
+    {
+      "enrollment_id": "ENROLLMENT-ID-001",
+      "employee_id": "EMPLOYEE-ID-001",
+      "plan_id": "PLAN-ID-001",
+      "status": "sample_status",
+      "coverage_level": "sample_coverage_level",
+      "effective_date": "sample_effective_date"
+    }
+  ],
+  "life_events": [
+    {
+      "life_event_id": "LIFE-EVENT-ID-001",
+      "employee_id": "EMPLOYEE-ID-001",
+      "event_type": "sample_event_type",
+      "status": "sample_status",
+      "event_date": "sample_event_date"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APPROVAL-ID-001",
+      "source_record_id": "SOURCE-RECORD-ID-001",
+      "approver": "sample_approver",
+      "state": "sample_state",
+      "reason": "sample_reason"
+    }
+  ],
+  "audit_events": []
+}

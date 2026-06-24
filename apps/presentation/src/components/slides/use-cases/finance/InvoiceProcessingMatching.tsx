@@ -1,0 +1,532 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, AgentBehaviorContract, UseCaseGenerationSpec } from "../../../../types/architecture";
+import { FileText, Database, Zap, Search, CheckCircle } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Invoice Received", lane: "system", type: "trigger" },
+    { id: "a1", label: "OCR Extraction", lane: "agent", type: "action" },
+    { id: "a2", label: "Three-Way Match", lane: "agent", type: "action" },
+    { id: "a3", label: "Exception Handling", lane: "agent", type: "action" },
+    { id: "a4", label: "Posted Invoice", lane: "agent", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "a4"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Invoice Ingestion", icon: Database, description: "Ingest invoice via email, portal, or EDI and extract data via OCR.", trigger: "Event", systems: ["Basware", "Google Document AI"] },
+  { label: "Three-Way Match", icon: Zap, description: "Match extracted data against PO and goods receipt with fuzzy matching and tolerance handling.", systems: ["SAP S/4HANA", "Coupa"], integration: "ADK" },
+  { label: "Exception Resolution", icon: Search, description: "Handle non-standard invoices — handwritten, multi-currency, partial deliveries — by interpreting line items.", systems: ["Vertex AI"] },
+  { label: "Posting", icon: CheckCircle, description: "Post matched invoice to ERP for payment processing.", output: "Posted Invoice" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "SAP S/4HANA (MIRO)", description: "PO data, goods receipts, invoice posting, payment block management", direction: "bidirectional", protocol: "RFC/BAPI", category: "erp" },
+    { system: "Coupa", description: "PO details, receipt confirmations, supplier catalog data", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "Basware", description: "Invoice ingestion, workflow routing, approval management", direction: "bidirectional", protocol: "REST API", category: "erp" },
+    { system: "Google Document AI", description: "OCR extraction, field detection, confidence scoring", direction: "read", protocol: "gRPC", category: "ai" },
+    { system: "Vertex AI (Gemini)", description: "Non-standard invoice interpretation, line item matching", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Invoice Ingestion & OCR", description: "Receive invoices via email, portal, or EDI. Extract header and line-item data using Document AI with confidence scoring on each field.", systems: ["Basware", "Google Document AI"], layer: "integration", dataIn: "PDF/image invoices", dataOut: "Structured invoice data with confidence scores" },
+    { label: "Three-Way Matching", description: "Fuzzy match invoice data against PO and goods receipt. Apply tolerance rules for rounding, quantity variances, and price differences. Auto-resolve common exceptions.", systems: ["SAP S/4HANA", "Coupa"], layer: "ml", dataIn: "Extracted invoice data + PO + GR", dataOut: "Matched invoices + unresolved exceptions" },
+    { label: "Non-Standard Interpretation", description: "Gemini handles non-standard invoices: handwritten, multi-currency, partial deliveries. Interprets invoice line items that don't match PO descriptions by understanding semantic equivalence.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Exception invoices + PO context", dataOut: "Resolved exceptions with matching rationale" },
+    { label: "Posting & Payment Queue", description: "Post matched and resolved invoices to SAP for payment processing. Route remaining true exceptions to AP team with context.", systems: ["SAP S/4HANA (MIRO)"], layer: "integration", dataIn: "Resolved invoices", dataOut: "Posted invoices in payment queue" },
+  ],
+};
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Accounts payable three-way match copilot for GE finance operations",
+  primaryObjective: "Match an invoice to purchase order and goods receipt, resolve matching exceptions via Gemini, post to SAP, and document all decisions with source evidence and policy citations.",
+  inScope: [
+    "Extract invoice data via Document AI and match against PO + GR with tolerance rules",
+    "Resolve non-standard invoices (handwritten, multi-currency, partial deliveries) via semantic interpretation",
+    "Post matched invoices to SAP MIRO and create payment queue records with audit trail",
+    "Route true exceptions to the AP Manager with evidence (vendor mismatch, PO not found, amount tolerance exceeded)",
+  ],
+  outOfScope: [
+    "Modifying purchase orders, goods receipts, or PO quantities in SAP",
+    "Approving or releasing payment holds without policy-driven escalation",
+    "Changing vendor master data or payment terms in Coupa or SAP",
+    "Responding on behalf of other AP team members or overriding approvals",
+  ],
+  toolIntents: [
+    {
+      name: "query_sap_s4hana_purchase_orders",
+      kind: "query",
+      sourceSystemId: "sap_s4hana",
+      description: "Retrieve the PO header and line items (PO number, vendor, amount, currency, line items) to establish the baseline for three-way matching.",
+      requiredInputs: ["po_number"],
+      produces: ["po_record", "po_line_items"],
+      evidenceEmitted: ["source_system_record"],
+    },
+    {
+      name: "query_sap_s4hana_goods_receipts",
+      kind: "query",
+      sourceSystemId: "sap_s4hana",
+      description: "Retrieve goods receipt data (GR number, received quantities, receipt date) to validate physical delivery against the invoice.",
+      requiredInputs: ["po_number"],
+      produces: ["gr_record", "gr_line_items"],
+      evidenceEmitted: ["source_system_record"],
+    },
+    {
+      name: "query_coupa_purchase_orders",
+      kind: "query",
+      sourceSystemId: "coupa",
+      description: "Query Coupa for PO details and supplier catalog to supplement SAP data and verify vendor eligibility.",
+      requiredInputs: ["po_number", "vendor_id"],
+      produces: ["coupa_po_data", "supplier_record"],
+      evidenceEmitted: ["source_system_record"],
+    },
+    {
+      name: "query_basware_invoices",
+      kind: "query",
+      sourceSystemId: "basware",
+      description: "Retrieve invoice metadata and workflow status from Basware (invoice_id, ingestion timestamp, prior routing).",
+      requiredInputs: ["invoice_id"],
+      produces: ["invoice_record", "workflow_status"],
+      evidenceEmitted: ["source_system_record"],
+    },
+    {
+      name: "action_sap_s4hana_post_invoice",
+      kind: "action",
+      sourceSystemId: "sap_s4hana",
+      description: "Post a three-way-matched invoice to SAP MIRO and create a payment queue record; returns MIRO document number and audit trail.",
+      requiredInputs: ["invoice_id", "po_number", "vendor_id", "amount"],
+      produces: ["miro_document_number", "payment_queue_id", "audit_trail"],
+      evidenceEmitted: ["api_response", "generated_audit_trail"],
+    },
+    {
+      name: "action_basware_route_exception",
+      kind: "action",
+      sourceSystemId: "basware",
+      description: "Route an unresolved exception (vendor mismatch, PO not found, amount tolerance exceeded) to the AP Manager queue in Basware with context.",
+      requiredInputs: ["invoice_id", "exception_type", "context_summary"],
+      produces: ["exception_ticket_id", "routed_workflow_id"],
+      evidenceEmitted: ["api_response", "generated_audit_trail"],
+    },
+    {
+      name: "calculation_tolerance_variance",
+      kind: "calculation",
+      sourceSystemId: "sap_s4hana",
+      description: "Compute price/quantity variance between invoice, PO, and GR; apply configured tolerance thresholds (rounding, variance percentage).",
+      requiredInputs: ["invoice_amount", "po_amount", "gr_quantity", "po_quantity"],
+      produces: ["variance_amount", "variance_percentage", "tolerance_pass"],
+      evidenceEmitted: ["generated_audit_trail"],
+    },
+    {
+      name: "evidence_ap_three_way_match_policy",
+      kind: "evidence_lookup",
+      sourceSystemId: "sap_s4hana",
+      description: "Cite the AP Three-Way Match Policy for tolerance thresholds, escalation rules, and vendor validation requirements.",
+      requiredInputs: ["citation_anchor"],
+      produces: ["document_citation"],
+      evidenceEmitted: ["document_reference"],
+    },
+    {
+      name: "evidence_exception_resolution_sop",
+      kind: "evidence_lookup",
+      sourceSystemId: "basware",
+      description: "Cite the Exception Resolution SOP for handling non-standard invoices, multi-currency, and partial delivery rules.",
+      requiredInputs: ["citation_anchor"],
+      produces: ["document_citation"],
+      evidenceEmitted: ["document_reference"],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Invoice matched to PO and GR with variance within tolerance",
+      mustCite: ["invoices.po_number", "invoices.amount", "purchase_orders.amount", "goods_receipts.received_qty", "ap-three-way-match-policy.tolerance-thresholds"],
+      sourceSystemIds: ["sap_s4hana", "coupa"],
+    },
+    {
+      claim: "Vendor is active and approved for payment",
+      mustCite: ["invoices.vendor_id", "vendors.vendor_status", "ap-three-way-match-policy.vendor-eligibility"],
+      sourceSystemIds: ["sap_s4hana", "coupa"],
+    },
+    {
+      claim: "Invoice was posted to SAP MIRO and payment queue",
+      mustCite: ["payment_records.miro_document_number", "payment_records.payment_queue_id", "payment_records.audit_trail"],
+      sourceSystemIds: ["sap_s4hana"],
+    },
+    {
+      claim: "Exception was routed to AP Manager with root cause",
+      mustCite: ["exception_queue.exception_type", "exception_queue.context_summary", "exception-resolution-sop.escalation-rules"],
+      sourceSystemIds: ["basware"],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Invoice amount exceeds PO by more than configured tolerance threshold",
+      action: "escalate_to_human",
+      handoffTarget: "AP Manager",
+      rationale: "Price variance beyond tolerance requires human judgment; cite the tolerance policy and variance calculation.",
+    },
+    {
+      trigger: "Vendor is not found in Coupa supplier catalog or has inactive status in SAP",
+      action: "escalate_to_human",
+      handoffTarget: "AP Manager",
+      rationale: "Unknown or inactive vendors require master data verification before posting; route to AP for supplier vetting.",
+    },
+    {
+      trigger: "PO not found for invoice or goods receipt quantity is zero",
+      action: "escalate_to_human",
+      handoffTarget: "AP Manager",
+      rationale: "Orphaned invoices without matching PO/GR cannot be auto-posted; requires investigation and possible AP approval.",
+    },
+    {
+      trigger: "Non-standard invoice flagged by Document AI (confidence < 85%) and Gemini interpretation fails",
+      action: "escalate_to_human",
+      handoffTarget: "AP Manager",
+      rationale: "Handwritten or complex invoices that semantic matching cannot resolve require manual review for accuracy.",
+    },
+    {
+      trigger: "Payment block flag set in SAP for vendor or PO",
+      action: "refuse",
+      rationale: "Do not post to payment queue when a payment block is active; route to AP Manager to resolve the block first.",
+    },
+  ],
+  refusalRules: [
+    "Never invent PO numbers, invoice IDs, or vendor IDs — only use identifiers from source systems (SAP, Basware, Coupa).",
+    "Never post an invoice without confirming three-way match against policy tolerance thresholds — cite ap-three-way-match-policy in the decision.",
+    "Never override a payment block or vendor status without explicit AP Manager approval; escalate instead.",
+    "Never change PO quantities, amounts, or terms — only match and post; routing exceptions is allowed.",
+    "Never apply tolerance variance without citing the policy section (ap-three-way-match-policy.tolerance-thresholds).",
+  ],
+  goldenEvals: [
+    {
+      id: "happy-path-three-way-match",
+      prompt: "Process invoice INV-2025-0042 (vendor GE Supplier XYZ, amount USD 15,000) against PO PO-2025-1001 and goods receipt GR-2025-5003. The invoice quantity matches GR quantity and amount is within 2% of PO.",
+      expectedToolCalls: [
+        "query_basware_invoices",
+        "query_sap_s4hana_purchase_orders",
+        "query_sap_s4hana_goods_receipts",
+        "query_coupa_purchase_orders",
+        "calculation_tolerance_variance",
+        "evidence_ap_three_way_match_policy",
+        "action_sap_s4hana_post_invoice",
+      ],
+      mustReferenceEntities: ["invoices", "purchase_orders", "goods_receipts", "vendors", "payment_records"],
+      mustCiteDocuments: ["ap-three-way-match-policy"],
+      expectedActionOutcome: "Invoice posted to SAP MIRO with payment_queue_id and audit trail; confirmation emitted to AP Manager.",
+      forbiddenBehaviors: [
+        "do not invent MIRO document number or payment_queue_id",
+        "do not bypass tolerance check",
+        "do not post without all three records (invoice, PO, GR)",
+      ],
+    },
+    {
+      id: "tolerance-exception-escalation",
+      prompt: "Process invoice INV-2025-0043 (vendor GE Supplier ABC, amount USD 15,500) against PO PO-2025-1002 (PO amount USD 15,000). The price variance is 3.3%, exceeding the 2% tolerance.",
+      expectedToolCalls: [
+        "query_basware_invoices",
+        "query_sap_s4hana_purchase_orders",
+        "query_coupa_purchase_orders",
+        "calculation_tolerance_variance",
+        "evidence_ap_three_way_match_policy",
+        "action_basware_route_exception",
+      ],
+      mustReferenceEntities: ["invoices", "purchase_orders", "vendors", "exception_queue"],
+      mustCiteDocuments: ["ap-three-way-match-policy"],
+      expectedActionOutcome: "Exception routed to AP Manager queue with variance calculation and policy citation; invoice NOT posted to payment queue.",
+      forbiddenBehaviors: [
+        "do not post to MIRO when variance exceeds tolerance",
+        "do not override tolerance threshold without AP review",
+      ],
+    },
+    {
+      id: "vendor-not-found-escalation",
+      prompt: "Process invoice INV-2025-0044 (vendor ID unknown, amount USD 8,000) against PO PO-2025-1003. The vendor is not in Coupa supplier catalog.",
+      expectedToolCalls: [
+        "query_basware_invoices",
+        "query_sap_s4hana_purchase_orders",
+        "query_coupa_purchase_orders",
+        "evidence_ap_three_way_match_policy",
+        "action_basware_route_exception",
+      ],
+      mustReferenceEntities: ["invoices", "vendors", "exception_queue"],
+      mustCiteDocuments: ["ap-three-way-match-policy"],
+      expectedActionOutcome: "Exception routed to AP Manager with vendor-not-found flag; invoice held pending supplier vetting.",
+      forbiddenBehaviors: [
+        "do not post to MIRO with unknown vendor",
+        "do not invent vendor master records",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Invoice processing requires 50+ invoices, POs, and GRs to simulate daily volume, exception patterns, and three-way matching accuracy without becoming a large-data demo.",
+  },
+  sourceSystems: [
+    {
+      id: "sap_s4hana",
+      name: "SAP S/4HANA",
+      owns: ["invoices", "purchase_orders", "goods_receipts", "payment_records"],
+      protocol: "RFC/BAPI",
+      localBacking: ["json-api", "alloydb"],
+      toolNames: ["query_sap_s4hana_purchase_orders", "query_sap_s4hana_goods_receipts", "action_sap_s4hana_post_invoice"],
+      mcpToolNames: ["sap_query_po", "sap_query_gr", "sap_post_miro_invoice"],
+      evidence: ["source_system_record", "sql_result", "generated_audit_trail", "api_response"],
+    },
+    {
+      id: "coupa",
+      name: "Coupa",
+      owns: ["purchase_orders", "vendors", "supplier_catalog", "receipt_confirmations"],
+      protocol: "REST API",
+      localBacking: ["json-api", "alloydb"],
+      toolNames: ["query_coupa_purchase_orders"],
+      mcpToolNames: ["coupa_get_po", "coupa_get_supplier"],
+      evidence: ["source_system_record", "sql_result"],
+    },
+    {
+      id: "basware",
+      name: "Basware",
+      owns: ["invoices", "workflows", "routing", "exception_queue"],
+      protocol: "REST API",
+      localBacking: ["json-api", "cloud-storage"],
+      toolNames: ["query_basware_invoices", "action_basware_route_exception"],
+      mcpToolNames: ["basware_get_invoice", "basware_route_exception"],
+      evidence: ["source_system_record", "api_response", "generated_audit_trail"],
+    },
+    {
+      id: "google_document_ai",
+      name: "Google Document AI",
+      owns: ["extracted_invoices", "ocr_results", "field_confidence"],
+      protocol: "gRPC",
+      localBacking: ["json-api", "cloud-storage"],
+      toolNames: ["extract_document_fields"],
+      mcpToolNames: ["docai_extract_invoice"],
+      evidence: ["source_system_record", "generated_audit_trail"],
+    },
+  ],
+  entities: [
+    {
+      name: "invoices",
+      sourceSystemId: "basware",
+      datastore: "alloydb",
+      rowCount: 50,
+      primaryKey: "id",
+      columns: [
+        { name: "id", type: "seq", required: true },
+        { name: "basware_invoice_id", type: "seq", required: true },
+        { name: "vendor_id", type: "ref", ref: "vendors.id", required: true },
+        { name: "po_number", type: "ref", ref: "purchase_orders.po_number", required: false },
+        { name: "amount", type: "number", min: 100, max: 50000, required: true },
+        { name: "currency", type: "enum", values: ["USD", "EUR", "GBP"], weights: [0.7, 0.2, 0.1], required: true },
+        { name: "invoice_date", type: "date", required: true },
+        { name: "status", type: "enum", values: ["received", "matched", "posted", "exception"], weights: [0.2, 0.5, 0.2, 0.1], required: true },
+      ],
+    },
+    {
+      name: "purchase_orders",
+      sourceSystemId: "sap_s4hana",
+      datastore: "alloydb",
+      rowCount: 40,
+      primaryKey: "po_number",
+      columns: [
+        { name: "po_number", type: "seq", required: true },
+        { name: "vendor_id", type: "ref", ref: "vendors.id", required: true },
+        { name: "amount", type: "number", min: 100, max: 50000, required: true },
+        { name: "currency", type: "enum", values: ["USD", "EUR", "GBP"], weights: [0.7, 0.2, 0.1], required: true },
+        { name: "po_date", type: "date", required: true },
+        { name: "line_items", type: "number", min: 1, max: 10, required: true },
+        { name: "status", type: "enum", values: ["open", "partial_received", "fully_received", "closed"], weights: [0.2, 0.4, 0.35, 0.05], required: true },
+      ],
+    },
+    {
+      name: "goods_receipts",
+      sourceSystemId: "sap_s4hana",
+      datastore: "alloydb",
+      rowCount: 45,
+      primaryKey: "id",
+      columns: [
+        { name: "id", type: "seq", required: true },
+        { name: "gr_number", type: "seq", required: true },
+        { name: "po_number", type: "ref", ref: "purchase_orders.po_number", required: true },
+        { name: "vendor_id", type: "ref", ref: "vendors.id", required: true },
+        { name: "received_qty", type: "number", min: 1, max: 1000, required: true },
+        { name: "receipt_date", type: "date", required: true },
+        { name: "status", type: "enum", values: ["received", "inspected", "accepted", "rejected"], weights: [0.1, 0.3, 0.55, 0.05], required: true },
+      ],
+    },
+    {
+      name: "vendors",
+      sourceSystemId: "coupa",
+      datastore: "alloydb",
+      rowCount: 30,
+      primaryKey: "id",
+      columns: [
+        { name: "id", type: "seq", required: true },
+        { name: "vendor_name", type: "person.fullName", required: true },
+        { name: "vendor_status", type: "enum", values: ["active", "inactive", "on_hold", "blocked"], weights: [0.8, 0.1, 0.07, 0.03], required: true },
+        { name: "country", type: "enum", values: ["US", "DE", "UK", "APAC"], weights: [0.5, 0.3, 0.15, 0.05], required: true },
+        { name: "payment_terms", type: "enum", values: ["NET30", "NET60", "NET90"], weights: [0.5, 0.35, 0.15], required: true },
+      ],
+    },
+    {
+      name: "exception_queue",
+      sourceSystemId: "basware",
+      datastore: "alloydb",
+      rowCount: 25,
+      primaryKey: "id",
+      columns: [
+        { name: "id", type: "seq", required: true },
+        { name: "invoice_id", type: "ref", ref: "invoices.id", required: true },
+        { name: "exception_type", type: "enum", values: ["amount_variance", "vendor_not_found", "po_not_found", "quantity_mismatch", "payment_block"], required: true },
+        { name: "context_summary", type: "lorem.sentence", required: true },
+        { name: "status", type: "enum", values: ["open", "in_review", "resolved", "escalated"], weights: [0.4, 0.3, 0.2, 0.1], required: true },
+      ],
+    },
+    {
+      name: "payment_records",
+      sourceSystemId: "sap_s4hana",
+      datastore: "alloydb",
+      rowCount: 35,
+      primaryKey: "id",
+      columns: [
+        { name: "id", type: "seq", required: true },
+        { name: "invoice_id", type: "ref", ref: "invoices.id", required: true },
+        { name: "miro_document_number", type: "seq", required: true },
+        { name: "payment_queue_id", type: "seq", required: true },
+        { name: "audit_trail", type: "lorem.sentence", required: true },
+        { name: "posted_date", type: "date", required: true },
+      ],
+    },
+  ],
+  relationships: [
+    { from: "invoices.vendor_id", to: "vendors.id", cardinality: "many-to-one", orphanPolicy: "seeded-anomaly" },
+    { from: "invoices.po_number", to: "purchase_orders.po_number", cardinality: "many-to-one", orphanPolicy: "seeded-anomaly" },
+    { from: "purchase_orders.vendor_id", to: "vendors.id", cardinality: "many-to-one", orphanPolicy: "none" },
+    { from: "goods_receipts.po_number", to: "purchase_orders.po_number", cardinality: "many-to-one", orphanPolicy: "none" },
+    { from: "goods_receipts.vendor_id", to: "vendors.id", cardinality: "many-to-one", orphanPolicy: "none" },
+    { from: "exception_queue.invoice_id", to: "invoices.id", cardinality: "many-to-one", orphanPolicy: "none" },
+    { from: "payment_records.invoice_id", to: "invoices.id", cardinality: "one-to-one", orphanPolicy: "none" },
+  ],
+  documents: [
+    {
+      id: "ap-three-way-match-policy",
+      sourceSystemId: "sap_s4hana",
+      type: "policy",
+      title: "AP Three-Way Match Policy",
+      requiredSections: ["Matching process overview", "Tolerance thresholds", "Vendor eligibility", "Payment approval workflow", "Escalation criteria"],
+      linkedEntities: ["invoices", "purchase_orders", "goods_receipts", "vendors"],
+      minimumWordCount: 600,
+      citationAnchors: ["tolerance-thresholds", "vendor-eligibility", "payment-approval", "escalation-criteria"],
+    },
+    {
+      id: "exception-resolution-sop",
+      sourceSystemId: "basware",
+      type: "sop",
+      title: "Exception Resolution SOP",
+      requiredSections: ["Non-standard invoice handling", "Multi-currency rules", "Partial delivery processing", "Handwritten document interpretation", "Escalation to AP Manager"],
+      linkedEntities: ["invoices", "exception_queue", "vendors"],
+      minimumWordCount: 500,
+      citationAnchors: ["non-standard-handling", "multi-currency-rules", "partial-delivery", "escalation-rules"],
+    },
+  ],
+  apis: [
+    {
+      systemId: "sap_s4hana",
+      operation: "post_invoice_miro",
+      method: "POST",
+      path: "/systems/sap-s4hana/invoices",
+      requestSchema: { invoice_id: "string", po_number: "string", vendor_id: "string", amount: "number" },
+      responseSchema: { miro_document_number: "string", payment_queue_id: "string", audit_trail: "string" },
+      fixture: "mock_data/apis/fixtures/sap_post_miro_invoice.json",
+      mcpToolName: "sap_post_miro_invoice",
+    },
+    {
+      systemId: "basware",
+      operation: "route_exception",
+      method: "POST",
+      path: "/systems/basware/exceptions",
+      requestSchema: { invoice_id: "string", exception_type: "string", context_summary: "string" },
+      responseSchema: { exception_ticket_id: "string", routed_workflow_id: "string" },
+      fixture: "mock_data/apis/fixtures/basware_route_exception.json",
+      mcpToolName: "basware_route_exception",
+    },
+  ],
+  anomalies: [
+    {
+      id: "duplicate-invoice-vendor-mismatch",
+      description: "Invoices with identical amounts and dates from the same vendor but different invoice IDs that reference the same PO.",
+      affectedEntities: ["invoices", "purchase_orders", "vendors"],
+      discoveryPath: ["Group invoices by vendor_id and po_number", "Check for duplicate amounts and dates", "Flag invoices with matching amount + date but different invoice_id"],
+      expectedEvidence: ["Invoice records from Basware", "Duplicate detection logic", "Vendor and PO context"],
+      expectedRecommendation: "Escalate to AP Manager to determine if invoice is a duplicate payment or legitimate split billing.",
+    },
+    {
+      id: "po-not-found-orphan",
+      description: "Invoices with po_number field NULL or referencing a PO that does not exist in SAP or Coupa, orphaning the invoice from three-way match.",
+      affectedEntities: ["invoices", "purchase_orders", "exception_queue"],
+      discoveryPath: ["Find invoices with po_number=NULL or non-matching references", "Attempt to locate PO in SAP and Coupa", "Flag as exception_type=po_not_found"],
+      expectedEvidence: ["Invoice from Basware", "SAP PO lookup failure", "Coupa PO lookup failure"],
+      expectedRecommendation: "Route to AP Manager to identify the correct PO or confirm this is a non-PO invoice requiring special handling.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: { database: "finance_ap", schemas: ["sap_s4hana", "coupa", "basware"] },
+    cloudStorage: { bucketSuffix: "finance-ap-evidence", prefixes: ["invoices/pdf", "documents/policy", "audit-trails"] },
+    bigquery: { dataset: "finance_ap_analytics", tables: ["invoice_accuracy", "exception_rate", "posting_latency"] },
+    apis: { serviceName: "finance-ap-source-adapters", deploymentTarget: "cloud_run" },
+  },
+  behaviorContract,
+  validation: {
+    smokePrompt: "Process invoice INV-2025-0042 (vendor GE Supplier XYZ, USD 15,000) against PO PO-2025-1001 and GR GR-2025-5003. Vendor is active, amount is within 2% tolerance, quantity matches.",
+    expectedAnswer: [
+      "queries SAP S/4HANA for PO and GR details",
+      "calculates variance and confirms within tolerance",
+      "cites AP Three-Way Match Policy",
+      "posts to SAP MIRO with payment_queue_id",
+      "returns audit trail confirming posting",
+    ],
+    assertions: [
+      "all tool names use canonical system ids (sap_s4hana, coupa, basware, google_document_ai)",
+      "all invoice/PO/GR foreign keys resolve without orphans in happy path",
+      "at least one document citation (ap-three-way-match-policy or exception-resolution-sop) is used",
+      "golden evals cover match, exception escalation, and vendor not-found scenarios",
+    ],
+  },
+};
+
+export const InvoiceProcessingMatching = () => (
+  <UseCaseSlide
+    title="Invoice Processing & Matching"
+    subtitle="A-2201 • Accounts Payable"
+    icon={FileText}
+    domainId="domain-22"
+    layer="Layer 3: Custom ADK"
+    persona="AP Manager"
+    systems={["SAP S/4HANA", "Coupa", "Basware", "Google Document AI", "Vertex AI"]}
+    kpis={[
+      { label: "Touchless processing rate", before: "60%", after: "95%+" },
+      { label: "Exception resolution time", before: "4 hours", after: "15 minutes" },
+      { label: "Invoice processing cost", before: "$12/invoice", after: "$2/invoice" },
+    ]}
+    triggerType="event"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    generationSpec={generationSpec}
+    statusQuo={[
+      "120+ invoices processed daily — 40% require manual data entry from PDFs into SAP.",
+      "Three-way match exceptions require hours of investigation per invoice across PO, GR, and invoice.",
+      "Non-standard invoices (handwritten, partial deliveries) always require manual processing."
+    ]}
+    agentification={[
+      "Document AI extracts invoice data with 98%+ accuracy, eliminating manual keying.",
+      "Fuzzy matching auto-resolves tolerance exceptions (rounding, quantities) without human intervention.",
+      "Gemini interprets non-standard line items by understanding semantic equivalence to PO descriptions."
+    ]}
+  />
+);

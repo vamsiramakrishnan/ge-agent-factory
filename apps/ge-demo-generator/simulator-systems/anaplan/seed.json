@@ -1,0 +1,51 @@
+{
+  "planning_models": [
+    {
+      "model_id": "MODEL-ID-001",
+      "name": "sample_name",
+      "status": "sample_status",
+      "period": "sample_period",
+      "currency": "sample_currency"
+    }
+  ],
+  "scenarios": [
+    {
+      "scenario_id": "SCENARIO-ID-001",
+      "model_id": "MODEL-ID-001",
+      "name": "sample_name",
+      "status": "sample_status",
+      "version": "sample_version",
+      "owner": "sample_owner"
+    }
+  ],
+  "forecast_lines": [
+    {
+      "forecast_line_id": "FORECAST-LINE-ID-001",
+      "scenario_id": "SCENARIO-ID-001",
+      "cost_center": "sample_cost_center",
+      "account": "sample_account",
+      "amount": "sample_amount",
+      "currency": "sample_currency",
+      "status": "sample_status"
+    }
+  ],
+  "budget_owners": [
+    {
+      "owner_id": "OWNER-ID-001",
+      "name": "sample_name",
+      "email": "sample_email",
+      "cost_center": "sample_cost_center",
+      "status": "sample_status"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APPROVAL-ID-001",
+      "source_record_id": "SOURCE-RECORD-ID-001",
+      "approver": "sample_approver",
+      "state": "sample_state",
+      "reason": "sample_reason"
+    }
+  ],
+  "audit_events": []
+}

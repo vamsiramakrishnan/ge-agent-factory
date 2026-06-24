@@ -1,0 +1,108 @@
+{
+  "id": "innovation_management_tools",
+  "version": 1,
+  "tools": [
+    {
+      "name": "search_projects",
+      "description": "Search projects in innovation_management.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "projects"
+      }
+    },
+    {
+      "name": "get_project",
+      "description": "Get one project in innovation_management.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "projects",
+        "primaryKey": "project_id"
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending innovation_management approvals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": {
+            "type": "string"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_pending_approvals",
+        "collection": "approvals"
+      }
+    },
+    {
+      "name": "submit_project_update",
+      "description": "Submit an update to one project in innovation_management.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "project_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "projects",
+        "primaryKey": "project_id"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List innovation_management simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

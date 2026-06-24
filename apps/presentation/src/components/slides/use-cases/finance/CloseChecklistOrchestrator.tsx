@@ -1,0 +1,1180 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { ListChecks, Database, Clock, MessageCircle, FileText } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Close Period Start", lane: "system", type: "trigger" },
+    { id: "a1", label: "Task Assignment", lane: "agent", type: "action" },
+    { id: "a2", label: "Progress Tracking", lane: "agent", type: "action" },
+    { id: "a3", label: "Status Interpretation", lane: "agent", type: "action" },
+    { id: "a4", label: "Close Summary", lane: "agent", type: "output" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "a4"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Task Distribution", icon: Database, description: "Assign 60+ close tasks across 15+ team members with dependencies enforced.", trigger: "Monthly/Quarterly", systems: ["BlackLine", "ServiceNow"] },
+  { label: "Delay Prediction", icon: Clock, description: "Track completion, predict bottlenecks from historical patterns, and auto-escalate delays.", systems: ["BlackLine", "BigQuery"], integration: "ADK" },
+  { label: "Status Interpretation", icon: MessageCircle, description: "Interpret natural-language status updates to assess timeline risk.", systems: ["Vertex AI"] },
+  { label: "Status Report", icon: FileText, description: "Generate daily close status summary for the Controller.", output: "Close Status" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "BlackLine", description: "Close checklist, task assignments, completion tracking", direction: "bidirectional", protocol: "REST API", category: "erp" },
+    { system: "SAP S/4HANA", description: "Sub-ledger close status, posting period controls", direction: "read", protocol: "RFC/BAPI", category: "erp" },
+    { system: "ServiceNow", description: "Task management, escalation workflows, notification routing", direction: "bidirectional", protocol: "REST API", category: "collaboration" },
+    { system: "Slack", description: "Team status updates, reminder notifications", direction: "bidirectional", protocol: "Webhook", category: "collaboration" },
+    { system: "Vertex AI (Gemini)", description: "Status update interpretation, close summary generation", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Task Assignment & Dependency", description: "Distribute 60+ close tasks across 15+ team members with dependency enforcement. Set deadlines based on close calendar and individual capacity.", systems: ["BlackLine", "ServiceNow"], layer: "integration", dataIn: "Close checklist template + team roster", dataOut: "Assigned tasks with deadlines" },
+    { label: "Bottleneck Prediction", description: "Track task completion rates against historical patterns. Predict which tasks will delay the close based on current progress and past cycle times.", systems: ["BlackLine", "BigQuery"], layer: "ml", dataIn: "Task completion data + historical patterns", dataOut: "Delay predictions + auto-escalations" },
+    { label: "Status Interpretation", description: "Gemini interprets natural-language status updates from team members and assesses whether the close timeline is at risk. Generates daily close status summaries for the Controller.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "NL status updates + task completion data", dataOut: "Risk assessment + daily close summary" },
+    { label: "Escalation & Reporting", description: "Auto-escalate delayed tasks, send reminders, and deliver daily close status summary to Controller with predicted completion date.", systems: ["ServiceNow", "Slack", "Email"], layer: "integration", dataIn: "Risk assessment + delays", dataOut: "Escalations + daily status report" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Controller agent for the Close Checklist Orchestrator workflow",
+  primaryObjective: "60+ close tasks auto-assigned with dependency enforcement and deadline management. Predicts bottlenecks from historical patterns and auto-escalates before deadlines are missed. so the Controller can move the Close cycle time KPI.",
+  inScope: [
+    "60+ close tasks auto-assigned with dependency enforcement and deadline management",
+    "Predicts bottlenecks from historical patterns and auto-escalates before deadlines are missed",
+    "Gemini interprets NL status updates and generates daily close summaries for the Controller",
+  ],
+  outOfScope: [
+    "Final sign-off on materially significant journal entries (Controller retains authority)",
+    "Restatement of prior-period filings",
+    "Tax position changes that require external advisor review",
+  ],
+  toolIntents: [
+    {
+      name: "query_blackline_reconciliations",
+      kind: "query",
+      sourceSystemId: "blackline",
+      description: "Retrieve reconciliations from BlackLine for the Close Checklist Orchestrator workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "reconciliations_records",
+        "reconciliations_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_sap_s_4hana_transactions",
+      kind: "query",
+      sourceSystemId: "sap_s_4hana",
+      description: "Retrieve transactions from SAP S/4HANA for the Close Checklist Orchestrator workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "transactions_records",
+        "transactions_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_servicenow_tickets",
+      kind: "query",
+      sourceSystemId: "servicenow",
+      description: "Retrieve tickets from ServiceNow for the Close Checklist Orchestrator workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "tickets_records",
+        "tickets_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_slack_messages",
+      kind: "query",
+      sourceSystemId: "slack",
+      description: "Retrieve messages from Slack for the Close Checklist Orchestrator workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "messages_records",
+        "messages_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_close_checklist_orchestrator_controls_playbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "blackline",
+      description: "Look up sections of the Close Checklist Orchestrator Controls Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_blackline_escalate",
+      kind: "action",
+      sourceSystemId: "blackline",
+      description: "Execute the escalate step in BlackLine after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Close cycle time moved from 8-10 days toward 3-4 days",
+      mustCite: [
+        "blackline.reconciliations",
+        "sap_s_4hana.transactions",
+      ],
+      sourceSystemIds: [
+        "blackline",
+        "sap_s_4hana",
+      ],
+    },
+    {
+      claim: "Task on-time completion moved from 75% toward 95%",
+      mustCite: [
+        "blackline.reconciliations",
+        "sap_s_4hana.transactions",
+      ],
+      sourceSystemIds: [
+        "blackline",
+        "sap_s_4hana",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Close cycle time regresses past the 8-10 days baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Controller",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed escalate action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from BlackLine (and other named systems) entities.",
+    "Never bypass Controller approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "close-checklist-orchestrator-end-to-end",
+      prompt: "Run the Close Checklist Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_blackline_reconciliations",
+        "query_sap_s_4hana_transactions",
+        "query_servicenow_tickets",
+        "query_slack_messages",
+        "lookup_close_checklist_orchestrator_controls_playbook",
+        "action_blackline_escalate",
+      ],
+      mustReferenceEntities: [
+        "reconciliations",
+        "transactions",
+        "tickets",
+        "messages",
+      ],
+      mustCiteDocuments: [
+        "close-checklist-orchestrator-controls-playbook",
+      ],
+      expectedActionOutcome: "Action escalate executed against BlackLine, with audit-trail entry and Controller notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute escalate without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Close Checklist Orchestrator so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "blackline",
+      name: "BlackLine",
+      owns: [
+        "reconciliations",
+        "matching_rules",
+        "certifications",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_blackline_reconciliations",
+        "query_blackline_matching_rules",
+        "query_blackline_certifications",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "sap_s_4hana",
+      name: "SAP S/4HANA",
+      owns: [
+        "transactions",
+        "journal_entries",
+        "master_data",
+      ],
+      protocol: "RFC/BAPI",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sap_s_4hana_transactions",
+        "query_sap_s_4hana_journal_entries",
+        "query_sap_s_4hana_master_data",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "servicenow",
+      name: "ServiceNow",
+      owns: [
+        "tickets",
+        "change_requests",
+        "incidents",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_servicenow_tickets",
+        "query_servicenow_change_requests",
+        "query_servicenow_incidents",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "slack",
+      name: "Slack",
+      owns: [
+        "messages",
+        "channels",
+        "thread_replies",
+      ],
+      protocol: "Slack API",
+      localBacking: [
+        "json-api",
+      ],
+      toolNames: [
+        "query_slack_messages",
+        "query_slack_channels",
+        "query_slack_thread_replies",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "reconciliations",
+      sourceSystemId: "blackline",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "in_progress",
+            "certified",
+            "exception",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "match_rate",
+          type: "float",
+          min: 0,
+          max: 1,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "last_run",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "matching_rules",
+      sourceSystemId: "blackline",
+      datastore: "alloydb",
+      rowCount: 30,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "in_progress",
+            "certified",
+            "exception",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "match_rate",
+          type: "float",
+          min: 0,
+          max: 1,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "last_run",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "certifications",
+      sourceSystemId: "blackline",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "in_progress",
+            "certified",
+            "exception",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "match_rate",
+          type: "float",
+          min: 0,
+          max: 1,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "last_run",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "transactions",
+      sourceSystemId: "sap_s_4hana",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "journal_entries",
+      sourceSystemId: "sap_s_4hana",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "master_data",
+      sourceSystemId: "sap_s_4hana",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "tickets",
+      sourceSystemId: "servicenow",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "change_requests",
+      sourceSystemId: "servicenow",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "incidents",
+      sourceSystemId: "servicenow",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "messages",
+      sourceSystemId: "slack",
+      datastore: "json-api",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "channel",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "author",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "body",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "sentiment",
+          type: "enum",
+          values: [
+            "positive",
+            "neutral",
+            "negative",
+          ],
+          weights: [
+            0.4,
+            0.4,
+            0.2,
+          ],
+          required: true,
+        },
+        {
+          name: "sent_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "channels",
+      sourceSystemId: "slack",
+      datastore: "json-api",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "thread_replies",
+      sourceSystemId: "slack",
+      datastore: "json-api",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "channel",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "author",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "body",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "sentiment",
+          type: "enum",
+          values: [
+            "positive",
+            "neutral",
+            "negative",
+          ],
+          weights: [
+            0.4,
+            0.4,
+            0.2,
+          ],
+          required: true,
+        },
+        {
+          name: "sent_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [],
+  documents: [
+    {
+      id: "close-checklist-orchestrator-controls-playbook",
+      sourceSystemId: "blackline",
+      type: "policy",
+      title: "Close Checklist Orchestrator Controls Playbook",
+      requiredSections: [
+        "Workflow scope",
+        "Materiality thresholds",
+        "Escalation triggers",
+        "Audit evidence requirements",
+        "Quarter-end variations",
+      ],
+      linkedEntities: [
+        "reconciliations",
+        "matching_rules",
+        "certifications",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "scope",
+        "materiality",
+        "escalation",
+        "audit-evidence",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "blackline_escalate_api",
+      sourceSystemId: "blackline",
+      method: "POST",
+      path: "/api/blackline/escalate",
+      description: "Synchronous endpoint the agent calls to escalate in BlackLine after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "close-checklist-orchestrator-baseline-gap",
+      description: "Seed a realistic gap where Close cycle time sits between 8-10 days and 3-4 days, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "reconciliations",
+        "matching_rules",
+      ],
+      discoveryPath: [
+        "Inspect BlackLine records for the affected entities",
+        "Compare against SAP S/4HANA historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Controller action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "close_checklist_orchestrator",
+      schemas: [
+        "blackline",
+        "sap_s_4hana",
+        "servicenow",
+        "slack",
+      ],
+    },
+    bigquery: {
+      dataset: "finance_close_checklist_orchestrator",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "close-checklist-orchestrator-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "close-checklist-orchestrator-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Close Checklist Orchestrator workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const CloseChecklistOrchestrator = () => (
+  <UseCaseSlide
+    title="Close Checklist Orchestrator"
+    subtitle="A-2104 • GL & Close"
+    icon={ListChecks}
+    domainId="domain-21"
+    layer="Layer 3: Custom ADK"
+    persona="Controller"
+    systems={["BlackLine", "SAP S/4HANA", "ServiceNow", "Slack", "Vertex AI"]}
+    kpis={[
+      { label: "Close cycle time", before: "8-10 days", after: "3-4 days" },
+      { label: "Task on-time completion", before: "75%", after: "95%" },
+      { label: "Status visibility", before: "Manual check-ins", after: "Real-time dashboard" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    statusQuo={[
+      "Controller manually chases 15+ team members for task status via email and Slack each close.",
+      "Task dependencies not enforced — downstream work starts before upstream tasks complete.",
+      "Bottlenecks discovered reactively after deadlines are already missed."
+    ]}
+    agentification={[
+      "60+ close tasks auto-assigned with dependency enforcement and deadline management.",
+      "Predicts bottlenecks from historical patterns and auto-escalates before deadlines are missed.",
+      "Gemini interprets NL status updates and generates daily close summaries for the Controller."
+    ]}
+  />
+);

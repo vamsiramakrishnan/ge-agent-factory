@@ -1,0 +1,715 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { BookOpen, FileText, PenTool, BarChart3, CheckCircle } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Brief Approved", lane: "system", type: "trigger" },
+    { id: "a1", label: "Draft Generation", lane: "agent", type: "action" },
+    { id: "a2", label: "Quality Scoring", lane: "agent", type: "action" },
+    { id: "a3", label: "Draft Delivered", lane: "agent", type: "output" },
+    { id: "h1", label: "Strategist Review", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Brief Ingest", icon: FileText, description: "Approved content brief with angle, outline, and keyword targets received.", trigger: "Brief approved", systems: ["Google Docs"] },
+  { label: "Draft Generation", icon: PenTool, description: "Long-form content drafted with brand voice, narrative arc, original analysis, and SEO optimization.", systems: ["Vertex AI"], integration: "ADK" },
+  { label: "Quality Scoring", icon: BarChart3, description: "Readability scoring, keyword density optimization, and internal link recommendations applied.", systems: ["WordPress", "Contentful"] },
+  { label: "Strategist Review", icon: CheckCircle, description: "Content Strategist reviews draft for accuracy, tone, and SME input requirements.", output: "Content Draft" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Google Docs", description: "Approved content brief input, draft document output", direction: "bidirectional", protocol: "Workspace API", category: "collaboration" },
+    { system: "WordPress", description: "Existing content inventory for internal linking, publishing", direction: "bidirectional", protocol: "REST API", category: "collaboration" },
+    { system: "Contentful", description: "Headless CMS for content publishing and asset management", direction: "write", protocol: "REST API", category: "collaboration" },
+    { system: "Vertex AI (Gemini)", description: "Long-form content generation, brand voice adaptation, headline creation", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Brief Processing", description: "Receive approved content brief with target keyword, angle, outline, and differentiation strategy. Load brand style guide and voice parameters.", systems: ["Google Docs"], layer: "integration", dataIn: "Approved content brief + brand guidelines", dataOut: "Structured generation parameters" },
+    { label: "Quality Metrics", description: "Readability scoring (Flesch-Kincaid), keyword density optimization, internal link recommendation based on content graph analysis.", systems: ["WordPress"], layer: "ml", dataIn: "Draft content + keyword targets + content inventory", dataOut: "Quality scores + optimization suggestions" },
+    { label: "Content Generation", description: "Transform brief into a draft that reads as if written by a domain expert. Maintain brand voice while adapting tone for content type. Generate multiple headline options with reasoning.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Brief + brand voice + quality targets", dataOut: "Long-form draft with headline variations" },
+    { label: "Publishing Preparation", description: "Draft formatted with brand style guide, SME input sections flagged, and publishing workflow initiated in WordPress or Contentful.", systems: ["WordPress", "Contentful"], layer: "integration", dataIn: "Approved draft", dataOut: "Published content with metadata" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Content Strategist agent for the Long-Form Content Drafter workflow",
+  primaryObjective: "Gemini generates domain-expert-quality drafts with original analysis, relevant examples, and clear narrative arcs. Maintains brand voice while adapting tone to content type \\u2014 thought leadership vs. how-to vs. comparison guide. so the Content Strategist can move the First draft time KPI.",
+  inScope: [
+    "Gemini generates domain-expert-quality drafts with original analysis, relevant examples, and clear narrative arcs",
+    "Maintains brand voice while adapting tone to content type \\u2014 thought leadership vs. how-to vs. comparison guide",
+    "Generates multiple headline options with reasoning and builds in SEO optimization from the start",
+  ],
+  outOfScope: [
+    "Final approval of paid spend reallocations above the governance threshold",
+    "Trademark, legal, or regulated-industry claim approval",
+    "Crisis communications without comms-team sign-off",
+  ],
+  toolIntents: [
+    {
+      name: "query_google_docs_documents",
+      kind: "query",
+      sourceSystemId: "google_docs",
+      description: "Retrieve documents from Google Docs for the Long-Form Content Drafter workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "documents_records",
+        "documents_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_wordpress_content_entries",
+      kind: "query",
+      sourceSystemId: "wordpress",
+      description: "Retrieve content entries from WordPress for the Long-Form Content Drafter workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "content_entries_records",
+        "content_entries_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_contentful_content_entries",
+      kind: "query",
+      sourceSystemId: "contentful",
+      description: "Retrieve content entries from Contentful for the Long-Form Content Drafter workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "content_entries_records",
+        "content_entries_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_long_form_content_drafter_playbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "google_docs",
+      description: "Look up sections of the Long-Form Content Drafter Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_google_docs_generate",
+      kind: "action",
+      sourceSystemId: "google_docs",
+      description: "Execute the generate step in Google Docs after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "First draft time moved from 3-5 days toward 2 hours",
+      mustCite: [
+        "google_docs.documents",
+        "wordpress.content_entries",
+      ],
+      sourceSystemIds: [
+        "google_docs",
+        "wordpress",
+      ],
+    },
+    {
+      claim: "Revision cycles moved from 3-4 rounds toward 1-2 rounds",
+      mustCite: [
+        "google_docs.documents",
+        "wordpress.content_entries",
+      ],
+      sourceSystemIds: [
+        "google_docs",
+        "wordpress",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "First draft time regresses past the 3-5 days baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Content Strategist",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed generate action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from Google Docs (and other named systems) entities.",
+    "Never bypass Content Strategist approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "long-form-content-drafter-end-to-end",
+      prompt: "Run the Long-Form Content Drafter workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_google_docs_documents",
+        "query_wordpress_content_entries",
+        "query_contentful_content_entries",
+        "lookup_long_form_content_drafter_playbook",
+        "action_google_docs_generate",
+      ],
+      mustReferenceEntities: [
+        "documents",
+        "content_entries",
+        "content_entries",
+      ],
+      mustCiteDocuments: [
+        "long-form-content-drafter-playbook",
+      ],
+      expectedActionOutcome: "Action generate executed against Google Docs, with audit-trail entry and Content Strategist notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute generate without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Long-Form Content Drafter so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "google_docs",
+      name: "Google Docs",
+      owns: [
+        "documents",
+        "comments",
+        "revision_history",
+      ],
+      protocol: "Workspace API",
+      localBacking: [
+        "cloud-storage",
+      ],
+      toolNames: [
+        "query_google_docs_documents",
+        "query_google_docs_comments",
+        "query_google_docs_revision_history",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "wordpress",
+      name: "WordPress",
+      owns: [
+        "content_entries",
+        "publishing_workflows",
+        "media_assets",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "cloud-storage",
+      ],
+      toolNames: [
+        "query_wordpress_content_entries",
+        "query_wordpress_publishing_workflows",
+        "query_wordpress_media_assets",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "contentful",
+      name: "Contentful",
+      owns: [
+        "content_entries",
+        "publishing_workflows",
+        "media_assets",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "cloud-storage",
+      ],
+      toolNames: [
+        "query_contentful_content_entries",
+        "query_contentful_publishing_workflows",
+        "query_contentful_media_assets",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "documents",
+      sourceSystemId: "google_docs",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "review",
+            "published",
+            "archived",
+          ],
+          required: true,
+        },
+        {
+          name: "last_updated",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "comments",
+      sourceSystemId: "google_docs",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "revision_history",
+      sourceSystemId: "google_docs",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "document_id",
+          type: "ref",
+          ref: "documents.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "content_entries",
+      sourceSystemId: "wordpress",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "publishing_workflows",
+      sourceSystemId: "wordpress",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "media_assets",
+      sourceSystemId: "wordpress",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "revision_history.document_id",
+      to: "documents.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "long-form-content-drafter-playbook",
+      sourceSystemId: "google_docs",
+      type: "playbook",
+      title: "Long-Form Content Drafter Playbook",
+      requiredSections: [
+        "Audience guidelines",
+        "Brand voice rules",
+        "Channel-specific guardrails",
+        "Measurement framework",
+        "Approval thresholds",
+      ],
+      linkedEntities: [
+        "documents",
+        "comments",
+        "revision_history",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "audience",
+        "brand-voice",
+        "channels",
+        "approvals",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "google_docs_generate_api",
+      sourceSystemId: "google_docs",
+      method: "POST",
+      path: "/api/google_docs/generate",
+      description: "Synchronous endpoint the agent calls to generate in Google Docs after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "long-form-content-drafter-baseline-gap",
+      description: "Seed a realistic gap where First draft time sits between 3-5 days and 2 hours, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "documents",
+        "comments",
+      ],
+      discoveryPath: [
+        "Inspect Google Docs records for the affected entities",
+        "Compare against WordPress historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Content Strategist action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "long_form_content_drafter",
+      schemas: [
+        "google_docs",
+        "wordpress",
+        "contentful",
+      ],
+    },
+    bigquery: {
+      dataset: "marketing_long_form_content_drafter",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "long-form-content-drafter-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "long-form-content-drafter-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Long-Form Content Drafter workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const LongFormContentDrafter = () => (
+  <UseCaseSlide
+    title="Long-Form Content Drafter"
+    subtitle="A-3002 \u2022 Content & Creative"
+    icon={BookOpen}
+    domainId="domain-30"
+    layer="Layer 1: OOTB"
+    persona="Content Strategist"
+    systems={["Google Docs", "WordPress", "Contentful", "Vertex AI"]}
+    kpis={[
+      { label: "First draft time", before: "3-5 days", after: "2 hours" },
+      { label: "Revision cycles", before: "3-4 rounds", after: "1-2 rounds" },
+      { label: "Content output volume", before: "4-6 pieces/month", after: "12-15 pieces/month" },
+    ]}
+    triggerType="event"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "Content Strategist", action: "Review content draft", description: "Content Strategist reviews draft for accuracy, brand voice fidelity, and identifies sections requiring SME input before publishing." }}
+    statusQuo={[
+      "Content production bottlenecked by writer availability \u2014 4-6 pieces per month with 3-5 day turnaround.",
+      "Brand voice inconsistency across writers requires multiple revision cycles and editorial oversight.",
+      "Internal linking and SEO optimization applied as afterthoughts rather than built into the drafting process."
+    ]}
+    agentification={[
+      "Gemini generates domain-expert-quality drafts with original analysis, relevant examples, and clear narrative arcs.",
+      "Maintains brand voice while adapting tone to content type \u2014 thought leadership vs. how-to vs. comparison guide.",
+      "Generates multiple headline options with reasoning and builds in SEO optimization from the start."
+    ]}
+  />
+);

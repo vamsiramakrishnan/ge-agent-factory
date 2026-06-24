@@ -1,0 +1,113 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencies
+node_modules
+**/node_modules
+
+# Build output
+dist
+dist-ssr
+**/dist
+**/dist-ssr
+docs/_site/
+docs/.jekyll-cache/
+docs/.bundle/
+docs/vendor/bundle/
+*.local
+**/.local
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Tooling state (don't commit any of this)
+.claude
+*.claude/
+.superpowers/
+.antigravitycli/
+.codex/
+.agents/
+.harness/
+.ge/
+.ge-daemon/
+.ge-harness/
+.ge-missions/
+.factory-runs.json
+
+# Generated design tokens (presentation app)
+apps/presentation/src/styles/tokens.generated.css
+apps/presentation/customer/types.generated.ts
+
+# ge-demo-generator runtime state — ephemeral, never commit
+apps/ge-demo-generator/.harness/
+apps/ge-demo-generator/.harness-test/
+apps/ge-demo-generator/.harness-test-service/
+apps/ge-demo-generator/.worktrees/
+apps/ge-demo-generator/.e2e-sample/
+apps/ge-demo-generator/runs/
+apps/ge-demo-generator/.ge-harness/
+apps/ge-demo-generator/simulator-systems/_openapi/
+
+# Legacy scratch symlinks
+tmp/
+
+# Bulk-provision / generated-agent sync runtime state — ephemeral, never commit.
+# NOTE: generated-agents/ and agents-batch.json ARE tracked on purpose.
+.bulk-provision-state.json
+.generated-agents-sync-state.json
+canary-batch.json
+.tmp/
+
+# Local env files — per-environment, may hold project ids / endpoints.
+# Keep the .env.example templates tracked.
+.env
+**/.env
+!**/.env.example
+
+# ge CLI config + state (per-environment; regenerate with `ge init`)
+.ge.json
+.ge-state.json
+
+# generated terraform vars (per-environment)
+installer/values.tfvars
+installer/terraform/.terraform/
+installer/terraform/*.tfstate*
+installer/terraform/.terraform.lock.hcl
+
+# ge cutover: generated terraform import blocks (project-specific, one-shot)
+installer/terraform/imports.generated.tf
+
+# ge sync --local: working clone of the dedicated agents repo
+.agents-repo/
+
+apps/ge-demo-generator/.harness/uv-cache/
+
+# repo-local Python venv for the Antigravity harness driver (uv; `make deps`)
+.venv/
+
+# Relocated use-case catalog — generated build artifact (regen with `npm run use-cases:sync`)
+apps/ge-demo-generator/generated/
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Python editable-install / build artifacts
+*.egg-info/
+.eggs/
+build/
+dist/

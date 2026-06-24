@@ -1,0 +1,108 @@
+{
+  "id": "workiva_tools",
+  "version": 1,
+  "tools": [
+    {
+      "name": "search_workspaces",
+      "description": "Search workspaces in workiva.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "workspaces"
+      }
+    },
+    {
+      "name": "get_workspace",
+      "description": "Get one workspace in workiva.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "workspace_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspace_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "workspaces",
+        "primaryKey": "workspace_id"
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending workiva approvals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": {
+            "type": "string"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_pending_approvals",
+        "collection": "approvals"
+      }
+    },
+    {
+      "name": "submit_workspace_update",
+      "description": "Submit an update to one workspace in workiva.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "workspace_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "workspace_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "workspaces",
+        "primaryKey": "workspace_id"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List workiva simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

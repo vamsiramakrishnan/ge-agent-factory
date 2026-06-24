@@ -1,0 +1,47 @@
+{
+  "id": "kubernetes_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into kubernetes collections.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "kubernetes"
+      ],
+      "realizedObjects": [
+        "pods"
+      ],
+      "simulatorCollection": "pods",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "kubernetes"
+      ],
+      "realizedObjects": [
+        "deployments"
+      ],
+      "simulatorCollection": "deployments",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "kubernetes"
+      ],
+      "realizedObjects": [
+        "services"
+      ],
+      "simulatorCollection": "services",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "kubernetes"
+      ],
+      "realizedObjects": [
+        "nodes"
+      ],
+      "simulatorCollection": "nodes",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

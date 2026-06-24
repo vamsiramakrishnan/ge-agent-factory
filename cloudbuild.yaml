@@ -1,0 +1,35 @@
+# Builds-only: this trigger builds + pushes the gateway image to Artifact Registry.
+# It does NOT deploy. Terraform owns Cloud Run config (env vars, ingress, service
+# account, scaling, CPU/memory, IAM) — bind a freshly built image with:
+#
+#   ge infra apply --gateway-image <region>-docker.pkg.dev/<proj>/<repo>/<svc>:<sha>
+#
+# (see docs/OPERATIONS.md "Deploy contract"). Keeping deploy out of Cloud Build
+# stops --set-env-vars from clobbering Terraform-managed env on every push.
+steps:
+  # 1. Build the container image (presentation server). The architecture deck under
+  #    apps/presentation/public/architecture is copied into dist/ by Vite and served
+  #    at /architecture/agent-factory-assembly-line.html. PDF export is client-side
+  #    (HTML -> PDF via bundled html2canvas + jsPDF) — no build-time render needed.
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-f', 'apps/presentation/Dockerfile',
+      '-t', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:${SHORT_SHA}',
+      '-t', '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:latest',
+      '.'
+    ]
+
+# Push both tags to Artifact Registry. The image SHA is then bound to the Cloud Run
+# service by `ge infra apply --gateway-image ...:${SHORT_SHA}`.
+images:
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:${SHORT_SHA}'
+  - '${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_AR_REPO}/${_SERVICE_NAME}:latest'
+
+substitutions:
+  _REGION: 'us-central1'
+  _SERVICE_NAME: 'ge-agent-factory-gateway'
+  _AR_REPO: 'cloud-run-source'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

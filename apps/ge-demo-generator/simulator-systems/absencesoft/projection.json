@@ -1,0 +1,40 @@
+{
+  "id": "absencesoft_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into absencesoft collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "worker"
+      ],
+      "realizedObjects": [
+        "employees",
+        "dependents"
+      ],
+      "simulatorCollection": "employees",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "benefit"
+      ],
+      "realizedObjects": [
+        "benefit_plans",
+        "enrollments",
+        "life_events"
+      ],
+      "simulatorCollection": "enrollments",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "approval"
+      ],
+      "realizedObjects": [
+        "approvals"
+      ],
+      "simulatorCollection": "approvals",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

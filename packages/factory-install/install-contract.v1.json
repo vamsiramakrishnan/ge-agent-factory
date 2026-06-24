@@ -1,0 +1,187 @@
+{
+  "kind": "ge.factory.install.contract",
+  "contractVersion": "1.0.0",
+  "packageName": "@ge/factory-install",
+  "packageVersion": "0.1.0",
+  "terraform": {
+    "root": "installer/terraform",
+    "tfvarsExample": "installer/values.example.tfvars",
+    "variables": [
+      "project_id",
+      "project_number",
+      "region",
+      "firestore_location",
+      "gemini_enterprise_app_id",
+      "gemini_enterprise_location",
+      "enable_iap",
+      "iap_members",
+      "allow_public_gateway",
+      "enable_iap_lb",
+      "console_image",
+      "presentation_image",
+      "iap_member",
+      "iap_backend_service_id",
+      "gateway_image",
+      "worker_image",
+      "oidc_allowed_audiences",
+      "factory_bucket_name",
+      "domain",
+      "create_oauth_client",
+      "iap_support_email",
+      "iap_oauth_client_id",
+      "iap_oauth_client_secret",
+      "create_build_trigger",
+      "repo_name",
+      "branch_name",
+      "enable_bigquery",
+      "enable_gcs_data",
+      "enable_alloydb",
+      "enable_bigtable",
+      "enable_firestore",
+      "data_bucket_name",
+      "bq_data_location",
+      "vpc_network",
+      "alloydb_password",
+      "enable_mcp",
+      "enable_agent_identity",
+      "agent_identity_org_id",
+      "worker_ingress",
+      "enable_agent_gateway",
+      "agent_gateway_name",
+      "agent_gateway_location",
+      "agent_gateway_protocols",
+      "agent_gateway_access_path",
+      "agent_gateway_egress_network_attachment",
+      "agent_gateway_registries",
+      "agent_gateway_mcp_services",
+      "agent_gateway_grant_mcp_invoker",
+      "agent_gateway_authz_action"
+    ],
+    "outputs": [
+      "project_id",
+      "project_number",
+      "region",
+      "factory_bucket",
+      "artifact_repository",
+      "runner_service_account",
+      "gateway_service_account",
+      "builder_service_account",
+      "tasks_queue",
+      "gateway_url",
+      "worker_url",
+      "gateway_service_name",
+      "worker_service_name",
+      "enable_iap",
+      "iap_audience_hint",
+      "gemini_enterprise_app_id",
+      "gemini_enterprise_location",
+      "gateway_lb_ip",
+      "iap_audience",
+      "agent_gateway_id",
+      "agent_gateway_mtls_endpoint",
+      "agent_gateway_root_certificates",
+      "agent_gateway_service_extensions_account",
+      "console_url",
+      "presentation_url",
+      "data_bucket",
+      "bq_location",
+      "alloydb_dsn_secret",
+      "alloydb_instance",
+      "bigtable_instance",
+      "firestore_location",
+      "mcp_enabled",
+      "agent_identity_principalset"
+    ]
+  },
+  "runtimeTargets": {
+    "gateway": {
+      "service": "ge-factory-gateway",
+      "imageVariable": "gateway_image",
+      "env": {
+        "GE_FACTORY_BUCKET": "output:factory_bucket",
+        "GOOGLE_CLOUD_PROJECT": "var:project_id",
+        "GOOGLE_CLOUD_LOCATION": "var:region",
+        "GE_FACTORY_WORKER_URL": "output:worker_url",
+        "GE_FACTORY_TASKS_QUEUE": "output:tasks_queue",
+        "REQUIRE_IAP": "var:enable_iap_lb",
+        "IAP_EXPECTED_AUDIENCE": "output:iap_audience"
+      }
+    },
+    "worker": {
+      "service": "ge-factory-worker",
+      "imageVariable": "worker_image",
+      "env": {
+        "GE_FACTORY_BUCKET": "output:factory_bucket",
+        "GOOGLE_CLOUD_PROJECT": "var:project_id",
+        "GOOGLE_CLOUD_LOCATION": "var:region",
+        "GE_AGENT_REGISTRY_LOCATION": "var:gemini_enterprise_location",
+        "GE_DATA_BACKEND": "computed:enable_mcp?mcp:fixtures"
+      }
+    },
+    "console": {
+      "service": "ge-console",
+      "imageVariable": "console_image",
+      "env": {
+        "GOOGLE_CLOUD_PROJECT": "var:project_id",
+        "GEMINI_ENTERPRISE_APP_ID": "var:gemini_enterprise_app_id",
+        "GEMINI_ENTERPRISE_LOCATION": "var:gemini_enterprise_location"
+      }
+    },
+    "presentation": {
+      "service": "ge-presentation",
+      "imageVariable": "presentation_image",
+      "env": {
+        "GOOGLE_CLOUD_PROJECT": "var:project_id",
+        "GEMINI_ENTERPRISE_APP_ID": "var:gemini_enterprise_app_id",
+        "GEMINI_ENTERPRISE_LOCATION": "var:gemini_enterprise_location"
+      }
+    },
+    "localPresentationEnv": {
+      "envFile": "apps/presentation/.env.local",
+      "env": {
+        "GE_FACTORY_GATEWAY_URL": "output:gateway_url",
+        "GEMINI_ENTERPRISE_APP_ID": "var:gemini_enterprise_app_id",
+        "GEMINI_ENTERPRISE_LOCATION": "var:gemini_enterprise_location"
+      }
+    }
+  },
+  "buildTargets": {
+    "gateway": {
+      "cloudBuild": "cloudbuild.yaml",
+      "substitutions": {
+        "_IMAGE": "var:gateway_image"
+      }
+    },
+    "worker": {
+      "cloudBuild": "apps/ge-demo-generator/cloudbuild.factory-stage.yaml",
+      "substitutions": {
+        "_IMAGE": "var:worker_image"
+      }
+    },
+    "console": {
+      "cloudBuild": "cloudbuild.ci.yaml",
+      "substitutions": {
+        "_CONSOLE_IMAGE": "var:console_image",
+        "_PRESENTATION_IMAGE": "var:presentation_image"
+      }
+    }
+  },
+  "commands": {
+    "init": {
+      "description": "Initialize Terraform working directory.",
+      "argv": ["terraform", "-chdir=installer/terraform", "init"]
+    },
+    "apply": {
+      "description": "Apply Terraform using a tfvars file.",
+      "argv": ["terraform", "-chdir=installer/terraform", "apply", "-var-file=../values.tfvars"]
+    },
+    "build": {
+      "description": "Build Cloud Run images using Cloud Build.",
+      "argv": ["gcloud", "builds", "submit"]
+    },
+    "verify": {
+      "description": "Verify deployed factory endpoints and auth wiring.",
+      "argv": ["installer/verify.sh"]
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "id": "terraform_schema",
+  "version": 1,
+  "collections": {
+    "datasets": {
+      "primaryKey": "dataset_id",
+      "fields": {
+        "dataset_id": "string",
+        "name": "string",
+        "status": "string",
+        "owner": "string",
+        "domain": "string",
+        "classification": "string"
+      }
+    },
+    "tables": {
+      "primaryKey": "table_id",
+      "fields": {
+        "table_id": "string",
+        "dataset_id": "string",
+        "name": "string",
+        "status": "string",
+        "row_count": "string",
+        "freshness": "string"
+      }
+    },
+    "pipelines": {
+      "primaryKey": "pipeline_id",
+      "fields": {
+        "pipeline_id": "string",
+        "dataset_id": "string",
+        "status": "string",
+        "schedule": "string",
+        "owner": "string"
+      }
+    },
+    "jobs": {
+      "primaryKey": "job_id",
+      "fields": {
+        "job_id": "string",
+        "pipeline_id": "string",
+        "state": "string",
+        "started_at": "string",
+        "duration_seconds": "string"
+      }
+    },
+    "quality_checks": {
+      "primaryKey": "check_id",
+      "fields": {
+        "check_id": "string",
+        "table_id": "string",
+        "status": "string",
+        "severity": "string",
+        "last_run_at": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string"
+      }
+    }
+  }
+}

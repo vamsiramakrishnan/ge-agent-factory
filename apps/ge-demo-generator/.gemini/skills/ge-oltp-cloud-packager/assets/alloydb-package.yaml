@@ -1,0 +1,13 @@
+id: alloydb
+class: OLTP_SQL
+target: Google Cloud AlloyDB for PostgreSQL
+source_systems: []
+files:
+  schema: schema.sql
+  loader: load-alloydb.sh
+env:
+  required:
+    - ALLOYDB_POSTGRES_DSN
+evidence:
+  primary_keys: true
+  audit_columns: true

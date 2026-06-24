@@ -1,0 +1,893 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { Presentation, Database, BarChart3, Brain, CheckCircle } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Quarterly Cycle", lane: "system", type: "trigger" },
+    { id: "a1", label: "KPI Aggregation", lane: "agent", type: "action" },
+    { id: "a2", label: "Narrative Generation", lane: "agent", type: "action" },
+    { id: "a3", label: "Board Deck Draft", lane: "agent", type: "output" },
+    { id: "h1", label: "CPO Reviews", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Data Assembly", icon: Database, description: "Savings data, KPIs, and benchmark comparisons aggregated from analytics platforms.", trigger: "Monthly/Quarterly", systems: ["BigQuery", "Looker"] },
+  { label: "EBITDA Modeling", icon: BarChart3, description: "Savings-to-EBITDA impact calculated with YoY comparisons and benchmark gap analysis.", systems: ["BigQuery"], integration: "OOTB" },
+  { label: "Narrative Drafting", icon: Brain, description: "LLM transforms raw KPIs into board-ready narrative linking savings to business outcomes.", systems: ["Vertex AI", "Google Slides"] },
+  { label: "CPO Approval", icon: CheckCircle, description: "CPO reviews and refines narrative framing before board or leadership distribution.", output: "Value Report" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "BigQuery", description: "Savings data, KPI aggregates, YoY comparisons, benchmark gaps", direction: "read", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Looker", description: "Chart outputs, trend visualizations, dashboard embeds for reporting", direction: "read", protocol: "Looker API", category: "analytics" },
+    { system: "Google Slides", description: "Board-ready presentation generation with formatted charts and narrative", direction: "write", protocol: "Workspace API", category: "collaboration" },
+    { system: "Vertex AI (Gemini)", description: "KPI-to-narrative transformation, audience-adapted framing, forward-looking commentary", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Data Assembly", description: "Aggregate savings data, KPIs, and benchmark comparisons from analytics platforms. Pull chart outputs from Looker dashboards. Compile YoY comparisons and savings-to-EBITDA impact calculations.", systems: ["BigQuery", "Looker"], layer: "integration", dataIn: "KPI data + savings pipeline + benchmark datasets", dataOut: "Assembled report data package" },
+    { label: "Impact Modeling", description: "Savings-to-EBITDA impact modeling with YoY comparisons. Benchmark gap analysis against industry peers. Trend calculations on key value metrics with forward projections.", systems: ["BigQuery"], layer: "ml", dataIn: "Report data + benchmark baselines", dataOut: "Impact metrics with trend projections" },
+    { label: "Narrative & Presentation Generation", description: "Primarily LLM-driven: Gemini transforms raw KPIs into board-ready narrative — '$47M in verified savings, up 12% YoY, driven by indirect spend consolidation.' Adapts framing for audience: CFO sees cash flow impact, CPO sees capability maturity, BU leaders see service levels. Auto-generates Google Slides deck.", systems: ["Vertex AI (Gemini)", "Google Slides"], layer: "llm", dataIn: "Impact metrics + audience context", dataOut: "Board-ready value report deck" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "CPO agent for the Procurement Value Reporter workflow",
+  primaryObjective: "Primarily LLM-driven: transforms raw KPIs into board-ready narrative linking $47M savings to EBITDA impact. Adapts framing for audience — CFO sees cash flow impact, CPO sees capability maturity, BU leaders see service levels. so the CPO can move the Report creation time KPI.",
+  inScope: [
+    "Primarily LLM-driven: transforms raw KPIs into board-ready narrative linking $47M savings to EBITDA impact",
+    "Adapts framing for audience — CFO sees cash flow impact, CPO sees capability maturity, BU leaders see service levels",
+    "Auto-generates Google Slides deck with trend visualizations and forward-looking risk commentary",
+  ],
+  outOfScope: [
+    "Contract execution without legal review",
+    "Supplier disqualification decisions (category lead retains authority)",
+    "Single-source justification overrides above policy threshold",
+  ],
+  toolIntents: [
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Procurement Value Reporter workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "query_looker_dashboards",
+      kind: "query",
+      sourceSystemId: "looker",
+      description: "Retrieve dashboards from Looker for the Procurement Value Reporter workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "dashboards_records",
+        "dashboards_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "query_google_slides_presentations",
+      kind: "query",
+      sourceSystemId: "google_slides",
+      description: "Retrieve presentations from Google Slides for the Procurement Value Reporter workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "presentations_records",
+        "presentations_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_procurement_value_reporter_policy_guide",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Procurement Value Reporter Procurement Policy Guide to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_google_slides_generate",
+      kind: "action",
+      sourceSystemId: "google_slides",
+      description: "Execute the generate step in Google Slides after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Report creation time moved from 3-5 days analyst effort toward 2 hours draft",
+      mustCite: [
+        "bigquery.analytics_events",
+        "looker.dashboards",
+      ],
+      sourceSystemIds: [
+        "bigquery",
+        "looker",
+      ],
+    },
+    {
+      claim: "Narrative quality moved from Data dump with charts toward Board-ready storyline",
+      mustCite: [
+        "bigquery.analytics_events",
+        "looker.dashboards",
+      ],
+      sourceSystemIds: [
+        "bigquery",
+        "looker",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Report creation time regresses past the 3-5 days analyst effort baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "CPO",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed generate action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from BigQuery (and other named systems) entities.",
+    "Never bypass CPO approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "procurement-value-reporter-end-to-end",
+      prompt: "Run the Procurement Value Reporter workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_bigquery_analytics_events",
+        "query_looker_dashboards",
+        "query_google_slides_presentations",
+        "lookup_procurement_value_reporter_policy_guide",
+        "action_google_slides_generate",
+      ],
+      mustReferenceEntities: [
+        "analytics_events",
+        "dashboards",
+        "presentations",
+      ],
+      mustCiteDocuments: [
+        "procurement-value-reporter-policy-guide",
+      ],
+      expectedActionOutcome: "Action generate executed against Google Slides, with audit-trail entry and CPO notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute generate without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Procurement Value Reporter so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "looker",
+      name: "Looker",
+      owns: [
+        "dashboards",
+        "explore_queries",
+        "metric_definitions",
+      ],
+      protocol: "LookerML",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_looker_dashboards",
+        "query_looker_explore_queries",
+        "query_looker_metric_definitions",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "google_slides",
+      name: "Google Slides",
+      owns: [
+        "presentations",
+        "slide_assets",
+        "view_logs",
+      ],
+      protocol: "Workspace API",
+      localBacking: [
+        "cloud-storage",
+      ],
+      toolNames: [
+        "query_google_slides_presentations",
+        "query_google_slides_slide_assets",
+        "query_google_slides_view_logs",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "dashboards",
+      sourceSystemId: "looker",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "explore_queries",
+      sourceSystemId: "looker",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "metric_definitions",
+      sourceSystemId: "looker",
+      datastore: "bigquery",
+      rowCount: 30,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "presentations",
+      sourceSystemId: "google_slides",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "draft",
+            "review",
+            "published",
+            "archived",
+          ],
+          required: true,
+        },
+        {
+          name: "last_updated",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "slide_assets",
+      sourceSystemId: "google_slides",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "view_logs",
+      sourceSystemId: "google_slides",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "presentation_id",
+          type: "ref",
+          ref: "presentations.id",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "view_logs.presentation_id",
+      to: "presentations.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "procurement-value-reporter-policy-guide",
+      sourceSystemId: "bigquery",
+      type: "policy",
+      title: "Procurement Value Reporter Procurement Policy Guide",
+      requiredSections: [
+        "Sourcing principles",
+        "Approval thresholds",
+        "Supplier risk requirements",
+        "Contract and compliance gates",
+        "Exception handling",
+      ],
+      linkedEntities: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "sourcing",
+        "approvals",
+        "supplier-risk",
+        "exceptions",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "google_slides_generate_api",
+      sourceSystemId: "google_slides",
+      method: "POST",
+      path: "/api/google_slides/generate",
+      description: "Synchronous endpoint the agent calls to generate in Google Slides after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "procurement-value-reporter-baseline-gap",
+      description: "Seed a realistic gap where Report creation time sits between 3-5 days analyst effort and 2 hours draft, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "analytics_events",
+        "historical_metrics",
+      ],
+      discoveryPath: [
+        "Inspect BigQuery records for the affected entities",
+        "Compare against Looker historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next CPO action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "procurement_value_reporter",
+      schemas: [
+        "google_slides",
+      ],
+    },
+    bigquery: {
+      dataset: "procurement_procurement_value_reporter",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "procurement-value-reporter-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "procurement-value-reporter-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Procurement Value Reporter workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const ProcurementValueReporter = () => (
+  <UseCaseSlide
+    title="Procurement Value Reporter"
+    subtitle="A-1906 • Spend Analytics"
+    icon={Presentation}
+    domainId="domain-19"
+    layer="Layer 1: OOTB"
+    persona="CPO"
+    systems={["BigQuery", "Looker", "Google Slides", "Vertex AI"]}
+    kpis={[
+      { label: "Report creation time", before: "3-5 days analyst effort", after: "2 hours draft" },
+      { label: "Narrative quality", before: "Data dump with charts", after: "Board-ready storyline" },
+      { label: "Audience adaptation", before: "One-size-fits-all", after: "CFO / CPO / BU tailored" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "CPO", action: "Review and approve value narrative", description: "CPO validates the framing, adjusts strategic emphasis, and approves for board or leadership distribution." }}
+    statusQuo={[
+      "Procurement value reports are data dumps — charts without narrative explaining what they mean for the business.",
+      "Analytics lead spends 3-5 days per quarter assembling slides for the CPO.",
+      "Same report sent to CFO, CPO, and BU leaders despite different priorities."
+    ]}
+    agentification={[
+      "Primarily LLM-driven: transforms raw KPIs into board-ready narrative linking $47M savings to EBITDA impact.",
+      "Adapts framing for audience — CFO sees cash flow impact, CPO sees capability maturity, BU leaders see service levels.",
+      "Auto-generates Google Slides deck with trend visualizations and forward-looking risk commentary."
+    ]}
+  />
+);

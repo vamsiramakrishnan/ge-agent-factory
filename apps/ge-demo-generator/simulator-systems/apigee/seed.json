@@ -1,0 +1,232 @@
+{
+  "apis": [
+    {
+      "api_id": "transformation-gateway",
+      "name": "transformation-gateway",
+      "org": "ge-transformation",
+      "latest_revision_id": "7",
+      "revision_count": 7
+    },
+    {
+      "api_id": "hr-events",
+      "name": "hr-events",
+      "org": "ge-transformation",
+      "latest_revision_id": "3",
+      "revision_count": 3
+    },
+    {
+      "api_id": "supplier-portal-api",
+      "name": "supplier-portal-api",
+      "org": "ge-transformation",
+      "latest_revision_id": "11",
+      "revision_count": 11
+    },
+    {
+      "api_id": "finance-close-api",
+      "name": "finance-close-api",
+      "org": "ge-transformation",
+      "latest_revision_id": "5",
+      "revision_count": 5
+    },
+    {
+      "api_id": "identity-bridge-api",
+      "name": "identity-bridge-api",
+      "org": "ge-secops",
+      "latest_revision_id": "2",
+      "revision_count": 2
+    }
+  ],
+  "apiproducts": [
+    {
+      "apiproduct_id": "platform-standard",
+      "name": "platform-standard",
+      "display_name": "Platform Standard",
+      "approval_type": "auto",
+      "environments": [
+        "prod"
+      ],
+      "quota": "1000"
+    },
+    {
+      "apiproduct_id": "platform-internal",
+      "name": "platform-internal",
+      "display_name": "Platform Internal",
+      "approval_type": "manual",
+      "environments": [
+        "test",
+        "prod"
+      ],
+      "quota": "100000"
+    },
+    {
+      "apiproduct_id": "hr-events-partner",
+      "name": "hr-events-partner",
+      "display_name": "HR Events Partner",
+      "approval_type": "manual",
+      "environments": [
+        "prod"
+      ],
+      "quota": "5000"
+    },
+    {
+      "apiproduct_id": "supplier-sandbox",
+      "name": "supplier-sandbox",
+      "display_name": "Supplier Sandbox",
+      "approval_type": "auto",
+      "environments": [
+        "test"
+      ],
+      "quota": "25000"
+    },
+    {
+      "apiproduct_id": "finance-close-premium",
+      "name": "finance-close-premium",
+      "display_name": "Finance Close Premium",
+      "approval_type": "manual",
+      "environments": [
+        "prod"
+      ],
+      "quota": "20000"
+    },
+    {
+      "apiproduct_id": "identity-admin",
+      "name": "identity-admin",
+      "display_name": "Identity Admin",
+      "approval_type": "manual",
+      "environments": [
+        "secops"
+      ],
+      "quota": "10000"
+    }
+  ],
+  "developers": [
+    {
+      "developer_id": "dev-1",
+      "email": "mina.patel@example.com",
+      "first_name": "Mina",
+      "last_name": "Patel",
+      "status": "active",
+      "org": "ge-transformation"
+    },
+    {
+      "developer_id": "dev-2",
+      "email": "sam.rivera@example.com",
+      "first_name": "Sam",
+      "last_name": "Rivera",
+      "status": "active",
+      "org": "ge-transformation"
+    },
+    {
+      "developer_id": "dev-3",
+      "email": "avery.johnson@example.com",
+      "first_name": "Avery",
+      "last_name": "Johnson",
+      "status": "inactive",
+      "org": "ge-transformation"
+    },
+    {
+      "developer_id": "dev-4",
+      "email": "jordan.lee@example.com",
+      "first_name": "Jordan",
+      "last_name": "Lee",
+      "status": "active",
+      "org": "ge-transformation"
+    },
+    {
+      "developer_id": "dev-5",
+      "email": "diego.chen@example.com",
+      "first_name": "Diego",
+      "last_name": "Chen",
+      "status": "active",
+      "org": "ge-secops"
+    },
+    {
+      "developer_id": "dev-6",
+      "email": "riley.morgan@example.com",
+      "first_name": "Riley",
+      "last_name": "Morgan",
+      "status": "active",
+      "org": "ge-transformation"
+    },
+    {
+      "developer_id": "dev-7",
+      "email": "nora.singh@example.com",
+      "first_name": "Nora",
+      "last_name": "Singh",
+      "status": "inactive",
+      "org": "ge-transformation"
+    },
+    {
+      "developer_id": "dev-8",
+      "email": "chloe.adams@example.com",
+      "first_name": "Chloe",
+      "last_name": "Adams",
+      "status": "active",
+      "org": "ge-secops"
+    },
+    {
+      "developer_id": "dev-9",
+      "email": "luca.martin@example.com",
+      "first_name": "Luca",
+      "last_name": "Martin",
+      "status": "active",
+      "org": "ge-transformation"
+    },
+    {
+      "developer_id": "dev-10",
+      "email": "taylor.king@example.com",
+      "first_name": "Taylor",
+      "last_name": "King",
+      "status": "active",
+      "org": "ge-transformation"
+    }
+  ],
+  "envgroups": [
+    {
+      "envgroup_id": "prod-group",
+      "name": "prod-group",
+      "org": "ge-transformation",
+      "status": "ACTIVE",
+      "hostnames": [
+        "api.ge-transformation.example.com"
+      ]
+    },
+    {
+      "envgroup_id": "test-group",
+      "name": "test-group",
+      "org": "ge-transformation",
+      "status": "ACTIVE",
+      "hostnames": [
+        "test-api.ge-transformation.example.com"
+      ]
+    },
+    {
+      "envgroup_id": "partner-group",
+      "name": "partner-group",
+      "org": "ge-transformation",
+      "status": "PROVISIONING",
+      "hostnames": [
+        "partner-api.ge-transformation.example.com"
+      ]
+    },
+    {
+      "envgroup_id": "secops-group",
+      "name": "secops-group",
+      "org": "ge-secops",
+      "status": "ACTIVE",
+      "hostnames": [
+        "secops-api.ge.example.com"
+      ]
+    },
+    {
+      "envgroup_id": "sandbox-group",
+      "name": "sandbox-group",
+      "org": "ge-transformation",
+      "status": "ACTIVE",
+      "hostnames": [
+        "sandbox-api.ge-transformation.example.com"
+      ]
+    }
+  ],
+  "audit_events": []
+}

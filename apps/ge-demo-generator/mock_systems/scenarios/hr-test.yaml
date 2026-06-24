@@ -1,0 +1,29 @@
+id: hr-test
+domain: hr
+mockTypes:
+  - data
+systems:
+  - id: workday
+    type: api
+    entities: employees,skills
+  - id: bigquery
+    type: data
+    entities: incidents
+entities:
+  - employees
+  - skills
+  - incidents
+relationships:
+  - from: skills.employee_id
+    to: employees.id
+  - from: incidents.assignee_id
+    to: employees.id
+anomalies:
+  - id: skills-gap-west
+    description: West region has 3x the average skills gap in AI/ML certifications
+    evidence: employees,skills
+    expectedDiscoveryPath: query employees by region,join skills,compare certification rates
+  - id: incident-spike-q1
+    description: Q1 2026 shows 40% more P1 incidents than any other quarter
+    evidence: incidents
+    expectedDiscoveryPath: query incidents by date,group by priority,compare to baseline

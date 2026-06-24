@@ -1,0 +1,1384 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { ShieldCheck, Code, Database, Brain, AlertTriangle } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Weekly Scan", lane: "system", type: "trigger" },
+    { id: "a1", label: "Code Analysis", lane: "agent", type: "action" },
+    { id: "a2", label: "Rule Evaluation", lane: "agent", type: "action" },
+    { id: "a3", label: "Violation Report", lane: "agent", type: "output" },
+    { id: "h1", label: "Architect Reviews", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Codebase Scan", icon: Code, description: "Codebases and infrastructure configs scanned against architecture guardrails.", trigger: "Weekly / Review", systems: ["GitHub", "SonarQube"] },
+  { label: "Guardrail Evaluation", icon: Database, description: "Violations detected: service boundary crossings, direct DB access, naming violations.", systems: ["ServiceNow CMDB", "BigQuery"], integration: "ADK" },
+  { label: "Impact Analysis", icon: Brain, description: "Gemini explains violations with business context and remediation guidance.", systems: ["Vertex AI"] },
+  { label: "Remediation Tracking", icon: AlertTriangle, description: "Violations tracked with severity, remediation plans, and exception approvals.", output: "Architecture Compliance Report" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "GitHub", description: "Source code repositories, dependency files, infrastructure configs", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "SonarQube", description: "Code quality metrics, architectural rule violations", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "ServiceNow CMDB", description: "System boundaries, approved patterns, architecture guardrails", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "Datadog", description: "Runtime service interactions, actual vs. declared dependencies", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "BigQuery", description: "Compliance score trends, violation analytics, remediation tracking", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Violation context reasoning, remediation guidance", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Multi-Source Scanning", description: "Scan GitHub repositories for code-level violations (direct DB queries across boundaries, unauthorized imports). Check SonarQube for architectural rules. Compare Datadog runtime traces against declared CMDB boundaries.", systems: ["GitHub", "SonarQube", "Datadog", "ServiceNow CMDB"], layer: "integration", dataIn: "Source code + runtime data + architecture rules", dataOut: "Raw violation candidates" },
+    { label: "Violation Classification", description: "Classify violations by severity (critical/high/medium/low), type (boundary crossing, pattern violation, naming), and scope (single service vs. systemic). Score drift from architecture standards.", systems: ["BigQuery"], layer: "ml", dataIn: "Raw violations + severity rules", dataOut: "Classified and prioritized violations" },
+    { label: "Contextual Remediation", description: "Gemini explains each violation in business context — why the guardrail exists, what risks the violation creates, and specific remediation steps. Suggests whether to fix or apply for an exception.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Classified violations + architecture context", dataOut: "Violation report with remediation guidance" },
+    { label: "Tracking & Reporting", description: "Create Jira tickets for violations requiring remediation. Update compliance dashboard with trends. Notify service owners of new violations.", systems: ["BigQuery"], layer: "integration", dataIn: "Approved violation findings", dataOut: "Tickets + dashboard + notifications" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Enterprise Architect agent for the Architecture Compliance Scanner workflow",
+  primaryObjective: "Gemini scans code, infrastructure, and runtime traces weekly against architecture guardrails. LLM explains violations with business context — why the guardrail matters and what risk the violation creates. so the Enterprise Architect can move the Architecture drift detection KPI.",
+  inScope: [
+    "Gemini scans code, infrastructure, and runtime traces weekly against architecture guardrails",
+    "LLM explains violations with business context — why the guardrail matters and what risk the violation creates",
+    "Continuous compliance scoring replaces quarterly manual reviews, catching drift before it causes incidents",
+  ],
+  outOfScope: [
+    "Production deployments outside an approved change window",
+    "Irreversible destructive actions on shared infrastructure (DROP, force-delete, key rotation)",
+    "Security incident attribution requiring forensics",
+  ],
+  toolIntents: [
+    {
+      name: "query_github_pull_requests",
+      kind: "query",
+      sourceSystemId: "github",
+      description: "Retrieve pull requests from GitHub for the Architecture Compliance Scanner workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "pull_requests_records",
+        "pull_requests_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_sonarqube_code_smells",
+      kind: "query",
+      sourceSystemId: "sonarqube",
+      description: "Retrieve code smells from SonarQube for the Architecture Compliance Scanner workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "code_smells_records",
+        "code_smells_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_servicenow_cmdb_tickets",
+      kind: "query",
+      sourceSystemId: "servicenow_cmdb",
+      description: "Retrieve tickets from ServiceNow CMDB for the Architecture Compliance Scanner workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "tickets_records",
+        "tickets_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_datadog_alerts",
+      kind: "query",
+      sourceSystemId: "datadog",
+      description: "Retrieve alerts from Datadog for the Architecture Compliance Scanner workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "alerts_records",
+        "alerts_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "lookup_architecture_compliance_scanner_runbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "datadog",
+      description: "Look up sections of the Architecture Compliance Scanner Operations Runbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_github_create",
+      kind: "action",
+      sourceSystemId: "github",
+      description: "Execute the create step in GitHub after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Architecture drift detection moved from Quarterly manual review toward Continuous weekly",
+      mustCite: [
+        "github.pull_requests",
+        "sonarqube.code_smells",
+      ],
+      sourceSystemIds: [
+        "github",
+        "sonarqube",
+      ],
+    },
+    {
+      claim: "Guardrail compliance moved from 68% toward 92%",
+      mustCite: [
+        "github.pull_requests",
+        "sonarqube.code_smells",
+      ],
+      sourceSystemIds: [
+        "github",
+        "sonarqube",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Architecture drift detection regresses past the Quarterly manual review baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Enterprise Architect",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed create action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from GitHub (and other named systems) entities.",
+    "Never bypass Enterprise Architect approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "architecture-compliance-scanner-end-to-end",
+      prompt: "Run the Architecture Compliance Scanner workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_github_pull_requests",
+        "query_sonarqube_code_smells",
+        "query_servicenow_cmdb_tickets",
+        "query_datadog_alerts",
+        "lookup_architecture_compliance_scanner_runbook",
+        "action_github_create",
+      ],
+      mustReferenceEntities: [
+        "pull_requests",
+        "code_smells",
+        "tickets",
+        "alerts",
+        "analytics_events",
+      ],
+      mustCiteDocuments: [
+        "architecture-compliance-scanner-runbook",
+      ],
+      expectedActionOutcome: "Action create executed against GitHub, with audit-trail entry and Enterprise Architect notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute create without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Architecture Compliance Scanner so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "github",
+      name: "GitHub",
+      owns: [
+        "pull_requests",
+        "commits",
+        "workflow_runs",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_github_pull_requests",
+        "query_github_commits",
+        "query_github_workflow_runs",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "sonarqube",
+      name: "SonarQube",
+      owns: [
+        "code_smells",
+        "security_hotspots",
+        "quality_gates",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sonarqube_code_smells",
+        "query_sonarqube_security_hotspots",
+        "query_sonarqube_quality_gates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "servicenow_cmdb",
+      name: "ServiceNow CMDB",
+      owns: [
+        "tickets",
+        "change_requests",
+        "incidents",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_servicenow_cmdb_tickets",
+        "query_servicenow_cmdb_change_requests",
+        "query_servicenow_cmdb_incidents",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "datadog",
+      name: "Datadog",
+      owns: [
+        "alerts",
+        "monitors",
+        "metrics_snapshots",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_datadog_alerts",
+        "query_datadog_monitors",
+        "query_datadog_metrics_snapshots",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "pull_requests",
+      sourceSystemId: "github",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "commits",
+      sourceSystemId: "github",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "workflow_runs",
+      sourceSystemId: "github",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "pending",
+            "running",
+            "succeeded",
+            "failed",
+            "rolled_back",
+          ],
+          required: true,
+        },
+        {
+          name: "duration_seconds",
+          type: "number",
+          min: 5,
+          max: 7200,
+          required: true,
+        },
+        {
+          name: "started_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "environment",
+          type: "enum",
+          values: [
+            "dev",
+            "staging",
+            "prod",
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "code_smells",
+      sourceSystemId: "sonarqube",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "severity",
+          type: "enum",
+          values: [
+            "low",
+            "medium",
+            "high",
+            "critical",
+          ],
+          weights: [
+            0.4,
+            0.35,
+            0.2,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "mitigated",
+            "accepted_risk",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "detected_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "asset",
+          type: "lorem.words",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "security_hotspots",
+      sourceSystemId: "sonarqube",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "severity",
+          type: "enum",
+          values: [
+            "low",
+            "medium",
+            "high",
+            "critical",
+          ],
+          weights: [
+            0.4,
+            0.35,
+            0.2,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "mitigated",
+            "accepted_risk",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "detected_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "asset",
+          type: "lorem.words",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "quality_gates",
+      sourceSystemId: "sonarqube",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "severity",
+          type: "enum",
+          values: [
+            "low",
+            "medium",
+            "high",
+            "critical",
+          ],
+          weights: [
+            0.4,
+            0.35,
+            0.2,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "mitigated",
+            "accepted_risk",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "detected_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "asset",
+          type: "lorem.words",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "tickets",
+      sourceSystemId: "servicenow_cmdb",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "change_requests",
+      sourceSystemId: "servicenow_cmdb",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "incidents",
+      sourceSystemId: "servicenow_cmdb",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "alerts",
+      sourceSystemId: "datadog",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "title",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "priority",
+          type: "enum",
+          values: [
+            "P1",
+            "P2",
+            "P3",
+            "P4",
+          ],
+          weights: [
+            0.05,
+            0.15,
+            0.4,
+            0.4,
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "open",
+            "triaged",
+            "in_progress",
+            "resolved",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "assignee",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "category",
+          type: "enum",
+          values: [
+            "access",
+            "hardware",
+            "software",
+            "network",
+            "policy",
+            "billing",
+          ],
+          required: true,
+        },
+        {
+          name: "sla_met",
+          type: "boolean",
+          trueRate: 0.78,
+        },
+      ],
+    },
+    {
+      name: "monitors",
+      sourceSystemId: "datadog",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "metrics_snapshots",
+      sourceSystemId: "datadog",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "architecture-compliance-scanner-runbook",
+      sourceSystemId: "datadog",
+      type: "runbook",
+      title: "Architecture Compliance Scanner Operations Runbook",
+      requiredSections: [
+        "Detection signals",
+        "Triage procedures",
+        "Remediation actions",
+        "Rollback criteria",
+        "Post-incident review",
+      ],
+      linkedEntities: [
+        "pull_requests",
+        "commits",
+        "workflow_runs",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "detection",
+        "triage",
+        "remediation",
+        "rollback",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "github_create_api",
+      sourceSystemId: "github",
+      method: "POST",
+      path: "/api/github/create",
+      description: "Synchronous endpoint the agent calls to create in GitHub after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "architecture-compliance-scanner-baseline-gap",
+      description: "Seed a realistic gap where Architecture drift detection sits between Quarterly manual review and Continuous weekly, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "pull_requests",
+        "commits",
+      ],
+      discoveryPath: [
+        "Inspect GitHub records for the affected entities",
+        "Compare against SonarQube historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Enterprise Architect action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "architecture_compliance_scanner",
+      schemas: [
+        "github",
+        "sonarqube",
+        "servicenow_cmdb",
+      ],
+    },
+    bigquery: {
+      dataset: "it_architecture_compliance_scanner",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "architecture-compliance-scanner-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "architecture-compliance-scanner-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Architecture Compliance Scanner workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const ArchitectureComplianceScanner = () => (
+  <UseCaseSlide
+    title="Architecture Compliance Scanner"
+    subtitle="A-4406 • Enterprise Architecture"
+    icon={ShieldCheck}
+    domainId="domain-44"
+    layer="Layer 3: Custom ADK"
+    persona="Enterprise Architect"
+    systems={["GitHub", "SonarQube", "ServiceNow CMDB", "Datadog", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "Architecture drift detection", before: "Quarterly manual review", after: "Continuous weekly" },
+      { label: "Guardrail compliance", before: "68%", after: "92%" },
+      { label: "Violation remediation time", before: "45 days average", after: "12 days average" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    statusQuo={[
+      "Architecture compliance checked only during formal reviews — violations discovered months after code ships.",
+      "Guardrail violations explained without business context, making developers dismiss them as bureaucratic overhead.",
+      "No systematic tracking of architecture drift — compliance erodes gradually until a major incident exposes it."
+    ]}
+    agentification={[
+      "Gemini scans code, infrastructure, and runtime traces weekly against architecture guardrails.",
+      "LLM explains violations with business context — why the guardrail matters and what risk the violation creates.",
+      "Continuous compliance scoring replaces quarterly manual reviews, catching drift before it causes incidents."
+    ]}
+  />
+);

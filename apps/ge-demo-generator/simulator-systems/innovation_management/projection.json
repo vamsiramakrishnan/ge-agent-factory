@@ -1,0 +1,30 @@
+{
+  "id": "innovation_management_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into innovation_management collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "project"
+      ],
+      "realizedObjects": [
+        "projects",
+        "issues",
+        "tasks"
+      ],
+      "simulatorCollection": "issues",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "release"
+      ],
+      "realizedObjects": [
+        "releases",
+        "approvals"
+      ],
+      "simulatorCollection": "releases",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

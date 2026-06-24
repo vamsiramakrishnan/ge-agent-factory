@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">GE Agent Factory architecture</title>
+  <desc id="desc">A simple developer-friendly architecture diagram showing how developers use the console, command line, or coding assistant to drive one shared factory engine that creates agent workspaces, runs checks, deploys to a cloud project, and feeds status and artifacts back to developers.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f7f9fc; }
+      .lane-local { fill: #eef6ff; stroke: #c4ddf7; stroke-width: 2; }
+      .lane-cloud { fill: #edf8f3; stroke: #b8e2d1; stroke-width: 2; }
+      .box { fill: #ffffff; stroke: #c9d4e2; stroke-width: 2; rx: 18; }
+      .box-strong { fill: #ffffff; stroke: #3174b7; stroke-width: 3; rx: 18; }
+      .box-cloud { fill: #ffffff; stroke: #2f8f68; stroke-width: 3; rx: 18; }
+      .chip { fill: #edf2f7; stroke: #c7d2df; stroke-width: 1.5; rx: 12; }
+      .chip-blue { fill: #e7f0fb; stroke: #a9c7ea; stroke-width: 1.5; rx: 12; }
+      .chip-green { fill: #e7f6ef; stroke: #aadbc7; stroke-width: 1.5; rx: 12; }
+      .arrow { fill: none; stroke: #50657d; stroke-width: 3; marker-end: url(#arrowhead); }
+      .arrow-soft { fill: none; stroke: #7890aa; stroke-width: 2.5; marker-end: url(#arrowhead-soft); stroke-dasharray: 8 8; }
+      .title { font: 700 42px Inter, Arial, sans-serif; fill: #142033; }
+      .subtitle { font: 400 20px Inter, Arial, sans-serif; fill: #4b5d73; }
+      .lane-label { font: 700 18px Inter, Arial, sans-serif; fill: #39536d; letter-spacing: 0.08em; }
+      .h2 { font: 700 25px Inter, Arial, sans-serif; fill: #172438; }
+      .h3 { font: 700 18px Inter, Arial, sans-serif; fill: #20324a; }
+      .body { font: 400 17px Inter, Arial, sans-serif; fill: #394b61; }
+      .small { font: 400 14px Inter, Arial, sans-serif; fill: #5c6f86; }
+      .step { font: 700 14px Inter, Arial, sans-serif; fill: #ffffff; }
+      .num { fill: #3174b7; }
+      .num-cloud { fill: #2f8f68; }
+    </style>
+    <marker id="arrowhead" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#50657d"/>
+    </marker>
+    <marker id="arrowhead-soft" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#7890aa"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1600" height="1000"/>
+
+  <text class="title" x="80" y="78">GE Agent Factory architecture</text>
+  <text class="subtitle" x="82" y="116">A simple map for developers.</text>
+
+  <rect class="lane-local" x="50" y="145" width="1010" height="730" rx="28"/>
+  <text class="lane-label" x="82" y="185">LOCAL DEVELOPMENT AND FACTORY CONTROL</text>
+
+  <rect class="lane-cloud" x="1090" y="145" width="460" height="730" rx="28"/>
+  <text class="lane-label" x="1122" y="185">YOUR CLOUD PROJECT</text>
+
+  <!-- Developer intent -->
+  <rect class="box" x="90" y="235" width="310" height="150"/>
+  <circle class="num" cx="122" cy="270" r="18"/>
+  <text class="step" x="117" y="275">1</text>
+  <text class="h2" x="150" y="277">Developer goal</text>
+  <text class="body" x="120" y="318">Pick a use case, request a new</text>
+  <text class="body" x="120" y="344">agent, fix a failed run, or move</text>
+  <text class="body" x="120" y="370">a local build toward release.</text>
+
+  <!-- Control surfaces -->
+  <rect class="box" x="90" y="455" width="310" height="250"/>
+  <circle class="num" cx="122" cy="490" r="18"/>
+  <text class="step" x="117" y="495">2</text>
+  <text class="h2" x="150" y="497">Ways to control it</text>
+  <rect class="chip-blue" x="120" y="535" width="245" height="42"/>
+  <text class="body" x="142" y="562">Web console for operators</text>
+  <rect class="chip-blue" x="120" y="590" width="245" height="42"/>
+  <text class="body" x="142" y="617">Command line for scripts</text>
+  <rect class="chip-blue" x="120" y="645" width="245" height="42"/>
+  <text class="body" x="142" y="672">Coding assistant for automation</text>
+
+  <!-- Shared engine -->
+  <rect class="box-strong" x="500" y="250" width="420" height="300"/>
+  <circle class="num" cx="535" cy="288" r="18"/>
+  <text class="step" x="530" y="293">3</text>
+  <text class="h2" x="565" y="296">Shared factory engine</text>
+  <text class="body" x="535" y="345">The same engine is used by the</text>
+  <text class="body" x="535" y="371">console, command line, and coding</text>
+  <text class="body" x="535" y="397">assistant.</text>
+  <rect class="chip" x="535" y="430" width="330" height="38"/>
+  <text class="small" x="555" y="454">Creates a step-by-step build plan</text>
+  <rect class="chip" x="535" y="478" width="330" height="38"/>
+  <text class="small" x="555" y="502">Runs generation, checks, and repairs</text>
+  <rect class="chip" x="535" y="526" width="330" height="38"/>
+  <text class="small" x="555" y="550">Keeps run state, logs, and artifacts</text>
+
+  <!-- Inputs to engine -->
+  <rect class="box" x="500" y="625" width="420" height="140"/>
+  <text class="h2" x="535" y="668">Guides the factory uses</text>
+  <text class="body" x="535" y="705">Use-case catalog, skill instructions,</text>
+  <text class="body" x="535" y="731">project settings, and existing run state.</text>
+
+  <!-- Workspace -->
+  <rect class="box-strong" x="650" y="80" width="370" height="130"/>
+  <text class="h2" x="685" y="123">Generated agent workspace</text>
+  <text class="body" x="685" y="160">Agent code, local test data,</text>
+  <text class="body" x="685" y="186">automated checks, and release files.</text>
+
+  <!-- Cloud deploy -->
+  <rect class="box-cloud" x="1130" y="250" width="380" height="320"/>
+  <circle class="num-cloud" cx="1165" cy="288" r="18"/>
+  <text class="step" x="1160" y="293">4</text>
+  <text class="h2" x="1195" y="296">Cloud deployment</text>
+  <text class="body" x="1165" y="345">The factory promotes a checked</text>
+  <text class="body" x="1165" y="371">workspace into your cloud project.</text>
+  <rect class="chip-green" x="1165" y="405" width="290" height="38"/>
+  <text class="small" x="1185" y="429">Load agent data stores</text>
+  <rect class="chip-green" x="1165" y="453" width="290" height="38"/>
+  <text class="small" x="1185" y="477">Deploy the managed agent</text>
+  <rect class="chip-green" x="1165" y="501" width="290" height="38"/>
+  <text class="small" x="1185" y="525">Register tool connectors</text>
+
+  <!-- Live agent -->
+  <rect class="box-cloud" x="1130" y="640" width="380" height="155"/>
+  <circle class="num-cloud" cx="1165" cy="678" r="18"/>
+  <text class="step" x="1160" y="683">5</text>
+  <text class="h2" x="1195" y="686">Live agent</text>
+  <text class="body" x="1165" y="735">Published for users and connected</text>
+  <text class="body" x="1165" y="761">to data stores and tool connectors.</text>
+
+  <!-- Feedback -->
+  <rect class="box" x="500" y="815" width="420" height="120"/>
+  <text class="h2" x="535" y="858">Feedback loop</text>
+  <text class="body" x="535" y="895">Status, logs, artifacts, blockers, and</text>
+  <text class="body" x="535" y="921">repair notes return to the developer.</text>
+
+  <!-- Arrows -->
+  <path class="arrow" d="M400 310 C450 310, 450 400, 500 400"/>
+  <path class="arrow" d="M400 580 C455 580, 455 455, 500 455"/>
+  <path class="arrow" d="M710 625 C700 590, 700 575, 700 550"/>
+  <path class="arrow" d="M760 250 C760 230, 760 225, 760 210"/>
+  <path class="arrow" d="M1020 145 C1080 145, 1080 410, 1130 410"/>
+  <path class="arrow" d="M1320 570 C1320 600, 1320 610, 1320 640"/>
+  <path class="arrow-soft" d="M1130 720 C1010 720, 1010 875, 920 875"/>
+  <path class="arrow-soft" d="M500 875 C430 875, 430 580, 400 580"/>
+
+  <!-- Footer note -->
+  <text class="small" x="82" y="935">Plain-language labels are intentional: the code can have implementation details, but the architecture should be readable before learning the internal names.</text>
+</svg>

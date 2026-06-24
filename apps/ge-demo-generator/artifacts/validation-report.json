@@ -1,0 +1,32 @@
+{
+  "ok": false,
+  "checks": [
+    {
+      "id": "pyproject",
+      "ok": false,
+      "path": "pyproject.toml"
+    },
+    {
+      "id": "agent",
+      "ok": false,
+      "path": "app/agent.py"
+    },
+    {
+      "id": "tools",
+      "ok": false,
+      "path": "app/tools.py"
+    },
+    {
+      "id": "fixtures",
+      "ok": false,
+      "path": "fixtures/manifest.json"
+    },
+    {
+      "id": "tests",
+      "ok": true,
+      "path": "tests"
+    }
+  ],
+  "testExitCode": null,
+  "generatedAt": "2026-05-18T04:26:13.519Z"
+}

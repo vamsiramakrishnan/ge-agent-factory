@@ -1,0 +1,47 @@
+{
+  "id": "pagerduty_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into pagerduty collections.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "pagerduty"
+      ],
+      "realizedObjects": [
+        "incidents"
+      ],
+      "simulatorCollection": "incidents",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "pagerduty"
+      ],
+      "realizedObjects": [
+        "services"
+      ],
+      "simulatorCollection": "services",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "pagerduty"
+      ],
+      "realizedObjects": [
+        "escalation_policies"
+      ],
+      "simulatorCollection": "escalation_policies",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "pagerduty"
+      ],
+      "realizedObjects": [
+        "oncalls"
+      ],
+      "simulatorCollection": "oncalls",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

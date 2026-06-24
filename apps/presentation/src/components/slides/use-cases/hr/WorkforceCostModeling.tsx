@@ -1,0 +1,1171 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { Calculator, Download, BarChart, Target } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "n1", label: "Cost Analysis Request", lane: "human", type: "trigger" },
+    { id: "n2", label: "Fully-Loaded Model", lane: "agent", type: "action" },
+    { id: "n3", label: "Scenario Modeling", lane: "agent", type: "action" },
+    { id: "n4", label: "Financial Impact Report", lane: "agent", type: "output" },
+  ],
+  connections: [["n1", "n2"], ["n2", "n3"], ["n3", "n4"]],
+};
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Workday", description: "Compensation, benefits, headcount, org structure data", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "SAP BPC", description: "Financial planning data, budget allocations, cost center structures", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "BigQuery", description: "Cost modeling warehouse, scenario results, variance history", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Scenario reasoning, cost narrative generation, variance explanation", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Cost Data Aggregation", description: "Pull compensation, benefits, overhead, and contractor costs from Workday and SAP BPC. Build fully-loaded cost model with multi-currency normalization.", systems: ["Workday", "SAP BPC"], layer: "integration", dataIn: "Comp + benefits + overhead + contractor data", dataOut: "Fully-loaded cost model by employee and team" },
+    { label: "Fully-Loaded Modeling", description: "Calculate per-employee and per-team fully-loaded costs including indirect expenses, facilities, and technology allocation. Apply location-based cost adjustments.", systems: ["BigQuery"], layer: "ml", dataIn: "Cost data + allocation rules + location factors", dataOut: "Fully-loaded cost breakdown by BU × geography × level" },
+    { label: "Scenario Modeling", description: "Gemini runs what-if scenarios — hiring plans, RIF impacts, location shifts, promotion waves. Model multi-year budget projections with sensitivity analysis.", systems: ["Vertex AI (Gemini)", "BigQuery"], layer: "llm", dataIn: "Fully-loaded model + scenario parameters", dataOut: "Scenario projections with confidence intervals" },
+    { label: "Financial Impact Report", description: "Generate budget projections with variance analysis against current plan. Provide drill-down by BU, geography, and cost center with narrative explanations.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Scenario results + current budget plan", dataOut: "Financial impact report with variance narrative" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "CFO / CHRO agent for the Workforce Cost Modeling workflow",
+  primaryObjective: "Real-time modeling of fully-loaded costs under any scenario. Direct integration with financial planning and HR data APIs. so the CFO / CHRO can move the Cost visibility KPI.",
+  inScope: [
+    "Real-time modeling of fully-loaded costs under any scenario",
+    "Direct integration with financial planning and HR data APIs",
+    "Instant drill-down by BU, Geography, and Cost Center",
+  ],
+  outOfScope: [
+    "Final hiring, termination, or compensation decisions (HRBP/leadership retains authority)",
+    "Performance management adjudication and disciplinary action",
+    "Legal interpretation of employment law in ambiguous jurisdictions",
+  ],
+  toolIntents: [
+    {
+      name: "query_workday_employees",
+      kind: "query",
+      sourceSystemId: "workday",
+      description: "Retrieve employees from Workday for the Workforce Cost Modeling workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "employees_records",
+        "employees_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_sap_bpc_budget_lines",
+      kind: "query",
+      sourceSystemId: "sap_bpc",
+      description: "Retrieve budget lines from SAP BPC for the Workforce Cost Modeling workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "budget_lines_records",
+        "budget_lines_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_google_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "google_bigquery",
+      description: "Retrieve analytics events from Google BigQuery for the Workforce Cost Modeling workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "query_google_sheets_sheets",
+      kind: "query",
+      sourceSystemId: "google_sheets",
+      description: "Retrieve sheets from Google Sheets for the Workforce Cost Modeling workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "sheets_records",
+        "sheets_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_workforce_cost_modeling_policy_handbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "google_bigquery",
+      description: "Look up sections of the Workforce Cost Modeling Policy Handbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Cost visibility moved from Headcount only toward Fully-loaded",
+      mustCite: [
+        "workday.employees",
+        "sap_bpc.budget_lines",
+      ],
+      sourceSystemIds: [
+        "workday",
+        "sap_bpc",
+      ],
+    },
+    {
+      claim: "Scenario speed moved from Weeks toward Real-time",
+      mustCite: [
+        "workday.employees",
+        "sap_bpc.budget_lines",
+      ],
+      sourceSystemIds: [
+        "workday",
+        "sap_bpc",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Cost visibility regresses past the Headcount only baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "CFO / CHRO",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from Workday (and other named systems) entities.",
+    "Never bypass CFO / CHRO approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "workforce-cost-modeling-end-to-end",
+      prompt: "Run the Workforce Cost Modeling workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_workday_employees",
+        "query_sap_bpc_budget_lines",
+        "query_google_bigquery_analytics_events",
+        "query_google_sheets_sheets",
+        "lookup_workforce_cost_modeling_policy_handbook",
+      ],
+      mustReferenceEntities: [
+        "employees",
+        "budget_lines",
+        "analytics_events",
+        "sheets",
+      ],
+      mustCiteDocuments: [
+        "workforce-cost-modeling-policy-handbook",
+      ],
+      expectedActionOutcome: "CFO / CHRO receives a fully-cited recommendation; no external state change without explicit approval.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not act on single-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Workforce Cost Modeling so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "workday",
+      name: "Workday",
+      owns: [
+        "employees",
+        "positions",
+        "compensation_records",
+      ],
+      protocol: "Workday REST",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_workday_employees",
+        "query_workday_positions",
+        "query_workday_compensation_records",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "sap_bpc",
+      name: "SAP BPC",
+      owns: [
+        "budget_lines",
+        "forecast_versions",
+        "variance_records",
+      ],
+      protocol: "RFC/BAPI",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sap_bpc_budget_lines",
+        "query_sap_bpc_forecast_versions",
+        "query_sap_bpc_variance_records",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "google_bigquery",
+      name: "Google BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_google_bigquery_analytics_events",
+        "query_google_bigquery_historical_metrics",
+        "query_google_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "google_sheets",
+      name: "Google Sheets",
+      owns: [
+        "sheets",
+        "named_ranges",
+        "edit_history",
+      ],
+      protocol: "Workspace API",
+      localBacking: [
+        "cloud-storage",
+      ],
+      toolNames: [
+        "query_google_sheets_sheets",
+        "query_google_sheets_named_ranges",
+        "query_google_sheets_edit_history",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "employees",
+      sourceSystemId: "workday",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "department",
+          type: "enum",
+          values: [
+            "Finance",
+            "HR",
+            "IT",
+            "Marketing",
+            "Procurement",
+            "Engineering",
+            "Operations",
+          ],
+          required: true,
+        },
+        {
+          name: "region",
+          type: "enum",
+          values: [
+            "US",
+            "EMEA",
+            "APAC",
+            "LATAM",
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "on_leave",
+            "inactive",
+          ],
+          weights: [
+            0.85,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "level",
+          type: "enum",
+          values: [
+            "L3",
+            "L4",
+            "L5",
+            "L6",
+            "L7",
+          ],
+          required: true,
+        },
+        {
+          name: "hired_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "positions",
+      sourceSystemId: "workday",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "department",
+          type: "enum",
+          values: [
+            "Finance",
+            "HR",
+            "IT",
+            "Marketing",
+            "Procurement",
+            "Engineering",
+            "Operations",
+          ],
+          required: true,
+        },
+        {
+          name: "region",
+          type: "enum",
+          values: [
+            "US",
+            "EMEA",
+            "APAC",
+            "LATAM",
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "on_leave",
+            "inactive",
+          ],
+          weights: [
+            0.85,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "level",
+          type: "enum",
+          values: [
+            "L3",
+            "L4",
+            "L5",
+            "L6",
+            "L7",
+          ],
+          required: true,
+        },
+        {
+          name: "hired_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "compensation_records",
+      sourceSystemId: "workday",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "department",
+          type: "enum",
+          values: [
+            "Finance",
+            "HR",
+            "IT",
+            "Marketing",
+            "Procurement",
+            "Engineering",
+            "Operations",
+          ],
+          required: true,
+        },
+        {
+          name: "region",
+          type: "enum",
+          values: [
+            "US",
+            "EMEA",
+            "APAC",
+            "LATAM",
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "on_leave",
+            "inactive",
+          ],
+          weights: [
+            0.85,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "level",
+          type: "enum",
+          values: [
+            "L3",
+            "L4",
+            "L5",
+            "L6",
+            "L7",
+          ],
+          required: true,
+        },
+        {
+          name: "hired_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "budget_lines",
+      sourceSystemId: "sap_bpc",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "cost_center",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "month",
+            "quarter",
+            "year",
+          ],
+          required: true,
+        },
+        {
+          name: "budget_amount",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "actual_amount",
+          type: "number",
+          min: 0,
+          max: 6000000,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -100,
+          max: 100,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "scenario",
+          type: "enum",
+          values: [
+            "baseline",
+            "stretch",
+            "downside",
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "forecast_versions",
+      sourceSystemId: "sap_bpc",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "cost_center",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "month",
+            "quarter",
+            "year",
+          ],
+          required: true,
+        },
+        {
+          name: "budget_amount",
+          type: "number",
+          min: 10000,
+          max: 5000000,
+          required: true,
+        },
+        {
+          name: "actual_amount",
+          type: "number",
+          min: 0,
+          max: 6000000,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -100,
+          max: 100,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "scenario",
+          type: "enum",
+          values: [
+            "baseline",
+            "stretch",
+            "downside",
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "variance_records",
+      sourceSystemId: "sap_bpc",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "google_bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "google_bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "google_bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "sheets",
+      sourceSystemId: "google_sheets",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "named_ranges",
+      sourceSystemId: "google_sheets",
+      datastore: "alloydb",
+      rowCount: 30,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "edit_history",
+      sourceSystemId: "google_sheets",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "sheet_id",
+          type: "ref",
+          ref: "sheets.id",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "edit_history.sheet_id",
+      to: "sheets.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "workforce-cost-modeling-policy-handbook",
+      sourceSystemId: "google_bigquery",
+      type: "policy",
+      title: "Workforce Cost Modeling Policy Handbook",
+      requiredSections: [
+        "Eligibility and scope",
+        "Workflow steps",
+        "Manager responsibilities",
+        "Compliance and audit",
+        "Sensitive-data handling",
+      ],
+      linkedEntities: [
+        "employees",
+        "positions",
+        "compensation_records",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "eligibility",
+        "workflow",
+        "compliance",
+        "sensitive-data",
+      ],
+    },
+  ],
+  apis: [],
+  anomalies: [
+    {
+      id: "workforce-cost-modeling-baseline-gap",
+      description: "Seed a realistic gap where Cost visibility sits between Headcount only and Fully-loaded, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "employees",
+        "positions",
+      ],
+      discoveryPath: [
+        "Inspect Workday records for the affected entities",
+        "Compare against SAP BPC historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next CFO / CHRO action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "workforce_cost_modeling",
+      schemas: [
+        "workday",
+        "sap_bpc",
+        "google_sheets",
+      ],
+    },
+    bigquery: {
+      dataset: "hr_workforce_cost_modeling",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "workforce-cost-modeling-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "workforce-cost-modeling-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Workforce Cost Modeling workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const WorkforceCostModeling = () => (
+  <UseCaseSlide
+    triggerType="chat"
+    swimlane={swimlane}
+    title="Workforce Cost Modeling"
+    subtitle="A-1003 • People Analytics"
+    icon={Calculator}
+    domainId="domain-10"
+    layer="Layer 3: Custom ADK"
+    persona="CFO / CHRO"
+    systems={["Workday", "SAP BPC", "Google BigQuery", "Google Sheets"]}
+    kpis={[
+      { label: "Cost visibility", before: "Headcount only", after: "Fully-loaded" },
+      { label: "Scenario speed", before: "Weeks", after: "Real-time" },
+      { label: "Budget accuracy", before: "+/-10%", after: "+/-2%" }
+    ]}
+    statusQuo={[
+      "Fully-loaded cost modeling done in complex, fragile spreadsheets.",
+      "Ad-hoc requests take days or weeks; multi-currency is difficult.",
+      "Budget variance analysis is retrospective and labor-intensive."
+    ]}
+    agentification={[
+      "Real-time modeling of fully-loaded costs under any scenario.",
+      "Direct integration with financial planning and HR data APIs.",
+      "Instant drill-down by BU, Geography, and Cost Center."
+    ]}
+    architecture={architecture}
+    flow={[
+      { label: "Cost Data", icon: Download, description: "Comp, benefits, overhead, contractor costs aggregated.", trigger: "On-demand", systems: ["HRIS", "Finance"] },
+      { label: "Fully-Loaded Model", icon: Calculator, description: "Per-employee and per-team fully-loaded costs calculated.", systems: ["Gemini"], integration: "ADK" },
+      { label: "Scenario Modeling", icon: BarChart, description: "What-if scenarios: hiring, RIF, location shifts." },
+      { label: "Financial Impact", icon: Target, description: "Budget projections with variance analysis.", output: "Cost Model" }
+    ]}
+  />
+);

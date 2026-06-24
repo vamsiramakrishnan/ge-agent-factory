@@ -1,0 +1,1207 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { CheckCircle, Download, RefreshCw, Shield, FileText } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "n1", label: "Post-Run Data", lane: "system", type: "trigger" },
+    { id: "n2", label: "Reconciliation", lane: "agent", type: "action" },
+    { id: "n3", label: "Compliance Validation", lane: "agent", type: "action" },
+    { id: "n4", label: "Payroll Mgr Signs Off", lane: "human", type: "hitl" },
+    { id: "n5", label: "Audit Package", lane: "agent", type: "output" },
+  ],
+  connections: [["n1", "n2"], ["n2", "n3"], ["n3", "n4"], ["n4", "n5"]],
+};
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "Workday", description: "Payroll run results, employee compensation records", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "ADP", description: "Payroll processing data, tax filings, GL entries", direction: "read", protocol: "REST API", category: "erp" },
+    { system: "BigQuery", description: "Reconciliation warehouse, variance history, compliance rules", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Variance root cause analysis, compliance narrative generation", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Post-Run Collection", description: "Collect payroll run results and GL entries from ADP. Cross-reference with Workday compensation records and benefits deductions for complete reconciliation dataset.", systems: ["ADP", "Workday"], layer: "integration", dataIn: "Payroll run output + GL entries + HRIS records", dataOut: "Reconciliation dataset with line-by-line mapping" },
+    { label: "Variance Detection", description: "Perform line-by-line reconciliation comparing payroll output to expected values. Detect variances in gross pay, deductions, taxes, and net pay with root cause classification.", systems: ["BigQuery"], layer: "ml", dataIn: "Reconciliation dataset + expected values", dataOut: "Variance report with root cause classification" },
+    { label: "Compliance Validation", description: "Validate multi-jurisdiction tax compliance, regulatory withholding rules, and filing deadlines. Gemini generates compliance narrative with risk assessment for each jurisdiction.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Variance report + regulatory rules by jurisdiction", dataOut: "Compliance validation report with risk flags" },
+    { label: "Audit Package", description: "Generate complete audit trail with reconciliation report, variance explanations, and compliance attestation. Format for both internal review and external audit requirements.", systems: ["BigQuery", "Vertex AI (Gemini)"], layer: "llm", dataIn: "Compliance report + reconciliation data", dataOut: "Audit-ready package with sign-off workflow" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Payroll Manager agent for the Payroll Reconciliation & Compliance Agent workflow",
+  primaryObjective: "Automated payroll reconciliation with variance detection and root cause analysis. Multi-jurisdiction compliance validation engine with regulatory update tracking. so the Payroll Manager can move the Reconciliation time KPI.",
+  inScope: [
+    "Automated payroll reconciliation with variance detection and root cause analysis",
+    "Multi-jurisdiction compliance validation engine with regulatory update tracking",
+    "Continuous audit trail with instant report generation for internal and external audits",
+  ],
+  outOfScope: [
+    "Final hiring, termination, or compensation decisions (HRBP/leadership retains authority)",
+    "Performance management adjudication and disciplinary action",
+    "Legal interpretation of employment law in ambiguous jurisdictions",
+  ],
+  toolIntents: [
+    {
+      name: "query_adp_adp_records",
+      kind: "query",
+      sourceSystemId: "adp",
+      description: "Retrieve adp records from ADP for the Payroll Reconciliation & Compliance Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "adp_records_records",
+        "adp_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_workday_employees",
+      kind: "query",
+      sourceSystemId: "workday",
+      description: "Retrieve employees from Workday for the Payroll Reconciliation & Compliance Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "employees_records",
+        "employees_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_google_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "google_bigquery",
+      description: "Retrieve analytics events from Google BigQuery for the Payroll Reconciliation & Compliance Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "query_tax_systems_tax_systems_records",
+      kind: "query",
+      sourceSystemId: "tax_systems",
+      description: "Retrieve tax systems records from Tax Systems for the Payroll Reconciliation & Compliance Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "tax_systems_records_records",
+        "tax_systems_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_payroll_reconciliation_compliance_agent_policy_handbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "google_bigquery",
+      description: "Look up sections of the Payroll Reconciliation & Compliance Agent Policy Handbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_adp_update",
+      kind: "action",
+      sourceSystemId: "adp",
+      description: "Execute the update step in ADP after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Reconciliation time moved from 3 days toward 2 hours",
+      mustCite: [
+        "adp.adp_records",
+        "workday.employees",
+      ],
+      sourceSystemIds: [
+        "adp",
+        "workday",
+      ],
+    },
+    {
+      claim: "Variance detection moved from Manual spot-check toward 100% automated",
+      mustCite: [
+        "adp.adp_records",
+        "workday.employees",
+      ],
+      sourceSystemIds: [
+        "adp",
+        "workday",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Reconciliation time regresses past the 3 days baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Payroll Manager",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed update action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from ADP (and other named systems) entities.",
+    "Never bypass Payroll Manager approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "payroll-reconciliation-compliance-agent-end-to-end",
+      prompt: "Run the Payroll Reconciliation & Compliance Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_adp_adp_records",
+        "query_workday_employees",
+        "query_google_bigquery_analytics_events",
+        "query_tax_systems_tax_systems_records",
+        "lookup_payroll_reconciliation_compliance_agent_policy_handbook",
+        "action_adp_update",
+      ],
+      mustReferenceEntities: [
+        "adp_records",
+        "employees",
+        "analytics_events",
+        "tax_systems_records",
+      ],
+      mustCiteDocuments: [
+        "payroll-reconciliation-compliance-agent-policy-handbook",
+      ],
+      expectedActionOutcome: "Action update executed against ADP, with audit-trail entry and Payroll Manager notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute update without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Payroll Reconciliation & Compliance Agent so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "adp",
+      name: "ADP",
+      owns: [
+        "adp_records",
+        "adp_events",
+        "adp_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_adp_adp_records",
+        "query_adp_adp_events",
+        "query_adp_adp_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "workday",
+      name: "Workday",
+      owns: [
+        "employees",
+        "positions",
+        "compensation_records",
+      ],
+      protocol: "Workday REST",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_workday_employees",
+        "query_workday_positions",
+        "query_workday_compensation_records",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "google_bigquery",
+      name: "Google BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_google_bigquery_analytics_events",
+        "query_google_bigquery_historical_metrics",
+        "query_google_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "tax_systems",
+      name: "Tax Systems",
+      owns: [
+        "tax_systems_records",
+        "tax_systems_events",
+        "tax_systems_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_tax_systems_tax_systems_records",
+        "query_tax_systems_tax_systems_events",
+        "query_tax_systems_tax_systems_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "adp_records",
+      sourceSystemId: "adp",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "adp_events",
+      sourceSystemId: "adp",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "adp_record_id",
+          type: "ref",
+          ref: "adp_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "adp_audit_trail",
+      sourceSystemId: "adp",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "employees",
+      sourceSystemId: "workday",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "department",
+          type: "enum",
+          values: [
+            "Finance",
+            "HR",
+            "IT",
+            "Marketing",
+            "Procurement",
+            "Engineering",
+            "Operations",
+          ],
+          required: true,
+        },
+        {
+          name: "region",
+          type: "enum",
+          values: [
+            "US",
+            "EMEA",
+            "APAC",
+            "LATAM",
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "on_leave",
+            "inactive",
+          ],
+          weights: [
+            0.85,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "level",
+          type: "enum",
+          values: [
+            "L3",
+            "L4",
+            "L5",
+            "L6",
+            "L7",
+          ],
+          required: true,
+        },
+        {
+          name: "hired_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "positions",
+      sourceSystemId: "workday",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "department",
+          type: "enum",
+          values: [
+            "Finance",
+            "HR",
+            "IT",
+            "Marketing",
+            "Procurement",
+            "Engineering",
+            "Operations",
+          ],
+          required: true,
+        },
+        {
+          name: "region",
+          type: "enum",
+          values: [
+            "US",
+            "EMEA",
+            "APAC",
+            "LATAM",
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "on_leave",
+            "inactive",
+          ],
+          weights: [
+            0.85,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "level",
+          type: "enum",
+          values: [
+            "L3",
+            "L4",
+            "L5",
+            "L6",
+            "L7",
+          ],
+          required: true,
+        },
+        {
+          name: "hired_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "compensation_records",
+      sourceSystemId: "workday",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "name",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "email",
+          type: "internet.email",
+          required: true,
+        },
+        {
+          name: "department",
+          type: "enum",
+          values: [
+            "Finance",
+            "HR",
+            "IT",
+            "Marketing",
+            "Procurement",
+            "Engineering",
+            "Operations",
+          ],
+          required: true,
+        },
+        {
+          name: "region",
+          type: "enum",
+          values: [
+            "US",
+            "EMEA",
+            "APAC",
+            "LATAM",
+          ],
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "on_leave",
+            "inactive",
+          ],
+          weights: [
+            0.85,
+            0.1,
+            0.05,
+          ],
+          required: true,
+        },
+        {
+          name: "level",
+          type: "enum",
+          values: [
+            "L3",
+            "L4",
+            "L5",
+            "L6",
+            "L7",
+          ],
+          required: true,
+        },
+        {
+          name: "hired_on",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "google_bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "google_bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "google_bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "tax_systems_records",
+      sourceSystemId: "tax_systems",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "tax_systems_events",
+      sourceSystemId: "tax_systems",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "tax_systems_record_id",
+          type: "ref",
+          ref: "tax_systems_records.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "tax_systems_audit_trail",
+      sourceSystemId: "tax_systems",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "adp_events.adp_record_id",
+      to: "adp_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "tax_systems_events.tax_systems_record_id",
+      to: "tax_systems_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "payroll-reconciliation-compliance-agent-policy-handbook",
+      sourceSystemId: "google_bigquery",
+      type: "policy",
+      title: "Payroll Reconciliation & Compliance Agent Policy Handbook",
+      requiredSections: [
+        "Eligibility and scope",
+        "Workflow steps",
+        "Manager responsibilities",
+        "Compliance and audit",
+        "Sensitive-data handling",
+      ],
+      linkedEntities: [
+        "adp_records",
+        "adp_events",
+        "adp_audit_trail",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "eligibility",
+        "workflow",
+        "compliance",
+        "sensitive-data",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "adp_update_api",
+      sourceSystemId: "adp",
+      method: "POST",
+      path: "/api/adp/update",
+      description: "Synchronous endpoint the agent calls to update in ADP after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "payroll-reconciliation-compliance-agent-baseline-gap",
+      description: "Seed a realistic gap where Reconciliation time sits between 3 days and 2 hours, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "adp_records",
+        "adp_events",
+      ],
+      discoveryPath: [
+        "Inspect ADP records for the affected entities",
+        "Compare against Workday historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Payroll Manager action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "payroll_reconciliation_compliance_agent",
+      schemas: [
+        "adp",
+        "workday",
+        "tax_systems",
+      ],
+    },
+    bigquery: {
+      dataset: "hr_payroll_reconciliation_compliance_agent",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "payroll-reconciliation-compliance-agent-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "payroll-reconciliation-compliance-agent-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Payroll Reconciliation & Compliance Agent workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const PayrollReconciliation = () => (
+  <UseCaseSlide
+    triggerType="scheduled"
+    swimlane={swimlane}
+    hitl={{ actor: "Payroll Manager", action: "Sign off reconciliation", description: "Agent performs line-by-line payroll reconciliation with variance detection and multi-jurisdiction compliance checks. Payroll Manager reviews and signs off before filing." }}
+    title="Payroll Reconciliation & Compliance Agent"
+    subtitle="A-806 • Payroll Processing"
+    icon={CheckCircle}
+    domainId="domain-8"
+    layer="Layer 3: Custom ADK"
+    persona="Payroll Manager"
+    systems={["ADP", "Workday", "Google BigQuery", "Tax Systems"]}
+    kpis={[
+      { label: "Reconciliation time", before: "3 days", after: "2 hours" },
+      { label: "Variance detection", before: "Manual spot-check", after: "100% automated" },
+      { label: "Audit prep", before: "2 weeks", after: "Instant" }
+    ]}
+    statusQuo={[
+      "Payroll reconciliation is manual and error-prone across pay cycles.",
+      "Multi-jurisdiction compliance checks are laborious and risk-laden.",
+      "Audit preparation takes weeks of gathering documentation and evidence."
+    ]}
+    agentification={[
+      "Automated payroll reconciliation with variance detection and root cause analysis.",
+      "Multi-jurisdiction compliance validation engine with regulatory update tracking.",
+      "Continuous audit trail with instant report generation for internal and external audits."
+    ]}
+    architecture={architecture}
+    flow={[
+      { label: "Post-Run Data", icon: Download, description: "Payroll run results and GL entries collected.", trigger: "Post-Payroll", systems: ["Payroll", "GL"] },
+      { label: "Reconciliation", icon: RefreshCw, description: "Line-by-line reconciliation with variance detection.", systems: ["Gemini"], integration: "ADK" },
+      { label: "Compliance Validation", icon: Shield, description: "Multi-jurisdiction tax and regulatory compliance checked." },
+      { label: "Audit Package", icon: FileText, description: "Complete audit trail with reconciliation report.", output: "Reconciliation Report" }
+    ]}
+  />
+);

@@ -1,0 +1,80 @@
+{
+  "id": "salesforce_marketing_cloud_schema",
+  "version": 1,
+  "collections": {
+    "leads": {
+      "primaryKey": "lead_id",
+      "fields": {
+        "lead_id": "string",
+        "name": "string",
+        "email": "string",
+        "status": "string",
+        "score": "string",
+        "source": "string",
+        "account_id": "string"
+      }
+    },
+    "accounts": {
+      "primaryKey": "account_id",
+      "fields": {
+        "account_id": "string",
+        "name": "string",
+        "industry": "string",
+        "segment": "string",
+        "status": "string"
+      }
+    },
+    "campaigns": {
+      "primaryKey": "campaign_id",
+      "fields": {
+        "campaign_id": "string",
+        "name": "string",
+        "status": "string",
+        "channel": "string",
+        "budget": "string",
+        "owner": "string"
+      }
+    },
+    "journeys": {
+      "primaryKey": "journey_id",
+      "fields": {
+        "journey_id": "string",
+        "campaign_id": "string",
+        "status": "string",
+        "audience_size": "string",
+        "activation_date": "string"
+      }
+    },
+    "email_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "lead_id": "string",
+        "campaign_id": "string",
+        "event_type": "string",
+        "status": "string",
+        "occurred_at": "string"
+      }
+    },
+    "segments": {
+      "primaryKey": "segment_id",
+      "fields": {
+        "segment_id": "string",
+        "name": "string",
+        "status": "string",
+        "criteria": "string",
+        "member_count": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string"
+      }
+    }
+  }
+}

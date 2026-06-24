@@ -1,0 +1,92 @@
+{
+  "id": "dbt_tools",
+  "version": 1,
+  "tools": [
+    {
+      "name": "search_datasets",
+      "description": "Search datasets in dbt.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "datasets"
+      }
+    },
+    {
+      "name": "get_dataset",
+      "description": "Get one dataset in dbt.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "dataset_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "datasets",
+        "primaryKey": "dataset_id"
+      }
+    },
+    {
+      "name": "submit_dataset_update",
+      "description": "Submit an update to one dataset in dbt.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataset_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "dataset_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "datasets",
+        "primaryKey": "dataset_id"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List dbt simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

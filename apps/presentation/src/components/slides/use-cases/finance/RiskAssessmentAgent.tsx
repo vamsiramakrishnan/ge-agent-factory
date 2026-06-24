@@ -1,0 +1,806 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { Target, Database, BarChart3, CheckCircle, Layers } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "Annual Risk Cycle", lane: "system", type: "trigger" },
+    { id: "a1", label: "Risk Data Aggregation", lane: "agent", type: "action" },
+    { id: "a2", label: "Signal Synthesis", lane: "agent", type: "action" },
+    { id: "a3", label: "Risk Heat Map", lane: "agent", type: "output" },
+    { id: "h1", label: "CAE Approves Plan", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Input Aggregation", icon: Database, description: "Collect risk inputs from surveys, financial indicators, operational metrics, and compliance signals.", trigger: "Annual", systems: ["AuditBoard", "BigQuery"] },
+  { label: "Risk Scoring", icon: BarChart3, description: "Score risks across likelihood and impact dimensions with correlation analysis and peer benchmarking.", systems: ["BigQuery", "Vertex AI"], integration: "ADK" },
+  { label: "Signal Synthesis", icon: Layers, description: "Gemini synthesizes quantitative risk scores with qualitative signals to generate enterprise risk narrative.", systems: ["Vertex AI"] },
+  { label: "CAE Approval", icon: CheckCircle, description: "Chief Audit Executive reviews risk heat map and approves the annual audit plan based on risk priorities.", output: "Enterprise Risk Assessment & Audit Plan" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "AuditBoard", description: "Risk register, survey responses, prior assessments", direction: "bidirectional", protocol: "REST API", category: "erp" },
+    { system: "BigQuery", description: "Financial KRIs, operational metrics, compliance data", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Multi-signal risk synthesis, audit plan narrative generation", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "Risk Input Collection", description: "Aggregate risk survey responses, financial risk indicators (DSO, margins, cash flow trends), operational incident data, and external risk signals.", systems: ["AuditBoard", "BigQuery"], layer: "integration", dataIn: "Survey responses + financial/operational metrics", dataOut: "Structured risk input dataset" },
+    { label: "Quantitative Scoring", description: "Score each risk across likelihood and impact dimensions. Run correlation analysis to identify risk clusters. Benchmark against industry peer data.", systems: ["BigQuery"], layer: "ml", dataIn: "Structured risk inputs", dataOut: "Scored risk register with heat map data" },
+    { label: "Risk Narrative Synthesis", description: "Gemini synthesizes quantitative scores with qualitative signals — pending litigation, regulatory changes, market shifts — into a coherent enterprise risk narrative with audit plan recommendations.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Scored risks + qualitative signals", dataOut: "Enterprise risk assessment with audit plan priorities" },
+    { label: "Plan Distribution", description: "Generate risk heat map visualization and recommended audit plan. Route to CAE for approval and audit committee presentation.", systems: ["AuditBoard"], layer: "integration", dataIn: "Approved risk assessment", dataOut: "Annual audit plan" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Chief Audit Executive agent for the Risk Assessment Agent workflow",
+  primaryObjective: "Gemini synthesizes quantitative risk scores with qualitative signals from multiple data sources. Correlation analysis identifies risk clusters that individual assessments miss. so the Chief Audit Executive can move the Risk assessment cycle KPI.",
+  inScope: [
+    "Gemini synthesizes quantitative risk scores with qualitative signals from multiple data sources",
+    "Correlation analysis identifies risk clusters that individual assessments miss",
+    "Dynamic risk scoring adapts to emerging threats — regulatory changes, market shifts, operational incidents",
+  ],
+  outOfScope: [
+    "Final sign-off on materially significant journal entries (Controller retains authority)",
+    "Restatement of prior-period filings",
+    "Tax position changes that require external advisor review",
+  ],
+  toolIntents: [
+    {
+      name: "query_auditboard_auditboard_records",
+      kind: "query",
+      sourceSystemId: "auditboard",
+      description: "Retrieve auditboard records from AuditBoard for the Risk Assessment Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "auditboard_records_records",
+        "auditboard_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the Risk Assessment Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "query_finance_3_finance_3_records",
+      kind: "query",
+      sourceSystemId: "finance_3",
+      description: "Retrieve finance 3 records from FINANCE 3 for the Risk Assessment Agent workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "finance_3_records_records",
+        "finance_3_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_risk_assessment_agent_controls_playbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the Risk Assessment Agent Controls Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Risk assessment cycle moved from 8-12 weeks toward 2-3 weeks",
+      mustCite: [
+        "auditboard.auditboard_records",
+        "bigquery.analytics_events",
+      ],
+      sourceSystemIds: [
+        "auditboard",
+        "bigquery",
+      ],
+    },
+    {
+      claim: "Risk signals analyzed moved from 5-10 manual sources toward 50+ automated sources",
+      mustCite: [
+        "auditboard.auditboard_records",
+        "bigquery.analytics_events",
+      ],
+      sourceSystemIds: [
+        "auditboard",
+        "bigquery",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Risk assessment cycle regresses past the 8-12 weeks baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Chief Audit Executive",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from AuditBoard (and other named systems) entities.",
+    "Never bypass Chief Audit Executive approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "risk-assessment-agent-end-to-end",
+      prompt: "Run the Risk Assessment Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_auditboard_auditboard_records",
+        "query_bigquery_analytics_events",
+        "query_finance_3_finance_3_records",
+        "lookup_risk_assessment_agent_controls_playbook",
+      ],
+      mustReferenceEntities: [
+        "auditboard_records",
+        "analytics_events",
+        "finance_3_records",
+      ],
+      mustCiteDocuments: [
+        "risk-assessment-agent-controls-playbook",
+      ],
+      expectedActionOutcome: "Chief Audit Executive receives a fully-cited recommendation; no external state change without explicit approval.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not act on single-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for Risk Assessment Agent so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "auditboard",
+      name: "AuditBoard",
+      owns: [
+        "auditboard_records",
+        "auditboard_events",
+        "auditboard_audit_trail",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_auditboard_auditboard_records",
+        "query_auditboard_auditboard_events",
+        "query_auditboard_auditboard_audit_trail",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "finance_3",
+      name: "FINANCE 3",
+      owns: [
+        "finance_3_records",
+        "finance_3_events",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_finance_3_records",
+      ],
+      evidence: [
+        "source_system_record",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "auditboard_records",
+      sourceSystemId: "auditboard",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "auditboard_events",
+      sourceSystemId: "auditboard",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "auditboard_audit_trail",
+      sourceSystemId: "auditboard",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "finance_3_records",
+      sourceSystemId: "finance_3",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "finance_3_events",
+      sourceSystemId: "finance_3",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "finance_3_record_id",
+          type: "ref",
+          ref: "finance_3_records.id",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "finance_3_events.finance_3_record_id",
+      to: "finance_3_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "risk-assessment-agent-controls-playbook",
+      sourceSystemId: "bigquery",
+      type: "policy",
+      title: "Risk Assessment Agent Controls Playbook",
+      requiredSections: [
+        "Workflow scope",
+        "Materiality thresholds",
+        "Escalation triggers",
+        "Audit evidence requirements",
+        "Quarter-end variations",
+      ],
+      linkedEntities: [
+        "auditboard_records",
+        "auditboard_events",
+        "auditboard_audit_trail",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "scope",
+        "materiality",
+        "escalation",
+        "audit-evidence",
+      ],
+    },
+  ],
+  apis: [],
+  anomalies: [
+    {
+      id: "risk-assessment-agent-baseline-gap",
+      description: "Seed a realistic gap where Risk assessment cycle sits between 8-12 weeks and 2-3 weeks, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "auditboard_records",
+        "auditboard_events",
+      ],
+      discoveryPath: [
+        "Inspect AuditBoard records for the affected entities",
+        "Compare against BigQuery historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Chief Audit Executive action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "risk_assessment_agent",
+      schemas: [
+        "auditboard",
+        "finance_3",
+      ],
+    },
+    bigquery: {
+      dataset: "finance_risk_assessment_agent",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "risk-assessment-agent-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "risk-assessment-agent-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the Risk Assessment Agent workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const RiskAssessmentAgent = () => (
+  <UseCaseSlide
+    title="Risk Assessment Agent"
+    subtitle="A-2604 • Internal Audit & Controls"
+    icon={Target}
+    domainId="domain-26"
+    layer="Layer 3: Custom ADK"
+    persona="Chief Audit Executive"
+    systems={["AuditBoard", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "Risk assessment cycle", before: "8-12 weeks", after: "2-3 weeks" },
+      { label: "Risk signals analyzed", before: "5-10 manual sources", after: "50+ automated sources" },
+      { label: "Audit plan coverage", before: "Risk-judgmental", after: "Data-driven prioritization" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "Chief Audit Executive", action: "Approve risk assessment and audit plan", description: "CAE validates the enterprise risk heat map and audit plan priorities before presenting to the audit committee." }}
+    statusQuo={[
+      "Risk assessments rely on subjective survey responses with limited data-driven validation.",
+      "Financial and operational risk signals analyzed in isolation without cross-functional correlation.",
+      "Audit plans based on historical precedent rather than dynamic risk indicators."
+    ]}
+    agentification={[
+      "Gemini synthesizes quantitative risk scores with qualitative signals from multiple data sources.",
+      "Correlation analysis identifies risk clusters that individual assessments miss.",
+      "Dynamic risk scoring adapts to emerging threats — regulatory changes, market shifts, operational incidents."
+    ]}
+  />
+);

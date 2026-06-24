@@ -1,0 +1,72 @@
+{
+  "name": "ap_aging_analyzer",
+  "domain": "finance",
+  "createdAt": "2026-06-11T08:59:39.878Z",
+  "steps": {
+    "init": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:39.878Z",
+      "name": "ap_aging_analyzer",
+      "domain": "finance"
+    },
+    "schema": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:39.885Z",
+      "tables": 9,
+      "derived": true
+    },
+    "generate": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:39.925Z",
+      "tables": 9,
+      "totalRows": 510,
+      "seed": 42
+    },
+    "tools": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:39.933Z",
+      "output": "/tmp/regen2/ap-aging-analyzer/app/tools.py",
+      "functions": 12,
+      "behaviorContract": "present",
+      "contractTools": 2,
+      "goldenEvals": 1,
+      "agentsCliEvalSet": "/tmp/regen2/ap-aging-analyzer/tests/eval/evalsets/ge_behavior_contract.evalset.json"
+    },
+    "test": {
+      "status": "done",
+      "completedAt": "2026-06-11T08:59:44.047Z",
+      "output": "/tmp/regen2/ap-aging-analyzer/tests/test_smoke.py",
+      "ran": true,
+      "passed": true,
+      "exitCode": 0
+    }
+  },
+  "currentStep": "test",
+  "useCase": {
+    "id": "ap-aging-analyzer",
+    "title": "AP Aging Analyzer",
+    "department": "finance",
+    "systems": [
+      "SAP S/4HANA FI",
+      "BigQuery",
+      "Looker"
+    ],
+    "kpis": [
+      {
+        "label": "Aging report time",
+        "before": "Half-day manual",
+        "after": "Auto-refreshed"
+      },
+      {
+        "label": "Dispute visibility",
+        "before": "Spreadsheet tracking",
+        "after": "Real-time with context"
+      },
+      {
+        "label": "Cash forecast accuracy",
+        "before": "Rough estimate",
+        "after": "Data-driven projection"
+      }
+    ]
+  }
+}

@@ -1,0 +1,188 @@
+{
+  "id": "bigquery_materialization",
+  "version": 1,
+  "collections": {
+    "datasets": {
+      "primaryKey": "dataset_id",
+      "fieldAliases": {
+        "dataset_id": [
+          "dataset_id",
+          "id",
+          "source_record_id"
+        ],
+        "project_id": [
+          "project_id",
+          "id",
+          "source_record_id"
+        ],
+        "location": [
+          "location",
+          "id",
+          "source_record_id"
+        ],
+        "friendly_name": [
+          "friendly_name",
+          "id",
+          "source_record_id"
+        ],
+        "default_table_expiration_ms": [
+          "default_table_expiration_ms",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    },
+    "tables": {
+      "primaryKey": "table_id",
+      "fieldAliases": {
+        "table_id": [
+          "table_id",
+          "id",
+          "source_record_id"
+        ],
+        "dataset_id": [
+          "dataset_id",
+          "id",
+          "source_record_id"
+        ],
+        "project_id": [
+          "project_id",
+          "id",
+          "source_record_id"
+        ],
+        "type": [
+          "type",
+          "id",
+          "source_record_id"
+        ],
+        "num_rows": [
+          "num_rows",
+          "id",
+          "source_record_id"
+        ],
+        "num_bytes": [
+          "num_bytes",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    },
+    "jobs": {
+      "primaryKey": "job_id",
+      "fieldAliases": {
+        "job_id": [
+          "job_id",
+          "id",
+          "source_record_id"
+        ],
+        "project_id": [
+          "project_id",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "job_type": [
+          "job_type",
+          "id",
+          "source_record_id"
+        ],
+        "user_email": [
+          "user_email",
+          "id",
+          "source_record_id"
+        ],
+        "total_bytes_processed": [
+          "total_bytes_processed",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "PENDING"
+      }
+    },
+    "routines": {
+      "primaryKey": "routine_id",
+      "fieldAliases": {
+        "routine_id": [
+          "routine_id",
+          "id",
+          "source_record_id"
+        ],
+        "dataset_id": [
+          "dataset_id",
+          "id",
+          "source_record_id"
+        ],
+        "project_id": [
+          "project_id",
+          "id",
+          "source_record_id"
+        ],
+        "routine_type": [
+          "routine_type",
+          "id",
+          "source_record_id"
+        ],
+        "language": [
+          "language",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "actor": [
+          "actor",
+          "id",
+          "source_record_id"
+        ],
+        "role": [
+          "role",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ],
+        "timestamp": [
+          "timestamp",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

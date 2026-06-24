@@ -1,0 +1,61 @@
+id,period,metric_name,value,variance_pct,computed_at,historical_metric_id
+ID-0001,week,risk_exposure_score,101.88,-15.1,2026-05-25,ID-0001
+ID-0002,month,control_exception_rate,128.23,-6.4,2026-05-26,ID-0002
+ID-0003,quarter,close_cycle_days,158.16,2.7,2026-05-27,ID-0003
+ID-0004,week,auto_certified_accounts,190.32,11.3,2026-05-28,ID-0004
+ID-0005,month,ultra conforto ustulo,159.61,-15.1,2026-05-29,ID-0005
+ID-0006,quarter,curtus asperiores suffoco,191.88,-6.4,2026-05-30,ID-0006
+ID-0007,week,adhuc comminor laborum,227.99,2.7,2026-05-25,ID-0007
+ID-0008,month,super via eum,266.01,11.3,2026-05-26,ID-0008
+ID-0009,quarter,cognatus exercitationem magni,217.34,-15.1,2026-05-27,ID-0009
+ID-0010,week,volubilis suscipio vesco,255.53,-6.4,2026-05-28,ID-0010
+ID-0011,month,qui pauper depraedor,297.83,2.7,2026-05-29,ID-0011
+ID-0012,quarter,tibi audax ago,341.69,11.3,2026-05-30,ID-0012
+ID-0013,week,labore conor vicissitudo,275.08,-15.1,2026-05-25,ID-0013
+ID-0014,month,adfectus demo condico,319.18,-6.4,2026-05-26,ID-0014
+ID-0015,quarter,deorsum ait voluptas,367.67,2.7,2026-05-27,ID-0015
+ID-0016,week,curto aestas amissio,417.38,11.3,2026-05-28,ID-0016
+ID-0017,month,tenuis aduro neque,332.81,-15.1,2026-05-29,ID-0017
+ID-0018,quarter,angulus adipisci debitis,382.82,-6.4,2026-05-30,ID-0018
+ID-0019,week,deduco nesciunt molestias,437.5,2.7,2026-05-25,ID-0019
+ID-0020,month,alveus tener voco,493.06,11.3,2026-05-26,ID-0020
+ID-0021,quarter,cinis quos defleo,390.54,-15.1,2026-05-27,ID-0021
+ID-0022,week,vesper adstringo depereo,446.47,-6.4,2026-05-28,ID-0022
+ID-0023,month,conicio ulterius laboriosam,507.34,2.7,2026-05-29,ID-0023
+ID-0024,quarter,cotidie pax ager,568.74,11.3,2026-05-30,ID-0024
+ID-0025,week,non tener cum,448.27,-15.1,2026-05-25,ID-0025
+ID-0026,month,apostolus collum baiulus,510.12,-6.4,2026-05-26,ID-0026
+ID-0027,quarter,auctus temperantia demitto,577.17,2.7,2026-05-27,ID-0027
+ID-0028,week,delicate arceo vorax,644.43,11.3,2026-05-28,ID-0028
+ID-0029,month,cursim maiores accusator,506,-15.1,2026-05-29,ID-0029
+ID-0030,quarter,aiunt fugiat vereor,573.77,-6.4,2026-05-30,ID-0030
+ID-0031,week,tantillus vilis spes,647.01,2.7,2026-05-25,ID-0031
+ID-0032,month,substantia teneo vetus,720.11,11.3,2026-05-26,ID-0032
+ID-0033,quarter,crepusculum cimentarius cogo,563.74,-15.1,2026-05-27,ID-0033
+ID-0034,week,cotidie thorax dapifer,637.42,-6.4,2026-05-28,ID-0034
+ID-0035,month,comparo temperantia cruentus,716.85,2.7,2026-05-29,ID-0035
+ID-0036,quarter,adsum coepi demitto,795.79,11.3,2026-05-30,ID-0036
+ID-0037,week,nostrum vado argentum,621.47,-15.1,2026-05-25,ID-0037
+ID-0038,month,cunctatio despecto absens,701.06,-6.4,2026-05-26,ID-0038
+ID-0039,quarter,volva curiositas desipio,786.68,2.7,2026-05-27,ID-0039
+ID-0040,week,urbs defluo demo,871.48,11.3,2026-05-28,ID-0040
+ID-0041,month,urbanus denique aegrotatio,679.2,-15.1,2026-05-29,ID-0041
+ID-0042,quarter,trepide labore adopto,764.71,-6.4,2026-05-30,ID-0042
+ID-0043,week,umquam cogo aurum,856.52,2.7,2026-05-25,ID-0043
+ID-0044,month,calcar aspernatur concedo,947.16,11.3,2026-05-26,ID-0044
+ID-0045,quarter,atrox vallum degero,736.93,-15.1,2026-05-27,ID-0045
+ID-0046,week,suppellex cilicium audacia,828.36,-6.4,2026-05-28,ID-0046
+ID-0047,month,delibero pecto cursus,926.35,2.7,2026-05-29,ID-0047
+ID-0048,quarter,varietas damnatio facilis,1022.85,11.3,2026-05-30,ID-0048
+ID-0049,week,condico possimus vester,794.66,-15.1,2026-05-25,ID-0049
+ID-0050,month,vitae aranea nisi,892.01,-6.4,2026-05-26,ID-0050
+ID-0051,quarter,adopto nesciunt agnitio,996.19,2.7,2026-05-27,ID-0051
+ID-0052,week,comes aiunt cognatus,1098.53,11.3,2026-05-28,ID-0052
+ID-0053,month,verbera absconditus tollo,852.4,-15.1,2026-05-29,ID-0053
+ID-0054,quarter,fugiat accedo causa,955.66,-6.4,2026-05-30,ID-0054
+ID-0055,week,civis fugiat expedita,1066.03,2.7,2026-05-25,ID-0055
+ID-0056,month,deripio pax calcar,1174.21,11.3,2026-05-26,ID-0056
+ID-0057,quarter,perferendis correptius ter,910.13,-15.1,2026-05-27,ID-0057
+ID-0058,week,terminatio denuo thalassinus,1019.3,-6.4,2026-05-28,ID-0058
+ID-0059,month,caelestis desparatus cavus,1135.86,2.7,2026-05-29,ID-0059
+ID-0060,quarter,volaticus molestias urbanus,1249.9,11.3,2026-05-30,ID-0060

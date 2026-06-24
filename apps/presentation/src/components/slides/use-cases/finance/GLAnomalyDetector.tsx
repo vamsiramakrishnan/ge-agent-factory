@@ -1,0 +1,915 @@
+import React from "react";
+import { UseCaseSlide } from "../../../agent/UseCaseSlide";
+import { FlowStep } from "../../../agent/ProcessFlow";
+import { SwimlaneFlow } from "../../../agent/SwimlaneFlow";
+import { AgentArchitecture, UseCaseGenerationSpec, AgentBehaviorContract} from "../../../../types/architecture";
+import { AlertTriangle, Database, Search, Shield, FileText } from "lucide-react";
+
+const swimlane: SwimlaneFlow = {
+  nodes: [
+    { id: "s1", label: "GL Posting Event", lane: "system", type: "trigger" },
+    { id: "a1", label: "Anomaly Scanning", lane: "agent", type: "action" },
+    { id: "a2", label: "Context Investigation", lane: "agent", type: "action" },
+    { id: "a3", label: "Alert Routing", lane: "agent", type: "output" },
+    { id: "h1", label: "Auditor Reviews", lane: "human", type: "hitl" },
+  ],
+  connections: [["s1", "a1"], ["a1", "a2"], ["a2", "a3"], ["a3", "h1"]],
+};
+
+const flow: FlowStep[] = [
+  { label: "Continuous Scan", icon: Database, description: "Scan GL postings for anomalies using statistical and Benford's Law analysis.", trigger: "Daily/Continuous", systems: ["SAP S/4HANA FI", "BigQuery"] },
+  { label: "Pattern Detection", icon: Search, description: "Detect unusual posting amounts, timing, account combinations, and duplicates.", systems: ["BigQuery"], integration: "ADK" },
+  { label: "Context Investigation", icon: Shield, description: "Investigate flagged anomalies by reading transaction context and memo fields.", systems: ["Vertex AI"] },
+  { label: "Alert Delivery", icon: FileText, description: "Route investigated anomalies to appropriate reviewers with context.", output: "Anomaly Alert" },
+];
+
+const architecture: AgentArchitecture = {
+  connections: [
+    { system: "SAP S/4HANA FI", description: "GL postings, transaction details, memo fields, user data", direction: "read", protocol: "RFC/BAPI", category: "erp" },
+    { system: "BigQuery", description: "Historical posting patterns, Benford distributions, anomaly models", direction: "bidirectional", protocol: "BigQuery SQL", category: "analytics" },
+    { system: "Vertex AI (Gemini)", description: "Anomaly context investigation, escalation recommendation", direction: "bidirectional", protocol: "gRPC", category: "ai" },
+  ],
+  pipeline: [
+    { label: "GL Posting Ingestion", description: "Continuously ingest GL postings from SAP. Capture posting amount, account combination, user, timestamp, and memo field for analysis.", systems: ["SAP S/4HANA FI"], layer: "integration", dataIn: "Real-time GL postings", dataOut: "Structured posting data for analysis" },
+    { label: "Statistical Anomaly Detection", description: "Apply Benford's Law analysis on transaction distributions, detect unusual posting amounts and timing, identify duplicate entries, and flag abnormal account combinations.", systems: ["BigQuery"], layer: "ml", dataIn: "Posting data + historical patterns", dataOut: "Flagged anomalies with severity scores" },
+    { label: "Context Investigation", description: "Gemini investigates flagged anomalies by reading transaction memos, approval documentation, and posting context. Determines whether anomaly is legitimate or requires escalation.", systems: ["Vertex AI (Gemini)"], layer: "llm", dataIn: "Flagged anomalies + transaction context", dataOut: "Investigated anomalies with escalation recommendation" },
+    { label: "Alert Routing", description: "Route investigated anomalies to appropriate reviewers — routine items to GL accountants, suspicious patterns to Internal Audit.", systems: ["Email", "ServiceNow"], layer: "integration", dataIn: "Investigated anomalies", dataOut: "Routed alerts with context" },
+  ],
+};
+
+
+const behaviorContract: AgentBehaviorContract = {
+  role: "Controller / Internal Audit agent for the GL Anomaly Detector workflow",
+  primaryObjective: "Continuous scanning of 100% of GL postings with Benford's Law and statistical anomaly detection. Gemini investigates flagged anomalies by reading transaction context before escalating. so the Controller / Internal Audit can move the Detection latency KPI.",
+  inScope: [
+    "Continuous scanning of 100% of GL postings with Benford's Law and statistical anomaly detection",
+    "Gemini investigates flagged anomalies by reading transaction context before escalating",
+    "Same-day detection with intelligent routing — routine items to GL, suspicious patterns to Audit",
+  ],
+  outOfScope: [
+    "Final sign-off on materially significant journal entries (Controller retains authority)",
+    "Restatement of prior-period filings",
+    "Tax position changes that require external advisor review",
+  ],
+  toolIntents: [
+    {
+      name: "query_sap_s_4hana_fi_gl_entries",
+      kind: "query",
+      sourceSystemId: "sap_s_4hana_fi",
+      description: "Retrieve gl entries from SAP S/4HANA FI for the GL Anomaly Detector workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "gl_entries_records",
+        "gl_entries_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "query_bigquery_analytics_events",
+      kind: "query",
+      sourceSystemId: "bigquery",
+      description: "Retrieve analytics events from BigQuery for the GL Anomaly Detector workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "analytics_events_records",
+        "analytics_events_summary",
+      ],
+      evidenceEmitted: [
+        "sql_result",
+      ],
+    },
+    {
+      name: "query_finance_3_finance_3_records",
+      kind: "query",
+      sourceSystemId: "finance_3",
+      description: "Retrieve finance 3 records from FINANCE 3 for the GL Anomaly Detector workflow.",
+      requiredInputs: [
+        "lookup_key",
+        "date_range",
+      ],
+      produces: [
+        "finance_3_records_records",
+        "finance_3_records_summary",
+      ],
+      evidenceEmitted: [
+        "source_system_record",
+      ],
+    },
+    {
+      name: "lookup_gl_anomaly_detector_controls_playbook",
+      kind: "evidence_lookup",
+      sourceSystemId: "bigquery",
+      description: "Look up sections of the GL Anomaly Detector Controls Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+      requiredInputs: [
+        "section_anchor",
+      ],
+      produces: [
+        "document_section",
+        "citation_anchor",
+      ],
+      evidenceEmitted: [
+        "document_reference",
+      ],
+    },
+    {
+      name: "action_sap_s_4hana_fi_post",
+      kind: "action",
+      sourceSystemId: "sap_s_4hana_fi",
+      description: "Execute the post step in SAP S/4HANA FI after the agent has gathered evidence and validated escalation gates.",
+      requiredInputs: [
+        "target_id",
+        "rationale",
+      ],
+      produces: [
+        "action_id",
+        "audit_record_id",
+      ],
+      evidenceEmitted: [
+        "api_response",
+        "generated_audit_trail",
+      ],
+    },
+  ],
+  evidenceRequirements: [
+    {
+      claim: "Detection latency moved from Quarterly audit toward Same-day",
+      mustCite: [
+        "sap_s_4hana_fi.gl_entries",
+        "bigquery.analytics_events",
+      ],
+      sourceSystemIds: [
+        "sap_s_4hana_fi",
+        "bigquery",
+      ],
+    },
+    {
+      claim: "False positive rate moved from N/A (no scanning) toward < 10%",
+      mustCite: [
+        "sap_s_4hana_fi.gl_entries",
+        "bigquery.analytics_events",
+      ],
+      sourceSystemIds: [
+        "sap_s_4hana_fi",
+        "bigquery",
+      ],
+    },
+  ],
+  escalationRules: [
+    {
+      trigger: "Detection latency regresses past the Quarterly audit baseline by more than 20%",
+      action: "escalate_to_human",
+      handoffTarget: "Controller / Internal Audit",
+      rationale: "Significant regressions need human judgment before automated remediation runs against production records.",
+    },
+    {
+      trigger: "Source-system evidence is incomplete or stale (>24h) for any required entity",
+      action: "request_more_info",
+      rationale: "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility.",
+    },
+    {
+      trigger: "Proposed post action lacks supporting evidence from at least two systems",
+      action: "refuse",
+      rationale: "Single-system evidence is insufficient to authorize external state changes without manual review.",
+    },
+  ],
+  refusalRules: [
+    "Never fabricate metric values; only publish numbers derived from SAP S/4HANA FI (and other named systems) entities.",
+    "Never bypass Controller / Internal Audit approval on escalation triggers, even when confidence is high.",
+    "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+    "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+  ],
+  goldenEvals: [
+    {
+      id: "gl-anomaly-detector-end-to-end",
+      prompt: "Run the GL Anomaly Detector workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+      expectedToolCalls: [
+        "query_sap_s_4hana_fi_gl_entries",
+        "query_bigquery_analytics_events",
+        "query_finance_3_finance_3_records",
+        "lookup_gl_anomaly_detector_controls_playbook",
+        "action_sap_s_4hana_fi_post",
+      ],
+      mustReferenceEntities: [
+        "gl_entries",
+        "analytics_events",
+        "finance_3_records",
+      ],
+      mustCiteDocuments: [
+        "gl-anomaly-detector-controls-playbook",
+      ],
+      expectedActionOutcome: "Action post executed against SAP S/4HANA FI, with audit-trail entry and Controller / Internal Audit notified of outcomes.",
+      forbiddenBehaviors: [
+        "do not invent KPI numbers",
+        "do not skip the evidence_lookup step before any recommendation",
+        "do not execute post without two-system evidence",
+      ],
+    },
+  ],
+};
+
+const generationSpec: UseCaseGenerationSpec = {
+  version: 1,
+  rowPolicy: {
+    defaultRowsPerEntity: 50,
+    minimumRowsPerEntity: 25,
+    seed: 42,
+    rationale: "Row counts sized for GL Anomaly Detector so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse.",
+  },
+  sourceSystems: [
+    {
+      id: "sap_s_4hana_fi",
+      name: "SAP S/4HANA FI",
+      owns: [
+        "gl_entries",
+        "subledger_balances",
+        "open_items",
+      ],
+      protocol: "RFC/BAPI",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_sap_s_4hana_fi_gl_entries",
+        "query_sap_s_4hana_fi_subledger_balances",
+        "query_sap_s_4hana_fi_open_items",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "bigquery",
+      name: "BigQuery",
+      owns: [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates",
+      ],
+      protocol: "BigQuery SQL",
+      localBacking: [
+        "bigquery",
+      ],
+      toolNames: [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates",
+      ],
+      evidence: [
+        "source_system_record",
+        "generated_audit_trail",
+      ],
+    },
+    {
+      id: "finance_3",
+      name: "FINANCE 3",
+      owns: [
+        "finance_3_records",
+        "finance_3_events",
+      ],
+      protocol: "REST API",
+      localBacking: [
+        "alloydb",
+      ],
+      toolNames: [
+        "query_finance_3_records",
+      ],
+      evidence: [
+        "source_system_record",
+      ],
+    },
+  ],
+  entities: [
+    {
+      name: "gl_entries",
+      sourceSystemId: "sap_s_4hana_fi",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "subledger_balances",
+      sourceSystemId: "sap_s_4hana_fi",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "open_items",
+      sourceSystemId: "sap_s_4hana_fi",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "posting_date",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "account",
+          type: "enum",
+          values: [
+            "1000-Cash",
+            "2000-AP",
+            "2100-AR",
+            "3000-Revenue",
+            "4000-Expense",
+            "5000-COGS",
+          ],
+          required: true,
+        },
+        {
+          name: "amount",
+          type: "float",
+          min: -50000,
+          max: 50000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "currency",
+          type: "enum",
+          values: [
+            "USD",
+            "EUR",
+            "GBP",
+          ],
+          required: true,
+        },
+        {
+          name: "description",
+          type: "lorem.sentence",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "posted",
+            "pending",
+            "reversed",
+          ],
+          weights: [
+            0.8,
+            0.15,
+            0.05,
+          ],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "analytics_events",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "historical_metric_id",
+          type: "ref",
+          ref: "historical_metrics.id",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "historical_metrics",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "cached_aggregates",
+      sourceSystemId: "bigquery",
+      datastore: "bigquery",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "period",
+          type: "enum",
+          values: [
+            "day",
+            "week",
+            "month",
+            "quarter",
+          ],
+          required: true,
+        },
+        {
+          name: "metric_name",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "value",
+          type: "float",
+          min: 0,
+          max: 100000,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "variance_pct",
+          type: "float",
+          min: -50,
+          max: 50,
+          decimals: 2,
+          required: true,
+        },
+        {
+          name: "computed_at",
+          type: "date",
+          required: true,
+        },
+      ],
+    },
+    {
+      name: "finance_3_records",
+      sourceSystemId: "finance_3",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "source_record_id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "status",
+          type: "enum",
+          values: [
+            "active",
+            "pending",
+            "closed",
+          ],
+          required: true,
+        },
+        {
+          name: "owner",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+      ],
+    },
+    {
+      name: "finance_3_events",
+      sourceSystemId: "finance_3",
+      datastore: "alloydb",
+      rowCount: 60,
+      primaryKey: "id",
+      columns: [
+        {
+          name: "id",
+          type: "seq",
+          required: true,
+        },
+        {
+          name: "actor",
+          type: "person.fullName",
+          required: true,
+        },
+        {
+          name: "action",
+          type: "enum",
+          values: [
+            "create",
+            "update",
+            "delete",
+            "approve",
+            "reject",
+            "escalate",
+            "view",
+            "share",
+          ],
+          required: true,
+        },
+        {
+          name: "target_type",
+          type: "lorem.words",
+          required: true,
+        },
+        {
+          name: "created_at",
+          type: "date",
+          required: true,
+        },
+        {
+          name: "notes",
+          type: "lorem.sentence",
+        },
+        {
+          name: "finance_3_record_id",
+          type: "ref",
+          ref: "finance_3_records.id",
+          required: true,
+        },
+      ],
+    },
+  ],
+  relationships: [
+    {
+      from: "analytics_events.historical_metric_id",
+      to: "historical_metrics.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+    {
+      from: "finance_3_events.finance_3_record_id",
+      to: "finance_3_records.id",
+      cardinality: "many-to-one",
+      orphanPolicy: "none",
+    },
+  ],
+  documents: [
+    {
+      id: "gl-anomaly-detector-controls-playbook",
+      sourceSystemId: "bigquery",
+      type: "policy",
+      title: "GL Anomaly Detector Controls Playbook",
+      requiredSections: [
+        "Workflow scope",
+        "Materiality thresholds",
+        "Escalation triggers",
+        "Audit evidence requirements",
+        "Quarter-end variations",
+      ],
+      linkedEntities: [
+        "gl_entries",
+        "subledger_balances",
+        "open_items",
+      ],
+      minimumWordCount: 500,
+      citationAnchors: [
+        "scope",
+        "materiality",
+        "escalation",
+        "audit-evidence",
+      ],
+    },
+  ],
+  apis: [
+    {
+      id: "sap_s_4hana_fi_post_api",
+      sourceSystemId: "sap_s_4hana_fi",
+      method: "POST",
+      path: "/api/sap_s_4hana_fi/post",
+      description: "Synchronous endpoint the agent calls to post in SAP S/4HANA FI after evidence gating.",
+      requestSchema: {
+        target_id: "string",
+        rationale: "string",
+        metadata: "object",
+      },
+      responseSchema: {
+        action_id: "string",
+        status: "string",
+        audit_record_id: "string",
+      },
+      idempotencyKey: "target_id+rationale",
+    },
+  ],
+  anomalies: [
+    {
+      id: "gl-anomaly-detector-baseline-gap",
+      description: "Seed a realistic gap where Detection latency sits between Quarterly audit and Same-day, so the agent can detect, narrate, and recommend remediation.",
+      affectedEntities: [
+        "gl_entries",
+        "subledger_balances",
+      ],
+      discoveryPath: [
+        "Inspect SAP S/4HANA FI records for the affected entities",
+        "Compare against BigQuery historical baseline",
+        "Generate a citation-backed recommendation",
+      ],
+      expectedEvidence: [
+        "source-system record",
+        "historical baseline metric",
+        "generated audit trail",
+      ],
+      expectedRecommendation: "Explain the gap, cite supporting evidence, and propose the next Controller / Internal Audit action.",
+    },
+  ],
+  datastorePackaging: {
+    alloydb: {
+      database: "gl_anomaly_detector",
+      schemas: [
+        "sap_s_4hana_fi",
+        "finance_3",
+      ],
+    },
+    bigquery: {
+      dataset: "finance_gl_anomaly_detector",
+      tables: [
+        "kpi_summary",
+        "evidence_index",
+      ],
+    },
+    cloudStorage: {
+      bucketSuffix: "gl-anomaly-detector-evidence",
+      prefixes: [
+        "documents",
+        "audit-trails",
+        "exports",
+      ],
+    },
+    apis: {
+      serviceName: "gl-anomaly-detector-source-adapters",
+      deploymentTarget: "cloud_run",
+    },
+  },
+  validation: {
+    smokePrompt: "Run the GL Anomaly Detector workflow and cite source-system evidence for every claim.",
+    expectedAnswer: [
+      "uses canonical source-system tools",
+      "cites the governing document",
+      "names the next operator action",
+    ],
+    assertions: [
+      "canonical source-system tool names",
+      "minimum row policy met",
+      "audit trail emitted on actions",
+      "evidence_lookup invoked before recommendations",
+    ],
+  },
+  behaviorContract: behaviorContract,
+};
+
+export const GLAnomalyDetector = () => (
+  <UseCaseSlide
+    title="GL Anomaly Detector"
+    subtitle="A-2108 • GL & Close"
+    icon={AlertTriangle}
+    domainId="domain-21"
+    layer="Layer 3: Custom ADK"
+    persona="Controller / Internal Audit"
+    systems={["SAP S/4HANA FI", "BigQuery", "Vertex AI"]}
+    kpis={[
+      { label: "Detection latency", before: "Quarterly audit", after: "Same-day" },
+      { label: "False positive rate", before: "N/A (no scanning)", after: "< 10%" },
+      { label: "Anomalies investigated", before: "Sample-based", after: "100% of postings" },
+    ]}
+    triggerType="scheduled"
+    swimlane={swimlane}
+    flow={flow}
+    architecture={architecture}
+    hitl={{ actor: "Controller / Internal Audit", action: "Review escalated anomalies", description: "Controller or Internal Audit reviews anomalies flagged as suspicious, determines whether corrective action or investigation is warranted." }}
+    statusQuo={[
+      "GL anomalies discovered months later during quarterly internal audit — by then, trail is cold.",
+      "Manual audit sampling reviews only 5-10% of postings, missing the majority of anomalies.",
+      "No real-time visibility into unusual posting patterns or potential misclassifications."
+    ]}
+    agentification={[
+      "Continuous scanning of 100% of GL postings with Benford's Law and statistical anomaly detection.",
+      "Gemini investigates flagged anomalies by reading transaction context before escalating.",
+      "Same-day detection with intelligent routing — routine items to GL, suspicious patterns to Audit."
+    ]}
+  />
+);

@@ -1,0 +1,37 @@
+{
+  "id": "datadog_projection",
+  "version": 2,
+  "materialization": "Project scenario graph concepts into Datadog observability collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": ["service", "application", "system"],
+      "realizedObjects": ["services", "monitors", "slos"],
+      "simulatorCollection": "services",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["monitor", "control", "health_check"],
+      "realizedObjects": ["monitors", "alerts"],
+      "simulatorCollection": "monitors",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["incident", "alert", "outage"],
+      "realizedObjects": ["alerts", "incidents"],
+      "simulatorCollection": "incidents",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["slo", "objective", "service_level"],
+      "realizedObjects": ["slos"],
+      "simulatorCollection": "slos",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": ["credential", "api_key", "service_account"],
+      "realizedObjects": ["api_keys"],
+      "simulatorCollection": "api_keys",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

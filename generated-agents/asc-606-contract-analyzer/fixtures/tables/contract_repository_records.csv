@@ -1,0 +1,61 @@
+id,counterparty,value,currency,start_date,end_date,status,auto_renew
+ID-0001,Jones - Ratke,3043447,USD,2024-12-10,2025-09-24,terminated,true
+ID-0002,Beier LLC,3436084,USD,2022-04-21,2022-09-27,negotiating,true
+ID-0003,Block Inc,4709212,GBP,2024-01-27,2022-03-04,active,true
+ID-0004,Swift LLC,611586,GBP,2020-05-25,2023-03-16,draft,true
+ID-0005,Mayert Group,623786,EUR,2022-01-22,2024-05-17,expired,false
+ID-0006,"Gorczany, King and Stiedemann",4584010,EUR,2021-11-29,2023-06-30,negotiating,false
+ID-0007,"Cummerata, Toy and Balistreri",3232654,EUR,2022-01-16,2020-06-06,active,true
+ID-0008,"Erdman, Pfeffer and Barrows",2532221,GBP,2022-04-22,2020-03-26,draft,true
+ID-0009,Koch - Buckridge,4780035,USD,2025-05-01,2023-08-14,terminated,false
+ID-0010,Howe - Cremin,2773020,EUR,2024-07-28,2025-01-01,active,true
+ID-0011,Heaney - Lynch-Heidenreich,2906533,USD,2022-08-31,2023-10-04,active,true
+ID-0012,"Marks, Huels and Littel",1146471,GBP,2025-06-16,2024-05-01,active,false
+ID-0013,Schimmel - Welch,752492,EUR,2025-11-20,2022-11-25,terminated,false
+ID-0014,Ruecker Inc,2561265,EUR,2023-06-19,2025-03-12,terminated,true
+ID-0015,"Will, Stehr and Trantow",321663,GBP,2022-09-09,2023-01-23,expired,false
+ID-0016,Reichert - Gusikowski,1799990,GBP,2021-09-03,2021-04-06,terminated,true
+ID-0017,"Grimes, Skiles and Romaguera",3846925,EUR,2024-08-06,2025-01-28,expired,true
+ID-0018,Jaskolski Group,1750614,USD,2024-11-06,2025-09-08,draft,false
+ID-0019,Kutch and Sons,3538362,USD,2020-06-08,2022-06-02,negotiating,true
+ID-0020,Jakubowski - Kreiger,1137884,EUR,2025-11-15,2023-08-15,negotiating,false
+ID-0021,Kirlin - Bernier,3416260,USD,2024-04-13,2024-12-07,terminated,false
+ID-0022,Goldner Inc,1428528,USD,2023-10-11,2020-04-29,expired,true
+ID-0023,Gorczany - Spencer,29061,USD,2024-06-12,2021-11-24,draft,true
+ID-0024,Schamberger - Vandervort,1892817,GBP,2020-07-14,2024-02-14,active,true
+ID-0025,Cummerata LLC,3335263,GBP,2024-07-26,2025-09-15,expired,true
+ID-0026,Beahan - Kutch-Kemmer,2293921,USD,2022-03-19,2022-03-21,draft,false
+ID-0027,Effertz LLC,2366686,GBP,2021-04-17,2024-01-25,expired,true
+ID-0028,Halvorson - Ratke,1004084,GBP,2021-09-22,2022-03-17,draft,true
+ID-0029,Ankunding Inc,1693354,USD,2020-09-29,2022-06-25,active,true
+ID-0030,Kohler and Sons,2599971,GBP,2021-11-14,2024-08-23,expired,false
+ID-0031,"Russel, Gleason and Rutherford",2594623,EUR,2022-03-25,2020-01-03,negotiating,false
+ID-0032,"Tromp, Koch and Bergstrom",1148894,USD,2022-11-27,2024-06-26,active,true
+ID-0033,"Zboncak, Blanda-Hickle and Connelly",3115844,GBP,2023-06-21,2020-11-18,terminated,false
+ID-0034,Hegmann and Sons,1459617,EUR,2025-05-05,2024-03-31,draft,true
+ID-0035,Collier - Flatley,2508012,GBP,2020-06-16,2021-08-25,terminated,true
+ID-0036,Cummerata Inc,1053835,USD,2025-01-23,2025-11-20,expired,false
+ID-0037,Wilderman - Wunsch,2852004,USD,2022-08-15,2023-07-25,draft,false
+ID-0038,"Upton, Lebsack-Wolff and Kreiger",3594473,USD,2023-11-05,2024-01-01,draft,false
+ID-0039,"Altenwerth, Fay and Hand",4241730,GBP,2020-07-28,2022-07-28,draft,true
+ID-0040,Jacobi and Sons,4966343,USD,2024-07-26,2022-03-25,negotiating,false
+ID-0041,"Hermiston, Maggio and Fisher",966048,GBP,2020-08-11,2023-01-14,negotiating,true
+ID-0042,Grady - Kertzmann,2904643,EUR,2024-07-21,2021-09-11,negotiating,false
+ID-0043,"Sauer, Doyle and Harris",4276601,USD,2020-06-04,2020-05-31,terminated,false
+ID-0044,Hartmann LLC,3857903,EUR,2020-11-28,2025-04-03,active,true
+ID-0045,Runolfsson Group,2088663,EUR,2020-04-29,2025-11-02,negotiating,true
+ID-0046,Rempel - Olson,3712063,GBP,2022-07-15,2021-10-26,negotiating,false
+ID-0047,"Turcotte, Romaguera-Huel and Block",2727040,GBP,2021-01-01,2024-09-07,active,false
+ID-0048,Gulgowski - Brakus,2574134,EUR,2022-03-20,2025-08-06,terminated,false
+ID-0049,"Powlowski, Goodwin and Hegmann",1684696,GBP,2025-02-20,2024-03-16,expired,false
+ID-0050,"Cruickshank, Hoppe and Anderson",3521462,GBP,2022-08-17,2021-05-30,expired,false
+ID-0051,Labadie LLC,4314576,USD,2024-10-19,2023-04-26,negotiating,true
+ID-0052,"Greenfelder, Schinner and Marquardt",4165824,GBP,2020-01-27,2024-01-17,draft,false
+ID-0053,Mraz - Jakubowski,351082,GBP,2021-09-18,2022-08-06,expired,true
+ID-0054,Nitzsche - Dooley,2097486,GBP,2020-08-10,2021-09-01,negotiating,true
+ID-0055,"Daugherty, Jacobson and Jones",1739155,EUR,2021-08-02,2021-03-26,active,true
+ID-0056,Mitchell-Blick - Gulgowski-Bosco,2999233,EUR,2023-11-22,2021-08-09,draft,false
+ID-0057,Monahan - Metz,4331818,GBP,2020-08-20,2020-12-05,terminated,false
+ID-0058,"Prohaska, Armstrong and Kirlin",4788330,EUR,2025-01-14,2021-02-17,expired,false
+ID-0059,Bosco - Kerluke,1300971,EUR,2024-05-04,2020-01-20,active,false
+ID-0060,Bosco Group,4388576,GBP,2020-01-31,2021-06-28,negotiating,true

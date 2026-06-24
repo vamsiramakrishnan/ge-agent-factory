@@ -1,0 +1,865 @@
+{
+  "id": "ad_hoc_query_agent_semantic_model",
+  "generatedAt": "2026-06-11T08:59:35.201Z",
+  "dataset": "agent_ad_hoc_query_agent",
+  "primaryObjective": "Natural language interface makes financial data accessible to any business user. Gemini interprets ambiguous questions and returns answers with business context and citations. so the FP&A Analyst can move the Query response time KPI.",
+  "tables": [
+    {
+      "name": "analytics_events",
+      "sourceSystem": "BigQuery",
+      "description": "analytics_events, historical_metrics, cached_aggregates",
+      "grain": "one row per analytics event",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "period",
+          "type": "string",
+          "description": "period (string)."
+        },
+        {
+          "name": "metric_name",
+          "type": "string",
+          "description": "Human-readable label."
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "variance_pct",
+          "type": "number",
+          "description": "variance pct (number)."
+        },
+        {
+          "name": "computed_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "historical_metric_id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "historical_metrics",
+      "sourceSystem": "BigQuery",
+      "description": "analytics_events, historical_metrics, cached_aggregates",
+      "grain": "one row per historical metric",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "period",
+          "type": "string",
+          "description": "period (string)."
+        },
+        {
+          "name": "metric_name",
+          "type": "string",
+          "description": "Human-readable label."
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "variance_pct",
+          "type": "number",
+          "description": "variance pct (number)."
+        },
+        {
+          "name": "computed_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cached_aggregates",
+      "sourceSystem": "BigQuery",
+      "description": "analytics_events, historical_metrics, cached_aggregates",
+      "grain": "one row per cached aggregate",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "period",
+          "type": "string",
+          "description": "period (string)."
+        },
+        {
+          "name": "metric_name",
+          "type": "string",
+          "description": "Human-readable label."
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "variance_pct",
+          "type": "number",
+          "description": "variance pct (number)."
+        },
+        {
+          "name": "computed_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "dashboards",
+      "sourceSystem": "Looker",
+      "description": "dashboards, explore_queries, metric_definitions",
+      "grain": "one row per dashboard",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "period",
+          "type": "string",
+          "description": "period (string)."
+        },
+        {
+          "name": "metric_name",
+          "type": "string",
+          "description": "Human-readable label."
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "variance_pct",
+          "type": "number",
+          "description": "variance pct (number)."
+        },
+        {
+          "name": "computed_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "explore_queries",
+      "sourceSystem": "Looker",
+      "description": "dashboards, explore_queries, metric_definitions",
+      "grain": "one row per explore querie",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "source_record_id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "owner (string)."
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "notes (string)."
+        }
+      ]
+    },
+    {
+      "name": "metric_definitions",
+      "sourceSystem": "Looker",
+      "description": "dashboards, explore_queries, metric_definitions",
+      "grain": "one row per metric definition",
+      "primaryKey": "id",
+      "rowCount": 30,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "period",
+          "type": "string",
+          "description": "period (string)."
+        },
+        {
+          "name": "metric_name",
+          "type": "string",
+          "description": "Human-readable label."
+        },
+        {
+          "name": "value",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "variance_pct",
+          "type": "number",
+          "description": "variance pct (number)."
+        },
+        {
+          "name": "computed_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "transactions",
+      "sourceSystem": "SAP S/4HANA",
+      "description": "transactions, journal_entries, master_data",
+      "grain": "one row per transaction",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "posting_date",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "account",
+          "type": "string",
+          "description": "Account number / GL account.",
+          "synonyms": [
+            "account",
+            "gl account"
+          ]
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "description": "Currency code (ISO 4217)."
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Human-readable label."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "journal_entries",
+      "sourceSystem": "SAP S/4HANA",
+      "description": "transactions, journal_entries, master_data",
+      "grain": "one row per journal entrie",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "posting_date",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "account",
+          "type": "string",
+          "description": "Account number / GL account.",
+          "synonyms": [
+            "account",
+            "gl account"
+          ]
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "description": "Monetary amount.",
+          "synonyms": [
+            "amount",
+            "value",
+            "balance"
+          ]
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "description": "Currency code (ISO 4217)."
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "description": "Human-readable label."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "master_data",
+      "sourceSystem": "SAP S/4HANA",
+      "description": "transactions, journal_entries, master_data",
+      "grain": "one row per master data",
+      "primaryKey": "id",
+      "rowCount": 60,
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ],
+          "isKey": true
+        },
+        {
+          "name": "source_record_id",
+          "type": "string",
+          "description": "Unique identifier.",
+          "synonyms": [
+            "id",
+            "key"
+          ]
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "Status / lifecycle state.",
+          "synonyms": [
+            "status",
+            "state"
+          ]
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "description": "owner (string)."
+        },
+        {
+          "name": "created_at",
+          "type": "string",
+          "description": "Date/timestamp.",
+          "synonyms": [
+            "date",
+            "when"
+          ]
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "description": "notes (string)."
+        }
+      ]
+    }
+  ],
+  "joins": [
+    {
+      "left": "explore_queries.source_record_id",
+      "right": "master_data.source_record_id",
+      "on": "source_record_id",
+      "type": "many-to-one"
+    },
+    {
+      "left": "transactions.account",
+      "right": "journal_entries.account",
+      "on": "account",
+      "type": "many-to-one"
+    }
+  ],
+  "measures": [],
+  "glossary": [
+    {
+      "term": "BigQuery",
+      "definition": "Source system: BigQuery.",
+      "maps_to": [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates"
+      ]
+    },
+    {
+      "term": "Looker",
+      "definition": "Source system: Looker.",
+      "maps_to": [
+        "dashboards",
+        "explore_queries",
+        "metric_definitions"
+      ]
+    },
+    {
+      "term": "SAP S/4HANA",
+      "definition": "Source system: SAP S/4HANA.",
+      "maps_to": [
+        "transactions",
+        "journal_entries",
+        "master_data"
+      ]
+    }
+  ],
+  "bigquery": {
+    "tables": [
+      {
+        "table": "analytics_events",
+        "description": "analytics_events, historical_metrics, cached_aggregates",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "period",
+            "description": "period (string)."
+          },
+          {
+            "name": "metric_name",
+            "description": "Human-readable label."
+          },
+          {
+            "name": "value",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "variance_pct",
+            "description": "variance pct (number)."
+          },
+          {
+            "name": "computed_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "historical_metric_id",
+            "description": "Unique identifier."
+          }
+        ]
+      },
+      {
+        "table": "historical_metrics",
+        "description": "analytics_events, historical_metrics, cached_aggregates",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "period",
+            "description": "period (string)."
+          },
+          {
+            "name": "metric_name",
+            "description": "Human-readable label."
+          },
+          {
+            "name": "value",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "variance_pct",
+            "description": "variance pct (number)."
+          },
+          {
+            "name": "computed_at",
+            "description": "Date/timestamp."
+          }
+        ]
+      },
+      {
+        "table": "cached_aggregates",
+        "description": "analytics_events, historical_metrics, cached_aggregates",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "period",
+            "description": "period (string)."
+          },
+          {
+            "name": "metric_name",
+            "description": "Human-readable label."
+          },
+          {
+            "name": "value",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "variance_pct",
+            "description": "variance pct (number)."
+          },
+          {
+            "name": "computed_at",
+            "description": "Date/timestamp."
+          }
+        ]
+      },
+      {
+        "table": "dashboards",
+        "description": "dashboards, explore_queries, metric_definitions",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "period",
+            "description": "period (string)."
+          },
+          {
+            "name": "metric_name",
+            "description": "Human-readable label."
+          },
+          {
+            "name": "value",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "variance_pct",
+            "description": "variance pct (number)."
+          },
+          {
+            "name": "computed_at",
+            "description": "Date/timestamp."
+          }
+        ]
+      },
+      {
+        "table": "explore_queries",
+        "description": "dashboards, explore_queries, metric_definitions",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "source_record_id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          },
+          {
+            "name": "owner",
+            "description": "owner (string)."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "notes",
+            "description": "notes (string)."
+          }
+        ]
+      },
+      {
+        "table": "metric_definitions",
+        "description": "dashboards, explore_queries, metric_definitions",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "period",
+            "description": "period (string)."
+          },
+          {
+            "name": "metric_name",
+            "description": "Human-readable label."
+          },
+          {
+            "name": "value",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "variance_pct",
+            "description": "variance pct (number)."
+          },
+          {
+            "name": "computed_at",
+            "description": "Date/timestamp."
+          }
+        ]
+      },
+      {
+        "table": "transactions",
+        "description": "transactions, journal_entries, master_data",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "posting_date",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "account",
+            "description": "Account number / GL account."
+          },
+          {
+            "name": "amount",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "currency",
+            "description": "Currency code (ISO 4217)."
+          },
+          {
+            "name": "description",
+            "description": "Human-readable label."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          }
+        ]
+      },
+      {
+        "table": "journal_entries",
+        "description": "transactions, journal_entries, master_data",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "posting_date",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "account",
+            "description": "Account number / GL account."
+          },
+          {
+            "name": "amount",
+            "description": "Monetary amount."
+          },
+          {
+            "name": "currency",
+            "description": "Currency code (ISO 4217)."
+          },
+          {
+            "name": "description",
+            "description": "Human-readable label."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          }
+        ]
+      },
+      {
+        "table": "master_data",
+        "description": "transactions, journal_entries, master_data",
+        "columns": [
+          {
+            "name": "id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "source_record_id",
+            "description": "Unique identifier."
+          },
+          {
+            "name": "status",
+            "description": "Status / lifecycle state."
+          },
+          {
+            "name": "owner",
+            "description": "owner (string)."
+          },
+          {
+            "name": "created_at",
+            "description": "Date/timestamp."
+          },
+          {
+            "name": "notes",
+            "description": "notes (string)."
+          }
+        ]
+      }
+    ]
+  }
+}

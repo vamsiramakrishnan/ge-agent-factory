@@ -1,0 +1,306 @@
+{
+  "id": "sap_fieldglass_tools",
+  "version": 2,
+  "tools": [
+    {
+      "name": "search_workers",
+      "description": "Search Fieldglass workers.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "cost_center": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "workers"
+      }
+    },
+    {
+      "name": "get_worker",
+      "description": "Get one worker.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "worker_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "worker_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "workers",
+        "primaryKey": "worker_id"
+      }
+    },
+    {
+      "name": "search_work_orders",
+      "description": "Search Fieldglass work orders.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "manager_id": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "work_orders"
+      }
+    },
+    {
+      "name": "get_work_order",
+      "description": "Get one work order.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "work_order_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "work_order_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "work_orders",
+        "primaryKey": "work_order_id"
+      }
+    },
+    {
+      "name": "search_job_postings",
+      "description": "Search Fieldglass job postings.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "labor_category": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "job_postings"
+      }
+    },
+    {
+      "name": "get_job_posting",
+      "description": "Get one job posting.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "job_posting_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "job_posting_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "job_postings",
+        "primaryKey": "job_posting_id"
+      }
+    },
+    {
+      "name": "search_time_sheets",
+      "description": "Search Fieldglass time sheets.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "worker_id": {
+            "type": "string"
+          },
+          "invoice_status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "time_sheets"
+      }
+    },
+    {
+      "name": "get_time_sheet",
+      "description": "Get one time sheet.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "time_sheet_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "time_sheet_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "time_sheets",
+        "primaryKey": "time_sheet_id"
+      }
+    },
+    {
+      "name": "search_statement_of_works",
+      "description": "Search Fieldglass SOWs.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "supplier_id": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "statement_of_works"
+      }
+    },
+    {
+      "name": "get_statement_of_work",
+      "description": "Get one statement of work.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sow_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "sow_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "statement_of_works",
+        "primaryKey": "sow_id"
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending Fieldglass approvals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": {
+            "type": "string"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_pending_approvals",
+        "collection": "approvals"
+      }
+    },
+    {
+      "name": "submit_work_order_update",
+      "description": "Submit a controlled state update for work order.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "work_order_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "work_order_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "work_orders",
+        "primaryKey": "work_order_id"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List Fieldglass audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

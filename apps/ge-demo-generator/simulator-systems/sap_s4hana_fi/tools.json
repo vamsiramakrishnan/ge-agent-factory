@@ -1,0 +1,712 @@
+{
+  "id": "sap_s4hana_fi_tools",
+  "version": 3,
+  "tools": [
+    {
+      "name": "search_company_codes",
+      "description": "Search SAP company codes (legal entities) with currency, chart of accounts, and open posting period.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "company_codes"
+      }
+    },
+    {
+      "name": "get_company_code",
+      "description": "Get one company code, including its currently open posting period range.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company_code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "company_code"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "company_codes",
+        "primaryKey": "company_code"
+      }
+    },
+    {
+      "name": "search_vendors",
+      "description": "Search SAP vendors / business partners by name, status, risk tier, block reason, or company code.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "company_code": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "risk_tier": {
+            "type": "string"
+          },
+          "block_reason": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "vendors"
+      }
+    },
+    {
+      "name": "get_vendor",
+      "description": "Get one vendor master record.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "vendor_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "vendor_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "vendors",
+        "primaryKey": "vendor_id"
+      }
+    },
+    {
+      "name": "search_gl_accounts",
+      "description": "Search GL accounts by chart of accounts, account type, or open-item-managed flag.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "chart_of_accounts": {
+            "type": "string"
+          },
+          "account_type": {
+            "type": "string"
+          },
+          "open_item_managed": {
+            "type": "boolean"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "gl_accounts"
+      }
+    },
+    {
+      "name": "get_gl_account",
+      "description": "Get one GL account master record.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "gl_account": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "gl_account"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "gl_accounts",
+        "primaryKey": "gl_account"
+      }
+    },
+    {
+      "name": "search_cost_centers",
+      "description": "Search controlling cost centers by company code, controlling area, or profit center.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "company_code": {
+            "type": "string"
+          },
+          "controlling_area": {
+            "type": "string"
+          },
+          "profit_center": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "cost_centers"
+      }
+    },
+    {
+      "name": "get_cost_center",
+      "description": "Get one cost center.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cost_center": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "cost_center"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "cost_centers",
+        "primaryKey": "cost_center"
+      }
+    },
+    {
+      "name": "search_profit_centers",
+      "description": "Search controlling profit centers by company code or segment.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "company_code": {
+            "type": "string"
+          },
+          "segment": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "profit_centers"
+      }
+    },
+    {
+      "name": "get_profit_center",
+      "description": "Get one profit center.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "profit_center": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "profit_center"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "profit_centers",
+        "primaryKey": "profit_center"
+      }
+    },
+    {
+      "name": "search_purchase_orders",
+      "description": "Search purchase orders by vendor, company code, cost center, or status (three-way-match reference document).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "company_code": {
+            "type": "string"
+          },
+          "vendor_id": {
+            "type": "string"
+          },
+          "cost_center": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "purchase_orders"
+      }
+    },
+    {
+      "name": "get_purchase_order",
+      "description": "Get one purchase order.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "purchase_order_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "purchase_order_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "purchase_orders",
+        "primaryKey": "purchase_order_id"
+      }
+    },
+    {
+      "name": "search_goods_receipts",
+      "description": "Search goods receipts by purchase order, vendor, or status (GR leg of three-way match).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "purchase_order_id": {
+            "type": "string"
+          },
+          "vendor_id": {
+            "type": "string"
+          },
+          "company_code": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "goods_receipts"
+      }
+    },
+    {
+      "name": "get_goods_receipt",
+      "description": "Get one goods receipt.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "goods_receipt_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "goods_receipt_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "goods_receipts",
+        "primaryKey": "goods_receipt_id"
+      }
+    },
+    {
+      "name": "search_invoices",
+      "description": "Search supplier invoices by vendor, company code, status, three-way-match status, or payment block.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "vendor_id": {
+            "type": "string"
+          },
+          "company_code": {
+            "type": "string"
+          },
+          "purchase_order_id": {
+            "type": "string"
+          },
+          "payment_block": {
+            "type": "string"
+          },
+          "three_way_match_status": {
+            "type": "string"
+          },
+          "posting_period": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "invoices"
+      }
+    },
+    {
+      "name": "get_invoice",
+      "description": "Get one supplier invoice with its three-way-match and payment-block status.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "invoice_id": {
+            "type": "string"
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "invoice_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "invoices",
+        "primaryKey": "invoice_id"
+      }
+    },
+    {
+      "name": "search_journal_entries",
+      "description": "Search GL journal entries by company code, period, status, ledger, or document type.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "company_code": {
+            "type": "string"
+          },
+          "period": {
+            "type": "string"
+          },
+          "ledger": {
+            "type": "string"
+          },
+          "document_type": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "journal_entries"
+      }
+    },
+    {
+      "name": "get_journal_entry",
+      "description": "Get one GL journal entry, including reversal linkage.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "journal_id": {
+            "type": "string"
+          },
+          "includes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "journal_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "journal_entries",
+        "primaryKey": "journal_id"
+      }
+    },
+    {
+      "name": "search_payment_runs",
+      "description": "Search automatic payment program runs (F110) by company code or status.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "company_code": {
+            "type": "string"
+          },
+          "payment_method": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "payment_runs"
+      }
+    },
+    {
+      "name": "get_payment_run",
+      "description": "Get one payment run.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "payment_run_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "payment_run_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "payment_runs",
+        "primaryKey": "payment_run_id"
+      }
+    },
+    {
+      "name": "search_payments",
+      "description": "Search outgoing payments by vendor, company code, payment run, or status.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "vendor_id": {
+            "type": "string"
+          },
+          "company_code": {
+            "type": "string"
+          },
+          "payment_run_id": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "search",
+        "collection": "payments"
+      }
+    },
+    {
+      "name": "get_payment",
+      "description": "Get one payment.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "payment_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "payment_id"
+        ]
+      },
+      "binding": {
+        "op": "get",
+        "collection": "payments",
+        "primaryKey": "payment_id"
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending SAP FI approval / release steps, optionally filtered to one source record.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": {
+            "type": "string"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_pending_approvals",
+        "collection": "approvals"
+      }
+    },
+    {
+      "name": "submit_invoice_update",
+      "description": "Advance a supplier invoice through its lifecycle (parked -> matched -> pending_approval -> approved -> posted -> paid -> cleared). Posting is gated by three-way match and by any pending approval; payment is gated by the payment block. role: ap_analyst | controller | finance_manager.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "invoice_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "invoice_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "invoices",
+        "primaryKey": "invoice_id"
+      }
+    },
+    {
+      "name": "submit_journal_entry_update",
+      "description": "Post or reverse a GL journal entry (parked -> pending_approval -> posted -> reversed). Posting is blocked when the posting period is closed. role: gl_accountant | controller | finance_manager.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "journal_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "journal_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "journal_entries",
+        "primaryKey": "journal_id"
+      }
+    },
+    {
+      "name": "submit_payment_run_update",
+      "description": "Execute the automatic payment program: created -> proposed -> released -> executed. Release requires a controller/finance_manager and clears any pending approval. role: ap_analyst | controller | finance_manager.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "payment_run_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "idempotency_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "payment_run_id"
+        ]
+      },
+      "binding": {
+        "op": "submit",
+        "collection": "payment_runs",
+        "primaryKey": "payment_run_id"
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List SAP FI simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      },
+      "binding": {
+        "op": "list_audit_events"
+      }
+    }
+  ]
+}

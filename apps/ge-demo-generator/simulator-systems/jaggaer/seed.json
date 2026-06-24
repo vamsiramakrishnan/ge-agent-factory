@@ -1,0 +1,50 @@
+{
+  "suppliers": [
+    {
+      "supplier_id": "SUPPLIER-ID-001",
+      "name": "sample_name",
+      "status": "sample_status",
+      "risk_tier": "sample_risk_tier",
+      "country": "sample_country",
+      "category": "sample_category"
+    }
+  ],
+  "purchase_orders": [
+    {
+      "po_id": "PO-ID-001",
+      "supplier_id": "SUPPLIER-ID-001",
+      "status": "sample_status",
+      "amount": "sample_amount",
+      "currency": "sample_currency",
+      "requester": "sample_requester"
+    }
+  ],
+  "requisitions": [
+    {
+      "requisition_id": "REQUISITION-ID-001",
+      "supplier_id": "SUPPLIER-ID-001",
+      "status": "sample_status",
+      "amount": "sample_amount",
+      "cost_center": "sample_cost_center"
+    }
+  ],
+  "contracts": [
+    {
+      "contract_id": "CONTRACT-ID-001",
+      "supplier_id": "SUPPLIER-ID-001",
+      "status": "sample_status",
+      "effective_date": "sample_effective_date",
+      "expiration_date": "sample_expiration_date"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APPROVAL-ID-001",
+      "source_record_id": "SOURCE-RECORD-ID-001",
+      "approver": "sample_approver",
+      "state": "sample_state",
+      "reason": "sample_reason"
+    }
+  ],
+  "audit_events": []
+}

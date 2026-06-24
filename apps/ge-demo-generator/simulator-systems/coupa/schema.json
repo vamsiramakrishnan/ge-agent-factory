@@ -1,0 +1,228 @@
+{
+  "id": "coupa_schema",
+  "version": 2,
+  "collections": {
+    "suppliers": {
+      "primaryKey": "supplier_id",
+      "description": "Coupa supplier master record with sourcing status, risk tier, diversity/compliance certifications, and the buyer/category that owns the relationship.",
+      "fields": {
+        "supplier_id": "string",
+        "name": "string",
+        "legal_name": "string",
+        "status": "enum:onboarding|active|on_hold|risk_review|inactive|terminated",
+        "risk_tier": "enum:low|medium|high|critical",
+        "risk_score": "number",
+        "category": "string",
+        "commodity_code": "string",
+        "country": "string",
+        "currency": "string",
+        "tax_id": "string",
+        "duns": "string",
+        "payment_terms": "string",
+        "preferred": "boolean",
+        "diversity_classification": "string",
+        "certifications": "array:string",
+        "primary_contact_email": "string",
+        "owning_buyer": "ref:suppliers.supplier_id",
+        "category_manager": "string",
+        "onboarded_date": "string",
+        "last_assessed_date": "string"
+      }
+    },
+    "supplier_scorecards": {
+      "primaryKey": "scorecard_id",
+      "description": "Periodic supplier performance scorecard covering quality, delivery, cost, and compliance dimensions.",
+      "fields": {
+        "scorecard_id": "string",
+        "supplier_id": "ref:suppliers.supplier_id",
+        "period": "string",
+        "overall_score": "number",
+        "quality_score": "number",
+        "delivery_score": "number",
+        "cost_score": "number",
+        "compliance_score": "number",
+        "rating": "enum:exceeds|meets|needs_improvement|at_risk",
+        "reviewer": "string",
+        "status": "enum:draft|published|disputed",
+        "published_date": "string"
+      }
+    },
+    "requisitions": {
+      "primaryKey": "requisition_id",
+      "description": "Purchase requisition routed through cost-center and threshold-based approvals before a PO is created.",
+      "fields": {
+        "requisition_id": "string",
+        "title": "string",
+        "requester": "string",
+        "requester_email": "string",
+        "supplier_id": "ref:suppliers.supplier_id",
+        "contract_id": "ref:contracts.contract_id",
+        "status": "enum:draft|submitted|manager_approved|procurement_approved|po_created|rejected|cancelled",
+        "cost_center": "string",
+        "company_code": "string",
+        "gl_account": "string",
+        "currency": "string",
+        "total_amount": "number",
+        "need_by_date": "string",
+        "justification": "string",
+        "approval_chain": "array:string",
+        "current_approver": "string",
+        "po_id": "ref:purchase_orders.po_id",
+        "created_date": "string",
+        "submitted_date": "string"
+      }
+    },
+    "requisition_lines": {
+      "primaryKey": "line_id",
+      "description": "Line item belonging to a requisition (item, quantity, unit price, commodity).",
+      "fields": {
+        "line_id": "string",
+        "requisition_id": "ref:requisitions.requisition_id",
+        "line_number": "number",
+        "description": "string",
+        "commodity_code": "string",
+        "quantity": "number",
+        "unit": "string",
+        "unit_price": "number",
+        "line_amount": "number",
+        "currency": "string",
+        "supplier_part_number": "string",
+        "status": "enum:open|approved|converted|cancelled"
+      }
+    },
+    "purchase_orders": {
+      "primaryKey": "po_id",
+      "description": "Purchase order issued to a supplier from an approved requisition, tracked through dispatch, receipt, and closure.",
+      "fields": {
+        "po_id": "string",
+        "po_number": "string",
+        "supplier_id": "ref:suppliers.supplier_id",
+        "requisition_id": "ref:requisitions.requisition_id",
+        "contract_id": "ref:contracts.contract_id",
+        "status": "enum:draft|issued|acknowledged|partially_received|received|invoiced|closed|cancelled",
+        "buyer": "string",
+        "cost_center": "string",
+        "company_code": "string",
+        "currency": "string",
+        "total_amount": "number",
+        "received_amount": "number",
+        "invoiced_amount": "number",
+        "order_date": "string",
+        "promised_date": "string",
+        "ship_to_location": "string",
+        "payment_terms": "string"
+      }
+    },
+    "po_lines": {
+      "primaryKey": "po_line_id",
+      "description": "Line item belonging to a purchase order with ordered vs received quantities.",
+      "fields": {
+        "po_line_id": "string",
+        "po_id": "ref:purchase_orders.po_id",
+        "line_number": "number",
+        "description": "string",
+        "commodity_code": "string",
+        "quantity": "number",
+        "received_quantity": "number",
+        "unit": "string",
+        "unit_price": "number",
+        "line_amount": "number",
+        "currency": "string",
+        "status": "enum:open|partially_received|received|closed|cancelled"
+      }
+    },
+    "receipts": {
+      "primaryKey": "receipt_id",
+      "description": "Goods/services receipt recorded against a purchase order, supporting three-way match.",
+      "fields": {
+        "receipt_id": "string",
+        "po_id": "ref:purchase_orders.po_id",
+        "po_line_id": "ref:po_lines.po_line_id",
+        "supplier_id": "ref:suppliers.supplier_id",
+        "status": "enum:draft|posted|reversed",
+        "received_by": "string",
+        "received_date": "string",
+        "quantity_received": "number",
+        "unit": "string",
+        "condition": "enum:accepted|damaged|partial|rejected",
+        "notes": "string"
+      }
+    },
+    "invoices": {
+      "primaryKey": "invoice_id",
+      "description": "Supplier invoice processed against a PO with three-way-match and approval state.",
+      "fields": {
+        "invoice_id": "string",
+        "invoice_number": "string",
+        "supplier_id": "ref:suppliers.supplier_id",
+        "po_id": "ref:purchase_orders.po_id",
+        "contract_id": "ref:contracts.contract_id",
+        "status": "enum:received|matched|exception|approved|disputed|paid|cancelled",
+        "match_status": "enum:not_matched|two_way_matched|three_way_matched|match_exception",
+        "amount": "number",
+        "currency": "string",
+        "tax_amount": "number",
+        "invoice_date": "string",
+        "due_date": "string",
+        "cost_center": "string",
+        "exception_reason": "string",
+        "approver": "string"
+      }
+    },
+    "contracts": {
+      "primaryKey": "contract_id",
+      "description": "Sourcing contract with a supplier defining coverage, pricing, term, and renewal lifecycle.",
+      "fields": {
+        "contract_id": "string",
+        "contract_number": "string",
+        "title": "string",
+        "supplier_id": "ref:suppliers.supplier_id",
+        "status": "enum:draft|in_negotiation|pending_approval|active|expiring|expired|terminated",
+        "contract_type": "enum:master_agreement|sow|purchasing|nda|amendment",
+        "category": "string",
+        "coverage_scope": "string",
+        "pricing_model": "enum:fixed|tiered|time_and_materials|rate_card|consumption",
+        "total_contract_value": "number",
+        "currency": "string",
+        "discount_pct": "number",
+        "effective_date": "string",
+        "expiration_date": "string",
+        "auto_renew": "boolean",
+        "renewal_notice_days": "number",
+        "owner": "string",
+        "approval_chain": "array:string"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "description": "Approval task generated for a requisition, contract, or invoice; blocks downstream transitions until resolved.",
+      "fields": {
+        "approval_id": "string",
+        "source_collection": "string",
+        "source_record_id": "string",
+        "approver": "string",
+        "approver_role": "string",
+        "sequence": "number",
+        "state": "enum:requested|pending|pending_approval|approved|rejected|skipped",
+        "reason": "string",
+        "requested_date": "string",
+        "resolved_date": "string"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "description": "Simulator audit log.",
+      "fields": {
+        "event_id": "string",
+        "actor": "string",
+        "role": "string",
+        "action": "string",
+        "entity": "string",
+        "entity_id": "string",
+        "outcome": "string",
+        "detail": "string",
+        "timestamp": "string"
+      }
+    }
+  }
+}

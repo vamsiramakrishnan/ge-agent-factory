@@ -1,0 +1,212 @@
+{
+  "id": "dbt_materialization",
+  "version": 1,
+  "collections": {
+    "datasets": {
+      "primaryKey": "dataset_id",
+      "fieldAliases": {
+        "dataset_id": [
+          "dataset_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "owner": [
+          "owner",
+          "id",
+          "source_record_id"
+        ],
+        "domain": [
+          "domain",
+          "id",
+          "source_record_id"
+        ],
+        "classification": [
+          "classification",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "tables": {
+      "primaryKey": "table_id",
+      "fieldAliases": {
+        "table_id": [
+          "table_id",
+          "id",
+          "source_record_id"
+        ],
+        "dataset_id": [
+          "dataset_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "row_count": [
+          "row_count",
+          "id",
+          "source_record_id"
+        ],
+        "freshness": [
+          "freshness",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "pipelines": {
+      "primaryKey": "pipeline_id",
+      "fieldAliases": {
+        "pipeline_id": [
+          "pipeline_id",
+          "id",
+          "source_record_id"
+        ],
+        "dataset_id": [
+          "dataset_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "schedule": [
+          "schedule",
+          "id",
+          "source_record_id"
+        ],
+        "owner": [
+          "owner",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "jobs": {
+      "primaryKey": "job_id",
+      "fieldAliases": {
+        "job_id": [
+          "job_id",
+          "id",
+          "source_record_id"
+        ],
+        "pipeline_id": [
+          "pipeline_id",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "started_at": [
+          "started_at",
+          "id",
+          "source_record_id"
+        ],
+        "duration_seconds": [
+          "duration_seconds",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "active"
+      }
+    },
+    "quality_checks": {
+      "primaryKey": "check_id",
+      "fieldAliases": {
+        "check_id": [
+          "check_id",
+          "id",
+          "source_record_id"
+        ],
+        "table_id": [
+          "table_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "severity": [
+          "severity",
+          "id",
+          "source_record_id"
+        ],
+        "last_run_at": [
+          "last_run_at",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

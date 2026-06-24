@@ -1,0 +1,52 @@
+{
+  "bank_accounts": [
+    {
+      "bank_account_id": "BANK-ACCOUNT-ID-001",
+      "name": "sample_name",
+      "status": "sample_status",
+      "bank": "sample_bank",
+      "currency": "sample_currency",
+      "country": "sample_country"
+    }
+  ],
+  "payment_batches": [
+    {
+      "batch_id": "BATCH-ID-001",
+      "bank_account_id": "BANK-ACCOUNT-ID-001",
+      "status": "sample_status",
+      "amount": "sample_amount",
+      "currency": "sample_currency",
+      "release_date": "sample_release_date"
+    }
+  ],
+  "cash_positions": [
+    {
+      "cash_position_id": "CASH-POSITION-ID-001",
+      "bank_account_id": "BANK-ACCOUNT-ID-001",
+      "status": "sample_status",
+      "as_of_date": "sample_as_of_date",
+      "balance": "sample_balance",
+      "currency": "sample_currency"
+    }
+  ],
+  "tax_filings": [
+    {
+      "filing_id": "FILING-ID-001",
+      "jurisdiction": "sample_jurisdiction",
+      "period": "sample_period",
+      "status": "sample_status",
+      "due_date": "sample_due_date",
+      "amount": "sample_amount"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APPROVAL-ID-001",
+      "source_record_id": "SOURCE-RECORD-ID-001",
+      "approver": "sample_approver",
+      "state": "sample_state",
+      "reason": "sample_reason"
+    }
+  ],
+  "audit_events": []
+}

@@ -1,0 +1,190 @@
+{
+  "id": "apigee_materialization",
+  "version": 1,
+  "collections": {
+    "apis": {
+      "primaryKey": "api_id",
+      "fieldAliases": {
+        "api_id": [
+          "api_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "org": [
+          "org",
+          "id",
+          "source_record_id"
+        ],
+        "latest_revision_id": [
+          "latest_revision_id",
+          "id",
+          "source_record_id"
+        ],
+        "revision_count": [
+          "revision_count",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    },
+    "apiproducts": {
+      "primaryKey": "apiproduct_id",
+      "fieldAliases": {
+        "apiproduct_id": [
+          "apiproduct_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "display_name": [
+          "display_name",
+          "id",
+          "source_record_id"
+        ],
+        "approval_type": [
+          "approval_type",
+          "id",
+          "source_record_id"
+        ],
+        "environments": [
+          "environments",
+          "id",
+          "source_record_id"
+        ],
+        "quota": [
+          "quota",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    },
+    "developers": {
+      "primaryKey": "developer_id",
+      "fieldAliases": {
+        "developer_id": [
+          "developer_id",
+          "id",
+          "source_record_id"
+        ],
+        "email": [
+          "email",
+          "id",
+          "source_record_id"
+        ],
+        "first_name": [
+          "first_name",
+          "id",
+          "source_record_id"
+        ],
+        "last_name": [
+          "last_name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "org": [
+          "org",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "envgroups": {
+      "primaryKey": "envgroup_id",
+      "fieldAliases": {
+        "envgroup_id": [
+          "envgroup_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "org": [
+          "org",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "hostnames": [
+          "hostnames",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "ACTIVE"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "actor": [
+          "actor",
+          "id",
+          "source_record_id"
+        ],
+        "role": [
+          "role",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ],
+        "timestamp": [
+          "timestamp",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

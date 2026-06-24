@@ -1,0 +1,67 @@
+{
+  "id": "coupa_projection",
+  "version": 2,
+  "materialization": "Project procurement scenario-graph concepts and Snowfakery rows into Coupa source-to-pay collections: suppliers, scorecards, requisitions, purchase orders, receipts, invoices, and contracts.",
+  "collectionMappings": [
+    {
+      "simulatorCollection": "suppliers",
+      "graphKinds": ["supplier", "vendor"],
+      "realizedObjects": ["suppliers", "vendors"],
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "simulatorCollection": "supplier_scorecards",
+      "graphKinds": ["supplier_scorecard", "performance_review"],
+      "realizedObjects": ["supplier_scorecards", "scorecards"],
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "simulatorCollection": "requisitions",
+      "graphKinds": ["requisition", "purchase_request"],
+      "realizedObjects": ["requisitions", "purchase_requests"],
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "simulatorCollection": "requisition_lines",
+      "graphKinds": ["requisition_line", "line_item"],
+      "realizedObjects": ["requisition_lines"],
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "simulatorCollection": "purchase_orders",
+      "graphKinds": ["purchase_order", "order"],
+      "realizedObjects": ["purchase_orders"],
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "simulatorCollection": "po_lines",
+      "graphKinds": ["po_line", "line_item"],
+      "realizedObjects": ["po_lines"],
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "simulatorCollection": "receipts",
+      "graphKinds": ["receipt", "goods_receipt"],
+      "realizedObjects": ["receipts", "goods_receipts"],
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "simulatorCollection": "invoices",
+      "graphKinds": ["invoice", "ap_invoice"],
+      "realizedObjects": ["invoices"],
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "simulatorCollection": "contracts",
+      "graphKinds": ["contract", "agreement"],
+      "realizedObjects": ["contracts", "agreements"],
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "simulatorCollection": "approvals",
+      "graphKinds": ["approval"],
+      "realizedObjects": ["approvals"],
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

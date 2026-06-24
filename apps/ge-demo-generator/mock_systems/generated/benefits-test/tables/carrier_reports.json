@@ -1,0 +1,98 @@
+[
+  {
+    "report_id": "REP-0001",
+    "carrier": "unknown",
+    "month": "2025-07-18",
+    "utilization_rate": 688,
+    "total_claims": 302,
+    "avg_cost_per_claim": 56
+  },
+  {
+    "report_id": "REP-0002",
+    "carrier": "unknown",
+    "month": "2024-12-20",
+    "utilization_rate": 336,
+    "total_claims": 382,
+    "avg_cost_per_claim": 578
+  },
+  {
+    "report_id": "REP-0003",
+    "carrier": "unknown",
+    "month": "2024-10-10",
+    "utilization_rate": 668,
+    "total_claims": 675,
+    "avg_cost_per_claim": 356
+  },
+  {
+    "report_id": "REP-0004",
+    "carrier": "unknown",
+    "month": "2025-06-01",
+    "utilization_rate": 939,
+    "total_claims": 814,
+    "avg_cost_per_claim": 944
+  },
+  {
+    "report_id": "REP-0005",
+    "carrier": "unknown",
+    "month": "2024-08-26",
+    "utilization_rate": 38,
+    "total_claims": 405,
+    "avg_cost_per_claim": 568
+  },
+  {
+    "report_id": "REP-0006",
+    "carrier": "unknown",
+    "month": "2026-05-24",
+    "utilization_rate": 481,
+    "total_claims": 933,
+    "avg_cost_per_claim": 399
+  },
+  {
+    "report_id": "REP-0007",
+    "carrier": "unknown",
+    "month": "2024-06-24",
+    "utilization_rate": 204,
+    "total_claims": 995,
+    "avg_cost_per_claim": 893
+  },
+  {
+    "report_id": "REP-0008",
+    "carrier": "unknown",
+    "month": "2025-01-31",
+    "utilization_rate": 539,
+    "total_claims": 810,
+    "avg_cost_per_claim": 779
+  },
+  {
+    "report_id": "REP-0009",
+    "carrier": "unknown",
+    "month": "2024-05-16",
+    "utilization_rate": 218,
+    "total_claims": 726,
+    "avg_cost_per_claim": 854
+  },
+  {
+    "report_id": "REP-0010",
+    "carrier": "unknown",
+    "month": "2025-10-27",
+    "utilization_rate": 270,
+    "total_claims": 76,
+    "avg_cost_per_claim": 962
+  },
+  {
+    "report_id": "REP-0011",
+    "carrier": "unknown",
+    "month": "2026-02-03",
+    "utilization_rate": 646,
+    "total_claims": 915,
+    "avg_cost_per_claim": 740
+  },
+  {
+    "report_id": "REP-0012",
+    "carrier": "unknown",
+    "month": "2024-07-11",
+    "utilization_rate": 838,
+    "total_claims": 112,
+    "avg_cost_per_claim": 499
+  }
+]

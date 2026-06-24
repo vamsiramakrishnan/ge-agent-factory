@@ -1,0 +1,17 @@
+id: bigquery
+class: OLAP_BIGQUERY
+target: Google BigQuery
+dataset: "ge_mock_<workspace>"
+tables: []
+files:
+  schemas: schema/
+  data: data/
+  loader: load-bigquery.sh
+env:
+  required:
+    - GOOGLE_CLOUD_PROJECT
+    - BQ_DATASET
+    - LOCATION
+quality:
+  partition_when_temporal: true
+  cluster_when_entity_keys_exist: true

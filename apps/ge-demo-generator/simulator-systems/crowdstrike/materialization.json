@@ -1,0 +1,249 @@
+{
+  "id": "crowdstrike_materialization",
+  "version": 1,
+  "collections": {
+    "assets": {
+      "primaryKey": "asset_id",
+      "fieldAliases": {
+        "asset_id": [
+          "asset_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "owner": [
+          "owner",
+          "id",
+          "source_record_id"
+        ],
+        "criticality": [
+          "criticality",
+          "id",
+          "source_record_id"
+        ],
+        "environment": [
+          "environment",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "findings": {
+      "primaryKey": "finding_id",
+      "fieldAliases": {
+        "finding_id": [
+          "finding_id",
+          "id",
+          "source_record_id"
+        ],
+        "asset_id": [
+          "asset_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "severity": [
+          "severity",
+          "id",
+          "source_record_id"
+        ],
+        "source": [
+          "source",
+          "id",
+          "source_record_id"
+        ],
+        "detected_at": [
+          "detected_at",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "incidents": {
+      "primaryKey": "incident_id",
+      "fieldAliases": {
+        "incident_id": [
+          "incident_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "severity": [
+          "severity",
+          "id",
+          "source_record_id"
+        ],
+        "commander": [
+          "commander",
+          "id",
+          "source_record_id"
+        ],
+        "opened_at": [
+          "opened_at",
+          "id",
+          "source_record_id"
+        ],
+        "summary": [
+          "summary",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "controls": {
+      "primaryKey": "control_id",
+      "fieldAliases": {
+        "control_id": [
+          "control_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "owner": [
+          "owner",
+          "id",
+          "source_record_id"
+        ],
+        "framework": [
+          "framework",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "exceptions": {
+      "primaryKey": "exception_id",
+      "fieldAliases": {
+        "exception_id": [
+          "exception_id",
+          "id",
+          "source_record_id"
+        ],
+        "finding_id": [
+          "finding_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "requester": [
+          "requester",
+          "id",
+          "source_record_id"
+        ],
+        "expiration_date": [
+          "expiration_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fieldAliases": {
+        "approval_id": [
+          "approval_id",
+          "id",
+          "source_record_id"
+        ],
+        "source_record_id": [
+          "source_record_id",
+          "id"
+        ],
+        "approver": [
+          "approver",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "reason": [
+          "reason",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "active"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}
