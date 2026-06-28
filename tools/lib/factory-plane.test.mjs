@@ -108,7 +108,7 @@ test("build returns gateway and worker image tags", () => {
   // The worker now builds from the repo-root context via its cloudbuild config + the
   // _IMAGE substitution (mirrors mcp-plane), so @ge/run-ledger + @ge/okf (packages/)
   // and tools/lib/* — all outside the app dir — are in the build context.
-  const workerBuild = builds.find((call) => call[2].includes("apps/ge-demo-generator/cloudbuild.worker.yaml"));
+  const workerBuild = builds.find((call) => call[2].includes("apps/factory/cloudbuild.worker.yaml"));
   expect(workerBuild).toBeDefined();
   expect(workerBuild[2]).toContain("--config");
   expect(workerBuild[2]).toContain("--substitutions");
@@ -119,11 +119,11 @@ test("build returns gateway and worker image tags", () => {
 });
 
 test("worker cloudbuild.worker.yaml is well-formed and uses repo-root context", () => {
-  const yamlPath = join(HERE, "..", "..", "apps", "ge-demo-generator", "cloudbuild.worker.yaml");
+  const yamlPath = join(HERE, "..", "..", "apps", "factory", "cloudbuild.worker.yaml");
   const yaml = readFileSync(yamlPath, "utf8");
   expect(yaml).toContain("steps:");
   expect(yaml).toContain("gcr.io/cloud-builders/docker");
-  expect(yaml).toContain('"build", "-f", "apps/ge-demo-generator/Dockerfile", "-t", "${_IMAGE}", "."');
+  expect(yaml).toContain('"build", "-f", "apps/factory/Dockerfile", "-t", "${_IMAGE}", "."');
   expect(yaml).toContain('"push", "${_IMAGE}"');
   expect(yaml).toContain("images:");
   expect(yaml).toContain("substitutions:");

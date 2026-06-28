@@ -18,7 +18,7 @@ export type SpecArtifactStatus = "idle" | "streaming" | "complete" | "error";
  * Optional self-describing workflow the interview agent may emit on
  * `behaviorContract.workflow` when the use case is multi-stage. Mirrors the
  * SPEC-SHAPE workflow the generator authors into catalog specs
- * (apps/ge-demo-generator/scripts/ge-mock/agent-workflow.mjs): ordered steps,
+ * (apps/factory/scripts/factory/agent-workflow.mjs): ordered steps,
  * each naming the toolIntents it uses. `tools` entries are toolIntent NAMES.
  */
 export interface SpecWorkflowStep {

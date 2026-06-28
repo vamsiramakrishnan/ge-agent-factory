@@ -56,9 +56,9 @@ make bootstrap CANARY=1
 | `tools/lib/run-ledger.mjs` | Local/remote run state and event history | Debugging status, fleet, logs, or resumability |
 | `tools/mcp-server.mjs` | MCP surface over factory operations | Letting models or harnesses drive the factory |
 | `apps/console/` | React operator UI | Changing Pipeline, Fleet, Activity, Doctor, or agent detail flows |
-| `apps/ge-demo-generator/` | Generator, workbench, simulator tooling, factory worker | Changing generated workspaces, data, evals, or simulator integration |
-| `apps/ge-demo-generator/simulator-systems/` | Source-system simulator packs | Adding Workday/SAP/etc. behavior without a live system |
-| `apps/ge-demo-generator/mcp-service/` | Runtime MCP facade for generated agents | Changing how cloud agents call source-system tools |
+| `apps/factory/` | Generator, workbench, simulator tooling, factory worker | Changing generated workspaces, data, evals, or simulator integration |
+| `apps/factory/simulator-systems/` | Source-system simulator packs | Adding Workday/SAP/etc. behavior without a live system |
+| `apps/factory/mcp-service/` | Runtime MCP facade for generated agents | Changing how cloud agents call source-system tools |
 | `installer/terraform/` | Cloud project platform | Changing infra, IAM, data stores, Cloud Run, Agent Gateway, or MCP |
 | `packages/` | Shared workspace libraries | Changing cross-app contracts or reusable UI/runtime code |
 | `docs/` | GitHub Pages docs | Changing public explanation, guides, reference, or operations docs |
@@ -122,7 +122,7 @@ manifest path, then gives the next commands to run.
 
 ### Generator or generated-agent change
 
-1. Edit `apps/ge-demo-generator/src/*` or the relevant generator scripts.
+1. Edit `apps/factory/src/*` or the relevant generator scripts.
 2. Build one canary locally with `make mode-local && make provision-local CANARY=1`.
 3. Inspect the generated workspace under `.ge/factory/workspaces/`.
 4. Run evals when the change affects behavior contracts.
@@ -131,7 +131,7 @@ manifest path, then gives the next commands to run.
 
 ### Simulator change
 
-1. Add or edit a pack under `apps/ge-demo-generator/simulator-systems/`.
+1. Add or edit a pack under `apps/factory/simulator-systems/`.
 2. Validate the pack with the simulator tooling.
 3. Build a canary that uses the system.
 4. Update [Simulator systems](./reference/simulator-systems.html) and the
@@ -158,7 +158,7 @@ merging shared behavior.
 | CLI/core | `bun test tools` and the touched `ge` command | `make devex-check`, then `make ci` |
 | Console | `bun run build:console` | `make ci` |
 | Presentation | `bun run build:presentation` | `make ci` |
-| Generator | Relevant `apps/ge-demo-generator` tests | `make ci` plus canary build |
+| Generator | Relevant `apps/factory` tests | `make ci` plus canary build |
 | Python simulator runtime | `npm run test:py` | `make ci` plus simulator conformance test |
 | Terraform/platform | `ge infra plan`, `ge doctor` | Canary bootstrap in a test project |
 

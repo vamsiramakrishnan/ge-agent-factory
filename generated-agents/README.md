@@ -32,7 +32,7 @@ CLI path with explicit selected ids and optional destination git repo.
 ### Remote archive sync
 
 1. `ge agents build --all --remote` submits each agent in the use-case catalog
-   (`apps/ge-demo-generator/src/use-cases.generated.js`) to the factory gateway.
+   (`apps/factory/src/use-cases.generated.js`) to the factory gateway.
 2. The cloud factory persists each result to
    `gs://<bucket>/runs/<runId>/items/<workspaceId>/agent-result.tar.gz`.
 3. `ge agents sync --push` downloads each completed result archive, extracts it

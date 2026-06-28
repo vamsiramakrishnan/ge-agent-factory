@@ -20,7 +20,7 @@ sample rows — mount it into the running MCP service via the runtime overlay, a
   resolved as `$GE_HARNESS_PYTHON` → the repo `.venv/bin/python` → `python3`.
 - NL synthesis uses Vertex; pass `--no-llm` to force the offline heuristic tier.
 - Run `synthesize_cli.py` with **cwd =
-  `apps/ge-demo-generator/mcp-service/`** (it does a bare `import synthesis`).
+  `apps/factory/mcp-service/`** (it does a bare `import synthesis`).
 
 ## Steps
 
@@ -29,7 +29,7 @@ sample rows — mount it into the running MCP service via the runtime overlay, a
 1. **From natural language:**
 
    ```bash
-   cd apps/ge-demo-generator/mcp-service
+   cd apps/factory/mcp-service
    python synthesize_cli.py \
      --description "PartsLedger: parts, requisitions, approval flow" \
      --display-name PartsLedger
@@ -67,11 +67,11 @@ sample rows — mount it into the running MCP service via the runtime overlay, a
 If you'd rather hand-author from a template:
 
 ```bash
-node apps/ge-demo-generator/scripts/scaffold-simulator-pack.mjs --id partsledger --archetype procurement
+node apps/factory/scripts/scaffold-simulator-pack.mjs --id partsledger --archetype procurement
 # or via the npm wrapper:
 npm run generator:new-simulator -- --id partsledger --archetype procurement
 # list available archetypes:
-node apps/ge-demo-generator/scripts/scaffold-simulator-pack.mjs --list-archetypes
+node apps/factory/scripts/scaffold-simulator-pack.mjs --list-archetypes
 ```
 
 Flags: `--id` (required), `--archetype` (default `procurement`), `--displayName`,
@@ -86,12 +86,12 @@ overwrite.
   mounted pack visible to **every** mcp-service instance (durable, shared);
   otherwise it's in-process only. `--no-register` disables mounting.
 - **Promote to the corpus** — add `--promote` to write the 6 per-section files
-  into `apps/ge-demo-generator/simulator-systems/<id>/` and upsert the
+  into `apps/factory/simulator-systems/<id>/` and upsert the
   `registry.json` entry, graduating the system to a built-in. Promotion runs only
   when the synthesized result is `valid`.
 
    ```bash
-   cd apps/ge-demo-generator/mcp-service
+   cd apps/factory/mcp-service
    python synthesize_cli.py --description "PartsLedger ..." --display-name PartsLedger --promote
    ```
 
@@ -99,7 +99,7 @@ overwrite.
 
 ```bash
 # deterministic seed (Snowfakery, falls back to Faker offline):
-node apps/ge-demo-generator/scripts/generate-simulator-data.mjs --system partsledger --seed 42
+node apps/factory/scripts/generate-simulator-data.mjs --system partsledger --seed 42
 # validate the pack against the registry:
 npm run generator:validate-simulators -- --system partsledger --strict
 ```
@@ -111,7 +111,7 @@ required), `--seed N`, `--out <path>` (default `<packDir>/seed.json`),
 
 ## A simulator pack's files
 
-Each system lives at `apps/ge-demo-generator/simulator-systems/<id>/` with six files:
+Each system lives at `apps/factory/simulator-systems/<id>/` with six files:
 `schema.json`, `tools.json`, `workflows.json`, `projection.json`,
 `materialization.json`, `seed.json` — plus an entry in
 `simulator-systems/registry.json`. The runtime handler module is
@@ -123,7 +123,7 @@ Each system lives at `apps/ge-demo-generator/simulator-systems/<id>/` with six f
 # the pack validates clean:
 npm run generator:validate-simulators -- --system partsledger
 # after --promote, the directory + registry entry exist:
-ls apps/ge-demo-generator/simulator-systems/partsledger
+ls apps/factory/simulator-systems/partsledger
 ```
 
 For NL synthesis, confirm the CLI's JSON output has `"valid": true` and
@@ -132,7 +132,7 @@ For NL synthesis, confirm the CLI's JSON output has `"valid": true` and
 ## Troubleshoot
 
 - **`import synthesis` fails** — you're not in the mcp-service dir. `cd
-  apps/ge-demo-generator/mcp-service` first.
+  apps/factory/mcp-service` first.
 - **NL synthesis errors / no Vertex** — pass `--no-llm` to use the offline
   heuristic tier.
 - **Overlay system not visible to other instances** — set

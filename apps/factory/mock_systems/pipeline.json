@@ -1,0 +1,19 @@
+{
+  "name": "@ge/factory",
+  "domain": "general",
+  "createdAt": "2026-05-14T10:30:36.420Z",
+  "steps": {
+    "init": {
+      "status": "done",
+      "completedAt": "2026-05-14T10:30:36.421Z",
+      "name": "@ge/factory",
+      "domain": "general"
+    },
+    "test": {
+      "status": "failed",
+      "exitCode": null,
+      "completedAt": "2026-05-18T04:26:13.519Z"
+    }
+  },
+  "currentStep": "init"
+}

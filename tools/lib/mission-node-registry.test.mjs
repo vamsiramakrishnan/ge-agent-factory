@@ -80,13 +80,13 @@ describe("mission node registry", () => {
     ]);
     expect(mock.input.argv).toEqual([
       "node",
-      "apps/ge-demo-generator/scripts/plan-mock-data.mjs",
+      "apps/factory/scripts/plan-mock-data.mjs",
       "--dir",
       ".ge/missions/benefits",
       "--usecase",
       "benefits",
       "--sourceMap",
-      "apps/ge-demo-generator/src/use-case-source-map.generated.json",
+      "apps/factory/src/use-case-source-map.generated.json",
     ]);
     expect(snowfakery.input.argv).toEqual([
       "uv",
@@ -104,13 +104,13 @@ describe("mission node registry", () => {
     ]);
     expect(seed.input.argv).toEqual([
       "node",
-      "apps/ge-demo-generator/scripts/materialize-simulator-seeds.mjs",
+      "apps/factory/scripts/materialize-simulator-seeds.mjs",
       "--dir",
       ".ge/missions/benefits",
     ]);
     expect(validate.input.argv).toEqual([
       "node",
-      "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs",
+      "apps/factory/scripts/validate-simulator-pack.mjs",
       "--check",
       "true",
       "--system",
@@ -123,19 +123,19 @@ describe("mission node registry", () => {
   });
 
   test("classifies safe node commands by kind contract", () => {
-    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", scenario: "benefits", argv: ["node", "apps/ge-demo-generator/scripts/plan-mock-data.mjs", "--dir", "x", "--usecase", "benefits"] })).toBe(true);
-    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", spec: ".ge/interviews/new/agent-spec.json", argv: ["node", "apps/ge-demo-generator/scripts/plan-mock-data.mjs", "--dir", "x", "--spec", ".ge/interviews/new/agent-spec.json"] })).toBe(true);
-    expect(safeMissionNodeCommand("simulator.seed", { workspace: "x", argv: [process.execPath, "/repo/apps/ge-demo-generator/scripts/materialize-simulator-seeds.mjs", "--dir", "x"] })).toBe(true);
+    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", scenario: "benefits", argv: ["node", "apps/factory/scripts/plan-mock-data.mjs", "--dir", "x", "--usecase", "benefits"] })).toBe(true);
+    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", spec: ".ge/interviews/new/agent-spec.json", argv: ["node", "apps/factory/scripts/plan-mock-data.mjs", "--dir", "x", "--spec", ".ge/interviews/new/agent-spec.json"] })).toBe(true);
+    expect(safeMissionNodeCommand("simulator.seed", { workspace: "x", argv: [process.execPath, "/repo/apps/factory/scripts/materialize-simulator-seeds.mjs", "--dir", "x"] })).toBe(true);
     expect(safeMissionNodeCommand("snowfakery.generate", { workspace: ".ge/missions/benefits", argv: ["uv", "run", "--with", "snowfakery", "--with", "setuptools<81", "snowfakery", ".ge/missions/benefits/mock_data/snowfakery/structured.recipe.yml", "--output-format", "csv", "--output-folder", ".ge/missions/benefits/mock_data/snowfakery/output"] })).toBe(true);
-    expect(safeMissionNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs", "--check", "true", "--system", "workday"] })).toBe(true);
-    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", argv: ["node", "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs", "--dir", "x"] })).toBe(false);
-    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", argv: ["node", "apps/ge-demo-generator/scripts/plan-mock-data.mjs", "--dir", "y"] })).toBe(false);
-    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", spec: ".ge/interviews/new/agent-spec.json", argv: ["node", "apps/ge-demo-generator/scripts/plan-mock-data.mjs", "--dir", "x", "--spec", ".ge/interviews/other/agent-spec.json"] })).toBe(false);
+    expect(safeMissionNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "true", "--system", "workday"] })).toBe(true);
+    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--dir", "x"] })).toBe(false);
+    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", argv: ["node", "apps/factory/scripts/plan-mock-data.mjs", "--dir", "y"] })).toBe(false);
+    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", spec: ".ge/interviews/new/agent-spec.json", argv: ["node", "apps/factory/scripts/plan-mock-data.mjs", "--dir", "x", "--spec", ".ge/interviews/other/agent-spec.json"] })).toBe(false);
     expect(safeMissionNodeCommand("snowfakery.generate", { workspace: ".ge/missions/benefits", argv: ["uv", "run", "--with", "snowfakery", "--with", "setuptools<81", "snowfakery", ".ge/missions/benefits/mock_data/snowfakery/structured.recipe.yml", "--output-folder", ".ge/missions/benefits/mock_data/snowfakery/output"] })).toBe(false);
     expect(safeMissionNodeCommand("snowfakery.generate", { workspace: ".ge/missions/benefits", argv: ["uv", "run", "--with", "snowfakery", "--with", "setuptools<81", "snowfakery", ".ge/missions/benefits/mock_data/snowfakery/structured.recipe.yml", "--output-format", "json", "--output-folder", ".ge/missions/benefits/mock_data/snowfakery/output"] })).toBe(false);
-    expect(safeMissionNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs", "--system", "workday"] })).toBe(false);
-    expect(safeMissionNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs", "--check", "false", "--system", "workday"] })).toBe(false);
-    expect(safeMissionNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs", "--check", "true", "--system", "sap_successfactors"] })).toBe(false);
+    expect(safeMissionNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--system", "workday"] })).toBe(false);
+    expect(safeMissionNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "false", "--system", "workday"] })).toBe(false);
+    expect(safeMissionNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "true", "--system", "sap_successfactors"] })).toBe(false);
   });
 
   test("registry-built data nodes match existing dataMissionNodes output", () => {
@@ -155,13 +155,13 @@ describe("mission node registry", () => {
   });
 
   test("builds executable command details", () => {
-    const command = missionNodeCommand("simulator.validate", { argv: ["node", "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs", "--check", "true"] });
+    const command = missionNodeCommand("simulator.validate", { argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "true"] });
 
     expect(command.kind).toBe("simulator.validate");
     expect(command.stage).toBe("simulator.validate");
     expect(command.prefix).toBe("simval");
     expect(command.cmd).toBe(process.execPath);
-    expect(command.args[0]).toBe("apps/ge-demo-generator/scripts/validate-simulator-pack.mjs");
+    expect(command.args[0]).toBe("apps/factory/scripts/validate-simulator-pack.mjs");
   });
 
   test("mock.generate semantic validation catches empty plans and missing requested simulator", () => {

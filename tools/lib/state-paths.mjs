@@ -72,13 +72,13 @@ export const LEGACY_STATE_PATHS = {
     jobs: join(REPO_ROOT, ".harness", "console-jobs"),
   },
   factory: {
-    root: join(REPO_ROOT, "apps", "ge-demo-generator", ".harness", "factory"),
-    events: join(REPO_ROOT, "apps", "ge-demo-generator", ".harness", "factory", "factory-events.jsonl"),
-    projects: join(REPO_ROOT, "apps", "ge-demo-generator", ".harness", "projects"),
-    projectsJson: join(REPO_ROOT, "apps", "ge-demo-generator", ".harness", "projects.json"),
+    root: join(REPO_ROOT, "apps", "factory", ".harness", "factory"),
+    events: join(REPO_ROOT, "apps", "factory", ".harness", "factory", "factory-events.jsonl"),
+    projects: join(REPO_ROOT, "apps", "factory", ".harness", "projects"),
+    projectsJson: join(REPO_ROOT, "apps", "factory", ".harness", "projects.json"),
   },
   cache: {
-    uv: join(REPO_ROOT, "apps", "ge-demo-generator", ".harness", "uv-cache"),
+    uv: join(REPO_ROOT, "apps", "factory", ".harness", "uv-cache"),
   },
 };
 

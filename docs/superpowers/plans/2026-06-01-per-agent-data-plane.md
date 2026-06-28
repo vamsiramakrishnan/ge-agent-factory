@@ -6,7 +6,7 @@
 
 **Architecture:** Three tiers — Tier-1 shared instances via Terraform (`installer/terraform/data_plane.tf`), Tier-2 per-agent objects created+loaded idempotently in the existing `load_data` factory stage, Tier-3 generated `tools.py` backend switch (`GE_DATA_BACKEND`, default `fixtures`). Spec: `docs/superpowers/specs/2026-06-01-per-agent-data-plane-design.md`.
 
-**Tech Stack:** Terraform (google + google-beta ~>6.0), Bun + citty CLI (`tools/`), Node generator (`apps/ge-demo-generator`), Python ADK (`tools.py`), gcloud/bq/psql.
+**Tech Stack:** Terraform (google + google-beta ~>6.0), Bun + citty CLI (`tools/`), Node generator (`apps/factory`), Python ADK (`tools.py`), gcloud/bq/psql.
 
 **Coordination:** Tasks 1–8 + 12 are `tools/` + `installer/` (this change's territory). Tasks 9–11 modify the generator (`plan-mock-data.mjs`, `factory-worker.js`, the `tools.py` template) which the parallel packs/source-integration work also edits — sequence those with that owner; build on `source-integration-plan.json` (`52af872`).
 
@@ -18,10 +18,10 @@
 - `installer/terraform/variables.tf` (modify) — `enable_alloydb`/`enable_bigtable`/`enable_bigquery`/`enable_gcs_data` (default true), `data_bucket_name`, `bq_data_location`, `alloydb_*` sizing, `vpc_network`.
 - `tools/lib/factory-core.mjs` (modify) — `dataUp()`, data-plane fields in `loadConfig`/`init`, doctor data-plane checks.
 - `tools/ge.mjs` (modify) — `ge data <up|doctor>` command.
-- `apps/ge-demo-generator/scripts/plan-mock-data.mjs` (modify) — Tier-2 describe-or-create+load per-agent objects.
-- `apps/ge-demo-generator/src/factory-worker.js` (modify) — pass data-plane connection substitutions to `load_data`.
-- `apps/ge-demo-generator/scripts/ge-mock.mjs` (modify) — `tools.py` template backend switch.
-- `apps/ge-demo-generator/tests/data-plane.test.js` (new) — generator unit tests.
+- `apps/factory/scripts/plan-mock-data.mjs` (modify) — Tier-2 describe-or-create+load per-agent objects.
+- `apps/factory/src/factory-worker.js` (modify) — pass data-plane connection substitutions to `load_data`.
+- `apps/factory/scripts/factory.mjs` (modify) — `tools.py` template backend switch.
+- `apps/factory/tests/data-plane.test.js` (new) — generator unit tests.
 - `docs/OPERATIONS.md` (modify) — data-plane section + cost note.
 
 ---
@@ -300,7 +300,7 @@ export function dataDoctor(cfg) {
 
 ## Task 9: Tier-2 — per-agent object create+load (generator) [coordinate]
 
-**Files:** Modify `apps/ge-demo-generator/scripts/plan-mock-data.mjs`; Test `apps/ge-demo-generator/tests/data-plane.test.js`
+**Files:** Modify `apps/factory/scripts/plan-mock-data.mjs`; Test `apps/factory/tests/data-plane.test.js`
 
 - [ ] **Step 1: Write the failing test** (`tests/data-plane.test.js`)
 
@@ -320,7 +320,7 @@ test("alloydb load creates per-agent database then applies schema", () => {
 });
 ```
 
-- [ ] **Step 2: Run → fail** — `cd apps/ge-demo-generator && node --test tests/data-plane.test.js` → FAIL (`buildLoadScript` not exported).
+- [ ] **Step 2: Run → fail** — `cd apps/factory && node --test tests/data-plane.test.js` → FAIL (`buildLoadScript` not exported).
 
 - [ ] **Step 3: Implement** — extract/extend the per-store load-script bodies (currently inline at `plan-mock-data.mjs:683-749`) into an exported `buildLoadScript(store, { agentId })` that emits describe-or-create against the per-agent object then load. Example BigQuery body:
 
@@ -353,7 +353,7 @@ Then have the existing writers call `buildLoadScript(store, { agentId: plan.id }
 
 ## Task 10: Tier-2 — data-plane substitutions to load_data (generator) [coordinate]
 
-**Files:** Modify `apps/ge-demo-generator/src/factory-worker.js`
+**Files:** Modify `apps/factory/src/factory-worker.js`
 
 - [ ] **Step 1: Add connection substitutions** in `buildStageExecutionPlan` substitutionPairs (only used by `load_data` / cloudbuild):
 
@@ -365,12 +365,12 @@ Then have the existing writers call `buildLoadScript(store, { agentId: plan.id }
 ```
 And in `factory-bridge.js` `submitFactoryRun` payload `cloud` block, source these from the run target (which `ge`/.ge.json provides).
 
-- [ ] **Step 2: Verify** — `node --check apps/ge-demo-generator/src/factory-worker.js apps/presentation/src/server/factory-bridge.js`
+- [ ] **Step 2: Verify** — `node --check apps/factory/src/factory-worker.js apps/presentation/src/server/factory-bridge.js`
 - [ ] **Step 3: Commit** — `git commit -am "feat(data-plane): pass store connections to load_data"`
 
 ## Task 11: Tier-3 — tools.py backend switch (generator) [coordinate]
 
-**Files:** Modify `apps/ge-demo-generator/scripts/ge-mock.mjs` (the `tools.py` template); Test `tests/data-plane.test.js`
+**Files:** Modify `apps/factory/scripts/factory.mjs` (the `tools.py` template); Test `tests/data-plane.test.js`
 
 - [ ] **Step 1: Failing test** — assert the generated `tools.py` reads `GE_DATA_BACKEND` and has both a fixtures path and a bigquery path.
 
@@ -400,7 +400,7 @@ test("tools.py supports a backend switch defaulting to fixtures", () => {
 ## Verification (end to end)
 
 1. `terraform -chdir=installer/terraform validate` → Success (Tasks 1–6).
-2. `bun tools/ge.mjs data --help` and `node --test apps/ge-demo-generator/tests/data-plane.test.js` → pass (Tasks 7–11).
+2. `bun tools/ge.mjs data --help` and `node --test apps/factory/tests/data-plane.test.js` → pass (Tasks 7–11).
 3. On an authed machine: `ge data up` stands up bucket + AlloyDB + Bigtable + secret + IAM; `ge data doctor` green.
 4. Build 1 agent to `load_data` → `agent_<id>` dataset/db/table/named-db/prefix created + loaded.
 5. Deploy that agent with `GE_DATA_BACKEND=bigquery` + `GE_AGENT_NS=<id>` → it returns rows from its dataset.

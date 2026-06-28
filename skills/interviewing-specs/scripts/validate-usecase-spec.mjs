@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { readFileSync } from "node:fs";
-import { validateAgentSpecQuality } from "../../../apps/ge-demo-generator/src/agent-spec-registry.js";
+import { validateAgentSpecQuality } from "../../../apps/factory/src/agent-spec-registry.js";
 
 const args = process.argv.slice(2);
 

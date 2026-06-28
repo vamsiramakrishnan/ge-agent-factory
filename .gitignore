@@ -52,15 +52,15 @@ docs/vendor/bundle/
 apps/presentation/src/styles/tokens.generated.css
 apps/presentation/customer/types.generated.ts
 
-# ge-demo-generator runtime state — ephemeral, never commit
-apps/ge-demo-generator/.harness/
-apps/ge-demo-generator/.harness-test/
-apps/ge-demo-generator/.harness-test-service/
-apps/ge-demo-generator/.worktrees/
-apps/ge-demo-generator/.e2e-sample/
-apps/ge-demo-generator/runs/
-apps/ge-demo-generator/.ge-harness/
-apps/ge-demo-generator/simulator-systems/_openapi/
+# factory runtime state — ephemeral, never commit
+apps/factory/.harness/
+apps/factory/.harness-test/
+apps/factory/.harness-test-service/
+apps/factory/.worktrees/
+apps/factory/.e2e-sample/
+apps/factory/runs/
+apps/factory/.ge-harness/
+apps/factory/simulator-systems/_openapi/
 
 # Legacy scratch symlinks
 tmp/
@@ -94,13 +94,13 @@ installer/terraform/imports.generated.tf
 # ge sync --local: working clone of the dedicated agents repo
 .agents-repo/
 
-apps/ge-demo-generator/.harness/uv-cache/
+apps/factory/.harness/uv-cache/
 
 # repo-local Python venv for the Antigravity harness driver (uv; `make deps`)
 .venv/
 
 # Relocated use-case catalog — generated build artifact (regen with `npm run use-cases:sync`)
-apps/ge-demo-generator/generated/
+apps/factory/generated/
 
 # Python bytecode
 __pycache__/

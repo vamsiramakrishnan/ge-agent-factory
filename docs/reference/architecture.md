@@ -43,7 +43,7 @@ work runs**. The split point is the **build boundary** — the `previewed` stage
 Driven by `core.provisionLocal` in
 [`tools/lib/factory-core.mjs`](https://github.com/vamsiramakrishnan/ge-agent-factory).
 Stages **up to the build boundary** run on the operator's machine via the
-Antigravity harness (`apps/ge-demo-generator/`):
+Antigravity harness (`apps/factory/`):
 
 ```
 created → validated → harness_reviewed → harness_refined → data_packaged → previewed
@@ -89,7 +89,7 @@ Cloud Run gateway  ── enqueues ──▶  Cloud Tasks queue (ge-agent-factor
   retries + exponential backoff. Each task carries an OIDC token signed as the
   **runner** service account, with the worker URL as audience.
 - **Worker** (`ge-agent-factory-worker`,
-  [`apps/ge-demo-generator/src/factory-worker.js`](https://github.com/vamsiramakrishnan/ge-agent-factory))
+  [`apps/factory/src/factory-worker.js`](https://github.com/vamsiramakrishnan/ge-agent-factory))
   restores the workspace, runs the stage, records the stage event to Firestore +
   AlloyDB, streams bounded log frames, and enqueues the next stage. It runs as the
   runner SA (Firestore, AlloyDB, GCS, Secret Manager access).

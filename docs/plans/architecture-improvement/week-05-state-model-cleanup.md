@@ -49,7 +49,7 @@ Acceptance criteria:
 
 Target areas:
 
-- `apps/ge-demo-generator/src/server.js`
+- `apps/factory/src/server.js`
 - extracted workspace/stage service from Week 4.
 
 Implementation tasks:
@@ -152,7 +152,7 @@ Acceptance criteria:
 
 ### Canonical SQLite Tables
 
-Add a migration under the existing DB module, for example `apps/ge-demo-generator/src/db/migrations/00xx_runtime_state.sql`:
+Add a migration under the existing DB module, for example `apps/factory/src/db/migrations/00xx_runtime_state.sql`:
 
 ```sql
 CREATE TABLE IF NOT EXISTS runtime_events (
@@ -228,7 +228,7 @@ Every event payload must include:
 
 ### Stage Transition Function
 
-Create `apps/ge-demo-generator/src/services/stage-machine.js`:
+Create `apps/factory/src/services/stage-machine.js`:
 
 ```js
 const ALLOWED = {
@@ -298,7 +298,7 @@ SSE endpoint behavior:
 Add command:
 
 ```bash
-bun apps/ge-demo-generator/src/cli.js state migrate
+bun apps/factory/src/cli.js state migrate
 ```
 
 Migration reads:
@@ -317,7 +317,7 @@ It writes:
 Dry run mode:
 
 ```bash
-bun apps/ge-demo-generator/src/cli.js state migrate --dry-run
+bun apps/factory/src/cli.js state migrate --dry-run
 ```
 
 ### API Changes
@@ -331,11 +331,11 @@ Do not break clients immediately. Keep response shape stable, but add fields:
 
 ### Tests To Add
 
-- `apps/ge-demo-generator/src/services/stage-machine.test.js`
+- `apps/factory/src/services/stage-machine.test.js`
   - invalid transitions rejected.
   - tested without validation rejected.
   - manual override records reason.
-- `apps/ge-demo-generator/src/services/projection-service.test.js`
+- `apps/factory/src/services/projection-service.test.js`
   - rebuilds `workspace.json`.
   - rebuilds `pipeline.json`.
 - `apps/console/src/server/transport.persistence.test.mjs`

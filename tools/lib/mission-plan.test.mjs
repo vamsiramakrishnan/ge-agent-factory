@@ -74,7 +74,7 @@ describe("mission graph", () => {
     expect(graph.input.workspace).toBe(".ge/missions/new-agent");
     expect(mock.input.argv).toEqual([
       "node",
-      "apps/ge-demo-generator/scripts/plan-mock-data.mjs",
+      "apps/factory/scripts/plan-mock-data.mjs",
       "--dir",
       ".ge/missions/new-agent",
       "--spec",

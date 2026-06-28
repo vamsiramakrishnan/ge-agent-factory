@@ -23,8 +23,8 @@
 | `tools/lib/exec-stream.mjs` (new) | Streaming exec helper: spawn piped, line-split stdout/stderr, env-normalize (PYTHONUNBUFFERED…), emit NDJSON `log` events + accumulate buffer. The single subprocess choke point. |
 | `tools/lib/events.mjs` (new) | NDJSON event schema + `makeEvent()` helper + line splitter (handles `\r`/ANSI). Shared by producers + tests. |
 | `tools/lib/factory-core.mjs` (mod) | Add `fleetStatus`, `tailLog`, `readArtifact` read ops; route `run` through exec-stream when a sink is passed. |
-| `apps/ge-demo-generator/src/factory-worker.js` (mod) | `runCommand` tees NDJSON to the live GCS sink (remote producer). |
-| `apps/ge-demo-generator/src/harness-runner.js` (mod) | Route chunk events → `.harness/runs/<runId>/<stage>.ndjson` + run index (local producer). |
+| `apps/factory/src/factory-worker.js` (mod) | `runCommand` tees NDJSON to the live GCS sink (remote producer). |
+| `apps/factory/src/harness-runner.js` (mod) | Route chunk events → `.harness/runs/<runId>/<stage>.ndjson` + run index (local producer). |
 | `apps/console/src/server/ge-api.mjs` (new) | The `/api/ge/*` handler (shared by server.js + vite plugin) — calls factory-core, streams SSE. |
 | `apps/console/server.js` (new) | Bun prod server: SPA + `/api/ge/*` (model: `apps/presentation/server.js`). |
 | `apps/console/vite.config.ts` (new) | Dev server + `ge-api` middleware plugin (model: presentation vite plugin). |
@@ -187,7 +187,7 @@ git -c user.email=vamramak@google.com -c user.name="Vamsi Ramakrishnan" commit -
 
 ## Task 3: Remote producer — worker tees NDJSON to a live GCS sink
 
-**Files:** Modify `apps/ge-demo-generator/src/factory-worker.js`
+**Files:** Modify `apps/factory/src/factory-worker.js`
 
 - [ ] **Step 1: Add an NDJSON append sink + route runCommand through execStream**
 
@@ -224,11 +224,11 @@ around lines 549–660) to use `execStream` with `onEvent: sink`, where `sink = 
 `stage_started`/`stage_done`/`stage_failed` events through the same sink at the existing
 `recordStageEvent` points. Keep the buffered `runCommand` for internal non-stage calls (token, tar).
 
-- [ ] **Step 3: Verify.** `node --check apps/ge-demo-generator/src/factory-worker.js` → OK. (Live GCS append runs authed; unit-tested logic lives in exec-stream/events.)
+- [ ] **Step 3: Verify.** `node --check apps/factory/src/factory-worker.js` → OK. (Live GCS append runs authed; unit-tested logic lives in exec-stream/events.)
 
 - [ ] **Step 4: Commit**
 ```bash
-git add apps/ge-demo-generator/src/factory-worker.js
+git add apps/factory/src/factory-worker.js
 git -c user.email=vamramak@google.com -c user.name="Vamsi Ramakrishnan" commit -m "feat(obs): worker tees stage logs to gs://.../<stage>.ndjson (remote producer)"
 ```
 
@@ -236,7 +236,7 @@ git -c user.email=vamramak@google.com -c user.name="Vamsi Ramakrishnan" commit -
 
 ## Task 4: Local producer — harness run journal
 
-**Files:** Modify `apps/ge-demo-generator/src/harness-runner.js`
+**Files:** Modify `apps/factory/src/harness-runner.js`
 
 - [ ] **Step 1: Write the journal**
 
@@ -253,11 +253,11 @@ import { makeEvent, splitLines } from "../../../tools/lib/events.mjs";
 // per stream: const sp = splitLines(); on chunk → for (line of sp.push(text)) appendFileSync(journalPath, JSON.stringify(makeEvent({runId,agentId,stage,type:"log",line,data:{stream}}))+"\n")
 ```
 
-- [ ] **Step 2: Verify.** `node --check apps/ge-demo-generator/src/harness-runner.js` → OK. Smoke: run a harness stage locally (offline) → assert `.harness/runs/<id>/<stage>.ndjson` exists and is valid NDJSON.
+- [ ] **Step 2: Verify.** `node --check apps/factory/src/harness-runner.js` → OK. Smoke: run a harness stage locally (offline) → assert `.harness/runs/<id>/<stage>.ndjson` exists and is valid NDJSON.
 
 - [ ] **Step 3: Commit**
 ```bash
-git add apps/ge-demo-generator/src/harness-runner.js
+git add apps/factory/src/harness-runner.js
 git -c user.email=vamramak@google.com -c user.name="Vamsi Ramakrishnan" commit -m "feat(obs): harness writes a local NDJSON run journal (local producer)"
 ```
 
@@ -300,7 +300,7 @@ export function readArtifact(cfg, { runId, item, name }) {
   return { found: r.ok, source: uri, content: r.ok ? r.out : "" };
 }
 ```
-(`GEN_DIR` already exists in the module; confirm it's the `apps/ge-demo-generator` root.)
+(`GEN_DIR` already exists in the module; confirm it's the `apps/factory` root.)
 
 - [ ] **Step 2: Verify.** `node --check tools/lib/factory-core.mjs` → OK.
 
@@ -502,7 +502,7 @@ stage transitions with agent/stage/status + link to `#/agent/:id`. Overview's st
 - [ ] **Step 1: Full build/typecheck sweep**
 ```bash
 cd apps/console && bun run lint && bun run build && echo CONSOLE_OK
-cd /home/user/fde-agent-factory && node --check tools/lib/exec-stream.mjs && node --check tools/lib/events.mjs && node --check tools/lib/factory-core.mjs && node --check apps/ge-demo-generator/src/factory-worker.js && node --check apps/ge-demo-generator/src/harness-runner.js && echo BACKEND_OK
+cd /home/user/fde-agent-factory && node --check tools/lib/exec-stream.mjs && node --check tools/lib/events.mjs && node --check tools/lib/factory-core.mjs && node --check apps/factory/src/factory-worker.js && node --check apps/factory/src/harness-runner.js && echo BACKEND_OK
 ```
 Expected: `CONSOLE_OK`, `BACKEND_OK`.
 

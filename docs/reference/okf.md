@@ -14,7 +14,7 @@ hand-edited, and exchanged as ordinary Markdown, then round-tripped back into a
 spec.
 
 The integration has three pieces, all under
-`apps/ge-demo-generator/scripts/`:
+`apps/factory/scripts/`:
 
 - [`spec-to-okf.mjs`](https://github.com/vamsiramakrishnan/ge-agent-factory) — spec → OKF bundle (export)
 - [`okf-to-spec.mjs`](https://github.com/vamsiramakrishnan/ge-agent-factory) — OKF bundle → partial spec (ingest)
@@ -97,20 +97,20 @@ derived). See [Spec schema](spec-schema.html) for those source fields.
 
 ```bash
 # From the built catalog, by use-case id:
-node apps/ge-demo-generator/scripts/spec-to-okf.mjs --id <useCaseId> [--out <dir>]
+node apps/factory/scripts/spec-to-okf.mjs --id <useCaseId> [--out <dir>]
 
 # From a spec JSON file directly:
-node apps/ge-demo-generator/scripts/spec-to-okf.mjs --spec <path/to/spec.json> [--out <dir>]
+node apps/factory/scripts/spec-to-okf.mjs --spec <path/to/spec.json> [--out <dir>]
 ```
 
-- Catalog input: `apps/ge-demo-generator/generated/use-cases.generated.json`.
+- Catalog input: `apps/factory/generated/use-cases.generated.json`.
 - Default output: `artifacts/okf/<id>/`.
 - Output: a conformant OKF v0.1 Knowledge Bundle.
 
 ### Ingest — `okf-to-spec.mjs`
 
 ```bash
-node apps/ge-demo-generator/scripts/okf-to-spec.mjs --bundle <dir>
+node apps/factory/scripts/okf-to-spec.mjs --bundle <dir>
 ```
 
 Reads a bundle and prints a reconstructed **partial spec** as JSON to stdout —

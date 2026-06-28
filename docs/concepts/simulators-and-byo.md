@@ -16,7 +16,7 @@ behaves as if it were wired into the real backends — without touching them.
 
 The simulators are **data-driven**, not hand-coded per system. A single generic
 engine
-([`apps/ge-demo-generator/mcp-service/simulator_runtime/`](https://github.com/vamsiramakrishnan/ge-agent-factory),
+([`apps/factory/mcp-service/simulator_runtime/`](https://github.com/vamsiramakrishnan/ge-agent-factory),
 notably `generic.py`) executes any system described by a **simulator pack** — a
 small set of declarative files under `simulator-systems/<id>/`:
 

@@ -102,7 +102,7 @@ MCP server.
 |------|------------|
 | [`apps/console`](apps/console) | The main operator UI — a React + Vite + Tailwind app whose Bun server exposes `/api/ge/*` (the same JSON the CLI emits). Views: Overview/Pipeline, Fleet (bulk build/ship/sync), Agent detail (stage pipeline + live logs + artifacts), Doctor, Activity. The **third surface** over `factory-core`. |
 | [`apps/presentation`](apps/presentation) | The transformation deck and source use-case catalog used to explain the system. |
-| [`apps/ge-demo-generator`](apps/ge-demo-generator) | The generator: the `ge-mock` generation pipeline, the lower-level web workbench, the factory runner/worker, and the generic multi-tenant FastMCP server under [`mcp-service/`](apps/ge-demo-generator/mcp-service). |
+| [`apps/factory`](apps/factory) | The generator: the `factory` generation pipeline, the lower-level web workbench, the factory runner/worker, and the generic multi-tenant FastMCP server under [`mcp-service/`](apps/factory/mcp-service). |
 | [`tools/`](tools) | The `ge` operator CLI (`ge.mjs`), the MCP server (`mcp-server.mjs`), and the shared operator core + runtime daemon under `tools/lib/`. |
 | [`installer/`](installer) | Terraform + the guided Cloud Shell installer (`TUTORIAL.md`) that stands the platform up in your project. |
 | [`docs/`](docs) | This documentation site (GitHub Pages) plus operator runbooks, ADRs, and design specs. |

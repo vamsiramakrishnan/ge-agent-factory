@@ -18,7 +18,7 @@ function makePlane(overrides = {}) {
   const commands = [];
   const plane = createMcpPlane({
     departments: ["hr"],
-    serviceDir: "/repo/apps/ge-demo-generator/mcp-service",
+    serviceDir: "/repo/apps/factory/mcp-service",
     repoRoot: "/repo",
     ensureGcloud: () => commands.push(["ensureGcloud"]),
     describeRun: (_cfg, service) => Object.hasOwn(overrides, "describeRun") ? overrides.describeRun(service) : readyService,
@@ -72,7 +72,7 @@ test("mcpDeploy builds via Cloud Build with the repo root context, then deploys 
   const build = commands.find((entry) => Array.isArray(entry[0]) && entry[0][0] === "builds" && entry[0][1] === "submit");
   expect(build).toBeDefined();
   expect(build[0]).toContain("--config");
-  expect(build[0]).toContain("apps/ge-demo-generator/mcp-service/cloudbuild.yaml");
+  expect(build[0]).toContain("apps/factory/mcp-service/cloudbuild.yaml");
   expect(build[0]).toContain("--substitutions");
   expect(build[0]).toContain(`_IMAGE=${image}`);
   // positional source = repo root → build context is the whole repo.
@@ -115,7 +115,7 @@ test("mcpDeploy honors a custom imageTag", () => {
 test("createMcpPlane requires repoRoot", () => {
   expect(() => createMcpPlane({
     departments: ["hr"],
-    serviceDir: "/repo/apps/ge-demo-generator/mcp-service",
+    serviceDir: "/repo/apps/factory/mcp-service",
     ensureGcloud: () => {},
     describeRun: () => null,
     serviceUrl: () => null,
@@ -126,12 +126,12 @@ test("createMcpPlane requires repoRoot", () => {
 });
 
 test("mcp-service cloudbuild.yaml is well-formed and uses repo-root context", () => {
-  const yamlPath = join(HERE, "..", "..", "apps", "ge-demo-generator", "mcp-service", "cloudbuild.yaml");
+  const yamlPath = join(HERE, "..", "..", "apps", "factory", "mcp-service", "cloudbuild.yaml");
   const yaml = readFileSync(yamlPath, "utf8");
   // sanity-check the structural keys + the load-bearing build args without a YAML dep.
   expect(yaml).toContain("steps:");
   expect(yaml).toContain("gcr.io/cloud-builders/docker");
-  expect(yaml).toContain('"build", "-f", "apps/ge-demo-generator/mcp-service/Dockerfile", "-t", "${_IMAGE}", "."');
+  expect(yaml).toContain('"build", "-f", "apps/factory/mcp-service/Dockerfile", "-t", "${_IMAGE}", "."');
   expect(yaml).toContain('"push", "${_IMAGE}"');
   expect(yaml).toContain("images:");
   expect(yaml).toContain("${_IMAGE}");
@@ -143,7 +143,7 @@ test("mcpDeploy preserves unrelated config and existing service URLs", () => {
   let stored = { project: "demo", gatewayUrl: "https://gateway", mcpServices: { finance: "https://finance.example" } };
   const plane = createMcpPlane({
     departments: ["hr", "finance"],
-    serviceDir: "/repo/apps/ge-demo-generator/mcp-service",
+    serviceDir: "/repo/apps/factory/mcp-service",
     repoRoot: "/repo",
     ensureGcloud: () => {},
     describeRun: () => readyService,

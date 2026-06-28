@@ -19,7 +19,7 @@ const CONTROL_PLANE_BUCKET = process.env.GE_AGENT_FACTORY_BUCKET || (CONTROL_PLA
 // the build.
 const WORKER_URL = process.env.GE_AGENT_FACTORY_WORKER_URL || "";
 
-const HARNESS_ROOT = resolve(import.meta.dirname, "../../../ge-demo-generator");
+const HARNESS_ROOT = resolve(import.meta.dirname, "../../../factory");
 const BRIDGE_STATE_PATH = resolve(import.meta.dirname, "../../../../.factory-runs.json");
 
 // Helper: slug name
@@ -43,7 +43,7 @@ function pascal(value) {
 }
 
 // Helper: humanize a machine id into a user-facing Title Case label.
-// Mirrors titleCase() in apps/ge-demo-generator/scripts/ge-mock/core/naming.mjs
+// Mirrors titleCase() in apps/factory/scripts/factory/core/naming.mjs
 // (kept local to avoid a cross-app import). "account_reconciliation_agent" →
 // "Account Reconciliation Agent". Used only for the GE display name id fallback.
 export function humanize(value) {
@@ -583,7 +583,7 @@ export async function submitFactoryRun(request) {
       mkdirSync(tempDir, { recursive: true });
 
       // Execute the local JS generator command to construct a real, fully compiled workspace (pyproject.toml, smoke tests, fixtures)
-      const generatorScript = join(HARNESS_ROOT, "scripts/ge-mock.mjs");
+      const generatorScript = join(HARNESS_ROOT, "scripts/factory.mjs");
       const cmdArgs = [generatorScript, "from-usecase", "--dir", tempDir];
       if (request.useCaseId) {
         cmdArgs.push("--usecase", request.useCaseId);
@@ -596,8 +596,8 @@ export async function submitFactoryRun(request) {
       // present, otherwise a neutral "general" (never the old "hr" default).
       cmdArgs.push("--domain", domain || "general");
 
-      // Pin the generated-agent model (default gemini-3.5-flash via ge-mock's own
-      // default) and forward an operator-set output-token budget; ge-mock reads these
+      // Pin the generated-agent model (default gemini-3.5-flash via factory's own
+      // default) and forward an operator-set output-token budget; factory reads these
       // from env. Unset maxOutputTokens ⇒ omitted from the agent (model default).
       const generateEnv = { ...process.env };
       if (request.model) generateEnv.GE_AGENT_MODEL = String(request.model);

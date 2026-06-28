@@ -2,12 +2,12 @@
   "kind": "ge.simulator-packs.manifest",
   "version": 1,
   "packageName": "@ge/simulator-packs",
-  "defaultCorpusId": "ge-demo-generator-simulator-systems",
+  "defaultCorpusId": "factory-simulator-systems",
   "corpora": [
     {
-      "id": "ge-demo-generator-simulator-systems",
-      "root": "apps/ge-demo-generator/simulator-systems",
-      "registry": "apps/ge-demo-generator/simulator-systems/registry.json",
+      "id": "factory-simulator-systems",
+      "root": "apps/factory/simulator-systems",
+      "registry": "apps/factory/simulator-systems/registry.json",
       "purpose": "Domain-realistic simulator schemas, tools, workflows, seed data, and backing-store projections for generated GE mock agents."
     }
   ]

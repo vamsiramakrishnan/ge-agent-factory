@@ -19,7 +19,7 @@ Target areas:
 
 - `tools/lib/factory-core.mjs`
 - `tools/lib/exec-stream.mjs`
-- `apps/ge-demo-generator/src/factory-worker.js`
+- `apps/factory/src/factory-worker.js`
 - `apps/presentation/src/server/factory-bridge.js`
 
 Implementation tasks:
@@ -73,7 +73,7 @@ Acceptance criteria:
 
 Target areas:
 
-- `apps/ge-demo-generator/src/server.js`
+- `apps/factory/src/server.js`
 
 Proposed modules:
 
@@ -111,8 +111,8 @@ Acceptance criteria:
 
 Target areas:
 
-- `apps/ge-demo-generator/src/factory-worker.js`
-- `apps/ge-demo-generator/src/factory-orchestration.js`
+- `apps/factory/src/factory-worker.js`
+- `apps/factory/src/factory-orchestration.js`
 
 Implementation tasks:
 
@@ -324,12 +324,12 @@ Split `factory-worker.js` into:
   - no auto-approve on plan.
 - `tools/lib/factory-client.test.mjs`
   - gateway URL/proxy behavior with mocked executor.
-- `apps/ge-demo-generator/src/services/preview-service.test.js`
+- `apps/factory/src/services/preview-service.test.js`
   - starts process with expected cwd/env.
   - terminates existing preview.
-- `apps/ge-demo-generator/src/routes/run-routes.test.js`
+- `apps/factory/src/routes/run-routes.test.js`
   - validates payload and delegates to RunService.
-- `apps/ge-demo-generator/src/worker/stage-runner.test.js`
+- `apps/factory/src/worker/stage-runner.test.js`
   - command plan is executed in order.
 
 ### Definition Of Done
