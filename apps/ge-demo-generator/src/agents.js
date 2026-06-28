@@ -34,6 +34,7 @@ export const AGENT_DEFS = [
       for (const file of options.attachments || []) args.push("--attach", file);
       if (options.enableFactoryTools) args.push("--enable-factory-tools");
       if (options.subagents === false) args.push("--no-subagents");
+      if (options.enableSubagents) args.push("--enable-subagents");
       if (options.conversationId) args.push("--conversation-id", options.conversationId);
       if (options.saveDir) args.push("--save-dir", options.saveDir);
       if (options.triggerEvery) args.push("--trigger-every", String(options.triggerEvery));

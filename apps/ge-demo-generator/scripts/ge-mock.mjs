@@ -2389,6 +2389,7 @@ async function cmdHarnessReview(dir, flags) {
     project: flags.project || flags["gcp-project"] || process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT || null,
     location: flags.location || flags.region || process.env.GOOGLE_CLOUD_LOCATION || process.env.GOOGLE_GENAI_LOCATION || null,
     responseSchemaFile: harnessResponseSchemaFile("harness-review"),
+    ...reviewFanoutOptions(),
     timeoutSec: Number(flags["timeout-sec"] || 300),
   });
 
@@ -2471,6 +2472,39 @@ function harnessResponseSchemaFile(name) {
   return new URL(`./schemas/${name}.schema.json`, import.meta.url).pathname;
 }
 
+function envOff(name) {
+  return ["1", "true", "yes", "on"].includes(String(process.env[name] || "").toLowerCase());
+}
+
+// Subagent fan-out for the read-only review/validation stage: turn capabilities
+// (and thus subagents) on while removing every write/exec builtin, so the
+// validator can delegate independent checks to subagents but still cannot mutate
+// the workspace. Disabled by the same opt-out as the refine fan-out.
+function reviewFanoutOptions() {
+  if (envOff("GE_HARNESS_NO_SUBAGENT_FANOUT")) return {};
+  return {
+    enableSubagents: true,
+    disableTools: ["CREATE_FILE", "EDIT_FILE", "DELETE_FILE", "WRITE_FILE", "RUN_COMMAND"],
+  };
+}
+
+// Resumable refine: a stable session id + save dir so a re-run of refine on the
+// same work item resumes the persisted conversation instead of starting over.
+function refineSessionId(dir, workItem) {
+  const base = workItem.runId && workItem.itemId
+    ? `${workItem.runId}-${workItem.itemId}`
+    : `refine-${basename(dir)}`;
+  return base.replace(/[^A-Za-z0-9._-]/g, "_");
+}
+
+async function refineResumeOptions(dir, workItem) {
+  if (envOff("GE_HARNESS_NO_RESUME")) return {};
+  const id = refineSessionId(dir, workItem);
+  const saveDir = join(HARNESS_DATA_ROOT, "harness-sessions", id);
+  await mkdir(saveDir, { recursive: true }).catch(() => {});
+  return { conversationId: id, saveDir };
+}
+
 async function applyHarnessReviewFeedback(dir, provider, review) {
   const feedback = {
     kind: "ge.harness_review.feedback",
@@ -2530,6 +2564,7 @@ async function cmdHarnessRefine(dir, flags) {
   const feedback = await readJson(feedbackPath, null);
   const context = await readWorkspaceReviewContext(dir);
   const message = await buildHarnessRefinePrompt({ workItem, workspaceContext: context, review, feedback });
+  const resumeOpts = await refineResumeOptions(dir, workItem);
 
   const result = await runHarnessTask({
     repoRoot: REPO_ROOT,
@@ -2548,6 +2583,9 @@ async function cmdHarnessRefine(dir, flags) {
     // Refine fixes generated code in place; it never deletes workspace files or
     // generates images. Remove those builtins from the model's context entirely.
     disableTools: ["DELETE_FILE", "GENERATE_IMAGE"],
+    // Resumable session: re-running refine on the same work item resumes rather
+    // than starting from scratch.
+    ...resumeOpts,
     timeoutSec: Number(flags["timeout-sec"] || 600),
   });
 

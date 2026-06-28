@@ -232,6 +232,35 @@ def resolve_disabled_tools(names, types):
     return resolved
 
 
+def tool_error_recovery_hint(exc):
+    """Transform an in-flight tool error into a short recovery instruction.
+
+    Returning a string from the on_tool_error hook (an Antigravity 'transform'
+    hook) replaces the raw error handed back to the model with actionable
+    guidance, instead of only logging it and letting it propagate. Conservative:
+    only well-understood, clearly-recoverable cases produce a hint; everything
+    else returns None so the SDK's default handling stands. The policy-denied
+    case pairs with the protected-file guard — it tells the model to stop
+    retrying a blocked edit (e.g. tools.py) rather than loop on it. Opt out with
+    GE_HARNESS_NO_TOOL_ERROR_RECOVERY.
+    """
+    if os.environ.get("GE_HARNESS_NO_TOOL_ERROR_RECOVERY", "").strip().lower() in TRUTHY:
+        return None
+    name = exc.__class__.__name__
+    msg = str(exc)
+    low = msg.lower()
+    if any(token in low for token in ("permission", "denied", "not allowed", "policy")):
+        return ("[Tool blocked by policy (e.g. a protected file such as tools.py, or a path outside the "
+                "workspace). Do not retry this exact action — pick an allowed file or a different step.]")
+    if isinstance(exc, FileNotFoundError) or "no such file" in low or "not found" in low:
+        return ("[Path not found. List the workspace (list_dir / find_file) to get the exact path, then "
+                "retry with a real path — do not invent paths.]")
+    if isinstance(exc, (ValueError, KeyError, TypeError)):
+        return (f"[{name}: {msg}. Re-check the tool's required argument names and types, then retry with "
+                "corrected arguments.]")
+    return None
+
+
 async def main() -> int:
     parser = argparse.ArgumentParser(description="Run a single prompt through the Google Antigravity SDK.")
     parser.add_argument("--permission-profile", default="review")
@@ -251,6 +280,9 @@ async def main() -> int:
                         help="Register built-in read-only factory tools (catalog + simulator discovery)")
     parser.add_argument("--no-subagents", dest="subagents", action="store_false", default=True,
                         help="Disable subagent delegation when capabilities are enabled")
+    parser.add_argument("--enable-subagents", dest="force_capabilities", action="store_true", default=False,
+                        help="Build CapabilitiesConfig (and thus subagents) even for a read-only/review run, "
+                             "so a read-only validator can fan independent checks out to subagents")
     parser.add_argument("--conversation-id", default=None, help="Resume/identify a persisted conversation")
     parser.add_argument("--save-dir", default=None, help="Persist conversation steps here (enables resume)")
     parser.add_argument("--trigger-every", type=float, default=None,
@@ -364,7 +396,7 @@ async def main() -> int:
     @hooks.on_tool_error
     async def on_tool_error(data):
         emit_status("tool_error", errorType=data.__class__.__name__, message=str(data))
-        return None
+        return tool_error_recovery_hint(data)
 
     @hooks.on_compaction
     async def on_compaction(data):
@@ -411,7 +443,7 @@ async def main() -> int:
     # review → read-only (omit capabilities; SDK default). workspace_write/full_auto
     # (or factory tools) → pass CapabilitiesConfig to enable tools, scoped by policy.
     write_allowed = args.permission_profile not in ("review", "read-only", "readonly")
-    if write_allowed or args.enable_factory_tools:
+    if write_allowed or args.enable_factory_tools or args.force_capabilities:
         cap_kwargs = {"enable_subagents": bool(args.subagents)}
         disabled_tools = resolve_disabled_tools(args.disable_tool, types) if args.disable_tool else []
         if disabled_tools:
@@ -488,6 +520,8 @@ async def main() -> int:
         emit_status("config_degraded", errorType=exc.__class__.__name__, message=str(exc))
         fallback = dict(config_kwargs)
         fallback.pop("response_schema", None)
+        fallback.pop("conversation_id", None)
+        fallback.pop("save_dir", None)
         if protect_policies:
             if base_workspace_policies:
                 fallback["policies"] = base_workspace_policies
