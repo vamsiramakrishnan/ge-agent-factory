@@ -26,10 +26,11 @@ import { createFactoryPlane, serviceUrl, serviceEnv } from "./factory-plane.mjs"
 import { buildFleetHealth } from "./fleet-health.mjs";
 import { buildJourneyPlan } from "./journey-plan.mjs";
 import { LEGACY_STATE_PATHS, STATE_PATHS, displayStatePath } from "./state-paths.mjs";
-import { loadInterviewSpecEntries, slug, validateGenerationSpec } from "../../apps/factory/src/agent-spec-registry.js";
-import { createFactoryPlan, runFactoryPlan } from "../../apps/factory/src/factory.js";
-import { removeWorkspace } from "../../apps/factory/src/projects.js";
-import { buildWorkspaceContractReport } from "../../apps/factory/src/workspace-contract.js";
+// Week-4: app-domain ops are imported via the two cycle-break boundary modules,
+// NOT directly from apps/factory — factory-core keeps zero app imports (enforced
+// by tools/check-no-app-imports.mjs).
+import { loadInterviewSpecEntries, slug, validateGenerationSpec } from "./factory-catalog.mjs";
+import { createFactoryPlan, runFactoryPlan, removeWorkspace, buildWorkspaceContractReport } from "./factory-local-ops.mjs";
 import { openRunLedger } from "./run-ledger.mjs";
 import { planWorkItem } from "./pipeline-state-machine.mjs";
 import { planReconcile } from "./reconcile.mjs";
