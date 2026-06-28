@@ -14,6 +14,10 @@ import {
   renderMermaidGraph,
 } from "./deploy-plan.js";
 
+// Merged refine completion packet (provider-agnostic) emitted by `ge-mock
+// harness-refine`. Carries the SDK-validated spec_to_code_fidelity verdict.
+const HARNESS_REFINE_PATH = "artifacts/harness-refine.json";
+
 async function readJson(path, fallback = null) {
   try {
     return JSON.parse(await readFile(path, "utf8"));
@@ -70,7 +74,7 @@ function compactPreview(previewReport) {
   };
 }
 
-function buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback }) {
+function buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback, refineResult }) {
   const blockers = [];
   if (validationReport?.ok !== true) blockers.push("validation report is not passing");
   if (!specCodeTrace) blockers.push(`missing ${ARTIFACT_PATHS.specCodeTrace}`);
@@ -83,12 +87,33 @@ function buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback
   if (hardFeedback.length) blockers.push(...hardFeedback.map((gap) => `harness feedback: ${gap}`));
   const specToCodeScore = Number(generatorFeedback?.specToCodeScore || 0);
   if (generatorFeedback && specToCodeScore > 0 && specToCodeScore < 4) blockers.push(`harness spec-to-code score below threshold: ${specToCodeScore}`);
+  // Review verdict: an explicit "not ok to promote" is a hard block.
+  if (generatorFeedback && generatorFeedback.okToPromote === false) blockers.push("harness review verdict: ok_to_promote is false");
+  // Refine verdict: the structured spec-to-code fidelity must be "pass". This is
+  // the SDK-validated field the refine harness now emits — it finally gates here.
+  const specToCodeFidelity = refineResult?.spec_to_code_fidelity || null;
+  if (specToCodeFidelity && specToCodeFidelity !== "pass") blockers.push(`refine spec-to-code fidelity: ${specToCodeFidelity}`);
   return {
     ok: blockers.length === 0,
     policy: PROMOTION_POLICY,
     specToCodeScore: generatorFeedback ? specToCodeScore : null,
+    specToCodeFidelity,
     blockers,
   };
+}
+
+// Evaluate the promotion gate for a workspace from its on-disk artifacts, without
+// rewriting the packet. Deploy entry points (local CLI + cloud worker) call this
+// to refuse shipping a workspace that hasn't passed validation + the harness
+// verdicts.
+export async function readPromotionGate(workspaceDir) {
+  const [validationReport, specCodeTrace, generatorFeedback, refineResult] = await Promise.all([
+    readJson(join(workspaceDir, ARTIFACT_PATHS.validationReport), null),
+    readJson(join(workspaceDir, ARTIFACT_PATHS.specCodeTrace), null),
+    readJson(join(workspaceDir, ARTIFACT_PATHS.generatorFeedback), null),
+    readJson(join(workspaceDir, HARNESS_REFINE_PATH), null),
+  ]);
+  return buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback, refineResult });
 }
 
 export async function createPromotionPacket({
@@ -103,6 +128,7 @@ export async function createPromotionPacket({
   const validationReport = await readJson(join(workspaceDir, ARTIFACT_PATHS.validationReport), null);
   const specCodeTrace = await readJson(join(workspaceDir, ARTIFACT_PATHS.specCodeTrace), null);
   const generatorFeedback = await readJson(join(workspaceDir, ARTIFACT_PATHS.generatorFeedback), null);
+  const refineResult = await readJson(join(workspaceDir, HARNESS_REFINE_PATH), null);
   const previewReport = await readJson(join(workspaceDir, ARTIFACT_PATHS.previewReport), null);
   const deployPlan = await readJson(join(workspaceDir, ARTIFACT_PATHS.deployPlan), null);
   const publishPlan = await readJson(join(workspaceDir, ARTIFACT_PATHS.publishPlan), null);
@@ -112,7 +138,7 @@ export async function createPromotionPacket({
   const pipeline = await readJson(join(workspaceDir, WORKSPACE_PATHS.pipeline), null);
   const files = await listWorkspaceFiles(workspaceDir);
   const generatedAt = new Date().toISOString();
-  const promotionGate = buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback });
+  const promotionGate = buildPromotionGate({ validationReport, specCodeTrace, generatorFeedback, refineResult });
 
   const packet = {
     schemaVersion: 1,
