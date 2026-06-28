@@ -4,9 +4,10 @@
  * Records which run/agent/brief produced each generated file via sidecar
  * .artifact.json files. Enables provenance queries: "who generated this?"
  */
-import { readFile, writeFile, readdir, stat } from "node:fs/promises";
+import { readFile, writeFile, stat } from "node:fs/promises";
 import { join, dirname, basename, extname } from "node:path";
 import { existsSync } from "node:fs";
+import { glob } from "tinyglobby";
 
 function artifactMetaPath(filePath) {
   const dir = dirname(filePath);
@@ -51,37 +52,19 @@ export async function readArtifactMeta(filePath) {
 }
 
 export async function listArtifacts(projectDir) {
-  const artifacts = [];
-  await walk(projectDir, "", artifacts, projectDir);
-  return artifacts;
-}
-
-async function walk(dir, relDir, out, root) {
-  let entries;
-  try { entries = await readdir(dir, { withFileTypes: true }); }
-  catch { return; }
-
-  for (const entry of entries) {
-    if (entry.name.startsWith(".")) continue;
-    if (["__pycache__", "node_modules", ".venv", "venv"].includes(entry.name)) continue;
-    const rel = relDir ? `${relDir}/${entry.name}` : entry.name;
-    const full = join(dir, entry.name);
-
-    if (entry.isDirectory()) {
-      await walk(full, rel, out, root);
-      continue;
-    }
-    if (!entry.isFile()) continue;
-
+  // dot:false (default) drops dotfiles/dot-dirs, matching the prior startsWith(".") skip.
+  const rels = await glob("**/*", {
+    cwd: projectDir, onlyFiles: true,
+    ignore: ["**/__pycache__/**", "**/node_modules/**", "**/venv/**"],
+  });
+  const out = [];
+  for (const rel of rels) {
+    const full = join(projectDir, rel);
     const meta = await readArtifactMeta(full);
     const st = await stat(full);
-    out.push({
-      path: rel,
-      size: st.size,
-      mtime: st.mtimeMs,
-      artifact: meta || null,
-    });
+    out.push({ path: rel, size: st.size, mtime: st.mtimeMs, artifact: meta || null });
   }
+  return out;
 }
 
 export async function recordRunArtifacts(projectDir, runId, agentId, projectId) {

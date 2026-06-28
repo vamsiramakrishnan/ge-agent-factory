@@ -12,10 +12,11 @@
 // That kills the recurring "run make catalog first" footgun — a stale or absent
 // catalog can no longer silently break commands or make the status board lie.
 // Disable with GE_NO_CATALOG_AUTOSYNC=1 (then a missing artifact throws as before).
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { globSync } from "tinyglobby";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const APP_ROOT = join(HERE, "..");
@@ -34,12 +35,10 @@ function autosyncDisabled() {
 
 function newestMtimeMs(path) {
   try {
-    const st = statSync(path);
-    if (!st.isDirectory()) return st.mtimeMs;
-    let max = st.mtimeMs;
-    for (const entry of readdirSync(path, { withFileTypes: true })) {
-      const child = join(path, entry.name);
-      const m = entry.isDirectory() ? newestMtimeMs(child) : statSync(child).mtimeMs;
+    let max = statSync(path).mtimeMs;
+    // Recurse via tinyglobby (dirs + files, incl. dotfiles) and take the newest mtime.
+    for (const entry of globSync("**/*", { cwd: path, absolute: true, dot: true, onlyFiles: false })) {
+      const m = statSync(entry).mtimeMs;
       if (m > max) max = m;
     }
     return max;
