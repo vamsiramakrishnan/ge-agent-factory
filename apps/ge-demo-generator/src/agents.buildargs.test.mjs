@@ -21,9 +21,21 @@ describe("antigravity-sdk buildArgs", () => {
     expect(args).toContain("agent.py");
   });
 
+  test("maps disabled tools to repeated --disable-tool flags", () => {
+    const args = sdk.buildArgs("prompt", {
+      cwd: "/ws",
+      permissionProfile: "workspace_write",
+      disableTools: ["DELETE_FILE", "GENERATE_IMAGE"],
+    });
+    expect(args.filter((a) => a === "--disable-tool").length).toBe(2);
+    expect(args).toContain("DELETE_FILE");
+    expect(args).toContain("GENERATE_IMAGE");
+  });
+
   test("omits new flags when unset (backward compatible)", () => {
     const args = sdk.buildArgs("prompt", { cwd: "/ws", permissionProfile: "review" });
     expect(args).not.toContain("--response-schema-file");
     expect(args).not.toContain("--protect-file");
+    expect(args).not.toContain("--disable-tool");
   });
 });

@@ -87,6 +87,37 @@ function buildSpecCoverageSection(workspaceDir) {
   }
 }
 
+// Build a "Subagent validation plan" section that tells a write-enabled harness
+// to delegate each INDEPENDENT validation dimension (topology, OKF query
+// coverage, eval mechanisms) to its own subagent — each reads only what it needs
+// and returns a compact verdict, keeping the parent context clean — then
+// synthesize and fix. Subagent delegation is model-driven, so this guides an
+// already-enabled capability rather than forcing it. Returns null when subagents
+// are unavailable, the opt-out env is set, or no validation sidecar exists
+// (additive: older workspaces and read-only runs are unchanged).
+function buildSubagentPlanSection(workspaceDir, { subagentsAvailable = false } = {}) {
+  if (!subagentsAvailable) return null;
+  const optOut = String(process.env.GE_HARNESS_NO_SUBAGENT_FANOUT || "").toLowerCase();
+  if (["1", "true", "yes", "on"].includes(optOut)) return null;
+  const hasWorkflow = existsSync(join(workspaceDir, "artifacts", "agent-workflow.json"));
+  const hasCoverage = existsSync(join(workspaceDir, "artifacts", "okf-coverage.json"));
+  if (!hasWorkflow && !hasCoverage) return null;
+  const dimensions = [];
+  if (hasWorkflow) {
+    dimensions.push('- "topology": app/agent.py matches the spec workflow — agent kind, per-stage tools, and the three guardrail callbacks (see the spec-workflow section).');
+  }
+  if (hasCoverage) {
+    dimensions.push('- "okf_query_coverage": every Query Capability\'s tools are reachable in the built topology (see the OKF coverage section).');
+    dimensions.push('- "eval_mechanisms": every Eval Scenario\'s mechanisms are callable from some (sub-)agent (see the OKF coverage section).');
+  }
+  return [
+    "# Subagent validation plan",
+    "This workspace has independent validation dimensions. To review each thoroughly without saturating your own context, delegate each dimension below to a subagent (start_subagent). Each subagent should read only what it needs and return a compact JSON verdict {\"dimension\":\"...\",\"status\":\"pass|partial|fail\",\"gaps\":[]}.",
+    ...dimensions,
+    `Spawn at most ${dimensions.length} subagents (one per dimension). Then, in the parent, synthesize their verdicts, apply any fixes (respecting the write rules above), and return the required output schema.`,
+  ].join("\n");
+}
+
 function readDotEnvSync(path) {
   if (!existsSync(path)) return {};
   const env = {};
@@ -149,6 +180,7 @@ export const __test = {
   findNearestConfig,
   parseAntigravityStatusLines,
   resolveVertexDefaults,
+  buildSubagentPlanSection,
 };
 
 function materializeWorkspaceCommandShims({ workspaceDir, repoRoot }) {
@@ -300,6 +332,7 @@ export async function runHarnessTask({
   allowFallback = false,
   responseSchemaFile = null,
   protectFiles = [],
+  disableTools = [],
   onEvent = null,
 } = {}) {
   const resolvedRepoRoot = resolve(repoRoot || new URL("..", import.meta.url).pathname);
@@ -349,6 +382,11 @@ export async function runHarnessTask({
   });
 
   const harnessProject = { id: "cli-harness", name: "CLI Harness" };
+  // Subagent fan-out is only meaningful when the adapter supports it and the run
+  // is write-enabled (CapabilitiesConfig — and thus subagents — is only built for
+  // non-review profiles in the driver).
+  const subagentsAvailable = plan.adapterId === "antigravity-sdk"
+    && !["review", "read-only", "readonly"].includes(plan.permissionProfile.id);
   const prompt = [
     "# Instructions",
     renderSystemPrompt(),
@@ -376,6 +414,9 @@ export async function runHarnessTask({
     // Additive: OKF coverage — verify the agent covers every Query Capability's
     // tools and every Eval Scenario's mechanisms; self-correct/flag gaps.
     buildSpecCoverageSection(cwd),
+    // Additive: when the run is write-enabled and validation sidecars exist,
+    // direct the harness to fan the independent checks out to subagents.
+    buildSubagentPlanSection(cwd, { subagentsAvailable }),
   ].filter(Boolean).join("\n");
 
   const binDir = materializeWorkspaceCommandShims({ workspaceDir: cwd, repoRoot: resolvedRepoRoot });
@@ -433,6 +474,12 @@ export async function runHarnessTask({
         ? process.env.GE_HARNESS_PROTECT.split(",").map((s) => s.trim()).filter(Boolean)
         : []);
     if (protect.length) sdkCaps.protectFiles = protect;
+    const disable = (Array.isArray(disableTools) && disableTools.length)
+      ? disableTools
+      : (process.env.GE_HARNESS_DISABLE_TOOLS
+        ? process.env.GE_HARNESS_DISABLE_TOOLS.split(",").map((s) => s.trim()).filter(Boolean)
+        : []);
+    if (disable.length) sdkCaps.disableTools = disable;
   }
   const args = def.buildArgs(prompt, { cwd: executionCwd, model, permissionProfile: plan.permissionProfile.id, vertex: vertexDefaults.vertex, project: vertexDefaults.project, location: vertexDefaults.location, agentLogFilePath, skillsPaths: skillPaths, ...sdkCaps });
 

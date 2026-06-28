@@ -40,6 +40,7 @@ export const AGENT_DEFS = [
       if (options.policy) args.push("--policy", options.policy);
       if (options.responseSchemaFile) args.push("--response-schema-file", options.responseSchemaFile);
       for (const name of options.protectFiles || []) args.push("--protect-file", name);
+      for (const name of options.disableTools || []) args.push("--disable-tool", name);
       return args;
     },
     promptViaStdin: true,
