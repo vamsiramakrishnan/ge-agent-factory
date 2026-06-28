@@ -210,6 +210,28 @@ def build_protect_policies(names, agpolicy, types):
     return policies
 
 
+def resolve_disabled_tools(names, types):
+    """Map built-in tool names (e.g. "DELETE_FILE") to types.BuiltinTools members.
+
+    disabled_tools physically removes a tool's schema from the model's context
+    (the model never learns it exists) — stronger and cheaper than a deny. Unknown
+    names are skipped; any failure returns [] so the run is unaffected.
+    """
+    resolved = []
+    try:
+        builtins = types.BuiltinTools
+        for raw in names:
+            key = str(raw).strip().upper()
+            if hasattr(builtins, key):
+                resolved.append(getattr(builtins, key))
+            else:
+                emit_status("disable_tool_unknown", name=raw)
+    except Exception as exc:  # noqa: BLE001
+        emit_status("disabled_tools_unavailable", reason=str(exc))
+        return []
+    return resolved
+
+
 async def main() -> int:
     parser = argparse.ArgumentParser(description="Run a single prompt through the Google Antigravity SDK.")
     parser.add_argument("--permission-profile", default="review")
@@ -240,6 +262,9 @@ async def main() -> int:
                              "the agent's final structured output (SDK validates + retries on mismatch)")
     parser.add_argument("--protect-file", action="append", default=[],
                         help="Basename to hard-deny edits/creates for when write-enabled (repeatable), e.g. tools.py")
+    parser.add_argument("--disable-tool", action="append", default=[],
+                        help="Built-in tool name to physically remove from the model's context (repeatable), "
+                             "e.g. DELETE_FILE, GENERATE_IMAGE. Hard capability removal, not just a deny.")
     parser.add_argument("--dry-run", action="store_true", default=False,
                         help="Build + validate the LocalAgentConfig and exit without running the agent")
     args = parser.parse_args()
@@ -387,7 +412,15 @@ async def main() -> int:
     # (or factory tools) → pass CapabilitiesConfig to enable tools, scoped by policy.
     write_allowed = args.permission_profile not in ("review", "read-only", "readonly")
     if write_allowed or args.enable_factory_tools:
-        config_kwargs["capabilities"] = CapabilitiesConfig(enable_subagents=bool(args.subagents))
+        cap_kwargs = {"enable_subagents": bool(args.subagents)}
+        disabled_tools = resolve_disabled_tools(args.disable_tool, types) if args.disable_tool else []
+        if disabled_tools:
+            cap_kwargs["disabled_tools"] = disabled_tools
+        try:
+            config_kwargs["capabilities"] = CapabilitiesConfig(**cap_kwargs)
+        except Exception as exc:  # noqa: BLE001 - degrade if SDK rejects disabled_tools
+            emit_status("capabilities_degraded", message=str(exc))
+            config_kwargs["capabilities"] = CapabilitiesConfig(enable_subagents=bool(args.subagents))
     # Workspace scoping (existing behaviour) + protected-file deny guards (new).
     # Protect guards are prepended so they take priority over the broad workspace
     # allow. base_workspace_policies/protect_policies are tracked so config build
@@ -469,6 +502,7 @@ async def main() -> int:
             tools=len(config_kwargs.get("tools", [])),
             policies=len(config_kwargs.get("policies", [])),
             protectedFiles=list(args.protect_file),
+            disabledTools=list(args.disable_tool),
             responseSchema=bool(response_schema_value),
             capabilities=("capabilities" in config_kwargs),
             subagents=(bool(args.subagents) if "capabilities" in config_kwargs else None),

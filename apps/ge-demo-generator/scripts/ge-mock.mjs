@@ -2545,6 +2545,9 @@ async function cmdHarnessRefine(dir, flags) {
     location: flags.location || flags.region || process.env.GOOGLE_CLOUD_LOCATION || process.env.GOOGLE_GENAI_LOCATION || null,
     responseSchemaFile: harnessResponseSchemaFile("harness-refine"),
     protectFiles: ["tools.py"],
+    // Refine fixes generated code in place; it never deletes workspace files or
+    // generates images. Remove those builtins from the model's context entirely.
+    disableTools: ["DELETE_FILE", "GENERATE_IMAGE"],
     timeoutSec: Number(flags["timeout-sec"] || 600),
   });
 
