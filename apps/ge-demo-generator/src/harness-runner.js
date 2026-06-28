@@ -333,6 +333,9 @@ export async function runHarnessTask({
   responseSchemaFile = null,
   protectFiles = [],
   disableTools = [],
+  enableSubagents = false,
+  conversationId = null,
+  saveDir = null,
   onEvent = null,
 } = {}) {
   const resolvedRepoRoot = resolve(repoRoot || new URL("..", import.meta.url).pathname);
@@ -386,7 +389,7 @@ export async function runHarnessTask({
   // is write-enabled (CapabilitiesConfig — and thus subagents — is only built for
   // non-review profiles in the driver).
   const subagentsAvailable = plan.adapterId === "antigravity-sdk"
-    && !["review", "read-only", "readonly"].includes(plan.permissionProfile.id);
+    && (!["review", "read-only", "readonly"].includes(plan.permissionProfile.id) || Boolean(enableSubagents));
   const prompt = [
     "# Instructions",
     renderSystemPrompt(),
@@ -480,6 +483,13 @@ export async function runHarnessTask({
         ? process.env.GE_HARNESS_DISABLE_TOOLS.split(",").map((s) => s.trim()).filter(Boolean)
         : []);
     if (disable.length) sdkCaps.disableTools = disable;
+    // Force capabilities (and subagents) on for a read-only validator fan-out.
+    if (enableSubagents) sdkCaps.enableSubagents = true;
+    // Durable / resumable session — caller-provided, with env opt-ins.
+    const convId = conversationId || process.env.GE_HARNESS_CONVERSATION_ID || null;
+    if (convId) sdkCaps.conversationId = convId;
+    const sdir = saveDir || process.env.GE_HARNESS_SAVE_DIR || null;
+    if (sdir) sdkCaps.saveDir = sdir;
   }
   const args = def.buildArgs(prompt, { cwd: executionCwd, model, permissionProfile: plan.permissionProfile.id, vertex: vertexDefaults.vertex, project: vertexDefaults.project, location: vertexDefaults.location, agentLogFilePath, skillsPaths: skillPaths, ...sdkCaps });
 
