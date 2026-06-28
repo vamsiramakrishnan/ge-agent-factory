@@ -1,0 +1,36 @@
+---
+title: GE Agent Factory
+description: Turn a business use case into a tested, deployable Gemini Enterprise agent.
+template: splash
+hero:
+  tagline: One traceable path from use case → generated ADK agent + tools + tests + evals → deployed on Gemini Enterprise.
+  actions:
+    - text: Quickstart
+      link: /ge-agent-factory/start/quickstart/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/vamsiramakrishnan/ge-agent-factory
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid stagger>
+  <Card title="Operators" icon="rocket">
+    Stand up the platform and run the factory in your GCP project.
+    → [ge command reference](/ge-agent-factory/reference/cli/)
+  </Card>
+  <Card title="Agent authors" icon="pencil">
+    Turn a use-case spec into a generated, validated agent workspace.
+    → [Quickstart](/ge-agent-factory/start/quickstart/)
+  </Card>
+  <Card title="Contributors" icon="setting">
+    Architecture, the modularization run, and the contracts everything shares.
+    → [GitHub](https://github.com/vamsiramakrishnan/ge-agent-factory)
+  </Card>
+  <Card title="One registry, three surfaces" icon="puzzle">
+    Every `ge` command is a CLI command, an HTTP route, and an MCP tool — the
+    same operator registry, so they can never disagree.
+  </Card>
+</CardGrid>
