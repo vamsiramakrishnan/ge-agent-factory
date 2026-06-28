@@ -30,7 +30,7 @@ test("flags tracked runtime, cache, dependency, and build artifacts", () => {
     "apps/service/__pycache__/server.pyc",
     "apps/service/.pytest_cache/v/cache/nodeids",
     "apps/console/dist/index.html",
-    "apps/ge-demo-generator/simulator-systems/_openapi/workday/spec.json",
+    "apps/factory/simulator-systems/_openapi/workday/spec.json",
   ]);
 
   expect(findings.map((finding) => finding.id)).toEqual([
@@ -46,7 +46,7 @@ test("flags tracked runtime, cache, dependency, and build artifacts", () => {
 
 test("allows explicitly documented legacy generated assets", () => {
   const findings = trackedHygieneFindings([
-    "apps/ge-demo-generator/src/use-cases.generated.js",
+    "apps/factory/src/use-cases.generated.js",
     "apps/presentation/public/architecture/vendor/html2canvas.min.js",
   ]);
 

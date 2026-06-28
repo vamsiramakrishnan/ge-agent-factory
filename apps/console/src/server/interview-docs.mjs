@@ -263,10 +263,10 @@ export async function interviewOkfBundle(usecaseId) {
   const spec = agentSpec.generationSpec ? agentSpec : agentSpec.spec || agentSpec;
   if (!spec.id) spec.id = sanitizeId(usecaseId);
   const { buildBundle } = await import(
-    join(REPO_ROOT, "apps", "ge-demo-generator", "scripts", "spec-to-okf.mjs")
+    join(REPO_ROOT, "apps", "factory", "scripts", "spec-to-okf.mjs")
   );
   const { renderConcept } = await import(
-    join(REPO_ROOT, "apps", "ge-demo-generator", "scripts", "lib", "okf.mjs")
+    join(REPO_ROOT, "apps", "factory", "scripts", "lib", "okf.mjs")
   );
   const concepts = buildBundle(spec);
   const files = {};

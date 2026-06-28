@@ -1,7 +1,7 @@
 # Generated / machine-produced artifacts: collapse in diffs and mark as generated
 # so they are not reviewed as hand-written source. Regenerate via the generator
 # scripts (see Makefile), do not edit by hand.
-apps/ge-demo-generator/src/*.generated.js     linguist-generated=true -diff
-apps/ge-demo-generator/src/*.generated.json   linguist-generated=true -diff
-apps/ge-demo-generator/artifacts/*.json       linguist-generated=true -diff
-apps/ge-demo-generator/src/use-case-source-map.generated.json linguist-generated=true -diff
+apps/factory/src/*.generated.js     linguist-generated=true -diff
+apps/factory/src/*.generated.json   linguist-generated=true -diff
+apps/factory/artifacts/*.json       linguist-generated=true -diff
+apps/factory/src/use-case-source-map.generated.json linguist-generated=true -diff

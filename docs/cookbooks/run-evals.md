@@ -22,7 +22,7 @@ agent, and understand how it's derived from the spec's OKF test mechanisms.
 ## What gets generated
 
 For each agent the factory writes (see `renderAgentsCliEvalSet` in
-`apps/ge-demo-generator/scripts/ge-mock.mjs`):
+`apps/factory/scripts/factory.mjs`):
 
 - `tests/eval/evalsets/ge_behavior_contract.evalset.json` — the ADK-format eval
   set (`eval_set_id: "ge_behavior_contract"`, `eval_cases[]`, one per golden
@@ -70,7 +70,7 @@ So the evalset is the runnable projection of the spec's test concepts.
    ```
 
    > Flag caveat: `--all` and the JSON config paths are what the factory invokes
-   > today (verified in `ge-mock.mjs`). `agents-cli` flags can change between
+   > today (verified in `factory.mjs`). `agents-cli` flags can change between
    > releases — confirm with `agents-cli eval run --help` before relying on them.
    > The pin is `google-agents-cli>=0.2,<0.3` (see `make deps`), which keeps
    > `eval run --all`.

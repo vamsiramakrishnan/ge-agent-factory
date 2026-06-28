@@ -22,7 +22,7 @@ import { normalizeRuntimeTask } from "./runtime-contract.mjs";
 import { LEGACY_STATE_PATHS, REPO_ROOT, STATE_PATHS, ensureStateLayout } from "./state-paths.mjs";
 
 const GE_CLI = join(REPO_ROOT, "tools", "ge.mjs");
-const HARNESS_CLI = join(REPO_ROOT, "apps", "ge-demo-generator", "src", "cli.js");
+const HARNESS_CLI = join(REPO_ROOT, "apps", "factory", "src", "cli.js");
 const DAEMON_DIR = STATE_PATHS.runtime.root;
 const RUNS_DIR = STATE_PATHS.runtime.runs;
 const PID_PATH = STATE_PATHS.runtime.pid;
@@ -132,9 +132,9 @@ export function safeProcessCommand(argv = []) {
   }
   if (cmd !== "node" && cmd !== process.execPath) return false;
   const allowedScripts = [
-    "apps/ge-demo-generator/scripts/plan-mock-data.mjs",
-    "apps/ge-demo-generator/scripts/materialize-simulator-seeds.mjs",
-    "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs",
+    "apps/factory/scripts/plan-mock-data.mjs",
+    "apps/factory/scripts/materialize-simulator-seeds.mjs",
+    "apps/factory/scripts/validate-simulator-pack.mjs",
   ];
   return allowedScripts.some((allowed) => script === allowed || script.endsWith(`/${allowed}`));
 }
@@ -755,7 +755,7 @@ function startHarnessRunTask(input = {}) {
     input: resolvedInput,
   });
   mkdirSync(interactionDir(run.id), { recursive: true });
-  appendEvent(run.id, { type: "stage_started", stage: "harness.run", line: `$ node apps/ge-demo-generator/src/cli.js agent run --workspace-dir ${resolvedInput.workspaceDir || resolvedInput.workspace || "."} --agent ${resolvedInput.agent || resolvedInput.provider || "antigravity-sdk"} --stage ${resolvedInput.stage || "review"}` });
+  appendEvent(run.id, { type: "stage_started", stage: "harness.run", line: `$ node apps/factory/src/cli.js agent run --workspace-dir ${resolvedInput.workspaceDir || resolvedInput.workspace || "."} --agent ${resolvedInput.agent || resolvedInput.provider || "antigravity-sdk"} --stage ${resolvedInput.stage || "review"}` });
 
   execStream(process.execPath, args, {
     cwd: REPO_ROOT,
@@ -1217,7 +1217,7 @@ function resumeHarnessRunTask(run) {
   const args = harnessRunArgv(run.input || {});
   mkdirSync(interactionDir(run.id), { recursive: true });
   updateRun(run.id, { status: "running", endedAt: null, error: null });
-  appendEvent(run.id, { type: "stage_started", stage: "harness.run", line: `$ node apps/ge-demo-generator/src/cli.js agent run --agent ${run.input?.agent || run.input?.provider || "antigravity-sdk"} --stage ${run.input?.stage || "review"} (resume)` });
+  appendEvent(run.id, { type: "stage_started", stage: "harness.run", line: `$ node apps/factory/src/cli.js agent run --agent ${run.input?.agent || run.input?.provider || "antigravity-sdk"} --stage ${run.input?.stage || "review"} (resume)` });
   execStream(process.execPath, args, {
     cwd: REPO_ROOT,
     env: { ...process.env, CLOUDSDK_CORE_DISABLE_PROMPTS: "1", GE_HARNESS_INTERACTION_DIR: interactionDir(run.id) },

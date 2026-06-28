@@ -9,7 +9,7 @@ layout: default
 
 Generated agents are **real ADK** code — not mocks. The emitter is the `tools`
 command of
-[`apps/ge-demo-generator/scripts/ge-mock.mjs`](https://github.com/vamsiramakrishnan/ge-agent-factory)
+[`apps/factory/scripts/factory.mjs`](https://github.com/vamsiramakrishnan/ge-agent-factory)
 (`cmdTools`), which reads the use-case [spec](spec-schema.html) and writes a
 runnable [`agents-cli`](https://github.com/vamsiramakrishnan/ge-agent-factory)
 workspace. The reference example is
@@ -92,7 +92,7 @@ These three callbacks are the runtime enforcement of the
 ### Multi-agent topology
 
 When the spec's `behaviorContract.workflow` qualifies (≥2 tool-bearing stages over
-≥2 distinct tools), `ge-mock` emits a multi-agent topology instead of a single
+≥2 distinct tools), `factory` emits a multi-agent topology instead of a single
 `Agent`:
 
 - `workflow.mode === "sequential"` → `from google.adk.agents import Agent, SequentialAgent`
@@ -166,7 +166,7 @@ Two artifacts:
 
 ## Antigravity validation & self-correction
 
-[`apps/ge-demo-generator/scripts/antigravity-sdk-agent.py`](https://github.com/vamsiramakrishnan/ge-agent-factory)
+[`apps/factory/scripts/antigravity-sdk-agent.py`](https://github.com/vamsiramakrishnan/ge-agent-factory)
 is the harness driver run at the review/refine stages. It checks the generated
 agent **against the spec** — that the topology matches the workflow
 (single vs `SequentialAgent`/`ParallelAgent` with the right sub-agents), that the

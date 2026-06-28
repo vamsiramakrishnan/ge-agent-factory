@@ -19,9 +19,9 @@ Target areas:
 
 - `apps/presentation/server.js`
 - `apps/presentation/src/server/iap-jwt.js`
-- `apps/ge-demo-generator/src/server.js`
-- `apps/ge-demo-generator/src/cli.js`
-- `apps/ge-demo-generator/scripts/factory-worker.mjs`
+- `apps/factory/src/server.js`
+- `apps/factory/src/cli.js`
+- `apps/factory/scripts/factory-worker.mjs`
 
 Implementation tasks:
 
@@ -73,7 +73,7 @@ Acceptance criteria:
 Target areas:
 
 - `apps/presentation/src/server/factory-bridge.js`
-- `apps/ge-demo-generator/src/factory-worker.js`
+- `apps/factory/src/factory-worker.js`
 
 Implementation tasks:
 
@@ -121,13 +121,13 @@ Add these small modules before changing route behavior:
 - `apps/presentation/src/server/process-runner.js`
   - exports `runFile(command, args, options)` and `runFileJson(command, args, options)`.
   - wraps `execFile` or `spawn`, never shell strings.
-- `apps/ge-demo-generator/src/security/auth-middleware.js`
+- `apps/factory/src/security/auth-middleware.js`
   - exports `requireDaemonAuth(req, { host, allowInsecureLocal })`.
   - accepts `Authorization: Bearer <GE_DAEMON_TOKEN>`.
-- `apps/ge-demo-generator/src/security/oidc.js`
+- `apps/factory/src/security/oidc.js`
   - exports `verifyGoogleOidcRequest(req, { audience, serviceAccount })`.
   - uses Google cert/JWKS verification, with a small in-memory cert cache.
-- `apps/ge-demo-generator/src/security/safe-tar.js`
+- `apps/factory/src/security/safe-tar.js`
   - exports `validateTarEntries(tarPath)` and `extractTarSafely(tarPath, destination)`.
 
 ### Suggested Request Schema Shape
@@ -198,7 +198,7 @@ Rules:
 
 ### Worker OIDC Verification Flow
 
-In `apps/ge-demo-generator/scripts/factory-worker.mjs`:
+In `apps/factory/scripts/factory-worker.mjs`:
 
 1. Parse request.
 2. Before parsing the stage payload, verify:
@@ -236,12 +236,12 @@ Implement `extractTarSafely` as:
   - shell metacharacters are passed literally.
   - unknown request fields are rejected.
   - malformed stage names are rejected.
-- `apps/ge-demo-generator/src/security/safe-tar.test.js`
+- `apps/factory/src/security/safe-tar.test.js`
   - rejects `../escape`.
   - rejects absolute path entries.
   - rejects symlinks.
   - extracts valid archives.
-- `apps/ge-demo-generator/src/security/oidc.test.js`
+- `apps/factory/src/security/oidc.test.js`
   - rejects missing token.
   - rejects wrong audience.
   - rejects wrong service account.

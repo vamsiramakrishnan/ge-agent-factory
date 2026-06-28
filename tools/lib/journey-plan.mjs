@@ -114,7 +114,7 @@ function baseStages({ scenario, ids, systems, targetStage, mode, usecaseId }) {
       data: action("run_mission", "Generate data", [`ge mission run${scenarioArg}${systemsArg}${targetArg}`.trim()], true),
       simulator: action("run_mission", "Seed simulators", [`ge mission run${scenarioArg}${systemsArg}${targetArg}`.trim()], true),
       build: action("build_agents", "Build agents", [`ge agents build${idArg}${mode === "remote" ? "" : " --local"}`.trim()], true),
-      eval: action("generate_evals", "Generate evals", [`node apps/ge-demo-generator/scripts/spec-workbench.mjs golden-evals prompt --spec ${specPath}`], true),
+      eval: action("generate_evals", "Generate evals", [`node apps/factory/scripts/spec-workbench.mjs golden-evals prompt --spec ${specPath}`], true),
       preview: action("run_preview", "Run preview", [`ge mission run${scenarioArg}${systemsArg} --run-preview`.trim()], true),
       deploy: action("ship_agents", "Ship agents", [`ge agents ship${idArg}`.trim()], false),
     }[stage],

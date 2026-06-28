@@ -285,7 +285,7 @@ the new stack.
 | 503 / `Memory limit exceeded` | gateway too small for in-process scaffolding | `ge deploy gateway` (8/32 default) |
 | `Invalid IAP credentials: JWT 'email' claim isn't a string` | platform IAP on the service | `gcloud run services update <svc> --no-iap` (use the proxy) |
 | stuck at `queued` | Cloud Tasks → worker failing | check worker IAP/`run.invoker`; `ge logs` |
-| `pytest: file or directory not found: tests/test_smoke.py` | scaffolder didn't emit the smoke test | fixed in `ge-mock from-usecase` |
+| `pytest: file or directory not found: tests/test_smoke.py` | scaffolder didn't emit the smoke test | fixed in `factory from-usecase` |
 | `Extra 'eval' is not defined` | missing `eval` extra in `pyproject.toml` | fixed in scaffolder |
 | eval `extra_forbidden … metadata` / `string indices` | evalset not ADK-schema-conformant | fixed; contract metadata lives in `evals/golden.json` |
 | `Legacy configuration detected in pyproject.toml` | no `agents-cli-manifest.yaml` | fixed; scaffolder emits the manifest |

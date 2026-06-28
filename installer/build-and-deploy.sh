@@ -85,12 +85,12 @@ gcloud builds submit "${REPO_ROOT}" \
 
 echo "==> Building worker image (Cloud Build)..."
 # The worker imports @ge/run-ledger + @ge/okf (packages/) and tools/lib/*, all OUTSIDE
-# apps/ge-demo-generator, so build from the repo-root context via its cloudbuild config
+# apps/factory, so build from the repo-root context via its cloudbuild config
 # (--tag only sees the app dir) — symmetric with the gateway/console builds above.
 gcloud builds submit "${REPO_ROOT}" \
   --project="${PROJECT_ID}" \
   --region="${REGION}" \
-  --config="${REPO_ROOT}/apps/ge-demo-generator/cloudbuild.worker.yaml" \
+  --config="${REPO_ROOT}/apps/factory/cloudbuild.worker.yaml" \
   --substitutions="_IMAGE=${WORKER_IMAGE}" \
   --gcs-source-staging-dir="gs://${PROJECT_ID}-ge-agent-factory/cloudbuild/source"
 

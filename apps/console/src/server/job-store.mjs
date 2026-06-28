@@ -6,7 +6,7 @@ const REPO_ROOT = join(import.meta.dirname, "..", "..", "..", "..");
 const DATA_DIR = process.env.GE_CONSOLE_JOB_STORE || join(REPO_ROOT, ".ge", "console", "jobs");
 const DB_PATH = join(DATA_DIR, "jobs.sqlite");
 const requireFromRoot = createRequire(join(REPO_ROOT, "package.json"));
-const requireFromGenerator = createRequire(join(REPO_ROOT, "apps", "ge-demo-generator", "package.json"));
+const requireFromGenerator = createRequire(join(REPO_ROOT, "apps", "factory", "package.json"));
 
 let db = null;
 let dbPromise = null;
@@ -16,7 +16,7 @@ let dbPromise = null;
 // branch is a fallback for plain-node invocations; the two have subtly different
 // type coercion (e.g. integer vs bigint), so anything that opens jobs.sqlite
 // under node should be covered by a cross-runtime contract test before relying
-// on it. better-sqlite3 must be installed (declared in ge-demo-generator).
+// on it. better-sqlite3 must be installed (declared in factory).
 async function loadDriver(dbPath) {
   if (typeof Bun !== "undefined") {
     const { Database } = await import("bun:sqlite");

@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { STATE_PATHS, relativeToRepo } from "./state-paths.mjs";
 
-const DEMO_ROOT = "apps/ge-demo-generator";
+const DEMO_ROOT = "apps/factory";
 const DEFAULT_SOURCE_MAP = `${DEMO_ROOT}/src/use-case-source-map.generated.json`;
 
 function compact(value) {

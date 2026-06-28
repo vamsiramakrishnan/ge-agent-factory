@@ -18,7 +18,7 @@ COPY package.json bun.lock ./
 COPY packages ./packages
 COPY apps/console/package.json apps/console/
 COPY apps/presentation/package.json apps/presentation/
-COPY apps/ge-demo-generator/package.json apps/ge-demo-generator/
+COPY apps/factory/package.json apps/factory/
 RUN bun install --frozen-lockfile --ignore-scripts
 
 # Build the presentation SPA. tools/ is needed because the deck's server bridge
@@ -29,8 +29,8 @@ RUN bun run --cwd apps/presentation build
 
 # Generate the use-case catalog build artifact (relocated out of the source tree).
 # Needs the presentation slides (above) + the generator source.
-COPY apps/ge-demo-generator ./apps/ge-demo-generator
-RUN cd apps/ge-demo-generator && bun scripts/sync-use-cases-from-slides.mjs
+COPY apps/factory ./apps/factory
+RUN cd apps/factory && bun scripts/sync-use-cases-from-slides.mjs
 
 # ── production stage ──────────────────────────────────────────────────────────
 FROM oven/bun:1.3-alpine
@@ -43,7 +43,7 @@ COPY package.json bun.lock ./
 COPY packages ./packages
 COPY apps/console/package.json apps/console/
 COPY apps/presentation/package.json apps/presentation/
-COPY apps/ge-demo-generator/package.json apps/ge-demo-generator/
+COPY apps/factory/package.json apps/factory/
 RUN bun install --frozen-lockfile --production --ignore-scripts
 
 # Built SPA + the server and the modules it imports at runtime.
@@ -55,9 +55,9 @@ COPY apps/presentation/src/server ./apps/presentation/src/server
 COPY tools ./tools
 
 # Generator files needed for container-side scaffolding + the generated catalog.
-COPY apps/ge-demo-generator/scripts ./apps/ge-demo-generator/scripts
-COPY apps/ge-demo-generator/src ./apps/ge-demo-generator/src
-COPY --from=builder /app/apps/ge-demo-generator/generated ./apps/ge-demo-generator/generated
+COPY apps/factory/scripts ./apps/factory/scripts
+COPY apps/factory/src ./apps/factory/src
+COPY --from=builder /app/apps/factory/generated ./apps/factory/generated
 
 WORKDIR /app/apps/presentation
 EXPOSE 8080

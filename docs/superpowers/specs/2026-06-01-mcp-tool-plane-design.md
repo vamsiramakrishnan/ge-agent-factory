@@ -22,18 +22,18 @@ The core rule is:
 
 The current pipeline already creates a planning contract:
 
-- `ge-mock plan-data` writes data packages under `mock_data/`.
-- `ge-mock source-integration-plan` writes:
+- `factory plan-data` writes data packages under `mock_data/`.
+- `factory source-integration-plan` writes:
   - `mock_data/plan/source-integration-plan.json`
   - `artifacts/tool-registry-plan.json`
-- `apps/ge-demo-generator/scripts/ge-mock/integration/source-integration.mjs`
+- `apps/factory/scripts/factory/integration/source-integration.mjs`
   maps source systems to:
   - backing datastores
   - required Google Cloud APIs
   - first-party MCP candidates
   - custom MCP fallback
   - Agent Registry/tool registry commands
-- `ge-mock register --as mcp` registers a deployed Cloud Run MCP endpoint in
+- `factory register --as mcp` registers a deployed Cloud Run MCP endpoint in
   Agent Registry.
 
 The implementation now follows the Agent Registry MCP registration constraints:

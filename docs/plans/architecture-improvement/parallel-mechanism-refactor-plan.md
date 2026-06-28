@@ -107,10 +107,10 @@ test("exampleFunction returns stable shape", () => {
 
 Unless your assigned task explicitly names one of these paths, do not edit:
 
-- `apps/ge-demo-generator/src/use-cases.generated.js`
-- `apps/ge-demo-generator/src/domains.generated.js`
-- `apps/ge-demo-generator/src/agent-spec-registry.generated.json`
-- `apps/ge-demo-generator/simulator-systems/_openapi/**`
+- `apps/factory/src/use-cases.generated.js`
+- `apps/factory/src/domains.generated.js`
+- `apps/factory/src/agent-spec-registry.generated.json`
+- `apps/factory/simulator-systems/_openapi/**`
 - `.ge-daemon/**`
 - `.ge-harness/**`
 - `artifacts/**`
@@ -135,13 +135,13 @@ git commit -m "<area>: <specific mechanism>"
 
 ## Current Hotspots
 
-- `apps/ge-demo-generator/scripts/ge-mock.mjs`: large multi-responsibility CLI and pipeline script.
+- `apps/factory/scripts/factory.mjs`: large multi-responsibility CLI and pipeline script.
 - `tools/lib/runtime-daemon.mjs`: daemon store, HTTP routing, scheduler, executors, resume, and event streaming in one module.
 - `tools/lib/factory-core.mjs`: compatibility facade plus still-too-broad factory responsibilities.
 - `tools/lib/mission-plan.mjs`: graph construction policy hard-coded in one function.
-- `tools/lib/mission-node-registry.mjs`, `tools/lib/mission-nodes.mjs`, `apps/ge-demo-generator/src/simulator-sdk.js`: overlapping knowledge of mock/Snowfakery/simulator lifecycle.
+- `tools/lib/mission-node-registry.mjs`, `tools/lib/mission-nodes.mjs`, `apps/factory/src/simulator-sdk.js`: overlapping knowledge of mock/Snowfakery/simulator lifecycle.
 - `apps/console/src/views/Activity.tsx`, `apps/console/src/views/Overview.tsx`, `apps/console/src/services/geClient.ts`: console interprets runtime semantics directly.
-- `apps/ge-demo-generator/src/spec-workbench.js`, skills, mission planning, and simulator SDK: spec intake and golden-eval flow are not a single durable contract yet.
+- `apps/factory/src/spec-workbench.js`, skills, mission planning, and simulator SDK: spec intake and golden-eval flow are not a single durable contract yet.
 
 ## Batch 1: Foundations
 
@@ -464,8 +464,8 @@ git checkout -b refactor/c-shared-utilities
 **Primary files:**
 
 - `tools/lib/factory-core.mjs`
-- `apps/ge-demo-generator/scripts/ge-mock.mjs`
-- `apps/ge-demo-generator/scripts/plan-mock-data.mjs`
+- `apps/factory/scripts/factory.mjs`
+- `apps/factory/scripts/plan-mock-data.mjs`
 
 **Add:**
 
@@ -479,7 +479,7 @@ git checkout -b refactor/c-shared-utilities
 A low-capability model is likely to make two bad edits if this task is too broad:
 
 - It may start with `factory-core.mjs` because the helpers look simple. Do not do that first. `factory-core.mjs` exports `readJson()` and `writeJson()` and is consumed by CLI/MCP/console surfaces.
-- It may replace `ge-mock.mjs` argument parsing with a generic parser that returns a different shape. Do not do that first. `ge-mock.mjs` currently expects `{ command, flags }` and uses string `"true"` for bare flags.
+- It may replace `factory.mjs` argument parsing with a generic parser that returns a different shape. Do not do that first. `factory.mjs` currently expects `{ command, flags }` and uses string `"true"` for bare flags.
 
 Therefore Agent C is split into C1, C2, and C3. Execute them as separate commits or separate agents.
 
@@ -487,7 +487,7 @@ Therefore Agent C is split into C1, C2, and C3. Execute them as separate commits
 
 1. C1: add JSON IO helpers and migrate only `plan-mock-data.mjs`.
 2. C2: add CLI arg helpers with separate return-shape functions; migrate one low-risk call site.
-3. C3: audit naming helpers; do not create a competing naming module until the existing `ge-mock/core/naming.mjs` ownership is decided.
+3. C3: audit naming helpers; do not create a competing naming module until the existing `factory/core/naming.mjs` ownership is decided.
 4. Do not refactor business logic in any C subtask.
 
 **Detailed implementation recipe:**
@@ -498,9 +498,9 @@ Therefore Agent C is split into C1, C2, and C3. Execute them as separate commits
 
 - `tools/lib/json-io.mjs`
 - `tools/lib/json-io.test.mjs`
-- `apps/ge-demo-generator/scripts/plan-mock-data.mjs`
+- `apps/factory/scripts/plan-mock-data.mjs`
 
-Do not edit `ge-mock.mjs`, `factory-core.mjs`, `cli-args.mjs`, or `naming.mjs` in C1.
+Do not edit `factory.mjs`, `factory-core.mjs`, `cli-args.mjs`, or `naming.mjs` in C1.
 
 1. Add `tools/lib/json-io.mjs` with sync helpers only:
 
@@ -521,7 +521,7 @@ Do not edit `ge-mock.mjs`, `factory-core.mjs`, `cli-args.mjs`, or `naming.mjs` i
    ```
 
 2. It is acceptable for existing async callers to keep `await readJson(...)` or `await writeJson(...)` even though these helpers return synchronously. Do not rewrite callers just to remove `await`.
-3. In `apps/ge-demo-generator/scripts/plan-mock-data.mjs`, replace only local `readJson()` and `writeJson()` with:
+3. In `apps/factory/scripts/plan-mock-data.mjs`, replace only local `readJson()` and `writeJson()` with:
 
    ```js
    import { readJson, writeJson } from "../../../tools/lib/json-io.mjs";
@@ -537,8 +537,8 @@ Do not edit `ge-mock.mjs`, `factory-core.mjs`, `cli-args.mjs`, or `naming.mjs` i
 6. Run C1 verification before doing anything else:
 
    ```bash
-   bun test tools/lib/json-io.test.mjs apps/ge-demo-generator/scripts/plan-mock-data.test.mjs
-   node --check apps/ge-demo-generator/scripts/plan-mock-data.mjs
+   bun test tools/lib/json-io.test.mjs apps/factory/scripts/plan-mock-data.test.mjs
+   node --check apps/factory/scripts/plan-mock-data.mjs
    ```
 
 #### C2: CLI Args Only
@@ -551,7 +551,7 @@ Start C2 only after C1 is committed.
 - `tools/lib/cli-args.test.mjs`
 - one selected low-risk call site
 
-Do not migrate `ge-mock.mjs` in the first C2 commit.
+Do not migrate `factory.mjs` in the first C2 commit.
 
 Add `cli-args.mjs` with separate helpers for different existing parser shapes:
 
@@ -605,14 +605,14 @@ Do not immediately create `tools/lib/naming.mjs`.
 
 First inspect:
 
-- `apps/ge-demo-generator/scripts/ge-mock/core/naming.mjs`
-- `apps/ge-demo-generator/scripts/ge-mock.mjs`
+- `apps/factory/scripts/factory/core/naming.mjs`
+- `apps/factory/scripts/factory.mjs`
 - any existing imports of `snakeCase`, `safePyName`, `canonicalSystemId`, `validPythonIdentifierName`
 
 Then decide one of these paths:
 
-- promote the existing `ge-mock/core/naming.mjs` helpers into `tools/lib/naming.mjs` and re-export from the old path for compatibility, or
-- keep `ge-mock/core/naming.mjs` as the owner and do not add a competing `tools/lib/naming.mjs`.
+- promote the existing `factory/core/naming.mjs` helpers into `tools/lib/naming.mjs` and re-export from the old path for compatibility, or
+- keep `factory/core/naming.mjs` as the owner and do not add a competing `tools/lib/naming.mjs`.
 
 Do not move `safeAgentsCliProjectName()` in this task. It is deployment-specific, not a generic naming utility.
 
@@ -628,7 +628,7 @@ Do not move `safeAgentsCliProjectName()` in this task. It is deployment-specific
 **Acceptance criteria:**
 
 - No public behavior change.
-- `ge-mock help` still works.
+- `factory help` still works.
 - Existing tests pass.
 - New shared modules have direct tests.
 
@@ -636,8 +636,8 @@ Do not move `safeAgentsCliProjectName()` in this task. It is deployment-specific
 
 ```bash
 bun test tools/lib/json-io.test.mjs tools/lib/cli-args.test.mjs
-node --check apps/ge-demo-generator/scripts/ge-mock.mjs
-node --check apps/ge-demo-generator/scripts/plan-mock-data.mjs
+node --check apps/factory/scripts/factory.mjs
+node --check apps/factory/scripts/plan-mock-data.mjs
 ```
 
 ## Batch 2: Interplay Layer
@@ -656,12 +656,12 @@ git checkout -b refactor/d-data-realization-contract
 
 **Primary files:**
 
-- `apps/ge-demo-generator/src/simulator-sdk.js`
+- `apps/factory/src/simulator-sdk.js`
 - `tools/lib/mission-nodes.mjs`
 - `tools/lib/mission-node-registry.mjs`
-- `apps/ge-demo-generator/scripts/plan-mock-data.mjs`
-- `apps/ge-demo-generator/scripts/materialize-simulator-seeds.mjs`
-- `apps/ge-demo-generator/scripts/validate-simulator-pack.mjs`
+- `apps/factory/scripts/plan-mock-data.mjs`
+- `apps/factory/scripts/materialize-simulator-seeds.mjs`
+- `apps/factory/scripts/validate-simulator-pack.mjs`
 
 **Add:**
 
@@ -687,7 +687,7 @@ git checkout -b refactor/d-data-realization-contract
 1. Read these functions before editing:
 
    ```bash
-   rg -n "dataMissionNodes|missionDataContext|snowfakery|materialize|validate-simulator" tools/lib apps/ge-demo-generator/src apps/ge-demo-generator/scripts
+   rg -n "dataMissionNodes|missionDataContext|snowfakery|materialize|validate-simulator" tools/lib apps/factory/src apps/factory/scripts
    ```
 
 2. Create `tools/lib/data-realization-contract.mjs` with a simple plan shape first:
@@ -699,7 +699,7 @@ git checkout -b refactor/d-data-realization-contract
      scenario = "scenario",
      workspace = null,
      systems = [],
-     sourceMap = "apps/ge-demo-generator/src/use-case-source-map.generated.json",
+     sourceMap = "apps/factory/src/use-case-source-map.generated.json",
    } = {}) {
      const resolvedWorkspace = workspace || join(".ge-missions", scenario);
      const requestedSystems = Array.isArray(systems) ? systems.filter(Boolean) : [];
@@ -726,10 +726,10 @@ git checkout -b refactor/d-data-realization-contract
    ```js
    export function dataRealizationCommands(plan) {
      return {
-       mockGenerate: ["node", "apps/ge-demo-generator/scripts/plan-mock-data.mjs", "--dir", plan.workspace, "--usecase", plan.scenario, "--sourceMap", plan.sourceMap],
+       mockGenerate: ["node", "apps/factory/scripts/plan-mock-data.mjs", "--dir", plan.workspace, "--usecase", plan.scenario, "--sourceMap", plan.sourceMap],
        snowfakeryGenerate: ["snowfakery", plan.paths.snowfakeryRecipe, "--output-format", "csv", "--output-folder", plan.paths.snowfakeryOutput],
-       simulatorSeed: ["node", "apps/ge-demo-generator/scripts/materialize-simulator-seeds.mjs", "--dir", plan.workspace],
-       simulatorValidate: ["node", "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs", "--check", "true", ...(plan.systems[0] ? ["--system", plan.systems[0]] : [])],
+       simulatorSeed: ["node", "apps/factory/scripts/materialize-simulator-seeds.mjs", "--dir", plan.workspace],
+       simulatorValidate: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "true", ...(plan.systems[0] ? ["--system", plan.systems[0]] : [])],
      };
    }
    ```
@@ -757,7 +757,7 @@ git checkout -b refactor/d-data-realization-contract
 - The Snowfakery output folder must remain exactly `mock_data/snowfakery/output`.
 - The simulator validator command must preserve `--check true`.
 - If multiple systems are provided, do not blindly append every system to one validator command. Preserve the current behavior: validate the selected/effective system, or use the first requested system only when that is the existing behavior.
-- Treat `sourceMap` as a pass-through input. Do not generate or rewrite `apps/ge-demo-generator/src/use-case-source-map.generated.json`.
+- Treat `sourceMap` as a pass-through input. Do not generate or rewrite `apps/factory/src/use-case-source-map.generated.json`.
 
 **Minimum tests to write:**
 
@@ -776,7 +776,7 @@ git checkout -b refactor/d-data-realization-contract
 **Verification:**
 
 ```bash
-bun test tools/lib/data-realization-contract.test.mjs tools/lib/mission-plan.test.mjs apps/ge-demo-generator/src/simulator-sdk.test.mjs
+bun test tools/lib/data-realization-contract.test.mjs tools/lib/mission-plan.test.mjs apps/factory/src/simulator-sdk.test.mjs
 ```
 
 ### Agent E: Console Presentation Contract
@@ -881,27 +881,27 @@ bun --cwd apps/console run build
 
 Start after shared utilities land. These are extraction tasks; they should not change user-facing behavior.
 
-### Agent F: `ge-mock` Pipeline Split
+### Agent F: `factory` Pipeline Split
 
-**Goal:** Shrink `ge-mock.mjs` by moving cohesive responsibilities into modules.
+**Goal:** Shrink `factory.mjs` by moving cohesive responsibilities into modules.
 
 **Branch name:**
 
 ```bash
-git checkout -b refactor/f-ge-mock-split
+git checkout -b refactor/f-factory-split
 ```
 
 **Primary file:**
 
-- `apps/ge-demo-generator/scripts/ge-mock.mjs`
+- `apps/factory/scripts/factory.mjs`
 
 **Add modules:**
 
-- `apps/ge-demo-generator/scripts/ge-mock/core/pipeline-state.mjs`
-- `apps/ge-demo-generator/scripts/ge-mock/data/schema-generation.mjs`
-- `apps/ge-demo-generator/scripts/ge-mock/evals/renderers.mjs`
-- `apps/ge-demo-generator/scripts/ge-mock/harness/review-refine.mjs`
-- `apps/ge-demo-generator/scripts/ge-mock/deploy/release-commands.mjs`
+- `apps/factory/scripts/factory/core/pipeline-state.mjs`
+- `apps/factory/scripts/factory/data/schema-generation.mjs`
+- `apps/factory/scripts/factory/evals/renderers.mjs`
+- `apps/factory/scripts/factory/harness/review-refine.mjs`
+- `apps/factory/scripts/factory/deploy/release-commands.mjs`
 
 **Steps:**
 
@@ -910,7 +910,7 @@ git checkout -b refactor/f-ge-mock-split
 3. Extract golden eval and eval config rendering.
 4. Extract harness review/refine execution and feedback application.
 5. Extract deploy/register/publish helper functions only after earlier extractions are stable.
-6. Keep `ge-mock.mjs` as CLI command dispatch plus thin command handlers.
+6. Keep `factory.mjs` as CLI command dispatch plus thin command handlers.
 
 **Detailed implementation recipe:**
 
@@ -918,7 +918,7 @@ Do this as multiple small commits. Do not attempt all extractions in one pass.
 
 **Commit F1: pipeline state extraction only**
 
-1. In `ge-mock.mjs`, locate:
+1. In `factory.mjs`, locate:
    - `pipelinePath`
    - `schemaPath`
    - `fixturesDir`
@@ -929,15 +929,15 @@ Do this as multiple small commits. Do not attempt all extractions in one pass.
    - `savePipeline`
    - `markStep`
    - `requireStep`
-2. Copy those functions into `scripts/ge-mock/core/pipeline-state.mjs`.
+2. Copy those functions into `scripts/factory/core/pipeline-state.mjs`.
 3. Export them by name.
-4. Import them back into `ge-mock.mjs`.
+4. Import them back into `factory.mjs`.
 5. Delete the local definitions only after `node --check` passes.
 
 Run:
 
 ```bash
-node --check apps/ge-demo-generator/scripts/ge-mock.mjs
+node --check apps/factory/scripts/factory.mjs
 ```
 
 **Commit F2: schema generation extraction**
@@ -951,8 +951,8 @@ node --check apps/ge-demo-generator/scripts/ge-mock.mjs
    - `deriveSchemaFromUseCase`
    - `generateValue`
    - `toCsv`
-2. Move them into `scripts/ge-mock/data/schema-generation.mjs`.
-3. Keep any file-writing behavior in `ge-mock.mjs` unless the whole function is pure.
+2. Move them into `scripts/factory/data/schema-generation.mjs`.
+3. Keep any file-writing behavior in `factory.mjs` unless the whole function is pure.
 4. Add tests for `deriveSchemaFromUseCase` using a tiny fake use case.
 
 **Commit F3: eval rendering extraction**
@@ -962,7 +962,7 @@ node --check apps/ge-demo-generator/scripts/ge-mock.mjs
    - `renderAgentsCliEvalSet`
    - `renderEvalConfig`
    - `renderOptimizationConfig`
-2. Move them into `scripts/ge-mock/evals/renderers.mjs`.
+2. Move them into `scripts/factory/evals/renderers.mjs`.
 3. Add a test that the returned eval set contains expected tool calls from a fake contract.
 
 **Commit F4: harness review/refine extraction**
@@ -972,16 +972,16 @@ node --check apps/ge-demo-generator/scripts/ge-mock.mjs
    - `cmdHarnessReview`
    - `applyHarnessReviewFeedback`
    - `cmdHarnessRefine`
-2. Move helper logic into `scripts/ge-mock/harness/review-refine.mjs`.
-3. Keep CLI command wrappers in `ge-mock.mjs`.
+2. Move helper logic into `scripts/factory/harness/review-refine.mjs`.
+3. Keep CLI command wrappers in `factory.mjs`.
 
 **Commit F5: deploy helper extraction, gated later**
 
-Do not extract deploy/register/publish helpers in F1-F4. Only attempt `deploy/release-commands.mjs` after F1-F4 are merged and stable. If any deploy helper depends on mutable CLI state, leave it in `ge-mock.mjs`.
+Do not extract deploy/register/publish helpers in F1-F4. Only attempt `deploy/release-commands.mjs` after F1-F4 are merged and stable. If any deploy helper depends on mutable CLI state, leave it in `factory.mjs`.
 
 **Small-model dry-run clarifications:**
 
-- F1 is the only required first task. It must create `apps/ge-demo-generator/scripts/ge-mock/core/pipeline-state.mjs` and move only:
+- F1 is the only required first task. It must create `apps/factory/scripts/factory/core/pipeline-state.mjs` and move only:
   - `pipelinePath`
   - `schemaPath`
   - `fixturesDir`
@@ -995,7 +995,7 @@ Do not extract deploy/register/publish helpers in F1-F4. Only attempt `deploy/re
 - Extract dependency roots before functions that call them. Path helpers move before pipeline readers/writers.
 - Preserve command output shape exactly. JSON command output must keep the same top-level fields such as `ok`, `step`, paths, manifests, and diagnostics.
 - Do not change `ok(data)` or error response formatting while extracting modules.
-- Do not convert command handlers to a new framework. Keep `ge-mock.mjs` as the CLI dispatch file.
+- Do not convert command handlers to a new framework. Keep `factory.mjs` as the CLI dispatch file.
 
 **Do not change:**
 
@@ -1006,15 +1006,15 @@ Do not extract deploy/register/publish helpers in F1-F4. Only attempt `deploy/re
 
 **Acceptance criteria:**
 
-- `ge-mock.mjs` drops by at least 800 lines.
+- `factory.mjs` drops by at least 800 lines.
 - Command names and flags remain stable.
 - Existing generated output remains equivalent for representative fixtures.
 
 **Verification:**
 
 ```bash
-node --check apps/ge-demo-generator/scripts/ge-mock.mjs
-bun test apps/ge-demo-generator/scripts/plan-mock-data.test.mjs
+node --check apps/factory/scripts/factory.mjs
+bun test apps/factory/scripts/plan-mock-data.test.mjs
 ```
 
 ### Agent G: Runtime Daemon Split
@@ -1292,15 +1292,15 @@ git checkout -b refactor/i-spec-intake-contract
 
 **Primary files:**
 
-- `apps/ge-demo-generator/src/spec-workbench.js`
-- `apps/ge-demo-generator/src/simulator-sdk.js`
+- `apps/factory/src/spec-workbench.js`
+- `apps/factory/src/simulator-sdk.js`
 - `skills/interviewing-specs/SKILL.md`
 - `skills/planning-missions/SKILL.md`
 
 **Add:**
 
-- `apps/ge-demo-generator/src/spec-intake-contract.js`
-- `apps/ge-demo-generator/src/spec-intake-contract.test.mjs`
+- `apps/factory/src/spec-intake-contract.js`
+- `apps/factory/src/spec-intake-contract.test.mjs`
 
 **Steps:**
 
@@ -1318,8 +1318,8 @@ git checkout -b refactor/i-spec-intake-contract
 
 **Detailed implementation recipe:**
 
-1. Read `apps/ge-demo-generator/src/spec-workbench.js` first. Do not edit skills yet.
-2. Create `apps/ge-demo-generator/src/spec-intake-contract.js` with pure functions only.
+1. Read `apps/factory/src/spec-workbench.js` first. Do not edit skills yet.
+2. Create `apps/factory/src/spec-intake-contract.js` with pure functions only.
 3. Add this initial shape:
 
    ```js
@@ -1385,7 +1385,7 @@ git checkout -b refactor/i-spec-intake-contract
 **Verification:**
 
 ```bash
-bun test apps/ge-demo-generator/src/spec-workbench.test.mjs apps/ge-demo-generator/src/spec-intake-contract.test.mjs
+bun test apps/factory/src/spec-workbench.test.mjs apps/factory/src/spec-intake-contract.test.mjs
 ```
 
 ### Agent J: Source Hygiene Hardening
@@ -1464,8 +1464,8 @@ git checkout -b refactor/j-source-hygiene-hardening
 
 - `.ge-harness/run.json` is blocked
 - `artifacts/foo.json` is blocked
-- `apps/ge-demo-generator/scripts/__pycache__/x.pyc` is blocked
-- existing `apps/ge-demo-generator/src/use-cases.generated.js` remains allowed
+- `apps/factory/scripts/__pycache__/x.pyc` is blocked
+- existing `apps/factory/src/use-cases.generated.js` remains allowed
 - documented generated registries are still allowed when the existing hygiene policy allows them
 
 **Failure handling:**
@@ -1492,7 +1492,7 @@ git status --short
 3. Agent B: mission node registry.
 4. Agent D: data realization contract.
 5. Agent E: console presentation contract.
-6. Agent F: `ge-mock` split.
+6. Agent F: `factory` split.
 7. Agent G: runtime daemon split.
 8. Agent H: factory core split.
 9. Agent I: spec intake contract.
@@ -1544,5 +1544,5 @@ Follow-ups:
 - Console builds and renders historical runtime tasks.
 - Simulator SDK and mission graph share the same data realization contract.
 - New node kinds can be added through registry/config rather than daemon + console + CLI + simulator SDK edits.
-- `ge-mock.mjs`, `runtime-daemon.mjs`, and `factory-core.mjs` are smaller compatibility surfaces instead of god classes.
+- `factory.mjs`, `runtime-daemon.mjs`, and `factory-core.mjs` are smaller compatibility surfaces instead of god classes.
 - Source hygiene prevents runtime/generated clutter from silently becoming source.

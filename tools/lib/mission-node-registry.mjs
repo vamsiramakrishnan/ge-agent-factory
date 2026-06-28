@@ -14,7 +14,7 @@ const NODE_PREFIX = {
   "simulator.seed": "seed",
   "simulator.validate": "simval",
 };
-const DEMO_ROOT = "apps/ge-demo-generator";
+const DEMO_ROOT = "apps/factory";
 const DEFINITIONS = new Map();
 const REQUIRED_DEFINITION_FIELDS = [
   "kind",
@@ -269,9 +269,9 @@ function safeNodeArgv(kind, input = {}) {
   }
   if (cmd !== "node" && cmd !== process.execPath) return false;
   const allowed = {
-    "mock.generate": "apps/ge-demo-generator/scripts/plan-mock-data.mjs",
-    "simulator.seed": "apps/ge-demo-generator/scripts/materialize-simulator-seeds.mjs",
-    "simulator.validate": "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs",
+    "mock.generate": "apps/factory/scripts/plan-mock-data.mjs",
+    "simulator.seed": "apps/factory/scripts/materialize-simulator-seeds.mjs",
+    "simulator.validate": "apps/factory/scripts/validate-simulator-pack.mjs",
   }[kind];
   if (!scriptMatches(script, allowed)) return false;
   if (kind === "mock.generate") {

@@ -26,13 +26,13 @@ test("dataRealizationCommands preserve exact command argv order", () => {
   expect(dataRealizationCommands(plan)).toEqual({
     mockGenerate: [
       "node",
-      "apps/ge-demo-generator/scripts/plan-mock-data.mjs",
+      "apps/factory/scripts/plan-mock-data.mjs",
       "--dir",
       ".ge/missions/benefits",
       "--usecase",
       "benefits",
       "--sourceMap",
-      "apps/ge-demo-generator/src/use-case-source-map.generated.json",
+      "apps/factory/src/use-case-source-map.generated.json",
     ],
     snowfakeryGenerate: [
       "uv",
@@ -50,13 +50,13 @@ test("dataRealizationCommands preserve exact command argv order", () => {
     ],
     simulatorSeed: [
       "node",
-      "apps/ge-demo-generator/scripts/materialize-simulator-seeds.mjs",
+      "apps/factory/scripts/materialize-simulator-seeds.mjs",
       "--dir",
       ".ge/missions/benefits",
     ],
     simulatorValidate: [
       "node",
-      "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs",
+      "apps/factory/scripts/validate-simulator-pack.mjs",
       "--check",
       "true",
       "--system",
@@ -71,7 +71,7 @@ test("simulator validate preserves selected-system behavior", () => {
 
   expect(dataRealizationCommands(oneSystem).simulatorValidate).toEqual([
     "node",
-    "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs",
+    "apps/factory/scripts/validate-simulator-pack.mjs",
     "--check",
     "true",
     "--system",
@@ -79,7 +79,7 @@ test("simulator validate preserves selected-system behavior", () => {
   ]);
   expect(dataRealizationCommands(multipleSystems).simulatorValidate).toEqual([
     "node",
-    "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs",
+    "apps/factory/scripts/validate-simulator-pack.mjs",
     "--check",
     "true",
   ]);

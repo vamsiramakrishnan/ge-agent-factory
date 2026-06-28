@@ -114,7 +114,7 @@ export interface UseCaseApiSpec {
   description?: string;
   requestSchema: Record<string, string>;
   responseSchema: Record<string, string>;
-  // `fixture` + `mcpToolName` wire the API into the downstream ge-mock factory (gold reference).
+  // `fixture` + `mcpToolName` wire the API into the downstream factory factory (gold reference).
   // `idempotencyKey` records the deduplication key used by mutating endpoints (generator shape).
   fixture?: string;
   mcpToolName?: string;
@@ -143,7 +143,7 @@ export interface UseCaseDatastorePackagingSpec {
 // The behavior contract is what stops the factory from emitting hello-world
 // agents. A use case must declare *what the agent actually does* — the domain
 // tool intents, the evidence it must cite, when it escalates or refuses, and
-// the golden eval prompts that prove the workflow end-to-end. The ge-mock
+// the golden eval prompts that prove the workflow end-to-end. The factory
 // generator and workspace validators read this to produce and audit task-
 // specific ADK code rather than a generic list/query shell.
 
@@ -222,7 +222,7 @@ export interface UseCaseGenerationSpec {
   datastorePackaging: UseCaseDatastorePackagingSpec;
   // Required at generation time: this is what makes the produced agent task-
   // specific. Marked optional only so legacy slides type-check while they are
-  // migrated; the ge-mock factory and validators treat its absence as an error.
+  // migrated; the factory factory and validators treat its absence as an error.
   behaviorContract?: AgentBehaviorContract;
   validation: {
     smokePrompt: string;

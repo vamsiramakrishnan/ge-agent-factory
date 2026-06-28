@@ -2,7 +2,7 @@ import { join } from "node:path";
 import { buildMissionNode } from "./mission-node-registry.mjs";
 import { STATE_PATHS, relativeToRepo } from "./state-paths.mjs";
 
-const DEMO_ROOT = "apps/ge-demo-generator";
+const DEMO_ROOT = "apps/factory";
 
 function slug(value) {
   return String(value || "").replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "").toLowerCase();

@@ -13,7 +13,7 @@ The key idea is that the generated workspace must prove readiness before the lin
 Run doctor for the target stage:
 
 ```bash
-node apps/ge-demo-generator/src/cli.js workspace doctor <workspace-id> --stage <stage>
+node apps/factory/src/cli.js workspace doctor <workspace-id> --stage <stage>
 ```
 
 ## Role In The Line

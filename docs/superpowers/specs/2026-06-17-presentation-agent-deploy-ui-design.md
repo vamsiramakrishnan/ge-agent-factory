@@ -25,7 +25,7 @@ full interview (sub-project 1); the presentation only consumes its output.
   `getGeminiAgents`, location, SA), optional "Run Preflight Check", and a primary "Provision".
 - `factoryClient.startFactoryRun` → `POST /api/factory/usecase` →
   `server/factory-bridge.js submitFactoryRun` (prod: GCS index → scaffold → tar+upload → Firestore
-  queued → Cloud Tasks; local: shells `ge-demo-generator`).
+  queued → Cloud Tasks; local: shells `factory`).
 - Progress via GCS-poll-over-SSE → shared `<Lifecycle>` 8-stage tracker → "Open in Console".
 - The spec is a hardcoded `UseCaseGenerationSpec` `const` (`types/architecture.ts`) per slide.
 
