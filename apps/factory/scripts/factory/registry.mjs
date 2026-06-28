@@ -39,5 +39,21 @@ export function buildFactoryCommandTree({ resolveDir, handlers }) {
       },
       ({ args }) => handlers.promotionGate(resolveDir(args.dir), args),
     ),
+    sources: cmd(
+      "sources",
+      "Analyze use-case data sources (writes the source map + doc)",
+      {
+        json: { type: "string", description: "Output JSON path" },
+        md: { type: "string", description: "Output markdown path" },
+        slides: { type: "string", description: "Slides source directory" },
+      },
+      ({ args }) => handlers.sources(args),
+    ),
+    "pack-coverage": cmd(
+      "pack-coverage",
+      "Report scenario-pack coverage across the catalog",
+      { out: { type: "string", description: "Write the full report to this path" } },
+      ({ args }) => handlers.packCoverage(args),
+    ),
   };
 }

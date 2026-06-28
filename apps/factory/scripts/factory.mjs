@@ -5009,7 +5009,13 @@ async function main() {
   // migrated. Handlers are injected so registry.mjs has no import back here.
   const tree = buildFactoryCommandTree({
     resolveDir: (d) => resolve(d || "."),
-    handlers: { status: cmdStatus, listUsecases: cmdListUseCases, promotionGate: cmdPromotionGate },
+    handlers: {
+      status: cmdStatus,
+      listUsecases: cmdListUseCases,
+      promotionGate: cmdPromotionGate,
+      sources: cmdSources,
+      packCoverage: cmdPackCoverage,
+    },
   });
   const commandIdx = argv.findIndex((a) => !a.startsWith("-"));
   const commandName = commandIdx >= 0 ? argv[commandIdx] : "help";
