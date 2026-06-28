@@ -1,6 +1,7 @@
-import { readdir, readFile, stat } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { glob } from "tinyglobby";
 import {
   updateWorkspaceCapabilities,
   writeJsonArtifact,
@@ -28,29 +29,16 @@ async function readJson(path, fallback = null) {
 }
 
 async function listWorkspaceFiles(workspaceDir) {
-  const files = [];
-  async function walk(dir, relDir = "") {
-    let entries = [];
-    try {
-      entries = await readdir(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const entry of entries) {
-      if (entry.name === ".git" || entry.name === ".venv" || entry.name === "__pycache__") continue;
-      if (entry.name.startsWith(".") && entry.name !== ".ge-harness") continue;
-      const rel = relDir ? `${relDir}/${entry.name}` : entry.name;
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) {
-        await walk(full, rel);
-        continue;
-      }
-      if (!entry.isFile()) continue;
-      const info = await stat(full);
-      files.push({ path: rel, size: info.size, mtime: info.mtimeMs });
-    }
-  }
-  await walk(workspaceDir);
+  const rels = await glob("**/*", {
+    cwd: workspaceDir, onlyFiles: true, dot: true,
+    ignore: ["**/.git/**", "**/.venv/**", "**/__pycache__/**"],
+  });
+  // Preserve the prior dotfile rule: skip dot entries at any level EXCEPT .ge-harness.
+  const kept = rels.filter((p) => !p.split("/").some((seg) => seg.startsWith(".") && seg !== ".ge-harness"));
+  const files = await Promise.all(kept.map(async (rel) => {
+    const info = await stat(join(workspaceDir, rel));
+    return { path: rel, size: info.size, mtime: info.mtimeMs };
+  }));
   return files.sort((a, b) => a.path.localeCompare(b.path));
 }
 

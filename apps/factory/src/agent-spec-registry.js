@@ -1,5 +1,6 @@
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { basename, join, relative, resolve } from "node:path";
+import { glob } from "tinyglobby";
 
 export const AGENT_SPEC_SCHEMA_VERSION = 1;
 export const INTERVIEW_SPEC_DIR = "catalog/interview-specs";
@@ -309,20 +310,8 @@ export function sortAgentSpecEntries(entries) {
 }
 
 async function walkJson(dir) {
-  const out = [];
-  let entries;
-  try {
-    entries = await readdir(dir, { withFileTypes: true });
-  } catch (error) {
-    if (error?.code === "ENOENT") return out;
-    throw error;
-  }
-  for (const entry of entries) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) out.push(...await walkJson(full));
-    else if (entry.isFile() && entry.name.endsWith(".json")) out.push(full);
-  }
-  return out.sort();
+  // tinyglobby returns [] for a missing cwd (matches the prior ENOENT → []).
+  return (await glob("**/*.json", { cwd: dir, absolute: true })).sort();
 }
 
 export async function loadInterviewSpecEntries({ repoRoot, dir = join(repoRoot, INTERVIEW_SPEC_DIR) } = {}) {
