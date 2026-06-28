@@ -162,6 +162,54 @@ def _mcp_servers_from_specs(specs, McpStdioServer, McpSseServer, McpStreamableHt
     return servers
 
 
+def _make_protect_pred(name: str):
+    """Predicate for a deny policy: true when any string tool-arg points at `name`.
+
+    We scan every string value in the tool-call args rather than guessing the
+    SDK's path key (it differs across edit/create/delete builtins), so the guard
+    holds regardless of the exact arg schema. Returning True → the deny fires.
+    """
+    target = os.path.basename(name).lower()
+
+    def _pred(call_args) -> bool:
+        try:
+            values = call_args.values() if isinstance(call_args, dict) else []
+        except Exception:  # noqa: BLE001 - a guard must never raise
+            return False
+        for value in values:
+            if isinstance(value, str) and os.path.basename(value).lower() == target:
+                return True
+        return False
+
+    return _pred
+
+
+def build_protect_policies(names, agpolicy, types):
+    """Hard-deny edits/creates/deletes of the named files (e.g. tools.py).
+
+    This enforces — at the policy layer, with the model unable to override — the
+    invariant the system prompt only *asks* for ("keep app/tools.py unchanged").
+    Best-effort: if the installed SDK lacks an expected builtin, we skip it; any
+    failure returns [] so the run degrades to prior (prompt-only) behaviour.
+    """
+    policies = []
+    try:
+        builtins = types.BuiltinTools
+        guarded = [t for t in ("EDIT_FILE", "CREATE_FILE", "DELETE_FILE", "WRITE_FILE") if hasattr(builtins, t)]
+        for name in names:
+            pred = _make_protect_pred(name)
+            for tool in guarded:
+                policies.append(agpolicy.deny(
+                    getattr(builtins, tool).value,
+                    when=pred,
+                    name=f"protect-{tool.lower()}-{os.path.basename(name)}",
+                ))
+    except Exception as exc:  # noqa: BLE001
+        emit_status("protect_policies_unavailable", reason=str(exc))
+        return []
+    return policies
+
+
 async def main() -> int:
     parser = argparse.ArgumentParser(description="Run a single prompt through the Google Antigravity SDK.")
     parser.add_argument("--permission-profile", default="review")
@@ -187,6 +235,11 @@ async def main() -> int:
                         help="Seconds for a periodic trigger (persistent sessions only)")
     parser.add_argument("--policy", default="workspace", choices=["workspace", "none"],
                         help="Tool policy when writes are enabled: scope writes to the workspace, or none")
+    parser.add_argument("--response-schema-file", default=None,
+                        help="Path to a JSON file describing the response schema; constrains and validates "
+                             "the agent's final structured output (SDK validates + retries on mismatch)")
+    parser.add_argument("--protect-file", action="append", default=[],
+                        help="Basename to hard-deny edits/creates for when write-enabled (repeatable), e.g. tools.py")
     parser.add_argument("--dry-run", action="store_true", default=False,
                         help="Build + validate the LocalAgentConfig and exit without running the agent")
     args = parser.parse_args()
@@ -335,8 +388,20 @@ async def main() -> int:
     write_allowed = args.permission_profile not in ("review", "read-only", "readonly")
     if write_allowed or args.enable_factory_tools:
         config_kwargs["capabilities"] = CapabilitiesConfig(enable_subagents=bool(args.subagents))
-        if args.policy == "workspace":
-            config_kwargs["policies"] = agpolicy.workspace_only([os.path.abspath(args.workspace_dir)])
+    # Workspace scoping (existing behaviour) + protected-file deny guards (new).
+    # Protect guards are prepended so they take priority over the broad workspace
+    # allow. base_workspace_policies/protect_policies are tracked so config build
+    # can fall back to the known-good baseline if the SDK rejects a policy shape.
+    base_workspace_policies = []
+    if (write_allowed or args.enable_factory_tools) and args.policy == "workspace":
+        ws_policies = agpolicy.workspace_only([os.path.abspath(args.workspace_dir)])
+        base_workspace_policies = list(ws_policies) if isinstance(ws_policies, (list, tuple)) else [ws_policies]
+    protect_policies = []
+    if write_allowed and args.protect_file:
+        protect_policies = build_protect_policies(args.protect_file, agpolicy, types)
+    combined_policies = protect_policies + base_workspace_policies
+    if combined_policies:
+        config_kwargs["policies"] = combined_policies
 
     # ── Custom factory tools (read-only, in-process) ──
     if args.enable_factory_tools:
@@ -354,6 +419,21 @@ async def main() -> int:
             await ctx.send("Periodic check: re-assess state and continue the next safe step, or stop.")
         config_kwargs["triggers"] = [trigger_every(args.trigger_every, _trigger_tick)]
 
+    # ── Structured output schema — the SDK constrains + validates the agent's
+    # final answer to this shape (and retries on mismatch), replacing the fragile
+    # "please end with a JSON object" prompt convention. Loaded as a plain JSON
+    # Schema dict; if the SDK rejects it the config build below degrades. ──
+    response_schema_value = None
+    if args.response_schema_file:
+        try:
+            with open(args.response_schema_file, encoding="utf-8") as f:
+                response_schema_value = json.load(f)
+        except Exception as exc:  # noqa: BLE001
+            emit_status("response_schema_unavailable", reason=str(exc))
+            response_schema_value = None
+    if response_schema_value is not None:
+        config_kwargs["response_schema"] = response_schema_value
+
     started_at = time.monotonic()
     phase_ref = {"phase": "configuring"}
     emit_status(
@@ -366,7 +446,21 @@ async def main() -> int:
         skills=len(skill_paths),
         promptChars=len(prompt),
     )
-    config = LocalAgentConfig(**config_kwargs)
+    try:
+        config = LocalAgentConfig(**config_kwargs)
+    except Exception as exc:  # noqa: BLE001
+        # An installed SDK that rejects a newly-wired optional (response_schema or a
+        # protect-guard policy shape) must not break the run — fall back to the
+        # known-good baseline so behaviour matches the pre-capability path.
+        emit_status("config_degraded", errorType=exc.__class__.__name__, message=str(exc))
+        fallback = dict(config_kwargs)
+        fallback.pop("response_schema", None)
+        if protect_policies:
+            if base_workspace_policies:
+                fallback["policies"] = base_workspace_policies
+            else:
+                fallback.pop("policies", None)
+        config = LocalAgentConfig(**fallback)
     if args.dry_run:
         emit_status(
             "dry_run_ok",
@@ -374,6 +468,8 @@ async def main() -> int:
             attachments=len(args.attach),
             tools=len(config_kwargs.get("tools", [])),
             policies=len(config_kwargs.get("policies", [])),
+            protectedFiles=list(args.protect_file),
+            responseSchema=bool(response_schema_value),
             capabilities=("capabilities" in config_kwargs),
             subagents=(bool(args.subagents) if "capabilities" in config_kwargs else None),
             conversationId=args.conversation_id,
@@ -429,6 +525,15 @@ async def main() -> int:
             structured_output = await response.structured_output()
             if structured_output is not None:
                 emit_status("structured_output", **preview_json(structured_output, 2000))
+                # When the schema produced a validated object but no text streamed,
+                # surface it on stdout so the caller's JSON parser still has a
+                # conforming object to read.
+                if not saw_text:
+                    dumped = dump_model(structured_output)
+                    try:
+                        print(json.dumps(dumped, sort_keys=True), flush=True)
+                    except TypeError:
+                        print(json.dumps(dumped, sort_keys=True, default=str), flush=True)
             emit_status("done", elapsedSec=round(time.monotonic() - started_at, 1), textChars=text_chars, thoughtChars=thought_chars, toolCalls=tool_calls)
     except Exception as exc:
         emit_status("error", errorType=exc.__class__.__name__, message=str(exc), phase=phase_ref.get("phase", "unknown"))
