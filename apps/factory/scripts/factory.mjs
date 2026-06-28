@@ -25,7 +25,9 @@ import { existsSync } from "node:fs";
 import { join, resolve, basename, relative } from "node:path";
 import { spawn } from "node:child_process";
 import { stringify as stringifyYaml } from "yaml";
+import { runCommand as runCittyCommand } from "citty";
 import { faker } from "@faker-js/faker";
+import { buildFactoryCommandTree } from "./factory/registry.mjs";
 import { runHarnessTask } from "../src/harness-runner.js";
 import { buildHarnessRefinePrompt, buildHarnessRunSummary, buildHarnessWorkItem, writeHarnessWorkItem } from "../src/harness-work-item.js";
 import { canonicalSystemId, safePyName, shortAgentName, snakeCase, titleCase, validPythonIdentifierName } from "./factory/core/naming.mjs";
@@ -4690,10 +4692,10 @@ function findUseCase(useCases, requestedId) {
 }
 
 async function cmdListUseCases(flags) {
-  const catalogPath = join(resolve("."), "src", "use-cases.js");
   try {
-    const mod = await import(`file://${catalogPath}`);
-    let cases = mod.getUseCases();
+    // getUseCases is statically imported (top of file); the prior dynamic import
+    // computed a cwd-relative path that broke when run from anywhere but repo root.
+    let cases = getUseCases();
     if (flags.department) cases = cases.filter((u) => u.department === flags.department);
     if (flags.search) {
       const q = flags.search.toLowerCase();
@@ -5001,7 +5003,22 @@ Examples:
 // ── Main ─────────────────────────────────────────────────────
 
 async function main() {
-  const { command, flags } = parseArgs(process.argv.slice(2));
+  const argv = process.argv.slice(2);
+  // citty registry (PR-B): commands present in the tree run via citty (typed args
+  // + auto --help); everything else falls through to the legacy switch until
+  // migrated. Handlers are injected so registry.mjs has no import back here.
+  const tree = buildFactoryCommandTree({
+    resolveDir: (d) => resolve(d || "."),
+    handlers: { status: cmdStatus, listUsecases: cmdListUseCases, promotionGate: cmdPromotionGate },
+  });
+  const commandIdx = argv.findIndex((a) => !a.startsWith("-"));
+  const commandName = commandIdx >= 0 ? argv[commandIdx] : "help";
+  if (tree[commandName]) {
+    await runCittyCommand(tree[commandName], { rawArgs: argv.filter((_, i) => i !== commandIdx) });
+    return;
+  }
+
+  const { command, flags } = parseArgs(argv);
   const dir = resolve(flags.dir || ".");
 
   switch (command) {
