@@ -1,6 +1,7 @@
 import { access, cp, mkdir, readdir, readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, join, relative, resolve } from "node:path";
+import matter from "gray-matter";
 
 export const OFFICIAL_AGENTS_CLI_SKILLS = [
   "google-agents-cli-workflow",
@@ -301,48 +302,18 @@ async function exists(path) {
 
 export function parseFrontmatter(text) {
   if (!text.startsWith("---")) return {};
-  const end = text.indexOf("\n---", 3);
-  if (end < 0) return {};
-  const raw = text.slice(3, end).trim();
-  const out = {};
-  let currentKey = null;
-  let blockKey = null;
-  let blockMode = null;
-  for (const line of raw.split("\n")) {
-    const keyMatch = line.match(/^([a-zA-Z0-9_-]+):\s*(.*)$/);
-    if (keyMatch) {
-      currentKey = keyMatch[1];
-      blockKey = null;
-      blockMode = null;
-      const value = keyMatch[2].trim();
-      if (value === "|" || value === ">") {
-        out[currentKey] = "";
-        blockKey = currentKey;
-        blockMode = value;
-      } else if (value === "") out[currentKey] = [];
-      else if (value.startsWith("[") && value.endsWith("]")) {
-        out[currentKey] = value.slice(1, -1).split(",").map(cleanYamlValue).filter(Boolean);
-      } else {
-        out[currentKey] = cleanYamlValue(value);
-      }
-      continue;
-    }
-    const listMatch = line.match(/^\s*-\s*(.*)$/);
-    if (currentKey && Array.isArray(out[currentKey]) && listMatch) {
-      out[currentKey].push(cleanYamlValue(listMatch[1].trim()));
-      continue;
-    }
-    if (blockKey && typeof out[blockKey] === "string") {
-      const value = line.replace(/^\s+/, "");
-      const separator = blockMode === ">" ? " " : "\n";
-      out[blockKey] = `${out[blockKey]}${out[blockKey] ? separator : ""}${value}`.trim();
-    }
+  let data;
+  try {
+    data = matter(text).data || {};
+  } catch {
+    return {};
   }
-  return out;
-}
-
-function cleanYamlValue(value) {
-  return String(value || "").trim().replace(/^["']|["']$/g, "");
+  // Preserve the prior contract: scalar strings are trimmed. (A folded `>` YAML
+  // scalar keeps a trailing newline that downstream code/tests don't expect.)
+  for (const [key, value] of Object.entries(data)) {
+    if (typeof value === "string") data[key] = value.trim();
+  }
+  return data;
 }
 
 function normalizeStringList(value) {
