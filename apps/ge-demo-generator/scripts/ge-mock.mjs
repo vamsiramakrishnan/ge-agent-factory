@@ -40,6 +40,7 @@ import { buildSemanticModel } from "./ge-mock/data/semantic-model.mjs";
 import { applyScenarioBindings, enrichScenarioSpec } from "./ge-mock/packs/index.mjs";
 import { analyzePackCoverage } from "./ge-mock/packs/coverage.mjs";
 import { getUseCases } from "../src/use-cases.js";
+import { readPromotionGate } from "../src/promotion-packet.js";
 import { DOMAIN_CATALOG } from "../src/domains.generated.js";
 import { APP_ROOT, GENERATOR_DATA_ROOT } from "../src/state-paths.js";
 import { DEFAULT_AGENT_MODEL, assertKnownModel } from "../src/known-models.js";
@@ -2505,6 +2506,35 @@ async function refineResumeOptions(dir, workItem) {
   return { conversationId: id, saveDir };
 }
 
+// Promotion gate enforcement. Refuse to deploy a workspace whose validation /
+// spec-code trace / harness verdicts haven't passed, unless explicitly forced
+// (--force or GE_ALLOW_UNPROMOTED). This is what makes the harness verdicts
+// (ok_to_promote, spec_to_code_fidelity) actually gate the deploy instead of
+// only being reported.
+async function assertPromotable(dir, flags) {
+  const gate = await readPromotionGate(dir);
+  if (gate.ok) return gate;
+  const override = truthyFlag(flags.force) || envOff("GE_ALLOW_UNPROMOTED");
+  const lines = gate.blockers.map((b) => `  - ${b}`).join("\n");
+  if (override) {
+    console.error(`⚠ promotion gate has ${gate.blockers.length} blocker(s); overridden by --force / GE_ALLOW_UNPROMOTED:\n${lines}`);
+    return gate;
+  }
+  fail(`Promotion gate blocked — refusing to deploy (${gate.blockers.length} blocker(s)):\n${lines}\nResolve the blockers, or re-run with --force (or GE_ALLOW_UNPROMOTED=1) to override.`);
+}
+
+async function cmdPromotionGate(dir, flags) {
+  const gate = await readPromotionGate(dir);
+  const base = { step: "promotion-gate", ok: gate.ok, specToCodeScore: gate.specToCodeScore, specToCodeFidelity: gate.specToCodeFidelity, blockers: gate.blockers };
+  if (gate.ok) { ok(base); return gate; }
+  if (truthyFlag(flags.force) || envOff("GE_ALLOW_UNPROMOTED")) {
+    console.error(`⚠ promotion gate blocked but overridden (${gate.blockers.length} blocker(s))`);
+    ok({ ...base, overridden: true });
+    return gate;
+  }
+  fail(`Promotion gate blocked (${gate.blockers.length} blocker(s)):\n${gate.blockers.map((b) => `  - ${b}`).join("\n")}`);
+}
+
 async function applyHarnessReviewFeedback(dir, provider, review) {
   const feedback = {
     kind: "ge.harness_review.feedback",
@@ -3283,6 +3313,7 @@ async function cmdMcp(dir, flags) {
 async function cmdDeploy(dir, flags) {
   const pipeline = await loadPipeline(dir);
   requireStep(pipeline, "tools");
+  await assertPromotable(dir, flags);
   const project = await getGcloudProject(flags);
   const region = await getGcloudRegion(flags);
   if (!project) fail("--project required (or set GOOGLE_CLOUD_PROJECT)");
@@ -4983,6 +5014,7 @@ async function main() {
     case "test": return cmdTest(dir, flags);
     case "eval": return cmdEval(dir, flags);
     case "quality-gate": return cmdQualityGate(dir, flags);
+    case "promotion-gate": return cmdPromotionGate(dir, flags);
     case "harness-review": return cmdHarnessReview(dir, flags);
     case "harness-refine": return cmdHarnessRefine(dir, flags);
     case "serve": return cmdServe(dir, flags);

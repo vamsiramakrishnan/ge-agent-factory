@@ -855,7 +855,9 @@ test("factory worker parses payloads and dispatches release stages to Cloud Buil
   }));
   assert.equal(deployPlan.owner, "control_plane");
   assert.equal(deployPlan.nextStage, "load_data");
-  assert.deepEqual(deployPlan.commands[0][1].slice(0, 3), ["scripts/run-deploy-plan.mjs", "--workspace-dir", DATA_ROOT]);
+  // Promotion gate runs first, then the deploy plan.
+  assert.deepEqual(deployPlan.commands[0][1].slice(0, 3), ["scripts/ge-mock.mjs", "promotion-gate", "--dir"]);
+  assert.deepEqual(deployPlan.commands[1][1].slice(0, 3), ["scripts/run-deploy-plan.mjs", "--workspace-dir", DATA_ROOT]);
 
   const pollPlan = buildStageExecutionPlan(parseWorkerPayload({
     ...payload,

@@ -197,13 +197,19 @@ export function buildStageExecutionPlan(payload) {
         ["node", ["scripts/ge-mock.mjs", "harness-refine", "--dir", workspaceDir, "--provider", provider, "--vertex", "true", "--project", project, "--location", refineLocation, "--model", harnessModel, "--soft", "true", "--run-id", payload.runId, "--item-id", payload.itemId, "--locality", "remote", "--target-gate", "validate"]],
       ];
     })(),
-    plan_deploy: [["node", [
-      "scripts/run-deploy-plan.mjs",
-      "--workspace-dir", workspaceDir,
-      "--project-id", payload.workspaceId,
-      "--repo-root", resolve("."),
-      "--target", payload.options?.targetRuntime || "agent_runtime",
-    ]]],
+    plan_deploy: [
+      // Promotion gate: block the remote release if validation / spec-code trace /
+      // harness verdicts haven't passed. Override per-run with options.allowUnpromoted.
+      ["node", ["scripts/ge-mock.mjs", "promotion-gate", "--dir", workspaceDir,
+        ...(payload.options?.allowUnpromoted ? ["--force"] : [])]],
+      ["node", [
+        "scripts/run-deploy-plan.mjs",
+        "--workspace-dir", workspaceDir,
+        "--project-id", payload.workspaceId,
+        "--repo-root", resolve("."),
+        "--target", payload.options?.targetRuntime || "agent_runtime",
+      ]],
+    ],
     load_data: [["bash", ["mock_data/cloud/load-to-google-cloud.sh"]]],
     register_tools: [
       ["node", ["scripts/ge-mock.mjs", "register", "--dir", workspaceDir, "--project", project, "--region", payload.cloud?.geminiEnterpriseLocation || "global", "--as", payload.options?.registerAs || "adk"]],
