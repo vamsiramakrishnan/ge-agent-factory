@@ -298,6 +298,8 @@ export async function runHarnessTask({
   secretNames = [],
   timeoutSec = 0,
   allowFallback = false,
+  responseSchemaFile = null,
+  protectFiles = [],
   onEvent = null,
 } = {}) {
   const resolvedRepoRoot = resolve(repoRoot || new URL("..", import.meta.url).pathname);
@@ -420,6 +422,17 @@ export async function runHarnessTask({
     if (plan.saveDir) sdkCaps.saveDir = plan.saveDir;
     if (plan.triggerEvery) sdkCaps.triggerEvery = plan.triggerEvery;
     if (plan.subagents === false) sdkCaps.subagents = false;
+    // Structured-output schema + protected-file write guards. Caller-provided
+    // (preferred) with an env opt-in, both default-off so existing runs are
+    // unchanged. The Python driver degrades gracefully if the SDK rejects either.
+    const schemaFile = responseSchemaFile || process.env.GE_HARNESS_RESPONSE_SCHEMA || null;
+    if (schemaFile) sdkCaps.responseSchemaFile = schemaFile;
+    const protect = (Array.isArray(protectFiles) && protectFiles.length)
+      ? protectFiles
+      : (process.env.GE_HARNESS_PROTECT
+        ? process.env.GE_HARNESS_PROTECT.split(",").map((s) => s.trim()).filter(Boolean)
+        : []);
+    if (protect.length) sdkCaps.protectFiles = protect;
   }
   const args = def.buildArgs(prompt, { cwd: executionCwd, model, permissionProfile: plan.permissionProfile.id, vertex: vertexDefaults.vertex, project: vertexDefaults.project, location: vertexDefaults.location, agentLogFilePath, skillsPaths: skillPaths, ...sdkCaps });
 

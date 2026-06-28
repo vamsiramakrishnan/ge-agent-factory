@@ -38,6 +38,8 @@ export const AGENT_DEFS = [
       if (options.saveDir) args.push("--save-dir", options.saveDir);
       if (options.triggerEvery) args.push("--trigger-every", String(options.triggerEvery));
       if (options.policy) args.push("--policy", options.policy);
+      if (options.responseSchemaFile) args.push("--response-schema-file", options.responseSchemaFile);
+      for (const name of options.protectFiles || []) args.push("--protect-file", name);
       return args;
     },
     promptViaStdin: true,

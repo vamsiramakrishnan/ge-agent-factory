@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GE harness refine result",
+  "description": "Structured result the harness must return after refining a generated GE ADK agent workspace.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["changed_files", "summary", "verification_commands", "remaining_gaps", "spec_to_code_fidelity"],
+  "properties": {
+    "changed_files": { "type": "array", "items": { "type": "string" } },
+    "summary": { "type": "string" },
+    "verification_commands": { "type": "array", "items": { "type": "string" } },
+    "remaining_gaps": { "type": "array", "items": { "type": "string" } },
+    "spec_to_code_fidelity": { "type": "string", "enum": ["pass", "partial", "fail"] }
+  }
+}

@@ -2388,6 +2388,7 @@ async function cmdHarnessReview(dir, flags) {
     vertex: wantsVertex(flags),
     project: flags.project || flags["gcp-project"] || process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT || null,
     location: flags.location || flags.region || process.env.GOOGLE_CLOUD_LOCATION || process.env.GOOGLE_GENAI_LOCATION || null,
+    responseSchemaFile: harnessResponseSchemaFile("harness-review"),
     timeoutSec: Number(flags["timeout-sec"] || 300),
   });
 
@@ -2459,6 +2460,15 @@ async function cmdHarnessReview(dir, flags) {
   };
   ok(summary);
   return summary;
+}
+
+// Resolve the bundled response-schema asset for a harness stage. Returns null
+// when structured output is disabled (GE_HARNESS_NO_RESPONSE_SCHEMA), so the
+// harness falls back to its prompt-instructed JSON convention.
+function harnessResponseSchemaFile(name) {
+  const off = String(process.env.GE_HARNESS_NO_RESPONSE_SCHEMA || "").toLowerCase();
+  if (off === "1" || off === "true" || off === "yes" || off === "on") return null;
+  return new URL(`./schemas/${name}.schema.json`, import.meta.url).pathname;
 }
 
 async function applyHarnessReviewFeedback(dir, provider, review) {
@@ -2533,6 +2543,8 @@ async function cmdHarnessRefine(dir, flags) {
     vertex: wantsVertex(flags),
     project: flags.project || flags["gcp-project"] || process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT || null,
     location: flags.location || flags.region || process.env.GOOGLE_CLOUD_LOCATION || process.env.GOOGLE_GENAI_LOCATION || null,
+    responseSchemaFile: harnessResponseSchemaFile("harness-refine"),
+    protectFiles: ["tools.py"],
     timeoutSec: Number(flags["timeout-sec"] || 600),
   });
 

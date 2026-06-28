@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GE harness review result",
+  "description": "Structured verdict the harness must return after reviewing (read-only) a generated GE ADK agent workspace for spec-to-code quality.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["ok_to_promote", "agent_quality_score", "spec_to_code_score"],
+  "properties": {
+    "ok_to_promote": { "type": "boolean" },
+    "agent_quality_score": { "type": "number" },
+    "spec_to_code_score": { "type": "number" },
+    "spec_gaps": { "type": "array", "items": {} },
+    "agent_logic_gaps": { "type": "array", "items": {} },
+    "tool_gaps": { "type": "array", "items": {} },
+    "mock_data_gaps": { "type": "array", "items": {} },
+    "eval_gaps": { "type": "array", "items": {} },
+    "adk_capability_gaps": { "type": "array", "items": {} },
+    "recommended_generator_changes": { "type": "array", "items": {} },
+    "recommended_pack_changes": { "type": "array", "items": {} },
+    "required_follow_up_commands": { "type": "array", "items": {} }
+  }
+}
