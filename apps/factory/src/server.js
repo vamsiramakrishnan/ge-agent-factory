@@ -3,6 +3,7 @@ import { spawn } from "node:child_process";
 import { createServer as createNetServer } from "node:net";
 import { chmodSync, cpSync, createWriteStream, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { delimiter, extname, join, resolve } from "node:path";
+import { readDotEnv } from "./dotenv.mjs";
 import { detectAgents, getAgentDef } from "./agents.js";
 import { DEPARTMENTS, INTERVIEW_QUESTIONS } from "./departments.js";
 import { DOMAIN_CATALOG, DOMAIN_SUMMARY, getDomainsByDepartment, searchDomains } from "./domains.generated.js";
@@ -106,22 +107,6 @@ function appendActivity(type, { projectId = null, actor = "daemon", entityType =
   }
 }
 
-function readDotEnvSync(path) {
-  if (!existsSync(path)) return {};
-  const env = {};
-  for (const line of readFileSync(path, "utf8").split(/\r?\n/)) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) continue;
-    const eqIdx = trimmed.indexOf("=");
-    if (eqIdx < 0) continue;
-    const key = trimmed.slice(0, eqIdx).trim();
-    let value = trimmed.slice(eqIdx + 1).trim();
-    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) value = value.slice(1, -1);
-    env[key] = value;
-  }
-  return env;
-}
-
 function buildWorkspaceEnv(extra = {}, workspaceDir = null) {
   const env = {};
   const exact = [
@@ -150,8 +135,8 @@ function buildWorkspaceEnv(extra = {}, workspaceDir = null) {
     }
   }
   const configuredEnv = {
-    ...readDotEnvSync(join(DATA_ROOT, ".env")),
-    ...(workspaceDir ? readDotEnvSync(join(workspaceDir, ".env")) : {}),
+    ...readDotEnv(join(DATA_ROOT, ".env")),
+    ...(workspaceDir ? readDotEnv(join(workspaceDir, ".env")) : {}),
   };
   return {
     ...env,

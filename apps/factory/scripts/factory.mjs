@@ -24,6 +24,7 @@ import { readFile, writeFile, mkdir, stat, readdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join, resolve, basename, relative } from "node:path";
 import { spawn } from "node:child_process";
+import { stringify as stringifyYaml } from "yaml";
 import { faker } from "@faker-js/faker";
 import { runHarnessTask } from "../src/harness-runner.js";
 import { buildHarnessRefinePrompt, buildHarnessRunSummary, buildHarnessWorkItem, writeHarnessWorkItem } from "../src/harness-work-item.js";
@@ -1051,15 +1052,12 @@ async function ensureAgentsCliPyprojectMetadata(dir, manifest, { deploymentTarge
   // fall back to [tool.agents-cli]. The factory always targets agent_runtime.
   const projectName = shortAgentName(manifest?.id || "generated_agent");
   const target = deploymentTarget && deploymentTarget !== "none" ? deploymentTarget : "agent_runtime";
-  const manifestYaml = [
-    `name: ${projectName}`,
-    `agent_directory: app`,
-    `region: us-central1`,
-    `create_params:`,
-    `  deployment_target: ${target}`,
-    `  is_a2a: false`,
-    ``,
-  ].join("\n");
+  const manifestYaml = stringifyYaml({
+    name: projectName,
+    agent_directory: "app",
+    region: "us-central1",
+    create_params: { deployment_target: target, is_a2a: false },
+  });
   await writeFile(join(dir, "agents-cli-manifest.yaml"), manifestYaml, "utf8");
 
   // Enable Agent Runtime agent identity (Preview) at deploy. agents-cli / adk deploy

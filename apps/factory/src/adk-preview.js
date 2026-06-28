@@ -1,26 +1,11 @@
 import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { readDotEnv } from "./dotenv.mjs";
 import { delimiter, dirname, join, resolve } from "node:path";
 import { writeJson } from "../../../tools/lib/json-io.mjs";
 import { createPromotionPacket } from "./promotion-packet.js";
 import { updateWorkspaceCapabilities } from "./workspace-capabilities.js";
 import { ARTIFACT_PATHS, WORKSPACE_PATHS } from "./workspace-contract.js";
-
-function readDotEnvSync(path) {
-  if (!existsSync(path)) return {};
-  const env = {};
-  for (const line of readFileSync(path, "utf8").split(/\r?\n/)) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) continue;
-    const eqIdx = trimmed.indexOf("=");
-    if (eqIdx < 0) continue;
-    const key = trimmed.slice(0, eqIdx).trim();
-    let value = trimmed.slice(eqIdx + 1).trim();
-    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) value = value.slice(1, -1);
-    env[key] = value;
-  }
-  return env;
-}
 
 export function buildAdkPreviewEnv({ workspaceDir, repoRoot, dataRoot, extra = {} } = {}) {
   const env = {};
@@ -45,8 +30,8 @@ export function buildAdkPreviewEnv({ workspaceDir, repoRoot, dataRoot, extra = {
     }
   }
   const configuredEnv = {
-    ...(dataRoot ? readDotEnvSync(join(dataRoot, ".env")) : {}),
-    ...(workspaceDir ? readDotEnvSync(join(workspaceDir, ".env")) : {}),
+    ...(dataRoot ? readDotEnv(join(dataRoot, ".env")) : {}),
+    ...(workspaceDir ? readDotEnv(join(workspaceDir, ".env")) : {}),
   };
   return {
     ...env,

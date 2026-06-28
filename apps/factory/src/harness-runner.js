@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { chmodSync, existsSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { basename, delimiter, join, resolve, sep } from "node:path";
+import { readDotEnv } from "./dotenv.mjs";
 import { detectAgents, getAgentDef } from "./agents.js";
 import { buildHandoffPacket, buildHarnessRunPlan } from "./harness-runtime.js";
 import { openJournal, recordRun } from "./harness-journal.js";
@@ -118,21 +119,6 @@ function buildSubagentPlanSection(workspaceDir, { subagentsAvailable = false } =
   ].join("\n");
 }
 
-function readDotEnvSync(path) {
-  if (!existsSync(path)) return {};
-  const env = {};
-  for (const line of readFileSync(path, "utf8").split(/\r?\n/)) {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) continue;
-    const eqIdx = trimmed.indexOf("=");
-    if (eqIdx < 0) continue;
-    const key = trimmed.slice(0, eqIdx).trim();
-    let value = trimmed.slice(eqIdx + 1).trim();
-    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) value = value.slice(1, -1);
-    env[key] = value;
-  }
-  return env;
-}
 
 function readJsonSync(path, fallback = {}) {
   if (!existsSync(path)) return fallback;
@@ -227,8 +213,8 @@ function buildHarnessEnv({ repoRoot, dataRoot, workspaceDir, binDir, extra = {} 
     }
   }
   const configuredEnv = {
-    ...readDotEnvSync(join(dataRoot, ".env")),
-    ...readDotEnvSync(join(workspaceDir, ".env")),
+    ...readDotEnv(join(dataRoot, ".env")),
+    ...readDotEnv(join(workspaceDir, ".env")),
   };
   return {
     ...env,

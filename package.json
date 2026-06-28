@@ -51,12 +51,18 @@
   },
   "dependencies": {
     "@ge/agent-resolver": "workspace:*",
-    "@ge/runtime": "workspace:*",
     "@ge/run-ledger": "workspace:*",
+    "@ge/runtime": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "citty": "^0.2.2",
+    "dotenv": "^17.4.2",
+    "gray-matter": "^4.0.3",
+    "hono": "^4.12.27",
     "picocolors": "^1.1.1",
-    "zod": "^4.4.3"
+    "tinyglobby": "^0.2.17",
+    "yaml": "^2.9.0",
+    "zod": "^4.4.3",
+    "zod-to-json-schema": "^3.25.2"
   },
   "devDependencies": {
     "@google-cloud/discoveryengine": "^2.7.0",
