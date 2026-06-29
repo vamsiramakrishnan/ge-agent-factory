@@ -9,7 +9,7 @@ import { readDotEnv } from "./dotenv.mjs";
 import { detectAgents, getAgentDef } from "./agents.js";
 import { buildHandoffPacket, buildHarnessRunPlan } from "./harness-runtime.js";
 import { openJournal, recordRun } from "./harness-journal.js";
-import { writeJson } from "../../../tools/lib/json-io.mjs";
+import { writeJson } from "@ge/std/json-io";
 import { createOutputParser, detectFormat } from "./output-parsers.js";
 import { readSecretsEnv } from "./secrets.js";
 import { loadSkillRegistry, materializeSkillsForWorkspace, selectSkillsForContext } from "./skill-registry.js";

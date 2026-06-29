@@ -9,7 +9,7 @@ import { detectAgents, getAgentDef } from "./agents.js";
 import { DEPARTMENTS, INTERVIEW_QUESTIONS } from "./departments.js";
 import { DOMAIN_CATALOG, DOMAIN_SUMMARY, getDomainsByDepartment, searchDomains } from "./domains.generated.js";
 import { MOCK_SYSTEMS, renderSystemPrompt } from "./systems.js";
-import { readJson, writeJson } from "../../../tools/lib/json-io.mjs";
+import { readJson, writeJson } from "@ge/std/json-io";
 import { getUseCases } from "./use-cases.js";
 import {
   createProject,

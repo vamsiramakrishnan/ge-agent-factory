@@ -16,8 +16,8 @@
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { parseFlagArgs, boolFlag } from "../../../tools/lib/cli-args.mjs";
-import { writeJson } from "../../../tools/lib/json-io.mjs";
+import { parseFlagArgs, boolFlag } from "@ge/std/cli-args";
+import { writeJson } from "@ge/std/json-io";
 import { loadSimulatorRegistry } from "./factory/simulators/registry.mjs";
 
 // ── Pluralization, ported verbatim from generic.py ──────────────────────────

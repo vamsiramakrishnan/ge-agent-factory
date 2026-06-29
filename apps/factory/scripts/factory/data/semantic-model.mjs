@@ -7,7 +7,7 @@
 // mock_data/metadata/semantic-model.json; the BQ descriptions are applied to the
 // dataset at load_data, and the agent can introspect the model via describe_data_model().
 
-import { snakeCase } from "../core/naming.mjs";
+import { snakeCase } from "@ge/std/naming";
 
 // Lightweight, deterministic column description from name + type + domain hints.
 function describeColumn(name, type) {

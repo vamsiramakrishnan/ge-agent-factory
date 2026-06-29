@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { slug as baseSlug } from "../scripts/factory/core/naming.mjs";
+import { slug as baseSlug } from "@ge/std/naming";
 
 const DEMO_ROOT = "apps/factory";
 const DEFAULT_SOURCE_MAP = `${DEMO_ROOT}/src/use-case-source-map.generated.json`;

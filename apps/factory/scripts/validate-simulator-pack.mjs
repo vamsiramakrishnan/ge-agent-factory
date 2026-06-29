@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { parseFlagArgs, boolFlag } from "../../../tools/lib/cli-args.mjs";
+import { parseFlagArgs, boolFlag } from "@ge/std/cli-args";
 import { loadSimulatorRegistry } from "./factory/simulators/registry.mjs";
 
 // Seed/schema paths in the registry are repo-root-relative. Resolve against the

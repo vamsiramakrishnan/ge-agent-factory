@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import { access, cp, mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { delimiter, join } from "node:path";
-import { slug as baseSlug } from "../scripts/factory/core/naming.mjs";
+import { slug as baseSlug } from "@ge/std/naming";
 
 async function findOnPath(bin) {
   for (const dir of (process.env.PATH || "").split(delimiter)) {

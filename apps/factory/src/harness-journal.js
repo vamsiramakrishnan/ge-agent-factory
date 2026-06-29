@@ -1,7 +1,7 @@
 import { mkdirSync, appendFileSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { makeEvent, splitLines } from "../../../tools/lib/events.mjs";
-import { writeJson } from "../../../tools/lib/json-io.mjs";
+import { writeJson } from "@ge/std/json-io";
 
 // A per-(run,stage) journal writer. Returns { log(stream, text), event(ev) }.
 export function openJournal(runsDir, { runId, agentId, stage }) {

@@ -1,4 +1,4 @@
-import { snakeCase } from "../core/naming.mjs";
+import { snakeCase } from "@ge/std/naming";
 
 export const DEPARTMENT_PACKS = [
   { id: "dept_hr", department: "hr", title: "HR", layer: "department" },

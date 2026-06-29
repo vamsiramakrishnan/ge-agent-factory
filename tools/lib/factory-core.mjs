@@ -13,7 +13,7 @@ import { createConnection } from "node:net";
 import { pool } from "./gcp.mjs";
 import { findOpenPort } from "./net.mjs";
 import { parseConcurrency } from "./concurrency.mjs";
-import { readJson, writeJson, updateJson } from "./json-io.mjs";
+import { readJson, writeJson, updateJson } from "@ge/std/json-io";
 import { buildFactoryConfig, explainFactoryConfig } from "./config-schema.mjs";
 import { runDocsCheck } from "./docs-check.mjs";
 import { commandMeta, commandRequirements } from "./ge-command-registry.mjs";

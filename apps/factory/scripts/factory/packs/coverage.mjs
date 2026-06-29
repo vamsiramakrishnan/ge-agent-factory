@@ -1,5 +1,5 @@
 import { matchScenarioPacks, listScenarioPacks } from "./index.mjs";
-import { canonicalSystemId, snakeCase } from "../core/naming.mjs";
+import { canonicalSystemId, snakeCase } from "@ge/std/naming";
 import { DEPARTMENT_PACKS, departmentPackForUseCase, domainPackForUseCase, domainPacksFromCatalog } from "./taxonomy.mjs";
 
 function systemIds(useCase) {

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
-import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
-import { writeJson } from "../../../tools/lib/json-io.mjs";
+import { parseFlagArgs } from "@ge/std/cli-args";
+import { writeJson } from "@ge/std/json-io";
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";

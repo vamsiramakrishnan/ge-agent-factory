@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "n
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "bun:test";
-import { readJson, writeJson, updateJson } from "./json-io.mjs";
+import { readJson, writeJson, updateJson } from "@ge/std/json-io";
 
 function tempDir(name) {
   return mkdtempSync(join(tmpdir(), `ge-json-io-${name}-`));

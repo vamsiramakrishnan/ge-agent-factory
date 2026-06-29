@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { readdir, readFile, writeFile, mkdir } from "node:fs/promises";
-import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
+import { parseFlagArgs } from "@ge/std/cli-args";
 import { existsSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 

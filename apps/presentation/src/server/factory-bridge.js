@@ -1,7 +1,7 @@
 import { spawn, execFileSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
-import { writeJson } from "../../../../tools/lib/json-io.mjs";
+import { writeJson } from "@ge/std/json-io";
 import dotenv from "dotenv";
 
 // Resolve presentation root and load local env parameters
