@@ -68,8 +68,7 @@
     "picocolors": "^1.1.1",
     "tinyglobby": "^0.2.17",
     "yaml": "^2.9.0",
-    "zod": "^4.4.3",
-    "zod-to-json-schema": "^3.25.2"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@google-cloud/discoveryengine": "^2.7.0",
