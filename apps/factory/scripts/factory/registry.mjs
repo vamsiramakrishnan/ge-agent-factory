@@ -64,8 +64,38 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
     reset: dirCmd("reset", "Reset workspace pipeline state", { step: str("Reset from this step") }, handlers.reset),
     "plan-data": dirCmd("plan-data", "Plan mock data generation", { usecase: str("Use case id"), "source-map": str("Source-map path") }, handlers.planData),
 
-    // ── Legacy passthrough (behaviour-sensitive under citty; typed later) ─────
-    tools: legacy("tools", "Render app/tools.py and scaffold", handlers.tools),
+    // ── Newly typed (clean string flags; parse-verified) ────────────────────
+    tools: dirCmd("tools", "Render app/tools.py and scaffold",
+      { out: str("Output path for tools.py"), "force-agent": str("Regenerate app/agent.py (true/false)") }, handlers.tools),
+    "from-usecase": dirCmd("from-usecase", "Generate a full workspace from a use case",
+      {
+        usecase: str("Use case id from the enterprise catalog"),
+        id: str("Alias for --usecase"),
+        freeform: str("Freeform use-case description (when not using --usecase)"),
+        rows: str("Rows per table"),
+        seed: str("Faker seed"),
+        domain: str("Department / domain slug"),
+        systems: str("Comma-separated source systems"),
+        "force-agent": str("Regenerate app/agent.py (true/false)"),
+        "run-tests-after-refine": str("Run smoke tests after refine (true/false)"),
+        out: str("Write the run report to this path"),
+      }, handlers.fromUseCase),
+
+    // ── Legacy passthrough — each kept legacy for a CONCRETE reason citty's
+    //    strict parsing would break; not yet typed:
+    //    test          — uses `"flag" in flags` presence detection; citty fills
+    //                    declared flags with defaults, so `in` is always true.
+    //    quality-gate  — `--lint-fix`/`--lint-mypy` are `=== "true"` checks used
+    //                    bare; runs agents-cli (can't verify parsing offline).
+    //    harness-review/refine — `--soft`/`--vertex` are passed WITH values
+    //                    (factory-worker `--soft true`) yet also used valueless;
+    //                    citty can't model both, and they drive the external harness.
+    //    mcp           — sub-action dispatch (`mcp deploy|doctor|…`); needs citty
+    //                    subcommands, not flags.
+    //    deploy/register — `--wait === "true"` bare hazard + gcloud/agents-cli only
+    //                    (deploy path, unverifiable in this environment).
+    //    batch-audit   — FORWARDS arbitrary flags to other commands; citty strict
+    //                    parsing rejects undeclared flags.
     test: legacy("test", "Run the workspace smoke tests", handlers.test),
     "quality-gate": legacy("quality-gate", "Run the quality gate", handlers.qualityGate),
     "harness-review": legacy("harness-review", "Antigravity harness review (read-only)", handlers.harnessReview),
@@ -73,7 +103,6 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
     mcp: legacy("mcp", "MCP tool-plane operations", handlers.mcp),
     deploy: legacy("deploy", "Deploy the agent (Cloud Run / Agent Runtime)", handlers.deploy),
     register: legacy("register", "Register the agent (Gemini Enterprise / MCP)", handlers.register),
-    "from-usecase": legacy("from-usecase", "Generate a full workspace from a use case", handlers.fromUseCase),
     "batch-audit": legacy("batch-audit", "Audit use-case specs in batch", handlers.batchAudit, false),
   };
 }
