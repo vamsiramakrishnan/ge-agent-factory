@@ -5,6 +5,7 @@ import { readJson, writeJson } from "../../../tools/lib/json-io.mjs";
 import { buildScenarioGraph } from "./factory/scenario-graph.mjs";
 import { buildSimulatorProjections } from "./factory/projections/simulator-projections.mjs";
 import { matchScenarioPacks } from "./factory/packs/index.mjs";
+import { snakeCase } from "./factory/core/naming.mjs";
 
 function parseArgs(argv) {
   const flags = {};
@@ -20,15 +21,6 @@ function parseArgs(argv) {
 async function writeText(path, value) {
   await mkdir(dirname(path), { recursive: true });
   await writeFile(path, value, "utf8");
-}
-
-function snakeCase(value) {
-  return String(value || "item")
-    .replace(/[^a-zA-Z0-9]+/g, "_")
-    .replace(/([A-Z])/g, "_$1")
-    .toLowerCase()
-    .replace(/^_+|_+$/g, "")
-    .replace(/_+/g, "_");
 }
 
 function normalizeUseCaseLookup(value) {

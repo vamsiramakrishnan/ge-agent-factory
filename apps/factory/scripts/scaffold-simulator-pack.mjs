@@ -2,6 +2,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
+import { snakeCase } from "./factory/core/naming.mjs";
 
 const REGISTRY_PATH = "apps/factory/simulator-systems/registry.json";
 
@@ -451,15 +452,6 @@ function parseArgs(argv) {
     flags[key] = argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[++i] : "true";
   }
   return flags;
-}
-
-function snakeCase(value) {
-  return String(value || "")
-    .replace(/[^a-zA-Z0-9]+/g, "_")
-    .replace(/([A-Z])/g, "_$1")
-    .toLowerCase()
-    .replace(/^_+|_+$/g, "")
-    .replace(/_+/g, "_");
 }
 
 function singularOf(collection) {

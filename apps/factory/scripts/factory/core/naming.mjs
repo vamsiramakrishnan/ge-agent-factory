@@ -1,9 +1,13 @@
+import { snakeCase as toSnakeCase } from "change-case";
+
+// snake_case via change-case (the canonical implementation for the whole repo —
+// spec-code-trace, plan-mock-data and scaffold-simulator-pack all import this).
+// change-case splits camelCase/PascalCase AND runs of capitals at word
+// boundaries, so acronyms collapse cleanly ("Salesforce CRM" -> "salesforce_crm")
+// instead of the per-letter "salesforce__c_r_m" the old hand-rolled regex emitted.
+// Already-snake input is idempotent, so values canonicalized once stay stable.
 export function snakeCase(value) {
-  return String(value || "")
-    .replace(/[^a-zA-Z0-9]+/g, "_")
-    .replace(/([A-Z])/g, "_$1")
-    .toLowerCase()
-    .replace(/^_+|_+$/g, "");
+  return toSnakeCase(String(value || ""));
 }
 
 export function titleCase(value) {
@@ -15,9 +19,8 @@ export function titleCase(value) {
 }
 
 export function canonicalSystemId(systemName) {
-  return snakeCase(String(systemName || "source_system"))
-    .replace(/_+/g, "_")
-    .replace(/^_+|_+$/g, "") || "source_system";
+  // change-case already yields a clean single-underscore, trimmed form.
+  return snakeCase(String(systemName || "source_system")) || "source_system";
 }
 
 export function safePyName(value, fallback = "value") {
