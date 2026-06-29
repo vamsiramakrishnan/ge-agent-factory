@@ -81,7 +81,7 @@ const SOURCE_STATE_PATH_PATTERNS = [
 const SOURCE_CODE_ANTIPATTERNS = [
   {
     id: "raw-json-write",
-    detail: "Write JSON state atomically via writeJson/updateJson (tools/lib/json-io.mjs), not raw writeFileSync(JSON.stringify(...)).",
+    detail: "Write JSON state atomically via writeJson/updateJson (@ge/std/json-io), not raw writeFileSync(JSON.stringify(...)).",
     match: (line) => /writeFileSync\(.*JSON\.stringify/.test(line),
   },
   {

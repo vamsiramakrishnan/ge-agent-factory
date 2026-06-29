@@ -25,7 +25,7 @@
 import { snakeCase } from "@ge/std/naming";
 
 // Re-exported for back-compat; the canonical (change-case) implementation lives
-// in factory/core/naming.mjs so the simulator-seed pipeline shares one casing.
+// in @ge/std/naming so the simulator-seed pipeline shares one casing.
 export { snakeCase };
 
 // ── deterministic PRNG ────────────────────────────────────────────────────────
@@ -68,7 +68,7 @@ function intBetween(rng, min, max) {
   return min + Math.floor(rng() * (max - min + 1));
 }
 
-// ── naming (kept in sync with scripts/factory/core/naming.mjs) ─────────────────
+// ── naming (kept in sync with @ge/std/naming) ─────────────────
 // ── schema field-type parsing ──────────────────────────────────────────────────
 // Pack schema field values are strings like "string", "number", "boolean",
 // "enum:a|b|c", "ref:collection.field". Normalize into a structured descriptor.
