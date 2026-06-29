@@ -2,6 +2,7 @@
 import { readFile, readdir } from "node:fs/promises";
 import { parseFlagArgs } from "@ge/std/cli-args";
 import { readJson, writeJson } from "@ge/std/json-io";
+import { parseCsv } from "@ge/std/csv-io";
 import { existsSync } from "node:fs";
 import { basename, extname, join, resolve } from "node:path";
 import { loadSimulatorRegistry } from "./factory/simulators/registry.mjs";
@@ -9,46 +10,6 @@ import { normalizeForCollection as sharedNormalizeForCollection, mergeByKey as s
 import { snakeCase } from "@ge/std/naming";
 
 const parseArgs = (argv) => parseFlagArgs(argv).flags;
-
-function parseCsv(text) {
-  const rows = [];
-  let field = "";
-  let row = [];
-  let quoted = false;
-  for (let i = 0; i < text.length; i += 1) {
-    const ch = text[i];
-    const next = text[i + 1];
-    if (quoted) {
-      if (ch === "\"" && next === "\"") {
-        field += "\"";
-        i += 1;
-      } else if (ch === "\"") {
-        quoted = false;
-      } else {
-        field += ch;
-      }
-      continue;
-    }
-    if (ch === "\"") quoted = true;
-    else if (ch === ",") {
-      row.push(field);
-      field = "";
-    } else if (ch === "\n") {
-      row.push(field);
-      rows.push(row);
-      row = [];
-      field = "";
-    } else if (ch !== "\r") {
-      field += ch;
-    }
-  }
-  if (field || row.length) {
-    row.push(field);
-    rows.push(row);
-  }
-  const [headers = [], ...body] = rows.filter((item) => item.some((cell) => String(cell || "").trim() !== ""));
-  return body.map((cells) => Object.fromEntries(headers.map((header, index) => [header, cells[index] ?? ""])));
-}
 
 async function readRows(path) {
   const ext = extname(path).toLowerCase();
