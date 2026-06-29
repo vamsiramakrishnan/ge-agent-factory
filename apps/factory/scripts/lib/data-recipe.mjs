@@ -22,6 +22,12 @@
  * rows land in the canonical collection shape the engine consumes.
  */
 
+import { snakeCase } from "../factory/core/naming.mjs";
+
+// Re-exported for back-compat; the canonical (change-case) implementation lives
+// in factory/core/naming.mjs so the simulator-seed pipeline shares one casing.
+export { snakeCase };
+
 // ── deterministic PRNG ────────────────────────────────────────────────────────
 // mulberry32: tiny, fast, fully deterministic given a 32-bit seed. We deliberately
 // never call Math.random()/Date.now() so identical (contract, seed) => identical bytes.
@@ -63,15 +69,6 @@ function intBetween(rng, min, max) {
 }
 
 // ── naming (kept in sync with scripts/factory/core/naming.mjs) ─────────────────
-export function snakeCase(value) {
-  return String(value || "")
-    .replace(/[^a-zA-Z0-9]+/g, "_")
-    .replace(/([A-Z])/g, "_$1")
-    .toLowerCase()
-    .replace(/^_+|_+$/g, "")
-    .replace(/_+/g, "_");
-}
-
 // ── schema field-type parsing ──────────────────────────────────────────────────
 // Pack schema field values are strings like "string", "number", "boolean",
 // "enum:a|b|c", "ref:collection.field". Normalize into a structured descriptor.

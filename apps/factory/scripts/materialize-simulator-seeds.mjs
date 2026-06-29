@@ -6,17 +6,9 @@ import { existsSync } from "node:fs";
 import { basename, extname, join, resolve } from "node:path";
 import { loadSimulatorRegistry } from "./factory/simulators/registry.mjs";
 import { normalizeForCollection as sharedNormalizeForCollection, mergeByKey as sharedMergeByKey } from "./lib/data-recipe.mjs";
+import { snakeCase } from "./factory/core/naming.mjs";
 
 const parseArgs = (argv) => parseFlagArgs(argv).flags;
-
-function snakeCase(value) {
-  return String(value || "")
-    .replace(/[^a-zA-Z0-9]+/g, "_")
-    .replace(/([A-Z])/g, "_$1")
-    .toLowerCase()
-    .replace(/^_+|_+$/g, "")
-    .replace(/_+/g, "_");
-}
 
 function parseCsv(text) {
   const rows = [];
