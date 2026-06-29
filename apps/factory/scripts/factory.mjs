@@ -5017,17 +5017,42 @@ Examples:
 
 async function main() {
   const argv = process.argv.slice(2);
-  // citty registry (PR-B): commands present in the tree run via citty (typed args
-  // + auto --help); everything else falls through to the legacy switch until
-  // migrated. Handlers are injected so registry.mjs has no import back here.
+  // Every command routes through the citty registry. Typed commands use citty's
+  // parsed args; legacy-passthrough commands re-parse rawArgs with the existing
+  // parser (byte-identical to the old switch) and are typed incrementally.
+  // Handlers are injected so registry.mjs has no import back here.
   const tree = buildFactoryCommandTree({
     resolveDir: (d) => resolve(d || "."),
+    parseLegacy: (rawArgs) => parseArgs(rawArgs).flags,
     handlers: {
       status: cmdStatus,
       listUsecases: cmdListUseCases,
       promotionGate: cmdPromotionGate,
       sources: cmdSources,
       packCoverage: cmdPackCoverage,
+      init: cmdInit,
+      schema: cmdSchema,
+      generate: cmdGenerate,
+      tools: cmdTools,
+      test: cmdTest,
+      eval: cmdEval,
+      qualityGate: cmdQualityGate,
+      harnessReview: cmdHarnessReview,
+      harnessRefine: cmdHarnessRefine,
+      serve: cmdServe,
+      dataPlan: cmdDataPlan,
+      sourceIntegrationPlan: cmdSourceIntegrationPlan,
+      snowfakeryRecipe: cmdSnowfakeryRecipe,
+      mcp: cmdMcp,
+      deploy: cmdDeploy,
+      deployStatus: cmdDeployStatus,
+      verifyLive: cmdVerifyLive,
+      register: cmdRegister,
+      publish: cmdPublish,
+      reset: cmdReset,
+      planData: cmdPlanData,
+      fromUseCase: cmdFromUseCase,
+      batchAudit: cmdBatchAudit,
     },
   });
   const commandIdx = argv.findIndex((a) => !a.startsWith("-"));
@@ -5036,41 +5061,7 @@ async function main() {
     await runCittyCommand(tree[commandName], { rawArgs: argv.filter((_, i) => i !== commandIdx) });
     return;
   }
-
-  const { command, flags } = parseArgs(argv);
-  const dir = resolve(flags.dir || ".");
-
-  switch (command) {
-    case "init": return cmdInit(dir, flags);
-    case "schema": return cmdSchema(dir, flags);
-    case "generate": return cmdGenerate(dir, flags);
-    case "tools": return cmdTools(dir, flags);
-    case "test": return cmdTest(dir, flags);
-    case "eval": return cmdEval(dir, flags);
-    case "quality-gate": return cmdQualityGate(dir, flags);
-    case "promotion-gate": return cmdPromotionGate(dir, flags);
-    case "harness-review": return cmdHarnessReview(dir, flags);
-    case "harness-refine": return cmdHarnessRefine(dir, flags);
-    case "serve": return cmdServe(dir, flags);
-    case "data-plan": return cmdDataPlan(dir, flags);
-    case "source-integration-plan": return cmdSourceIntegrationPlan(dir, flags);
-    case "snowfakery-recipe": return cmdSnowfakeryRecipe(dir, flags);
-    case "mcp": return cmdMcp(dir, flags);
-    case "deploy": return cmdDeploy(dir, flags);
-    case "deploy-status": return cmdDeployStatus(dir, flags);
-    case "verify-live": return cmdVerifyLive(dir, flags);
-    case "register": return cmdRegister(dir, flags);
-    case "publish": return cmdPublish(dir, flags);
-    case "status": return cmdStatus(dir);
-    case "reset": return cmdReset(dir, flags);
-    case "sources": return cmdSources(flags);
-    case "plan-data": return cmdPlanData(dir, flags);
-    case "from-usecase": return cmdFromUseCase(dir, flags);
-    case "list-usecases": return cmdListUseCases(flags);
-    case "pack-coverage": return cmdPackCoverage(flags);
-    case "batch-audit": return cmdBatchAudit(flags);
-    default: printHelp();
-  }
+  printHelp();
 }
 
 // Pure build-time helpers exported for unit tests. Importing this module must NOT
