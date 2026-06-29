@@ -1,5 +1,5 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
+import { readJson, writeJson } from "../../../../../tools/lib/json-io.mjs";
 import { canonicalSystemId, safePyName, snakeCase } from "../core/naming.mjs";
 import { findSimulatorForSystem, loadSimulatorRegistry } from "../simulators/registry.mjs";
 import { sourceTimestamp } from "../../../src/source-clock.js";
@@ -69,17 +69,6 @@ const DATASTORE_PROVISIONING = {
     registryPolicy: "register Cloud Run adapter as MCP server in Agent Registry after deployment",
   },
 };
-
-async function readJson(path, fallback = null) {
-  try { return JSON.parse(await readFile(path, "utf8")); }
-  catch { return fallback; }
-}
-
-async function writeJson(path, data) {
-  const dir = path.substring(0, path.lastIndexOf("/"));
-  if (dir) await mkdir(dir, { recursive: true }).catch(() => {});
-  await writeFile(path, JSON.stringify(data, null, 2) + "\n", "utf8");
-}
 
 function uniq(values) {
   return Array.from(new Set((values || []).filter(Boolean)));

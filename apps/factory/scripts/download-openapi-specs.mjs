@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
 import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
+import { writeJson } from "../../../tools/lib/json-io.mjs";
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -136,11 +137,6 @@ async function removeStaleContractFiles(systemDir, keepFile) {
 
 async function readJson(path) {
   return JSON.parse(await readFile(path, "utf8"));
-}
-
-async function writeJson(path, value) {
-  await mkdir(dirname(path), { recursive: true });
-  await writeFile(path, `${JSON.stringify(value, null, 2)}\n`);
 }
 
 function candidateUrls(source) {

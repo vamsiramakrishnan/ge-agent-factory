@@ -1,22 +1,13 @@
 #!/usr/bin/env node
-import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
+import { readJson, writeJson } from "../../../tools/lib/json-io.mjs";
 import { existsSync } from "node:fs";
-import { basename, dirname, extname, join, resolve } from "node:path";
+import { basename, extname, join, resolve } from "node:path";
 import { loadSimulatorRegistry } from "./factory/simulators/registry.mjs";
 import { normalizeForCollection as sharedNormalizeForCollection, mergeByKey as sharedMergeByKey } from "./lib/data-recipe.mjs";
 
 const parseArgs = (argv) => parseFlagArgs(argv).flags;
-
-async function readJson(path, fallback = null) {
-  try { return JSON.parse(await readFile(path, "utf8")); }
-  catch { return fallback; }
-}
-
-async function writeJson(path, data) {
-  await mkdir(dirname(path), { recursive: true });
-  await writeFile(path, JSON.stringify(data, null, 2) + "\n", "utf8");
-}
 
 function snakeCase(value) {
   return String(value || "")
