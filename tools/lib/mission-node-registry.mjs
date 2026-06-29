@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { basename, extname, join, normalize } from "node:path";
+import { snakeCase } from "@ge/std/naming";
 
 const DATA_NODE_KINDS = new Set([
   "mock.generate",
@@ -75,19 +76,12 @@ function snowfakeryArgv(recipe, output) {
   ];
 }
 
-// NOTE: deliberately a local copy, not factory/core/naming's canonical snakeCase.
-// tools/lib must not import from apps/factory (enforced by check-no-app-imports),
-// so unifying this requires relocating core/naming to a shared package first.
-// Used only for internal csv/object name matching here (both sides use this fn),
-// so the local divergence is self-consistent.
-function snakeCase(value) {
-  return String(value || "")
-    .replace(/[^a-zA-Z0-9]+/g, "_")
-    .replace(/([A-Z])/g, "_$1")
-    .toLowerCase()
-    .replace(/^_+|_+$/g, "")
-    .replace(/_+/g, "_");
-}
+// snakeCase now imported from @ge/std/naming (the shared leaf package — tools/lib
+// can depend on it without the apps/factory layering cycle). Used only for internal
+// csv/object name matching below; both operands run through the same fn so matching
+// stays self-consistent. A divergence-probe test (mission-node-registry.test.mjs)
+// guards that the change-case canonical produces the same match outcomes as the
+// former local regex for representative + adversarial object names.
 
 function artifactByName(artifactCheck = {}, name) {
   return (artifactCheck.artifacts || []).find((artifact) => artifact.name === name) || null;
