@@ -9,10 +9,10 @@
  * simulator packs.
  */
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
+import { parseFlagArgs } from "@ge/std/cli-args";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { readJson, writeJson } from "../../../tools/lib/json-io.mjs";
+import { readJson, writeJson } from "@ge/std/json-io";
 import { detectFormatAndParse, loadSpec } from "./generate-tools-from-openapi.mjs";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));

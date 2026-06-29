@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { boolFlag, parseCommandArgs, parseFlagArgs } from "./cli-args.mjs";
+import { boolFlag, parseCommandArgs, parseFlagArgs } from "@ge/std/cli-args";
 
 test("parseFlagArgs returns positional values and flags", () => {
   expect(parseFlagArgs(["cmd", "--id", "x", "--force"], { bareValue: "true" })).toEqual({

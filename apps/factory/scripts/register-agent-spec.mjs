@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { readFile } from "node:fs/promises";
-import { parseFlagArgs, boolFlag } from "../../../tools/lib/cli-args.mjs";
+import { parseFlagArgs, boolFlag } from "@ge/std/cli-args";
 import { resolve } from "node:path";
 import { writeInterviewSpecEntry } from "../src/agent-spec-registry.js";
 
@@ -8,7 +8,7 @@ const repoRoot = resolve(new URL("..", import.meta.url).pathname);
 
 const parseArgs = (argv) => parseFlagArgs(argv).flags;
 
-// boolFlag imported from tools/lib/cli-args.mjs
+// boolFlag imported from @ge/std/cli-args
 
 async function readStdin() {
   const chunks = [];

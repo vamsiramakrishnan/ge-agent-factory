@@ -16,7 +16,7 @@
 // Both share `matchPipelineSteps` so the stage→intent matching exists in exactly
 // one place and can never drift between authoring and build.
 
-import { safePyName, snakeCase } from "./core/naming.mjs";
+import { safePyName, snakeCase } from "@ge/std/naming";
 
 // The threshold below which a pipeline is NOT considered a "real" multi-agent
 // pipeline (it stays a single agent). Mirrors deriveAgentWorkflow's decision:

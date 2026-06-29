@@ -6,8 +6,8 @@ import { getUseCases } from "./use-cases.js";
 import { DEFAULT_AGENT_MODEL } from "./known-models.js";
 import { ARTIFACT_PATHS, DATA_PATHS, WORKSPACE_PATHS } from "./workspace-contract.js";
 import { runAdkPreviewForWorkspace } from "./adk-preview.js";
-import { slug as baseSlug } from "../scripts/factory/core/naming.mjs";
-import { boolFlag } from "../../../tools/lib/cli-args.mjs";
+import { slug as baseSlug } from "@ge/std/naming";
+import { boolFlag } from "@ge/std/cli-args";
 
 const FACTORY_STAGES = [
   "planned",
@@ -26,7 +26,7 @@ const FACTORY_STAGES = [
 ];
 const DEFAULT_WEB_URL = process.env.GE_HARNESS_WEB_URL || "http://localhost:17655";
 
-// boolFlag imported from tools/lib/cli-args.mjs
+// boolFlag imported from @ge/std/cli-args
 
 const slug = (value, max = 72) => baseSlug(value, { max });
 

@@ -1,6 +1,6 @@
 import { basename, join } from "node:path";
-import { readJson, writeJson } from "../../../../../tools/lib/json-io.mjs";
-import { canonicalSystemId, safePyName, snakeCase } from "../core/naming.mjs";
+import { readJson, writeJson } from "@ge/std/json-io";
+import { canonicalSystemId, safePyName, snakeCase } from "@ge/std/naming";
 import { findSimulatorForSystem, loadSimulatorRegistry } from "../simulators/registry.mjs";
 import { sourceTimestamp } from "../../../src/source-clock.js";
 

@@ -20,12 +20,12 @@
  *   node scripts/generate-simulator-data.mjs --system servicenow --stdout          # print seed, don't write
  */
 import { readFileSync, writeFileSync, mkdirSync, existsSync, mkdtempSync, rmSync } from "node:fs";
-import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
+import { parseFlagArgs } from "@ge/std/cli-args";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
-import { writeJson, readJson } from "../../../tools/lib/json-io.mjs";
+import { writeJson, readJson } from "@ge/std/json-io";
 import {
   buildRecipe,
   generateWithFaker,

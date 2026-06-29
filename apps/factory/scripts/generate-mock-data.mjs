@@ -71,7 +71,7 @@
  * OUTPUT: JSON array to stdout (or files to --out directory)
  */
 import { faker } from "@faker-js/faker";
-import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
+import { parseFlagArgs } from "@ge/std/cli-args";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { existsSync, readFileSync } from "node:fs";
 import { join, extname, basename, resolve, dirname } from "node:path";

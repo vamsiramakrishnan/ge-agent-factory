@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync, rmS
 import { dirname, join, resolve } from "node:path";
 import { homedir } from "node:os";
 import * as core from "./factory-core.mjs";
-import { readJson, writeJson } from "./json-io.mjs";
+import { readJson, writeJson } from "@ge/std/json-io";
 import { execStream } from "./exec-stream.mjs";
 import {
   autopilotCounts,

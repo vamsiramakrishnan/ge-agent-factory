@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 import { readFile, readdir } from "node:fs/promises";
-import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
-import { readJson, writeJson } from "../../../tools/lib/json-io.mjs";
+import { parseFlagArgs } from "@ge/std/cli-args";
+import { readJson, writeJson } from "@ge/std/json-io";
 import { existsSync } from "node:fs";
 import { basename, extname, join, resolve } from "node:path";
 import { loadSimulatorRegistry } from "./factory/simulators/registry.mjs";
 import { normalizeForCollection as sharedNormalizeForCollection, mergeByKey as sharedMergeByKey } from "./lib/data-recipe.mjs";
-import { snakeCase } from "./factory/core/naming.mjs";
+import { snakeCase } from "@ge/std/naming";
 
 const parseArgs = (argv) => parseFlagArgs(argv).flags;
 

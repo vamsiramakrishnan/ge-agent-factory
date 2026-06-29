@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { basename, join, relative, resolve } from "node:path";
 import { glob } from "tinyglobby";
-import { slug as baseSlug } from "../scripts/factory/core/naming.mjs";
+import { slug as baseSlug } from "@ge/std/naming";
 
 export const AGENT_SPEC_SCHEMA_VERSION = 1;
 export const INTERVIEW_SPEC_DIR = "catalog/interview-specs";

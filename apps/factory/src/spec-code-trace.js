@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { snakeCase } from "../scripts/factory/core/naming.mjs";
+import { snakeCase } from "@ge/std/naming";
 import { WORKSPACE_PATHS } from "./workspace-contract.js";
 
 async function readJson(path, fallback = null) {

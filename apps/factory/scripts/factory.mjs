@@ -21,14 +21,14 @@
  *   factory reset    --dir <dir> --step <step>
  */
 import { readFile, writeFile, mkdir, stat, readdir } from "node:fs/promises";
-import { parseCommandArgs } from "../../../tools/lib/cli-args.mjs";
+import { parseCommandArgs } from "@ge/std/cli-args";
 import { existsSync } from "node:fs";
 import { join, resolve, basename, relative } from "node:path";
 import { execa } from "execa";
 import { stringify as stringifyYaml } from "yaml";
 import { defineCommand, runMain } from "citty";
 import { faker } from "@faker-js/faker";
-import { jsonrepair } from "jsonrepair";
+import { extractFirstJsonObject } from "@ge/std/json-repair";
 import { buildFactoryCommandTree } from "./factory/registry.mjs";
 import { harnessRefineSchema, harnessReviewSchema } from "./schemas/harness-schemas.mjs";
 
@@ -43,7 +43,7 @@ function validateHarnessOutput(schema, value, label) {
 }
 import { runHarnessTask } from "../src/harness-runner.js";
 import { buildHarnessRefinePrompt, buildHarnessRunSummary, buildHarnessWorkItem, writeHarnessWorkItem } from "../src/harness-work-item.js";
-import { canonicalSystemId, safePyName, shortAgentName, snakeCase, titleCase, validPythonIdentifierName } from "./factory/core/naming.mjs";
+import { canonicalSystemId, safePyName, shortAgentName, snakeCase, titleCase, validPythonIdentifierName } from "@ge/std/naming";
 import { CONTRACT_INTENT_KINDS, CONTRACT_TOOL_KINDS, ensureContractQueryTables, inferEvalToolArgs, tablePrimaryKey } from "./factory/core/contract-schema.mjs";
 import { MANAGED_MCP_SERVICES, buildSourceIntegrationPlan } from "./factory/integration/source-integration.mjs";
 import { renderToolsModule } from "./factory/runtime/tools-backend.mjs";
@@ -2285,52 +2285,8 @@ async function cmdQualityGate(dir, flags) {
   }
 }
 
-// Parse a JSON candidate that an LLM emitted, tolerating the usual model slop
-// (trailing commas, single quotes, unquoted keys, smart quotes, comments,
-// truncated tails). jsonrepair fixes the syntax, JSON.parse does the parse.
-function parseLooseJson(candidate) {
-  return JSON.parse(jsonrepair(candidate));
-}
-
-// Locate the first balanced { ... } object in (possibly fenced, possibly
-// prose-wrapped) LLM text and parse it leniently. If the object is truncated
-// (stream cut off mid-response) we hand the open tail to jsonrepair, which
-// closes the structure.
-function extractFirstJsonObject(text) {
-  const raw = String(text || "").trim();
-  const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
-  const input = fenced ? fenced[1].trim() : raw;
-  let start = -1;
-  let depth = 0;
-  let inString = false;
-  let escaped = false;
-  for (let i = 0; i < input.length; i++) {
-    const ch = input[i];
-    if (start < 0) {
-      if (ch === "{") {
-        start = i;
-        depth = 1;
-      }
-      continue;
-    }
-    if (inString) {
-      if (escaped) escaped = false;
-      else if (ch === "\\") escaped = true;
-      else if (ch === "\"") inString = false;
-      continue;
-    }
-    if (ch === "\"") inString = true;
-    else if (ch === "{") depth++;
-    else if (ch === "}") {
-      depth--;
-      if (depth === 0) return parseLooseJson(input.slice(start, i + 1));
-    }
-  }
-  // Found an opening brace but never balanced it → truncated object. jsonrepair
-  // completes the open tail rather than throwing on the partial response.
-  if (start >= 0) return parseLooseJson(input.slice(start));
-  throw new Error("Harness response did not contain a JSON object.");
-}
+// extractFirstJsonObject now lives in @ge/std/json-repair (imported above) so the
+// harness parsers and any other consumer share one repair-tolerant extractor.
 
 async function readWorkspaceReviewContext(dir) {
   const files = [

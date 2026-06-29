@@ -1,7 +1,7 @@
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { writeJson } from "../../../tools/lib/json-io.mjs";
+import { writeJson } from "@ge/std/json-io";
 import { loadSkillRegistry, selectSkillsForContext } from "./skill-registry.js";
 import { ARTIFACT_PATHS, DATA_PATHS, REQUIRED_WORKSPACE_FILES, WORKSPACE_PATHS } from "./workspace-contract.js";
 

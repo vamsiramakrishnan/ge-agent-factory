@@ -10,12 +10,12 @@
  * for the ADK run preview.
  */
 import { mkdir, writeFile } from "node:fs/promises";
-import { parseFlagArgs, boolFlag } from "../../../tools/lib/cli-args.mjs";
+import { parseFlagArgs, boolFlag } from "@ge/std/cli-args";
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getUseCases } from "../src/use-cases.js";
-import { slug as baseSlug } from "./factory/core/naming.mjs";
+import { slug as baseSlug } from "@ge/std/naming";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(SCRIPT_DIR, "..");
@@ -23,7 +23,7 @@ const DEFAULT_WEB_URL = process.env.GE_HARNESS_WEB_URL || "http://localhost:1765
 
 const parseArgs = (argv) => parseFlagArgs(argv).flags;
 
-// boolFlag imported from tools/lib/cli-args.mjs
+// boolFlag imported from @ge/std/cli-args
 
 const slug = (value) => baseSlug(value, { max: 72 });
 

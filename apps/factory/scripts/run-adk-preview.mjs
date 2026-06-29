@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { resolve } from "node:path";
-import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
+import { parseFlagArgs } from "@ge/std/cli-args";
 import { runAdkPreviewForWorkspace } from "../src/adk-preview.js";
 
 const parseArgs = (argv) => parseFlagArgs(argv, { bareValue: true }).flags;

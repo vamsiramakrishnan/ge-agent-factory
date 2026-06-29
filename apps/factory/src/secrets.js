@@ -2,7 +2,7 @@ import { randomBytes, createCipheriv, createDecipheriv, createHash } from "node:
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { writeJson } from "../../../tools/lib/json-io.mjs";
+import { writeJson } from "@ge/std/json-io";
 
 const SECRET_NAME_RE = /^[A-Z][A-Z0-9_]{1,63}$/;
 

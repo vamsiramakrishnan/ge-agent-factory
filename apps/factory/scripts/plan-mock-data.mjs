@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 import { mkdir, writeFile } from "node:fs/promises";
-import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
+import { parseFlagArgs } from "@ge/std/cli-args";
 import { basename, dirname, join, resolve } from "node:path";
-import { readJson, writeJson } from "../../../tools/lib/json-io.mjs";
+import { readJson, writeJson } from "@ge/std/json-io";
 import { buildScenarioGraph } from "./factory/scenario-graph.mjs";
 import { buildSimulatorProjections } from "./factory/projections/simulator-projections.mjs";
 import { matchScenarioPacks } from "./factory/packs/index.mjs";
-import { snakeCase } from "./factory/core/naming.mjs";
+import { snakeCase } from "@ge/std/naming";
 
 const parseArgs = (argv) => parseFlagArgs(argv).flags;
 

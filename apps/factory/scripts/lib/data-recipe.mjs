@@ -22,7 +22,7 @@
  * rows land in the canonical collection shape the engine consumes.
  */
 
-import { snakeCase } from "../factory/core/naming.mjs";
+import { snakeCase } from "@ge/std/naming";
 
 // Re-exported for back-compat; the canonical (change-case) implementation lives
 // in factory/core/naming.mjs so the simulator-seed pipeline shares one casing.

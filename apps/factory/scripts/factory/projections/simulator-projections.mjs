@@ -1,4 +1,4 @@
-import { snakeCase } from "../core/naming.mjs";
+import { snakeCase } from "@ge/std/naming";
 import { findSimulatorForSystem, loadSimulatorRegistry } from "../simulators/registry.mjs";
 
 function nodesForSystem(graph, systemName) {

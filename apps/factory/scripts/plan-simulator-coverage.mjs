@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
+import { parseFlagArgs } from "@ge/std/cli-args";
 import { dirname, resolve } from "node:path";
 import { findSimulatorForSystem, loadSimulatorRegistry } from "./factory/simulators/registry.mjs";
 

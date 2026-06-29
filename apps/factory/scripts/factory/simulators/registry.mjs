@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { snakeCase } from "../core/naming.mjs";
+import { snakeCase } from "@ge/std/naming";
 
 const SCRIPT_DIR = fileURLToPath(new URL(".", import.meta.url));
 const REGISTRY_PATH = resolve(SCRIPT_DIR, "../../../simulator-systems/registry.json");

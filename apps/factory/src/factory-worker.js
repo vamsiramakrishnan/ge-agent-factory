@@ -4,7 +4,7 @@ import { dirname, join, resolve } from "node:path";
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { FACTORY_STAGE_GRAPH, FACTORY_STAGE_IDS, nextFactoryStage } from "./factory-orchestration.js";
-import { shortAgentName } from "../scripts/factory/core/naming.mjs";
+import { shortAgentName } from "@ge/std/naming";
 import { DEFAULT_AGENT_MODEL } from "./known-models.js";
 import { execStream } from "../../../tools/lib/exec-stream.mjs";
 import { makeEvent } from "../../../tools/lib/events.mjs";

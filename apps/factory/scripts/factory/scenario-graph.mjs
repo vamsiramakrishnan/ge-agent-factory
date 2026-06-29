@@ -1,4 +1,4 @@
-import { snakeCase } from "./core/naming.mjs";
+import { snakeCase } from "@ge/std/naming";
 
 function stableId(prefix, ...parts) {
   const suffix = snakeCase(parts.filter(Boolean).join("_")).slice(0, 72) || "default";
