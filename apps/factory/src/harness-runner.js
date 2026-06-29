@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { chmodSync, existsSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { basename, delimiter, join, resolve, sep } from "node:path";
+import { splitLines } from "@ge/runtime/events";
 import { readDotEnv } from "./dotenv.mjs";
 import { detectAgents, getAgentDef } from "./agents.js";
 import { buildHandoffPacket, buildHarnessRunPlan } from "./harness-runtime.js";
@@ -260,29 +261,12 @@ function parseAntigravityStatusLines(text) {
   return { events, passthrough: passthrough.length ? `${passthrough.join("\n")}\n` : "" };
 }
 
+// Incremental line buffer for streamed stderr. This was a local re-implementation
+// of @ge/runtime's splitLines(); delegate to the shared one so there's a single
+// line-buffer in the codebase (it also strips a trailing \r — CRLF the old copy
+// left in place). A function (not a const alias) so it hoists above __test below.
 function createLineBuffer() {
-  let buffer = "";
-  return {
-    push(chunk) {
-      buffer += String(chunk);
-      const lines = [];
-      let index;
-      while ((index = buffer.indexOf("\n")) >= 0) {
-        lines.push(buffer.slice(0, index));
-        buffer = buffer.slice(index + 1);
-      }
-      return lines;
-    },
-    flush() {
-      if (!buffer.trim()) {
-        buffer = "";
-        return [];
-      }
-      const rest = [buffer];
-      buffer = "";
-      return rest;
-    },
-  };
+  return splitLines();
 }
 
 function pathHasHiddenSegment(path) {
