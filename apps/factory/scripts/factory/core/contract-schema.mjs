@@ -1,4 +1,4 @@
-import { safePyName, snakeCase, titleCase } from "./naming.mjs";
+import { safePyName, snakeCase, titleCase } from "@ge/std/naming";
 
 export const CONTRACT_TOOL_KINDS = new Set(["action", "notification", "evidence_lookup", "calculation"]);
 export const CONTRACT_INTENT_KINDS = new Set(["query", "action", "notification", "evidence_lookup", "calculation"]);

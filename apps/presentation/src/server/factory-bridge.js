@@ -43,7 +43,7 @@ function pascal(value) {
 }
 
 // Helper: humanize a machine id into a user-facing Title Case label.
-// Mirrors titleCase() in apps/factory/scripts/factory/core/naming.mjs
+// Mirrors titleCase() in @ge/std/naming
 // (kept local to avoid a cross-app import). "account_reconciliation_agent" →
 // "Account Reconciliation Agent". Used only for the GE display name id fallback.
 export function humanize(value) {
