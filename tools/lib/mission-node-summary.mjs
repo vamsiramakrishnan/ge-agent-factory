@@ -1,13 +1,9 @@
 import { existsSync, readFileSync } from "node:fs";
+import { readJson } from "@ge/std/json-io";
 import { parseStdoutJson } from "./mission-artifacts.mjs";
 
 function readJsonArtifact(artifact) {
-  if (!artifact?.resolvedPath || !existsSync(artifact.resolvedPath)) return null;
-  try {
-    return JSON.parse(readFileSync(artifact.resolvedPath, "utf8"));
-  } catch {
-    return null;
-  }
+  return readJson(artifact?.resolvedPath, null);
 }
 
 function artifactByName(artifactCheck, name) {

@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { basename, extname, join, normalize } from "node:path";
 import { snakeCase } from "@ge/std/naming";
+import { readJson } from "@ge/std/json-io";
 
 const DATA_NODE_KINDS = new Set([
   "mock.generate",
@@ -88,12 +89,7 @@ function artifactByName(artifactCheck = {}, name) {
 }
 
 function readJsonArtifact(artifact) {
-  if (!artifact?.resolvedPath || !existsSync(artifact.resolvedPath)) return null;
-  try {
-    return JSON.parse(readFileSync(artifact.resolvedPath, "utf8"));
-  } catch {
-    return null;
-  }
+  return readJson(artifact?.resolvedPath, null);
 }
 
 function semanticBlocker(id, message, artifact = null) {
