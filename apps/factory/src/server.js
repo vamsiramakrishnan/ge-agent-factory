@@ -3,6 +3,7 @@ import { spawn } from "node:child_process";
 import { createServer as createNetServer } from "node:net";
 import { chmodSync, cpSync, createWriteStream, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { delimiter, extname, join, resolve } from "node:path";
+import { Hono } from "hono";
 import { readDotEnv } from "./dotenv.mjs";
 import { detectAgents, getAgentDef } from "./agents.js";
 import { DEPARTMENTS, INTERVIEW_QUESTIONS } from "./departments.js";
@@ -1388,10 +1389,62 @@ export async function startServer({ port = 17654, host = "127.0.0.1", returnServ
   mkdirSync(PROJECTS_ROOT, { recursive: true });
   await openDatabase(DATA_ROOT);
 
+  // Hono strangler: converted API routes are served by this Hono app; anything it
+  // doesn't match (404) falls through to the legacy handler below. Routes migrate
+  // onto Hono incrementally — the legacy if-ladder remains the fallback. GET-only
+  // for now (the converted routes need no request body).
+  const apiApp = new Hono();
+  apiApp.get("/api/health", (c) => c.json({ ok: true, systems: MOCK_SYSTEMS.length }));
+  apiApp.get("/api/daemon/status", (c) => c.json(daemonStatus()));
+  apiApp.get("/api/systems", (c) => c.json({ systems: MOCK_SYSTEMS }));
+  apiApp.get("/api/departments", (c) => {
+    const departments = DEPARTMENTS.map((department) => {
+      const useCases = getUseCases().filter((item) => item.department === department.id);
+      const domains = getDomainsByDepartment(department.id);
+      return {
+        ...department,
+        useCaseCount: useCases.length,
+        domainCount: domains.length,
+        domains: domains.map((d) => ({ id: d.id, title: d.title, subtitle: d.subtitle, color: d.color, useCaseCount: d.useCaseCount, useCases: d.useCases })),
+        featuredUseCases: useCases.slice(0, 12),
+      };
+    });
+    return c.json({ departments, interviewQuestions: INTERVIEW_QUESTIONS });
+  });
+  apiApp.get("/api/use-cases", (c) => {
+    const department = c.req.query("department");
+    const query = (c.req.query("q") || "").toLowerCase();
+    let useCases = getUseCases();
+    if (department) useCases = useCases.filter((item) => item.department === department);
+    if (query) {
+      const tokens = query.split(/\s+/).filter(Boolean);
+      useCases = useCases
+        .map((item) => {
+          const haystack = [item.title, item.subtitle, item.persona, item.layer, item.triggerType, ...(item.systems || []), ...(item.statusQuo || []), ...(item.agentification || [])].join(" ").toLowerCase();
+          const score = tokens.reduce((total, token) => total + (haystack.includes(token) ? 1 : 0) + (item.title.toLowerCase().includes(token) ? 2 : 0), 0);
+          return { item, score };
+        })
+        .filter((entry) => entry.score > 0)
+        .sort((a, b) => b.score - a.score || a.item.title.localeCompare(b.item.title))
+        .map((entry) => entry.item);
+    }
+    return c.json({ useCases: useCases.slice(0, 80) });
+  });
+  apiApp.get("/api/agents", async (c) => c.json({ agents: await detectAgents() }));
+
   const server = createServer(async (req, res) => {
     const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
     const workspacePathname = url.pathname;
     try {
+      // Hono first (GET only). A 404 means no converted route matched → fall through.
+      if (req.method === "GET") {
+        const honoResp = await apiApp.fetch(new Request(`http://localhost${req.url}`, { method: "GET" }));
+        if (honoResp.status !== 404) {
+          res.writeHead(honoResp.status, Object.fromEntries(honoResp.headers));
+          res.end(await honoResp.text());
+          return;
+        }
+      }
       if (req.method === "GET" && url.pathname === "/api/health") return json(res, 200, { ok: true, systems: MOCK_SYSTEMS.length });
       if (req.method === "GET" && url.pathname === "/api/daemon/status") return json(res, 200, daemonStatus());
 
