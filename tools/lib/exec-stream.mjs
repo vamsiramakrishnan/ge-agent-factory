@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { execa } from "execa";
 import { makeEvent, splitLines, inferLevel } from "./events.mjs";
 
 const STREAM_ENV = { PYTHONUNBUFFERED: "1", PYTHONIOENCODING: "utf-8", CLOUDSDK_CORE_DISABLE_PROMPTS: "1" };
@@ -85,28 +85,38 @@ export function formatAntigravityEvent(event = {}) {
 // while accumulating the full buffers for the final result. The single subprocess
 // choke point so agents-cli/gcloud/antigravity all stream (they block-buffer otherwise).
 export function execStream(command, args, { cwd, env = process.env, onEvent = () => {}, meta = {} } = {}) {
-  return new Promise((resolve) => {
-    const child = spawn(command, args, { cwd, env: { ...env, ...STREAM_ENV }, stdio: ["ignore", "pipe", "pipe"] });
-    let stdout = "", stderr = "";
-    const stdoutSplitter = splitLines();
-    const stderrSplitter = splitLines();
-    const handler = (stream, splitter) => (chunk) => {
-      const text = String(chunk);
-      if (stream === "stdout") stdout += text; else stderr += text;
-      for (const line of splitter.push(text)) onEvent(processLineEvent({ stream, line, meta }));
-    };
-    child.stdout.on("data", handler("stdout", stdoutSplitter));
-    child.stderr.on("data", handler("stderr", stderrSplitter));
-    // Spawn failures (e.g. ENOENT — binary not found) land here, not in "close". Name the
+  // buffer:false leaves the pipes for us to read live; reject:false turns spawn/exit
+  // failures into a resolved result instead of a throw, so we keep the single resolve path.
+  const subprocess = execa(command, args, {
+    cwd,
+    env: { ...env, ...STREAM_ENV },
+    extendEnv: false,
+    stdin: "ignore",
+    reject: false,
+    buffer: false,
+    stripFinalNewline: false,
+  });
+  let stdout = "", stderr = "";
+  const stdoutSplitter = splitLines();
+  const stderrSplitter = splitLines();
+  const handler = (stream, splitter) => (chunk) => {
+    const text = String(chunk);
+    if (stream === "stdout") stdout += text; else stderr += text;
+    for (const line of splitter.push(text)) onEvent(processLineEvent({ stream, line, meta }));
+  };
+  subprocess.stdout?.on("data", handler("stdout", stdoutSplitter));
+  subprocess.stderr?.on("data", handler("stderr", stderrSplitter));
+  return subprocess.then((r) => {
+    for (const line of stdoutSplitter.flush()) onEvent(processLineEvent({ stream: "stdout", line, meta }));
+    for (const line of stderrSplitter.flush()) onEvent(processLineEvent({ stream: "stderr", line, meta }));
+    // A launch failure (e.g. ENOENT — binary not found) yields no numeric exitCode. Name the
     // command so a missing tool is obvious instead of a cryptic "exit 1".
-    child.on("error", (e) => {
-      const hint = e?.code === "ENOENT" ? ` — '${command}' not found on PATH (is it installed?)` : "";
-      resolve({ code: 1, stdout, stderr: `${stderr}failed to launch '${command}': ${e.message}${hint}` });
-    });
-    child.on("close", (code, signal) => {
-      for (const line of stdoutSplitter.flush()) onEvent(processLineEvent({ stream: "stdout", line, meta }));
-      for (const line of stderrSplitter.flush()) onEvent(processLineEvent({ stream: "stderr", line, meta }));
-      resolve({ code: code ?? 1, signal, stdout, stderr });
-    });
+    if (typeof r.exitCode !== "number") {
+      const code = r.code || r.cause?.code;
+      const hint = code === "ENOENT" ? ` — '${command}' not found on PATH (is it installed?)` : "";
+      const reason = r.shortMessage || r.cause?.message || r.message || "spawn failed";
+      return { code: 1, stdout, stderr: `${stderr}failed to launch '${command}': ${reason}${hint}` };
+    }
+    return { code: r.exitCode ?? 1, signal: r.signal, stdout, stderr };
   });
 }
