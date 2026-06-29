@@ -41,6 +41,7 @@
     "@faker-js/faker": "^10.4.0",
     "@ge/okf": "workspace:*",
     "@ge/run-ledger": "workspace:*",
+    "@ge/runtime": "workspace:*",
     "better-sqlite3": "^12.9.0",
     "yaml": "^2.9.0"
   }
