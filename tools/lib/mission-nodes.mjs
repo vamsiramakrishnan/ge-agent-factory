@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { parseList } from "@ge/std/list";
 import { buildMissionNode } from "./mission-node-registry.mjs";
 import { STATE_PATHS, relativeToRepo } from "./state-paths.mjs";
 
@@ -19,7 +20,7 @@ export function missionDataContext({ scenario = null, spec = null, workspace = n
     scenario: scenario || null,
     spec: spec || null,
     workspace: resolvedWorkspace,
-    systems: Array.isArray(systems) ? systems.filter(Boolean) : String(systems || "").split(",").map((item) => item.trim()).filter(Boolean),
+    systems: Array.isArray(systems) ? systems.filter(Boolean) : parseList(String(systems || "")),
     enabled: Boolean(scenario || spec),
   };
 }

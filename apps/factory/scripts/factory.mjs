@@ -21,6 +21,7 @@
  *   factory reset    --dir <dir> --step <step>
  */
 import { readFile, writeFile, mkdir, stat, readdir } from "node:fs/promises";
+import { parseList } from "@ge/std/list";
 import { parseCommandArgs } from "@ge/std/cli-args";
 import { existsSync } from "node:fs";
 import { join, resolve, basename, relative, dirname } from "node:path";
@@ -4831,7 +4832,7 @@ function generateParagraph(topic, entityRefs) {
 
   const subject = faker.helpers.arrayElement(subjects);
   const connector = faker.helpers.arrayElement(connectors);
-  const topicWords = topic.split(",").map((w) => w.trim()).filter(Boolean);
+  const topicWords = parseList(topic);
   const focus = faker.helpers.arrayElement(topicWords.length > 0 ? topicWords : ["operations"]);
 
   let para = `${subject} ${focus} within the defined scope. ${connector} ${focus} standards are met.`;

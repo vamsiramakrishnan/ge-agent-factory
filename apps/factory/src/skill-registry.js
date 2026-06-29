@@ -1,4 +1,5 @@
 import { access, cp, mkdir, readdir, readFile } from "node:fs/promises";
+import { parseList } from "@ge/std/list";
 import { homedir } from "node:os";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import matter from "gray-matter";
@@ -319,7 +320,7 @@ export function parseFrontmatter(text) {
 function normalizeStringList(value) {
   if (Array.isArray(value)) return value.map((item) => String(item || "").trim()).filter(Boolean);
   if (typeof value !== "string") return [];
-  return value.split(/[;,]/).map((item) => item.trim()).filter(Boolean);
+  return parseList(value, /[;,]/);
 }
 
 async function loadSkillRouting(registryRoot) {

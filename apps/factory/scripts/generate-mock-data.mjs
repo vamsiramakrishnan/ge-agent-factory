@@ -71,6 +71,7 @@
  * OUTPUT: JSON array to stdout (or files to --out directory)
  */
 import { faker } from "@faker-js/faker";
+import { parseList } from "@ge/std/list";
 import { parseFlagArgs } from "@ge/std/cli-args";
 import { toCsv } from "@ge/std/csv-io";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
@@ -84,7 +85,7 @@ const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const parseArgs = (argv) => parseFlagArgs(argv).flags;
 
 function parseColumnSpec(spec) {
-  const parts = spec.split(",").map((s) => s.trim()).filter(Boolean);
+  const parts = parseList(spec);
   return parts.map((part) => {
     const [name, type, ...rest] = part.split(":");
     const col = { name, type: type || "string" };

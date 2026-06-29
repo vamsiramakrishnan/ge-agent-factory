@@ -10,6 +10,7 @@
  * for the ADK run preview.
  */
 import { mkdir, writeFile } from "node:fs/promises";
+import { parseList } from "@ge/std/list";
 import { parseFlagArgs, boolFlag } from "@ge/std/cli-args";
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
@@ -29,7 +30,7 @@ const slug = (value) => baseSlug(value, { max: 72 });
 
 function selectUseCases(flags) {
   if (flags.usecases) {
-    const wanted = new Set(String(flags.usecases).split(",").map((item) => item.trim()).filter(Boolean));
+    const wanted = new Set(parseList(String(flags.usecases)));
     const selected = getUseCases().filter((item) => wanted.has(item.id) || wanted.has(item.title));
     const missing = [...wanted].filter((id) => !selected.some((item) => item.id === id || item.title === id));
     if (missing.length) throw new Error(`Unknown use case(s): ${missing.join(", ")}`);

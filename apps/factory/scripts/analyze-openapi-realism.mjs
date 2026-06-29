@@ -9,6 +9,7 @@
  * simulator packs.
  */
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { parseList } from "@ge/std/list";
 import { parseFlagArgs } from "@ge/std/cli-args";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -480,7 +481,7 @@ function renderMarkdown(report) {
 async function main() {
   const flags = parseArgs(process.argv.slice(2));
   const requested = flags.system
-    ? new Set(String(flags.system).split(",").map((item) => item.trim()).filter(Boolean))
+    ? new Set(parseList(String(flags.system)))
     : null;
   const systems = listSystemDirs(OPENAPI_DIR)
     .filter((systemId) => !requested || requested.has(systemId))

@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { parseList } from "@ge/std/list";
 import { randomUUID } from "node:crypto";
 import { chmodSync, existsSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
@@ -416,12 +417,12 @@ export async function runHarnessTask({
         const v = JSON.parse(process.env.GE_HARNESS_MCP);
         sdkCaps.mcpServers = Array.isArray(v) ? v : [v];
       } catch {
-        sdkCaps.mcpServers = process.env.GE_HARNESS_MCP.split(",").map((s) => s.trim()).filter(Boolean)
+        sdkCaps.mcpServers = parseList(process.env.GE_HARNESS_MCP)
           .map((url, i) => ({ transport: "sse", name: `mcp${i}`, url }));
       }
     }
     if (Array.isArray(plan.attachments) && plan.attachments.length) sdkCaps.attachments = plan.attachments;
-    else if (process.env.GE_HARNESS_ATTACH) sdkCaps.attachments = process.env.GE_HARNESS_ATTACH.split(",").map((s) => s.trim()).filter(Boolean);
+    else if (process.env.GE_HARNESS_ATTACH) sdkCaps.attachments = parseList(process.env.GE_HARNESS_ATTACH);
     if (plan.enableFactoryTools || process.env.GE_HARNESS_FACTORY_TOOLS === "1") sdkCaps.enableFactoryTools = true;
     if (plan.conversationId) sdkCaps.conversationId = plan.conversationId;
     if (plan.saveDir) sdkCaps.saveDir = plan.saveDir;
@@ -435,13 +436,13 @@ export async function runHarnessTask({
     const protect = (Array.isArray(protectFiles) && protectFiles.length)
       ? protectFiles
       : (process.env.GE_HARNESS_PROTECT
-        ? process.env.GE_HARNESS_PROTECT.split(",").map((s) => s.trim()).filter(Boolean)
+        ? parseList(process.env.GE_HARNESS_PROTECT)
         : []);
     if (protect.length) sdkCaps.protectFiles = protect;
     const disable = (Array.isArray(disableTools) && disableTools.length)
       ? disableTools
       : (process.env.GE_HARNESS_DISABLE_TOOLS
-        ? process.env.GE_HARNESS_DISABLE_TOOLS.split(",").map((s) => s.trim()).filter(Boolean)
+        ? parseList(process.env.GE_HARNESS_DISABLE_TOOLS)
         : []);
     if (disable.length) sdkCaps.disableTools = disable;
     // Force capabilities (and subagents) on for a read-only validator fan-out.

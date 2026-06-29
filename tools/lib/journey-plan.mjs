@@ -1,4 +1,5 @@
 import { buildMissionGraph } from "./mission-plan.mjs";
+import { parseList } from "@ge/std/list";
 
 export const JOURNEY_STAGES = [
   "interview",
@@ -49,7 +50,7 @@ const ACTIVE = new Set(["queued", "running", "paused"]);
 
 function splitIds(ids = []) {
   if (Array.isArray(ids)) return ids.map(String).map((id) => id.trim()).filter(Boolean);
-  return String(ids || "").split(",").map((id) => id.trim()).filter(Boolean);
+  return parseList(String(ids || ""));
 }
 
 function slugify(value) {
