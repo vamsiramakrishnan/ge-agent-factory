@@ -26,7 +26,7 @@ import { existsSync } from "node:fs";
 import { join, resolve, basename, relative } from "node:path";
 import { execa } from "execa";
 import { stringify as stringifyYaml } from "yaml";
-import { runCommand as runCittyCommand } from "citty";
+import { defineCommand, runMain } from "citty";
 import { faker } from "@faker-js/faker";
 import { jsonrepair } from "jsonrepair";
 import { buildFactoryCommandTree } from "./factory/registry.mjs";
@@ -5069,13 +5069,26 @@ async function main() {
       batchAudit: cmdBatchAudit,
     },
   });
-  const commandIdx = argv.findIndex((a) => !a.startsWith("-"));
-  const commandName = commandIdx >= 0 ? argv[commandIdx] : "help";
-  if (tree[commandName]) {
-    await runCittyCommand(tree[commandName], { rawArgs: argv.filter((_, i) => i !== commandIdx) });
+  const wantsHelp = argv.some((a) => a === "--help" || a === "-h");
+  const firstCmd = argv.find((a) => !a.startsWith("-"));
+  // Curated top-level help for a bare or unknown invocation (keeps the worked
+  // examples below). Everything else goes through citty's own main: command
+  // routing, per-command `--help`/usage rendering, and `--version`. citty runs a
+  // command's `run` AFTER any matched subcommand, so the root command must have
+  // no `run` — hence handling bare/unknown here instead of as a root run().
+  if (!wantsHelp && (!firstCmd || !tree[firstCmd])) {
+    printHelp();
     return;
   }
-  printHelp();
+  const cli = defineCommand({
+    meta: {
+      name: "factory",
+      version: "5.0",
+      description: "Gemini Enterprise agent factory — generate, validate, deploy, and register GE agents",
+    },
+    subCommands: tree,
+  });
+  await runMain(cli, { rawArgs: argv });
 }
 
 // Pure build-time helpers exported for unit tests. Importing this module must NOT
