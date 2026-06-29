@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { access, cp, mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { delimiter, join } from "node:path";
+import { slug as baseSlug } from "../scripts/factory/core/naming.mjs";
 
 async function findOnPath(bin) {
   for (const dir of (process.env.PATH || "").split(delimiter)) {
@@ -16,14 +17,7 @@ async function findOnPath(bin) {
   return null;
 }
 
-function slug(value) {
-  const safe = String(value || "ge-agent")
-    .toLowerCase()
-    .replace(/[^a-z0-9-]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 26);
-  return safe || "ge-agent";
-}
+const slug = (value) => baseSlug(value, { max: 26, fallback: "ge-agent", allow: "-" });
 
 function run(command, args, { cwd, env }) {
   return new Promise((resolve) => {

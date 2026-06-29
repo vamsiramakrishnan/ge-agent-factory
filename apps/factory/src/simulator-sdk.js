@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { slug as baseSlug } from "../scripts/factory/core/naming.mjs";
 
 const DEMO_ROOT = "apps/factory";
 const DEFAULT_SOURCE_MAP = `${DEMO_ROOT}/src/use-case-source-map.generated.json`;
@@ -9,13 +10,7 @@ function asArray(value) {
   return [];
 }
 
-function slug(value, fallback = "scenario") {
-  return String(value || fallback)
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, "-")
-    .replace(/^-+|-+$/g, "") || fallback;
-}
+const slug = (value, fallback = "scenario") => baseSlug(value, { fallback, allow: "._-" });
 
 function getGenerationSpec(spec) {
   return spec?.generationSpec || spec?.spec || spec?.agentSpec || spec || {};

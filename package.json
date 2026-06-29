@@ -64,7 +64,6 @@
     "hono": "^4.12.27",
     "jsonrepair": "^3.14.1",
     "picocolors": "^1.1.1",
-    "slugify": "^1.6.9",
     "tinyglobby": "^0.2.17",
     "yaml": "^2.9.0",
     "zod": "^4.4.3",

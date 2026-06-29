@@ -6,6 +6,7 @@ import {
   safePyName,
   validPythonIdentifierName,
   titleCase,
+  slug,
 } from "./naming.mjs";
 
 const MAX = 26;
@@ -120,5 +121,36 @@ describe("naming golden corpus", () => {
     expect(titleCase("account-reconciliation")).toBe("Account Reconciliation");
     expect(titleCase("Salesforce CRM")).toBe("Salesforce CRM");
     expect(titleCase("Workday HCM")).toBe("Workday HCM");
+  });
+});
+
+// The shared slug() replaced five near-identical copies (factory.js,
+// agent-spec-registry.js, agents-cli-scaffold.js, simulator-sdk.js,
+// batch-generate-agents.mjs). These reproduce each copy's exact contract so the
+// consolidation stays behaviour-preserving (slugs feed agent dir / bucket /
+// registry-key derivation — they must not drift).
+describe("slug", () => {
+  test("default: collapse junk to a dash, lowercase, trim", () => {
+    expect(slug("Account Reconciliation")).toBe("account-reconciliation");
+    expect(slug("AT&T Billing")).toBe("at-t-billing");
+    expect(slug("---Order/Fulfillment v2---")).toBe("order-fulfillment-v2");
+    expect(slug("")).toBe("");
+  });
+
+  test("max caps length (factory.js / agent-spec-registry.js)", () => {
+    expect(slug("a".repeat(100), { max: 72 }).length).toBe(72);
+    expect(slug("a".repeat(100), { max: 96 }).length).toBe(96);
+  });
+
+  test("fallback replaces empty results (agents-cli-scaffold / simulator-sdk)", () => {
+    expect(slug("", { fallback: "ge-agent" })).toBe("ge-agent");
+    expect(slug("!!!", { fallback: "scenario" })).toBe("scenario");
+    expect(slug(null, { fallback: "scenario" })).toBe("scenario");
+  });
+
+  test("allow keeps extra chars (simulator-sdk keeps dots/underscores)", () => {
+    expect(slug("scenario.one_two-three", { allow: "._-" })).toBe("scenario.one_two-three");
+    // Default charset turns dots/underscores into dashes.
+    expect(slug("scenario.one_two-three")).toBe("scenario-one-two-three");
   });
 });

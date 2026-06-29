@@ -10,6 +10,29 @@ export function snakeCase(value) {
   return toSnakeCase(String(value || ""));
 }
 
+// Hyphenated id slug: lowercase, collapse every run of disallowed chars to a
+// single "-", trim leading/trailing "-", cap length. The single implementation
+// behind the five near-identical copies that lived in factory.js,
+// agent-spec-registry.js, agents-cli-scaffold.js, simulator-sdk.js and
+// batch-generate-agents.mjs. Options cover the only ways those differed:
+//   max       — length cap (default unbounded)
+//   fallback  — value when the input is empty or slugs to "" (default "")
+//   allow     — extra chars to KEEP beyond [a-z0-9] (e.g. "._" to preserve dots)
+// NOTE: deliberately NOT slugify — these are internal identifier slugs (some
+// persisted as registry keys) whose contract is "collapse junk to a dash", not
+// URL slugs; slugify transliterates/strips (& -> "and", drops "."), which would
+// re-key existing data.
+export function slug(value, { max = Infinity, fallback = "", allow = "" } = {}) {
+  const disallowed = new RegExp(`[^a-z0-9${allow.replace(/[\\\]^-]/g, "\\$&")}]+`, "g");
+  const out = String(value || fallback)
+    .trim()
+    .toLowerCase()
+    .replace(disallowed, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, max);
+  return out || fallback;
+}
+
 export function titleCase(value) {
   return String(value || "")
     .replace(/[_-]+/g, " ")

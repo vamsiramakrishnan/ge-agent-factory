@@ -6,6 +6,7 @@ import { getUseCases } from "./use-cases.js";
 import { DEFAULT_AGENT_MODEL } from "./known-models.js";
 import { ARTIFACT_PATHS, DATA_PATHS, WORKSPACE_PATHS } from "./workspace-contract.js";
 import { runAdkPreviewForWorkspace } from "./adk-preview.js";
+import { slug as baseSlug } from "../scripts/factory/core/naming.mjs";
 
 const FACTORY_STAGES = [
   "planned",
@@ -29,14 +30,7 @@ function boolFlag(options, key, fallback = false) {
   return !["false", "0", "no", "off"].includes(String(options[key]).toLowerCase());
 }
 
-function slug(value, max = 72) {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, max);
-}
+const slug = (value, max = 72) => baseSlug(value, { max });
 
 function splitList(value) {
   return String(value || "")
