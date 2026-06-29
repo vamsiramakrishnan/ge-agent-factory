@@ -20,7 +20,7 @@
     "daemon:bun": "bun src/cli.js daemon --no-open",
     "web:bun": "bun src/cli.js web --port 17655 --no-open",
     "start": "node src/cli.js",
-    "test": "GE_HARNESS_DATA_ROOT=../../.ge/test/factory node --test tests/*.test.js",
+    "test": "GE_HARNESS_DATA_ROOT=../../.ge/test/factory bun test tests/",
     "use-cases:sync": "node scripts/sync-use-cases-from-slides.mjs",
     "use-cases:sources": "node scripts/analyze-usecase-sources.mjs --slides ../presentation/src/components/slides/use-cases",
     "agents:batch": "node scripts/batch-generate-agents.mjs",
