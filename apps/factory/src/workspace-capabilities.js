@@ -1,6 +1,7 @@
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
+import { writeJson } from "../../../tools/lib/json-io.mjs";
 import { loadSkillRegistry, selectSkillsForContext } from "./skill-registry.js";
 import { ARTIFACT_PATHS, DATA_PATHS, REQUIRED_WORKSPACE_FILES, WORKSPACE_PATHS } from "./workspace-contract.js";
 
@@ -25,11 +26,6 @@ async function readJson(path, fallback = null) {
     if (error?.code === "ENOENT") return fallback;
     throw error;
   }
-}
-
-async function writeJson(path, value) {
-  await mkdir(dirname(path), { recursive: true });
-  await writeFile(path, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
 async function canAccess(path) {

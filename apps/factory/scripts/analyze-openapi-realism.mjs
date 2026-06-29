@@ -12,7 +12,7 @@ import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "
 import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { writeJson } from "../../../tools/lib/json-io.mjs";
+import { readJson, writeJson } from "../../../tools/lib/json-io.mjs";
 import { detectFormatAndParse, loadSpec } from "./generate-tools-from-openapi.mjs";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
@@ -29,15 +29,6 @@ const WRITE_METHODS = new Set(["post", "put", "patch", "delete"]);
 const SPEC_CANDIDATES = ["openapi.json", "swagger.json", "discovery.json", "openapi.yaml", "swagger.yaml"];
 
 const parseArgs = (argv) => parseFlagArgs(argv, { bareValue: true }).flags;
-
-function readJson(path, fallback = null) {
-  if (!path || !existsSync(path)) return fallback;
-  try {
-    return JSON.parse(readFileSync(path, "utf8"));
-  } catch {
-    return fallback;
-  }
-}
 
 function firstExisting(dir, names) {
   return names.map((name) => join(dir, name)).find((path) => existsSync(path)) || null;

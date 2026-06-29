@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
+import { readJson, writeJson } from "../../../tools/lib/json-io.mjs";
 import { existsSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { snakeCase } from "./factory/core/naming.mjs";
 
 const REGISTRY_PATH = "apps/factory/simulator-systems/registry.json";
@@ -590,15 +590,6 @@ function sampleValueFor(field, collection, index = 1) {
   return lookup[field] || `${titleCaseWords(field)} ${index}`;
 }
 
-async function readJson(path, fallback = null) {
-  try { return JSON.parse(await readFile(path, "utf8")); }
-  catch { return fallback; }
-}
-
-async function writeJson(path, data) {
-  await mkdir(dirname(path), { recursive: true });
-  await writeFile(path, JSON.stringify(data, null, 2) + "\n", "utf8");
-}
 
 function schemaFor(id, archetype) {
   return {
