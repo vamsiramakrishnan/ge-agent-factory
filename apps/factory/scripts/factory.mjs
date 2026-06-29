@@ -28,6 +28,17 @@ import { stringify as stringifyYaml } from "yaml";
 import { runCommand as runCittyCommand } from "citty";
 import { faker } from "@faker-js/faker";
 import { buildFactoryCommandTree } from "./factory/registry.mjs";
+import { harnessRefineSchema, harnessReviewSchema } from "./schemas/harness-schemas.mjs";
+
+// Non-fatal: validate parsed harness output against its zod source of truth.
+// Warns (keeps the output) so a contract drift surfaces without breaking a run.
+function validateHarnessOutput(schema, value, label) {
+  const result = schema.safeParse(value);
+  if (!result.success) {
+    console.error(`⚠  ${label} output failed schema validation (kept anyway): ${result.error.issues.map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`).join("; ")}`);
+  }
+  return result.success;
+}
 import { runHarnessTask } from "../src/harness-runner.js";
 import { buildHarnessRefinePrompt, buildHarnessRunSummary, buildHarnessWorkItem, writeHarnessWorkItem } from "../src/harness-work-item.js";
 import { canonicalSystemId, safePyName, shortAgentName, snakeCase, titleCase, validPythonIdentifierName } from "./factory/core/naming.mjs";
@@ -2421,6 +2432,7 @@ async function cmdHarnessReview(dir, flags) {
   let parseError = null;
   try {
     review = extractFirstJsonObject(result.text || result.stdout || "");
+    validateHarnessOutput(harnessReviewSchema, review, "harness review");
     await writeJson(join(dir, "artifacts", `${provider}-harness-review.json`), review);
     await writeJson(join(dir, "artifacts", "harness-review.json"), {
       provider,
@@ -2664,6 +2676,7 @@ async function cmdHarnessRefine(dir, flags) {
       remaining_gaps: ["Harness did not return parseable JSON completion packet."],
     };
   }
+  validateHarnessOutput(harnessRefineSchema, refine, "harness refine");
   await writeJson(join(dir, "artifacts", `${provider}-harness-refine.json`), refine);
   await writeJson(join(dir, "artifacts", "harness-refine.json"), {
     provider,
