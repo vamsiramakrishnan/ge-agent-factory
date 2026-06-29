@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { snakeCase } from "../scripts/factory/core/naming.mjs";
 import { WORKSPACE_PATHS } from "./workspace-contract.js";
 
 async function readJson(path, fallback = null) {
@@ -19,15 +20,6 @@ async function readText(path) {
     if (error?.code === "ENOENT") return "";
     throw error;
   }
-}
-
-function snakeCase(value) {
-  return String(value || "")
-    .trim()
-    .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "");
 }
 
 function safePyName(value) {

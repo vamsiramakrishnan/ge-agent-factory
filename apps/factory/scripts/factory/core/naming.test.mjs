@@ -1,5 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { shortAgentName } from "./naming.mjs";
+import {
+  shortAgentName,
+  snakeCase,
+  canonicalSystemId,
+  safePyName,
+  validPythonIdentifierName,
+  titleCase,
+} from "./naming.mjs";
 
 const MAX = 26;
 const VALID = /^[a-z_][a-z0-9_]*$/; // snake_case, agents-cli-normalizable, valid Python id
@@ -72,5 +79,46 @@ describe("shortAgentName", () => {
     expect(VALID.test(shortAgentName(""))).toBe(true);
     expect(VALID.test(shortAgentName(null))).toBe(true);
     expect(VALID.test(shortAgentName(undefined))).toBe(true);
+  });
+});
+
+// Golden corpus — pins the exact identifier strings the whole repo derives from
+// human-facing names. snakeCase here is the single source of truth shared by
+// spec-code-trace, plan-mock-data and scaffold-simulator-pack, so any drift in
+// the casing library (or an accidental re-divergence of a copy) is caught here
+// before it can rename a generated tool, fixture path or cloud resource.
+describe("naming golden corpus", () => {
+  test("snakeCase collapses acronyms and word boundaries", () => {
+    expect(snakeCase("")).toBe("");
+    expect(snakeCase("order_items")).toBe("order_items");
+    expect(snakeCase("fooBar")).toBe("foo_bar");
+    expect(snakeCase("account-reconciliation")).toBe("account_reconciliation");
+    expect(snakeCase("Salesforce CRM")).toBe("salesforce_crm");
+    expect(snakeCase("ServiceNow ITSM")).toBe("service_now_itsm");
+    expect(snakeCase("POReconciliation")).toBe("po_reconciliation");
+    expect(snakeCase("HTTP API v2")).toBe("http_api_v2");
+    expect(snakeCase("GeminiEnterprise")).toBe("gemini_enterprise");
+    expect(snakeCase("123-leading-digits")).toBe("123_leading_digits");
+    expect(snakeCase("Weird Mixed CASE name!!!")).toBe("weird_mixed_case_name");
+  });
+
+  test("canonicalSystemId falls back to source_system on empty", () => {
+    expect(canonicalSystemId("")).toBe("source_system");
+    expect(canonicalSystemId("Salesforce CRM")).toBe("salesforce_crm");
+    expect(canonicalSystemId("Workday HCM")).toBe("workday_hcm");
+  });
+
+  test("safePyName / validPythonIdentifierName guard leading non-identifier chars", () => {
+    expect(safePyName("")).toBe("value");
+    expect(safePyName("123-leading-digits")).toBe("_123_leading_digits");
+    expect(safePyName("Salesforce CRM")).toBe("salesforce_crm");
+    expect(validPythonIdentifierName("")).toBe("agent");
+    expect(validPythonIdentifierName("123-leading-digits")).toBe("agent_123_leading_digits");
+  });
+
+  test("titleCase preserves acronyms (display-only, intentionally not change-case)", () => {
+    expect(titleCase("account-reconciliation")).toBe("Account Reconciliation");
+    expect(titleCase("Salesforce CRM")).toBe("Salesforce CRM");
+    expect(titleCase("Workday HCM")).toBe("Workday HCM");
   });
 });
