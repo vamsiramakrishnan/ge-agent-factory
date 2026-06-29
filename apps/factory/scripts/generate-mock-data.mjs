@@ -71,6 +71,7 @@
  * OUTPUT: JSON array to stdout (or files to --out directory)
  */
 import { faker } from "@faker-js/faker";
+import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { existsSync, readFileSync } from "node:fs";
 import { join, extname, basename, resolve, dirname } from "node:path";
@@ -79,16 +80,7 @@ import { buildRecipe, generateWithFaker } from "./lib/data-recipe.mjs";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 
-function parseArgs(argv) {
-  const out = {};
-  for (let i = 0; i < argv.length; i++) {
-    if (argv[i].startsWith("--")) {
-      const key = argv[i].slice(2);
-      out[key] = argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[++i] : "true";
-    }
-  }
-  return out;
-}
+const parseArgs = (argv) => parseFlagArgs(argv).flags;
 
 function parseColumnSpec(spec) {
   const parts = spec.split(",").map((s) => s.trim()).filter(Boolean);

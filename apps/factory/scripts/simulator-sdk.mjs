@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { readFile } from "node:fs/promises";
+import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
 import { resolve } from "node:path";
 import { simulatorSdkPlan } from "../src/simulator-sdk.js";
 
@@ -16,21 +17,7 @@ The plan prefers existing simulator registry entries and only scaffolds missing
 systems when createIfMissing is true.`;
 }
 
-function parseArgs(argv) {
-  const positional = [];
-  const flags = {};
-  for (let i = 0; i < argv.length; i += 1) {
-    const arg = argv[i];
-    if (!arg.startsWith("--")) {
-      positional.push(arg);
-      continue;
-    }
-    const key = arg.slice(2);
-    const next = argv[i + 1];
-    flags[key] = next && !next.startsWith("--") ? argv[++i] : "true";
-  }
-  return { positional, flags };
-}
+const parseArgs = (argv) => parseFlagArgs(argv);
 
 async function readJson(path, fallback = null) {
   if (!path) return fallback;

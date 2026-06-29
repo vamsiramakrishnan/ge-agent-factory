@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { readFile, writeFile } from "node:fs/promises";
+import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
 import { resolve } from "node:path";
 import {
   applyGoldenEvalsToSpec,
@@ -18,21 +19,7 @@ Antigravity should generate eval JSON from the prompt; this script validates and
 applies it before registration or factory generation.`;
 }
 
-function parseArgs(argv) {
-  const positional = [];
-  const flags = {};
-  for (let i = 0; i < argv.length; i += 1) {
-    const arg = argv[i];
-    if (!arg.startsWith("--")) {
-      positional.push(arg);
-      continue;
-    }
-    const key = arg.slice(2);
-    const next = argv[i + 1];
-    flags[key] = next && !next.startsWith("--") ? argv[++i] : "true";
-  }
-  return { positional, flags };
-}
+const parseArgs = (argv) => parseFlagArgs(argv);
 
 async function readJson(path, label) {
   if (!path) throw new Error(`missing --${label}`);

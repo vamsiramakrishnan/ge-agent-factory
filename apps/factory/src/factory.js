@@ -7,6 +7,7 @@ import { DEFAULT_AGENT_MODEL } from "./known-models.js";
 import { ARTIFACT_PATHS, DATA_PATHS, WORKSPACE_PATHS } from "./workspace-contract.js";
 import { runAdkPreviewForWorkspace } from "./adk-preview.js";
 import { slug as baseSlug } from "../scripts/factory/core/naming.mjs";
+import { boolFlag } from "../../../tools/lib/cli-args.mjs";
 
 const FACTORY_STAGES = [
   "planned",
@@ -25,10 +26,7 @@ const FACTORY_STAGES = [
 ];
 const DEFAULT_WEB_URL = process.env.GE_HARNESS_WEB_URL || "http://localhost:17655";
 
-function boolFlag(options, key, fallback = false) {
-  if (!(key in options)) return fallback;
-  return !["false", "0", "no", "off"].includes(String(options[key]).toLowerCase());
-}
+// boolFlag imported from tools/lib/cli-args.mjs
 
 const slug = (value, max = 72) => baseSlug(value, { max });
 

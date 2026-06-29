@@ -20,6 +20,7 @@
  *   node scripts/generate-simulator-data.mjs --system servicenow --stdout          # print seed, don't write
  */
 import { readFileSync, writeFileSync, mkdirSync, existsSync, mkdtempSync, rmSync } from "node:fs";
+import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve, basename } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -39,15 +40,7 @@ import {
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const SYSTEMS_DIR = resolve(SCRIPT_DIR, "../simulator-systems");
 
-function parseArgs(argv) {
-  const flags = {};
-  for (let i = 0; i < argv.length; i += 1) {
-    if (!argv[i].startsWith("--")) continue;
-    const key = argv[i].slice(2);
-    flags[key] = argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[++i] : "true";
-  }
-  return flags;
-}
+const parseArgs = (argv) => parseFlagArgs(argv).flags;
 
 // Load a pack contract from a directory of {schema,projection,materialization,workflows}.json.
 function loadContractFromDir(packDir) {

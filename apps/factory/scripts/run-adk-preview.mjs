@@ -1,23 +1,9 @@
 #!/usr/bin/env node
 import { resolve } from "node:path";
+import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
 import { runAdkPreviewForWorkspace } from "../src/adk-preview.js";
 
-function parseArgs(argv) {
-  const out = {};
-  for (let i = 0; i < argv.length; i += 1) {
-    const arg = argv[i];
-    if (!arg.startsWith("--")) continue;
-    const key = arg.slice(2);
-    const next = argv[i + 1];
-    if (!next || next.startsWith("--")) {
-      out[key] = true;
-    } else {
-      out[key] = next;
-      i += 1;
-    }
-  }
-  return out;
-}
+const parseArgs = (argv) => parseFlagArgs(argv, { bareValue: true }).flags;
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));

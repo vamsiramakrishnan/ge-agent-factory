@@ -21,6 +21,7 @@
  *   factory reset    --dir <dir> --step <step>
  */
 import { readFile, writeFile, mkdir, stat, readdir } from "node:fs/promises";
+import { parseCommandArgs } from "../../../tools/lib/cli-args.mjs";
 import { existsSync } from "node:fs";
 import { join, resolve, basename, relative } from "node:path";
 import { execa } from "execa";
@@ -89,20 +90,7 @@ const HARNESS_DATA_ROOT = GENERATOR_DATA_ROOT;
 
 const STEPS = ["init", "schema", "generate", "tools", "test", "harnessReview", "harnessRefine", "sourceIntegration", "serve", "deploy", "register", "publish"];
 
-function parseArgs(argv) {
-  const positional = [];
-  const flags = {};
-  for (let i = 0; i < argv.length; i++) {
-    const a = argv[i];
-    if (a.startsWith("--")) {
-      const key = a.slice(2);
-      flags[key] = argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[++i] : "true";
-    } else {
-      positional.push(a);
-    }
-  }
-  return { command: positional[0] || "help", flags };
-}
+const parseArgs = (argv) => parseCommandArgs(argv, "help");
 
 function pipelinePath(dir) { return join(dir, "mock_systems", "pipeline.json"); }
 function schemaPath(dir) { return join(dir, "mock_systems", "schema.json"); }

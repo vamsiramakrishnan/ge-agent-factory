@@ -1,18 +1,10 @@
 #!/usr/bin/env node
 import { readdir, readFile, writeFile, mkdir } from "node:fs/promises";
+import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
 import { existsSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 
-function parseArgs(argv) {
-  const flags = {};
-  for (let i = 0; i < argv.length; i++) {
-    if (argv[i].startsWith("--")) {
-      const key = argv[i].slice(2);
-      flags[key] = argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[++i] : "true";
-    }
-  }
-  return flags;
-}
+const parseArgs = (argv) => parseFlagArgs(argv).flags;
 
 async function walk(dir) {
   const entries = await readdir(dir, { withFileTypes: true });

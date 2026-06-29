@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { mkdir, writeFile } from "node:fs/promises";
+import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
 import { basename, dirname, join, resolve } from "node:path";
 import { readJson, writeJson } from "../../../tools/lib/json-io.mjs";
 import { buildScenarioGraph } from "./factory/scenario-graph.mjs";
@@ -7,16 +8,7 @@ import { buildSimulatorProjections } from "./factory/projections/simulator-proje
 import { matchScenarioPacks } from "./factory/packs/index.mjs";
 import { snakeCase } from "./factory/core/naming.mjs";
 
-function parseArgs(argv) {
-  const flags = {};
-  for (let i = 0; i < argv.length; i++) {
-    if (argv[i].startsWith("--")) {
-      const key = argv[i].slice(2);
-      flags[key] = argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[++i] : "true";
-    }
-  }
-  return flags;
-}
+const parseArgs = (argv) => parseFlagArgs(argv).flags;
 
 async function writeText(path, value) {
   await mkdir(dirname(path), { recursive: true });

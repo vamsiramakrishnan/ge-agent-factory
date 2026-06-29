@@ -1,19 +1,12 @@
 #!/usr/bin/env node
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
 import { existsSync } from "node:fs";
 import { basename, dirname, extname, join, resolve } from "node:path";
 import { loadSimulatorRegistry } from "./factory/simulators/registry.mjs";
 import { normalizeForCollection as sharedNormalizeForCollection, mergeByKey as sharedMergeByKey } from "./lib/data-recipe.mjs";
 
-function parseArgs(argv) {
-  const flags = {};
-  for (let i = 0; i < argv.length; i += 1) {
-    if (!argv[i].startsWith("--")) continue;
-    const key = argv[i].slice(2);
-    flags[key] = argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[++i] : "true";
-  }
-  return flags;
-}
+const parseArgs = (argv) => parseFlagArgs(argv).flags;
 
 async function readJson(path, fallback = null) {
   try { return JSON.parse(await readFile(path, "utf8")); }
