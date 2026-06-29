@@ -23,7 +23,7 @@
 import { readFile, writeFile, mkdir, stat, readdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join, resolve, basename, relative } from "node:path";
-import { spawn } from "node:child_process";
+import { execa } from "execa";
 import { stringify as stringifyYaml } from "yaml";
 import { runCommand as runCittyCommand } from "citty";
 import { faker } from "@faker-js/faker";
@@ -158,45 +158,56 @@ function requireStep(pipeline, step) {
 function ok(data) { console.log(JSON.stringify({ ok: true, ...data }, null, 2)); }
 function fail(msg) { console.error(JSON.stringify({ ok: false, error: msg }, null, 2)); process.exit(1); }
 
-function runCommand(cmd, args, opts = {}) {
-  return new Promise((resolve, reject) => {
-    let timer = null;
-    const child = spawn(cmd, args, {
-      cwd: opts.cwd,
-      env: { ...process.env, ...opts.env },
-      stdio: opts.stdio || "pipe",
-      shell: opts.shell || false,
-    });
-    let stdout = "";
-    let stderr = "";
-    if (child.stdout) child.stdout.on("data", (d) => { stdout += d; if (opts.stream) process.stdout.write(d); });
-    if (child.stderr) child.stderr.on("data", (d) => { stderr += d; if (opts.stream) process.stderr.write(d); });
-    child.on("close", (code) => {
-      if (timer) clearTimeout(timer);
-      if (code !== 0 && !opts.allowFail) {
-        const error = new Error(`${cmd} exited ${code}: ${stderr.slice(0, 500)}`);
-        error.code = code;
-        error.stdout = stdout;
-        error.stderr = stderr;
-        reject(error);
-      }
-      else resolve({ code, stdout, stderr });
-    });
-    child.on("error", (error) => {
-      if (timer) clearTimeout(timer);
-      reject(error);
-    });
-    if (opts.timeout) {
-      timer = setTimeout(() => {
-        child.kill("SIGTERM");
-        const error = new Error("timeout");
-        error.stdout = stdout;
-        error.stderr = stderr;
-        reject(error);
-      }, opts.timeout);
-      timer.unref?.();
-    }
-  });
+// Run a child process via execa, preserving the historical contract callers
+// rely on: resolves to { code, stdout, stderr }; throws `${cmd} exited N: …`
+// (with .code/.stdout/.stderr attached) on a non-zero exit unless opts.allowFail;
+// throws Error("timeout") (with partial .stdout/.stderr) when opts.timeout fires;
+// re-throws the raw spawn error (e.g. ENOENT) on launch failure. opts.stream
+// echoes the child's stdout/stderr to the parent while still capturing them.
+async function runCommand(cmd, args, opts = {}) {
+  const execaOpts = {
+    cwd: opts.cwd,
+    // execa extends process.env by default, matching the old { ...process.env, ...opts.env }.
+    env: opts.env,
+    shell: opts.shell || false,
+    timeout: opts.timeout || undefined,
+    reject: false,
+    // Keep the trailing newline so captured output is byte-identical to the old spawn path.
+    stripFinalNewline: false,
+  };
+  if (opts.stdio) {
+    execaOpts.stdio = opts.stdio;
+  } else if (opts.stream) {
+    // "pipe" captures into result.stdout/stderr; "inherit" echoes to the parent — both at once.
+    execaOpts.stdout = ["pipe", "inherit"];
+    execaOpts.stderr = ["pipe", "inherit"];
+  }
+
+  const r = await execa(cmd, args, execaOpts);
+  const stdout = r.stdout ?? "";
+  const stderr = r.stderr ?? "";
+
+  if (r.timedOut) {
+    const error = new Error("timeout");
+    error.stdout = stdout;
+    error.stderr = stderr;
+    throw error;
+  }
+  // A launch failure (ENOENT etc.) has no numeric exitCode — re-throw the raw error
+  // the way the old "error" handler did.
+  if (typeof r.exitCode !== "number") {
+    const launchError = r.cause || r.originalError || new Error(r.shortMessage || r.message || `failed to launch ${cmd}`);
+    throw launchError;
+  }
+  const code = r.exitCode;
+  if (code !== 0 && !opts.allowFail) {
+    const error = new Error(`${cmd} exited ${code}: ${stderr.slice(0, 500)}`);
+    error.code = code;
+    error.stdout = stdout;
+    error.stderr = stderr;
+    throw error;
+  }
+  return { code, stdout, stderr };
 }
 
 // ── Introspection helpers ────────────────────────────────────
