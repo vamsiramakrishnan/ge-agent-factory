@@ -3994,7 +3994,7 @@ async function cmdReset(dir, flags) {
 }
 
 async function cmdSources(flags) {
-  const script = join(resolve("."), "scripts", "analyze-usecase-sources.mjs");
+  const script = new URL("./analyze-usecase-sources.mjs", import.meta.url).pathname;
   const jsonPath = flags.json || "src/use-case-source-map.generated.json";
   const mdPath = flags.md || "docs/use-case-data-source-map.md";
   const args = [script];
@@ -4013,7 +4013,7 @@ async function cmdSources(flags) {
 }
 
 async function cmdPlanData(dir, flags) {
-  const script = join(resolve("."), "scripts", "plan-mock-data.mjs");
+  const script = new URL("./plan-mock-data.mjs", import.meta.url).pathname;
   const args = [script, "--dir", dir];
   if (flags.usecase) args.push("--usecase", flags.usecase);
   if (flags["source-map"]) args.push("--sourceMap", flags["source-map"]);
