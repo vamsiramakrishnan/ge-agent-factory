@@ -9,6 +9,7 @@
  * simulator packs.
  */
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { writeJson } from "../../../tools/lib/json-io.mjs";
@@ -27,16 +28,7 @@ const WEBHOOK_RE = /\b(webhook|webhooks|event|events|subscription|subscriptions|
 const WRITE_METHODS = new Set(["post", "put", "patch", "delete"]);
 const SPEC_CANDIDATES = ["openapi.json", "swagger.json", "discovery.json", "openapi.yaml", "swagger.yaml"];
 
-function parseArgs(argv) {
-  const flags = {};
-  for (let i = 0; i < argv.length; i += 1) {
-    const arg = argv[i];
-    if (!arg.startsWith("--")) continue;
-    const key = arg.slice(2);
-    flags[key] = argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[++i] : true;
-  }
-  return flags;
-}
+const parseArgs = (argv) => parseFlagArgs(argv, { bareValue: true }).flags;
 
 function readJson(path, fallback = null) {
   if (!path || !existsSync(path)) return fallback;

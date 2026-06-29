@@ -10,6 +10,7 @@
  * for the ADK run preview.
  */
 import { mkdir, writeFile } from "node:fs/promises";
+import { parseFlagArgs, boolFlag } from "../../../tools/lib/cli-args.mjs";
 import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -20,22 +21,9 @@ const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(SCRIPT_DIR, "..");
 const DEFAULT_WEB_URL = process.env.GE_HARNESS_WEB_URL || "http://localhost:17655";
 
-function parseArgs(argv) {
-  const flags = {};
-  for (let i = 0; i < argv.length; i += 1) {
-    const raw = argv[i];
-    if (!raw.startsWith("--")) continue;
-    const key = raw.slice(2);
-    const next = argv[i + 1];
-    flags[key] = next && !next.startsWith("--") ? argv[++i] : "true";
-  }
-  return flags;
-}
+const parseArgs = (argv) => parseFlagArgs(argv).flags;
 
-function boolFlag(flags, key, fallback = false) {
-  if (!(key in flags)) return fallback;
-  return !["false", "0", "no", "off"].includes(String(flags[key]).toLowerCase());
-}
+// boolFlag imported from tools/lib/cli-args.mjs
 
 const slug = (value) => baseSlug(value, { max: 72 });
 

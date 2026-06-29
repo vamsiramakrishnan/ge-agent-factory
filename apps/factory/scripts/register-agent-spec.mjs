@@ -1,26 +1,14 @@
 #!/usr/bin/env node
 import { readFile } from "node:fs/promises";
+import { parseFlagArgs, boolFlag } from "../../../tools/lib/cli-args.mjs";
 import { resolve } from "node:path";
 import { writeInterviewSpecEntry } from "../src/agent-spec-registry.js";
 
 const repoRoot = resolve(new URL("..", import.meta.url).pathname);
 
-function parseArgs(argv) {
-  const flags = {};
-  for (let i = 0; i < argv.length; i += 1) {
-    const arg = argv[i];
-    if (!arg.startsWith("--")) continue;
-    const key = arg.slice(2);
-    const next = argv[i + 1];
-    flags[key] = next && !next.startsWith("--") ? argv[++i] : "true";
-  }
-  return flags;
-}
+const parseArgs = (argv) => parseFlagArgs(argv).flags;
 
-function boolFlag(flags, key, fallback = false) {
-  if (!(key in flags)) return fallback;
-  return !["false", "0", "no", "off"].includes(String(flags[key]).toLowerCase());
-}
+// boolFlag imported from tools/lib/cli-args.mjs
 
 async function readStdin() {
   const chunks = [];

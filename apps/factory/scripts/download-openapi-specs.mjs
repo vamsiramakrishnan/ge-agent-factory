@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
+import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -10,15 +11,7 @@ const DEFAULT_MANIFEST = resolve(REPO_ROOT, "apps/factory/simulator-systems/open
 const DEFAULT_OUT_DIR = resolve(REPO_ROOT, "apps/factory/simulator-systems/_openapi");
 const DEFAULT_REGISTRY = resolve(REPO_ROOT, "apps/factory/simulator-systems/registry.json");
 
-function parseArgs(argv) {
-  const flags = {};
-  for (let i = 0; i < argv.length; i += 1) {
-    if (!argv[i].startsWith("--")) continue;
-    const key = argv[i].slice(2);
-    flags[key] = argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[++i] : "true";
-  }
-  return flags;
-}
+const parseArgs = (argv) => parseFlagArgs(argv).flags;
 
 function asList(value) {
   if (!value) return [];

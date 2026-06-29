@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { parseFlagArgs } from "../../../tools/lib/cli-args.mjs";
 import { dirname, resolve } from "node:path";
 import { findSimulatorForSystem, loadSimulatorRegistry } from "./factory/simulators/registry.mjs";
 
@@ -32,15 +33,7 @@ const DOMAIN_FACADE_PATTERNS = [
   /contract repository/i,
 ];
 
-function parseArgs(argv) {
-  const flags = {};
-  for (let i = 0; i < argv.length; i += 1) {
-    if (!argv[i].startsWith("--")) continue;
-    const key = argv[i].slice(2);
-    flags[key] = argv[i + 1] && !argv[i + 1].startsWith("--") ? argv[++i] : "true";
-  }
-  return flags;
-}
+const parseArgs = (argv) => parseFlagArgs(argv).flags;
 
 function matchesAny(name, patterns) {
   return patterns.some((pattern) => pattern.test(name));
