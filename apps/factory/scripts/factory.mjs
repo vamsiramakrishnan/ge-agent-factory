@@ -27,6 +27,7 @@ import { spawn } from "node:child_process";
 import { stringify as stringifyYaml } from "yaml";
 import { runCommand as runCittyCommand } from "citty";
 import { faker } from "@faker-js/faker";
+import { jsonrepair } from "jsonrepair";
 import { buildFactoryCommandTree } from "./factory/registry.mjs";
 import { harnessRefineSchema, harnessReviewSchema } from "./schemas/harness-schemas.mjs";
 
@@ -2285,6 +2286,17 @@ async function cmdQualityGate(dir, flags) {
   }
 }
 
+// Parse a JSON candidate that an LLM emitted, tolerating the usual model slop
+// (trailing commas, single quotes, unquoted keys, smart quotes, comments,
+// truncated tails). jsonrepair fixes the syntax, JSON.parse does the parse.
+function parseLooseJson(candidate) {
+  return JSON.parse(jsonrepair(candidate));
+}
+
+// Locate the first balanced { ... } object in (possibly fenced, possibly
+// prose-wrapped) LLM text and parse it leniently. If the object is truncated
+// (stream cut off mid-response) we hand the open tail to jsonrepair, which
+// closes the structure.
 function extractFirstJsonObject(text) {
   const raw = String(text || "").trim();
   const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
@@ -2312,9 +2324,12 @@ function extractFirstJsonObject(text) {
     else if (ch === "{") depth++;
     else if (ch === "}") {
       depth--;
-      if (depth === 0) return JSON.parse(input.slice(start, i + 1));
+      if (depth === 0) return parseLooseJson(input.slice(start, i + 1));
     }
   }
+  // Found an opening brace but never balanced it → truncated object. jsonrepair
+  // completes the open tail rather than throwing on the partial response.
+  if (start >= 0) return parseLooseJson(input.slice(start));
   throw new Error("Harness response did not contain a JSON object.");
 }
 
