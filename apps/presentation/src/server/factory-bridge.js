@@ -1,7 +1,7 @@
 import { spawn, execFileSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
-import { writeJson } from "@ge/std/json-io";
+import { readJson as baseReadJson, writeJson } from "@ge/std/json-io";
 import dotenv from "dotenv";
 
 // Resolve presentation root and load local env parameters
@@ -97,14 +97,8 @@ export function parseGsUri(gsUri) {
   return { bucket: match[1], object: match[2] };
 }
 
-function readJson(path) {
-  if (!existsSync(path)) return {};
-  try {
-    return JSON.parse(readFileSync(path, "utf8"));
-  } catch {
-    return {};
-  }
-}
+// Thin wrapper over @ge/std/json-io.readJson preserving this module's {}-on-miss default.
+const readJson = (path) => baseReadJson(path, {});
 
 // Helper: read canonical local factory config
 function readHarnessEnv() {
