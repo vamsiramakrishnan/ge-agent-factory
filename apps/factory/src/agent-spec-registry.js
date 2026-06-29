@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { basename, join, relative, resolve } from "node:path";
 import { glob } from "tinyglobby";
+import { slug as baseSlug } from "../scripts/factory/core/naming.mjs";
 
 export const AGENT_SPEC_SCHEMA_VERSION = 1;
 export const INTERVIEW_SPEC_DIR = "catalog/interview-specs";
@@ -17,14 +18,7 @@ export const REQUIRED_BEHAVIOR_FIELDS = [
   "goldenEvals",
 ];
 
-export function slug(value, max = 96) {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, max);
-}
+export const slug = (value, max = 96) => baseSlug(value, { max });
 
 export function sourceSystemId(system) {
   return String(system || "source_system")

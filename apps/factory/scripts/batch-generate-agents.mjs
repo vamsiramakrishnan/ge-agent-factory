@@ -14,6 +14,7 @@ import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getUseCases } from "../src/use-cases.js";
+import { slug as baseSlug } from "./factory/core/naming.mjs";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(SCRIPT_DIR, "..");
@@ -36,14 +37,7 @@ function boolFlag(flags, key, fallback = false) {
   return !["false", "0", "no", "off"].includes(String(flags[key]).toLowerCase());
 }
 
-function slug(value) {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 72);
-}
+const slug = (value) => baseSlug(value, { max: 72 });
 
 function selectUseCases(flags) {
   if (flags.usecases) {
