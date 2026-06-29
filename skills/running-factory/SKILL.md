@@ -52,19 +52,19 @@ bun tools/ge.mjs mission resume <mission_task_id>
 Plan:
 
 ```bash
-node apps/ge-demo-generator/src/cli.js factory plan --department all --limit all --target previewed
+node apps/factory/src/cli.js factory plan --department all --limit all --target previewed
 ```
 
 Run:
 
 ```bash
-node apps/ge-demo-generator/src/cli.js factory run --target previewed --continue true
+node apps/factory/src/cli.js factory run --target previewed --continue true
 ```
 
 Harness task:
 
 ```bash
-node apps/ge-demo-generator/src/cli.js agent run --workspace-dir <workspace-dir> --message "<task>" --agent antigravity-sdk
+node apps/factory/src/cli.js agent run --workspace-dir <workspace-dir> --message "<task>" --agent antigravity-sdk
 ```
 
 Summarize a factory run artifact:

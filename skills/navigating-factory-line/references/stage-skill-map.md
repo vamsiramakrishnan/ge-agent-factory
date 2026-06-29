@@ -1,6 +1,6 @@
 # Stage Skill Map
 
-This map is anchored to `apps/presentation/public/architecture/agent-factory-assembly-line.html` and `apps/ge-demo-generator/src/factory-orchestration.js`.
+This map is anchored to `apps/presentation/public/architecture/agent-factory-assembly-line.html` and `apps/factory/src/factory-orchestration.js`.
 
 | Station | What It Means | Primary Skill | First Command Or Action | Next Step |
 | --- | --- | --- | --- | --- |

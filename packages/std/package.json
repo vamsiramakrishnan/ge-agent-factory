@@ -1,0 +1,23 @@
+{
+  "name": "@ge/std",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Neutral leaf utilities shared across apps/* and tools/*: naming/case (change-case), CLI arg parsing, atomic JSON I/O, and LLM-JSON extraction (jsonrepair). Depends on nothing in apps or tools, so it can be imported from anywhere without a layering cycle.",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./naming": "./src/naming.mjs",
+    "./cli-args": "./src/cli-args.mjs",
+    "./json-io": "./src/json-io.mjs",
+    "./json-repair": "./src/json-repair.mjs",
+    "./csv-io": "./src/csv-io.mjs",
+    "./list": "./src/list.mjs"
+  },
+  "scripts": {
+    "test": "bun test src"
+  },
+  "dependencies": {
+    "change-case": "^5.4.4",
+    "jsonrepair": "^3.14.1"
+  }
+}

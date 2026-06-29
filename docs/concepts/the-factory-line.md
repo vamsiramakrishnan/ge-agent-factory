@@ -16,7 +16,7 @@ trail you can inspect.
 ## The stages
 
 The stage graph is defined declaratively in
-[`apps/ge-demo-generator/src/factory-orchestration.js`](https://github.com/vamsiramakrishnan/ge-agent-factory)
+[`apps/factory/src/factory-orchestration.js`](https://github.com/vamsiramakrishnan/ge-agent-factory)
 (`FACTORY_STAGE_GRAPH`). The line, in order:
 
 | Stage | What it produces | Owner |

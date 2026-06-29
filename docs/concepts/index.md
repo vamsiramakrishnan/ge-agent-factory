@@ -62,9 +62,9 @@ described, and you can trace any line of generated code back to a spec intent.
 |---|---|---|
 | Factory line | `tools/lib/factory-core.mjs` | Shared engine behind CLI, console, and MCP |
 | Durable ledger | `tools/lib/run-ledger.mjs` | Single source of truth for local and remote runs |
-| Generated agent | `apps/ge-demo-generator/src/agent-workspace-pipeline.js` | Turns specs into ADK workspaces |
-| Simulator systems | `apps/ge-demo-generator/simulator-systems/` | Makes source systems testable before real integration |
-| Tool plane | `apps/ge-demo-generator/mcp-service/` | Runtime facade that generated agents call through MCP |
+| Generated agent | `apps/factory/src/agent-workspace-pipeline.js` | Turns specs into ADK workspaces |
+| Simulator systems | `apps/factory/simulator-systems/` | Makes source systems testable before real integration |
+| Tool plane | `apps/factory/mcp-service/` | Runtime facade that generated agents call through MCP |
 | Cloud platform | `installer/terraform/` | Owns infra, IAM, data stores, MCP, and runtime services |
 
 ## How to use this section

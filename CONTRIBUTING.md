@@ -32,7 +32,7 @@ SDK, the Snowfakery data runtime, and `terraform`.
 
 ### Python / pytest
 
-The MCP service lives at `apps/ge-demo-generator/mcp-service` and is a standard
+The MCP service lives at `apps/factory/mcp-service` and is a standard
 `pyproject.toml` project (`requires-python >= 3.11`; pytest is in the `dev` extra).
 The repo's test scripts invoke pytest as **`python3 -m pytest`** — so they use
 whatever `python3` resolves to on your `PATH`, and that interpreter must have pytest
@@ -42,7 +42,7 @@ installed.
 > SDK) does **not** include pytest, so a bare `python3 -m pytest` will fail with
 > `No module named pytest` if `.venv` is first on your `PATH`. Either install the dev
 > deps into the interpreter you run tests with —
-> `python3 -m pip install -e 'apps/ge-demo-generator/mcp-service[dev]'` (or
+> `python3 -m pip install -e 'apps/factory/mcp-service[dev]'` (or
 > `uv pip install -e '…[dev]'`) — or run pytest from an interpreter that already has
 > it (on the maintainer's machine that is the Anaconda Python, not `.venv`). Confirm
 > with `python3 -m pytest --version` before assuming a clean run.
@@ -59,7 +59,7 @@ and an MCP server.
 |------|------------|
 | [`apps/console`](apps/console) | The main operator UI (React + Vite + Tailwind). Its Bun server exposes `/api/ge/*` — the same JSON the CLI emits. See the [Console Tour](docs/reference/console-tour.md). |
 | [`apps/presentation`](apps/presentation) | The transformation deck + source use-case catalog used to explain the system. |
-| [`apps/ge-demo-generator`](apps/ge-demo-generator) | The generator: the `ge-mock` pipeline, the lower-level web workbench, the factory runner/worker, and the generic FastMCP server under [`mcp-service/`](apps/ge-demo-generator/mcp-service). |
+| [`apps/factory`](apps/factory) | The generator: the `factory` pipeline, the lower-level web workbench, the factory runner/worker, and the generic FastMCP server under [`mcp-service/`](apps/factory/mcp-service). |
 | [`tools/`](tools) | The `ge` operator CLI (`ge.mjs`), the MCP server (`mcp-server.mjs`), and the shared operator core + runtime daemon under `tools/lib/`. |
 | [`skills/`](skills) | Cross-runtime harness skills (one dir per skill, each with a `SKILL.md`). |
 | [`installer/`](installer) | Terraform + the guided Cloud Shell installer (`TUTORIAL.md`) that stands the platform up in a target project. |
@@ -89,7 +89,7 @@ bun test apps tools packages    # include the packages workspace tests too
 For the Python MCP service (run from a `python3` that has pytest — see above):
 
 ```bash
-python3 -m pytest apps/ge-demo-generator/mcp-service        # the MCP / simulator tests
+python3 -m pytest apps/factory/mcp-service        # the MCP / simulator tests
 bun run test:py                                             # same, via the package script
 ```
 
@@ -101,7 +101,7 @@ bun run build:presentation
 ```
 
 > CI typechecks with `bun run lint` because `vite build` strips types — a TS error
-> can otherwise ship silently. Note `apps/ge-demo-generator` has no `lint` script, so
+> can otherwise ship silently. Note `apps/factory` has no `lint` script, so
 > `bun run lint` typechecks the console and presentation apps. The Python tests are
 > **not** part of the `bun`/Cloud Build CI gate today — run them yourself when you
 > touch `mcp-service` or the simulator packs.
@@ -166,7 +166,7 @@ Knowledge Format) v0.1**, a portable BRD exchange format, via the converters in
 ## Adding a simulator
 
 Generated agents are grounded by simulated source systems under
-`apps/ge-demo-generator/simulator-systems/`. To add one:
+`apps/factory/simulator-systems/`. To add one:
 
 ```bash
 bun run generator:new-simulator          # scaffold a new simulator pack

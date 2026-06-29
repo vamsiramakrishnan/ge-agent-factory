@@ -31,14 +31,14 @@ Use this skill when the question is “why is this workspace not ready for the n
 2. Run doctor first:
 
 ```bash
-node apps/ge-demo-generator/src/cli.js workspace doctor <workspace-id> --stage <preview|promote|deploy:plan|publish:plan>
+node apps/factory/src/cli.js workspace doctor <workspace-id> --stage <preview|promote|deploy:plan|publish:plan>
 ```
 
 3. Inspect blockers and artifacts, not only terminal output.
 4. Use deterministic repair first:
 
 ```bash
-node apps/ge-demo-generator/src/cli.js workspace repair <workspace-id> --stage <stage> --agent none --attempts 3
+node apps/factory/src/cli.js workspace repair <workspace-id> --stage <stage> --agent none --attempts 3
 ```
 
 5. Use harness-assisted repair only when deterministic repair cannot resolve the blocker.
@@ -62,12 +62,12 @@ node apps/ge-demo-generator/src/cli.js workspace repair <workspace-id> --stage <
 
 ## Source Files
 
-- Contract: `apps/ge-demo-generator/src/workspace-contract.js`
-- Validation pipeline: `apps/ge-demo-generator/src/agent-workspace-pipeline.js`
-- Spec-code trace: `apps/ge-demo-generator/src/spec-code-trace.js`
-- Doctor: `apps/ge-demo-generator/src/checking-workspaces.js`
-- Repair: `apps/ge-demo-generator/src/workspace-repair.js`
-- CLI routing: `apps/ge-demo-generator/src/cli.js`
+- Contract: `apps/factory/src/workspace-contract.js`
+- Validation pipeline: `apps/factory/src/agent-workspace-pipeline.js`
+- Spec-code trace: `apps/factory/src/spec-code-trace.js`
+- Doctor: `apps/factory/src/checking-workspaces.js`
+- Repair: `apps/factory/src/workspace-repair.js`
+- CLI routing: `apps/factory/src/cli.js`
 
 ## Scripts
 
@@ -89,15 +89,15 @@ node skills/checking-workspaces/scripts/summarize-gate.mjs .ge/factory/projects/
 Run the narrow checks first:
 
 ```bash
-node apps/ge-demo-generator/src/cli.js workspace doctor <workspace-id> --stage <stage>
-node apps/ge-demo-generator/src/cli.js validate <workspace-id>
+node apps/factory/src/cli.js workspace doctor <workspace-id> --stage <stage>
+node apps/factory/src/cli.js validate <workspace-id>
 ```
 
 For source changes:
 
 ```bash
-node --check apps/ge-demo-generator/src/checking-workspaces.js
-node --check apps/ge-demo-generator/src/workspace-repair.js
+node --check apps/factory/src/checking-workspaces.js
+node --check apps/factory/src/workspace-repair.js
 ```
 
 ## References

@@ -4,7 +4,7 @@
 
 **Goal:** Give every generated agent real tools over two MCP tiers — Google Cloud 1P managed MCP servers for store access, and a generic multi-tenant FastMCP service (deployed per department on Cloud Run) for domain-system facades, registered per-agent in Agent Registry — and consume both from the runtime agent with agent-identity auth.
 
-**Architecture:** A single generic FastMCP server (`apps/ge-demo-generator/mcp-service/`) is deployed 5× as `ge-agent-factory-mcp-<dept>` by a fleet-level `ge mcp deploy`. It is multi-tenant: each request carries `?agent=<id>`; the server loads that agent's `mcp-tools.json` + store coordinates from `gs://<dataBucket>/agents/<id>/` and serves tools backed by the per-agent stores (or fixtures). The per-agent pipeline only adds a cheap Agent Registry entry pointing at its department URL. Generated `app/tools.py` switches its toolset on `GE_DATA_BACKEND`: `fixtures` (in-process FunctionTools, today's behavior) vs `mcp` (`MCPToolset` over the dept custom MCP + 1P MCP endpoints).
+**Architecture:** A single generic FastMCP server (`apps/factory/mcp-service/`) is deployed 5× as `ge-agent-factory-mcp-<dept>` by a fleet-level `ge mcp deploy`. It is multi-tenant: each request carries `?agent=<id>`; the server loads that agent's `mcp-tools.json` + store coordinates from `gs://<dataBucket>/agents/<id>/` and serves tools backed by the per-agent stores (or fixtures). The per-agent pipeline only adds a cheap Agent Registry entry pointing at its department URL. Generated `app/tools.py` switches its toolset on `GE_DATA_BACKEND`: `fixtures` (in-process FunctionTools, today's behavior) vs `mcp` (`MCPToolset` over the dept custom MCP + 1P MCP endpoints).
 
 **Tech Stack:** Terraform (google/google-beta ~>6.0), Node ESM (citty CLI, factory-core), Python (ADK `MCPToolset`/`StreamableHTTPConnectionParams`, `fastmcp`), Cloud Run, Agent Registry (`gcloud alpha agent-registry`).
 
@@ -24,16 +24,16 @@
 | `installer/terraform/agent_identity.tf` (new) | Grant the runtime role set + `run.invoker` to the Agent Runtime agent-identity `principalSet` (Preview), gated by `enable_agent_identity`. |
 | `installer/terraform/variables.tf` (mod) | `enable_mcp`, `enable_agent_identity`, `agent_identity_org_id` variables. |
 | `installer/terraform/apis.tf` (mod) | `agentregistry.googleapis.com` gated by `enable_mcp`. |
-| `apps/ge-demo-generator/mcp-service/server.py` (new) | Generic multi-tenant FastMCP server: `?agent=<id>` → load manifest from GCS → serve store/fixture tools. |
-| `apps/ge-demo-generator/mcp-service/Dockerfile` (new) | Container for the server (runs on Cloud Run). |
-| `apps/ge-demo-generator/mcp-service/pyproject.toml` (new) | Server deps (`fastmcp`, `google-cloud-*`). |
-| `apps/ge-demo-generator/mcp-service/tests/test_server_smoke.py` (new) | Offline fixtures smoke test (lists tools for an agent). |
+| `apps/factory/mcp-service/server.py` (new) | Generic multi-tenant FastMCP server: `?agent=<id>` → load manifest from GCS → serve store/fixture tools. |
+| `apps/factory/mcp-service/Dockerfile` (new) | Container for the server (runs on Cloud Run). |
+| `apps/factory/mcp-service/pyproject.toml` (new) | Server deps (`fastmcp`, `google-cloud-*`). |
+| `apps/factory/mcp-service/tests/test_server_smoke.py` (new) | Offline fixtures smoke test (lists tools for an agent). |
 | `tools/lib/factory-core.mjs` (mod) | `loadConfig` mcp fields; `DEPARTMENTS`; `mcpDeploy()`; `mcpDoctor()`. |
 | `tools/ge.mjs` (mod) | `ge mcp deploy` / `doctor` command. |
 | `tools/mcp-server.mjs` (mod) | `factory_mcp_deploy` / `factory_mcp_doctor` tools. |
-| `apps/ge-demo-generator/scripts/ge-mock.mjs` (mod) | `app/tools.py` `GE_DATA_BACKEND` switch; pivot `cmdRegister --as mcp` to dept URL `?agent=<id>`. |
-| `apps/ge-demo-generator/scripts/ge-mock/integration/source-integration.mjs` (mod) | Correct ADK usage strings (`MCPToolset`, not `ApiRegistry`/`AgentRegistry`); record dept-service registry target. |
-| `apps/ge-demo-generator/src/factory-worker.js` (mod) | `register_tools` stage passes the dept URL + `agent` id to `register --as mcp`. |
+| `apps/factory/scripts/factory.mjs` (mod) | `app/tools.py` `GE_DATA_BACKEND` switch; pivot `cmdRegister --as mcp` to dept URL `?agent=<id>`. |
+| `apps/factory/scripts/factory/integration/source-integration.mjs` (mod) | Correct ADK usage strings (`MCPToolset`, not `ApiRegistry`/`AgentRegistry`); record dept-service registry target. |
+| `apps/factory/src/factory-worker.js` (mod) | `register_tools` stage passes the dept URL + `agent` id to `register --as mcp`. |
 | `docs/OPERATIONS.md`, `docs/MCP.md` (mod) | Tool-plane runbook + the two tiers. |
 
 ---
@@ -209,15 +209,15 @@ test; the store backend is added in Task 7's runtime work via the same store-acc
 minimal here — fixtures path first, TDD).
 
 **Files:**
-- Create: `apps/ge-demo-generator/mcp-service/server.py`
-- Create: `apps/ge-demo-generator/mcp-service/pyproject.toml`
-- Create: `apps/ge-demo-generator/mcp-service/Dockerfile`
-- Create: `apps/ge-demo-generator/mcp-service/tests/test_server_smoke.py`
-- Create: `apps/ge-demo-generator/mcp-service/tests/fixtures/agents/demo-agent/mcp-tools.json`
+- Create: `apps/factory/mcp-service/server.py`
+- Create: `apps/factory/mcp-service/pyproject.toml`
+- Create: `apps/factory/mcp-service/Dockerfile`
+- Create: `apps/factory/mcp-service/tests/test_server_smoke.py`
+- Create: `apps/factory/mcp-service/tests/fixtures/agents/demo-agent/mcp-tools.json`
 
 - [ ] **Step 1: Write the failing smoke test**
 
-`apps/ge-demo-generator/mcp-service/tests/test_server_smoke.py`:
+`apps/factory/mcp-service/tests/test_server_smoke.py`:
 
 ```python
 import json, os
@@ -246,7 +246,7 @@ def test_unknown_agent_raises():
         pass
 ```
 
-`apps/ge-demo-generator/mcp-service/tests/fixtures/agents/demo-agent/mcp-tools.json`:
+`apps/factory/mcp-service/tests/fixtures/agents/demo-agent/mcp-tools.json`:
 
 ```json
 {
@@ -261,12 +261,12 @@ def test_unknown_agent_raises():
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run: `cd apps/ge-demo-generator/mcp-service && python -m pytest tests/test_server_smoke.py -q`
+Run: `cd apps/factory/mcp-service && python -m pytest tests/test_server_smoke.py -q`
 Expected: FAIL — `ModuleNotFoundError: No module named 'server'`.
 
 - [ ] **Step 3: Implement `server.py`**
 
-`apps/ge-demo-generator/mcp-service/server.py`:
+`apps/factory/mcp-service/server.py`:
 
 ```python
 """Generic multi-tenant MCP server for GE Agent Factory.
@@ -355,12 +355,12 @@ if __name__ == "__main__":
 
 - [ ] **Step 4: Run the test to verify it passes**
 
-Run: `cd apps/ge-demo-generator/mcp-service && python -m pytest tests/test_server_smoke.py -q`
+Run: `cd apps/factory/mcp-service && python -m pytest tests/test_server_smoke.py -q`
 Expected: PASS (2 passed). `fastmcp` is not imported by the test (only `load_agent_manifest`/`build_tools`), so the test runs offline.
 
 - [ ] **Step 5: Add `pyproject.toml` and `Dockerfile`**
 
-`apps/ge-demo-generator/mcp-service/pyproject.toml`:
+`apps/factory/mcp-service/pyproject.toml`:
 
 ```toml
 [project]
@@ -379,7 +379,7 @@ dependencies = [
 dev = ["pytest>=8.0.0"]
 ```
 
-`apps/ge-demo-generator/mcp-service/Dockerfile`:
+`apps/factory/mcp-service/Dockerfile`:
 
 ```dockerfile
 FROM python:3.11-slim
@@ -396,13 +396,13 @@ CMD ["python", "server.py"]
 
 - [ ] **Step 6: Verify py compiles**
 
-Run: `cd apps/ge-demo-generator/mcp-service && python -m py_compile server.py`
+Run: `cd apps/factory/mcp-service && python -m py_compile server.py`
 Expected: no output (exit 0).
 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add apps/ge-demo-generator/mcp-service
+git add apps/factory/mcp-service
 git -c user.email=vamramak@google.com -c user.name="Vamsi Ramakrishnan" commit -m "feat(ge): generic multi-tenant FastMCP server (fixtures backend + smoke test)"
 ```
 
@@ -433,7 +433,7 @@ Near the top of `tools/lib/factory-core.mjs` (after the existing `const` paths, 
 
 ```javascript
 export const DEPARTMENTS = ["finance", "hr", "it", "marketing", "procurement"];
-const MCP_SERVICE_DIR = join(REPO_ROOT, "apps/ge-demo-generator/mcp-service");
+const MCP_SERVICE_DIR = join(REPO_ROOT, "apps/factory/mcp-service");
 ```
 
 - [ ] **Step 3: Implement `mcpDeploy` and `mcpDoctor`**
@@ -598,21 +598,21 @@ git -c user.email=vamramak@google.com -c user.name="Vamsi Ramakrishnan" commit -
 
 ## Task 5: Generated `app/tools.py` — `GE_DATA_BACKEND` switch
 
-The agent already wires `tools=source_adapters` (`ge-mock.mjs:1142`); `source_adapters` is defined in
+The agent already wires `tools=source_adapters` (`factory.mjs:1142`); `source_adapters` is defined in
 `app/tools.py`. Make `source_adapters` resolve at import time based on `GE_DATA_BACKEND`: `fixtures`
 (today's FunctionTool list) or `mcp` (an `MCPToolset` over the dept custom MCP + 1P MCP endpoints).
 
 **Files:**
-- Modify: `apps/ge-demo-generator/scripts/ge-mock.mjs` (the `app/tools.py` writer near line 930 and the `source_adapters = [...]` assembly near line 1039)
-- Test: `apps/ge-demo-generator/tests/tools-backend.test.js` (new)
+- Modify: `apps/factory/scripts/factory.mjs` (the `app/tools.py` writer near line 930 and the `source_adapters = [...]` assembly near line 1039)
+- Test: `apps/factory/tests/tools-backend.test.js` (new)
 
 - [ ] **Step 1: Write a failing JS test for the rendered tools.py**
 
-`apps/ge-demo-generator/tests/tools-backend.test.js`:
+`apps/factory/tests/tools-backend.test.js`:
 
 ```javascript
 import { test, expect } from "bun:test";
-import { renderToolsModule } from "../scripts/ge-mock.mjs";
+import { renderToolsModule } from "../scripts/factory.mjs";
 
 test("tools.py renders a GE_DATA_BACKEND switch with MCPToolset for the mcp backend", () => {
   const src = renderToolsModule({
@@ -632,12 +632,12 @@ test("tools.py renders a GE_DATA_BACKEND switch with MCPToolset for the mcp back
 
 - [ ] **Step 2: Run the test to verify it fails**
 
-Run: `cd apps/ge-demo-generator && bun test tests/tools-backend.test.js`
+Run: `cd apps/factory && bun test tests/tools-backend.test.js`
 Expected: FAIL — `renderToolsModule` is not exported.
 
 - [ ] **Step 3: Extract + implement `renderToolsModule`**
 
-In `ge-mock.mjs`, add and **export** a pure function that produces the backend-switch tail of
+In `factory.mjs`, add and **export** a pure function that produces the backend-switch tail of
 `tools.py`. Place it near `renderAgentInstruction`:
 
 ```javascript
@@ -685,7 +685,7 @@ export function renderToolsModule({ fixtureToolsBlock, agentId, department, oneP
 ```
 
 Then, in the `app/tools.py` writer: rename the existing `source_adapters = [FunctionTool(...)]`
-line (near `ge-mock.mjs:1039`) to `source_adapters_fixtures = [FunctionTool(...)]`, and append
+line (near `factory.mjs:1039`) to `source_adapters_fixtures = [FunctionTool(...)]`, and append
 `renderToolsModule({ fixtureToolsBlock: "", agentId, department, onePartyScopes })` output to the
 module (passing `fixtureToolsBlock: ""` because the fixtures list is written inline just above).
 Resolve `agentId` from `qualityPlan.naming.agentName`/workspace id and `department` from the use
@@ -693,7 +693,7 @@ case; build `onePartyScopes` from the agent's datastores via a small map added i
 
 - [ ] **Step 4: Add the 1P scope map**
 
-Near the top of `ge-mock.mjs` (with other consts), add:
+Near the top of `factory.mjs` (with other consts), add:
 
 ```javascript
 // 1P managed MCP OAuth scopes per store (used by the mcp runtime backend).
@@ -712,13 +712,13 @@ Map each store in `bigquery.googleapis.com`-style host: `bigquery→bigquery`, `
 
 - [ ] **Step 5: Run the test to verify it passes**
 
-Run: `cd apps/ge-demo-generator && bun test tests/tools-backend.test.js`
+Run: `cd apps/factory && bun test tests/tools-backend.test.js`
 Expected: PASS.
 
 - [ ] **Step 6: Enable Agent Runtime agent identity at deploy**
 
 Agent identity (Preview) is enabled by a workspace config file the deploy path reads. In the
-workspace writer in `ge-mock.mjs` (where other top-level workspace files like `pyproject.toml` are
+workspace writer in `factory.mjs` (where other top-level workspace files like `pyproject.toml` are
 written), write `.agent_engine_config.json`:
 
 ```javascript
@@ -734,8 +734,8 @@ allowlist if sync prunes dotfiles.)
 
 Run:
 ```bash
-cd apps/ge-demo-generator
-node scripts/ge-mock.mjs from-usecase --usecase account-reconciliation-agent --dir /tmp/mcp-check 2>&1 | tail -5
+cd apps/factory
+node scripts/factory.mjs from-usecase --usecase account-reconciliation-agent --dir /tmp/mcp-check 2>&1 | tail -5
 python -m py_compile /tmp/mcp-check/app/tools.py && echo TOOLS_OK
 test -f /tmp/mcp-check/.agent_engine_config.json && echo IDENTITY_OK
 ```
@@ -745,7 +745,7 @@ inside `_mcp_toolsets()` so compilation does not require ADK present); `IDENTITY
 - [ ] **Step 8: Commit**
 
 ```bash
-git add apps/ge-demo-generator/scripts/ge-mock.mjs apps/ge-demo-generator/tests/tools-backend.test.js
+git add apps/factory/scripts/factory.mjs apps/factory/tests/tools-backend.test.js
 git -c user.email=vamramak@google.com -c user.name="Vamsi Ramakrishnan" commit -m "feat(ge): agent tools.py GE_DATA_BACKEND switch + .agent_engine_config.json (agent identity)"
 ```
 
@@ -753,13 +753,13 @@ git -c user.email=vamramak@google.com -c user.name="Vamsi Ramakrishnan" commit -
 
 ## Task 6: Pivot `register --as mcp` to the per-department service
 
-Today `cmdRegister --as mcp` (`ge-mock.mjs:2773`) requires a per-agent `deployStep.serviceUrl`.
+Today `cmdRegister --as mcp` (`factory.mjs:2773`) requires a per-agent `deployStep.serviceUrl`.
 Change it to register the agent against its **department** service URL with `?agent=<id>`, taking
 the URL from a `--service-url` flag (passed by the worker from `.ge.json` `mcpServices`).
 
 **Files:**
-- Modify: `apps/ge-demo-generator/scripts/ge-mock.mjs` (`cmdRegister`, near line 2773)
-- Modify: `apps/ge-demo-generator/src/factory-worker.js` (`register_tools` command, line 128)
+- Modify: `apps/factory/scripts/factory.mjs` (`cmdRegister`, near line 2773)
+- Modify: `apps/factory/src/factory-worker.js` (`register_tools` command, line 128)
 
 - [ ] **Step 1: Accept a department service URL in `cmdRegister`**
 
@@ -805,15 +805,15 @@ with:
 
 - [ ] **Step 2: Pass the dept URL + agent id from the worker**
 
-In `apps/ge-demo-generator/src/factory-worker.js`, the `register_tools` stage (line 128) currently
+In `apps/factory/src/factory-worker.js`, the `register_tools` stage (line 128) currently
 registers `--as adk`. Change it to register the custom MCP against the department service. Replace
 the `register_tools` entry with:
 
 ```javascript
     register_tools: [
-      ["node", ["scripts/ge-mock.mjs", "register", "--dir", workspaceDir, "--project", project, "--region", payload.cloud?.geminiEnterpriseLocation || "global", "--as", "adk"]],
+      ["node", ["scripts/factory.mjs", "register", "--dir", workspaceDir, "--project", project, "--region", payload.cloud?.geminiEnterpriseLocation || "global", "--as", "adk"]],
       ...(payload.cloud?.mcpServiceUrl
-        ? [["node", ["scripts/ge-mock.mjs", "register", "--dir", workspaceDir, "--project", project, "--region", payload.cloud?.geminiEnterpriseLocation || "global", "--as", "mcp", "--service-url", payload.cloud.mcpServiceUrl, "--agent-id", payload.workspaceId]]]
+        ? [["node", ["scripts/factory.mjs", "register", "--dir", workspaceDir, "--project", project, "--region", payload.cloud?.geminiEnterpriseLocation || "global", "--as", "mcp", "--service-url", payload.cloud.mcpServiceUrl, "--agent-id", payload.workspaceId]]]
         : []),
     ],
 ```
@@ -824,13 +824,13 @@ custom MCP. This keeps the stage backward compatible.)
 
 - [ ] **Step 3: Verify**
 
-Run: `node --check apps/ge-demo-generator/scripts/ge-mock.mjs && node --check apps/ge-demo-generator/src/factory-worker.js && echo OK`
+Run: `node --check apps/factory/scripts/factory.mjs && node --check apps/factory/src/factory-worker.js && echo OK`
 Expected: `OK`.
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add apps/ge-demo-generator/scripts/ge-mock.mjs apps/ge-demo-generator/src/factory-worker.js
+git add apps/factory/scripts/factory.mjs apps/factory/src/factory-worker.js
 git -c user.email=vamramak@google.com -c user.name="Vamsi Ramakrishnan" commit -m "feat(ge): register agents against per-department MCP service (?agent=<id>, jsonrpc)"
 ```
 
@@ -865,9 +865,9 @@ calculation → aggregate; evidence → return a `source_system_record` envelope
 entities.
 
 **Files:**
-- Create: `apps/ge-demo-generator/mcp-service/store_backend.py`
-- Create: `apps/ge-demo-generator/mcp-service/stores.py` (per-store client adapters)
-- Test: `apps/ge-demo-generator/mcp-service/tests/test_store_backend.py`
+- Create: `apps/factory/mcp-service/store_backend.py`
+- Create: `apps/factory/mcp-service/stores.py` (per-store client adapters)
+- Test: `apps/factory/mcp-service/tests/test_store_backend.py`
 
 - [ ] **Step 1: Write a failing test (pure planning + envelope, no GCP)**
 
@@ -922,7 +922,7 @@ def test_unknown_tool_without_binding_raises():
 
 - [ ] **Step 2: Run to verify it fails**
 
-Run: `cd apps/ge-demo-generator/mcp-service && python -m pytest tests/test_store_backend.py -q`
+Run: `cd apps/factory/mcp-service && python -m pytest tests/test_store_backend.py -q`
 Expected: FAIL — no module `store_backend`.
 
 - [ ] **Step 3: Implement `store_backend.py` (pure planning + envelope + dispatch)**
@@ -1104,7 +1104,7 @@ Add `psycopg[binary]>=3.2` and `google-cloud-secret-manager>=2.20` to the server
 - [ ] **Step 5: Carry the binding into `mcp-tools.json` (generator — shared file)**
 
 The binding originates from the data-plan: `source.target.datastore` (store) + the behavior
-contract's `toolIntents` (op/entity/key/sourceSystem). In `apps/ge-demo-generator/scripts/plan-mock-data.mjs`,
+contract's `toolIntents` (op/entity/key/sourceSystem). In `apps/factory/scripts/plan-mock-data.mjs`,
 extend `renderMcpTools(plan)` so each emitted tool includes a `binding` object built from its
 source + intent. **This file is shared with the data-plane generator work (Tasks 9–11)** — if that
 work is in flight, add the `binding` field there rather than conflicting. Minimum mapping:
@@ -1126,14 +1126,14 @@ binding: {
 
 - [ ] **Step 6: Run to verify it passes**
 
-Run: `cd apps/ge-demo-generator/mcp-service && python -m pytest tests/ -q && python -m py_compile stores.py`
+Run: `cd apps/factory/mcp-service && python -m pytest tests/ -q && python -m py_compile stores.py`
 Expected: PASS (server + store tests; `stores.py` compiles — GCP/psycopg imports are inside
 functions, so no external deps needed to compile/test).
 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add apps/ge-demo-generator/mcp-service/store_backend.py apps/ge-demo-generator/mcp-service/stores.py apps/ge-demo-generator/mcp-service/tests/test_store_backend.py apps/ge-demo-generator/mcp-service/pyproject.toml apps/ge-demo-generator/scripts/plan-mock-data.mjs
+git add apps/factory/mcp-service/store_backend.py apps/factory/mcp-service/stores.py apps/factory/mcp-service/tests/test_store_backend.py apps/factory/mcp-service/pyproject.toml apps/factory/scripts/plan-mock-data.mjs
 git -c user.email=vamramak@google.com -c user.name="Vamsi Ramakrishnan" commit -m "feat(ge): domain-facade store backend — binding-driven multi-store ops + source-system envelope (Workday/Ariba effect)"
 ```
 
@@ -1147,7 +1147,7 @@ git -c user.email=vamramak@google.com -c user.name="Vamsi Ramakrishnan" commit -
 service.
 
 **Files:**
-- Modify: `apps/ge-demo-generator/scripts/ge-mock/integration/source-integration.mjs`
+- Modify: `apps/factory/scripts/factory/integration/source-integration.mjs`
 
 - [ ] **Step 1: Replace the first-party ADK usage string**
 
@@ -1190,13 +1190,13 @@ In `plan.policy.adkCapabilityOrder`, replace `"ApiRegistry first-party MCP"` wit
 
 - [ ] **Step 4: Verify**
 
-Run: `node --check apps/ge-demo-generator/scripts/ge-mock/integration/source-integration.mjs && echo OK`
+Run: `node --check apps/factory/scripts/factory/integration/source-integration.mjs && echo OK`
 Expected: `OK`.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add apps/ge-demo-generator/scripts/ge-mock/integration/source-integration.mjs
+git add apps/factory/scripts/factory/integration/source-integration.mjs
 git -c user.email=vamramak@google.com -c user.name="Vamsi Ramakrishnan" commit -m "fix(ge): source-integration emits MCPToolset usage (not ApiRegistry/AgentRegistry)"
 ```
 
@@ -1247,9 +1247,9 @@ git -c user.email=vamramak@google.com -c user.name="Vamsi Ramakrishnan" commit -
 Run:
 ```bash
 node --check tools/lib/factory-core.mjs && node --check tools/ge.mjs && node --check tools/mcp-server.mjs \
-  && node --check apps/ge-demo-generator/scripts/ge-mock.mjs \
-  && node --check apps/ge-demo-generator/src/factory-worker.js \
-  && node --check apps/ge-demo-generator/scripts/ge-mock/integration/source-integration.mjs \
+  && node --check apps/factory/scripts/factory.mjs \
+  && node --check apps/factory/src/factory-worker.js \
+  && node --check apps/factory/scripts/factory/integration/source-integration.mjs \
   && echo ALL_JS_OK
 ```
 Expected: `ALL_JS_OK`.
@@ -1258,7 +1258,7 @@ Expected: `ALL_JS_OK`.
 
 Run:
 ```bash
-cd apps/ge-demo-generator && bun test tests/tools-backend.test.js
+cd apps/factory && bun test tests/tools-backend.test.js
 cd mcp-service && python -m pytest tests/ -q
 ```
 Expected: all pass.
@@ -1267,8 +1267,8 @@ Expected: all pass.
 
 Run:
 ```bash
-cd apps/ge-demo-generator
-node scripts/ge-mock.mjs from-usecase --usecase account-reconciliation-agent --dir /tmp/mcp-e2e 2>&1 | tail -3
+cd apps/factory
+node scripts/factory.mjs from-usecase --usecase account-reconciliation-agent --dir /tmp/mcp-e2e 2>&1 | tail -3
 python -m py_compile /tmp/mcp-e2e/app/tools.py && echo TOOLS_OK
 ls /tmp/mcp-e2e/mock_data/apis/mcp-tools.json && echo MANIFEST_OK
 ```
@@ -1310,7 +1310,7 @@ git -c user.email=vamramak@google.com -c user.name="Vamsi Ramakrishnan" commit -
 
 1. `node --check` all touched JS → `ALL_JS_OK`.
 2. `bun test tests/tools-backend.test.js` → pass.
-3. `python -m pytest apps/ge-demo-generator/mcp-service/tests/ -q` → pass.
+3. `python -m pytest apps/factory/mcp-service/tests/ -q` → pass.
 4. HCL brace/ref checks on `mcp.tf` → balanced, SAs referenced.
 5. `bun tools/ge.mjs mcp --help` / `... mcp doctor --json` → valid.
 6. One generated agent: `app/tools.py` compiles; `mcp-tools.json` present.

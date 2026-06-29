@@ -3,6 +3,7 @@
  * Reusable by both Bun server and Vite dev middleware.
  */
 import { GE_COMMANDS, GE_COMMAND_LIST, commandForRoute } from "../shared/ge-commands.mjs";
+import { parseList } from "@ge/std/list";
 
 // Parse GE_CONSOLE_READONLY as a boolean — only 1/true/yes/on enable read-only.
 // (Raw truthiness would treat the strings "false"/"0" as read-only.)
@@ -358,7 +359,7 @@ function isKnownRoute(method, parts) {
 
 function splitCsv(value) {
   if (Array.isArray(value)) return value;
-  return String(value || "").split(",").map((item) => item.trim()).filter(Boolean);
+  return parseList(String(value || ""));
 }
 
 /**

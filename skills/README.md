@@ -20,7 +20,7 @@ Each skill is a directory with a `SKILL.md` (+ optional `references/`, `scripts/
 
 Machine routing lives in `skills/skill-routing.json`, not portable `SKILL.md`
 frontmatter. That sidecar records GE-specific trigger keywords and composition
-edges, is parsed by `apps/ge-demo-generator/src/skill-registry.js`, written into the
+edges, is parsed by `apps/factory/src/skill-registry.js`, written into the
 synced manifest, and rendered into the agent's context — so `operating-the-factory`
 pulls in the stations it conducts, and risky stations pull in `guarding-the-factory`.
 Selection also works by **capability/stage bindings** (`FACTORY_SKILL_BINDINGS`),
@@ -29,7 +29,7 @@ conductor set), and routing-file trigger matching in the run message.
 
 ## How the harness loads them (auto)
 
-Per run, `apps/ge-demo-generator/src/harness-runner.js`:
+Per run, `apps/factory/src/harness-runner.js`:
 1. `loadSkillRegistry()` discovers everything under `skills/`.
 2. `selectSkillsForContext({ capabilities, stages, message })` picks the relevant set.
 3. `materializeSkillsForWorkspace()` copies them into the run's `.ge-harness/skills/`.
@@ -70,7 +70,7 @@ directly — `~/.agents/skills/` matters only when a *non-factory* harness is th
    `skills/skill-routing.json`, not to `SKILL.md` frontmatter. Body: `## Assembly-Line Slot`
    (First step / Plays a role in / Input / Output / Next step), `## Workflow`,
    `## Common mistakes`, `## Done when`. Keep it tight (single responsibility).
-2. Bind it in `apps/ge-demo-generator/src/skill-registry.js` (`FACTORY_SKILL_BINDINGS`
+2. Bind it in `apps/factory/src/skill-registry.js` (`FACTORY_SKILL_BINDINGS`
    capability→stages→skill, and any `CAPABILITY_ALIASES`).
 3. `make skills-sync && make skills-doctor` (both must pass; the manifest is gitignored —
    never commit `.ge/skills/manifest.json`).

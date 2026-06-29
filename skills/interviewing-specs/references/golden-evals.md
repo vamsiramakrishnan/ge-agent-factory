@@ -7,7 +7,7 @@ Golden evals are part of the spec contract. They are not ad hoc test prompts.
 Create or load a normalized spec JSON, then generate the Antigravity prompt:
 
 ```bash
-node apps/ge-demo-generator/scripts/spec-workbench.mjs golden-evals prompt --spec <normalized-spec.json> --out /tmp/golden-evals.prompt.txt
+node apps/factory/scripts/spec-workbench.mjs golden-evals prompt --spec <normalized-spec.json> --out /tmp/golden-evals.prompt.txt
 ```
 
 Give that prompt to Antigravity as the task context.
@@ -38,7 +38,7 @@ Antigravity must return JSON only:
 Validate before applying:
 
 ```bash
-node apps/ge-demo-generator/scripts/spec-workbench.mjs golden-evals validate --spec <normalized-spec.json> --evals <golden-evals.json>
+node apps/factory/scripts/spec-workbench.mjs golden-evals validate --spec <normalized-spec.json> --evals <golden-evals.json>
 ```
 
 If validation fails, ask Antigravity to repair only the eval JSON. Do not change tool names, source systems, entities, or documents unless the user is intentionally revising the spec.
@@ -46,7 +46,7 @@ If validation fails, ask Antigravity to repair only the eval JSON. Do not change
 Apply only after validation passes:
 
 ```bash
-node apps/ge-demo-generator/scripts/spec-workbench.mjs golden-evals apply --spec <normalized-spec.json> --evals <golden-evals.json> --out <normalized-spec.with-evals.json>
+node apps/factory/scripts/spec-workbench.mjs golden-evals apply --spec <normalized-spec.json> --evals <golden-evals.json> --out <normalized-spec.with-evals.json>
 ```
 
 ## Scope Rules
@@ -63,7 +63,7 @@ node apps/ge-demo-generator/scripts/spec-workbench.mjs golden-evals apply --spec
 Register the spec with validated evals:
 
 ```bash
-node apps/ge-demo-generator/scripts/register-agent-spec.mjs --input <normalized-spec.with-evals.json>
+node apps/factory/scripts/register-agent-spec.mjs --input <normalized-spec.with-evals.json>
 ```
 
 After the factory generates a workspace, the generator converts these spec evals into Agents CLI artifacts:

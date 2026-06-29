@@ -115,7 +115,7 @@ done
 ```
 
 ### B2. Worker change: pass `--service-account` on build submits (DONE in code — redeploy)
-**Landed.** `apps/ge-demo-generator/src/factory-worker.js` already appends, on every
+**Landed.** `apps/factory/src/factory-worker.js` already appends, on every
 `gcloud builds submit` (release stages: validate/preview/deploy_runtime/poll_runtime/
 publish_enterprise — builds go via **`gcloud`**, not the REST API):
 

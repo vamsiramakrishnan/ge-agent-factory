@@ -15,6 +15,7 @@
  */
 
 import { defineCommand, runMain } from "citty";
+import { parseList } from "@ge/std/list";
 import pc from "picocolors";
 import { spawn } from "node:child_process";
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, rmSync } from "node:fs";
@@ -133,7 +134,7 @@ function statusText(status) {
 }
 
 function parseIds(ids) {
-  return String(ids || "").split(",").map((id) => id.trim()).filter(Boolean);
+  return parseList(String(ids || ""));
 }
 
 function renderAutopilotSummary(task) {
@@ -1290,7 +1291,7 @@ const runtimeStartAutopilot = defineCommand({
     const port = Number(args.port || process.env.GE_DAEMON_PORT || daemonPaths().defaultPort);
     const body = {
       kind: "autopilot.run",
-      ids: args.ids ? args.ids.split(",").map((id) => id.trim()).filter(Boolean) : [],
+      ids: args.ids ? parseList(args.ids) : [],
       targetStage: args.stage || "preview",
       repair: args.repair !== false,
       attempts: Number(args.attempts || 3),

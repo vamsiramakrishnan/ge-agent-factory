@@ -37,13 +37,13 @@ bun tools/ge.mjs agents ship --ids <workspace-id> --start-stage load_data --targ
 Deploy plan:
 
 ```bash
-node apps/ge-demo-generator/src/cli.js deploy:plan <workspace-id>
+node apps/factory/src/cli.js deploy:plan <workspace-id>
 ```
 
 Publish plan:
 
 ```bash
-node apps/ge-demo-generator/src/cli.js publish:plan <workspace-id>
+node apps/factory/src/cli.js publish:plan <workspace-id>
 ```
 
 Summarize release artifacts:

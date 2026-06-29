@@ -21,16 +21,16 @@ This makes Workday, ServiceNow, SAP, Coupa, Icertis, Salesforce, and similar sys
 The upstream-system inventory is generated from:
 
 ```text
-apps/ge-demo-generator/src/use-case-source-map.generated.json
+apps/factory/src/use-case-source-map.generated.json
 ```
 
 Generated artifacts:
 
 ```text
-apps/ge-demo-generator/artifacts/upstream-system-inventory.json
-apps/ge-demo-generator/artifacts/upstream-system-inventory.md
-apps/ge-demo-generator/artifacts/simulator-coverage.json
-apps/ge-demo-generator/artifacts/simulator-coverage.md
+apps/factory/artifacts/upstream-system-inventory.json
+apps/factory/artifacts/upstream-system-inventory.md
+apps/factory/artifacts/simulator-coverage.json
+apps/factory/artifacts/simulator-coverage.md
 ```
 
 Current inventory:
@@ -341,7 +341,7 @@ Acceptance:
 
 ## Cloud Run MCP Changes
 
-Current `apps/ge-demo-generator/mcp-service/server.py` exposes generic tools and delegates to store backend.
+Current `apps/factory/mcp-service/server.py` exposes generic tools and delegates to store backend.
 
 Target:
 
@@ -389,11 +389,11 @@ This is the smallest slice that proves the new architecture.
 
 Implemented starter runtime:
 
-- `apps/ge-demo-generator/mcp-service/simulator_runtime/registry.py`
-- `apps/ge-demo-generator/mcp-service/simulator_runtime/router.py`
-- `apps/ge-demo-generator/mcp-service/simulator_runtime/context.py`
-- `apps/ge-demo-generator/mcp-service/simulator_runtime/audit.py`
-- `apps/ge-demo-generator/mcp-service/simulator_runtime/simulators.py`
+- `apps/factory/mcp-service/simulator_runtime/registry.py`
+- `apps/factory/mcp-service/simulator_runtime/router.py`
+- `apps/factory/mcp-service/simulator_runtime/context.py`
+- `apps/factory/mcp-service/simulator_runtime/audit.py`
+- `apps/factory/mcp-service/simulator_runtime/simulators.py`
 
 Current Workday capabilities:
 

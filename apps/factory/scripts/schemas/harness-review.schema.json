@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "ok_to_promote": {
+      "type": "boolean"
+    },
+    "agent_quality_score": {
+      "type": "number"
+    },
+    "spec_to_code_score": {
+      "type": "number"
+    },
+    "spec_gaps": {
+      "type": "array",
+      "items": {}
+    },
+    "agent_logic_gaps": {
+      "type": "array",
+      "items": {}
+    },
+    "tool_gaps": {
+      "type": "array",
+      "items": {}
+    },
+    "mock_data_gaps": {
+      "type": "array",
+      "items": {}
+    },
+    "eval_gaps": {
+      "type": "array",
+      "items": {}
+    },
+    "adk_capability_gaps": {
+      "type": "array",
+      "items": {}
+    },
+    "recommended_generator_changes": {
+      "type": "array",
+      "items": {}
+    },
+    "recommended_pack_changes": {
+      "type": "array",
+      "items": {}
+    },
+    "required_follow_up_commands": {
+      "type": "array",
+      "items": {}
+    }
+  },
+  "required": [
+    "ok_to_promote",
+    "agent_quality_score",
+    "spec_to_code_score"
+  ],
+  "additionalProperties": {}
+}

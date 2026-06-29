@@ -111,9 +111,9 @@ tool plane to per-agent stores that behave like the real source systems (see
 [Simulators and BYO](./simulators-and-byo.html)). If an MCP toolset is not yet
 registered, resolution falls back to fixtures rather than crashing startup.
 
-The reference implementation of the generator (and the `ge-mock` CLI that drives
+The reference implementation of the generator (and the `factory` CLI that drives
 generation, refine, registration, and status) lives in
-[`apps/ge-demo-generator/scripts/ge-mock.mjs`](https://github.com/vamsiramakrishnan/ge-agent-factory).
+[`apps/factory/scripts/factory.mjs`](https://github.com/vamsiramakrishnan/ge-agent-factory).
 
 See the [Reference](../reference/) for the generated workspace layout and the
 ADK/`agents-cli` command surface, and the [Cookbooks](../cookbooks/) for running

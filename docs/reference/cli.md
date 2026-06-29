@@ -11,8 +11,8 @@ The factory exposes three command surfaces:
 
 - **`ge`** — the human/operator CLI (`bun tools/ge.mjs`). Lifecycle: set up the
   machine → stand up the platform → run agents.
-- **`ge-mock`** — the lower-level generator CLI
-  (`node apps/ge-demo-generator/scripts/ge-mock.mjs`) that emits one agent
+- **`factory`** — the lower-level generator CLI
+  (`node apps/factory/scripts/factory.mjs`) that emits one agent
   workspace step by step.
 - **`make`** — task runner that wraps both for the common flows.
 
@@ -164,11 +164,11 @@ ge apply --manifest <path>  # use a specific manifest
 
 ---
 
-## `ge-mock` — generator CLI
+## `factory` — generator CLI
 
 Source:
-[`apps/ge-demo-generator/scripts/ge-mock.mjs`](https://github.com/vamsiramakrishnan/ge-agent-factory).
-Invoke as `node apps/ge-demo-generator/scripts/ge-mock.mjs <command>`. This is the
+[`apps/factory/scripts/factory.mjs`](https://github.com/vamsiramakrishnan/ge-agent-factory).
+Invoke as `node apps/factory/scripts/factory.mjs <command>`. This is the
 build engine the factory drives per stage; it emits one agent workspace into
 `--dir <dir>`.
 
@@ -217,15 +217,15 @@ build engine the factory drives per stage; it emits one agent workspace into
 | `batch-audit` | Audit many generated workspaces | `[--limit N]` `[--department hr]` `[--root <dir>]` `[--run]` `[--harness-review]` |
 
 ```bash
-ge-mock init --dir ./hr-agent --name hr-demo --domain hr
-ge-mock from-usecase --dir ./hr-agent --usecase account-reconciliation-agent
-ge-mock generate --dir ./hr-agent --seed 42
-ge-mock tools --dir ./hr-agent
-ge-mock quality-gate --dir ./hr-agent --prompt "hello" --harness-review true
-ge-mock publish --dir ./hr-agent --app-id my-gemini-enterprise-app-id
+factory init --dir ./hr-agent --name hr-demo --domain hr
+factory from-usecase --dir ./hr-agent --usecase account-reconciliation-agent
+factory generate --dir ./hr-agent --seed 42
+factory tools --dir ./hr-agent
+factory quality-gate --dir ./hr-agent --prompt "hello" --harness-review true
+factory publish --dir ./hr-agent --app-id my-gemini-enterprise-app-id
 ```
 
-> `ge-mock` also exports pure build helpers (`deriveAgentWorkflow`,
+> `factory` also exports pure build helpers (`deriveAgentWorkflow`,
 > `canonicalIntentToolName`, …) under `__test`; importing the module does **not**
 > execute the CLI.
 

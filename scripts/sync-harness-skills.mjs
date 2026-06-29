@@ -4,7 +4,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { FACTORY_SKILL_BINDINGS, loadSkillRegistry } from "../apps/ge-demo-generator/src/skill-registry.js";
+import { FACTORY_SKILL_BINDINGS, loadSkillRegistry } from "../apps/factory/src/skill-registry.js";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, "..");

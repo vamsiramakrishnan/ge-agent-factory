@@ -10,7 +10,7 @@ layout: default
 The simulator engine serves an agent's enterprise tools (Workday, DocuSign CLM,
 SAP, …) as a stateful, MCP-shaped backend, without the real systems. Each system
 is a **pack** (six JSON files) interpreted by a generic Python runtime under
-[`apps/ge-demo-generator/mcp-service/simulator_runtime/`](https://github.com/vamsiramakrishnan/ge-agent-factory).
+[`apps/factory/mcp-service/simulator_runtime/`](https://github.com/vamsiramakrishnan/ge-agent-factory).
 Bring-your-own (BYO) systems are mounted at runtime through a lazy layered registry
 and an overlay.
 
@@ -19,7 +19,7 @@ and an overlay.
 ## The pack contract (six files)
 
 A pack lives at
-`apps/ge-demo-generator/simulator-systems/<system_id>/` and has exactly six files.
+`apps/factory/simulator-systems/<system_id>/` and has exactly six files.
 Example: `docusign_clm/`.
 
 | File | What it holds |
@@ -147,7 +147,7 @@ or missing dependency falls back to `memory`.
 
 ## Pack tooling
 
-All three CLIs live under `apps/ge-demo-generator/scripts/`.
+All three CLIs live under `apps/factory/scripts/`.
 
 ### Scaffold a pack
 

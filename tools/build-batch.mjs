@@ -4,11 +4,11 @@
 // resolves the full use-case spec server-side.
 
 import { join } from "path";
-import { writeJson } from "./lib/json-io.mjs";
+import { writeJson } from "@ge/std/json-io";
 
 const catalogPath = join(
   import.meta.dirname,
-  "../apps/ge-demo-generator/src/use-cases.js",
+  "../apps/factory/src/use-cases.js",
 );
 const { getUseCases } = await import(catalogPath);
 const USE_CASES = getUseCases();

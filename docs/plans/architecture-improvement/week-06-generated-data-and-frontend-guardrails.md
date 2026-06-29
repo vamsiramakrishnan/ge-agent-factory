@@ -18,10 +18,10 @@ Reduce source bloat from generated catalogs and add guardrails around frontend b
 
 Target areas:
 
-- `apps/ge-demo-generator/src/use-cases.generated.js`
-- `apps/ge-demo-generator/src/domains.generated.js`
+- `apps/factory/src/use-cases.generated.js`
+- `apps/factory/src/domains.generated.js`
 - `tools/lib/factory-core.mjs`
-- `apps/ge-demo-generator/src/server.js`
+- `apps/factory/src/server.js`
 
 Implementation tasks:
 
@@ -96,7 +96,7 @@ Target areas:
 
 - `apps/presentation`
 - `apps/console`
-- `apps/ge-demo-generator/web`
+- `apps/factory/web`
 
 Implementation tasks:
 
@@ -162,7 +162,7 @@ Acceptance criteria:
 Move generated data from JS modules to data artifacts:
 
 ```text
-apps/ge-demo-generator/data/catalog/
+apps/factory/data/catalog/
   use-cases.json
   domains.json
   catalog.schema.json
@@ -186,7 +186,7 @@ apps/ge-demo-generator/data/catalog/
 
 Runtime loader:
 
-- `apps/ge-demo-generator/src/catalog/catalog-store.js`
+- `apps/factory/src/catalog/catalog-store.js`
   - `listUseCases({ department, search, limit, offset })`
   - `getUseCase(id)`
   - `listDomains({ department })`
@@ -199,7 +199,7 @@ The loader should avoid loading the full catalog for simple counts or paginated 
 Add a generation step:
 
 ```bash
-bun apps/ge-demo-generator/scripts/validate-catalog.mjs
+bun apps/factory/scripts/validate-catalog.mjs
 ```
 
 Validation checks:
@@ -316,7 +316,7 @@ or per app if no shared package exists:
 
 ```text
 apps/presentation/src/services/runSessionClient.ts
-apps/ge-demo-generator/web/src/services/run-session-client.js
+apps/factory/web/src/services/run-session-client.js
 ```
 
 API:
@@ -365,7 +365,7 @@ Suggested tests:
 - `apps/console/src/views/AgentDetail.test.tsx`
   - local mode actions.
   - remote mode actions.
-- `apps/ge-demo-generator/web/src/services/run-session-client.test.js`
+- `apps/factory/web/src/services/run-session-client.test.js`
   - cancel aborts reader.
   - terminal events close session.
 - `tests/playwright/console-smoke.spec.ts`

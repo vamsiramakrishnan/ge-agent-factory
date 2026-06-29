@@ -5,7 +5,7 @@ Pure workspace contract helpers for generated GE agents.
 This package extracts the generated-agent workspace path contract, manifest shape,
 and promotion-critical file inventory into a standalone module. It is intended for
 generators, validators, release gates, and external tooling that need to inspect or
-produce a workspace without importing the full `ge-demo-generator` app.
+produce a workspace without importing the full `factory` app.
 
 ## Solves
 

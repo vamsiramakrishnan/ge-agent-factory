@@ -64,7 +64,7 @@ def _search_upward() -> Path | None:
         if (candidate / "registry.json").is_file():
             return candidate
         # Also accept the canonical in-repo location, in case cwd is above it.
-        nested = base / "apps" / "ge-demo-generator" / "simulator-systems"
+        nested = base / "apps" / "factory" / "simulator-systems"
         if (nested / "registry.json").is_file():
             return nested
     return None
@@ -100,7 +100,7 @@ def repo_root() -> Path:
 
     If set explicitly via :func:`set_packs_dir`, that wins. Otherwise it is derived from
     the packs dir so the corpus is self-contained: registry paths in this repo are stored
-    as ``apps/ge-demo-generator/simulator-systems/<sys>/<file>.json`` (rooted at the repo
+    as ``apps/factory/simulator-systems/<sys>/<file>.json`` (rooted at the repo
     root), so we strip that known suffix from the packs dir to recover the root. If the
     packs dir does not end in that suffix, the packs dir itself is used as the root (which
     is correct for a self-contained corpus whose registry paths are corpus-relative).
@@ -108,7 +108,7 @@ def repo_root() -> Path:
     if _REPO_ROOT is not None:
         return _REPO_ROOT
     pdir = packs_dir()
-    suffix = Path("apps") / "ge-demo-generator" / "simulator-systems"
+    suffix = Path("apps") / "factory" / "simulator-systems"
     parts = pdir.parts
     n = len(suffix.parts)
     if len(parts) >= n and Path(*parts[-n:]) == suffix:

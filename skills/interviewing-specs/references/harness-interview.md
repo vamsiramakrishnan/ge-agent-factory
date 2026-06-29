@@ -35,9 +35,9 @@ The interview must decide what systems are in scope before any simulator or mock
 Antigravity may enrich the spec with conservative baseline schemas, but it must not invent systems outside `generationSpec.sourceSystems`. If a required system is missing, ask the user or add it explicitly to the spec with owned entities/documents. After that, the mission/data tools can generate data:
 
 ```bash
-node apps/ge-demo-generator/scripts/plan-mock-data.mjs --dir <mission-workspace> --usecase <registered-spec-id> --sourceMap apps/ge-demo-generator/src/use-case-source-map.generated.json
-node apps/ge-demo-generator/scripts/materialize-simulator-seeds.mjs --dir <mission-workspace>
-node apps/ge-demo-generator/scripts/validate-simulator-pack.mjs --dir <mission-workspace>
+node apps/factory/scripts/plan-mock-data.mjs --dir <mission-workspace> --usecase <registered-spec-id> --sourceMap apps/factory/src/use-case-source-map.generated.json
+node apps/factory/scripts/materialize-simulator-seeds.mjs --dir <mission-workspace>
+node apps/factory/scripts/validate-simulator-pack.mjs --dir <mission-workspace>
 ```
 
 If a simulator pack does not exist for a declared source system, the next action is to scaffold or enrich that simulator pack, not to make the eval or generated agent pretend the system exists.

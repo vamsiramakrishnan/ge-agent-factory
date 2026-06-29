@@ -132,7 +132,7 @@ export function createFactoryPlane({
       run("gcloud", ["artifacts", "repositories", "create", repo.split("/").pop(), "--repository-format=docker", "--location", cfg.region, "--project", cfg.project], { allowFail: true });
       const image = builderImageTag(cfg);
       log(`building shared builder image → ${image}`);
-      run("gcloud", ["builds", "submit", "apps/ge-demo-generator", "--project", cfg.project, "--config", "apps/ge-demo-generator/cloudbuild.builder.yaml", "--substitutions", `_IMAGE=${image}`], { capture: false });
+      run("gcloud", ["builds", "submit", "apps/factory", "--project", cfg.project, "--config", "apps/factory/cloudbuild.builder.yaml", "--substitutions", `_IMAGE=${image}`], { capture: false });
       return { builderImage: image };
     }
     const repo = resolveRepo(cfg);
@@ -144,10 +144,10 @@ export function createFactoryPlane({
     log(`building worker → ${workerImage}`);
     // Build the worker from the repo-root context via its cloudbuild config (mirrors
     // mcp-plane / the gateway): the worker imports @ge/run-ledger + @ge/okf (packages/)
-    // and tools/lib/*, which live OUTSIDE apps/ge-demo-generator, so `--tag` (app-dir
+    // and tools/lib/*, which live OUTSIDE apps/factory, so `--tag` (app-dir
     // context) can't include them. Positional source = repoRoot.
     run("gcloud", ["builds", "submit", repoRoot, "--project", cfg.project,
-      "--config", "apps/ge-demo-generator/cloudbuild.worker.yaml",
+      "--config", "apps/factory/cloudbuild.worker.yaml",
       "--substitutions", `_IMAGE=${workerImage}`], { capture: false });
     return { gatewayImage, workerImage };
   }

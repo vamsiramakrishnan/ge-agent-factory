@@ -36,7 +36,7 @@ Harness-driven interview:
 Ask Antigravity to produce a normalized spec JSON using `references/harness-interview.md` as the contract. The stable repo mechanism today is to register that JSON:
 
 ```bash
-node apps/ge-demo-generator/scripts/register-agent-spec.mjs --input <normalized-spec.json>
+node apps/factory/scripts/register-agent-spec.mjs --input <normalized-spec.json>
 ```
 
 Use `--allow-draft true` only when intentionally storing an incomplete interview result that must not build yet.
@@ -44,7 +44,7 @@ Use `--allow-draft true` only when intentionally storing an incomplete interview
 Merge registered interview specs into the build catalog:
 
 ```bash
-node apps/ge-demo-generator/scripts/sync-use-cases-from-slides.mjs
+node apps/factory/scripts/sync-use-cases-from-slides.mjs
 ```
 
 Build the registered spec:
@@ -56,13 +56,13 @@ node tools/ge.mjs agents build --ids <registered-spec-id> --local --target previ
 Catalog use case:
 
 ```bash
-node apps/ge-demo-generator/src/cli.js create --usecase <id> --name "<Name>"
+node apps/factory/src/cli.js create --usecase <id> --name "<Name>"
 ```
 
 Legacy freeform draft only:
 
 ```bash
-node apps/ge-demo-generator/src/cli.js create --freeform "<description>" --name "<Name>" --systems <a,b> --domain <domain>
+node apps/factory/src/cli.js create --freeform "<description>" --name "<Name>" --systems <a,b> --domain <domain>
 ```
 
 Use legacy freeform only for quick local drafts. For durable factory work, use a harness-authored normalized spec first so the generator receives a real spec contract.
@@ -76,19 +76,19 @@ node skills/interviewing-specs/scripts/validate-usecase-spec.mjs <workspace>/moc
 Generate a golden-eval prompt for Antigravity:
 
 ```bash
-node apps/ge-demo-generator/scripts/spec-workbench.mjs golden-evals prompt --spec <normalized-spec.json> --out /tmp/golden-evals.prompt.txt
+node apps/factory/scripts/spec-workbench.mjs golden-evals prompt --spec <normalized-spec.json> --out /tmp/golden-evals.prompt.txt
 ```
 
 Validate Antigravity-authored evals:
 
 ```bash
-node apps/ge-demo-generator/scripts/spec-workbench.mjs golden-evals validate --spec <normalized-spec.json> --evals <golden-evals.json>
+node apps/factory/scripts/spec-workbench.mjs golden-evals validate --spec <normalized-spec.json> --evals <golden-evals.json>
 ```
 
 Apply validated evals back to the spec:
 
 ```bash
-node apps/ge-demo-generator/scripts/spec-workbench.mjs golden-evals apply --spec <normalized-spec.json> --evals <golden-evals.json> --out <normalized-spec.with-evals.json>
+node apps/factory/scripts/spec-workbench.mjs golden-evals apply --spec <normalized-spec.json> --evals <golden-evals.json> --out <normalized-spec.with-evals.json>
 ```
 
 ## References

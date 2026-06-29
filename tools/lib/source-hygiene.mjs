@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 
 const DEFAULT_ALLOWED_LEGACY = new Set([
   // use-cases.generated.js was relocated to a git-ignored build artifact
-  // (apps/ge-demo-generator/generated/use-cases.generated.json), loaded lazily.
+  // (apps/factory/generated/use-cases.generated.json), loaded lazily.
   "apps/presentation/public/architecture/vendor/html2canvas.min.js",
   "apps/presentation/public/architecture/vendor/jspdf.umd.min.js",
 ]);
@@ -37,7 +37,7 @@ const FORBIDDEN_TRACKED_PATTERNS = [
   {
     id: "openapi-cache",
     detail: "Downloaded API docs/spec cache is reproducible from the manifest.",
-    match: (path) => path.startsWith("apps/ge-demo-generator/simulator-systems/_openapi/"),
+    match: (path) => path.startsWith("apps/factory/simulator-systems/_openapi/"),
   },
   {
     id: "build-output",
@@ -81,7 +81,7 @@ const SOURCE_STATE_PATH_PATTERNS = [
 const SOURCE_CODE_ANTIPATTERNS = [
   {
     id: "raw-json-write",
-    detail: "Write JSON state atomically via writeJson/updateJson (tools/lib/json-io.mjs), not raw writeFileSync(JSON.stringify(...)).",
+    detail: "Write JSON state atomically via writeJson/updateJson (@ge/std/json-io), not raw writeFileSync(JSON.stringify(...)).",
     match: (line) => /writeFileSync\(.*JSON\.stringify/.test(line),
   },
   {

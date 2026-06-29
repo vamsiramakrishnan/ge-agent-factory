@@ -76,7 +76,7 @@ Domain shape per system:
 - One agent applies every reported `registry.json` patch (maturity, entities, workflows, roles,
   failureModes, evalScenarios, stateBackend) in a single coherent edit; confirms no `simulators.py`
   change is required for the de-clones.
-- Run and make green: `python -m pytest apps/ge-demo-generator/mcp-service`,
+- Run and make green: `python -m pytest apps/factory/mcp-service`,
   `node scripts/validate-simulator-pack.mjs`, `python tools/validate_seed_schema.py`, and the
   conformance suite. Update conformance SAMPLE_ARGS where tool names changed. Confirm
   `test_backward_compat.py` still passes (untouched systems behave identically).

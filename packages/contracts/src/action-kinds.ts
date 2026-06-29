@@ -3,63 +3,77 @@
 // NO merging, NO behavior change. The reconciliation that collapses these into one canonical
 // dispatch is a later, behavior-changing wave (see
 // docs/superpowers/specs/2026-06-14-console-presentation-unification.md).
+//
+// zod-backed: each vocabulary is a z.enum (runtime-validatable) with the type inferred, so the
+// exported type names + members are unchanged for consumers.
+import { z } from "zod";
 
 // (a) Minted by tools/lib/journey-plan.mjs action() — what the journey plan emits.
-export type JourneyPlanActionKind =
-  | "start_interview"
-  | "review_spec"
-  | "run_mission"
-  | "build_agents"
-  | "generate_evals"
-  | "run_preview"
-  | "ship_agents"
-  | "resume_mission"
-  | "resume_harness"
-  | "watch_runtime";
+export const JourneyPlanActionKindSchema = z.enum([
+  "start_interview",
+  "review_spec",
+  "run_mission",
+  "build_agents",
+  "generate_evals",
+  "run_preview",
+  "ship_agents",
+  "resume_mission",
+  "resume_harness",
+  "watch_runtime",
+]);
+export type JourneyPlanActionKind = z.infer<typeof JourneyPlanActionKindSchema>;
 
 // (b) Minted by tools/lib/fleet-health.mjs actionPlanFor() — now plural build_agents (unified).
-export type FleetActionKind =
-  | "ship_agents"
-  | "none"
-  | "resume_mission"
-  | "resume_autopilot"
-  | "build_agents"
-  | "user_action"
-  | "repair_agent";
+export const FleetActionKindSchema = z.enum([
+  "ship_agents",
+  "none",
+  "resume_mission",
+  "resume_autopilot",
+  "build_agents",
+  "user_action",
+  "repair_agent",
+]);
+export type FleetActionKind = z.infer<typeof FleetActionKindSchema>;
 
 // (c) Emitted by tools/lib/runtime-daemon.mjs resumePlanFor()/taskSummary + mission-plan.mjs.
 //     The daemon emits `rerun_harness`, NEVER `resume_harness` (that lives only in the UI vocab).
 //     The generic safe-resume fallback is `rerun_${TaskKind}` (runtime-daemon.mjs).
-export type DaemonNextAction =
-  | "none"
-  | "wait"
-  | "resume_autopilot"
-  | "inspect_blocker"
-  | "rerun_doctor"
-  | "rerun_task"
-  | "rerun_harness"
-  | "resume_mission";
+export const DaemonNextActionSchema = z.enum([
+  "none",
+  "wait",
+  "resume_autopilot",
+  "inspect_blocker",
+  "rerun_doctor",
+  "rerun_task",
+  "rerun_harness",
+  "resume_mission",
+]);
+export type DaemonNextAction = z.infer<typeof DaemonNextActionSchema>;
 
 // (d) CLI command ids from tools/lib/ge-command-registry.mjs (a separate namespace).
-export type GeCommandId =
-  | "up"
-  | "data.up"
-  | "mcp.deploy"
-  | "agents.build"
-  | "agents.build.local"
-  | "mission.run"
-  | "agents.ship"
-  | "agents.sync";
+export const GeCommandIdSchema = z.enum([
+  "up",
+  "data.up",
+  "mcp.deploy",
+  "agents.build",
+  "agents.build.local",
+  "mission.run",
+  "agents.ship",
+  "agents.sync",
+]);
+export type GeCommandId = z.infer<typeof GeCommandIdSchema>;
 
 // (e) Risk levels encoded by GE_COMMANDS entries (used for confirm-gating).
-export type RiskLevel =
-  | "mutates-cloud"
-  | "starts-workloads"
-  | "starts-local-workloads"
-  | "writes-repo";
+export const RiskLevelSchema = z.enum([
+  "mutates-cloud",
+  "starts-workloads",
+  "starts-local-workloads",
+  "writes-repo",
+]);
+export type RiskLevel = z.infer<typeof RiskLevelSchema>;
 
 // The set the console treats as executable, EXACTLY as apps/console/src/lib/actionPlans.ts
-// declared it (9 members). Const-asserted so it cannot silently drift.
+// declared it. Const-asserted so it cannot silently drift.
 export const EXECUTABLE_ACTION_KINDS = [
   "start_interview",
   "review_spec",
@@ -92,7 +106,8 @@ export const ACTION_KIND_ALIASES = {
 // Descriptive mirror of how the console dispatches each kind today (routeForAction-first in
 // Journey.runStageAction / AgentDetail.runPlan). NOT switched on yet — a typed target so a shared
 // <Lifecycle> can render the right affordance once consumers honor it (reconcile-b).
-export type DispatchMode = "navigate" | "runTask" | "resumeTask" | "copyOnly";
+export const DispatchModeSchema = z.enum(["navigate", "runTask", "resumeTask", "copyOnly"]);
+export type DispatchMode = z.infer<typeof DispatchModeSchema>;
 export const ACTION_DISPATCH_MODE: Record<string, DispatchMode> = {
   start_interview: "navigate",
   review_spec: "navigate",

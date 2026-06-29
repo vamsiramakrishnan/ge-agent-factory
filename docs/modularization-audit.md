@@ -4,9 +4,9 @@
 
 | Package | Source Boundary | Standalone Purpose |
 | --- | --- | --- |
-| `@ge/agent-workspace` | Generated workspace path and manifest contract | Lets generators, validators, and promotion gates inspect or create generated-agent workspaces without importing `apps/ge-demo-generator`. |
+| `@ge/agent-workspace` | Generated workspace path and manifest contract | Lets generators, validators, and promotion gates inspect or create generated-agent workspaces without importing `apps/factory`. |
 | `@ge/runtime` | Runtime event, blocker, artifact, and resume-plan normalization | Lets daemon, CLI, UI, and future remote workers share one tested runtime contract. |
-| `@ge/simulator-packs` | `apps/ge-demo-generator/simulator-systems` corpus facade | Gives simulator packs a package identity, manifest, and validator before the large corpus is physically moved. |
+| `@ge/simulator-packs` | `apps/factory/simulator-systems` corpus facade | Gives simulator packs a package identity, manifest, and validator before the large corpus is physically moved. |
 | `generated-agent-runtime` | Repeated Python helpers in generated agents | Provides reusable callbacks, evidence capture, action events, fixture document helpers, and MCP backend selection for generated agents. |
 | `@ge/factory-install` | Installer/Terraform/build/runtime env contract | Makes deployment inputs, outputs, runtime targets, and command plans inspectable without running Terraform or shell scripts. |
 
