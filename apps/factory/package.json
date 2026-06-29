@@ -42,6 +42,7 @@
     "@ge/okf": "workspace:*",
     "@ge/run-ledger": "workspace:*",
     "@ge/runtime": "workspace:*",
+    "@ge/std": "workspace:*",
     "better-sqlite3": "^12.9.0",
     "yaml": "^2.9.0"
   }
