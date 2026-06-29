@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { parseList } from "@ge/std/list";
 import { slug as baseSlug } from "@ge/std/naming";
 
 const DEMO_ROOT = "apps/factory";
@@ -6,7 +7,7 @@ const DEFAULT_SOURCE_MAP = `${DEMO_ROOT}/src/use-case-source-map.generated.json`
 
 function asArray(value) {
   if (Array.isArray(value)) return value.filter((item) => item != null);
-  if (typeof value === "string" && value.trim()) return value.split(",").map((item) => item.trim()).filter(Boolean);
+  if (typeof value === "string" && value.trim()) return parseList(value);
   return [];
 }
 

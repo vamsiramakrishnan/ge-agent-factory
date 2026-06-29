@@ -1,3 +1,5 @@
+import { parseList } from "@ge/std/list";
+
 const LOCAL_BUILD_BOUNDARY = "previewed";
 
 const STAGE_CONTRACTS = {
@@ -230,5 +232,5 @@ function autopilotActionForMode({ mode, autopilotItems, remoteObserveItems }) {
 
 function normalizeIds(ids) {
   if (Array.isArray(ids)) return ids.map((id) => String(id).trim()).filter(Boolean);
-  return String(ids || "").split(",").map((id) => id.trim()).filter(Boolean);
+  return parseList(String(ids || ""));
 }

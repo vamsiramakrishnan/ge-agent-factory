@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { createHash } from "node:crypto";
+import { parseList } from "@ge/std/list";
 import { parseFlagArgs } from "@ge/std/cli-args";
 import { writeJson } from "@ge/std/json-io";
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
@@ -318,7 +319,7 @@ async function main() {
       process.exit(2);
     }
   }
-  const requested = flags.system ? new Set(String(flags.system).split(",").map((item) => item.trim()).filter(Boolean)) : null;
+  const requested = flags.system ? new Set(parseList(String(flags.system))) : null;
   const sources = (manifest.sources || []).filter((source) => !requested || requested.has(source.systemId));
   if (!sources.length) throw new Error(`No OpenAPI source entries matched ${flags.system || basename(manifestPath)}`);
 

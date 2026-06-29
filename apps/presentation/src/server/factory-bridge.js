@@ -1,4 +1,5 @@
 import { spawn, execFileSync } from "node:child_process";
+import { parseList } from "@ge/std/list";
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { readJson as baseReadJson, writeJson } from "@ge/std/json-io";
@@ -380,7 +381,7 @@ export async function preflightTarget(target = {}) {
 
   const allowed = process.env.GE_ALLOWED_PROJECTS;
   if (allowed) {
-    const projects = allowed.split(",").map(p => p.trim()).filter(Boolean);
+    const projects = parseList(allowed);
     if (projects.includes(targetProject)) {
       push("allowlist", "Project allowlist", "pass", `"${targetProject}" is in GE_ALLOWED_PROJECTS`);
     } else {

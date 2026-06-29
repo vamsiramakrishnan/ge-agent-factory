@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { parseList } from "@ge/std/list";
 import { STATE_PATHS, relativeToRepo } from "./state-paths.mjs";
 
 const DEMO_ROOT = "apps/factory";
@@ -13,7 +14,7 @@ function scenarioWorkspace(scenario) {
 }
 
 function requestedSystems(systems = []) {
-  return Array.isArray(systems) ? systems.filter(Boolean) : String(systems || "").split(",").map((item) => item.trim()).filter(Boolean);
+  return Array.isArray(systems) ? systems.filter(Boolean) : parseList(String(systems || ""));
 }
 
 export function buildDataRealizationPlan({

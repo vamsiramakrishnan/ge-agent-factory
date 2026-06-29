@@ -1,4 +1,5 @@
 import { dataMissionNodes, missionDataContext } from "./mission-nodes.mjs";
+import { parseList } from "@ge/std/list";
 
 const TERMINAL = new Set(["done", "skipped"]);
 
@@ -73,7 +74,7 @@ export function buildMissionGraph({
   harnessLocation = "global",
 } = {}) {
   const missionId = id || `mission-${Date.now()}`;
-  const selectedIds = Array.isArray(ids) ? ids.filter(Boolean) : idsArg(ids).split(",").map((x) => x.trim()).filter(Boolean);
+  const selectedIds = Array.isArray(ids) ? ids.filter(Boolean) : parseList(idsArg(ids));
   const local = mode !== "remote";
   const dataContext = missionDataContext({ scenario, spec, workspace, systems });
   const antigravityNodeId = "antigravity.spec-data-review";

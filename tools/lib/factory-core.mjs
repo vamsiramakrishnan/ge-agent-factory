@@ -6,6 +6,7 @@
 // tools/mcp-server.mjs exposes the same ops as typed MCP tools.
 
 import { spawn, execFileSync } from "node:child_process";
+import { parseList } from "@ge/std/list";
 import { accessSync, constants, existsSync, readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync, statSync } from "node:fs";
 import { basename, join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -619,7 +620,7 @@ function matchesSpecSearch(spec, search) {
 
 function splitCsvLike(value) {
   if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean);
-  return String(value || "").split(",").map((item) => item.trim()).filter(Boolean);
+  return parseList(String(value || ""));
 }
 
 function summarizeSpec(usecase, registryEntry) {
@@ -1563,12 +1564,12 @@ function catalogDeptById() {
 // tool plane rather than silently skipping the check. Pure given `deptById`.
 export function selectionDepartments({ ids, dept, scope } = {}, deptById = null) {
   if (dept) {
-    const set = String(dept).split(",").map((s) => s.trim()).filter(Boolean);
+    const set = parseList(String(dept));
     return set.length ? [...new Set(set)] : null;
   }
   if (ids) {
     const map = deptById || catalogDeptById();
-    const requested = String(ids).split(",").map((s) => s.trim()).filter(Boolean);
+    const requested = parseList(String(ids));
     const depts = requested.map((id) => map.get(id));
     // If any requested id can't be mapped to a department, gate the whole tool
     // plane rather than silently under-gating the unmapped agents.
@@ -1663,11 +1664,11 @@ export function bigQueryApiCheck(probe) {
 // Pure given the store `items` and an optional catalog dept lookup.
 export function selectWorkspacesForRegen(items, { ids, dept, scope } = {}, deptById = null) {
   if (ids) {
-    const set = new Set(String(ids).split(",").map((s) => s.trim()).filter(Boolean));
+    const set = new Set(parseList(String(ids)));
     return items.filter((w) => set.has(w.id) || set.has(w.useCaseId));
   }
   if (dept) {
-    const set = new Set(String(dept).split(",").map((s) => s.trim()).filter(Boolean));
+    const set = new Set(parseList(String(dept)));
     const map = deptById || catalogDeptById();
     return items.filter((w) => set.has(w.departmentId) || set.has(map.get(w.useCaseId)));
   }
@@ -2157,7 +2158,7 @@ export async function ship(cfg, { ids, startStage = "load_data", targetStage = "
   if (!existsSync(LOCAL_PROJECTS)) throw new Error(`no local workspaces at ${LOCAL_PROJECTS} — run \`ge agents build --local\` first.`);
   let dirs = readdirSync(LOCAL_PROJECTS).filter((d) => { try { return statSync(join(LOCAL_PROJECTS, d)).isDirectory(); } catch { return false; } });
   if (ids) {
-    const requested = String(ids).split(",").map((s) => s.trim()).filter(Boolean);
+    const requested = parseList(String(ids));
     const resolved = new Set(requested.map((id) => {
       try { return resolveLocalWorkspaceId(id); } catch { return id; }
     }));
