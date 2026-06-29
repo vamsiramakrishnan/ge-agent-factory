@@ -8,6 +8,7 @@
         "@ge/agent-resolver": "workspace:*",
         "@ge/run-ledger": "workspace:*",
         "@ge/runtime": "workspace:*",
+        "@ge/std": "workspace:*",
         "@modelcontextprotocol/sdk": "^1.29.0",
         "c12": "^3",
         "change-case": "^5.4.4",
@@ -88,6 +89,7 @@
         "@ge/okf": "workspace:*",
         "@ge/run-ledger": "workspace:*",
         "@ge/runtime": "workspace:*",
+        "@ge/std": "workspace:*",
         "better-sqlite3": "^12.9.0",
         "yaml": "^2.9.0",
       },
@@ -101,6 +103,7 @@
       "dependencies": {
         "@ge/contracts": "workspace:*",
         "@ge/design": "workspace:*",
+        "@ge/std": "workspace:*",
         "@ge/ui": "workspace:*",
         "@google/genai": "^1.29.0",
         "@tailwindcss/vite": "^4.1.14",
@@ -174,6 +177,14 @@
       "bin": {
         "ge-simulator-packs-validate": "./scripts/validate.mjs",
         "ge-simulator-packs-manifest": "./scripts/print-manifest.mjs",
+      },
+    },
+    "packages/std": {
+      "name": "@ge/std",
+      "version": "0.1.0",
+      "dependencies": {
+        "change-case": "^5.4.4",
+        "jsonrepair": "^3.14.1",
       },
     },
     "packages/ui": {
@@ -426,6 +437,8 @@
     "@ge/runtime": ["@ge/runtime@workspace:packages/runtime"],
 
     "@ge/simulator-packs": ["@ge/simulator-packs@workspace:packages/simulator-packs"],
+
+    "@ge/std": ["@ge/std@workspace:packages/std"],
 
     "@ge/ui": ["@ge/ui@workspace:packages/ui"],
 
