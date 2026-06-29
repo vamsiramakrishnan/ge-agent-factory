@@ -4,6 +4,12 @@
 // entry point. The two cycle-break modules are allowlisted — they are the
 // designated downward boundary that owns the app-domain ops factory-core used to
 // import. Exits non-zero on any violation (wire into the CI gate).
+//
+// Shared logic that BOTH tools/* and apps/* need lives in the @ge/std leaf package
+// (packages/std) — a dependency-free leaf with no apps/* imports, so importing it
+// from tools/lib introduces no cycle. @ge/std specifiers never contain "apps/factory"
+// and so are already permitted by the rule below; this is the sanctioned way to
+// unify a former duplicate (e.g. mission-node-registry's snakeCase) without an edge.
 import { readFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";

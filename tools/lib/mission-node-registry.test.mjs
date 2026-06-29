@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { snakeCase } from "@ge/std/naming";
 import { verifyMissionArtifacts } from "./mission-artifacts.mjs";
 import { dataMissionNodes } from "./mission-nodes.mjs";
 import { buildMissionNode, isDataMissionNodeKind, listMissionNodeDefinitions, missionNodeCommand, missionNodeDefinition, registerMissionNodeDefinition, safeMissionNodeCommand, validateMissionNodeArtifacts } from "./mission-node-registry.mjs";
@@ -256,5 +257,45 @@ describe("mission node registry", () => {
 
     expect(result.ok).toBe(true);
     expect(result.blockers).toEqual([]);
+  });
+});
+
+// Divergence probe (Wave 1f): mission-node-registry's snakeCase moved from a local
+// regex (_$1-per-capital) to @ge/std/naming's change-case canonical. The snowfakery
+// validator matches CSV filenames against realization object names via
+// snakeCase(name).replace(/s$/, ""). Both operands run through the same fn, but two
+// raw names could in principle collapse to the same key under change-case yet stay
+// distinct under the old regex — changing a match. This asserts the MATCH OUTCOMES
+// are identical between the two implementations for representative + adversarial
+// inputs, so the swap is behaviour-preserving for the matching this module performs.
+describe("snakeCase swap (mission-node-registry 1f) preserves csv<->object matching", () => {
+  const stdSnake = snakeCase; // @ge/std/naming change-case canonical (imported below)
+  const localSnake = (value) =>
+    String(value || "")
+      .replace(/[^a-zA-Z0-9]+/g, "_")
+      .replace(/([A-Z])/g, "_$1")
+      .toLowerCase()
+      .replace(/^_+|_+$/g, "")
+      .replace(/_+/g, "_");
+
+  // Mirror validateSnowfakeryGenerate's matching for a given snakeCase impl.
+  const matchOutcomes = (snake, csvFileNames, objectNames) => {
+    const csvObjects = new Set(
+      csvFileNames.map((name) => snake(name.replace(/\.[^.]+$/, "")).replace(/s$/, "")),
+    );
+    return objectNames.map((object) => csvObjects.has(snake(object).replace(/s$/, "")));
+  };
+
+  test("identical match outcomes for realistic + adversarial object/file names", () => {
+    const csvFileNames = [
+      "workers.csv", "job_requisitions.csv", "worker_events.csv", "supervisory_orgs.csv",
+      "approvals.csv", "HRData.csv", "Workday2.csv", "POBox.csv", "ServiceNowTickets.csv",
+    ];
+    const objectNames = [
+      "worker", "job_requisition", "worker_event", "supervisory_org", "approval",
+      "HRData", "Workday2", "POBox", "ServiceNowTicket", "missing_object",
+    ];
+    expect(matchOutcomes(stdSnake, csvFileNames, objectNames))
+      .toEqual(matchOutcomes(localSnake, csvFileNames, objectNames));
   });
 });
