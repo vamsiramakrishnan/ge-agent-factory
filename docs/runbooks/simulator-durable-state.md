@@ -9,7 +9,7 @@ behind this runbook (per ADR 0001 and the phase-2 design spec).
 ## What this controls
 
 Each simulator system keeps its per-`(agent:system:scenario)` state in a
-`StateStore` (`apps/ge-demo-generator/mcp-service/simulator_runtime/state_store.py`).
+`StateStore` (`apps/factory/mcp-service/simulator_runtime/state_store.py`).
 Three backends exist:
 
 | backend     | home of state                                  | selected by                              |
@@ -162,7 +162,7 @@ degraded to memory (missing dep / ADC / DSN). Check the service logs for
 ## New dependencies (add before deploying a cloud backend)
 
 These are **not** added by this wiring task (no lockfile mutation here). Add to
-`apps/ge-demo-generator/mcp-service/pyproject.toml` before flipping the matching
+`apps/factory/mcp-service/pyproject.toml` before flipping the matching
 backend:
 
 - `google-cloud-firestore` — required by the `firestore` backend.

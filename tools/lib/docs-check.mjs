@@ -1,5 +1,6 @@
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, extname, join, normalize, resolve } from "node:path";
+import { globSync } from "tinyglobby";
 
 const DOC_EXTENSIONS = new Set([".md", ".markdown"]);
 const IGNORED_DIRS = new Set([
@@ -18,16 +19,12 @@ const IGNORED_DIRS = new Set([
 ]);
 
 function walkMarkdownFiles(root, relDir = "") {
-  const dir = join(root, relDir);
-  if (!existsSync(dir)) return [];
-  const files = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (IGNORED_DIRS.has(entry.name)) continue;
-    const relPath = relDir ? `${relDir}/${entry.name}` : entry.name;
-    if (entry.isDirectory()) files.push(...walkMarkdownFiles(root, relPath));
-    else if (entry.isFile() && DOC_EXTENSIONS.has(extname(entry.name))) files.push(relPath);
-  }
-  return files;
+  const base = relDir ? join(root, relDir) : root;
+  if (!existsSync(base)) return [];
+  const patterns = [...DOC_EXTENSIONS].map((ext) => `**/*${ext}`);
+  const ignore = [...IGNORED_DIRS].map((dir) => `**/${dir}/**`);
+  return globSync(patterns, { cwd: base, ignore, dot: true })
+    .map((rel) => (relDir ? `${relDir}/${rel}` : rel));
 }
 
 function stripFencedCode(content) {

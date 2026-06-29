@@ -1,5 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { basename, extname, join, normalize } from "node:path";
+import { snakeCase } from "@ge/std/naming";
+import { readJson } from "@ge/std/json-io";
 
 const DATA_NODE_KINDS = new Set([
   "mock.generate",
@@ -14,7 +16,7 @@ const NODE_PREFIX = {
   "simulator.seed": "seed",
   "simulator.validate": "simval",
 };
-const DEMO_ROOT = "apps/ge-demo-generator";
+const DEMO_ROOT = "apps/factory";
 const DEFINITIONS = new Map();
 const REQUIRED_DEFINITION_FIELDS = [
   "kind",
@@ -75,26 +77,19 @@ function snowfakeryArgv(recipe, output) {
   ];
 }
 
-function snakeCase(value) {
-  return String(value || "")
-    .replace(/[^a-zA-Z0-9]+/g, "_")
-    .replace(/([A-Z])/g, "_$1")
-    .toLowerCase()
-    .replace(/^_+|_+$/g, "")
-    .replace(/_+/g, "_");
-}
+// snakeCase now imported from @ge/std/naming (the shared leaf package — tools/lib
+// can depend on it without the apps/factory layering cycle). Used only for internal
+// csv/object name matching below; both operands run through the same fn so matching
+// stays self-consistent. A divergence-probe test (mission-node-registry.test.mjs)
+// guards that the change-case canonical produces the same match outcomes as the
+// former local regex for representative + adversarial object names.
 
 function artifactByName(artifactCheck = {}, name) {
   return (artifactCheck.artifacts || []).find((artifact) => artifact.name === name) || null;
 }
 
 function readJsonArtifact(artifact) {
-  if (!artifact?.resolvedPath || !existsSync(artifact.resolvedPath)) return null;
-  try {
-    return JSON.parse(readFileSync(artifact.resolvedPath, "utf8"));
-  } catch {
-    return null;
-  }
+  return readJson(artifact?.resolvedPath, null);
 }
 
 function semanticBlocker(id, message, artifact = null) {
@@ -269,9 +264,9 @@ function safeNodeArgv(kind, input = {}) {
   }
   if (cmd !== "node" && cmd !== process.execPath) return false;
   const allowed = {
-    "mock.generate": "apps/ge-demo-generator/scripts/plan-mock-data.mjs",
-    "simulator.seed": "apps/ge-demo-generator/scripts/materialize-simulator-seeds.mjs",
-    "simulator.validate": "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs",
+    "mock.generate": "apps/factory/scripts/plan-mock-data.mjs",
+    "simulator.seed": "apps/factory/scripts/materialize-simulator-seeds.mjs",
+    "simulator.validate": "apps/factory/scripts/validate-simulator-pack.mjs",
   }[kind];
   if (!scriptMatches(script, allowed)) return false;
   if (kind === "mock.generate") {

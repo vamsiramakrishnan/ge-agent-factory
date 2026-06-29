@@ -231,7 +231,7 @@ variable "enable_agent_identity" {
 }
 
 variable "agent_identity_org_id" {
-  description = "Organization ID for the agent-identity SPIFFE trust domain. Required for automatic Agent Identity principalSet grants; empty skips those grants."
+  description = "Numeric organization ID for the agent-identity SPIFFE trust domain. Leave empty to auto-derive from the project's org (data.google_project.org_id); set explicitly for folder-parented projects where it can't be derived. When enable_agent_identity = true and this resolves to empty, the apply fails loudly (agent_identity.tf precondition) rather than silently granting nothing."
   type        = string
   default     = ""
 }

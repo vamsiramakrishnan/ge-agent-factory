@@ -9,7 +9,7 @@ import {
   validateCorpus,
 } from "./index.mjs";
 
-const EXPECTED_CORPUS_ROOT = "apps/ge-demo-generator/simulator-systems";
+const EXPECTED_CORPUS_ROOT = "apps/factory/simulator-systems";
 const EXPECTED_REGISTRY = `${EXPECTED_CORPUS_ROOT}/registry.json`;
 
 describe("@ge/simulator-packs facade", () => {
@@ -19,7 +19,7 @@ describe("@ge/simulator-packs facade", () => {
 
     expect(manifest.packageName).toBe("@ge/simulator-packs");
     expect(defaultCorpus).toMatchObject({
-      id: "ge-demo-generator-simulator-systems",
+      id: "factory-simulator-systems",
       root: EXPECTED_CORPUS_ROOT,
       registry: EXPECTED_REGISTRY,
     });
@@ -58,7 +58,7 @@ describe("@ge/simulator-packs facade", () => {
 
     expect(result).toMatchObject({
       ok: true,
-      corpus: "ge-demo-generator-simulator-systems",
+      corpus: "factory-simulator-systems",
       root: EXPECTED_CORPUS_ROOT,
       registry: EXPECTED_REGISTRY,
       errors: [],

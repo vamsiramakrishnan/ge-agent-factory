@@ -21,7 +21,7 @@ const rootArgs = valuesFor("--root");
 const roots = rootArgs.length
   ? rootArgs
   : all
-    ? ["skills", ".ge-harness/skills", "apps/ge-demo-generator/.gemini/skills", "apps/ge-demo-generator/.ge-harness/skills"]
+    ? ["skills", ".ge-harness/skills", "apps/factory/.gemini/skills", "apps/factory/.ge-harness/skills"]
     : ["skills"];
 
 const allowedFrontmatterKeys = new Set(["name", "description", "license", "compatibility", "metadata", "allowed-tools"]);

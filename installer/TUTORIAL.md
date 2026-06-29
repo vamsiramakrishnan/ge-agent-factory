@@ -55,7 +55,7 @@ To verify the skill substrate later:
 
 ```bash
 make skills-doctor
-bun apps/ge-demo-generator/src/cli.js skills
+bun apps/factory/src/cli.js skills
 ge state paths
 ```
 

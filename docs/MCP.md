@@ -66,7 +66,7 @@ agent uses, with the right OAuth scope. No custom code; auto-registered when the
 product API is enabled.
 
 **Tier 2 — custom per-department MCP** (domain facades). A generic multi-tenant
-FastMCP server (`apps/ge-demo-generator/mcp-service/`) is deployed once per
+FastMCP server (`apps/factory/mcp-service/`) is deployed once per
 department (`ge-agent-factory-mcp-<dept>`). It resolves `?agent=<id>`, loads that
 agent's `mock_data/apis/mcp-tools.json`, and maps each tool's `binding`
 (`{op, store, entity, key, sourceSystem}`) to an op over the agent's per-agent 1P

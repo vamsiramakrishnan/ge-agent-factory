@@ -11,7 +11,7 @@
  *
  * The Python interpreter is resolved the SAME way the Antigravity harness driver
  * resolves it (GE_HARNESS_PYTHON -> repo .venv -> python3); see harness-python.js
- * in apps/ge-demo-generator. We reimplement it here (rather than importing across
+ * in apps/factory. We reimplement it here (rather than importing across
  * apps) so this app stays self-contained, while matching the resolution order.
  */
 import { spawn } from "node:child_process";
@@ -26,11 +26,11 @@ const REPO_ROOT = join(import.meta.dirname, "..", "..", "..", "..");
 const REGISTRY_PATH = join(
   REPO_ROOT,
   "apps",
-  "ge-demo-generator",
+  "factory",
   "simulator-systems",
   "registry.json",
 );
-const SYNTH_CLI_DIR = join(REPO_ROOT, "apps", "ge-demo-generator", "mcp-service");
+const SYNTH_CLI_DIR = join(REPO_ROOT, "apps", "factory", "mcp-service");
 const SYNTH_CLI = join(SYNTH_CLI_DIR, "synthesize_cli.py");
 
 /** Cap the free-text description so we never feed an unbounded prompt to the CLI. */

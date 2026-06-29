@@ -41,7 +41,7 @@ Later additions enrich the contract so the spec is *self-describing* and
 
 The `behaviorContract.workflow` is the join between *what the business described*
 and *what the factory builds*. It is computed in exactly one place,
-[`scripts/ge-mock/agent-workflow.mjs`](https://github.com/vamsiramakrishnan/ge-agent-factory),
+[`scripts/factory/agent-workflow.mjs`](https://github.com/vamsiramakrishnan/ge-agent-factory),
 shared by two consumers so authoring and build can never drift:
 
 ```

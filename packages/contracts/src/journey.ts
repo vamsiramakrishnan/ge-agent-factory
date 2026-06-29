@@ -1,94 +1,134 @@
 // The canonical lifecycle + fleet shapes shared across GE front-ends and tools.
-// Lifted verbatim from apps/console/src/services/geClient.ts (which now re-exports
-// these). Keep this PURE: types only, no runtime imports.
+// zod is the source of truth; the TypeScript types are inferred (z.infer) so the
+// exported names + shapes are unchanged for consumers, and the runtime can now
+// validate these payloads at the API boundary.
+import { z } from "zod";
 
-export interface FleetBlocker { id: string; message: string; raw?: any }
+export const FleetBlockerSchema = z.object({
+  id: z.string(),
+  message: z.string(),
+  raw: z.any().optional(),
+});
+export type FleetBlocker = z.infer<typeof FleetBlockerSchema>;
 
-export interface MissionArtifactRef {
-  name?: string;
-  type?: string;
-  path?: string;
-  status?: "missing" | "present" | "invalid" | string;
-  error?: string;
-  metadata?: {
-    size?: number;
-    entries?: number;
-    files?: number;
-    csvFiles?: number;
-    rowCount?: number;
-    mtime?: string;
-    sha256?: string;
-    [key: string]: any;
-  };
-  [key: string]: any;
-}
+export const MissionArtifactRefSchema = z
+  .object({
+    name: z.string().optional(),
+    type: z.string().optional(),
+    path: z.string().optional(),
+    status: z.string().optional(),
+    error: z.string().optional(),
+    metadata: z
+      .object({
+        size: z.number().optional(),
+        entries: z.number().optional(),
+        files: z.number().optional(),
+        csvFiles: z.number().optional(),
+        rowCount: z.number().optional(),
+        mtime: z.string().optional(),
+        sha256: z.string().optional(),
+      })
+      .catchall(z.any())
+      .optional(),
+  })
+  .catchall(z.any());
+export type MissionArtifactRef = z.infer<typeof MissionArtifactRefSchema>;
 
-export interface FleetActionPlan {
-  kind: string;
-  label: string;
-  owner: string;
-  safeToRun: boolean;
-  commands: string[];
-  route?: string;
-  artifactPath?: string;
-  taskId?: string;
-  agentIds?: string[];
-  workspaceIds?: string[];
-}
+export const FleetActionPlanSchema = z.object({
+  kind: z.string(),
+  label: z.string(),
+  owner: z.string(),
+  safeToRun: z.boolean(),
+  commands: z.array(z.string()),
+  route: z.string().optional(),
+  artifactPath: z.string().optional(),
+  taskId: z.string().optional(),
+  agentIds: z.array(z.string()).optional(),
+  workspaceIds: z.array(z.string()).optional(),
+});
+export type FleetActionPlan = z.infer<typeof FleetActionPlanSchema>;
 
-export interface FleetAgent {
-  id: string;
-  title: string;
-  department: string;
-  status: string;
-  runId: string | null;
-  workspaceId: string | null;
-  error: string | null;
-  stage?: string;
-  healthStatus?: string;
-  blocker?: FleetBlocker | null;
-  nextAction?: string;
-  owner?: string;
-  runtimeTaskId?: string;
-  source?: string;
-  actionPlan?: FleetActionPlan;
-}
+export const FleetAgentSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  department: z.string(),
+  status: z.string(),
+  runId: z.string().nullable(),
+  workspaceId: z.string().nullable(),
+  error: z.string().nullable(),
+  stage: z.string().optional(),
+  healthStatus: z.string().optional(),
+  blocker: FleetBlockerSchema.nullable().optional(),
+  nextAction: z.string().optional(),
+  owner: z.string().optional(),
+  runtimeTaskId: z.string().optional(),
+  source: z.string().optional(),
+  actionPlan: FleetActionPlanSchema.optional(),
+});
+export type FleetAgent = z.infer<typeof FleetAgentSchema>;
 
-export interface FleetHealth {
-  stages: string[];
-  byStage: Record<string, number>;
-  byHealth: Record<string, number>;
-  byOwner: Record<string, number>;
-  blocked: number;
-  repairable: number;
-  bottlenecks: Array<{ id: string; stage: string; blockerId: string; message: string; count: number; owner: string; agentIds: string[]; actionPlan?: FleetActionPlan | null }>;
-  agents: FleetAgent[];
-}
+export const FleetHealthSchema = z.object({
+  stages: z.array(z.string()),
+  byStage: z.record(z.string(), z.number()),
+  byHealth: z.record(z.string(), z.number()),
+  byOwner: z.record(z.string(), z.number()),
+  blocked: z.number(),
+  repairable: z.number(),
+  bottlenecks: z.array(
+    z.object({
+      id: z.string(),
+      stage: z.string(),
+      blockerId: z.string(),
+      message: z.string(),
+      count: z.number(),
+      owner: z.string(),
+      agentIds: z.array(z.string()),
+      actionPlan: FleetActionPlanSchema.nullable().optional(),
+    }),
+  ),
+  agents: z.array(FleetAgentSchema),
+});
+export type FleetHealth = z.infer<typeof FleetHealthSchema>;
 
-export interface Fleet { total: number; byDept: Record<string, number>; byStatus: Record<string, number>; agents: FleetAgent[]; health?: FleetHealth }
+export const FleetSchema = z.object({
+  total: z.number(),
+  byDept: z.record(z.string(), z.number()),
+  byStatus: z.record(z.string(), z.number()),
+  agents: z.array(FleetAgentSchema),
+  health: FleetHealthSchema.optional(),
+});
+export type Fleet = z.infer<typeof FleetSchema>;
 
-export interface JourneyStage {
-  id: string;
-  label: string;
-  owner: string;
-  status: string;
-  blocker?: FleetBlocker | null;
-  taskId?: string | null;
-  nodeIds?: string[];
-  artifacts?: MissionArtifactRef[];
-  actionPlan?: FleetActionPlan | null;
-}
+export const JourneyStageSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  owner: z.string(),
+  status: z.string(),
+  blocker: FleetBlockerSchema.nullable().optional(),
+  taskId: z.string().nullable().optional(),
+  nodeIds: z.array(z.string()).optional(),
+  artifacts: z.array(MissionArtifactRefSchema).optional(),
+  actionPlan: FleetActionPlanSchema.nullable().optional(),
+});
+export type JourneyStage = z.infer<typeof JourneyStageSchema>;
 
-export interface JourneyPlan {
-  kind: "ge.journey.plan";
-  version: number;
-  id: string;
-  mode: string;
-  targetStage: string;
-  input: { scenario?: string | null; spec?: string | null; usecaseId?: string | null; systems: string[]; ids: string[] };
-  status: string;
-  next?: JourneyStage | null;
-  counts: Record<string, number>;
-  stages: JourneyStage[];
-  implementation?: Record<string, any>;
-}
+export const JourneyPlanSchema = z.object({
+  kind: z.literal("ge.journey.plan"),
+  version: z.number(),
+  id: z.string(),
+  mode: z.string(),
+  targetStage: z.string(),
+  input: z.object({
+    scenario: z.string().nullable().optional(),
+    spec: z.string().nullable().optional(),
+    usecaseId: z.string().nullable().optional(),
+    systems: z.array(z.string()),
+    ids: z.array(z.string()),
+  }),
+  status: z.string(),
+  next: JourneyStageSchema.nullable().optional(),
+  counts: z.record(z.string(), z.number()),
+  stages: z.array(JourneyStageSchema),
+  implementation: z.record(z.string(), z.any()).optional(),
+});
+export type JourneyPlan = z.infer<typeof JourneyPlanSchema>;

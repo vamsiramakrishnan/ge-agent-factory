@@ -7,7 +7,7 @@
 ## Goal
 
 Lift realism across **all 54** simulated systems by enriching the **one shared engine**
-(`apps/ge-demo-generator/mcp-service/simulator_runtime/generic.py`, which powers 52/54) rather than
+(`apps/factory/mcp-service/simulator_runtime/generic.py`, which powers 52/54) rather than
 hand-deepening a few. Higher leverage: every primitive added to the engine lands across every
 system that uses it.
 

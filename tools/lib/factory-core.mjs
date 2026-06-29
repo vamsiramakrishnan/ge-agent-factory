@@ -6,6 +6,7 @@
 // tools/mcp-server.mjs exposes the same ops as typed MCP tools.
 
 import { spawn, execFileSync } from "node:child_process";
+import { parseList } from "@ge/std/list";
 import { accessSync, constants, existsSync, readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync, statSync } from "node:fs";
 import { basename, join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,7 +14,7 @@ import { createConnection } from "node:net";
 import { pool } from "./gcp.mjs";
 import { findOpenPort } from "./net.mjs";
 import { parseConcurrency } from "./concurrency.mjs";
-import { readJson, writeJson, updateJson } from "./json-io.mjs";
+import { readJson, writeJson, updateJson } from "@ge/std/json-io";
 import { buildFactoryConfig, explainFactoryConfig } from "./config-schema.mjs";
 import { runDocsCheck } from "./docs-check.mjs";
 import { commandMeta, commandRequirements } from "./ge-command-registry.mjs";
@@ -26,10 +27,11 @@ import { createFactoryPlane, serviceUrl, serviceEnv } from "./factory-plane.mjs"
 import { buildFleetHealth } from "./fleet-health.mjs";
 import { buildJourneyPlan } from "./journey-plan.mjs";
 import { LEGACY_STATE_PATHS, STATE_PATHS, displayStatePath } from "./state-paths.mjs";
-import { loadInterviewSpecEntries, slug, validateGenerationSpec } from "../../apps/ge-demo-generator/src/agent-spec-registry.js";
-import { createFactoryPlan, runFactoryPlan } from "../../apps/ge-demo-generator/src/factory.js";
-import { removeWorkspace } from "../../apps/ge-demo-generator/src/projects.js";
-import { buildWorkspaceContractReport } from "../../apps/ge-demo-generator/src/workspace-contract.js";
+// Week-4: app-domain ops are imported via the two cycle-break boundary modules,
+// NOT directly from apps/factory — factory-core keeps zero app imports (enforced
+// by tools/check-no-app-imports.mjs).
+import { loadInterviewSpecEntries, slug, validateGenerationSpec } from "./factory-catalog.mjs";
+import { createFactoryPlan, runFactoryPlan, removeWorkspace, buildWorkspaceContractReport } from "./factory-local-ops.mjs";
 import { openRunLedger } from "./run-ledger.mjs";
 import { planWorkItem } from "./pipeline-state-machine.mjs";
 import { planReconcile } from "./reconcile.mjs";
@@ -38,10 +40,10 @@ export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", 
 const CONFIG_PATH = join(REPO_ROOT, ".ge.json");
 const STATE_PATH = STATE_PATHS.envState;
 const SYNC_STATE_PATH = STATE_PATHS.syncState;
-const CATALOG_PATH = join(REPO_ROOT, "apps/ge-demo-generator/generated/use-cases.generated.json");
-const AGENT_SPEC_REGISTRY_PATH = join(REPO_ROOT, "apps/ge-demo-generator/src/agent-spec-registry.generated.json");
+const CATALOG_PATH = join(REPO_ROOT, "apps/factory/generated/use-cases.generated.json");
+const AGENT_SPEC_REGISTRY_PATH = join(REPO_ROOT, "apps/factory/src/agent-spec-registry.generated.json");
 const TF_DIR = join(REPO_ROOT, "installer/terraform");
-const MCP_SERVICE_DIR = join(REPO_ROOT, "apps/ge-demo-generator/mcp-service");
+const MCP_SERVICE_DIR = join(REPO_ROOT, "apps/factory/mcp-service");
 const FACTORY_HARNESS_DIR = STATE_PATHS.factory.root;
 
 export const DEPARTMENTS = ["finance", "hr", "it", "marketing", "procurement"];
@@ -618,7 +620,7 @@ function matchesSpecSearch(spec, search) {
 
 function splitCsvLike(value) {
   if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean);
-  return String(value || "").split(",").map((item) => item.trim()).filter(Boolean);
+  return parseList(String(value || ""));
 }
 
 function summarizeSpec(usecase, registryEntry) {
@@ -690,7 +692,7 @@ function safeSpecReviewPath({ usecaseId, path } = {}) {
     join(GEN_DIR, "catalog", "interview-specs"),
   ];
   if (!allowedRoots.some((root) => isInsideDir(fullPath, root))) {
-    throw new Error("spec review path must be under .ge/interviews or apps/ge-demo-generator/catalog/interview-specs");
+    throw new Error("spec review path must be under .ge/interviews or apps/factory/catalog/interview-specs");
   }
   return fullPath;
 }
@@ -821,7 +823,7 @@ export async function reviewSpec({ usecaseId, path } = {}) {
     const registered = interviewEntries.find((entry) => entry.id === normalizedUsecaseId || entry.registry?.familyId === normalizedUsecaseId);
     if (registered) {
       const reviewed = summarizeReviewedSpec(registered, normalizedUsecaseId);
-      const registeredPath = registered.sourcePath?.startsWith(`${REPO_ROOT}/`) ? registered.sourcePath.slice(REPO_ROOT.length + 1) : registered.sourcePath || `apps/ge-demo-generator/catalog/interview-specs/${registered.id}.json`;
+      const registeredPath = registered.sourcePath?.startsWith(`${REPO_ROOT}/`) ? registered.sourcePath.slice(REPO_ROOT.length + 1) : registered.sourcePath || `apps/factory/catalog/interview-specs/${registered.id}.json`;
       return {
         kind: "ge.spec.review",
         source: "registered_interview_spec",
@@ -843,7 +845,7 @@ export async function reviewSpec({ usecaseId, path } = {}) {
         source: "canonical_catalog_spec",
         found: true,
         usecaseId: catalogEntry.id,
-        path: `apps/ge-demo-generator/generated/use-cases.generated.json#${catalogEntry.id}`,
+        path: `apps/factory/generated/use-cases.generated.json#${catalogEntry.id}`,
         spec: catalogEntry,
         content: `${JSON.stringify(catalogEntry, null, 2)}\n`,
         ...reviewed,
@@ -1240,7 +1242,7 @@ export async function sync(cfg, { ids = "", force = false, commit = true, push =
   return { mode: "remote", ids: entries.map(([id]) => id), synced: ok, failed: fail, committed, pushed: !!(ok && commit && push) };
 }
 
-const GEN_DIR = join(REPO_ROOT, "apps/ge-demo-generator");
+const GEN_DIR = join(REPO_ROOT, "apps/factory");
 const FACTORY_DATA_ROOT = STATE_PATHS.factory.root;
 const LOCAL_PROJECTS = STATE_PATHS.factory.workspaces;
 const LOCAL_PROJECT_STORE = STATE_PATHS.factory.workspacesJson;
@@ -1562,12 +1564,12 @@ function catalogDeptById() {
 // tool plane rather than silently skipping the check. Pure given `deptById`.
 export function selectionDepartments({ ids, dept, scope } = {}, deptById = null) {
   if (dept) {
-    const set = String(dept).split(",").map((s) => s.trim()).filter(Boolean);
+    const set = parseList(String(dept));
     return set.length ? [...new Set(set)] : null;
   }
   if (ids) {
     const map = deptById || catalogDeptById();
-    const requested = String(ids).split(",").map((s) => s.trim()).filter(Boolean);
+    const requested = parseList(String(ids));
     const depts = requested.map((id) => map.get(id));
     // If any requested id can't be mapped to a department, gate the whole tool
     // plane rather than silently under-gating the unmapped agents.
@@ -1662,11 +1664,11 @@ export function bigQueryApiCheck(probe) {
 // Pure given the store `items` and an optional catalog dept lookup.
 export function selectWorkspacesForRegen(items, { ids, dept, scope } = {}, deptById = null) {
   if (ids) {
-    const set = new Set(String(ids).split(",").map((s) => s.trim()).filter(Boolean));
+    const set = new Set(parseList(String(ids)));
     return items.filter((w) => set.has(w.id) || set.has(w.useCaseId));
   }
   if (dept) {
-    const set = new Set(String(dept).split(",").map((s) => s.trim()).filter(Boolean));
+    const set = new Set(parseList(String(dept)));
     const map = deptById || catalogDeptById();
     return items.filter((w) => set.has(w.departmentId) || set.has(map.get(w.useCaseId)));
   }
@@ -1870,9 +1872,9 @@ export function localPreflight() {
   const gitignore = existsSync(join(REPO_ROOT, ".gitignore")) ? readFileSync(join(REPO_ROOT, ".gitignore"), "utf8") : "";
   addStatus(
     "generated OpenAPI ignored",
-    gitignore.includes("apps/ge-demo-generator/simulator-systems/_openapi/") ? "pass" : "warn",
-    gitignore.includes("apps/ge-demo-generator/simulator-systems/_openapi/") ? "private-key-like generated payloads excluded" : "generated OpenAPI payloads can trip remote private-key scanners",
-    "Add apps/ge-demo-generator/simulator-systems/_openapi/ to .gitignore",
+    gitignore.includes("apps/factory/simulator-systems/_openapi/") ? "pass" : "warn",
+    gitignore.includes("apps/factory/simulator-systems/_openapi/") ? "private-key-like generated payloads excluded" : "generated OpenAPI payloads can trip remote private-key scanners",
+    "Add apps/factory/simulator-systems/_openapi/ to .gitignore",
   );
   return { mode: "local", cacheDir: process.env.UV_CACHE_DIR || UV_CACHE, checks, fails: checks.filter((c) => c.status === "fail").length };
 }
@@ -1921,7 +1923,7 @@ export async function provisionLocal(cfg, { scope, ids, dept, limit, target = "p
   planOptions.factoryDir = FACTORY_HARNESS_DIR;
   log("planning (local harness)…");
   process.env.GE_HARNESS_DATA_ROOT = FACTORY_DATA_ROOT;
-  // Propagate model / token overrides to the spawned `ge-mock generate` so locally
+  // Propagate model / token overrides to the spawned `factory generate` so locally
   // generated agents honor them (parity with the remote worker's commandEnv).
   if (model) process.env.GE_AGENT_MODEL = model;
   if (maxOutputTokens != null && String(maxOutputTokens).trim() !== "") {
@@ -2156,7 +2158,7 @@ export async function ship(cfg, { ids, startStage = "load_data", targetStage = "
   if (!existsSync(LOCAL_PROJECTS)) throw new Error(`no local workspaces at ${LOCAL_PROJECTS} — run \`ge agents build --local\` first.`);
   let dirs = readdirSync(LOCAL_PROJECTS).filter((d) => { try { return statSync(join(LOCAL_PROJECTS, d)).isDirectory(); } catch { return false; } });
   if (ids) {
-    const requested = String(ids).split(",").map((s) => s.trim()).filter(Boolean);
+    const requested = parseList(String(ids));
     const resolved = new Set(requested.map((id) => {
       try { return resolveLocalWorkspaceId(id); } catch { return id; }
     }));

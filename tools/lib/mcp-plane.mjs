@@ -50,7 +50,7 @@ export function createMcpPlane({
   departments,
   serviceDir,
   repoRoot,
-  cloudBuildConfig = "apps/ge-demo-generator/mcp-service/cloudbuild.yaml",
+  cloudBuildConfig = "apps/factory/mcp-service/cloudbuild.yaml",
   ensureGcloud,
   describeRun,
   serviceUrl,

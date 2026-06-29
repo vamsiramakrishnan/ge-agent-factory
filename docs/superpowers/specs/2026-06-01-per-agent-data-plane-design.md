@@ -27,7 +27,7 @@ This is the default for generation, validation, evals, and harness refinement.
 ```text
 local workspace
 ┌─────────────────────────────────────────────────────────────┐
-│ ge-mock generate                                            │
+│ factory generate                                            │
 │   -> fixtures/*.json                                        │
 │   -> fixtures/documents/*                                   │
 │   -> fixtures/manifest.json                                 │
@@ -103,13 +103,13 @@ Option 5: hybrid runtime
 
 The generator already produces data-plane intent:
 
-- `ge-mock generate` writes local fixture rows and documents.
-- `ge-mock plan-data` writes `mock_data/plan/data-plan.json`,
+- `factory generate` writes local fixture rows and documents.
+- `factory plan-data` writes `mock_data/plan/data-plan.json`,
   `mock_data/plan/data-plan.yaml`, Snowfakery recipes, API adapter contracts, and
   package indexes.
-- `ge-mock data-plan` writes BigQuery/GCS load artifacts under
+- `factory data-plan` writes BigQuery/GCS load artifacts under
   `mock_data/cloud/`.
-- `ge-mock source-integration-plan` writes the source-to-cloud/MCP/registry plan.
+- `factory source-integration-plan` writes the source-to-cloud/MCP/registry plan.
 - `src/factory.js` records data artifacts during the `data_packaged` stage.
 
 The current implementation is a planning and packaging layer. It does not yet
@@ -145,7 +145,7 @@ The planner maps source data by class:
 This mapping is encoded today across:
 
 - `scripts/plan-mock-data.mjs`
-- `scripts/ge-mock/integration/source-integration.mjs`
+- `scripts/factory/integration/source-integration.mjs`
 - `src/factory.js`
 
 ## Layer 1: Shared Services
@@ -192,7 +192,7 @@ The load stage must be idempotent:
 
 Current state:
 
-- BigQuery/GCS packaging exists in `ge-mock data-plan`.
+- BigQuery/GCS packaging exists in `factory data-plan`.
 - Snowfakery recipe generation exists.
 - Per-store package planning exists in `plan-mock-data.mjs`.
 - Full cloud load execution across all stores is still a build-out item.

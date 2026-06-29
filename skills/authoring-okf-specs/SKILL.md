@@ -34,23 +34,23 @@ Conformance to OKF v0.1: every non-reserved `.md` has parseable frontmatter with
 Export a generated spec to an OKF bundle (default out: `artifacts/okf/<id>/`):
 
 ```bash
-node apps/ge-demo-generator/scripts/spec-to-okf.mjs --id <useCaseId> [--out <dir>]
+node apps/factory/scripts/spec-to-okf.mjs --id <useCaseId> [--out <dir>]
 ```
 
 Export from a spec JSON file directly:
 
 ```bash
-node apps/ge-demo-generator/scripts/spec-to-okf.mjs --spec <path/to/usecase-spec.json> [--out <dir>]
+node apps/factory/scripts/spec-to-okf.mjs --spec <path/to/usecase-spec.json> [--out <dir>]
 ```
 
 Ingest an OKF bundle back into a partial spec (printed as JSON):
 
 ```bash
-node apps/ge-demo-generator/scripts/okf-to-spec.mjs --bundle <dir>
+node apps/factory/scripts/okf-to-spec.mjs --bundle <dir>
 ```
 
 Validate the converter and the round-trip:
 
 ```bash
-bun test apps/ge-demo-generator/scripts/spec-to-okf.test.mjs
+bun test apps/factory/scripts/spec-to-okf.test.mjs
 ```

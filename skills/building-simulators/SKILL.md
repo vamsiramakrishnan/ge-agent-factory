@@ -134,16 +134,16 @@ Every scaffolded pack should include:
 - `workflows.json`: declarative role gates, lifecycle transitions, approval blockers, and audit behavior.
 - `seed.json`: small deterministic starter state; large data still comes from scenario graph plus Snowfakery materialization.
 
-Before writing custom handlers, check `apps/ge-demo-generator/simulator-systems/openapi-sources.json` and the cached files under `apps/ge-demo-generator/simulator-systems/_openapi/<system_id>/`. If a machine-readable spec exists, derive tool names, input schemas, lifecycle verbs, and error shapes from the spec. If only docs are cached, use them as provenance and record which endpoints need manual capture or authenticated export.
+Before writing custom handlers, check `apps/factory/simulator-systems/openapi-sources.json` and the cached files under `apps/factory/simulator-systems/_openapi/<system_id>/`. If a machine-readable spec exists, derive tool names, input schemas, lifecycle verbs, and error shapes from the spec. If only docs are cached, use them as provenance and record which endpoints need manual capture or authenticated export.
 
 Prefer generic workflow primitives first. Add custom Python handlers only when a system needs domain-specific side effects such as Workday business process creation, ServiceNow change gates, ledger balancing, or identity entitlement inheritance.
 
 ## Scenario Pack Interlock
 
-`apps/ge-demo-generator/scripts/ge-mock/packs/*` is the scenario fixture/eval enrichment layer. Simulator packs are the runtime MCP system layer. Keep them interlocked:
+`apps/factory/scripts/factory/packs/*` is the scenario fixture/eval enrichment layer. Simulator packs are the runtime MCP system layer. Keep them interlocked:
 
 ```text
-scenario graph -> ge-mock scenario packs -> Snowfakery rows -> simulator materialization -> MCP simulator runtime
+scenario graph -> factory scenario packs -> Snowfakery rows -> simulator materialization -> MCP simulator runtime
 ```
 
 Every active scenario pack should declare `simulatorInterop`:
@@ -156,12 +156,12 @@ simulatorInterop: {
 }
 ```
 
-When a scenario pack matches, `ge-mock` annotates the behavior contract with `simulatorEnrichment.packBridges`. Use that to explain downstream materialization and to detect drift between fixture recipes and simulator schemas.
+When a scenario pack matches, `factory` annotates the behavior contract with `simulatorEnrichment.packBridges`. Use that to explain downstream materialization and to detect drift between fixture recipes and simulator schemas.
 
 Run pack coverage when changing either layer:
 
 ```bash
-bun run apps/ge-demo-generator/scripts/ge-mock.mjs pack-coverage --out apps/ge-demo-generator/artifacts/pack-coverage.json
+bun run apps/factory/scripts/factory.mjs pack-coverage --out apps/factory/artifacts/pack-coverage.json
 ```
 
 Check `simulatorInterop.unbridgedScenarioPackCounts`; active scenario packs should not be unbridged unless they are intentionally taxonomy-only.

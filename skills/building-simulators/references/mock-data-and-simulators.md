@@ -17,7 +17,7 @@ Do not create data, simulator systems, tools, or citations outside that scope. I
 Prefer the simulator SDK plan so Antigravity uses existing systems before scaffolding anything new:
 
 ```bash
-node apps/ge-demo-generator/scripts/simulator-sdk.mjs plan --spec <normalized-spec.json> --simulator-id <system_id>
+node apps/factory/scripts/simulator-sdk.mjs plan --spec <normalized-spec.json> --simulator-id <system_id>
 ```
 
 The SDK returns:
@@ -53,7 +53,7 @@ Use direct commands only when debugging a single node.
 Generate the scenario graph, data plan, Snowfakery recipe, realization plan, and simulator index:
 
 ```bash
-node apps/ge-demo-generator/scripts/plan-mock-data.mjs --dir <mission-workspace> --usecase <usecase_id> --sourceMap apps/ge-demo-generator/src/use-case-source-map.generated.json
+node apps/factory/scripts/plan-mock-data.mjs --dir <mission-workspace> --usecase <usecase_id> --sourceMap apps/factory/src/use-case-source-map.generated.json
 ```
 
 Generate Snowfakery rows:
@@ -65,13 +65,13 @@ snowfakery <mission-workspace>/mock_data/snowfakery/structured.recipe.yml --outp
 Materialize Snowfakery rows into simulator seed overlays:
 
 ```bash
-node apps/ge-demo-generator/scripts/materialize-simulator-seeds.mjs --dir <mission-workspace>
+node apps/factory/scripts/materialize-simulator-seeds.mjs --dir <mission-workspace>
 ```
 
 Validate simulator conformance:
 
 ```bash
-node apps/ge-demo-generator/scripts/validate-simulator-pack.mjs --check true --system <system_id>
+node apps/factory/scripts/validate-simulator-pack.mjs --check true --system <system_id>
 ```
 
 ## Expected Artifacts

@@ -76,8 +76,8 @@ describe("runtime resume plan", () => {
   });
 
   test("failed process commands only resume for whitelisted repo scripts", () => {
-    expect(safeProcessCommand(["node", "apps/ge-demo-generator/scripts/plan-mock-data.mjs", "--dir", "x"])).toBe(true);
-    expect(safeProcessCommand([process.execPath, "/repo/apps/ge-demo-generator/scripts/materialize-simulator-seeds.mjs", "--dir", "x"])).toBe(true);
+    expect(safeProcessCommand(["node", "apps/factory/scripts/plan-mock-data.mjs", "--dir", "x"])).toBe(true);
+    expect(safeProcessCommand([process.execPath, "/repo/apps/factory/scripts/materialize-simulator-seeds.mjs", "--dir", "x"])).toBe(true);
     expect(safeProcessCommand(["uv", "run", "--with", "snowfakery", "--with", "setuptools<81", "snowfakery", ".ge/missions/benefits/mock_data/snowfakery/structured.recipe.yml", "--output-format", "csv", "--output-folder", ".ge/missions/benefits/mock_data/snowfakery/output"])).toBe(true);
     expect(safeProcessCommand(["node", "scripts/unknown.mjs"])).toBe(false);
 
@@ -85,7 +85,7 @@ describe("runtime resume plan", () => {
       id: "proc-safe",
       kind: "process.command",
       status: "failed",
-      input: { argv: ["node", "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs", "--check", "true"] },
+      input: { argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "true"] },
       output: {},
     });
     const unsafe = resumePlanFor({
@@ -103,14 +103,14 @@ describe("runtime resume plan", () => {
   });
 
   test("failed typed mission data nodes resume through node registry", () => {
-    expect(safeMissionRuntimeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs", "--check", "true", "--system", "workday"] })).toBe(true);
+    expect(safeMissionRuntimeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "true", "--system", "workday"] })).toBe(true);
     expect(safeMissionRuntimeCommand("simulator.validate", { argv: ["node", "scripts/unknown.mjs"] })).toBe(false);
 
     const safe = resumePlanFor({
       id: "simval-1",
       kind: "simulator.validate",
       status: "failed",
-      input: { systems: ["workday"], argv: ["node", "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs", "--check", "true", "--system", "workday"] },
+      input: { systems: ["workday"], argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "true", "--system", "workday"] },
       output: {},
     });
     const unsafe = resumePlanFor({

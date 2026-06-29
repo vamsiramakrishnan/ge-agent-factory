@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { snakeCase } from "@ge/std/naming";
 import { verifyMissionArtifacts } from "./mission-artifacts.mjs";
 import { dataMissionNodes } from "./mission-nodes.mjs";
 import { buildMissionNode, isDataMissionNodeKind, listMissionNodeDefinitions, missionNodeCommand, missionNodeDefinition, registerMissionNodeDefinition, safeMissionNodeCommand, validateMissionNodeArtifacts } from "./mission-node-registry.mjs";
@@ -80,13 +81,13 @@ describe("mission node registry", () => {
     ]);
     expect(mock.input.argv).toEqual([
       "node",
-      "apps/ge-demo-generator/scripts/plan-mock-data.mjs",
+      "apps/factory/scripts/plan-mock-data.mjs",
       "--dir",
       ".ge/missions/benefits",
       "--usecase",
       "benefits",
       "--sourceMap",
-      "apps/ge-demo-generator/src/use-case-source-map.generated.json",
+      "apps/factory/src/use-case-source-map.generated.json",
     ]);
     expect(snowfakery.input.argv).toEqual([
       "uv",
@@ -104,13 +105,13 @@ describe("mission node registry", () => {
     ]);
     expect(seed.input.argv).toEqual([
       "node",
-      "apps/ge-demo-generator/scripts/materialize-simulator-seeds.mjs",
+      "apps/factory/scripts/materialize-simulator-seeds.mjs",
       "--dir",
       ".ge/missions/benefits",
     ]);
     expect(validate.input.argv).toEqual([
       "node",
-      "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs",
+      "apps/factory/scripts/validate-simulator-pack.mjs",
       "--check",
       "true",
       "--system",
@@ -123,19 +124,19 @@ describe("mission node registry", () => {
   });
 
   test("classifies safe node commands by kind contract", () => {
-    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", scenario: "benefits", argv: ["node", "apps/ge-demo-generator/scripts/plan-mock-data.mjs", "--dir", "x", "--usecase", "benefits"] })).toBe(true);
-    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", spec: ".ge/interviews/new/agent-spec.json", argv: ["node", "apps/ge-demo-generator/scripts/plan-mock-data.mjs", "--dir", "x", "--spec", ".ge/interviews/new/agent-spec.json"] })).toBe(true);
-    expect(safeMissionNodeCommand("simulator.seed", { workspace: "x", argv: [process.execPath, "/repo/apps/ge-demo-generator/scripts/materialize-simulator-seeds.mjs", "--dir", "x"] })).toBe(true);
+    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", scenario: "benefits", argv: ["node", "apps/factory/scripts/plan-mock-data.mjs", "--dir", "x", "--usecase", "benefits"] })).toBe(true);
+    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", spec: ".ge/interviews/new/agent-spec.json", argv: ["node", "apps/factory/scripts/plan-mock-data.mjs", "--dir", "x", "--spec", ".ge/interviews/new/agent-spec.json"] })).toBe(true);
+    expect(safeMissionNodeCommand("simulator.seed", { workspace: "x", argv: [process.execPath, "/repo/apps/factory/scripts/materialize-simulator-seeds.mjs", "--dir", "x"] })).toBe(true);
     expect(safeMissionNodeCommand("snowfakery.generate", { workspace: ".ge/missions/benefits", argv: ["uv", "run", "--with", "snowfakery", "--with", "setuptools<81", "snowfakery", ".ge/missions/benefits/mock_data/snowfakery/structured.recipe.yml", "--output-format", "csv", "--output-folder", ".ge/missions/benefits/mock_data/snowfakery/output"] })).toBe(true);
-    expect(safeMissionNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs", "--check", "true", "--system", "workday"] })).toBe(true);
-    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", argv: ["node", "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs", "--dir", "x"] })).toBe(false);
-    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", argv: ["node", "apps/ge-demo-generator/scripts/plan-mock-data.mjs", "--dir", "y"] })).toBe(false);
-    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", spec: ".ge/interviews/new/agent-spec.json", argv: ["node", "apps/ge-demo-generator/scripts/plan-mock-data.mjs", "--dir", "x", "--spec", ".ge/interviews/other/agent-spec.json"] })).toBe(false);
+    expect(safeMissionNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "true", "--system", "workday"] })).toBe(true);
+    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--dir", "x"] })).toBe(false);
+    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", argv: ["node", "apps/factory/scripts/plan-mock-data.mjs", "--dir", "y"] })).toBe(false);
+    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", spec: ".ge/interviews/new/agent-spec.json", argv: ["node", "apps/factory/scripts/plan-mock-data.mjs", "--dir", "x", "--spec", ".ge/interviews/other/agent-spec.json"] })).toBe(false);
     expect(safeMissionNodeCommand("snowfakery.generate", { workspace: ".ge/missions/benefits", argv: ["uv", "run", "--with", "snowfakery", "--with", "setuptools<81", "snowfakery", ".ge/missions/benefits/mock_data/snowfakery/structured.recipe.yml", "--output-folder", ".ge/missions/benefits/mock_data/snowfakery/output"] })).toBe(false);
     expect(safeMissionNodeCommand("snowfakery.generate", { workspace: ".ge/missions/benefits", argv: ["uv", "run", "--with", "snowfakery", "--with", "setuptools<81", "snowfakery", ".ge/missions/benefits/mock_data/snowfakery/structured.recipe.yml", "--output-format", "json", "--output-folder", ".ge/missions/benefits/mock_data/snowfakery/output"] })).toBe(false);
-    expect(safeMissionNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs", "--system", "workday"] })).toBe(false);
-    expect(safeMissionNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs", "--check", "false", "--system", "workday"] })).toBe(false);
-    expect(safeMissionNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs", "--check", "true", "--system", "sap_successfactors"] })).toBe(false);
+    expect(safeMissionNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--system", "workday"] })).toBe(false);
+    expect(safeMissionNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "false", "--system", "workday"] })).toBe(false);
+    expect(safeMissionNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "true", "--system", "sap_successfactors"] })).toBe(false);
   });
 
   test("registry-built data nodes match existing dataMissionNodes output", () => {
@@ -155,13 +156,13 @@ describe("mission node registry", () => {
   });
 
   test("builds executable command details", () => {
-    const command = missionNodeCommand("simulator.validate", { argv: ["node", "apps/ge-demo-generator/scripts/validate-simulator-pack.mjs", "--check", "true"] });
+    const command = missionNodeCommand("simulator.validate", { argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "true"] });
 
     expect(command.kind).toBe("simulator.validate");
     expect(command.stage).toBe("simulator.validate");
     expect(command.prefix).toBe("simval");
     expect(command.cmd).toBe(process.execPath);
-    expect(command.args[0]).toBe("apps/ge-demo-generator/scripts/validate-simulator-pack.mjs");
+    expect(command.args[0]).toBe("apps/factory/scripts/validate-simulator-pack.mjs");
   });
 
   test("mock.generate semantic validation catches empty plans and missing requested simulator", () => {
@@ -256,5 +257,45 @@ describe("mission node registry", () => {
 
     expect(result.ok).toBe(true);
     expect(result.blockers).toEqual([]);
+  });
+});
+
+// Divergence probe (Wave 1f): mission-node-registry's snakeCase moved from a local
+// regex (_$1-per-capital) to @ge/std/naming's change-case canonical. The snowfakery
+// validator matches CSV filenames against realization object names via
+// snakeCase(name).replace(/s$/, ""). Both operands run through the same fn, but two
+// raw names could in principle collapse to the same key under change-case yet stay
+// distinct under the old regex — changing a match. This asserts the MATCH OUTCOMES
+// are identical between the two implementations for representative + adversarial
+// inputs, so the swap is behaviour-preserving for the matching this module performs.
+describe("snakeCase swap (mission-node-registry 1f) preserves csv<->object matching", () => {
+  const stdSnake = snakeCase; // @ge/std/naming change-case canonical (imported below)
+  const localSnake = (value) =>
+    String(value || "")
+      .replace(/[^a-zA-Z0-9]+/g, "_")
+      .replace(/([A-Z])/g, "_$1")
+      .toLowerCase()
+      .replace(/^_+|_+$/g, "")
+      .replace(/_+/g, "_");
+
+  // Mirror validateSnowfakeryGenerate's matching for a given snakeCase impl.
+  const matchOutcomes = (snake, csvFileNames, objectNames) => {
+    const csvObjects = new Set(
+      csvFileNames.map((name) => snake(name.replace(/\.[^.]+$/, "")).replace(/s$/, "")),
+    );
+    return objectNames.map((object) => csvObjects.has(snake(object).replace(/s$/, "")));
+  };
+
+  test("identical match outcomes for realistic + adversarial object/file names", () => {
+    const csvFileNames = [
+      "workers.csv", "job_requisitions.csv", "worker_events.csv", "supervisory_orgs.csv",
+      "approvals.csv", "HRData.csv", "Workday2.csv", "POBox.csv", "ServiceNowTickets.csv",
+    ];
+    const objectNames = [
+      "worker", "job_requisition", "worker_event", "supervisory_org", "approval",
+      "HRData", "Workday2", "POBox", "ServiceNowTicket", "missing_object",
+    ];
+    expect(matchOutcomes(stdSnake, csvFileNames, objectNames))
+      .toEqual(matchOutcomes(localSnake, csvFileNames, objectNames));
   });
 });

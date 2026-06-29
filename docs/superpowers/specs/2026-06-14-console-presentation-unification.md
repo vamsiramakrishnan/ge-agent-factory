@@ -122,7 +122,7 @@ split by function/section and otherwise serialized.
     `@ge/contracts/action-kinds.ts` — zero behavior change. The behavior-changing reconciles are queued.
   - **Identity** — chosen mechanism: thread `slide.id` (`uc-…`) via a **`UsecaseIdContext`** at the
     `App` render boundary (NOT `cloneElement`, which would hit the `<Suspense>` wrapper not the lazy
-    agent), with a title-derived fallback during migration. **Hard blocker:** `ge-mock from-usecase`
+    agent), with a title-derived fallback during migration. **Hard blocker:** `factory from-usecase`
     must accept `uc-…` ids before the provision payload can switch.
 
 ### Spike outcomes (resolved 2026-06-14)
@@ -140,12 +140,12 @@ split by function/section and otherwise serialized.
   `resume_autopilot`/`repair_agent` into the shared executable set; (c) fix `run_preview` routing;
   (b) make consumers honor `DispatchMode` instead of the `isExecutableAction` boolean (broadest — last).
 - **Identity sequence:** plumb `UsecaseIdContext` + optional `usecaseId` prop + optional
-  `FactoryRunRequest.usecaseId` (safe) → clear the `ge-mock` `uc-` lookup blocker → ship
+  `FactoryRunRequest.usecaseId` (safe) → clear the `factory` `uc-` lookup blocker → ship
   `@ge/agent-resolver` (`uc-…` ⇄ `{title, agentId A-…, domain, workspaceSlug}`) → flip
   `FactoryProvisionPanel` to send `usecaseId` and delete `toUseCaseId(title)`.
 - **Dependency blocks:** **T3** can't switch dispatch on daemon `nextAction` until alias map (done) +
   reconcile-a land. **T7** `<Lifecycle>` can be BUILT against the descriptive `DispatchMode` now, but
-  must not switch real dispatch until reconcile-b. **T4** is hard-blocked by the `ge-mock` `uc-`
+  must not switch real dispatch until reconcile-b. **T4** is hard-blocked by the `factory` `uc-`
   lookup and the `<Suspense>`-clone hazard (→ use context).
 - **Wave 2 — T3 runtime-task wiring** (kills the dead `applyRuntimeTasks` path; adds a daemon fetch to
   `/api/ge/journey` with graceful planned-only degrade) + **T4 `@ge/agent-resolver` + identity

@@ -61,8 +61,8 @@ curl -s http://127.0.0.1:<port>/api/ge/autopilot/<run-id>/events
 Local workspace:
 
 ```bash
-node apps/ge-demo-generator/src/cli.js workspace doctor <workspace-id> --stage preview
-node apps/ge-demo-generator/src/cli.js workspace repair <workspace-id> --stage preview --agent none --attempts 3
+node apps/factory/src/cli.js workspace doctor <workspace-id> --stage preview
+node apps/factory/src/cli.js workspace repair <workspace-id> --stage preview --agent none --attempts 3
 ```
 
 ## Generated-Agent Review Points

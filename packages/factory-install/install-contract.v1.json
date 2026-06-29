@@ -153,7 +153,7 @@
       }
     },
     "worker": {
-      "cloudBuild": "apps/ge-demo-generator/cloudbuild.factory-stage.yaml",
+      "cloudBuild": "apps/factory/cloudbuild.factory-stage.yaml",
       "substitutions": {
         "_IMAGE": "var:worker_image"
       }

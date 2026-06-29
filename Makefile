@@ -105,7 +105,7 @@ setup: ## Install JS deps + Python/uv toolchain + put `ge` on PATH
 	@echo "                                    # build one agent locally up to preview"
 
 catalog: ## Generate the use-case catalog build artifact (git-ignored) from the slide + interview registries
-	@cd apps/ge-demo-generator && bun scripts/sync-use-cases-from-slides.mjs
+	@cd apps/factory && bun scripts/sync-use-cases-from-slides.mjs
 
 ci: ## Run the CI gate locally (source hygiene + full bun test suite) — mirrors cloudbuild.ci.yaml
 	@bun run source:hygiene
@@ -181,7 +181,7 @@ skills-sync: ## Validate repository skills and write the harness skill manifest
 
 skills-doctor: ## Verify the harness skill manifest is current and complete
 	@node scripts/sync-harness-skills.mjs --check
-	@bun apps/ge-demo-generator/src/cli.js skills >/dev/null
+	@bun apps/factory/src/cli.js skills >/dev/null
 	@echo "✓ harness skills are discoverable"
 
 skills-spec-audit: ## Report Agent Skills spec portability gaps for repo skills
@@ -268,7 +268,7 @@ presentation: ## Run the transformation deck and source use-case catalog → htt
 	@cd apps/presentation && bun install && bun run dev
 
 generator: ## Run the lower-level generator workbench for mock data/workspaces → http://localhost:17655
-	@bun run --filter ./apps/ge-demo-generator dev
+	@bun run --filter ./apps/factory dev
 
 build-console: ## Production build of the console (apps/console/dist)
 	@cd apps/console && bun install && bun run build
