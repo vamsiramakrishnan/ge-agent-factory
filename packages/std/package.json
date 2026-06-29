@@ -9,7 +9,8 @@
     "./naming": "./src/naming.mjs",
     "./cli-args": "./src/cli-args.mjs",
     "./json-io": "./src/json-io.mjs",
-    "./json-repair": "./src/json-repair.mjs"
+    "./json-repair": "./src/json-repair.mjs",
+    "./csv-io": "./src/csv-io.mjs"
   },
   "scripts": {
     "test": "bun test src"

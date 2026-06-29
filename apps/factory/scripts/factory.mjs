@@ -29,6 +29,7 @@ import { stringify as stringifyYaml } from "yaml";
 import { defineCommand, runMain } from "citty";
 import { faker } from "@faker-js/faker";
 import { extractFirstJsonObject } from "@ge/std/json-repair";
+import { toCsv } from "@ge/std/csv-io";
 import { buildFactoryCommandTree } from "./factory/registry.mjs";
 import { harnessRefineSchema, harnessReviewSchema } from "./schemas/harness-schemas.mjs";
 
@@ -4898,15 +4899,6 @@ function generateValue(col, rowIndex, generatedTables) {
     } catch { /* fall through */ }
   }
   return faker.lorem.word();
-}
-
-function toCsv(rows) {
-  if (!rows.length) return "";
-  const keys = Object.keys(rows[0]);
-  return [keys.join(","), ...rows.map((r) => keys.map((k) => {
-    const v = r[k]; if (v == null) return "";
-    const s = String(v); return /[,"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-  }).join(","))].join("\n") + "\n";
 }
 
 // ── Help ─────────────────────────────────────────────────────

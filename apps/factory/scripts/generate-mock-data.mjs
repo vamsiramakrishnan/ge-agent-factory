@@ -72,6 +72,7 @@
  */
 import { faker } from "@faker-js/faker";
 import { parseFlagArgs } from "@ge/std/cli-args";
+import { toCsv } from "@ge/std/csv-io";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { existsSync, readFileSync } from "node:fs";
 import { join, extname, basename, resolve, dirname } from "node:path";
@@ -180,20 +181,6 @@ function generateTable(tableDef, generatedTables) {
   return rows;
 }
 
-function toCsv(rows) {
-  if (rows.length === 0) return "";
-  const keys = Object.keys(rows[0]);
-  const lines = [keys.join(",")];
-  for (const row of rows) {
-    lines.push(keys.map((k) => {
-      const v = row[k];
-      if (v === null || v === undefined) return "";
-      const s = String(v);
-      return s.includes(",") || s.includes('"') || s.includes("\n") ? `"${s.replace(/"/g, '""')}"` : s;
-    }).join(","));
-  }
-  return lines.join("\n") + "\n";
-}
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
