@@ -3,8 +3,8 @@ import { resolve } from "node:path";
 import { __test } from "./harness-runner.js";
 
 describe("harness runner config", () => {
-  test("resolves Vertex project from nearest parent .ge.json", () => {
-    const defaults = __test.resolveVertexDefaults({
+  test("resolves Vertex project from repo-root .ge.json (via c12)", async () => {
+    const defaults = await __test.resolveVertexDefaults({
       repoRoot: resolve("apps/factory"),
       project: null,
       location: null,

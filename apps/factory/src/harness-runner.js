@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { chmodSync, existsSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { basename, delimiter, join, resolve, sep } from "node:path";
+import { loadConfig } from "c12";
 import { splitLines } from "@ge/runtime/events";
 import { readDotEnv } from "./dotenv.mjs";
 import { detectAgents, getAgentDef } from "./agents.js";
@@ -121,28 +122,18 @@ function buildSubagentPlanSection(workspaceDir, { subagentsAvailable = false } =
 }
 
 
-function readJsonSync(path, fallback = {}) {
-  if (!existsSync(path)) return fallback;
-  try {
-    return JSON.parse(readFileSync(path, "utf8"));
-  } catch {
-    return fallback;
-  }
+// Load the workspace .ge.json via c12 (cwd = repoRoot). c12 brings layered
+// resolution — `extends`, NODE_ENV overlays (.ge.<env>.json / $env keys) and
+// .config/ge.json — over the previous bespoke read. It resolves the file at
+// repoRoot (the location resolveVertexDefaults always defaulted to); it does not
+// walk above the repo, which only ever risked picking up a stray external .ge.json.
+async function loadGeConfig(repoRoot) {
+  const { config } = await loadConfig({ cwd: resolve(repoRoot || process.cwd()), configFile: ".ge.json" });
+  return config || {};
 }
 
-function findNearestConfig(startDir) {
-  let current = resolve(startDir || process.cwd());
-  for (;;) {
-    const candidate = join(current, ".ge.json");
-    if (existsSync(candidate)) return candidate;
-    const parent = resolve(current, "..");
-    if (parent === current) return null;
-    current = parent;
-  }
-}
-
-function resolveVertexDefaults({ repoRoot, project, location, vertex }) {
-  const cfg = readJsonSync(findNearestConfig(repoRoot) || join(repoRoot, ".ge.json"), {});
+async function resolveVertexDefaults({ repoRoot, project, location, vertex }) {
+  const cfg = await loadGeConfig(repoRoot);
   const resolvedProject = project
     || process.env.GOOGLE_CLOUD_PROJECT
     || process.env.GCLOUD_PROJECT
@@ -164,7 +155,7 @@ function resolveVertexDefaults({ repoRoot, project, location, vertex }) {
 
 export const __test = {
   createLineBuffer,
-  findNearestConfig,
+  loadGeConfig,
   parseAntigravityStatusLines,
   resolveVertexDefaults,
   buildSubagentPlanSection,
@@ -402,7 +393,7 @@ export async function runHarnessTask({
   const agentLogFilePath = join(runDir, `${plan.adapterId}.log`);
   writeFileSync(join(runDir, "prompt.txt"), prompt, "utf8");
 
-  const vertexDefaults = resolveVertexDefaults({
+  const vertexDefaults = await resolveVertexDefaults({
     repoRoot: resolvedRepoRoot,
     project: vertexProject,
     location,
