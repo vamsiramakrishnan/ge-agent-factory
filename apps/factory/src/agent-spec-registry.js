@@ -20,6 +20,10 @@ export const REQUIRED_BEHAVIOR_FIELDS = [
 
 export const slug = (value, max = 96) => baseSlug(value, { max });
 
+// Distinct from core/naming's canonicalSystemId ON PURPOSE: this collapses
+// non-alphanumerics to "_" but does NOT split camelCase ("fooBar" -> "foobar",
+// not "foo_bar"). These ids are persisted registry keys, so they must stay
+// stable — do not "unify" this with snakeCase/canonicalSystemId.
 export function sourceSystemId(system) {
   return String(system || "source_system")
     .toLowerCase()

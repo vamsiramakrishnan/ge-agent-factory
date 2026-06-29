@@ -75,6 +75,11 @@ function snowfakeryArgv(recipe, output) {
   ];
 }
 
+// NOTE: deliberately a local copy, not factory/core/naming's canonical snakeCase.
+// tools/lib must not import from apps/factory (enforced by check-no-app-imports),
+// so unifying this requires relocating core/naming to a shared package first.
+// Used only for internal csv/object name matching here (both sides use this fn),
+// so the local divergence is self-consistent.
 function snakeCase(value) {
   return String(value || "")
     .replace(/[^a-zA-Z0-9]+/g, "_")
