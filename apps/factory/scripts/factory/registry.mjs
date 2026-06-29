@@ -2,14 +2,22 @@ import { defineCommand } from "citty";
 
 // citty command registry for the factory CLI (Week-4 / PR-B). Replaces the
 // hand-rolled parseArgs + 28-case switch. Two kinds of command:
-//   - TYPED: citty args schema (typed flags, the migration target).
+//   - TYPED: citty args schema (typed flags + auto --help).
 //   - LEGACY passthrough: re-parses ctx.rawArgs with the existing parser and
-//     calls the handler — byte-identical behaviour to the old switch, so every
-//     command moves onto the registry now and gets typed args incrementally.
+//     calls the handler — byte-identical to the old switch.
+// A command stays on LEGACY only when typing it would change behaviour under
+// citty's strict parsing: handlers that compare flags to the STRING "true"
+// (=== "true"), ambiguous --soft (true/false/valueless), sub-action dispatch
+// (mcp), or commands that FORWARD arbitrary flags to others (batch-audit).
 // Handlers are INJECTED (not imported) → no import cycle back to factory.mjs.
 export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
   const typed = (name, description, args, run) =>
     defineCommand({ meta: { name, description }, args, run });
+
+  // dir-taking typed command whose handler reads its flags off the parsed args.
+  const dirCmd = (name, description, flags, handler) =>
+    typed(name, description, { dir: { type: "string", description: "Workspace directory", default: "." }, ...flags },
+      ({ args }) => handler(resolveDir(args.dir), args));
 
   const legacy = (name, description, handler, takesDir = true) =>
     defineCommand({
@@ -20,58 +28,51 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
       },
     });
 
+  const str = (description) => ({ type: "string", description });
+
   return {
-    // ── Typed commands ──────────────────────────────────────────────────────
+    // ── Typed (flags-only handlers) ──────────────────────────────────────────
     status: typed("status", "Status board for a generated workspace",
       { dir: { type: "string", description: "Workspace directory", default: "." } },
       ({ args }) => handlers.status(resolveDir(args.dir))),
     "list-usecases": typed("list-usecases", "List use cases in the catalog",
-      {
-        department: { type: "string", description: "Filter by department" },
-        search: { type: "string", description: "Filter by search term" },
-        limit: { type: "string", description: "Max results" },
-        json: { type: "boolean", description: "Emit JSON" },
-      },
+      { department: str("Filter by department"), search: str("Filter by search term"), limit: str("Max results"), json: { type: "boolean", description: "Emit JSON" } },
       ({ args }) => handlers.listUsecases(args)),
-    "promotion-gate": typed("promotion-gate", "Evaluate the promotion gate (blocks deploy on failure)",
-      {
-        dir: { type: "string", description: "Workspace directory", default: "." },
-        force: { type: "boolean", description: "Override blockers" },
-      },
-      ({ args }) => handlers.promotionGate(resolveDir(args.dir), args)),
     sources: typed("sources", "Analyze use-case data sources (writes the source map + doc)",
-      {
-        json: { type: "string", description: "Output JSON path" },
-        md: { type: "string", description: "Output markdown path" },
-        slides: { type: "string", description: "Slides source directory" },
-      },
+      { json: str("Output JSON path"), md: str("Output markdown path"), slides: str("Slides source directory") },
       ({ args }) => handlers.sources(args)),
     "pack-coverage": typed("pack-coverage", "Report scenario-pack coverage across the catalog",
-      { out: { type: "string", description: "Write the full report to this path" } },
+      { out: str("Write the full report to this path") },
       ({ args }) => handlers.packCoverage(args)),
 
-    // ── Legacy passthrough (identical behaviour; typed incrementally) ─────────
-    init: legacy("init", "Initialize a workspace", handlers.init),
-    schema: legacy("schema", "Derive the schema", handlers.schema),
-    generate: legacy("generate", "Generate mock data", handlers.generate),
+    // ── Typed (dir + clean string-value flags) ───────────────────────────────
+    "promotion-gate": dirCmd("promotion-gate", "Evaluate the promotion gate (blocks deploy on failure)",
+      { force: { type: "boolean", description: "Override blockers" } }, handlers.promotionGate),
+    init: dirCmd("init", "Initialize a workspace", { name: str("Agent name"), domain: str("Domain") }, handlers.init),
+    schema: dirCmd("schema", "Derive / edit the schema", { "add-table": str("Add a table (JSON)"), "from-file": str("Import schema JSON") }, handlers.schema),
+    generate: dirCmd("generate", "Generate mock data", { seed: str("Faker seed"), rows: str("Default rows per table") }, handlers.generate),
+    eval: dirCmd("eval", "Run evals", { run: str("Set to 'false' to skip running"), "eval-timeout": str("Eval timeout (s)"), "timeout-ms": str("Command timeout (ms)") }, handlers.eval),
+    serve: dirCmd("serve", "Serve the agent locally (adk web)", { port: str("Port (default 8080)") }, handlers.serve),
+    "data-plan": dirCmd("data-plan", "Build the cloud data plan", {}, handlers.dataPlan),
+    "source-integration-plan": dirCmd("source-integration-plan", "Plan source-system integration", {}, handlers.sourceIntegrationPlan),
+    "snowfakery-recipe": dirCmd("snowfakery-recipe", "Emit the Snowfakery recipe", { rows: str("Rows per object") }, handlers.snowfakeryRecipe),
+    "deploy-status": dirCmd("deploy-status", "Check deploy status", {}, handlers.deployStatus),
+    "verify-live": dirCmd("verify-live", "Verify the deployed agent",
+      { url: str("Override URL"), mode: str("adk|a2a"), prompt: str("Prompt"), "app-name": str("App name"), "timeout-ms": str("Timeout (ms)") }, handlers.verifyLive),
+    publish: dirCmd("publish", "Publish to Gemini Enterprise",
+      { location: str("Location"), region: str("Region"), "project-number": str("Project number"), "app-id": str("GE app id"), "display-name": str("Display name"), description: str("Description") }, handlers.publish),
+    reset: dirCmd("reset", "Reset workspace pipeline state", { step: str("Reset from this step") }, handlers.reset),
+    "plan-data": dirCmd("plan-data", "Plan mock data generation", { usecase: str("Use case id"), "source-map": str("Source-map path") }, handlers.planData),
+
+    // ── Legacy passthrough (behaviour-sensitive under citty; typed later) ─────
     tools: legacy("tools", "Render app/tools.py and scaffold", handlers.tools),
     test: legacy("test", "Run the workspace smoke tests", handlers.test),
-    eval: legacy("eval", "Run evals", handlers.eval),
     "quality-gate": legacy("quality-gate", "Run the quality gate", handlers.qualityGate),
     "harness-review": legacy("harness-review", "Antigravity harness review (read-only)", handlers.harnessReview),
     "harness-refine": legacy("harness-refine", "Antigravity harness refine (write-enabled)", handlers.harnessRefine),
-    serve: legacy("serve", "Serve the agent locally (adk web)", handlers.serve),
-    "data-plan": legacy("data-plan", "Build the cloud data plan", handlers.dataPlan),
-    "source-integration-plan": legacy("source-integration-plan", "Plan source-system integration", handlers.sourceIntegrationPlan),
-    "snowfakery-recipe": legacy("snowfakery-recipe", "Emit the Snowfakery recipe", handlers.snowfakeryRecipe),
     mcp: legacy("mcp", "MCP tool-plane operations", handlers.mcp),
     deploy: legacy("deploy", "Deploy the agent (Cloud Run / Agent Runtime)", handlers.deploy),
-    "deploy-status": legacy("deploy-status", "Check deploy status", handlers.deployStatus),
-    "verify-live": legacy("verify-live", "Verify the deployed agent", handlers.verifyLive),
     register: legacy("register", "Register the agent (Gemini Enterprise / MCP)", handlers.register),
-    publish: legacy("publish", "Publish to Gemini Enterprise", handlers.publish),
-    reset: legacy("reset", "Reset workspace pipeline state", handlers.reset),
-    "plan-data": legacy("plan-data", "Plan mock data generation", handlers.planData),
     "from-usecase": legacy("from-usecase", "Generate a full workspace from a use case", handlers.fromUseCase),
     "batch-audit": legacy("batch-audit", "Audit use-case specs in batch", handlers.batchAudit, false),
   };
