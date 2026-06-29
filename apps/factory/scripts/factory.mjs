@@ -32,6 +32,8 @@ import { faker } from "@faker-js/faker";
 import { extractFirstJsonObject } from "@ge/std/json-repair";
 import { toCsv } from "@ge/std/csv-io";
 import { buildFactoryCommandTree } from "./factory/registry.mjs";
+import { deriveColumnsForEntity, matchEntityColumnSchema } from "./factory/use-case/entity-column-schemas.mjs";
+import { deriveSchemaFromGenerationSpec } from "./factory/use-case/schema-from-generation-spec.mjs";
 import { harnessRefineSchema, harnessReviewSchema } from "./schemas/harness-schemas.mjs";
 
 // Non-fatal: validate parsed harness output against its zod source of truth.
@@ -4038,157 +4040,9 @@ function matchSystem(systemName) {
   return null;
 }
 
-function deriveColumnsForEntity(entityName, systemPrefix) {
-  const name = entityName.toLowerCase();
-  const idCol = { name: "id", type: "seq", pattern: `${systemPrefix}-{n:4}` };
-
-  if (name.includes("employee") || name.includes("staff") || name.includes("worker")) {
-    return [idCol, { name: "source_record_id", type: "seq", pattern: `${systemPrefix}-REC-{n:4}` }, { name: "name", type: "person.fullName" }, { name: "email", type: "internet.email" }, { name: "department", type: "enum", values: ["HR", "Finance", "IT", "Operations", "Marketing", "Engineering"] }, { name: "region", type: "enum", values: ["US", "EMEA", "APAC", "LATAM"] }, { name: "status", type: "enum", values: ["active", "inactive", "on_leave"], weights: [0.8, 0.1, 0.1] }, { name: "level", type: "enum", values: ["L3", "L4", "L5", "L6", "L7"] }, { name: "hire_date", type: "date", min: "2018-01-01", max: "2026-01-01" }, { name: "salary", type: "number", min: 55000, max: 180000 }, { name: "life_event", type: "enum", values: ["none", "birth_of_child", "marriage", "move", "loss_of_coverage"], weights: [0.7, 0.1, 0.08, 0.07, 0.05] }, { name: "dependents", type: "number", min: 0, max: 4 }];
-  }
-  if (name.includes("benefit_plan") || name.includes("plan")) {
-    return [idCol, { name: "carrier", type: "enum", values: ["Aetna", "Cigna", "UnitedHealthcare", "Kaiser"] }, { name: "plan_name", type: "enum", values: ["Gold PPO", "Standard PPO", "Silver HMO", "Bronze HSA"] }, { name: "coverage_tier", type: "enum", values: ["employee_only", "employee_spouse", "family"] }, { name: "monthly_premium", type: "number", min: 50, max: 450 }, { name: "deductible", type: "number", min: 500, max: 6000 }, { name: "network_type", type: "enum", values: ["ppo", "hmo", "hdhp"] }, { name: "eligible_regions", type: "enum", values: ["US", "US_CA", "US_NY", "US_ALL"] }, { name: "status", type: "enum", values: ["active", "retired"], weights: [0.9, 0.1] }];
-  }
-  if (name.includes("enrollment")) {
-    return [idCol, { name: "employee_id", type: "ref", ref: "employees.id" }, { name: "plan_id", type: "ref", ref: "benefit_plans.id" }, { name: "coverage_tier", type: "enum", values: ["employee_only", "employee_spouse", "family"] }, { name: "effective_date", type: "date", min: "2025-01-01", max: "2026-12-31" }, { name: "status", type: "enum", values: ["active", "pending_carrier_sync", "waived", "terminated"] }, { name: "life_event", type: "enum", values: ["open_enrollment", "birth_of_child", "marriage", "new_hire"] }, { name: "source_record_id", type: "seq", pattern: `${systemPrefix}-ENR-{n:4}` }, { name: "audit_trail", type: "lorem.sentence" }];
-  }
-  if (name.includes("eligibility")) {
-    return [idCol, { name: "rule_name", type: "enum", values: ["US active employee", "New hire waiting period", "Life event window", "Family tier eligibility"] }, { name: "employee_status", type: "enum", values: ["active", "on_leave"] }, { name: "region", type: "enum", values: ["US", "EMEA", "APAC"] }, { name: "waiting_days", type: "number", min: 0, max: 30 }, { name: "life_event_window_days", type: "number", min: 30, max: 60 }, { name: "requires_documentation", type: "boolean", trueRate: 0.35 }];
-  }
-  if (name.includes("carrier_sync")) {
-    return [idCol, { name: "enrollment_id", type: "ref", ref: "enrollments.id" }, { name: "carrier", type: "enum", values: ["Aetna", "Cigna", "UnitedHealthcare", "Kaiser"] }, { name: "sync_status", type: "enum", values: ["queued", "sent", "confirmed", "failed"], weights: [0.2, 0.35, 0.4, 0.05] }, { name: "sync_date", type: "date", min: "2025-01-01", max: "2026-12-31" }, { name: "source_record_id", type: "seq", pattern: `${systemPrefix}-SYNC-{n:4}` }, { name: "error_message", type: "lorem.sentence" }];
-  }
-  if (name.includes("transaction") || name.includes("gl_entr") || name.includes("journal")) {
-    return [idCol, { name: "date", type: "date", min: "2024-01-01", max: "2026-06-01" }, { name: "account", type: "enum", values: ["1000-Cash", "2000-AP", "3000-Revenue", "4000-Expense", "5000-COGS"] }, { name: "amount", type: "float", min: -50000, max: 50000, decimals: 2 }, { name: "currency", type: "enum", values: ["USD", "EUR", "GBP"] }, { name: "description", type: "lorem.sentence" }, { name: "status", type: "enum", values: ["posted", "pending", "reversed"], weights: [0.8, 0.15, 0.05] }];
-  }
-  if (name.includes("ticket") || name.includes("incident") || name.includes("request") || name.includes("case")) {
-    return [idCol, { name: "title", type: "lorem.sentence" }, { name: "priority", type: "enum", values: ["P1", "P2", "P3", "P4"], weights: [0.05, 0.15, 0.4, 0.4] }, { name: "status", type: "enum", values: ["open", "in_progress", "resolved", "closed"], weights: [0.2, 0.3, 0.3, 0.2] }, { name: "assignee", type: "person.fullName" }, { name: "created_date", type: "date", min: "2025-01-01", max: "2026-06-01" }, { name: "category", type: "enum", values: ["access", "hardware", "software", "network", "policy"] }, { name: "sla_met", type: "boolean", trueRate: 0.78 }];
-  }
-  if (name.includes("vendor") || name.includes("supplier")) {
-    return [idCol, { name: "name", type: "company.name" }, { name: "category", type: "enum", values: ["IT", "Consulting", "Manufacturing", "Logistics", "Facilities"] }, { name: "rating", type: "number", min: 1, max: 5 }, { name: "contract_value", type: "number", min: 10000, max: 500000 }, { name: "risk_score", type: "enum", values: ["low", "medium", "high"], weights: [0.5, 0.35, 0.15] }, { name: "contract_start", type: "date", min: "2022-01-01", max: "2026-01-01" }];
-  }
-  if (name.includes("purchase_order") || name.includes("requisition") || name.includes("invoice")) {
-    return [idCol, { name: "vendor", type: "company.name" }, { name: "amount", type: "float", min: 500, max: 100000, decimals: 2 }, { name: "date", type: "date", min: "2024-06-01", max: "2026-06-01" }, { name: "status", type: "enum", values: ["pending", "approved", "rejected", "completed"], weights: [0.2, 0.4, 0.1, 0.3] }, { name: "category", type: "enum", values: ["services", "hardware", "software", "facilities"] }, { name: "approver", type: "person.fullName" }];
-  }
-  if (name.includes("campaign") || name.includes("lead")) {
-    return [idCol, { name: "name", type: "commerce.product" }, { name: "channel", type: "enum", values: ["email", "social", "search", "display", "event"] }, { name: "budget", type: "number", min: 5000, max: 200000 }, { name: "spend", type: "float", min: 1000, max: 180000, decimals: 2 }, { name: "impressions", type: "number", min: 1000, max: 500000 }, { name: "conversions", type: "number", min: 10, max: 5000 }, { name: "start_date", type: "date", min: "2025-01-01", max: "2026-06-01" }];
-  }
-  if (name.includes("review") || name.includes("feedback") || name.includes("goal")) {
-    return [idCol, { name: "employee_id", type: "ref", ref: "employees.id" }, { name: "reviewer", type: "person.fullName" }, { name: "score", type: "float", min: 1.0, max: 5.0, decimals: 1 }, { name: "cycle", type: "enum", values: ["Q1-2025", "Q2-2025", "Q3-2025", "Q4-2025", "Q1-2026"] }, { name: "comments", type: "lorem.paragraph" }, { name: "status", type: "enum", values: ["draft", "submitted", "acknowledged"], weights: [0.1, 0.6, 0.3] }];
-  }
-  if (name.includes("document") || name.includes("polic") || name.includes("audit")) {
-    return [idCol, { name: "title", type: "lorem.sentence" }, { name: "type", type: "enum", values: ["policy", "procedure", "audit_report", "compliance_doc", "training_material"] }, { name: "author", type: "person.fullName" }, { name: "created_date", type: "date", min: "2023-01-01", max: "2026-06-01" }, { name: "version", type: "enum", values: ["1.0", "1.1", "2.0", "3.0"] }, { name: "content_preview", type: "lorem.paragraph" }];
-  }
-  if (name.includes("message") || name.includes("notification") || name.includes("thread") || name.includes("space")) {
-    return [idCol, { name: "channel", type: "enum", values: ["google_chat", "slack", "email"] }, { name: "recipient", type: "internet.email" }, { name: "subject", type: "lorem.sentence" }, { name: "body", type: "lorem.paragraph" }, { name: "sent_at", type: "date", min: "2025-01-01", max: "2026-12-31" }, { name: "status", type: "enum", values: ["draft", "sent", "delivered", "failed"] }, { name: "source_record_id", type: "seq", pattern: `${systemPrefix}-MSG-{n:4}` }];
-  }
-  if (name.includes("metric") || name.includes("analytic") || name.includes("dashboard") || name.includes("historical")) {
-    return [idCol, { name: "metric_name", type: "enum", values: ["utilization", "cost_per_unit", "cycle_time", "error_rate", "throughput", "satisfaction_score"] }, { name: "value", type: "float", min: 0, max: 100, decimals: 2 }, { name: "period", type: "date", min: "2024-01-01", max: "2026-06-01" }, { name: "department", type: "enum", values: ["HR", "Finance", "IT", "Operations"] }, { name: "trend", type: "enum", values: ["up", "down", "flat"], weights: [0.4, 0.3, 0.3] }];
-  }
-  // Generic fallback
-  return [idCol, { name: "name", type: "string" }, { name: "value", type: "number", min: 1, max: 1000 }, { name: "status", type: "enum", values: ["active", "inactive", "pending"] }, { name: "created_at", type: "date", min: "2024-01-01", max: "2026-06-01" }, { name: "notes", type: "lorem.sentence" }];
-}
-
 function deriveSchemaFromUseCase(useCase, defaultRows = 30) {
   if (useCase.generationSpec?.entities?.length) {
-    const spec = useCase.generationSpec;
-    const systems = spec.sourceSystems || [];
-    const systemsById = new Map(systems.map((system) => [system.id, system]));
-    const tables = spec.entities.map((entity) => {
-      const source = systemsById.get(entity.sourceSystemId) || { id: entity.sourceSystemId, name: entity.sourceSystemId };
-      return {
-        name: entity.name,
-        rows: entity.rowCount || spec.rowPolicy?.defaultRowsPerEntity || defaultRows,
-        columns: (entity.columns || []).map((column) => ({
-          name: column.name,
-          type: column.type,
-          values: column.values,
-          weights: column.weights,
-          ref: column.ref,
-          min: column.min,
-          max: column.max,
-        })),
-        _sourceSystem: source.name,
-        _sourceSystemId: source.id,
-        _sourceKind: entity.datastore,
-        _sourceProtocol: source.protocol,
-        _sourceDescription: source.owns?.join(", ") || `Source records owned by ${source.name}`,
-      };
-    });
-    const documents = (spec.documents || []).map((doc) => {
-      const source = systemsById.get(doc.sourceSystemId) || { id: doc.sourceSystemId, name: doc.sourceSystemId };
-      return {
-        id: doc.id,
-        name: doc.id,
-        type: doc.type,
-        title: doc.title,
-        sourceSystem: source.name,
-        sourceSystemId: source.id,
-        linkedEntities: doc.linkedEntities,
-        requiredSections: doc.requiredSections || [],
-        topic: doc.requiredSections?.join("; "),
-        citationAnchors: doc.citationAnchors,
-        minimumWordCount: doc.minimumWordCount,
-      };
-    });
-    const useCaseSpec = {
-      id: useCase.id,
-      title: useCase.title,
-      department: useCase.department || "general",
-      rowPolicy: {
-        requestedRows: spec.rowPolicy?.defaultRowsPerEntity || defaultRows,
-        minimumRowsPerEntity: spec.rowPolicy?.minimumRowsPerEntity || 25,
-        defaultRowsPerEntity: spec.rowPolicy?.defaultRowsPerEntity || defaultRows,
-      },
-      systems,
-      dataContracts: spec.entities.map((entity) => ({
-        entity: entity.name,
-        sourceSystem: systemsById.get(entity.sourceSystemId)?.name || entity.sourceSystemId,
-        sourceSystemId: entity.sourceSystemId,
-        sourceKind: entity.datastore,
-        rows: entity.rowCount,
-        primaryKey: entity.primaryKey,
-        columns: entity.columns.map((column) => ({
-          name: column.name,
-          type: column.type,
-          ref: column.ref || null,
-          required: column.required !== false,
-        })),
-      })),
-      evidenceRequired: ["sql_result", "source_system_record", "document_reference", "generated_audit_trail"],
-      documentRequirements: (spec.documents || []).map((doc) => `${doc.title}: ${(doc.requiredSections || []).join(", ")}`),
-      integrityRules: (spec.relationships || []).map((rel) => `${rel.from} -> ${rel.to}; orphanPolicy=${rel.orphanPolicy}`),
-      apis: spec.apis || [],
-      datastorePackaging: spec.datastorePackaging || {},
-      // Persist the pipeline narrative so the agent emitter can derive a multi-step
-      // (sequential/parallel) topology at build time. See buildUseCaseSpec for rationale.
-      architecture: useCase.architecture ? { pipeline: Array.isArray(useCase.architecture.pipeline) ? useCase.architecture.pipeline : [] } : null,
-      // Behavior contract is what makes the generated ADK agent task-specific.
-      // Null here means the slide did not declare one — workspace validators
-      // will flag this and skills will refuse to scaffold an agent until the
-      // upstream slide is fixed.
-      behaviorContract: spec.behaviorContract || null,
-    };
-    const schema = enrichScenarioSpec({
-      seed: spec.rowPolicy?.seed || 42,
-      domain: useCase.department || "general",
-      systems,
-      useCaseSpec,
-      rowPolicy: {
-        minimumRowsPerEntity: spec.rowPolicy?.minimumRowsPerEntity || 25,
-        defaultRowsPerEntity: spec.rowPolicy?.defaultRowsPerEntity || defaultRows,
-      },
-      tables,
-      documents,
-      anomalies: spec.anomalies || [],
-    });
-    schema.useCaseSpec.agentQualityPlan = buildAgentQualityPlan({
-      useCase: { ...useCase, rowPolicy: useCaseSpec.rowPolicy },
-      contract: schema.useCaseSpec.behaviorContract,
-      systems,
-      tables,
-      documents,
-    });
-    return schema;
+    return deriveSchemaFromGenerationSpec(useCase, defaultRows, { buildAgentQualityPlan });
   }
 
   const tables = [];
@@ -5043,6 +4897,10 @@ export const __test = {
   sharedAgentGuardrails,
   bigQueryType,
   bigQueryNumericType,
+  deriveColumnsForEntity,
+  matchEntityColumnSchema,
+  deriveSchemaFromGenerationSpec,
+  deriveSchemaFromUseCase,
 };
 
 // Run the CLI only when this file is the process entry point. When imported by a
