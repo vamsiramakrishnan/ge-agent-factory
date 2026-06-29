@@ -23,7 +23,7 @@
 import { readFile, writeFile, mkdir, stat, readdir } from "node:fs/promises";
 import { parseCommandArgs } from "@ge/std/cli-args";
 import { existsSync } from "node:fs";
-import { join, resolve, basename, relative } from "node:path";
+import { join, resolve, basename, relative, dirname } from "node:path";
 import { execa } from "execa";
 import { stringify as stringifyYaml } from "yaml";
 import { defineCommand, runMain } from "citty";
@@ -106,15 +106,12 @@ async function readJson(path, fallback) {
 }
 
 async function writeJson(path, data) {
-  await mkdir(join(path, "..").replace(/\/\.\.$/, ""), { recursive: true }).catch(() => {});
-  const dir = path.substring(0, path.lastIndexOf("/"));
-  if (dir) await mkdir(dir, { recursive: true }).catch(() => {});
+  await mkdir(dirname(path), { recursive: true }).catch(() => {});
   await writeFile(path, JSON.stringify(data, null, 2) + "\n", "utf8");
 }
 
 async function writeText(path, data) {
-  const dir = path.substring(0, path.lastIndexOf("/"));
-  if (dir) await mkdir(dir, { recursive: true }).catch(() => {});
+  await mkdir(dirname(path), { recursive: true }).catch(() => {});
   await writeFile(path, data, "utf8");
 }
 
@@ -1243,9 +1240,7 @@ async function cmdTools(dir, flags) {
   // Registry by server name; defines source_adapters + mock_tools alias.
   lines.push(renderToolsModule({ agentId: manifest.id, department, mcpServerName }));
 
-  await mkdir(join(outPath, "..").includes("/") ? outPath.substring(0, outPath.lastIndexOf("/")) : ".", { recursive: true }).catch(() => {});
-  const toolDir = outPath.substring(0, outPath.lastIndexOf("/"));
-  if (toolDir) await mkdir(toolDir, { recursive: true }).catch(() => {});
+  await mkdir(dirname(outPath), { recursive: true }).catch(() => {});
   await writeFile(outPath, lines.join("\n"), "utf8");
 
   const agentPath = join(dir, "app", "agent.py");
@@ -2056,8 +2051,7 @@ async function cmdTest(dir, flags) {
     );
   }
 
-  const testDir = testPath.substring(0, testPath.lastIndexOf("/"));
-  if (testDir) await mkdir(testDir, { recursive: true }).catch(() => {});
+  await mkdir(dirname(testPath), { recursive: true }).catch(() => {});
   await writeFile(testPath, lines.join("\n"), "utf8");
 
   let testResult = { ran: false };
