@@ -34,6 +34,7 @@ import { toCsv } from "@ge/std/csv-io";
 import { buildFactoryCommandTree } from "./factory/registry.mjs";
 import { renderToolsPy } from "./factory/tools/render-tools-py.mjs";
 import { renderAgentPy } from "./factory/agents/render-agent-py.mjs";
+import { writeOkfArtifacts } from "./factory/agents/okf-artifacts.mjs";
 import { deriveColumnsForEntity, matchEntityColumnSchema } from "./factory/use-case/entity-column-schemas.mjs";
 import { deriveSchemaFromGenerationSpec } from "./factory/use-case/schema-from-generation-spec.mjs";
 import { harnessRefineSchema, harnessReviewSchema } from "./schemas/harness-schemas.mjs";
@@ -56,9 +57,7 @@ import { pyEscape, pyTripleEscape } from "./factory/tools/py-emit.mjs";
 import { canonicalExpectedToolCallName, canonicalIntentToolName, tableToolName } from "./factory/tools/tool-naming.mjs";
 import { findSimulatorForSystem, loadSimulatorRegistry, simulatorBindingForTool } from "./factory/simulators/registry.mjs";
 import { matchPipelineSteps } from "./factory/agent-workflow.mjs";
-import { buildBundle as buildOkfBundle } from "./spec-to-okf.mjs";
-import { renderConcept as renderOkfConcept } from "@ge/okf";
-import { deriveAnswerableQueries, deriveTestMechanisms } from "./lib/okf-capabilities.mjs";
+import { deriveTestMechanisms } from "./lib/okf-capabilities.mjs";
 import { buildSemanticModel } from "./factory/data/semantic-model.mjs";
 import { applyScenarioBindings, enrichScenarioSpec } from "./factory/packs/index.mjs";
 import { analyzePackCoverage } from "./factory/packs/coverage.mjs";
@@ -1038,75 +1037,7 @@ async function cmdTools(dir, flags) {
     await writeJson(join(dir, "tests", "eval", "optimization_config.json"), renderOptimizationConfig(behaviorContract));
   }
 
-  // OKF grounding artifact: emit the agent's spec AS an OKF v0.1 Knowledge
-  // Bundle into the workspace (app/knowledge/), so the DEPLOYED agent can read
-  // what it answers (queries/), how each is tested (tests/), and its source
-  // documents (documents/) as portable, typed concepts. Additive — generation
-  // proceeds even if conversion fails; the agent/tools output is unaffected.
-  let okfBundleDir = null;
-  if (behaviorContract) {
-    try {
-      const okfSpec = {
-        id: manifest?.id || "generated",
-        title: manifest?.useCaseSpec?.title || manifest?.id || "generated",
-        subtitle: manifest?.useCaseSpec?.subtitle,
-        persona: manifest?.useCaseSpec?.persona,
-        department: manifest?.domain,
-        kpis: manifest?.useCaseSpec?.kpis || [],
-        architecture: manifest?.useCaseSpec?.architecture,
-        generationSpec: {
-          behaviorContract,
-          sourceSystems: manifest?.systems || [],
-          entities: manifest?.tables || [],
-          documents: manifest?.documents || [],
-        },
-      };
-      const concepts = buildOkfBundle(okfSpec);
-      okfBundleDir = join(dir, "app", "knowledge");
-      for (const concept of concepts) {
-        const abs = join(okfBundleDir, `${concept.relPath}.md`);
-        await mkdir(join(abs, ".."), { recursive: true }).catch(() => {});
-        await writeFile(abs, renderOkfConcept(concept.fields, concept.body), "utf8");
-      }
-    } catch (error) {
-      // Non-fatal: knowledge bundle is grounding, not a build gate.
-      okfBundleDir = null;
-    }
-
-    // OKF coverage sidecar: the canonical tool name each Query Capability and
-    // each Eval Scenario's mechanisms require — so the Antigravity refine step
-    // can verify the built agent COVERS every query (tools reachable) and that
-    // every test's mechanisms are callable. Topology-independent (unlike the
-    // agent-workflow sidecar, which only exists for multi-stage agents).
-    try {
-      const canon = (name) => {
-        const intent = (behaviorContract.toolIntents || []).find((i) => i.name === name);
-        return intent ? canonicalIntentToolName(intent, manifest?.tables || []) : name;
-      };
-      const queries = deriveAnswerableQueries(behaviorContract).map((q) => ({
-        id: q.id,
-        request: q.request,
-        stage: q.stage,
-        tools: (q.tools || []).map(canon).filter(Boolean),
-      }));
-      const tests = deriveTestMechanisms(behaviorContract).map((t) => ({
-        id: t.id,
-        validates: t.validates,
-        mechanisms: (t.mechanisms || []).map(canon).filter(Boolean),
-      }));
-      if (queries.length || tests.length) {
-        await mkdir(join(dir, "artifacts"), { recursive: true }).catch(() => {});
-        await writeJson(join(dir, "artifacts", "okf-coverage.json"), {
-          generatedAt: GENERATED_AT,
-          agentId: manifest?.id || "generated",
-          queries,
-          tests,
-        });
-      }
-    } catch {
-      // Non-fatal.
-    }
-  }
+  const okfBundleDir = await writeOkfArtifacts({ dir, manifest, behaviorContract, generatedAt: GENERATED_AT });
 
   const initPath = join(dir, "app", "__init__.py");
   await writeFile(initPath, `from .agent import app, root_agent\n\n__all__ = ["app", "root_agent"]\n`, "utf8");
