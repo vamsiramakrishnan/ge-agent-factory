@@ -52,6 +52,8 @@ import { canonicalSystemId, safePyName, shortAgentName, snakeCase, titleCase, va
 import { CONTRACT_INTENT_KINDS, CONTRACT_TOOL_KINDS, ensureContractQueryTables, inferEvalToolArgs, tablePrimaryKey } from "./factory/core/contract-schema.mjs";
 import { MANAGED_MCP_SERVICES, buildSourceIntegrationPlan } from "./factory/integration/source-integration.mjs";
 import { renderToolsModule } from "./factory/runtime/tools-backend.mjs";
+import { pyEscape, pyTripleEscape } from "./factory/tools/py-emit.mjs";
+import { canonicalExpectedToolCallName, canonicalIntentToolName, tableToolName } from "./factory/tools/tool-naming.mjs";
 import { findSimulatorForSystem, loadSimulatorRegistry, simulatorBindingForTool } from "./factory/simulators/registry.mjs";
 import { matchPipelineSteps } from "./factory/agent-workflow.mjs";
 import { buildBundle as buildOkfBundle } from "./spec-to-okf.mjs";
@@ -500,14 +502,6 @@ async function cmdGenerate(dir, flags) {
 // agent task-specific instead of a hello/list/query shell. These helpers turn
 // each ToolIntentSpec into a Python function and shape the agent instruction
 // from the contract's role, scope, evidence, and escalation rules.
-
-function pyEscape(value) {
-  return String(value || "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-}
-
-function pyTripleEscape(value) {
-  return String(value || "").replace(/\\/g, "\\\\").replace(/"""/g, '\\"\\"\\"');
-}
 
 function buildAgentQualityPlan({ useCase, contract, systems = [], tables = [], documents = [] }) {
   const agentName = validPythonIdentifierName(`${useCase?.id || "generated"}_agent`);
@@ -1541,57 +1535,6 @@ async function cmdTools(dir, flags) {
     okfKnowledgeBundle: okfBundleDir,
     agentGenerated: !existsSync(agentPath) || true,
   });
-}
-
-function tableToolName(table) {
-  const source = snakeCase(table.sourceSystemId || "source");
-  const tableName = snakeCase(table.name || "records");
-  const dedupedTable = tableName === source || tableName.startsWith(`${source}_`)
-    ? tableName.slice(source.length).replace(/^_+/, "") || "records"
-    : tableName;
-  return snakeCase(`${source}_${dedupedTable}`);
-}
-
-function queryIntentTableName(intent) {
-  const source = snakeCase(intent?.sourceSystemId || "");
-  const name = snakeCase(intent?.name || "").replace(/^query_/, "");
-  if (source && name.startsWith(`${source}_`)) return name.slice(source.length + 1) || "records";
-  return name || "records";
-}
-
-function canonicalIntentToolName(intent, tables = []) {
-  if (!intent?.name) return "";
-  if (intent.kind !== "query") return safePyName(intent.name);
-  const source = snakeCase(intent.sourceSystemId || "");
-  const tableName = queryIntentTableName(intent);
-  // Materialized contract tables are now source-qualified (e.g. "workday_records"),
-  // so accept either the bare tail or the source-qualified form when matching by
-  // name — both alongside a matching sourceSystemId.
-  const qualifiedName = source && tableName !== source && !tableName.startsWith(`${source}_`)
-    ? snakeCase(`${source}_${tableName}`)
-    : tableName;
-  const nameMatches = (table) => {
-    const tn = snakeCase(table.name || "");
-    return tn === tableName || tn === qualifiedName;
-  };
-  const matchingTable = tables.find((table) => (
-    snakeCase(table.sourceSystemId || "") === source && nameMatches(table)
-  ));
-  if (matchingTable) return `query_${tableToolName(matchingTable)}`;
-  // Fallback by name only is allowed ONLY when it does not cross source systems:
-  // require the candidate's sourceSystemId to match the intent's, so a same-tail
-  // table from a DIFFERENT system can never claim this intent's tool name.
-  const sameNameTables = tables.filter((table) => (
-    nameMatches(table) && snakeCase(table.sourceSystemId || "") === source
-  ));
-  if (sameNameTables.length === 1) return `query_${tableToolName(sameNameTables[0])}`;
-  return safePyName(intent.name);
-}
-
-function canonicalExpectedToolCallName(name, intents = [], tables = []) {
-  const safeName = safePyName(name);
-  const intent = intents.find((candidate) => safePyName(candidate?.name || "") === safeName);
-  return intent ? canonicalIntentToolName(intent, tables) : safeName;
 }
 
 // ── Multi-agent workflow deriver ──────────────────────────────
