@@ -33,6 +33,8 @@ import { extractFirstJsonObject } from "@ge/std/json-repair";
 import { toCsv } from "@ge/std/csv-io";
 import { buildFactoryCommandTree } from "./factory/registry.mjs";
 import { renderToolsPreambleLines, renderDocumentToolLines } from "./factory/tools/render-tools-py.mjs";
+import { renderQueryToolLines } from "./factory/tools/render-query-tools.mjs";
+import { renderAgentPy } from "./factory/agents/render-agent-py.mjs";
 import { deriveColumnsForEntity, matchEntityColumnSchema } from "./factory/use-case/entity-column-schemas.mjs";
 import { deriveSchemaFromGenerationSpec } from "./factory/use-case/schema-from-generation-spec.mjs";
 import { harnessRefineSchema, harnessReviewSchema } from "./schemas/harness-schemas.mjs";
@@ -1090,51 +1092,7 @@ async function cmdTools(dir, flags) {
 
   const lines = renderToolsPreambleLines({ manifest, tables });
 
-  for (const t of tables) {
-    const fn = tableToolName(t);
-    const matchingQueryIntent = contractIntents.find((intent) => intent.kind === "query" && canonicalIntentToolName(intent, tables) === `query_${fn}`);
-    const requiredFilters = new Set((matchingQueryIntent?.requiredInputs || []).map((input) => snakeCase(input)));
-    const genericFilters = [...requiredFilters]
-      .filter((input) => !["employee_id"].includes(input))
-      .filter((input) => !(t.columns || []).some((column) => snakeCase(column.name) === input))
-      .map((input) => ({ param: input, column: null }));
-    const filterSpecs = (t.columns || [])
-      .filter((c) => c.name === tablePrimaryKey(t) || requiredFilters.has(snakeCase(c.name)) || (c.type !== "number" && !["name", "email"].includes(c.name)))
-      .slice(0, 6)
-      .map((c) => ({ param: snakeCase(c.name), column: c.name }));
-    if (requiredFilters.has("employee_id") && !filterSpecs.some((spec) => spec.param === "employee_id")) {
-      filterSpecs.unshift({ param: "employee_id", column: tablePrimaryKey(t) });
-    }
-    const params = [...genericFilters, ...filterSpecs]
-      .filter((spec, index, all) => all.findIndex((item) => item.param === spec.param) === index)
-      .map((spec) => `${spec.param}: str = ""`)
-      .join(", ");
-    const hasJson = t.jsonPath;
-    const produces = matchingQueryIntent?.produces?.length ? matchingQueryIntent.produces : [`${snakeCase(t.name)}_records`, `${snakeCase(t.name)}_summary`];
-    const evidence = matchingQueryIntent?.evidenceEmitted?.length ? matchingQueryIntent.evidenceEmitted : ["source_system_record"];
-    lines.push(
-      `def query_${fn}(${params}${params ? ", " : ""}limit: int = 20) -> dict[str, Any]:`,
-      `    """Query ${t.sourceSystem || "source system"} ${t.name}. Columns: ${(t.columns || []).map((c) => c.name).join(", ")}."""`,
-      `    rows = ${hasJson ? `_json("${t.jsonPath}")` : `_csv("${t.path}")`}`,
-    );
-    if (genericFilters.some((spec) => spec.param === "lookup_key")) {
-      lines.push(
-        `    if lookup_key:`,
-        `        needle = lookup_key.lower()`,
-        `        rows = [r for r in rows if any(needle in str(value).lower() for value in r.values())]`,
-      );
-    }
-    if (genericFilters.some((spec) => spec.param === "date_range")) {
-      lines.push(
-        `    if date_range:`,
-        `        rows = [r for r in rows if any(date_range.lower() in str(value).lower() for key, value in r.items() if "date" in key.lower() or key.lower().endswith("_at") or key.lower() == "period")]`,
-      );
-    }
-    for (const spec of filterSpecs) {
-      lines.push(`    if ${spec.param}: rows = [r for r in rows if str(r.get("${spec.column}","")).lower() == ${spec.param}.lower()]`);
-    }
-    lines.push(`    return {"source_system": ${JSON.stringify(t.sourceSystem || null)}, "source_system_id": ${JSON.stringify(t.sourceSystemId || null)}, "table": "${t.name}", "rows": rows[:max(1,min(limit,100))], "total": len(rows), "produces": ${JSON.stringify(produces)}, "evidence": ${JSON.stringify(evidence)}}`, ``);
-  }
+  lines.push(...renderQueryToolLines({ tables, contractIntents }));
 
   // Document tools
   const docs = manifest.documents || [];
@@ -1185,222 +1143,13 @@ async function cmdTools(dir, flags) {
       tables: manifest?.tables || [],
       documents: manifest?.documents || [],
     });
-    const writeToolNames = (behaviorContract?.toolIntents || [])
-      .filter((intent) => ["action", "notification"].includes(intent?.kind))
-      .map((intent) => safePyName(intent.name));
-    const evidenceMinSystemsByTool = Object.fromEntries((behaviorContract?.toolIntents || [])
-      .filter((intent) => ["action", "notification"].includes(intent?.kind))
-      .map((intent) => {
-        const toolName = safePyName(intent.name);
-        const ruleText = [
-          intent?.description,
-          ...(behaviorContract?.escalationRules || []).map((rule) => `${rule?.trigger || ""} ${rule?.action || ""} ${rule?.rationale || ""}`),
-          ...(behaviorContract?.hardGuardrails || []).map((rule) => typeof rule === "string" ? rule : JSON.stringify(rule)),
-        ].join(" ");
-        const minSystems = /(?:at least\s+)?two(?:-|\s+)system|two\s+systems|2\s+systems/i.test(ruleText) ? 2 : 0;
-        return [toolName, minSystems];
-      })
-      .filter(([, minSystems]) => minSystems > 0));
-    const requiredInputsByTool = Object.fromEntries((behaviorContract?.toolIntents || [])
-      .filter((intent) => intent?.name)
-      .map((intent) => [safePyName(intent.name), (intent.requiredInputs || []).map((input) => snakeCase(input))]));
-
     // Derive the agent topology from the upstream pipeline / explicit workflow.
     // topology === "single" emits byte-identical output to the legacy single-agent
     // path (default, must never regress). sequential/parallel emit a workflow of
     // sub-agents, each scoped to its stage's tools.
     const workflow = deriveAgentWorkflow({ behaviorContract, architecture: manifest?.useCaseSpec?.architecture, manifest });
-    const isMultiAgent = workflow.topology !== "single";
-    const workflowAgentClass = workflow.topology === "parallel" ? "ParallelAgent" : "SequentialAgent";
 
-    // Common header: imports + build-time design notes. The single-agent path keeps
-    // the exact legacy import line and design note; the multi-agent path adds the
-    // orchestration import and records the derived topology.
-    const importLine = isMultiAgent
-      ? `from google.adk.agents import Agent, ${workflowAgentClass}`
-      : `from google.adk.agents import Agent`;
-    const subAgentNote = isMultiAgent
-      ? `# Topology   : ${workflow.topology} (${workflow.steps.length} stages, derived from architecture.pipeline)`
-      : `# Sub-agents : ${String(qualityPlan.adkCapabilities.useSubAgentsWhen || "single agent").replace(/\s+/g, " ").slice(0, 200)}`;
-
-    const headerLines = [
-      importLine,
-      `from google.adk.apps import App`,
-      `from google.adk.agents.callback_context import CallbackContext`,
-      `from google.genai import types as genai_types`,
-      `from .tools import source_adapters`,
-      ``,
-      `# === Agent design (build-time notes — NOT part of the runtime prompt) ===`,
-      `# Agent name : ${qualityPlan.naming.agentName}  (keep stable for evals / deployment metadata / GE registration)`,
-      `# Model      : ${AGENT_MODEL} @ temperature ${qualityPlan.adkCapabilities.generateContentConfig.temperature}`,
-      `# Session    : scenario_id, primary_objective, expected_tools, evidence_log, audit_trails`,
-      `# Callbacks  : initialize_workflow_state, enforce_tool_contract, capture_tool_evidence`,
-      subAgentNote,
-      ``,
-      `_INSTRUCTION = """${pyTripleEscape(instruction)}"""`,
-      `_SCENARIO_ID = "${pyEscape(manifest?.id || "generated")}"`,
-      `_PRIMARY_OBJECTIVE = """${pyTripleEscape(behaviorContract?.primaryObjective || "Fixture-backed generated agent.")}"""`,
-      `_EXPECTED_TOOLS = ${JSON.stringify((behaviorContract?.toolIntents || []).map((intent) => canonicalIntentToolName(intent, manifest?.tables || [])).filter(Boolean))}`,
-      `_WRITE_TOOLS = ${JSON.stringify(writeToolNames)}`,
-      `_REQUIRED_INPUTS_BY_TOOL = ${JSON.stringify(requiredInputsByTool)}`,
-      `_EVIDENCE_MIN_SYSTEMS_BY_TOOL = ${JSON.stringify(evidenceMinSystemsByTool)}`,
-      ``,
-      `async def initialize_workflow_state(callback_context: CallbackContext) -> None:`,
-      `    """Initialize session-scoped state used by evals, callbacks, and audit review."""`,
-      `    state = callback_context.state`,
-      `    state.setdefault("scenario_id", _SCENARIO_ID)`,
-      `    state.setdefault("primary_objective", _PRIMARY_OBJECTIVE)`,
-      `    state.setdefault("expected_tools", _EXPECTED_TOOLS)`,
-      `    state.setdefault("evidence_log", [])`,
-      `    state.setdefault("audit_trails", [])`,
-      ``,
-      `# ADK injects tool-callback args by keyword. before_tool_callback signature is`,
-      `# (tool, args, tool_context); after_tool_callback adds tool_response. We accept`,
-      `# **kwargs for forward-compatibility across ADK versions (result vs tool_response).`,
-      `async def enforce_tool_contract(tool=None, args: dict = None, tool_context=None, **kwargs) -> dict | None:`,
-      `    """Block unsafe write-like tool calls before they can mutate external state."""`,
-      `    args = args or {}`,
-      `    tool_name = getattr(tool, "name", tool)`,
-      `    if tool_name in _WRITE_TOOLS:`,
-      `        required = _REQUIRED_INPUTS_BY_TOOL.get(tool_name, [])`,
-      `        missing = [key for key in required if args.get(key) in ("", None)]`,
-      `        missing.extend([key for key, value in args.items() if value in ("", None) and key not in missing])`,
-      `        idempotency = args.get("idempotency_key") or args.get("idempotencyKey")`,
-      `        if missing:`,
-      `            return {"error": "missing_required_inputs", "missing": missing, "tool": tool_name, "escalation": "request_more_info"}`,
-      `        if ("idempotency_key" in args or "idempotencyKey" in args) and not idempotency:`,
-      `            return {"error": "missing_idempotency_key", "tool": tool_name, "escalation": "request_confirmation"}`,
-      `        min_systems = _EVIDENCE_MIN_SYSTEMS_BY_TOOL.get(tool_name, 0)`,
-      `        if min_systems:`,
-      `            state = getattr(tool_context, "state", {}) or {}`,
-      `            evidence_log = state.get("evidence_log", [])`,
-      `            systems = set()`,
-      `            for entry in evidence_log:`,
-      `                if not isinstance(entry, dict):`,
-      `                    continue`,
-      `                source = entry.get("source_system_id") or entry.get("source_system")`,
-      `                if source:`,
-      `                    systems.add(str(source).lower().replace(" ", "").replace("_", "").replace("/", ""))`,
-      `            if len(systems) < min_systems:`,
-      `                return {"error": "insufficient_evidence", "tool": tool_name, "required_source_systems": min_systems, "actual_source_systems": sorted(systems), "escalation": "refuse", "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."}`,
-      `    return None`,
-      ``,
-      `async def capture_tool_evidence(tool=None, args: dict = None, tool_context=None, tool_response=None, **kwargs) -> dict | None:`,
-      `    """Record source evidence and audit trails in session state without changing the tool result."""`,
-      `    tool_name = getattr(tool, "name", tool)`,
-      `    result = tool_response if tool_response is not None else kwargs.get("result")`,
-      `    state = getattr(tool_context, "state", None)`,
-      `    if state is None:`,
-      `        return None`,
-      `    evidence_log = state.setdefault("evidence_log", [])`,
-      `    if isinstance(result, dict):`,
-      `        evidence_log.append({`,
-      `            "tool": tool_name,`,
-      `            "source_system": result.get("source_system") or result.get("source_system_id"),`,
-      `            "evidence": result.get("evidence"),`,
-      `            "table": result.get("table"),`,
-      `            "total": result.get("total"),`,
-      `        })`,
-      `        if result.get("audit_trail"):`,
-      `            state.setdefault("audit_trails", []).append(result["audit_trail"])`,
-      `    return None`,
-      ``,
-    ];
-
-    // generate_content_config body shared by single + multi (sub-)agents. Inline
-    // comment preserved so the single-agent path stays byte-identical to legacy.
-    const generateConfigLines = [
-      `    generate_content_config=genai_types.GenerateContentConfig(`,
-      `        temperature=${qualityPlan.adkCapabilities.generateContentConfig.temperature},`,
-      // Emit max_output_tokens only when the use case warrants a bound; otherwise
-      // omit it so the agent uses the model's default budget (never the 2048 boilerplate).
-      ...(qualityPlan.adkCapabilities.generateContentConfig.maxOutputTokens != null
-        ? [`        max_output_tokens=${qualityPlan.adkCapabilities.generateContentConfig.maxOutputTokens},`]
-        : []),
-      `    ),`,
-    ];
-
-    let agentTail;
-    if (!isMultiAgent) {
-      // ── Single-agent path: byte-identical to the legacy emitter. ──
-      agentTail = [
-        `root_agent = Agent(`,
-        `    name="${qualityPlan.naming.agentName}",`,
-        `    model="${AGENT_MODEL}",`,
-        `    description="${pyEscape(qualityPlan.naming.displayName)}: ${pyEscape((behaviorContract?.primaryObjective || "Fixture-backed generated agent.").slice(0, 180))}",`,
-        `    instruction=_INSTRUCTION,`,
-        ...generateConfigLines,
-        `    output_key="${qualityPlan.adkCapabilities.outputKey}",`,
-        `    before_agent_callback=initialize_workflow_state,`,
-        `    before_tool_callback=enforce_tool_contract,`,
-        `    after_tool_callback=capture_tool_evidence,`,
-        `    tools=source_adapters,`,
-        `)`,
-        ``,
-        `app = App(root_agent=root_agent, name="app")`,
-        ``,
-      ];
-    } else {
-      // ── Multi-agent path: SequentialAgent/ParallelAgent of stage sub-agents. ──
-      // Each sub-agent is scoped to its stage's tools via _pick(); tools.py is
-      // unchanged (source_adapters stays the full list). The orchestration agent
-      // (SequentialAgent/ParallelAgent) takes name/description/sub_agents only.
-      const scenario = pyEscape(manifest?.id ? safePyName(manifest.id) : "generated");
-      const subAgentVars = workflow.steps.map((step) => `${scenario}_${step.id}`);
-      agentTail = [];
-      // name -> tool object map + picker, so a sub-agent can request a tool subset
-      // by name without re-deriving the FunctionTool list.
-      agentTail.push(
-        `# Resolve each tool by its runtime name (FunctionTool.name or the wrapped`,
-        `# function's __name__) so stage sub-agents can claim a subset of source_adapters.`,
-        `_TOOLS_BY_NAME = {getattr(t, "name", None) or getattr(getattr(t, "func", None), "__name__", None): t for t in source_adapters}`,
-        ``,
-        ``,
-        `def _pick(*names):`,
-        `    """Return the source_adapters tools matching the given names, preserving order."""`,
-        `    return [_TOOLS_BY_NAME[n] for n in names if n in _TOOLS_BY_NAME]`,
-        ``,
-        ``,
-      );
-      workflow.steps.forEach((step, index) => {
-        const varName = subAgentVars[index];
-        const pickArgs = step.toolNames.map((name) => `"${pyEscape(name)}"`).join(", ");
-        agentTail.push(
-          `${varName} = Agent(`,
-          `    name="${pyEscape(varName)}",`,
-          `    model="${AGENT_MODEL}",`,
-          `    description="${pyEscape(step.label).slice(0, 180)}",`,
-          `    instruction="""${pyTripleEscape(step.instruction)}""",`,
-          ...generateConfigLines,
-          // Distinct per-stage output_key so sequential stages don't clobber each
-          // other and parallel branches don't collide on a shared key.
-          `    output_key="${pyEscape(safePyName(`${step.id}_output`) || `${qualityPlan.adkCapabilities.outputKey}_${index}`)}",`,
-          // initialize_workflow_state seeds shared session state. It is wired on
-          // EVERY sub-agent: ParallelAgent branches do NOT share state, so each
-          // branch must seed evidence_log/expected_tools itself (setdefault is
-          // idempotent, so this is also safe for the sequential topology).
-          `    before_agent_callback=initialize_workflow_state,`,
-          `    before_tool_callback=enforce_tool_contract,`,
-          `    after_tool_callback=capture_tool_evidence,`,
-          `    tools=_pick(${pickArgs}),`,
-          `)`,
-          ``,
-          ``,
-        );
-      });
-      agentTail.push(
-        `root_agent = ${workflowAgentClass}(`,
-        `    name="${qualityPlan.naming.agentName}",`,
-        `    description="${pyEscape(qualityPlan.naming.displayName)}: ${pyEscape((behaviorContract?.primaryObjective || "Fixture-backed generated agent.").slice(0, 180))}",`,
-        `    sub_agents=[${subAgentVars.join(", ")}],`,
-        `)`,
-        ``,
-        `app = App(root_agent=root_agent, name="app")`,
-        ``,
-      );
-    }
-
-    await writeFile(agentPath, [...headerLines, ...agentTail].join("\n"), "utf8");
+    await writeFile(agentPath, renderAgentPy({ manifest, behaviorContract, instruction, qualityPlan, workflow, agentModel: AGENT_MODEL }), "utf8");
 
     // Persist the derived workflow as a sidecar so downstream validators (the
     // Antigravity harness review/refine) can check the emitted agent.py topology +
