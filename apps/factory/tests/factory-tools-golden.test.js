@@ -26,6 +26,9 @@ import { fileURLToPath } from "node:url";
 //   cp <tmp>/evals/golden.json apps/factory/tests/fixtures/tools-golden/golden.json.golden
 //   cp <tmp>/tests/eval/evalsets/ge_behavior_contract.evalset.json apps/factory/tests/fixtures/tools-golden/evalset.json.golden
 //   cp <tmp>/tests/eval/{eval_config,optimization_config}.json apps/factory/tests/fixtures/tools-golden/
+//   cp <tmp>/pyproject.toml apps/factory/tests/fixtures/tools-golden/pyproject.toml.golden
+//   cp <tmp>/agents-cli-manifest.yaml apps/factory/tests/fixtures/tools-golden/agents-cli-manifest.yaml.golden
+//   cp <tmp>/.agent_engine_config.json apps/factory/tests/fixtures/tools-golden/agent_engine_config.json.golden
 // and review the golden diff as part of the PR.
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -56,6 +59,9 @@ function generate() {
     evalSet: readFileSync(join(ws, "tests", "eval", "evalsets", "ge_behavior_contract.evalset.json"), "utf8"),
     evalConfig: readFileSync(join(ws, "tests", "eval", "eval_config.json"), "utf8"),
     optimizationConfig: readFileSync(join(ws, "tests", "eval", "optimization_config.json"), "utf8"),
+    pyproject: readFileSync(join(ws, "pyproject.toml"), "utf8"),
+    agentsCliManifest: readFileSync(join(ws, "agents-cli-manifest.yaml"), "utf8"),
+    agentEngineConfig: readFileSync(join(ws, ".agent_engine_config.json"), "utf8"),
   };
   rmSync(ws, { recursive: true, force: true });
   return out;
@@ -81,6 +87,9 @@ test.each([
   ["tests/eval/evalsets/ge_behavior_contract.evalset.json", "evalSet", "evalset.json.golden"],
   ["tests/eval/eval_config.json", "evalConfig", "eval_config.json.golden"],
   ["tests/eval/optimization_config.json", "optimizationConfig", "optimization_config.json.golden"],
+  ["pyproject.toml", "pyproject", "pyproject.toml.golden"],
+  ["agents-cli-manifest.yaml", "agentsCliManifest", "agents-cli-manifest.yaml.golden"],
+  [".agent_engine_config.json", "agentEngineConfig", "agent_engine_config.json.golden"],
 ])("cmdTools generates byte-identical %s (parity oracle)", (_label, key, goldenFile) => {
   const out = generate();
   const golden = readFileSync(join(FIXTURE_DIR, goldenFile), "utf8");
