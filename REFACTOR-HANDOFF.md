@@ -1,7 +1,7 @@
 # Refactor session — handoff & status
 
 **Branch:** `claude/elite-engineers-top-areas-g994w3` (pushed, in sync with origin)
-**Test baseline:** `598 pass / 12 fail / 2 errors` — the 12 fails + 2 errors are **pre-existing environmental** (no gcloud/agents-cli/uv/Python/`.ge.json`/Firestore in this sandbox), identical before and after every change (verified by stash-compares). No regressions introduced.
+**Test baseline:** judge by distinct fail **names**, not count — the only real failure is the pre-existing environmental `skill registry maps harness capabilities…` (no gcloud/agents-cli/uv/Python/`.ge.json`/Firestore in this sandbox). The subprocess-heavy golden/workflow tests produce flaky **timeout** fails that inflate the count run-to-run; identical before and after every change (verified by stash-compares). No regressions introduced. Latest: factory.mjs decomposition (see §9).
 **PR:** none opened yet (deliberately — awaiting go-ahead).
 
 This document is the source of truth for what shipped, what was deliberately **not** done (and why), and what's queued. It's written for a reviewing agent.
@@ -116,8 +116,8 @@ A reviewer should treat these as **intentional**, not oversights:
 ## 7. Queued work (bigger, each deserves its own checkpoint)
 
 **Highest value, behavior-sensitive (audit-confirmed):**
-1. **`factory.mjs` god-function split** — `cmdTools` → focused generators + thin assembler; `deriveSchemaFromUseCase` → two functions + if/else; **`deriveColumnsForEntity` → declarative `ENTITY_COLUMN_SCHEMAS` lookup** (the same file already models this pattern at `SYSTEM_TABLE_PATTERNS`). Most self-contained: `deriveColumnsForEntity`.
-2. **Error-handling tier** — establish DEBUG/WARN/throw discipline over the ~71 silent catches. Best first concrete piece: the silent daemon→local fallback in `transport.mjs` (add a "fell back to local" event + WARN — behavior-preserving).
+1. ~~**`factory.mjs` god-function split**~~ — **DONE this session (see §9).** `cmdTools` 462→109 lines (thin orchestrator); `deriveSchemaFromUseCase` + `deriveColumnsForEntity` (the latter landed via PR #4) both extracted. 8 renderer/writer modules, all gated by a new byte-exact parity oracle.
+2. **Error-handling tier** — establish DEBUG/WARN/throw discipline over the ~71 silent catches. The first concrete pieces landed this session (transport.mjs daemon→local fallback trace; harness-journal + factory-core silent catches). The broad sweep over the remaining catches is still open.
 3. **Blocking I/O on HTTP paths** — `factory-bridge.js submitFactoryRun` (sync→job-based; not purely behavior-preserving — flag it).
 
 **Larger / env-gated:**
@@ -131,4 +131,34 @@ A reviewer should treat these as **intentional**, not oversights:
 ---
 
 ## 8. Recommended next step
-`deriveColumnsForEntity → ENTITY_COLUMN_SCHEMAS` (declarative lookup) — smallest, fully offline-verifiable slice of the `factory.mjs` god-module work, with the pattern already modeled in-file. Then the `transport.mjs` silent-fallback trace. Both behavior-preserving; both green-gateable here.
+The god-function split (§9) and the first error-handling pieces are done. The next offline-verifiable slices, in order of value/safety:
+1. `deriveAgentWorkflow` + its instruction helpers (`contractGovernancePreamble`, `sharedAgentGuardrails`, `buildStepInstruction`) → an `agent-workflow` module. Pure; oracle covers the single-agent agent.py, the workflow test covers multi-agent, and `__test.deriveAgentWorkflow` allows a stash-diff.
+2. `buildCloudDataArtifacts` → `factory/data/` — deterministic, but needs a NEW json-backed parity fixture first (the tools-golden fixture is CSV-backed with no row data).
+3. The broad error-handling sweep over the remaining silent catches.
+
+**Do NOT** decompose `cmdTest` / `cmdRegister` / `cmdDeploy` offline — they shell out to uv/pytest/gcloud/Agent Registry and can only be parse-checked here, so any change ships without a runtime net.
+
+---
+
+## 9. cmdTools / factory.mjs decomposition (this session)
+
+The `factory.mjs` god-function split (queued item §7.1). **factory.mjs: 4849 → 3816 lines (−1033, −21%).** `cmdTools` (the deploy-path function that emits every agent's `tools.py` + `agent.py`): **462 → 109 lines**, now a flat orchestrator.
+
+### The keystone: a byte-exact parity oracle (built FIRST)
+`apps/factory/tests/factory-tools-golden.test.js` + `fixtures/tools-golden/`. Regenerates from a real manifest (asc-606-contract-analyzer) under `GE_SOURCE_DATE` and asserts byte-identical output for **9 deterministic artifacts**: `tools.py`, `agent.py`, `evals/golden.json`, the agents-cli evalset, `eval_config.json`, `optimization_config.json`, `pyproject.toml`, `agents-cli-manifest.yaml`, `.agent_engine_config.json`. This is what made parallel-safe, fast extraction possible — the bottleneck was always *verification*, not editing. Verified the oracle catches drift (perturb a renderer → fail; revert → green). Regeneration instructions are in the test header. (Note: oracle tests spawn `node` per case, so flaky subprocess **timeouts** inflate the fail *count* — judge by distinct fail *names*; only `skill registry…` is a real pre-existing environmental failure.)
+
+### Modules extracted (each a verbatim move, gated green)
+| Commit | Module | What |
+|---|---|---|
+| `7c6bb9e` | `factory/tools/py-emit.mjs`, `factory/tools/tool-naming.mjs` | shared Python-emit + tool-naming primitives (the dependency that was blocking renderer extraction) |
+| `c5b0e0d` | `factory/tools/render-query-tools.mjs`, `factory/agents/render-agent-py.mjs` | per-table query tools; the ~230-line agent.py emitter (single + multi-agent) |
+| `69cf2da` | `factory/tools/render-tools-py.mjs` (`renderToolsPy`), `factory/tools/render-contract-tools.mjs` | full tools.py assembly + behavior-contract tools |
+| `79ccb2f` | `factory/agents/okf-artifacts.mjs` | OKF knowledge-bundle + coverage-sidecar writer |
+| `1d3c0ae` | `factory/evals/render-eval-artifacts.mjs` | the 4 eval-artifact renderers (oracle extended to pin them) |
+| `5a45f72` | `factory/runtime/agents-cli-metadata.mjs` | pyproject/manifest/engine-config writer (oracle extended to pin them) |
+| `99bf0d4` | `factory/use-case/schema-derivation.mjs` | legacy `deriveSchemaFromUseCase` + its private cluster |
+
+### Verification beyond the oracle
+- New offline unit tests: `factory-render-agent-py.test.js` (locks the multi-agent `SequentialAgent`/`ParallelAgent` branch the single-agent golden can't reach), `factory-render-tools-py.test.js`.
+- For moves the oracle doesn't cover (OKF bundle, schema derivation), proved byte-parity with **stash-diff harnesses** against the inline baseline before landing — schema-derivation verified on BOTH the heuristic path (24,464 B) and the generationSpec delegation branch (5,630 B).
+- `buildAgentQualityPlan` is **injected** into `deriveSchemaFromUseCase` / `deriveSchemaFromGenerationSpec` (it also drives the agent.py emitter, so it stays in factory.mjs); `__test` binds it to keep the test-facing 2-arg signature.
