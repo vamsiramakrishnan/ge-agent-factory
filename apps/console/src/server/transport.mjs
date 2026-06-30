@@ -202,6 +202,12 @@ export async function startGeJob(argv, command = null, { cfg = null, preflight =
     await appendJobEvent(id, ev);
   };
 
+  // When the daemon submit fails we fall through to local execution. Capture the
+  // reason so the local job carries a "fell back to local" trace instead of the
+  // submit error vanishing into a silent catch (the DB may already mark the run
+  // daemon-bound, so a silent fallback desyncs the UI with no way to see why).
+  let daemonSubmitError = null;
+
   if (command?.id) {
     let preflightResult;
     try {
@@ -230,7 +236,9 @@ export async function startGeJob(argv, command = null, { cfg = null, preflight =
       await pushPreflightOnly(run.id, { type: "stage_started", stage: "preflight", line: `doctor readiness: ${command.id}`, ts: new Date().toISOString() });
       await pushPreflightOnly(run.id, { type: "stage_done", stage: "preflight", level: "info", line: "readiness passed", data: { checks: preflightResult.checks } });
       return run.id;
-    } catch {}
+    } catch (error) {
+      daemonSubmitError = error;
+    }
   }
 
   if (!command?.id) {
@@ -238,7 +246,9 @@ export async function startGeJob(argv, command = null, { cfg = null, preflight =
       const run = await submitGeJobToDaemon(argv, command);
       await createJobRecord({ id: run.id, argv, command });
       return run.id;
-    } catch {}
+    } catch (error) {
+      daemonSubmitError = error;
+    }
   }
 
   const id = `job-${Date.now()}-${++jobSeq}`;
@@ -252,6 +262,11 @@ export async function startGeJob(argv, command = null, { cfg = null, preflight =
     for (const l of job.listeners) { try { l(ev); } catch {} }
   };
   push({ type: "stage_started", stage: "job", line: `$ ge ${argv.join(" ")}`, ts: new Date().toISOString() });
+  if (daemonSubmitError) {
+    const reason = daemonSubmitError?.message || String(daemonSubmitError);
+    console.warn(`[transport] job ${id}: daemon submit failed, running locally — ${reason}`);
+    push({ type: "log", level: "warn", line: `Daemon unavailable; running this job locally instead — ${reason}`, data: { fellBackToLocal: true } });
+  }
 
   if (command?.id) {
     push({ type: "stage_started", stage: "preflight", line: `doctor readiness: ${command.id}`, ts: new Date().toISOString() });
@@ -287,6 +302,9 @@ export async function listJobs({ limit } = {}) {
 }
 
 export async function startAutopilotRun({ ids = [], targetStage = "preview", repair = true, attempts = 3, runPreview = false, query = {} } = {}) {
+  // Daemon submit failure falls through to local mission planning below; capture
+  // the reason so the local run is traceable instead of silently swapping planes.
+  let daemonSubmitError = null;
   try {
     const task = await submitAutopilotToDaemon({ ids, targetStage, repair, attempts, runPreview, query });
     const output = task.output || {};
@@ -308,7 +326,9 @@ export async function startAutopilotRun({ ids = [], targetStage = "preview", rep
       reason: output.reason,
       mission: output.mission,
     };
-  } catch {}
+  } catch (error) {
+    daemonSubmitError = error;
+  }
 
   const cfg = core.loadConfig(query || {});
   const mission = await core.missionPlan(cfg, { ids, targetStage, repair, attempts, runPreview });
@@ -316,6 +336,7 @@ export async function startAutopilotRun({ ids = [], targetStage = "preview", rep
   if (!items.length) {
     const id = `auto-skip-${Date.now()}-${++autopilotSeq}`;
     const reason = autopilotSkipReason(mission);
+    if (daemonSubmitError) console.warn(`[transport] autopilot ${id}: daemon submit failed, planned locally — ${daemonSubmitError?.message || String(daemonSubmitError)}`);
     await createAutopilotRun({
       id,
       targetStage,
@@ -345,6 +366,11 @@ export async function startAutopilotRun({ ids = [], targetStage = "preview", rep
     options: { repair, attempts, runPreview, mode: cfg.mode, mission },
     items,
   });
+  if (daemonSubmitError) {
+    const reason = daemonSubmitError?.message || String(daemonSubmitError);
+    console.warn(`[transport] autopilot ${id}: daemon submit failed, running locally — ${reason}`);
+    await appendAutopilotEvent(id, { type: "log", level: "warn", line: `Daemon unavailable; running autopilot locally instead — ${reason}`, data: { fellBackToLocal: true }, ts: new Date().toISOString() });
+  }
   processAutopilotRun(id, { cfg, repair, attempts, runPreview }).catch(() => {});
   return { skipped: false, runId: id, mission };
 }
