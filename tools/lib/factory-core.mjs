@@ -1263,7 +1263,13 @@ async function ledgerWrite(fn) {
   try {
     const l = await runLedger();
     if (l) await fn(l);
-  } catch { /* ledger is a shadow store in phase 1; never fatal */ }
+  } catch (error) {
+    // The ledger is a shadow store in phase 1, so a write failure is never fatal to
+    // the build/ship — but silently dropping it means a run/submission can vanish
+    // from the durable ledger with no trace, leaving the UI/CLI disagreeing about
+    // run state. Surface the reason; the swallow (and fallback to file state) is unchanged.
+    console.warn(`[factory-core] ledger write skipped — durable run/job record not persisted: ${error?.message || String(error)}`);
+  }
 }
 
 // Read cutover (default ON; set GE_LEDGER_READS=0 to disable): fleetStatus and
@@ -2514,7 +2520,13 @@ export function statusBoard(cfg) {
 
   let factoryUp = false;
   if (cfg.project) {
-    try { factoryUp = !!(factoryPlane.describeRun(cfg, cfg.gatewayService) && factoryPlane.describeRun(cfg, cfg.workerService)); } catch {}
+    try { factoryUp = !!(factoryPlane.describeRun(cfg, cfg.gatewayService) && factoryPlane.describeRun(cfg, cfg.workerService)); } catch (error) {
+      // describeRun returns null on a clean "service absent" (allowFail), so a throw
+      // here means the check itself broke (e.g. gcloud missing / auth error) — i.e.
+      // "deployed but unreachable", not "not deployed". Surface it so the board's
+      // "not deployed" detail isn't mistaken for a confirmed absence. factoryUp stays false.
+      console.warn(`[factory-core] statusBoard: factory-plane probe failed; reporting "not deployed" but the check itself errored — ${error?.message || String(error)}`);
+    }
   }
   planes.push({ name: "factory", up: factoryUp, detail: factoryUp ? `${cfg.gatewayService} + ${cfg.workerService}` : "gateway/worker not deployed" });
 
