@@ -4,6 +4,49 @@
 // source lines (spliced into the tools.py line buffer); byte output is identical
 // to the former inline construction.
 
+import { snakeCase } from "@ge/std/naming";
+import { renderToolsModule } from "../runtime/tools-backend.mjs";
+import { tableToolName } from "./tool-naming.mjs";
+import { renderQueryToolLines } from "./render-query-tools.mjs";
+import { renderContractToolLines } from "./render-contract-tools.mjs";
+
+// Assemble the complete app/tools.py source. Owns the whole layout: preamble +
+// per-table query tools + document tools + behavior-contract tools + the
+// source_adapters list + the GE_DATA_BACKEND switch module. Pure function of the
+// manifest, tables, contract intents, and pipeline. Returns the source string and
+// the emitted contract-tool function names (the caller records them in the tools
+// pipeline manifest and reports them).
+export function renderToolsPy({ manifest, tables, contractIntents, emittedContractIntents, pipeline }) {
+  const lines = renderToolsPreambleLines({ manifest, tables });
+  lines.push(...renderQueryToolLines({ tables, contractIntents }));
+
+  const docs = manifest.documents || [];
+  if (docs.length > 0) {
+    lines.push(...renderDocumentToolLines(docs));
+  }
+
+  const { lines: contractLines, functionNames: contractToolFunctionNames } = renderContractToolLines(emittedContractIntents);
+  lines.push(...contractLines);
+
+  const docToolNames = docs.length > 0 ? ", FunctionTool(func=list_documents), FunctionTool(func=read_document), FunctionTool(func=search_documents)" : "";
+  const contractToolList = contractToolFunctionNames.length
+    ? `, ${contractToolFunctionNames.map((name) => `FunctionTool(func=${name})`).join(", ")}`
+    : "";
+  const department = manifest?.useCaseSpec?.department || manifest?.department || "general";
+  // The Agent Registry server id this agent registers as — MUST match cmdRegister's
+  // serverName so the runtime resolves exactly the registered toolset by name.
+  const mcpServerName = snakeCase(pipeline.name || manifest?.id || "mock-agent").replace(/_/g, "-");
+
+  lines.push(
+    `source_adapters_fixtures = [FunctionTool(func=list_systems), FunctionTool(func=describe_data_model), ${tables.map((t) => `FunctionTool(func=query_${tableToolName(t)})`).join(", ")}${docToolNames}${contractToolList}]`,
+  );
+  // Append the GE_DATA_BACKEND switch (fixtures | mcp). mcp resolves tools from Agent
+  // Registry by server name; defines source_adapters + mock_tools alias.
+  lines.push(renderToolsModule({ agentId: manifest.id, department, mcpServerName }));
+
+  return { source: lines.join("\n"), contractToolFunctionNames };
+}
+
 // File preamble: module docstring, imports, fixture loaders, deterministic-id
 // helper, the embedded contract-documents table, and the always-present
 // describe_data_model / list_systems tools. Pure function of (manifest, tables).

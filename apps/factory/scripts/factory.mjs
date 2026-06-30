@@ -32,8 +32,7 @@ import { faker } from "@faker-js/faker";
 import { extractFirstJsonObject } from "@ge/std/json-repair";
 import { toCsv } from "@ge/std/csv-io";
 import { buildFactoryCommandTree } from "./factory/registry.mjs";
-import { renderToolsPreambleLines, renderDocumentToolLines } from "./factory/tools/render-tools-py.mjs";
-import { renderQueryToolLines } from "./factory/tools/render-query-tools.mjs";
+import { renderToolsPy } from "./factory/tools/render-tools-py.mjs";
 import { renderAgentPy } from "./factory/agents/render-agent-py.mjs";
 import { deriveColumnsForEntity, matchEntityColumnSchema } from "./factory/use-case/entity-column-schemas.mjs";
 import { deriveSchemaFromGenerationSpec } from "./factory/use-case/schema-from-generation-spec.mjs";
@@ -53,7 +52,6 @@ import { buildHarnessRefinePrompt, buildHarnessRunSummary, buildHarnessWorkItem,
 import { canonicalSystemId, safePyName, shortAgentName, snakeCase, titleCase, validPythonIdentifierName } from "@ge/std/naming";
 import { CONTRACT_INTENT_KINDS, CONTRACT_TOOL_KINDS, ensureContractQueryTables, inferEvalToolArgs, tablePrimaryKey } from "./factory/core/contract-schema.mjs";
 import { MANAGED_MCP_SERVICES, buildSourceIntegrationPlan } from "./factory/integration/source-integration.mjs";
-import { renderToolsModule } from "./factory/runtime/tools-backend.mjs";
 import { pyEscape, pyTripleEscape } from "./factory/tools/py-emit.mjs";
 import { canonicalExpectedToolCallName, canonicalIntentToolName, tableToolName } from "./factory/tools/tool-naming.mjs";
 import { findSimulatorForSystem, loadSimulatorRegistry, simulatorBindingForTool } from "./factory/simulators/registry.mjs";
@@ -600,118 +598,6 @@ function buildAgentQualityPlan({ useCase, contract, systems = [], tables = [], d
   };
 }
 
-function renderContractToolPython(intent) {
-  const fnName = safePyName(intent.name || `${intent.kind || "tool"}_tool`);
-  const sourceSystemId = pyEscape(intent.sourceSystemId || "unknown");
-  const kind = pyEscape(intent.kind || "action");
-  const description = pyTripleEscape(intent.description || `${intent.kind || "Tool"} for ${intent.sourceSystemId || "source system"}`);
-  const evidenceFallback = intent.kind === "evidence_lookup" ? ["document_reference"] : ["api_response", "generated_audit_trail"];
-  const evidenceLiteral = JSON.stringify((intent.evidenceEmitted && intent.evidenceEmitted.length) ? intent.evidenceEmitted : evidenceFallback);
-  const producesList = intent.produces && intent.produces.length ? intent.produces : [];
-
-  if (intent.kind === "evidence_lookup") {
-    const anchorParam = (intent.requiredInputs || []).find((input) => /anchor|section|topic/i.test(input)) || "citation_anchor";
-    const safeAnchor = safePyName(anchorParam, "citation_anchor");
-    const producedFieldLines = producesList
-      .filter((produce) => snakeCase(produce) !== "citation_anchor")
-      .map((produce) => {
-        const safeProduce = safePyName(produce, "result_field");
-        if (snakeCase(produce).includes("section")) return `    ${safeProduce} = best.get("snippet", "")`;
-        if (snakeCase(produce).includes("document")) return `    ${safeProduce} = best.get("snippet", "")`;
-        return `    ${safeProduce} = best.get("${pyEscape(produce)}") or best.get("snippet", "")`;
-      });
-    const producedDictLines = producesList
-      .filter((produce) => snakeCase(produce) !== "citation_anchor")
-      .map((produce) => `        "${pyEscape(produce)}": ${safePyName(produce, "result_field")},`);
-    return [
-      `def ${fnName}(${safeAnchor}: str = "", document_id: str = "") -> dict[str, Any]:`,
-      `    """${description}"""`,
-      `    candidates = [d for d in _CONTRACT_DOCUMENTS if d.get("source_system_id") == "${sourceSystemId}"]`,
-      `    if document_id:`,
-      `        candidates = [d for d in candidates if d.get("id") == document_id]`,
-      `    if not candidates:`,
-      `        return {"error": "no_document_for_source", "source_system_id": "${sourceSystemId}", "tool_kind": "${kind}"}`,
-      `    best = None`,
-      `    for doc in candidates:`,
-      `        path = FIXTURES / doc.get("path", "")`,
-      `        if not path.exists():`,
-      `            continue`,
-      `        text = path.read_text(encoding="utf-8")`,
-      `        if ${safeAnchor} and ${safeAnchor}.lower() in text.lower():`,
-      `            idx = text.lower().find(${safeAnchor}.lower())`,
-      `            snippet = text[max(0, idx - 160):idx + 320].strip()`,
-      `            best = {"id": doc.get("id"), "title": doc.get("title"), "snippet": snippet, "anchor_matched": True}`,
-      `            break`,
-      `        if best is None:`,
-      `            best = {"id": doc.get("id"), "title": doc.get("title"), "snippet": text[:400].strip(), "anchor_matched": False}`,
-      `    if best is None:`,
-      `        return {"error": "documents_unavailable", "source_system_id": "${sourceSystemId}", "tool_kind": "${kind}"}`,
-      ...(producedFieldLines.length ? [
-        `    # Contract outputs: expose produced fields as top-level keys so`,
-        `    # validators and downstream harnesses can trace spec-to-code coverage.`,
-        ...producedFieldLines,
-      ] : []),
-      `    return {`,
-      `        "source_system_id": "${sourceSystemId}",`,
-      `        "tool_kind": "${kind}",`,
-      `        "citation_anchor": ${safeAnchor},`,
-      ...producedDictLines,
-      `        "document": best,`,
-      `        "evidence": ${evidenceLiteral},`,
-      `    }`,
-      ``,
-    ].join("\n");
-  }
-
-  const safeInputs = (intent.requiredInputs || []).map((input) => ({ raw: input, safe: safePyName(input, "arg") }));
-  const params = safeInputs.map(({ safe }) => `${safe}: str = ""`).join(", ");
-  const requiredList = safeInputs.map(({ raw, safe }) => `("${pyEscape(raw)}", ${safe})`).join(", ");
-  const requiredCheck = requiredList
-    ? [
-        `    missing = [name for name, value in [${requiredList}] if not value]`,
-        `    if missing:`,
-        `        return {"error": "missing_required_inputs", "missing": missing, "tool_kind": "${kind}", "escalation": "request_more_info"}`,
-      ].join("\n")
-    : "";
-  const auditFmt = safeInputs.map(({ raw, safe }) => `${raw}={${safe}}`).join(", ");
-  const auditFmtArgs = safeInputs.map(({ safe }) => `${safe}=${safe}`).join(", ");
-  const auditLine = safeInputs.length
-    ? `    audit_trail = "${pyEscape(intent.name || "intent")}(${auditFmt})".format(${auditFmtArgs})`
-    : `    audit_trail = "${pyEscape(intent.name || "intent")}()"`;
-
-  const actionProducesList = producesList.length ? producesList : ["result_id"];
-  const generatedProduces = actionProducesList.filter((produce) => snakeCase(produce) !== "audit_trail");
-  const producesAssignments = generatedProduces.map((produce) => {
-    const safe = safePyName(produce, "result_field");
-    const prefix = pyEscape(produce).toUpperCase().slice(0, 8) || "OUT";
-    const idArgs = [`"${pyEscape(intent.name || "intent")}"`, ...safeInputs.map(({ safe }) => safe)].join(", ");
-    return `    ${safe} = _deterministic_id("${prefix}", ${idArgs})`;
-  }).join("\n");
-  const producesDict = generatedProduces
-    .map((produce) => `        "${pyEscape(produce)}": ${safePyName(produce, "result_field")},`)
-    .join("\n");
-
-  return [
-    `def ${fnName}(${params}) -> dict[str, Any]:`,
-    `    """${description}"""`,
-    requiredCheck,
-    auditLine,
-    producesAssignments,
-    `    result = {`,
-    `        "source_system_id": "${sourceSystemId}",`,
-    `        "tool_kind": "${kind}",`,
-    `        "status": "submitted",`,
-    producesDict,
-    `        "audit_trail": audit_trail,`,
-    `        "evidence": ${evidenceLiteral},`,
-    `        "produces": ${JSON.stringify(actionProducesList)},`,
-    `    }`,
-    `    _append_action_event("${fnName}", result)`,
-    `    return result`,
-    ``,
-  ].filter((line) => line !== "").join("\n");
-}
-
 function renderAgentInstruction(contract, manifest) {
   if (!contract) {
     return `You are the ${pyEscape(manifest?.id || "mock")} agent.\n\nNo behavior contract was provided on the upstream slide, so this agent only exposes read-only source adapters. Refuse to take actions and tell the operator the slide's generationSpec.behaviorContract must be filled in before this workflow can be demoed.`;
@@ -1090,43 +976,12 @@ async function cmdTools(dir, flags) {
   const emittedContractIntents = contractIntents.filter((intent) => contractToolKinds.has(intent.kind));
   const outPath = flags.out || join(dir, "app", "tools.py");
 
-  const lines = renderToolsPreambleLines({ manifest, tables });
-
-  lines.push(...renderQueryToolLines({ tables, contractIntents }));
-
-  // Document tools
-  const docs = manifest.documents || [];
-  if (docs.length > 0) {
-    lines.push(...renderDocumentToolLines(docs));
-  }
-
-  const contractToolFunctionNames = [];
-  if (emittedContractIntents.length) {
-    lines.push(`# ── Behavior-contract tools (action / notification / evidence / calculation) ──`);
-    for (const intent of emittedContractIntents) {
-      lines.push(renderContractToolPython(intent));
-      contractToolFunctionNames.push(safePyName(intent.name || `${intent.kind || "tool"}_tool`));
-    }
-  }
-
-  const docToolNames = docs.length > 0 ? ", FunctionTool(func=list_documents), FunctionTool(func=read_document), FunctionTool(func=search_documents)" : "";
-  const contractToolList = contractToolFunctionNames.length
-    ? `, ${contractToolFunctionNames.map((name) => `FunctionTool(func=${name})`).join(", ")}`
-    : "";
-  const department = manifest?.useCaseSpec?.department || manifest?.department || "general";
-  // The Agent Registry server id this agent registers as — MUST match cmdRegister's
-  // serverName so the runtime resolves exactly the registered toolset by name.
-  const mcpServerName = snakeCase(pipeline.name || manifest?.id || "mock-agent").replace(/_/g, "-");
-
-  lines.push(
-    `source_adapters_fixtures = [FunctionTool(func=list_systems), FunctionTool(func=describe_data_model), ${tables.map((t) => `FunctionTool(func=query_${tableToolName(t)})`).join(", ")}${docToolNames}${contractToolList}]`,
-  );
-  // Append the GE_DATA_BACKEND switch (fixtures | mcp). mcp resolves tools from Agent
-  // Registry by server name; defines source_adapters + mock_tools alias.
-  lines.push(renderToolsModule({ agentId: manifest.id, department, mcpServerName }));
+  const { source: toolsSource, contractToolFunctionNames } = renderToolsPy({
+    manifest, tables, contractIntents, emittedContractIntents, pipeline,
+  });
 
   await mkdir(dirname(outPath), { recursive: true }).catch(() => {});
-  await writeFile(outPath, lines.join("\n"), "utf8");
+  await writeFile(outPath, toolsSource, "utf8");
 
   const agentPath = join(dir, "app", "agent.py");
   const forceAgent = flags["force-agent"] === "true" || flags["force-agent"] === true;
