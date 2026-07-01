@@ -2,7 +2,7 @@
 // Autopilot). Moved verbatim out of tools/ge.mjs.
 import { defineCommand } from "citty";
 import {
-  common, emit, out, pc,
+  guarded, common, emit, out, pc,
   daemonPort, daemonStatusSnapshot, daemonRequest, parseIds,
   renderAutopilotSummary, statusText,
 } from "./shared.mjs";
@@ -18,7 +18,7 @@ const autopilotRun = defineCommand({
     "run-preview": { type: "boolean", description: "Run preview after repair when supported" },
     port: { type: "string", description: "Daemon port (default 17654)" },
   },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const port = daemonPort(args);
     const daemon = await daemonStatusSnapshot(port);
     if (!daemon.ok) throw new Error(`ge daemon is ${daemon.status || "stopped"}; run: ge daemon start`);
@@ -46,7 +46,7 @@ const autopilotRun = defineCommand({
       out(pc.dim(`\n  watch: ge autopilot status ${t.id}`));
       out(pc.dim(`  events: ge autopilot events ${t.id}`));
     });
-  },
+  }),
 });
 
 const autopilotStatus = defineCommand({
@@ -57,7 +57,7 @@ const autopilotStatus = defineCommand({
     port: { type: "string", description: "Daemon port (default 17654)" },
     limit: { type: "string", description: "Recent Autopilot run count when no id is provided" },
   },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const port = daemonPort(args);
     const daemon = await daemonStatusSnapshot(port);
     if (!daemon.ok) throw new Error(`ge daemon is ${daemon.status || "stopped"}; run: ge daemon start`);
@@ -81,7 +81,7 @@ const autopilotStatus = defineCommand({
         out(`  ${statusText(run.status || task.status).padEnd(14)} ${String(task.id).padEnd(30)} ${pc.dim(run.targetStage || task.input?.targetStage || "preview")} ${counts.passed || 0}/${counts.repaired || 0}/${counts.blocked || 0}/${counts.total || 0}`);
       }
     });
-  },
+  }),
 });
 
 const autopilotEvents = defineCommand({
@@ -91,7 +91,7 @@ const autopilotEvents = defineCommand({
     json: { type: "boolean", description: "Machine-readable JSON result on stdout" },
     port: { type: "string", description: "Daemon port (default 17654)" },
   },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const port = daemonPort(args);
     const daemon = await daemonStatusSnapshot(port);
     if (!daemon.ok) throw new Error(`ge daemon is ${daemon.status || "stopped"}; run: ge daemon start`);
@@ -109,7 +109,7 @@ const autopilotEvents = defineCommand({
         out(`  ${String(wrapped.seq || "").padStart(4)} ${level.padEnd(24)} ${agent}${ev.line || ""}`);
       }
     });
-  },
+  }),
 });
 
 export const autopilot = defineCommand({

@@ -1,7 +1,7 @@
 // tools/ge/devex.mjs — `ge devex check|smoke`. Moved verbatim out of
 // tools/ge.mjs.
 import { defineCommand } from "citty";
-import { common, cfgFrom, emit, out, pc, elog, core, ICON } from "./shared.mjs";
+import { guarded, common, cfgFrom, emit, out, pc, elog, core, ICON } from "./shared.mjs";
 
 const devexSmoke = defineCommand({
   meta: { name: "smoke", description: "One-command local DevEx proof: doctor → local mode → canary workspace manifest" },
@@ -15,7 +15,7 @@ const devexSmoke = defineCommand({
     warm: { type: "boolean", description: "Pre-warm the shared uv cache before running" },
     force: { type: "boolean", description: "Regenerate matching local workspace(s) from scratch" },
   },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const vertex = args["no-vertex"] ? false : args.preview ? true : !!args.vertex;
     const res = await core.devexSmoke(cfgFrom(args), {
       id: args.id,
@@ -51,7 +51,7 @@ const devexSmoke = defineCommand({
       }
     });
     if (!res.ok) process.exitCode = 1;
-  },
+  }),
 });
 
 const devexCheck = defineCommand({
@@ -64,7 +64,7 @@ const devexCheck = defineCommand({
     "no-local": { type: "boolean", description: "Skip local toolchain doctor checks" },
     "no-strict-workspaces": { type: "boolean", description: "Warn instead of fail on missing generated workspace files" },
   },
-  run({ args }) {
+  run: guarded(({ args }) => {
     const res = core.devexCheck(cfgFrom(args), {
       ids: args.id || "",
       allWorkspaces: args["all-workspaces"],
@@ -109,7 +109,7 @@ const devexCheck = defineCommand({
       }
     });
     if (!res.ok) process.exitCode = 1;
-  },
+  }),
 });
 
 export const devex = defineCommand({
