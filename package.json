@@ -28,6 +28,8 @@
     "preview:presentation": "bun run --filter ./apps/presentation preview",
     "lint": "bun run --filter '*' lint",
     "docs:check": "node tools/docs-check.mjs",
+    "docs:diagrams": "node tools/gen-docs-diagrams.mjs",
+    "docs:diagrams:check": "node tools/gen-docs-diagrams.mjs --check",
     "docs:build": "cd docs && BUNDLE_PATH=vendor/bundle bundle exec jekyll build --config _config.yml,_config.local.yml",
     "catalog": "bun apps/factory/scripts/sync-use-cases-from-slides.mjs",
     "test": "bun test apps tools packages",

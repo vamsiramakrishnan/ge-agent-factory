@@ -39,6 +39,10 @@ Move the execution spine to the platform. The gateway stops being a dumb proxy a
 **durable control plane**; the CLI and console become thin clients that submit *intent* and
 stream *state*.
 
+<p align="center">
+  <img src="../assets/diagrams/durable-control-plane.svg" alt="CLI to gateway to Cloud Tasks to worker to the Firestore/AlloyDB ledger, looping until the run completes" width="700">
+</p>
+
 ### Execution spine
 - **Cloud Tasks** as the work queue — one task per `(agent, stage)`. The platform owns
   retries, backoff, rate-limiting, and dedup, replacing the local `pool()`.

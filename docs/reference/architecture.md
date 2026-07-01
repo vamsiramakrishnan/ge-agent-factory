@@ -21,6 +21,10 @@ and [ADR 0001 — remote control plane](https://github.com/vamsiramakrishnan/ge-
 
 ## The three planes
 
+<p align="center">
+  <img src="../assets/diagrams/three-planes.svg" alt="ge CLI and console drive the factory plane (gateway, Cloud Tasks, worker), which reads and writes the data plane and the tool (MCP) plane" width="650">
+</p>
+
 | Plane | What it is | Provisioned by |
 |---|---|---|
 | **Factory plane** | Orchestration + build: the `ge` CLI, the Cloud Run **gateway**, the **worker**, and the **Cloud Tasks** stage queue | `installer/terraform/` (`cloud_run.tf`, `tasks.tf`, `service_accounts.tf`) |
@@ -68,19 +72,9 @@ AlloyDB).
 
 A remote build is a chain of HTTP tasks, one per `(runId, item, stage)`:
 
-```
-ge agents build --remote
-        │  ID token (gcloud auth print-identity-token, audience = gateway URL)
-        ▼
-Cloud Run gateway  ── enqueues ──▶  Cloud Tasks queue (ge-agent-factory-stages)
-                                            │  OIDC, signed as the runner SA
-                                            ▼
-                                   Cloud Run worker  ── runs one stage ──┐
-                                            │                            │
-                          writes Firestore events + AlloyDB ledger row   │
-                                            │                            │
-                          enqueues the next stage's task ◀───────────────┘
-```
+<p align="center">
+  <img src="../assets/diagrams/durable-control-plane.svg" alt="ge CLI to gateway to Cloud Tasks to worker to the Firestore/AlloyDB ledger, looping until the run completes" width="700">
+</p>
 
 - **Gateway** (`ge-agent-factory-gateway`, `cloud_run.tf`) authenticates the
   caller and enqueues stage tasks; the gateway service account holds

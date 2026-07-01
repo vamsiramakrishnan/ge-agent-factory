@@ -1,0 +1,7 @@
+flowchart LR
+    A["architecture.pipeline\n[{label, description}]"] --> B["matchPipelineSteps()\nagent-workflow.mjs, one place"]
+    B --> C["spec generation\nWRITES behaviorContract.workflow"]
+    B --> D["build\nderives multi-agent topology"]
+
+    classDef shared fill:#e8f0fe,stroke:#1a73e8,color:#202124;
+    class B shared;

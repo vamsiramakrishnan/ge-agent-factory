@@ -23,6 +23,7 @@ exclude:
   - vendor/
   - adr/
   - collateral/
+  - diagrams-src/
   - plans/
   - runbooks/
   - skills/

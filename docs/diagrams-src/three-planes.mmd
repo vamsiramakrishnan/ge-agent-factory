@@ -1,0 +1,13 @@
+flowchart TB
+    CLI["ge CLI / console"] --> GW
+    subgraph FP["Factory plane"]
+        direction LR
+        GW["Cloud Run gateway"] --> CT["Cloud Tasks queue"] --> W["Worker"]
+    end
+    W --> DP[("Data plane\nGCS, AlloyDB, Firestore,\nBigQuery, Bigtable")]
+    W --> TP["Tool (MCP) plane\nAgent Gateway + per-department\nMCP services + Agent Registry"]
+
+    classDef data fill:#e8f0fe,stroke:#1a73e8,color:#202124;
+    classDef tool fill:#e6f4ea,stroke:#34a853,color:#202124;
+    class DP data;
+    class TP tool;

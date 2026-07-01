@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 929.616 437.4" width="929.616" height="437.4" style="--bg:#ffffff;--fg:#202124;--line:#5f6368;--accent:#1a73e8;--muted:#80868b;--surface:#eef3f9;--border:#dadce0;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<g class="subgraph" data-id="FP" data-label="Factory plane">
+  <rect x="117.658" y="181.8" width="433.172" height="96.9" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="117.658" y="181.8" width="433.172" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="129.65800000000002" y="195.8" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">Factory plane</text>
+</g>
+<polyline class="edge" data-from="CLI" data-to="GW" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="107.65799999999999,133.8 107.658,244.25000000000003 117.658,244.25 133.65800000000002,244.25" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="W" data-to="DP" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="534.83,238.10000000000002 550.83,238.10000000000002 796.764,238.10000000000002 796.764,250.10000000000005" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="W" data-to="TP" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="534.83,250.40000000000003 550.83,250.40000000000003 560.83,250.4 560.83,326.70000000000005" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="GW" data-to="CT" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="195.615,244.25 243.615,244.25" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="CT" data-to="W" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="399.67900000000003,244.25 447.67900000000003,244.25" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<g class="node" data-id="CLI" data-label="ge CLI / console" data-shape="rectangle">
+  <rect x="40" y="96.9" width="135.31599999999997" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="107.65799999999999" y="115.35000000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">ge CLI / console</text>
+</g>
+<g class="node" data-id="DP" data-label="Data plane
+GCS, AlloyDB, Firestore,
+BigQuery, Bigtable" data-shape="cylinder">
+  <rect x="703.912" y="257.1" width="185.70399999999998" height="70.7" fill="var(--_node-fill)" stroke="none" />
+  <line x1="703.912" y1="257.1" x2="703.912" y2="327.8" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <line x1="889.616" y1="257.1" x2="889.616" y2="327.8" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <ellipse cx="796.764" cy="327.80000000000007" rx="92.85199999999999" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <ellipse cx="796.764" cy="257.1" rx="92.85199999999999" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="796.764" y="292.45000000000005" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="796.764" dy="-12.350000000000001">Data plane</tspan><tspan x="796.764" dy="16.900000000000002">GCS, AlloyDB, Firestore,</tspan><tspan x="796.764" dy="16.900000000000002">BigQuery, Bigtable</tspan></text>
+</g>
+<g class="node" data-id="TP" data-label="Tool (MCP) plane
+Agent Gateway + per-department
+MCP services + Agent Registry" data-shape="rectangle">
+  <rect x="445.74800000000005" y="326.70000000000005" width="230.16399999999996" height="70.7" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="560.83" y="362.05000000000007" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="560.83" dy="-12.350000000000001">Tool (MCP) plane</tspan><tspan x="560.83" dy="16.900000000000002">Agent Gateway + per-department</tspan><tspan x="560.83" dy="16.900000000000002">MCP services + Agent Registry</tspan></text>
+</g>
+<g class="node" data-id="class" data-label="class" data-shape="rectangle">
+  <rect x="40" y="40" width="74.554" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="77.277" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">class</text>
+</g>
+<g class="node" data-id="GW" data-label="GW" data-shape="rectangle">
+  <rect x="133.65800000000002" y="225.8" width="61.956999999999994" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="164.6365" y="244.25" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">GW</text>
+</g>
+<g class="node" data-id="CT" data-label="Cloud Tasks queue" data-shape="rectangle">
+  <rect x="243.615" y="225.8" width="156.06400000000002" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="321.64700000000005" y="244.25" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Cloud Tasks queue</text>
+</g>
+<g class="node" data-id="W" data-label="Worker" data-shape="rectangle">
+  <rect x="447.67900000000003" y="225.8" width="87.151" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="491.2545" y="244.25" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Worker</text>
+</g>
+</svg>
