@@ -37,21 +37,15 @@ The site is sourced from [`docs/`](docs/) (start at [`docs/index.md`](docs/index
 
 ## Quickstart
 
+**→ See [`SETUP.md`](SETUP.md) for the full step-by-step: clone, prerequisites,
+`make setup`, `make doctor-local`, first command, optional cloud setup.**
+
 Local development — no cloud credentials required:
 
 ```bash
 make setup          # install deps, sync catalog/skills, install the `ge` command, start the daemon
 make doctor-local   # check local tools: Bun, uv, Python, agents-cli, cache, harness wiring
-make devex-check    # fast gate: local doctor, docs links, workspace manifest contracts
-make devex-smoke    # prove the path: doctor → local mode → one validated canary workspace
 make console        # open the operator UI (Pipeline · Fleet · Activity · Doctor) → http://localhost:18260
-```
-
-Build one agent locally, up to the preview/build boundary:
-
-```bash
-make mode-local
-make provision-local CANARY=1
 ```
 
 Run `make help` for all targets, or `make next` for a status-based recommendation.
