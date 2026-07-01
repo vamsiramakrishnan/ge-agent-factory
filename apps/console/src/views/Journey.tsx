@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, Boxes, Database, FileText, GitBranch, ListChecks
 import { ge, startJob, type JourneyPlan, type JourneyStage, type RuntimeTaskSummary, type SpecCatalog, type SpecOption, type StatusBoard } from "../services/geClient";
 import { StatusPill } from "../components/StatusPill";
 import { Lifecycle } from "../components/Lifecycle";
+import { ErrorBanner } from "../components/ErrorBanner";
 import { actionCommand, isExecutableAction, planNavigates } from "../lib/actionPlans";
 import { useToast } from "../lib/toast";
 import { slugify, splitCsv, startInterview } from "../lib/startInterview";
@@ -385,11 +386,7 @@ export default function Journey({ status, refresh }: JourneyProps) {
           <Stepper steps={WIZARD_STEPS} current={step} onStep={(id) => setStep(id as 1 | 2 | 3)} />
         </div>
 
-        {error && (
-          <div className="mx-6 mt-5 rounded-md border border-amber-400/20 bg-amber-500/10 px-4 py-2 text-sm text-amber-700">
-            {error}
-          </div>
-        )}
+        {error && <ErrorBanner tone="amber" message={error} onRetry={loadJourney} className="mx-6 mt-5" />}
 
         {/* Step 1 — Source */}
         {step === 1 && (

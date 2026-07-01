@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { ge, startJob, type StatusBoard, type Fleet as FleetData } from "../services/geClient";
 import { FleetTable } from "../components/FleetTable";
+import { ErrorBanner } from "../components/ErrorBanner";
 import { useUrlParam } from "../lib/useUrlState";
 import { useToast } from "../lib/toast";
 
@@ -303,11 +304,7 @@ export default function Fleet({ status, refresh }: FleetProps) {
         </div>
       </div>
 
-      {error && (
-        <div className="mb-4 px-4 py-3 bg-rose-500/10 border border-rose-400/30 text-rose-700 text-sm rounded-lg">
-          <span className="font-medium">Failed to load fleet:</span> {error}
-        </div>
-      )}
+      {error && <ErrorBanner label="Failed to load fleet:" message={error} onRetry={fetchFleet} />}
 
       {health && (
         <div className="mb-6 grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">

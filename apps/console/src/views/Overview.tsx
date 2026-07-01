@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ge, startJob, type StatusBoard, type Fleet, type RuntimeTaskSummary, type ReconcilePlan } from "../services/geClient";
 import { PlaneCard } from "../components/PlaneCard";
+import { ErrorBanner } from "../components/ErrorBanner";
 import { useToast } from "../lib/toast";
 import { StatusChip } from "../lib/runStatus";
 import { User, GitBranch, Boxes, ArrowRight, Check } from "lucide-react";
@@ -244,11 +245,7 @@ export default function Overview({ status, refresh }: OverviewProps) {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      {error && (
-        <div className="mb-4 px-4 py-2 bg-rose-500/10 border border-rose-400/20 text-rose-700 text-sm rounded-lg">
-          {error}
-        </div>
-      )}
+      {error && <ErrorBanner message={error} onRetry={fetchOverview} />}
 
 
       <div className="mb-6">

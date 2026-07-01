@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { streamDoctor, startJob, type StatusBoard, type DoctorReport as DoctorReportData, type DoctorEvent } from "../services/geClient";
 import { DoctorReport } from "../components/DoctorReport";
 import { RuntimeStatusCard } from "../components/RuntimeStatusBadge";
+import { ErrorBanner } from "../components/ErrorBanner";
 import { useRunFollow } from "../state/runFollow";
 import { useUrlParam } from "../lib/useUrlState";
 import { resolveFix, runFix } from "../lib/doctorFix";
@@ -255,11 +256,7 @@ export default function Doctor({ status }: DoctorProps) {
         </div>
       </div>
 
-      {error && (
-        <div className="mb-4 px-4 py-3 bg-rose-500/10 border border-rose-400/20 text-rose-700 text-sm rounded-lg">
-          {error}
-        </div>
-      )}
+      {error && <ErrorBanner message={error} onRetry={() => fetchReport(scope, command)} />}
 
       {/* Verdict header — the scannable bottom line. */}
       <div className="mb-4 editorial-micro-card rounded-lg p-5" aria-live="polite">
