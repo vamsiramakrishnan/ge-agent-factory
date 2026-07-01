@@ -62,7 +62,24 @@ export PATH="$HOME/.local/bin:$PATH"
 Then restart your shell (or `source ~/.bashrc`). Until then, you can always
 invoke the CLI directly with `bun tools/ge.mjs <command>`.
 
-## 4. `make doctor-local`
+## 4. Env vars (optional for local mode)
+
+Local mode (steps 1–3) runs with no env file at all. Once you need a GCP
+project (cloud ops, `ge doctor`'s env check, or either app's own auth/config
+knobs), copy the templates:
+
+```bash
+cp .env.example .env                                # shared: GCP project, etc.
+cp apps/console/.env.example apps/console/.env       # only if running the console
+cp apps/presentation/.env.example apps/presentation/.env  # only if running the deck
+```
+
+The root `.env` covers vars shared across the CLI and both apps (Bun
+auto-loads it from the repo root); each app's own `.env` covers that app's
+specific knobs (provisioning flags, Firebase auth, Vite build-time config).
+See the comments in each file — most vars are optional with sane defaults.
+
+## 5. `make doctor-local`
 
 ```bash
 make doctor-local
@@ -81,6 +98,7 @@ This is `ge doctor --local` under the hood. It checks:
 - generated OpenAPI files excluded from git
 - whether `~/.local/bin` is on `PATH`
 - whether root workspace deps are installed (`node_modules` present)
+- whether `GOOGLE_CLOUD_PROJECT` resolves (env, or `gcloud config get-value project`)
 
 All checks follow the same pass/warn/fail pattern; failures print a `fix:`
 line with the exact command to resolve them.
@@ -89,7 +107,7 @@ For narrower, scoped checks, use `ge data doctor` (data plane only) or
 `ge mcp doctor` (tool plane / MCP services only) instead of the unified
 `ge doctor`.
 
-## 5. First command
+## 6. First command
 
 Open the operator console (Pipeline / specs / Fleet / Activity / Doctor UI):
 
@@ -111,9 +129,9 @@ make devex-check      # local doctor + docs links + workspace manifest contracts
 make devex-smoke      # doctor → local mode → one validated canary workspace
 ```
 
-## 6. (Optional) Cloud setup
+## 7. (Optional) Cloud setup
 
-Local mode (steps 1–5) needs no cloud credentials. To deploy the control
+Local mode (steps 1–6) needs no cloud credentials. To deploy the control
 plane into **your own** GCP project (single-tenant, ~15 min):
 
 - Click **Open in Cloud Shell** from the root `README.md` to clone the repo

@@ -59,12 +59,12 @@ and an MCP server.
 |------|------------|
 | [`apps/console`](apps/console) | The main operator UI (React + Vite + Tailwind). Its Bun server exposes `/api/ge/*` — the same JSON the CLI emits. See the [Console Tour](docs/reference/console-tour.md). |
 | [`apps/presentation`](apps/presentation) | The transformation deck + source use-case catalog used to explain the system. |
-| [`apps/factory`](apps/factory) | The generator: the `factory` pipeline, the lower-level web workbench, the factory runner/worker, and the generic FastMCP server under [`mcp-service/`](apps/factory/mcp-service). |
+| [`apps/factory`](apps/factory) | The generator: the `factory` pipeline, the lower-level web workbench, the factory runner/worker, and the generic FastMCP server under [`mcp-service/`](apps/factory/mcp-service). The `factory.mjs` pipeline's modules are split out under [`apps/factory/scripts/factory/`](apps/factory/scripts/factory/README.md) — see that directory's README for a map of what lives where and why. |
 | [`tools/`](tools) | The `ge` operator CLI (`ge.mjs`), the MCP server (`mcp-server.mjs`), and the shared operator core + runtime daemon under `tools/lib/`. |
 | [`skills/`](skills) | Cross-runtime harness skills (one dir per skill, each with a `SKILL.md`). |
 | [`installer/`](installer) | Terraform + the guided Cloud Shell installer (`TUTORIAL.md`) that stands the platform up in a target project. |
 | [`docs/`](docs) | The GitHub Pages documentation site plus operator runbooks, ADRs, and design specs. |
-| [`packages/`](packages) | Shared workspace packages (e.g. `@ge/agent-resolver`). |
+| [`packages/`](packages) | Shared workspace packages (e.g. `@ge/agent-resolver`). See [`packages/std/README.md`](packages/std/README.md) for the `@ge/std` utility catalog — check it before hand-rolling a naming/JSON/CSV/merge helper. |
 
 ---
 

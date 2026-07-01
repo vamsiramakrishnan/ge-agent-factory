@@ -1988,6 +1988,22 @@ export function localPreflight() {
     rootDepsInstalled ? `${displayStatePath(join(REPO_ROOT, "node_modules"))} present` : "node_modules missing at repo root",
     "bun install  (or: make setup)",
   );
+  // GCP project: not required for local mode itself, but cloud-facing commands
+  // (provision/up/data/mcp) and both apps' read paths need it. Falls back to
+  // `gcloud config get-value project` / the ge config file when unset here, so
+  // this is a warn (not a fail) — mirrors resolveGcpProject's precedence in
+  // packages/std/src/gcp-config.mjs.
+  const envProject = process.env.GOOGLE_CLOUD_PROJECT || process.env.GCP_PROJECT_ID || process.env.GCLOUD_PROJECT;
+  const gcloudProject = envProject ? null : gcloud(["config", "get-value", "project"], { allowFail: true });
+  const resolvedProject = envProject || (gcloudProject?.ok ? gcloudProject.out : "");
+  addStatus(
+    "GOOGLE_CLOUD_PROJECT",
+    resolvedProject ? "pass" : "warn",
+    resolvedProject
+      ? `resolved to ${resolvedProject}${envProject ? "" : " (via gcloud config)"}`
+      : "not set — required for cloud ops (provision/up/data/mcp) and both apps' read paths",
+    `cp .env.example .env  then set GOOGLE_CLOUD_PROJECT=<your-project-id>  (or: gcloud config set project <id>)`,
+  );
   return { mode: "local", cacheDir: process.env.UV_CACHE_DIR || UV_CACHE, checks, fails: checks.filter((c) => c.status === "fail").length };
 }
 
