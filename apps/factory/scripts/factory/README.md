@@ -102,15 +102,55 @@ planning. `bigquery-types.mjs` (value→BigQuery type inference),
 `yaml-render.mjs` (hand-rolled-layout YAML + Snowfakery-expression rendering,
 byte-compatible with the legacy planner output), `render-cloud-data-plan.mjs`
 (BigQuery schema + manifest derivation for the cloud-data packager),
-`semantic-model.mjs` (NL→SQL semantic layer: table/column descriptions, keys,
-joins, glossary), `mcp-tool-descriptors.mjs` (MCP tool spec derivation from a
-fixture manifest), `pack-bridges.mjs` (scenario-pack → simulator bridge
-projection), and `use-case-resolve.mjs` (fuzzy use-case lookup/matching for
-the mock-data planner CLI). These were grouped as "everything the mock-data /
-cloud-data planners need," which is why the directory reads more like a bag
-of planner utilities than one cohesive concern — if this directory grows
-further it may be worth splitting `use-case-resolve.mjs` (CLI-facing lookup)
-out from the rest (rendering/derivation).
+`build-cloud-data-artifacts.mjs` (the file-writing orchestration around that
+derivation — resolves project/dataset/bucket/prefix, walks the fixture
+manifest, writes schemas/NDJSON/load-script/manifest/mcp-tools.json, and
+marks the pipeline's `cloudDataPlan` step; this is `cmdDataPlan`'s only real
+dependency besides pipeline state I/O), `semantic-model.mjs` (NL→SQL semantic
+layer: table/column descriptions, keys, joins, glossary),
+`mcp-tool-descriptors.mjs` (MCP tool spec derivation from a fixture
+manifest), `pack-bridges.mjs` (scenario-pack → simulator bridge projection),
+and `use-case-resolve.mjs` (fuzzy use-case lookup/matching for the mock-data
+planner CLI). These were grouped as "everything the mock-data / cloud-data
+planners need," which is why the directory reads more like a bag of planner
+utilities than one cohesive concern — if this directory grows further it may
+be worth splitting `use-case-resolve.mjs` (CLI-facing lookup) out from the
+rest (rendering/derivation).
+
+## `lifecycle/`
+
+Just `deploy.mjs` — the cloud-facing lifecycle stage orchestration: MCP
+tool-plane management (`cmdMcp`), deploy (`cmdDeploy`/`cmdDeployStatus`/
+`cmdVerifyLive`, Agent Runtime or Cloud Run), Agent Registry registration
+(`cmdRegister`), and Gemini Enterprise publish (`cmdPublish`) — plus every
+gcloud/agents-cli helper only they use (project/region resolution, runtime-id
+parsing, Gemini Enterprise app-id resolution, tool-spec building,
+reachability checks). Grouped as one file rather than split further because
+these commands are tightly coupled to EACH OTHER (register/publish/
+deploy-status all read `deployment_metadata.json` through the same
+`parseAgentRuntimeId`/`hydrateDeployStepFromMetadata` path) even though
+they're only loosely coupled to the rest of `factory.mjs`'s local pipeline
+commands — a real seam, but not one with sub-seams worth their own files yet.
+`factory.mjs` injects pipeline state I/O, the `ok()`/`fail()` contract,
+`runCommand`, `runLifecycleCommand`, `assertPromotable`, and the resolved
+`AGENT_MODEL` as `deps`, same pattern as everywhere else in this tree.
+
+## `harness/`
+
+Just `harness.mjs` — Antigravity harness orchestration: `cmdHarnessReview`
+(read-only spec-to-code audit) and `cmdHarnessRefine` (write-enabled
+implementation pass), plus `readWorkspaceReviewContext`,
+`applyHarnessReviewFeedback`, and the refine-resume helpers that only they
+use. `factory.mjs` injects pipeline state I/O, the harness-runner/
+harness-work-item bridges, the zod schemas, and the flag predicates
+(`truthyFlag`/`wantsVertex`/`envOff`) that are also used elsewhere in
+`factory.mjs` (`assertPromotable`, quality-gate, from-usecase, batch-audit)
+as `deps`. Both `cmdHarnessReview`/`cmdHarnessRefine` intentionally return
+their bare summary object rather than `ok(summary)` — they're composed
+in-process by `cmdFromUseCase`/`cmdBatchAudit`/`cmdQualityGate`, which embed
+the return value verbatim; wrapping here would double-wrap `ok:true` and
+change byte-identical JSON output. See the inline NOTE comments preserved
+from the original for the full rationale.
 
 ## `packs/`
 
