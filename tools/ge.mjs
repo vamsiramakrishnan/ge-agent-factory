@@ -400,7 +400,10 @@ const agentsBuild = defineCommand({
     }
     const refine = !args["no-refine"] && process.env.REFINE !== "0";
     const res = await core.provision(cfg, { scope, ids: args.ids, dept: args.dept, concurrency: args.concurrency || "2", force: args.force, noProxy: args["no-proxy"], refine, model: args.model, maxOutputTokens: args["max-output-tokens"], log: elog });
-    emit(args, res, (r) => out(`\nSubmitted ${pc.green(r.submitted)}  failed ${r.failed ? pc.red(r.failed) : "0"}${r.note ? pc.dim("  " + r.note) : ""}`));
+    emit(args, res, (r) => {
+      out(`\nSubmitted ${pc.green(r.submitted)}  failed ${r.failed ? pc.red(r.failed) : "0"}${r.note ? pc.dim("  " + r.note) : ""}`);
+      if (r.submitted) out(pc.dim("  next: ge agents status --watch   (track the submitted runs to completion)"));
+    });
   },
 });
 
