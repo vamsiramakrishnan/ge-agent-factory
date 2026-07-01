@@ -20,8 +20,17 @@ export function openJournal(runsDir, { runId, agentId, stage }) {
 export function recordRun(runsDir, record) {
   const idx = join(runsDir, "index.json");
   let all = [];
-  try { if (existsSync(idx)) all = JSON.parse(readFileSync(idx, "utf8")); } catch {}
+  try { if (existsSync(idx)) all = JSON.parse(readFileSync(idx, "utf8")); } catch (error) {
+    // Behaviour-preserving: a corrupt/unreadable index still resets to []. But the
+    // write below then OVERWRITES the file with only this record, dropping every
+    // previously recorded run — so surface why before that data loss happens.
+    console.warn(`[harness-journal] run index ${idx} unreadable; resetting (prior run records will be overwritten) — ${error?.message || String(error)}`);
+  }
   const i = all.findIndex((r) => r.runId === record.runId && r.stage === record.stage);
   if (i >= 0) all[i] = { ...all[i], ...record }; else all.push(record);
-  try { writeJson(idx, all); } catch {}
+  try { writeJson(idx, all); } catch (error) {
+    // The run record never reaches runs/index.json, so the run silently won't appear
+    // in listings. Best-effort write is unchanged; just make the loss observable.
+    console.warn(`[harness-journal] failed to persist run record (${record.runId}/${record.stage}) to ${idx} — ${error?.message || String(error)}`);
+  }
 }

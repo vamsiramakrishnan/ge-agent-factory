@@ -1,7 +1,8 @@
-import { readFile, stat } from "node:fs/promises";
+import { stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { glob } from "tinyglobby";
+import { readJsonAsync } from "@ge/std/json-io";
 import {
   updateWorkspaceCapabilities,
   writeJsonArtifact,
@@ -19,13 +20,8 @@ import {
 // harness-refine`. Carries the SDK-validated spec_to_code_fidelity verdict.
 const HARNESS_REFINE_PATH = "artifacts/harness-refine.json";
 
-async function readJson(path, fallback = null) {
-  try {
-    return JSON.parse(await readFile(path, "utf8"));
-  } catch (error) {
-    if (error?.code === "ENOENT") return fallback;
-    throw error;
-  }
+function readJson(path, fallback = null) {
+  return readJsonAsync(path, fallback, { rethrowUnexpected: true });
 }
 
 async function listWorkspaceFiles(workspaceDir) {

@@ -1,0 +1,1557 @@
+{
+  "id": "asc_606_contract_analyzer",
+  "generatedAt": "2026-06-11T08:59:53.337Z",
+  "domain": "finance",
+  "seed": 42,
+  "systems": [
+    {
+      "id": "sap_s_4hana_sd",
+      "name": "SAP S/4HANA SD",
+      "owns": [
+        "sales_orders",
+        "contracts",
+        "billing_documents"
+      ],
+      "protocol": "RFC/BAPI",
+      "localBacking": [
+        "alloydb"
+      ],
+      "toolNames": [
+        "query_sap_s_4hana_sd_sales_orders",
+        "query_sap_s_4hana_sd_contracts",
+        "query_sap_s_4hana_sd_billing_documents"
+      ],
+      "evidence": [
+        "source_system_record",
+        "generated_audit_trail"
+      ]
+    },
+    {
+      "id": "contract_repository",
+      "name": "Contract Repository",
+      "owns": [
+        "contract_repository_records",
+        "contract_repository_events",
+        "contract_repository_audit_trail"
+      ],
+      "protocol": "REST API",
+      "localBacking": [
+        "alloydb"
+      ],
+      "toolNames": [
+        "query_contract_repository_contract_repository_records",
+        "query_contract_repository_contract_repository_events",
+        "query_contract_repository_contract_repository_audit_trail"
+      ],
+      "evidence": [
+        "source_system_record",
+        "generated_audit_trail"
+      ]
+    },
+    {
+      "id": "bigquery",
+      "name": "BigQuery",
+      "owns": [
+        "analytics_events",
+        "historical_metrics",
+        "cached_aggregates"
+      ],
+      "protocol": "BigQuery SQL",
+      "localBacking": [
+        "bigquery"
+      ],
+      "toolNames": [
+        "query_bigquery_analytics_events",
+        "query_bigquery_historical_metrics",
+        "query_bigquery_cached_aggregates"
+      ],
+      "evidence": [
+        "source_system_record",
+        "generated_audit_trail"
+      ]
+    }
+  ],
+  "useCaseSpec": {
+    "id": "asc-606-contract-analyzer",
+    "title": "ASC 606 Contract Analyzer",
+    "department": "finance",
+    "rowPolicy": {
+      "requestedRows": 50,
+      "minimumRowsPerEntity": 25,
+      "defaultRowsPerEntity": 50
+    },
+    "systems": [
+      {
+        "id": "sap_s_4hana_sd",
+        "name": "SAP S/4HANA SD",
+        "owns": [
+          "sales_orders",
+          "contracts",
+          "billing_documents"
+        ],
+        "protocol": "RFC/BAPI",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_sap_s_4hana_sd_sales_orders",
+          "query_sap_s_4hana_sd_contracts",
+          "query_sap_s_4hana_sd_billing_documents"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "contract_repository",
+        "name": "Contract Repository",
+        "owns": [
+          "contract_repository_records",
+          "contract_repository_events",
+          "contract_repository_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_contract_repository_contract_repository_records",
+          "query_contract_repository_contract_repository_events",
+          "query_contract_repository_contract_repository_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "bigquery",
+        "name": "BigQuery",
+        "owns": [
+          "analytics_events",
+          "historical_metrics",
+          "cached_aggregates"
+        ],
+        "protocol": "BigQuery SQL",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_bigquery_analytics_events",
+          "query_bigquery_historical_metrics",
+          "query_bigquery_cached_aggregates"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "dataContracts": [
+      {
+        "entity": "sales_orders",
+        "sourceSystem": "SAP S/4HANA SD",
+        "sourceSystemId": "sap_s_4hana_sd",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "vendor",
+            "type": "company.name",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "due_date",
+            "type": "date",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "contracts",
+        "sourceSystem": "SAP S/4HANA SD",
+        "sourceSystemId": "sap_s_4hana_sd",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "counterparty",
+            "type": "company.name",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "number",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "start_date",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "end_date",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "auto_renew",
+            "type": "boolean",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "billing_documents",
+        "sourceSystem": "SAP S/4HANA SD",
+        "sourceSystemId": "sap_s_4hana_sd",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "vendor",
+            "type": "company.name",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "due_date",
+            "type": "date",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "contract_repository_records",
+        "sourceSystem": "Contract Repository",
+        "sourceSystemId": "contract_repository",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "counterparty",
+            "type": "company.name",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "number",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "start_date",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "end_date",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "auto_renew",
+            "type": "boolean",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "contract_repository_events",
+        "sourceSystem": "Contract Repository",
+        "sourceSystemId": "contract_repository",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "counterparty",
+            "type": "company.name",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "number",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "start_date",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "end_date",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "auto_renew",
+            "type": "boolean",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "contract_repository_record_id",
+            "type": "ref",
+            "ref": "contract_repository_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "contract_repository_audit_trail",
+        "sourceSystem": "Contract Repository",
+        "sourceSystemId": "contract_repository",
+        "sourceKind": "alloydb",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "counterparty",
+            "type": "company.name",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "number",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "start_date",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "end_date",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "auto_renew",
+            "type": "boolean",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "analytics_events",
+        "sourceSystem": "BigQuery",
+        "sourceSystemId": "bigquery",
+        "sourceKind": "bigquery",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "historical_metric_id",
+            "type": "ref",
+            "ref": "historical_metrics.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "historical_metrics",
+        "sourceSystem": "BigQuery",
+        "sourceSystemId": "bigquery",
+        "sourceKind": "bigquery",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          }
+        ]
+      },
+      {
+        "entity": "cached_aggregates",
+        "sourceSystem": "BigQuery",
+        "sourceSystemId": "bigquery",
+        "sourceKind": "bigquery",
+        "rows": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "ref": null,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "ref": null,
+            "required": true
+          }
+        ]
+      }
+    ],
+    "evidenceRequired": [
+      "sql_result",
+      "source_system_record",
+      "document_reference",
+      "generated_audit_trail"
+    ],
+    "documentRequirements": [
+      "ASC 606 Contract Analyzer Controls Playbook: Workflow scope, Materiality thresholds, Escalation triggers, Audit evidence requirements, Quarter-end variations"
+    ],
+    "integrityRules": [
+      "contract_repository_events.contract_repository_record_id -> contract_repository_records.id; orphanPolicy=none",
+      "analytics_events.historical_metric_id -> historical_metrics.id; orphanPolicy=none"
+    ],
+    "apis": [
+      {
+        "id": "sap_s_4hana_sd_match_api",
+        "sourceSystemId": "sap_s_4hana_sd",
+        "method": "POST",
+        "path": "/api/sap_s_4hana_sd/match",
+        "description": "Synchronous endpoint the agent calls to match in SAP S/4HANA SD after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "asc_606_contract_analyzer",
+        "schemas": [
+          "sap_s_4hana_sd",
+          "contract_repository"
+        ]
+      },
+      "bigquery": {
+        "dataset": "finance_asc_606_contract_analyzer",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "asc-606-contract-analyzer-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "asc-606-contract-analyzer-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "behaviorContract": {
+      "role": "Controller agent for the ASC 606 Contract Analyzer workflow",
+      "primaryObjective": "Gemini reads complex contract language and applies the 5-step ASC 606 model with cited guidance. Precedent matching ensures consistent treatment across similar contracts. so the Controller can move the Contract analysis time KPI.",
+      "inScope": [
+        "Gemini reads complex contract language and applies the 5-step ASC 606 model with cited guidance",
+        "Precedent matching ensures consistent treatment across similar contracts",
+        "Novel terms flagged proactively at contract inception, not discovered during audit"
+      ],
+      "outOfScope": [
+        "Final sign-off on materially significant journal entries (Controller retains authority)",
+        "Restatement of prior-period filings",
+        "Tax position changes that require external advisor review"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_sap_s_4hana_sd_sales_orders",
+          "kind": "query",
+          "sourceSystemId": "sap_s_4hana_sd",
+          "description": "Retrieve sales orders from SAP S/4HANA SD for the ASC 606 Contract Analyzer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "sales_orders_records",
+            "sales_orders_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_contract_repository_contract_repository_records",
+          "kind": "query",
+          "sourceSystemId": "contract_repository",
+          "description": "Retrieve contract repository records from Contract Repository for the ASC 606 Contract Analyzer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "contract_repository_records_records",
+            "contract_repository_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_bigquery_analytics_events",
+          "kind": "query",
+          "sourceSystemId": "bigquery",
+          "description": "Retrieve analytics events from BigQuery for the ASC 606 Contract Analyzer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "analytics_events_records",
+            "analytics_events_summary"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "lookup_asc_606_contract_analyzer_controls_playbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "bigquery",
+          "description": "Look up sections of the ASC 606 Contract Analyzer Controls Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_sap_s_4hana_sd_match",
+          "kind": "action",
+          "sourceSystemId": "sap_s_4hana_sd",
+          "description": "Execute the match step in SAP S/4HANA SD after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "evidenceRequirements": [
+        {
+          "claim": "Contract analysis time moved from 1-2 days toward 2-3 hours",
+          "mustCite": [
+            "sap_s_4hana_sd.sales_orders",
+            "contract_repository.contract_repository_records"
+          ],
+          "sourceSystemIds": [
+            "sap_s_4hana_sd",
+            "contract_repository"
+          ]
+        },
+        {
+          "claim": "Consistency across analysts moved from Variable treatment toward Standardized with precedent matching",
+          "mustCite": [
+            "sap_s_4hana_sd.sales_orders",
+            "contract_repository.contract_repository_records"
+          ],
+          "sourceSystemIds": [
+            "sap_s_4hana_sd",
+            "contract_repository"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Contract analysis time regresses past the 1-2 days baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Controller",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed match action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from SAP S/4HANA SD (and other named systems) entities.",
+        "Never bypass Controller approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query.",
+        "Do not invent metric values, trends, or forecast confidence when analytics rows are missing.",
+        "Do not claim a document is approved or published without document or revision evidence.",
+        "Do not approve, renew, or recommend supplier action without supplier/spend evidence.",
+        "Do not certify, close, or post finance actions without ledger and exception evidence."
+      ],
+      "goldenEvals": [
+        {
+          "id": "asc-606-contract-analyzer-end-to-end",
+          "prompt": "Run the ASC 606 Contract Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_sap_s_4hana_sd_sales_orders",
+            "query_contract_repository_contract_repository_records",
+            "query_bigquery_analytics_events",
+            "lookup_asc_606_contract_analyzer_controls_playbook",
+            "action_sap_s_4hana_sd_match"
+          ],
+          "mustReferenceEntities": [
+            "sales_orders",
+            "contract_repository_records",
+            "analytics_events"
+          ],
+          "mustCiteDocuments": [
+            "asc-606-contract-analyzer-controls-playbook"
+          ],
+          "expectedActionOutcome": "Action match executed against SAP S/4HANA SD, with audit-trail entry and Controller notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute match without two-system evidence"
+          ]
+        }
+      ],
+      "simulatorEnrichment": {
+        "packBridges": [
+          {
+            "packId": "system_analytics",
+            "simulatorArchetypes": [
+              "data_platform",
+              "digital_analytics",
+              "planning_epm"
+            ],
+            "simulatorCollections": [
+              "datasets",
+              "tables",
+              "pipelines",
+              "jobs",
+              "quality_checks",
+              "events",
+              "conversions"
+            ],
+            "materializes": "analytics tables, metric rows, forecasts, freshness signals, and quality checks into simulator seed overlays"
+          },
+          {
+            "packId": "system_content_collaboration",
+            "simulatorArchetypes": [
+              "collaboration_docs",
+              "content_cms"
+            ],
+            "simulatorCollections": [
+              "workspaces",
+              "documents",
+              "comments",
+              "tasks",
+              "assets",
+              "content_items",
+              "workflow_tasks",
+              "approvals"
+            ],
+            "materializes": "document, comment, revision, content review, and publishing workflow rows into simulator seed overlays"
+          },
+          {
+            "packId": "system_procurement_ops",
+            "simulatorArchetypes": [
+              "procurement",
+              "supply_chain",
+              "clm"
+            ],
+            "simulatorCollections": [
+              "suppliers",
+              "purchase_orders",
+              "requisitions",
+              "contracts",
+              "approvals",
+              "materials",
+              "shipments",
+              "risk_events",
+              "agreements"
+            ],
+            "materializes": "supplier, spend, requisition, purchase order, contract, and supplier-risk rows into procurement simulator seeds"
+          },
+          {
+            "packId": "system_finance_erp",
+            "simulatorArchetypes": [
+              "erp_finance",
+              "tax_treasury",
+              "planning_epm"
+            ],
+            "simulatorCollections": [
+              "vendors",
+              "invoices",
+              "journal_entries",
+              "payments",
+              "bank_accounts",
+              "payment_batches",
+              "tax_filings",
+              "forecast_lines"
+            ],
+            "materializes": "ledger, AP/AR, invoice, payment, cash, tax, and close-control rows into finance simulator seeds"
+          }
+        ]
+      },
+      "evalEnrichment": {
+        "packHints": [
+          {
+            "packId": "system_analytics",
+            "expectedToolKinds": [
+              "query",
+              "calculation"
+            ],
+            "mustReferenceEntities": [
+              "analytics_events",
+              "historical_metrics",
+              "cached_aggregates"
+            ],
+            "successCriteria": [
+              "Derive metric claims from warehouse-backed rows.",
+              "Compare current values against historical or cached baselines.",
+              "Call out negative variance and stale computed_at dates."
+            ],
+            "refusalRules": [
+              "Do not invent metric values, trends, or forecast confidence when analytics rows are missing."
+            ]
+          },
+          {
+            "packId": "system_content_collaboration",
+            "expectedToolKinds": [
+              "query",
+              "evidence_lookup"
+            ],
+            "mustReferenceEntities": [
+              "documents",
+              "comments",
+              "revision_history"
+            ],
+            "successCriteria": [
+              "Cite document titles or revision evidence for content claims.",
+              "Distinguish draft, review, published, and archived states.",
+              "Escalate unresolved review comments before publish-like actions."
+            ],
+            "refusalRules": [
+              "Do not claim a document is approved or published without document or revision evidence."
+            ]
+          },
+          {
+            "packId": "system_procurement_ops",
+            "expectedToolKinds": [
+              "query",
+              "evidence_lookup",
+              "action"
+            ],
+            "mustReferenceEntities": [
+              "suppliers",
+              "contracts",
+              "requisitions",
+              "purchase_orders",
+              "invoices"
+            ],
+            "successCriteria": [
+              "Cite vendor, amount, status, and due-date evidence for approval or sourcing recommendations.",
+              "Differentiate pending, approved, paid, and rejected spend records.",
+              "Escalate high-value or missing-contract cases before action."
+            ],
+            "refusalRules": [
+              "Do not approve, renew, or recommend supplier action without supplier/spend evidence."
+            ]
+          },
+          {
+            "packId": "system_finance_erp",
+            "expectedToolKinds": [
+              "query",
+              "calculation",
+              "action"
+            ],
+            "mustReferenceEntities": [
+              "gl_entries",
+              "subledger_balances",
+              "open_items",
+              "accounts_payable",
+              "accounts_receivable"
+            ],
+            "successCriteria": [
+              "Back close, cash, AP, AR, and control claims with ledger evidence.",
+              "Call out pending or reversed records as exceptions.",
+              "Preserve audit trail details for write-like finance actions."
+            ],
+            "refusalRules": [
+              "Do not certify, close, or post finance actions without ledger and exception evidence."
+            ]
+          }
+        ]
+      }
+    },
+    "agentQualityPlan": {
+      "naming": {
+        "agentName": "asc_606_contract_analyzer_agent",
+        "displayName": "ASC 606 Contract Analyzer",
+        "rule": "Use snake_case Python identifiers for agent and tools; use title case only for display labels.",
+        "toolNamePattern": "<verb>_<source_system_id>_<business_object>",
+        "forbiddenPatterns": [
+          "helper",
+          "do_task",
+          "process_data",
+          "tool1",
+          "generic_agent"
+        ]
+      },
+      "adkCapabilities": {
+        "agentClass": "google.adk.agents.Agent",
+        "model": "gemini-3.5-flash",
+        "generateContentConfig": {
+          "temperature": 0.2,
+          "maxOutputTokens": null,
+          "reason": "Output budget left to the model default; the harness review sets a bound only when the use case warrants one."
+        },
+        "outputKey": "last_response",
+        "callbacks": [
+          "before_agent_callback initializes session state from the generated spec.",
+          "before_tool_callback enforces idempotency keys for write-like tool intents.",
+          "after_tool_callback records tool evidence and audit trails in session state."
+        ],
+        "stateKeys": [
+          "scenario_id",
+          "primary_objective",
+          "expected_tools",
+          "evidence_log",
+          "audit_trails"
+        ],
+        "useSubAgentsWhen": "Split into source-specific researcher/verifier sub-agents when live APIs replace fixtures or when one prompt needs parallel evidence collection.",
+        "useAgentToolWhen": "Expose specialist agents through AgentTool when the coordinator must retain control over final synthesis.",
+        "useCodeExecutorWhen": "Not required unless future specs add deterministic calculation or modeling work.",
+        "useMemoryWhen": "Only persist user preferences or repeated workflow context after the user explicitly asks for memory; keep generated demos session-scoped by default."
+      },
+      "toolDesign": {
+        "expectedToolCount": 18,
+        "sourceAdapters": [
+          "sap_s_4hana_sd",
+          "contract_repository",
+          "bigquery"
+        ],
+        "writeSafety": "All write-like tools require explicit inputs and return deterministic audit_trail values; callbacks block missing idempotency_key/idempotencyKey when present in args.",
+        "evidence": "Evidence lookup tools and document search must run before recommendations or write actions."
+      },
+      "evalPlan": {
+        "unitTests": [
+          "Import generated app.tools and app.agent.",
+          "Verify fixture tables exist and contain rows.",
+          "Verify generated agent instruction contains objective, tool playbook, and guardrails.",
+          "Statically verify advanced ADK config: callbacks, generate_content_config, output_key, and description."
+        ],
+        "agentEvals": [
+          "tool_trajectory_avg_score with ANY_ORDER for contract tool usage.",
+          "rubric_based_tool_use_quality_v1 for source-before-action reasoning.",
+          "rubric_based_final_response_quality_v1 for grounded final answers.",
+          "hallucinations_v1 and safety_v1 for cited evidence and guardrail adherence."
+        ],
+        "goldenEvalMinimum": 1,
+        "addMoreEvalsWhen": [
+          "A tool intent writes external state.",
+          "A source adapter has bidirectional sync semantics.",
+          "A workflow has escalation/refusal branches.",
+          "A document citation is mandatory for final answers."
+        ]
+      },
+      "mockDataQuality": {
+        "minimumRowsPerEntity": 25,
+        "requirements": [
+          "Every generated row has a stable primary key.",
+          "Foreign keys must resolve to generated parent rows.",
+          "Each table declares sourceSystem and sourceSystemId in fixtures/manifest.json.",
+          "Documents include citation anchors and linked entity ids when document evidence is needed.",
+          "Action-oriented workflows include at least one anomaly or edge-case fixture."
+        ]
+      }
+    }
+  },
+  "tables": [
+    {
+      "name": "sales_orders",
+      "path": "tables/sales_orders.csv",
+      "jsonPath": "tables/sales_orders.json",
+      "sourceSystem": "SAP S/4HANA SD",
+      "sourceSystemId": "sap_s_4hana_sd",
+      "sourceDescription": "sales_orders, contracts, billing_documents",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "source_record_id",
+          "type": "string"
+        },
+        {
+          "name": "vendor",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "number"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "created_at",
+          "type": "string"
+        },
+        {
+          "name": "due_date",
+          "type": "string"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "contracts",
+      "path": "tables/contracts.csv",
+      "jsonPath": "tables/contracts.json",
+      "sourceSystem": "SAP S/4HANA SD",
+      "sourceSystemId": "sap_s_4hana_sd",
+      "sourceDescription": "sales_orders, contracts, billing_documents",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "counterparty",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "type": "number"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "start_date",
+          "type": "string"
+        },
+        {
+          "name": "end_date",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "auto_renew",
+          "type": "boolean"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "billing_documents",
+      "path": "tables/billing_documents.csv",
+      "jsonPath": "tables/billing_documents.json",
+      "sourceSystem": "SAP S/4HANA SD",
+      "sourceSystemId": "sap_s_4hana_sd",
+      "sourceDescription": "sales_orders, contracts, billing_documents",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "source_record_id",
+          "type": "string"
+        },
+        {
+          "name": "vendor",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "number"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "created_at",
+          "type": "string"
+        },
+        {
+          "name": "due_date",
+          "type": "string"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "contract_repository_records",
+      "path": "tables/contract_repository_records.csv",
+      "jsonPath": "tables/contract_repository_records.json",
+      "sourceSystem": "Contract Repository",
+      "sourceSystemId": "contract_repository",
+      "sourceDescription": "contract_repository_records, contract_repository_events, contract_repository_audit_trail",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "counterparty",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "type": "number"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "start_date",
+          "type": "string"
+        },
+        {
+          "name": "end_date",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "auto_renew",
+          "type": "boolean"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "contract_repository_events",
+      "path": "tables/contract_repository_events.csv",
+      "jsonPath": "tables/contract_repository_events.json",
+      "sourceSystem": "Contract Repository",
+      "sourceSystemId": "contract_repository",
+      "sourceDescription": "contract_repository_records, contract_repository_events, contract_repository_audit_trail",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "counterparty",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "type": "number"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "start_date",
+          "type": "string"
+        },
+        {
+          "name": "end_date",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "auto_renew",
+          "type": "boolean"
+        },
+        {
+          "name": "contract_repository_record_id",
+          "type": "string"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "contract_repository_audit_trail",
+      "path": "tables/contract_repository_audit_trail.csv",
+      "jsonPath": "tables/contract_repository_audit_trail.json",
+      "sourceSystem": "Contract Repository",
+      "sourceSystemId": "contract_repository",
+      "sourceDescription": "contract_repository_records, contract_repository_events, contract_repository_audit_trail",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "counterparty",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "type": "number"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "start_date",
+          "type": "string"
+        },
+        {
+          "name": "end_date",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "auto_renew",
+          "type": "boolean"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "analytics_events",
+      "path": "tables/analytics_events.csv",
+      "jsonPath": "tables/analytics_events.json",
+      "sourceSystem": "BigQuery",
+      "sourceSystemId": "bigquery",
+      "sourceDescription": "analytics_events, historical_metrics, cached_aggregates",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "period",
+          "type": "string"
+        },
+        {
+          "name": "metric_name",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "type": "number"
+        },
+        {
+          "name": "variance_pct",
+          "type": "number"
+        },
+        {
+          "name": "computed_at",
+          "type": "string"
+        },
+        {
+          "name": "historical_metric_id",
+          "type": "string"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "historical_metrics",
+      "path": "tables/historical_metrics.csv",
+      "jsonPath": "tables/historical_metrics.json",
+      "sourceSystem": "BigQuery",
+      "sourceSystemId": "bigquery",
+      "sourceDescription": "analytics_events, historical_metrics, cached_aggregates",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "period",
+          "type": "string"
+        },
+        {
+          "name": "metric_name",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "type": "number"
+        },
+        {
+          "name": "variance_pct",
+          "type": "number"
+        },
+        {
+          "name": "computed_at",
+          "type": "string"
+        }
+      ],
+      "rowCount": 60
+    },
+    {
+      "name": "cached_aggregates",
+      "path": "tables/cached_aggregates.csv",
+      "jsonPath": "tables/cached_aggregates.json",
+      "sourceSystem": "BigQuery",
+      "sourceSystemId": "bigquery",
+      "sourceDescription": "analytics_events, historical_metrics, cached_aggregates",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "period",
+          "type": "string"
+        },
+        {
+          "name": "metric_name",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "type": "number"
+        },
+        {
+          "name": "variance_pct",
+          "type": "number"
+        },
+        {
+          "name": "computed_at",
+          "type": "string"
+        }
+      ],
+      "rowCount": 60
+    }
+  ],
+  "documents": [
+    {
+      "id": "asc-606-contract-analyzer-controls-playbook",
+      "path": "documents/asc-606-contract-analyzer-controls-playbook.md",
+      "title": "ASC 606 Contract Analyzer Controls Playbook",
+      "type": "policy",
+      "sourceSystem": "BigQuery",
+      "sourceSystemId": "bigquery",
+      "linkedEntities": [
+        "sales_orders",
+        "contracts",
+        "billing_documents"
+      ],
+      "requiredSections": [
+        "Workflow scope",
+        "Materiality thresholds",
+        "Escalation triggers",
+        "Audit evidence requirements",
+        "Quarter-end variations"
+      ],
+      "citationAnchors": [
+        "scope",
+        "materiality",
+        "escalation",
+        "audit-evidence"
+      ],
+      "minimumWordCount": 500,
+      "wordCount": 530
+    }
+  ],
+  "totalRows": 540
+}

@@ -9,7 +9,7 @@ layout: default
 
 Task-oriented, step-by-step recipes for operating the GE Agent Factory. Each
 recipe is structured as **Goal → Prerequisites → Steps → Verify → Troubleshoot**
-and uses only real commands from the repo (`Makefile`, `tools/ge.mjs`,
+and uses only real commands from the repo (`mise.toml`, `tools/ge.mjs`,
 `scripts/*`, `installer/*`).
 
 Use Cookbooks when you want a known-good path through the system. Each recipe

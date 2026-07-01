@@ -10,16 +10,17 @@ layout: default
 ## Goal
 
 Build one agent end-to-end from a spec, on your machine, and know exactly what
-lands on disk: the multi-agent ADK app, fixtures, the OKF knowledge bundle, and
+lands on disk: the multi-agent [ADK](https://google.github.io/adk-docs/)
+(Google's Agent Development Kit) app, fixtures, the OKF knowledge bundle, and
 evals.
 
 ## Prerequisites
 
-- Local toolchain installed (`make setup`) and `make doctor-local` green.
+- Local toolchain installed (`mise run setup`) and `mise run doctor-local` green.
 - A spec to build from (from the [interview](author-a-spec-via-interview.html) or
   the catalog).
 - For local builds, `google-antigravity` must be importable in `.venv` (verified
-  by `make deps` / `make doctor-local`).
+  by `mise run deps` / `mise run doctor-local`).
 
 ## Steps
 
@@ -48,11 +49,11 @@ evals.
    - `--target <stage>` sets the harness target (local; default `previewed`).
    - `--warm` pre-warms the shared uv cache before running (local).
 
-   Equivalent `Makefile` shortcuts:
+   Equivalent `mise` shortcuts:
 
    ```bash
-   make provision-local CANARY=1   # ge agents build --local --canary
-   make provision CANARY=1         # ge agents build --canary  (active mode)
+   CANARY=1 mise run provision-local   # ge agents build --local --canary
+   CANARY=1 mise run provision         # ge agents build --canary  (active mode)
    ```
 
 3. **Find the workspace.** Local builds report `Workspaces in <dir>`. The
@@ -94,9 +95,9 @@ Then open the workspace and confirm `app/agent.py` and `tests/eval/` exist.
 ## Troubleshoot
 
 - **Build pauses at data readiness** — the Snowfakery runtime isn't warm. Run
-  `make data-runtime`.
+  `mise run data-runtime`.
 - **Local build fails immediately** — `google.antigravity` not importable.
-  Re-run `make deps`.
+  Re-run `mise run deps`.
 - **Want to skip the cloud refine stage (remote)** — pass `--no-refine`
   (sets `REFINE=0`).
 - **Inspect a specific run's logs** — `ge agents logs <runId>`.

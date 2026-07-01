@@ -7,25 +7,20 @@ import { Hono } from "hono";
 import { readDotEnv } from "./dotenv.mjs";
 import { detectAgents, getAgentDef } from "./agents.js";
 import { DEPARTMENTS, INTERVIEW_QUESTIONS } from "./departments.js";
-import { DOMAIN_CATALOG, DOMAIN_SUMMARY, getDomainsByDepartment, searchDomains } from "./domains.generated.js";
+import { getDomainsByDepartment } from "./domains.generated.js";
 import { MOCK_SYSTEMS, renderSystemPrompt } from "./systems.js";
 import { readJson, writeJson } from "@ge/std/json-io";
 import { getUseCases } from "./use-cases.js";
 import {
-  createProject,
   ensureDefaultProject,
   ensureProjectDir,
   getProject,
-  listProjectFiles,
-  listProjects,
   projectRunsDir,
-  readProjectFile,
-  removeProject,
   touchProject,
   workspaceManifestPath,
 } from "./projects.js";
 import { createOutputParser, detectFormat } from "./output-parsers.js";
-import { buildHandoffPacket, buildHarnessRunPlan, PERMISSION_PROFILES } from "./harness-runtime.js";
+import { buildHandoffPacket, buildHarnessRunPlan } from "./harness-runtime.js";
 import { loadSkillRegistry, materializeSkillsForWorkspace, selectSkillsForContext } from "./skill-registry.js";
 import { recordRunArtifacts } from "./artifacts.js";
 import { validateAgentWorkspace } from "./agent-workspace-pipeline.js";
@@ -40,30 +35,18 @@ import {
   buildPublishPlan,
   renderPlanMarkdown,
 } from "./deploy-plan.js";
-import { getAuthStatus, listGeminiEnterpriseApps, listProjects as listGcpProjects, setProject as setGcpProject, getFullSetupStatus, writeEnvFile } from "./auth.js";
 import {
   openDatabase,
-  getProjectDb, insertProjectDb, touchProjectDb, deleteProjectDb,
-  listConversationsDb, createConversationDb, deleteConversationDb, renameConversationDb,
-  listMessagesDb, appendMessageDb,
-  listVersionsDb, createVersionDb, getVersionDb, promoteVersionDb,
-  listAgentsDb, getAgentDb, insertAgentDb, updateAgentStageDb, updateAgentDb, deleteAgentDb,
-  listArtifactsDb, STAGES,
-  listTasksDb, getTaskDb, insertTaskDb, updateTaskDb, deleteTaskDb,
-  appendActivityEventDb, listActivityEventsDb,
-  getHeartbeatPolicyDb, upsertHeartbeatPolicyDb,
+  getProjectDb, insertProjectDb, touchProjectDb,
+  listAgentsDb, getAgentDb, insertAgentDb, updateAgentStageDb,
+  STAGES,
+  getTaskDb, updateTaskDb,
+  appendActivityEventDb,
+  getHeartbeatPolicyDb,
 } from "./db.js";
-import {
-  saveBrief,
-  readBrief,
-} from "./versions.js";
-import {
-  createWorkspaceSnapshot,
-  normalizeAgentDirName,
-  restoreWorkspaceSnapshot,
-} from "./snapshots.js";
+import { normalizeAgentDirName } from "./snapshots.js";
 import { createRunService } from "./run-service.js";
-import { deleteSecret, listSecrets, readSecretsEnv, upsertSecret } from "./secrets.js";
+import { readSecretsEnv } from "./secrets.js";
 import {
   APP_ROOT,
   GENERATOR_DATA_ROOT,
@@ -71,6 +54,9 @@ import {
   GENERATOR_WORKSPACES_ROOT,
   GENERATOR_WORKSPACE_STORE,
 } from "./state-paths.js";
+import { createCatalogRoutes } from "./routes/catalog.mjs";
+import { createWorkspaceRoutes } from "./routes/workspaces.mjs";
+import { createRunRoutes } from "./routes/runs.mjs";
 
 const REPO_ROOT = APP_ROOT;
 const WEB_ROOT = join(REPO_ROOT, "web");
@@ -1432,238 +1418,74 @@ export async function startServer({ port = 17654, host = "127.0.0.1", returnServ
   });
   apiApp.get("/api/agents", async (c) => c.json({ agents: await detectAgents() }));
 
+  apiApp.route("/", createCatalogRoutes({ REPO_ROOT, DATA_ROOT }));
+  apiApp.route("/", createWorkspaceRoutes({
+    PROJECTS_ROOT,
+    PROJECT_STORE,
+    DATA_ROOT,
+    REPO_ROOT,
+    previews,
+    ensureProjectInDb,
+    appendActivity,
+    wakeProjectAgent,
+    runWorkspaceCommand,
+    terminateChild,
+    createPromotionPacket,
+    repairWorkspaceArtifact,
+    writeDeployPlanArtifact,
+    writePublishPlanArtifact,
+    getRegistrationStatus,
+    ensureWorkspaceAgentRecord,
+    persistWorkspaceStage,
+    uniqueAgentDirName,
+  }));
+  apiApp.route("/", createRunRoutes({ runs, terminateChild }));
+  // Distinguish "no converted route matched this path" (→ fall through to the
+  // legacy handler) from "a converted route matched and legitimately
+  // responded 404" (e.g. { error: "workspace not found" }) — both are status
+  // 404, but only the former should fall through. Hono's own notFound
+  // handler only fires in the first case, so mark it with a sentinel header
+  // the bridge below can check without inspecting the body.
+  const NO_ROUTE_MATCHED = "x-ge-no-route-matched";
+  apiApp.notFound((c) => {
+    c.header(NO_ROUTE_MATCHED, "1");
+    return c.json({ error: "not found" }, 404);
+  });
+
   const server = createServer(async (req, res) => {
     const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
     const workspacePathname = url.pathname;
     try {
-      // Hono first (GET only). A 404 means no converted route matched → fall through.
-      if (req.method === "GET") {
-        const honoResp = await apiApp.fetch(new Request(`http://localhost${req.url}`, { method: "GET" }));
-        if (honoResp.status !== 404) {
+      // Hono first. A 404 with the NO_ROUTE_MATCHED sentinel means no
+      // converted route matched this path/method → fall through to the
+      // legacy raw-http handler below (which still owns SSE/streaming and
+      // upstream-proxying routes that are too risky to strangle in this
+      // pass). A 404 WITHOUT the sentinel means a converted route matched
+      // and legitimately returned 404 itself — that response must be
+      // returned as-is, not treated as a fallthrough signal.
+      {
+        const isBodyless = req.method === "GET" || req.method === "HEAD";
+        const honoReq = new Request(`http://localhost${req.url}`, {
+          method: req.method,
+          headers: req.headers,
+          body: isBodyless ? undefined : req,
+          duplex: isBodyless ? undefined : "half",
+        });
+        const honoResp = await apiApp.fetch(honoReq);
+        if (!(honoResp.status === 404 && honoResp.headers.has(NO_ROUTE_MATCHED))) {
           res.writeHead(honoResp.status, Object.fromEntries(honoResp.headers));
-          res.end(await honoResp.text());
+          res.end(Buffer.from(await honoResp.arrayBuffer()));
           return;
         }
       }
-      if (req.method === "GET" && url.pathname === "/api/health") return json(res, 200, { ok: true, systems: MOCK_SYSTEMS.length });
-      if (req.method === "GET" && url.pathname === "/api/daemon/status") return json(res, 200, daemonStatus());
-
-      // ── Auth & Setup endpoints ──
-      if (req.method === "GET" && url.pathname === "/api/auth/status") {
-        return json(res, 200, await getFullSetupStatus(DATA_ROOT));
-      }
-      if (req.method === "GET" && url.pathname === "/api/auth/projects") {
-        return json(res, 200, { projects: await listGcpProjects() });
-      }
-      if (req.method === "POST" && url.pathname === "/api/auth/project") {
-        const body = await readBody(req);
-        const ok = await setGcpProject(body.projectId);
-        if (ok) await writeEnvFile(DATA_ROOT, { GOOGLE_CLOUD_PROJECT: body.projectId });
-        return json(res, 200, { ok, projectId: body.projectId });
-      }
-      if (req.method === "GET" && url.pathname === "/api/auth/gemini-apps") {
-        const projectId = url.searchParams.get("project") || (await getAuthStatus()).project;
-        return json(res, 200, { apps: await listGeminiEnterpriseApps(projectId) });
-      }
-      if (req.method === "POST" && url.pathname === "/api/auth/env") {
-        const body = await readBody(req);
-        const merged = await writeEnvFile(DATA_ROOT, body);
-        return json(res, 200, { ok: true, env: merged });
-      }
-
-      if (req.method === "GET" && url.pathname === "/api/systems") return json(res, 200, { systems: MOCK_SYSTEMS });
-      if (req.method === "GET" && url.pathname === "/api/departments") {
-        const departments = DEPARTMENTS.map((department) => {
-          const useCases = getUseCases().filter((item) => item.department === department.id);
-          const domains = getDomainsByDepartment(department.id);
-          return {
-            ...department,
-            useCaseCount: useCases.length,
-            domainCount: domains.length,
-            domains: domains.map((d) => ({ id: d.id, title: d.title, subtitle: d.subtitle, color: d.color, useCaseCount: d.useCaseCount, useCases: d.useCases })),
-            featuredUseCases: useCases.slice(0, 12),
-          };
-        });
-        return json(res, 200, { departments, interviewQuestions: INTERVIEW_QUESTIONS });
-      }
-      if (req.method === "GET" && url.pathname === "/api/domains") {
-        const dept = url.searchParams.get("department");
-        const q = url.searchParams.get("q");
-        let domains = dept ? getDomainsByDepartment(dept) : DOMAIN_CATALOG;
-        if (q) domains = searchDomains(q).filter((d) => !dept || d.department === dept);
-        return json(res, 200, { domains, summary: DOMAIN_SUMMARY, total: domains.length });
-      }
-      if (req.method === "GET" && url.pathname === "/api/use-cases") {
-        const department = url.searchParams.get("department");
-        const query = (url.searchParams.get("q") || "").toLowerCase();
-        let useCases = getUseCases();
-        if (department) useCases = useCases.filter((item) => item.department === department);
-        if (query) {
-          const tokens = query.split(/\s+/).filter(Boolean);
-          useCases = useCases
-            .map((item) => {
-              const haystack = [item.title, item.subtitle, item.persona, item.layer, item.triggerType, ...(item.systems || []), ...(item.statusQuo || []), ...(item.agentification || [])].join(" ").toLowerCase();
-              const score = tokens.reduce((total, token) => total + (haystack.includes(token) ? 1 : 0) + (item.title.toLowerCase().includes(token) ? 2 : 0), 0);
-              return { item, score };
-            })
-            .filter((entry) => entry.score > 0)
-            .sort((a, b) => b.score - a.score || a.item.title.localeCompare(b.item.title))
-            .map((entry) => entry.item);
-        }
-        return json(res, 200, { useCases: useCases.slice(0, 80) });
-      }
-      if (req.method === "GET" && url.pathname === "/api/agents") return json(res, 200, { agents: await detectAgents() });
-      if (req.method === "GET" && url.pathname === "/api/runtime/adapters") {
-        const agents = await detectAgents();
-        return json(res, 200, { adapters: agents.map((agent) => agent.contract) });
-      }
-      if (req.method === "GET" && url.pathname === "/api/runtime/capabilities") {
-        const agents = await detectAgents();
-        return json(res, 200, {
-          permissionProfiles: Object.values(PERMISSION_PROFILES),
-          adapters: agents.map((agent) => ({
-            id: agent.id,
-            name: agent.name,
-            available: agent.available,
-            capabilities: agent.capabilities,
-            contract: agent.contract,
-          })),
-        });
-      }
-      if (req.method === "GET" && url.pathname === "/api/runtime/skills") {
-        return json(res, 200, await loadSkillRegistry(REPO_ROOT));
-      }
-      if (req.method === "GET" && workspacePathname === "/api/workspaces") {
-        const workspaces = await listProjects({ storePath: PROJECT_STORE, projectsRoot: PROJECTS_ROOT });
-        return json(res, 200, { workspaces });
-      }
-      if (req.method === "POST" && workspacePathname === "/api/workspaces") {
-        const body = await readBody(req);
-        const workspace = await createProject({
-          storePath: PROJECT_STORE,
-          projectsRoot: PROJECTS_ROOT,
-          name: typeof body.name === "string" ? body.name : "New Workspace",
-          kind: typeof body.kind === "string" ? body.kind : "workspace",
-          useCaseId: body.useCaseId || undefined,
-          departmentId: body.departmentId || undefined,
-        });
-        ensureProjectInDb(workspace.id);
-        appendActivity("workspace.created", {
-          projectId: workspace.id,
-          entityType: "workspace",
-          entityId: workspace.id,
-          payload: { name: workspace.name, kind: workspace.kind },
-        });
-        return json(res, 200, { workspace });
-      }
-      const projectActivityMatch = workspacePathname.match(/^\/api\/workspaces\/([^/]+)\/activity$/);
-      if (req.method === "GET" && projectActivityMatch) {
-        const pid = decodeURIComponent(projectActivityMatch[1]);
-        return json(res, 200, { events: listActivityEventsDb({ projectId: pid, limit: url.searchParams.get("limit") }) });
-      }
-      const projectTasksMatch = workspacePathname.match(/^\/api\/workspaces\/([^/]+)\/tasks(?:\/([^/]+))?$/);
-      if (projectTasksMatch) {
-        const pid = decodeURIComponent(projectTasksMatch[1]);
-        const taskId = projectTasksMatch[2] ? decodeURIComponent(projectTasksMatch[2]) : null;
-        const project = await getProject({ storePath: PROJECT_STORE, projectsRoot: PROJECTS_ROOT, projectId: pid });
-        if (!project) return json(res, 404, { error: "workspace not found" });
-        ensureProjectInDb(pid);
-        if (req.method === "GET" && !taskId) {
-          return json(res, 200, { tasks: listTasksDb(pid, { status: url.searchParams.get("status"), assigneeAgentId: url.searchParams.get("assigneeAgentId") }) });
-        }
-        if (req.method === "POST" && !taskId) {
-          const body = await readBody(req);
-          const task = insertTaskDb(pid, body);
-          appendActivity("task.created", { projectId: pid, entityType: "task", entityId: task.id, payload: { title: task.title, assigneeAgentId: task.assigneeAgentId } });
-          if (task.assigneeAgentId) {
-            const policy = getHeartbeatPolicyDb(task.assigneeAgentId);
-            if (policy.wakeOnAssignment) {
-              wakeProjectAgent(pid, {
-                agentId: body.runtimeAgentId || "gemini",
-                selectedAgentId: task.assigneeAgentId,
-                reason: "assignment",
-                taskId: task.id,
-              }).catch((error) => appendActivity("wakeup.failed", { projectId: pid, entityType: "task", entityId: task.id, payload: { error: error.message } }));
-            }
-          }
-          return json(res, 201, { task });
-        }
-        if (req.method === "GET" && taskId) {
-          const task = getTaskDb(pid, taskId);
-          if (!task) return json(res, 404, { error: "task not found" });
-          return json(res, 200, { task });
-        }
-        if (req.method === "PATCH" && taskId) {
-          const body = await readBody(req);
-          const task = updateTaskDb(pid, taskId, body);
-          if (!task) return json(res, 404, { error: "task not found" });
-          appendActivity("task.updated", { projectId: pid, entityType: "task", entityId: task.id, payload: body });
-          return json(res, 200, { task });
-        }
-        if (req.method === "DELETE" && taskId) {
-          deleteTaskDb(pid, taskId);
-          appendActivity("task.deleted", { projectId: pid, entityType: "task", entityId: taskId });
-          return json(res, 200, { ok: true });
-        }
-      }
-      const projectSecretsMatch = workspacePathname.match(/^\/api\/workspaces\/([^/]+)\/secrets(?:\/([^/]+))?$/);
-      if (projectSecretsMatch) {
-        const pid = decodeURIComponent(projectSecretsMatch[1]);
-        const name = projectSecretsMatch[2] ? decodeURIComponent(projectSecretsMatch[2]) : null;
-        const project = await getProject({ storePath: PROJECT_STORE, projectsRoot: PROJECTS_ROOT, projectId: pid });
-        if (!project) return json(res, 404, { error: "workspace not found" });
-        if (req.method === "GET" && !name) return json(res, 200, { secrets: await listSecrets(DATA_ROOT) });
-        if (req.method === "POST" && !name) {
-          const body = await readBody(req);
-          const secret = await upsertSecret(DATA_ROOT, body);
-          appendActivity("secret.upserted", { projectId: pid, entityType: "secret", entityId: secret.name, payload: { name: secret.name, scope: secret.scope } });
-          return json(res, 201, { secret });
-        }
-        if (req.method === "DELETE" && name) {
-          await deleteSecret(DATA_ROOT, name);
-          appendActivity("secret.deleted", { projectId: pid, entityType: "secret", entityId: name });
-          return json(res, 200, { ok: true });
-        }
-      }
-      const projectWakeupMatch = workspacePathname.match(/^\/api\/workspaces\/([^/]+)\/wakeups$/);
-      if (req.method === "POST" && projectWakeupMatch) {
-        const pid = decodeURIComponent(projectWakeupMatch[1]);
-        const body = await readBody(req);
-        const project = await getProject({ storePath: PROJECT_STORE, projectsRoot: PROJECTS_ROOT, projectId: pid });
-        if (!project) return json(res, 404, { error: "workspace not found" });
-        try {
-          return json(res, 202, await wakeProjectAgent(pid, body));
-        } catch (error) {
-          return json(res, 400, { error: error instanceof Error ? error.message : String(error) });
-        }
-      }
-      const projectDeleteMatch = workspacePathname.match(/^\/api\/workspaces\/([^/]+)$/);
-      if (req.method === "DELETE" && projectDeleteMatch) {
-        const pid = decodeURIComponent(projectDeleteMatch[1]);
-        // Stop any running ADK preview for this project
-        const preview = previews.get(pid);
-        terminateChild(preview?.child, "SIGTERM");
-        previews.delete(pid);
-        // Delete from SQLite (explicit + CASCADE)
-        try { deleteProjectDb(pid); } catch { /* may not exist in db */ }
-        // Delete from the workspace store and remove the workspace directory from disk.
-        await removeProject({ storePath: PROJECT_STORE, projectsRoot: PROJECTS_ROOT, projectId: pid });
-        appendActivity("workspace.deleted", { projectId: pid, entityType: "workspace", entityId: pid });
-        return json(res, 200, { ok: true, deleted: pid });
-      }
-      const projectFilesMatch = workspacePathname.match(/^\/api\/workspaces\/([^/]+)\/files$/);
-      if (req.method === "GET" && projectFilesMatch) {
-        return json(res, 200, { files: await listProjectFiles(PROJECTS_ROOT, projectFilesMatch[1]) });
-      }
-      const projectFileContentMatch = workspacePathname.match(/^\/api\/workspaces\/([^/]+)\/file$/);
-      if (req.method === "GET" && projectFileContentMatch) {
-        return json(res, 200, { file: await readProjectFile(PROJECTS_ROOT, projectFileContentMatch[1], url.searchParams.get("path")) });
-      }
-      const projectCommandMatch = workspacePathname.match(/^\/api\/workspaces\/([^/]+)\/terminal$/);
-      if (req.method === "POST" && projectCommandMatch) {
-        const body = await readBody(req);
-        return json(res, 200, { result: await runWorkspaceCommand(projectCommandMatch[1], body.commandId) });
-      }
+      // NOTE: /api/health, /api/daemon/status, auth/*, /api/systems,
+      // /api/departments, /api/domains, /api/use-cases, /api/agents,
+      // /api/runtime/*, and the full /api/workspaces/* CRUD/tasks/secrets/
+      // wakeups/files/terminal surface now live in the Hono apiApp above
+      // (server.js apiApp.route() + apps/factory/src/routes/catalog.mjs and
+      // routes/workspaces.mjs). Only the ADK preview/adk-run/adk-proxy
+      // routes below remain here — see the file-header comment in
+      // routes/workspaces.mjs for why they're deferred.
       const projectPreviewMatch = workspacePathname.match(/^\/api\/workspaces\/([^/]+)\/previews\/adk-web$/);
       if (projectPreviewMatch) {
         if (req.method === "POST") return json(res, 200, { preview: serializePreview(await waitForPreviewRunning(await startAdkPreview(projectPreviewMatch[1]))) });
@@ -1680,236 +1502,6 @@ export async function startServer({ port = 17654, host = "127.0.0.1", returnServ
         const result = await runAdkAgent(decodeURIComponent(adkRunMatch[1]), body.prompt || body.message || "hello");
         if (result.blocked) return json(res, 422, result);
         return json(res, 200, { result });
-      }
-      const promotionPacketMatch = url.pathname.match(/^\/api\/workspaces\/([^/]+)\/promotion-packet$/);
-      if (promotionPacketMatch && (req.method === "POST" || req.method === "GET")) {
-        const pid = decodeURIComponent(promotionPacketMatch[1]);
-        const workspaceDir = await ensureProjectDir(PROJECTS_ROOT, pid);
-        const manifestPath = join(workspaceDir, "workspace.json");
-        const gate = await runWorkspaceDoctor({
-          workspaceDir,
-          manifestPath,
-          workspaceId: pid,
-          repoRoot: REPO_ROOT,
-          stage: "promote",
-        });
-        if (!gate.ok) return json(res, 422, { ok: false, blocked: true, doctor: gate });
-        const promotion = await createPromotionPacket({
-          workspaceDir,
-          manifestPath,
-          projectId: pid,
-          repoRoot: REPO_ROOT,
-          source: req.method === "POST" ? "ui" : "api",
-        });
-        touchProjectDb(pid);
-        return json(res, 200, promotion);
-      }
-      const workspaceDoctorMatch = url.pathname.match(/^\/api\/workspaces\/([^/]+)\/workspace-doctor$/);
-      if (workspaceDoctorMatch && (req.method === "POST" || req.method === "GET")) {
-        const pid = decodeURIComponent(workspaceDoctorMatch[1]);
-        const workspaceDir = await ensureProjectDir(PROJECTS_ROOT, pid);
-        const body = req.method === "POST" ? await readBody(req) : {};
-        const stage = body.stage || url.searchParams.get("stage") || "validate";
-        const report = await runWorkspaceDoctor({
-          workspaceDir,
-          manifestPath: join(workspaceDir, WORKSPACE_PATHS.workspaceManifest),
-          workspaceId: pid,
-          repoRoot: REPO_ROOT,
-          stage,
-        });
-        return json(res, report.ok ? 200 : 422, report);
-      }
-      const workspaceRepairMatch = url.pathname.match(/^\/api\/workspaces\/([^/]+)\/workspace-repair$/);
-      if (workspaceRepairMatch && req.method === "POST") {
-        const pid = decodeURIComponent(workspaceRepairMatch[1]);
-        const body = await readBody(req);
-        const report = await repairWorkspaceArtifact(pid, {
-          stage: body.stage || "preview",
-          attempts: body.attempts || body.maxAttempts || 3,
-          runPreview: body.runPreview !== false,
-          target: body.target || "agent_runtime",
-        });
-        return json(res, report.ok ? 200 : 422, report);
-      }
-      const planMatch = url.pathname.match(/^\/api\/workspaces\/([^/]+)\/plans\/(deploy|publish)$/);
-      if (planMatch && req.method === "POST") {
-        const pid = decodeURIComponent(planMatch[1]);
-        const kind = planMatch[2];
-        const body = await readBody(req);
-        const result = kind === "deploy"
-          ? await writeDeployPlanArtifact(pid, body.target || "agent_runtime")
-          : await writePublishPlanArtifact(pid, body.appId || body.app_id || "<GEMINI_ENTERPRISE_APP_ID>");
-        if (result.blocked) return json(res, 422, result);
-        return json(res, 200, result);
-      }
-      const registrationMatch = url.pathname.match(/^\/api\/workspaces\/([^/]+)\/registration$/);
-      if (req.method === "GET" && registrationMatch) {
-        return json(res, 200, { registration: await getRegistrationStatus(registrationMatch[1]) });
-      }
-      const agentsMatch = url.pathname.match(/^\/api\/workspaces\/([^/]+)\/agents(?:\/([^/]+))?(?:\/(stage|artifacts|heartbeat-policy))?$/);
-      if (agentsMatch) {
-        const pid = decodeURIComponent(agentsMatch[1]);
-        const aid = agentsMatch[2] ? decodeURIComponent(agentsMatch[2]) : null;
-        const sub = agentsMatch[3] || null;
-        ensureProjectInDb(pid);
-        if (req.method === "GET" && !aid) {
-          return json(res, 200, { agents: ensureWorkspaceAgentRecord(pid), stages: STAGES });
-        }
-        if (req.method === "POST" && !aid) {
-          const body = await readBody(req);
-          const proposedDir = body.dirName || body.name?.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "agent";
-          let dirName;
-          try {
-            dirName = uniqueAgentDirName(pid, proposedDir);
-          } catch {
-            return json(res, 400, { error: "invalid agent directory" });
-          }
-          mkdirSync(join(await ensureProjectDir(PROJECTS_ROOT, pid), dirName), { recursive: true });
-          const agent = insertAgentDb({ projectId: pid, name: body.name || "New Agent", useCaseId: body.useCaseId, departmentId: body.departmentId, dirName, brief: body.brief });
-          if (body.heartbeatPolicy && typeof body.heartbeatPolicy === "object") upsertHeartbeatPolicyDb(agent.id, body.heartbeatPolicy);
-          appendActivity("agent.created", { projectId: pid, entityType: "agent", entityId: agent.id, payload: { name: agent.name, dirName: agent.dirName } });
-          return json(res, 201, { agent });
-        }
-        if (req.method === "GET" && aid && !sub) {
-          const agent = getAgentDb(aid);
-          if (!agent) return json(res, 404, { error: "agent not found" });
-          return json(res, 200, { agent });
-        }
-        if (req.method === "PATCH" && aid && sub === "stage") {
-          const body = await readBody(req);
-          if (body.stage === "tested") {
-            const workspaceDir = join(PROJECTS_ROOT, pid);
-            const validation = await validateAgentWorkspace({
-              workspaceDir,
-              manifestPath: workspaceManifestPath(PROJECTS_ROOT, pid),
-              workspaceId: pid,
-              repoRoot: REPO_ROOT,
-              testsRequested: false,
-              source: "stage-patch",
-            });
-            if (!validation.ok) return json(res, 422, { error: "validation failed", validation });
-          }
-          const agent = updateAgentStageDb(aid, body.stage);
-          persistWorkspaceStage(pid, body.stage, { source: "stage-patch" });
-          appendActivity("agent.stage_changed", { projectId: pid, entityType: "agent", entityId: aid, payload: { stage: body.stage } });
-          return json(res, 200, { agent });
-        }
-        if (aid && sub === "heartbeat-policy") {
-          const agent = getAgentDb(aid);
-          if (!agent) return json(res, 404, { error: "agent not found" });
-          if (req.method === "GET") return json(res, 200, { policy: getHeartbeatPolicyDb(aid) });
-          if (req.method === "PATCH") {
-            const body = await readBody(req);
-            const policy = upsertHeartbeatPolicyDb(aid, body);
-            appendActivity("agent.heartbeat_policy_updated", { projectId: pid, entityType: "agent", entityId: aid, payload: policy });
-            return json(res, 200, { policy });
-          }
-        }
-        if (req.method === "PATCH" && aid && !sub) {
-          const body = await readBody(req);
-          updateAgentDb(aid, body);
-          appendActivity("agent.updated", { projectId: pid, entityType: "agent", entityId: aid, payload: body });
-          return json(res, 200, { agent: getAgentDb(aid) });
-        }
-        if (req.method === "DELETE" && aid) {
-          deleteAgentDb(aid);
-          appendActivity("agent.deleted", { projectId: pid, entityType: "agent", entityId: aid });
-          return json(res, 200, { ok: true });
-        }
-        if (req.method === "GET" && aid && sub === "artifacts") {
-          return json(res, 200, { artifacts: listArtifactsDb(aid) });
-        }
-      }
-      const chatSessionsMatch = url.pathname.match(/^\/api\/workspaces\/([^/]+)\/chat\/sessions(?:\/([^/]+))?$/);
-      if (chatSessionsMatch) {
-        const pid = decodeURIComponent(chatSessionsMatch[1]);
-        const sid = chatSessionsMatch[2] ? decodeURIComponent(chatSessionsMatch[2]) : null;
-        ensureProjectInDb(pid);
-        if (req.method === "GET" && !sid) {
-          const agentId = url.searchParams.get("agentId") || null;
-          const agent = agentId ? getAgentDb(agentId) : null;
-          if (agentId && (!agent || agent.projectId !== pid)) return json(res, 404, { error: "Agent not found" });
-          return json(res, 200, { sessions: listConversationsDb(pid, agentId) });
-        }
-        if (req.method === "POST" && !sid) {
-          const body = await readBody(req);
-          const agentId = typeof body.agentId === "string" && body.agentId ? body.agentId : null;
-          const agent = agentId ? getAgentDb(agentId) : null;
-          if (agentId && (!agent || agent.projectId !== pid)) return json(res, 404, { error: "Agent not found" });
-          const session = createConversationDb(pid, body.title, agentId);
-          return json(res, 201, { session });
-        }
-        if (req.method === "DELETE" && sid) {
-          deleteConversationDb(pid, sid);
-          return json(res, 200, { ok: true });
-        }
-        if (req.method === "PATCH" && sid) {
-          const body = await readBody(req);
-          const session = renameConversationDb(pid, sid, body.title);
-          return json(res, 200, { session });
-        }
-      }
-      const chatMessagesMatch = url.pathname.match(/^\/api\/workspaces\/([^/]+)\/chat\/sessions\/([^/]+)\/messages$/);
-      if (chatMessagesMatch) {
-        const pid = decodeURIComponent(chatMessagesMatch[1]);
-        const sid = decodeURIComponent(chatMessagesMatch[2]);
-        if (req.method === "GET") {
-          return json(res, 200, { messages: listMessagesDb(pid, sid) });
-        }
-        if (req.method === "POST") {
-          const body = await readBody(req);
-          const message = appendMessageDb(pid, sid, body);
-          return json(res, 201, { message });
-        }
-      }
-      const briefMatch = url.pathname.match(/^\/api\/workspaces\/([^/]+)\/brief$/);
-      if (briefMatch) {
-        const pid = decodeURIComponent(briefMatch[1]);
-        if (req.method === "POST") {
-          const body = await readBody(req);
-          const brief = await saveBrief(PROJECTS_ROOT, pid, body);
-          return json(res, 201, { brief });
-        }
-        if (req.method === "GET") {
-          const brief = await readBrief(PROJECTS_ROOT, pid);
-          return json(res, 200, { brief });
-        }
-      }
-      const versionsMatch = url.pathname.match(/^\/api\/workspaces\/([^/]+)\/versions(?:\/(\d+))?(?:\/(promote))?$/);
-      if (versionsMatch) {
-        const pid = decodeURIComponent(versionsMatch[1]);
-        const vid = versionsMatch[2] ? Number(versionsMatch[2]) : null;
-        const action = versionsMatch[3] || null;
-        ensureProjectInDb(pid);
-        if (req.method === "GET" && vid === null) {
-          return json(res, 200, listVersionsDb(pid));
-        }
-        if (req.method === "POST" && vid === null) {
-          const body = await readBody(req);
-          const snapshot = await createWorkspaceSnapshot(PROJECTS_ROOT, pid, { message: `workspace version for ${pid}` });
-          const version = createVersionDb(pid, {
-            brief: body.brief || null,
-            fileSnapshot: snapshot.fileSnapshot,
-            snapshotRef: snapshot.commit,
-          });
-          touchProjectDb(pid);
-          appendActivity("version.created", { projectId: pid, entityType: "version", entityId: String(version.version), payload: { snapshotRef: version.snapshotRef, fileCount: version.fileCount } });
-          return json(res, 201, { version });
-        }
-        if (req.method === "GET" && vid !== null && !action) {
-          const version = getVersionDb(pid, vid);
-          if (!version) return json(res, 404, { error: "version not found" });
-          return json(res, 200, { version });
-        }
-        if (req.method === "PATCH" && vid !== null && action === "promote") {
-          const version = getVersionDb(pid, vid);
-          if (!version) return json(res, 404, { error: "version not found" });
-          if (!version.snapshotRef) return json(res, 409, { error: "version has no restorable snapshot" });
-          await restoreWorkspaceSnapshot(PROJECTS_ROOT, pid, version.snapshotRef);
-          const result = promoteVersionDb(pid, vid);
-          appendActivity("version.promoted", { projectId: pid, entityType: "version", entityId: String(vid), payload: { snapshotRef: version.snapshotRef } });
-          return json(res, 200, result);
-        }
       }
       const adkProxyMatch = url.pathname.match(/^\/api\/workspaces\/([^/]+)\/adk-proxy(\/.*)?$/);
       if (adkProxyMatch) {
@@ -2010,27 +1602,16 @@ export async function startServer({ port = 17654, host = "127.0.0.1", returnServ
         await startAgentRun(body, res, req);
         return;
       }
-      if (req.method === "GET" && url.pathname === "/api/runs") {
-        const filters = {
-          projectId: url.searchParams.get("projectId") || "",
-          agentId: url.searchParams.get("agentId") || "",
-          status: url.searchParams.get("status") || "",
-        };
-        return json(res, 200, { runs: runs.list(filters).map((run) => runs.statusBody(run)) });
-      }
-      const runMatch = url.pathname.match(/^\/api\/runs\/([^/]+)(?:\/(events|cancel|wait))?$/);
-      if (runMatch) {
-        const run = runs.get(runMatch[1]);
+      // NOTE: GET /api/runs, GET /api/runs/:id, GET /api/runs/:id/wait, and
+      // POST /api/runs/:id/cancel now live in routes/runs.mjs. Only
+      // GET /api/runs/:id/events (SSE, long-lived) stays here — it hands the
+      // raw res to runs.stream(), which registers req.on("close") and pushes
+      // further events onto it from a shared client registry.
+      const runEventsMatch = url.pathname.match(/^\/api\/runs\/([^/]+)\/events$/);
+      if (req.method === "GET" && runEventsMatch) {
+        const run = runs.get(runEventsMatch[1]);
         if (!run) return json(res, 404, { error: "run not found" });
-        if (req.method === "GET" && runMatch[2] === "events") return streamRun(req, res, run);
-        if (req.method === "GET" && runMatch[2] === "wait") return json(res, 200, { run: await runs.wait(run) });
-        if (req.method === "POST" && runMatch[2] === "cancel") {
-          runs.cancel(run, terminateChild);
-          return json(res, 200, { ok: true });
-        }
-        if (req.method === "GET" && !runMatch[2]) {
-          return json(res, 200, { run: runs.statusBody(run) });
-        }
+        return streamRun(req, res, run);
       }
       if (req.method === "GET" && serveWeb) return serveStatic(req, res, url.pathname);
       json(res, 404, { error: "not found" });

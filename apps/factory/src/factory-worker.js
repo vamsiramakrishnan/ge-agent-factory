@@ -5,6 +5,7 @@ import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { FACTORY_STAGE_GRAPH, FACTORY_STAGE_IDS, nextFactoryStage } from "./factory-orchestration.js";
 import { shortAgentName } from "@ge/std/naming";
+import { resolveGcpProject } from "@ge/std/gcp-config";
 import { DEFAULT_AGENT_MODEL } from "./known-models.js";
 import { execStream } from "../../../tools/lib/exec-stream.mjs";
 import { makeEvent } from "../../../tools/lib/events.mjs";
@@ -65,7 +66,7 @@ export function parseWorkerPayload(raw = null, env = process.env) {
     artifactPrefix: payload.artifactPrefix || env.GE_AGENT_FACTORY_ARTIFACT_PREFIX || "",
     workerService: payload.workerService || env.GE_AGENT_FACTORY_WORKER_SERVICE || "ge-agent-factory-worker",
     cloud: {
-      projectId: payload.cloud?.projectId || env.GOOGLE_CLOUD_PROJECT || env.GE_AGENT_FACTORY_PROJECT || "",
+      projectId: resolveGcpProject({ explicit: payload.cloud?.projectId, env, fallbackEnvVars: ["GE_AGENT_FACTORY_PROJECT"] }) || "",
       projectNumber: payload.cloud?.projectNumber || env.GOOGLE_CLOUD_PROJECT_NUMBER || "",
       runtimeRegion: payload.cloud?.runtimeRegion || env.GE_AGENT_FACTORY_RUNTIME_REGION || env.GE_AGENT_FACTORY_REGION || "us-central1",
       workerServiceUrl: payload.cloud?.workerServiceUrl || env.GE_AGENT_FACTORY_WORKER_SERVICE_URL || "",

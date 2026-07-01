@@ -1,13 +1,13 @@
 ---
 title: CLI
-description: The ge, factory, and make command surfaces.
+description: The ge, factory, and mise command surfaces.
 ---
 
 The factory exposes three command surfaces:
 
 - **`ge`** — the operator CLI (`bun tools/ge.mjs`): set up the machine → stand up the platform → run agents.
 - **`factory`** — the lower-level generator CLI (`node apps/factory/scripts/factory.mjs`) that emits one agent workspace step by step.
-- **`make`** — a task runner that wraps the common flows.
+- **`mise run <task>`** — a task runner that wraps the common flows.
 
 `ge` is a thin renderer over `tools/lib/factory-core.mjs`. Every command accepts `--json` (structured result on stdout, progress on stderr); the console serves the same commands as HTTP routes, and the MCP server exposes them as tools — one registry, three surfaces.
 

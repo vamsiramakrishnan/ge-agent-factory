@@ -28,7 +28,7 @@ The full docs site (sidebar + search) is published with GitHub Pages:
 
 - **[Developer Guide](https://vamsiramakrishnan.github.io/ge-agent-factory/developers.html)** — purpose, repo map, development loops, quality gates, and docs rules.
 - **[Concepts](https://vamsiramakrishnan.github.io/ge-agent-factory/concepts/)** — the factory model: local vs remote mode, the stage graph, OKF specs, the data plane, the MCP tool plane.
-- **[Reference](https://vamsiramakrishnan.github.io/ge-agent-factory/reference/)** — the `ge` CLI, `make` targets, configuration, and the apps.
+- **[Reference](https://vamsiramakrishnan.github.io/ge-agent-factory/reference/)** — the `ge` CLI, `mise` tasks, configuration, and the apps.
 - **[Cookbooks](https://vamsiramakrishnan.github.io/ge-agent-factory/cookbooks/)** — task-oriented guides: build a canary, run a mission, bring your own simulator, ship to the cloud.
 - **[Operations](https://vamsiramakrishnan.github.io/ge-agent-factory/OPERATIONS.html)** — deploy, operate, troubleshoot, and recover the factory.
 - **[MCP](https://vamsiramakrishnan.github.io/ge-agent-factory/MCP.html)** — factory MCP tools plus the generated-agent MCP tool plane.
@@ -37,24 +37,19 @@ The site is sourced from [`docs/`](docs/) (start at [`docs/index.md`](docs/index
 
 ## Quickstart
 
+**→ See [`SETUP.md`](SETUP.md) for the full step-by-step: clone, prerequisites,
+`mise run setup`, `mise run doctor-local`, first command, optional cloud setup.**
+
 Local development — no cloud credentials required:
 
 ```bash
-make setup          # install deps, sync catalog/skills, install the `ge` command, start the daemon
-make doctor-local   # check local tools: Bun, uv, Python, agents-cli, cache, harness wiring
-make devex-check    # fast gate: local doctor, docs links, workspace manifest contracts
-make devex-smoke    # prove the path: doctor → local mode → one validated canary workspace
-make console        # open the operator UI (Pipeline · Fleet · Activity · Doctor) → http://localhost:18260
+curl https://mise.run | sh   # one-time, if you don't have mise yet — see SETUP.md
+mise run setup          # install deps, sync catalog/skills, install the `ge` command, start the daemon
+mise run doctor-local   # check local tools: Bun, uv, Python, agents-cli, cache, harness wiring
+mise run console        # open the operator UI (Pipeline · Fleet · Activity · Doctor) → http://localhost:18260
 ```
 
-Build one agent locally, up to the preview/build boundary:
-
-```bash
-make mode-local
-make provision-local CANARY=1
-```
-
-Run `make help` for all targets, or `make next` for a status-based recommendation.
+Run `mise run help` for all targets, or `mise run next` for a status-based recommendation.
 
 ## Deploy to your own GCP project
 
@@ -66,7 +61,7 @@ The control plane lands in **your own** GCP project (single-tenant), ~15 min:
 
   ```bash
   export GEMINI_ENTERPRISE_APP_ID=projects/<num>/locations/global/collections/default_collection/engines/<app>
-  make bootstrap CANARY=1   # toolchain → ge init → ge up (factory + data + tool planes) → prove one agent
+  CANARY=1 mise run bootstrap   # toolchain → ge init → ge up (factory + data + tool planes) → prove one agent
   ```
 
 ## Local vs remote mode
@@ -109,13 +104,13 @@ MCP server.
 
 ### Running an app locally
 
-`make dev` (or `bun run dev`) just lists the apps and starts nothing — pick one:
+`mise run dev` (or `bun run dev`) just lists the apps and starts nothing — pick one:
 
 | App | Dev (hot reload) | Build | Serve the build |
 |-----|------------------|-------|-----------------|
-| Console — ops UI (:18260) | `make console` · `bun run dev:console` | `bun run build:console` | `bun run start:console` (:8261) |
-| Presentation — deck (:18250) | `make presentation` · `bun run dev:presentation` | `bun run build:presentation` | `bun run start:presentation` (:8251) |
-| Generator — web (:17655) | `make generator` · `bun run dev:generator` | — | — |
+| Console — ops UI (:18260) | `mise run console` · `bun run dev:console` | `bun run build:console` | `bun run start:console` (:8261) |
+| Presentation — deck (:18250) | `mise run presentation` · `bun run dev:presentation` | `bun run build:presentation` | `bun run start:presentation` (:8251) |
+| Generator — web (:17655) | `mise run generator` · `bun run dev:generator` | — | — |
 
 ## The `ge` CLI
 
@@ -136,14 +131,14 @@ ge agents status --watch
 ge agents sync --push
 ```
 
-Run via `bun tools/ge.mjs <cmd>`, or install it on your PATH with `make setup` (then just `ge`).
+Run via `bun tools/ge.mjs <cmd>`, or install it on your PATH with `mise run setup` (then just `ge`).
 
 ## Develop
 
 ```bash
 bun install            # install workspace deps
-make devex-check       # fast local gate before or after a focused edit
-make ci                # the CI gate: source hygiene + full bun test suite (mirrors CI)
+mise run devex-check       # fast local gate before or after a focused edit
+mise run ci                # the CI gate: source hygiene + full bun test suite (mirrors CI)
 bun test apps tools    # run the test suite directly
 ```
 

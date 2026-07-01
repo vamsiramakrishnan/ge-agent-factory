@@ -20,13 +20,13 @@ ops (`ge up` / deploy); local development needs neither.
 One-command setup:
 
 ```bash
-make setup          # bun install, sync the catalog + skills, install the `ge` command, start the daemon
-make doctor-local   # verify the local toolchain: Bun, uv, Python, agents-cli, shared cache, harness wiring
+mise run setup          # bun install, sync the catalog + skills, install the `ge` command, start the daemon
+mise run doctor-local   # verify the local toolchain: Bun, uv, Python, agents-cli, shared cache, harness wiring
 ```
 
-`make setup` runs, in order: `bun install` → `make catalog` → `make deps` →
-`make install` (puts `ge` on your `PATH` at `~/.local/bin/ge`) → `make skills-sync` →
-starts the daemon. If you only want the language toolchains, `make deps` installs
+`mise run setup` runs, in order: `bun install` → `mise run catalog` → `mise run deps` →
+`mise run install` (puts `ge` on your `PATH` at `~/.local/bin/ge`) → `mise run skills-sync` →
+starts the daemon. If you only want the language toolchains, `mise run deps` installs
 `uv`, the pinned `google-agents-cli`, the repo `.venv` with the `google-antigravity`
 SDK, the Snowfakery data runtime, and `terraform`.
 
@@ -38,7 +38,7 @@ The repo's test scripts invoke pytest as **`python3 -m pytest`** — so they use
 whatever `python3` resolves to on your `PATH`, and that interpreter must have pytest
 installed.
 
-> **Note:** the repo `.venv` (created by `make deps` for the `google-antigravity`
+> **Note:** the repo `.venv` (created by `mise run deps` for the `google-antigravity`
 > SDK) does **not** include pytest, so a bare `python3 -m pytest` will fail with
 > `No module named pytest` if `.venv` is first on your `PATH`. Either install the dev
 > deps into the interpreter you run tests with —
@@ -59,12 +59,12 @@ and an MCP server.
 |------|------------|
 | [`apps/console`](apps/console) | The main operator UI (React + Vite + Tailwind). Its Bun server exposes `/api/ge/*` — the same JSON the CLI emits. See the [Console Tour](docs/reference/console-tour.md). |
 | [`apps/presentation`](apps/presentation) | The transformation deck + source use-case catalog used to explain the system. |
-| [`apps/factory`](apps/factory) | The generator: the `factory` pipeline, the lower-level web workbench, the factory runner/worker, and the generic FastMCP server under [`mcp-service/`](apps/factory/mcp-service). |
+| [`apps/factory`](apps/factory) | The generator: the `factory` pipeline, the lower-level web workbench, the factory runner/worker, and the generic FastMCP server under [`mcp-service/`](apps/factory/mcp-service). The `factory.mjs` pipeline's modules are split out under [`apps/factory/scripts/factory/`](apps/factory/scripts/factory/README.md) — see that directory's README for a map of what lives where and why. |
 | [`tools/`](tools) | The `ge` operator CLI (`ge.mjs`), the MCP server (`mcp-server.mjs`), and the shared operator core + runtime daemon under `tools/lib/`. |
 | [`skills/`](skills) | Cross-runtime harness skills (one dir per skill, each with a `SKILL.md`). |
 | [`installer/`](installer) | Terraform + the guided Cloud Shell installer (`TUTORIAL.md`) that stands the platform up in a target project. |
 | [`docs/`](docs) | The GitHub Pages documentation site plus operator runbooks, ADRs, and design specs. |
-| [`packages/`](packages) | Shared workspace packages (e.g. `@ge/agent-resolver`). |
+| [`packages/`](packages) | Shared workspace packages (e.g. `@ge/agent-resolver`). See [`packages/std/README.md`](packages/std/README.md) for the `@ge/std` utility catalog — check it before hand-rolling a naming/JSON/CSV/merge helper. |
 
 ---
 
@@ -74,7 +74,7 @@ CI is the source hygiene check plus the full Bun test suite (see
 [`cloudbuild.ci.yaml`](cloudbuild.ci.yaml)). Run the same gate locally with:
 
 ```bash
-make ci             # source:hygiene → catalog → bun test apps tools  (mirrors CI)
+mise run ci             # source:hygiene → catalog → bun test apps tools  (mirrors CI)
 ```
 
 Or run the individual checks:
@@ -117,8 +117,8 @@ bun run build:presentation
 - Use **[Conventional Commits](https://www.conventionalcommits.org/)**:
   `feat(scope): …`, `fix(scope): …`, `chore(scope): …`, etc. Recent history is the
   reference (e.g. `feat(okf): …`, `fix(agent-gateway): …`).
-- Optional: `make install-hooks` installs a fast pre-commit hook that runs source
-  hygiene before each commit (the full suite runs in `make ci` / CI).
+- Optional: `mise run install-hooks` installs a fast pre-commit hook that runs source
+  hygiene before each commit (the full suite runs in `mise run ci` / CI).
 
 ---
 
@@ -140,12 +140,12 @@ By convention every `description` ends with a **"Use when …"** trigger so the 
 can route to it. After adding or editing a skill:
 
 ```bash
-make skills-sync     # validate the repo skills + (re)write the harness skill manifest
-make skills-doctor   # verify the manifest is current and the skills are discoverable
+mise run skills-sync     # validate the repo skills + (re)write the harness skill manifest
+mise run skills-doctor   # verify the manifest is current and the skills are discoverable
 ```
 
-`make skills-install` symlinks the repo skills into a headless harness skills dir
-(`AGENTS_SKILLS_DIR`, default `~/.agents/skills`). `make skills-spec-audit` reports
+`mise run skills-install` symlinks the repo skills into a headless harness skills dir
+(`AGENTS_SKILLS_DIR`, default `~/.agents/skills`). `mise run skills-spec-audit` reports
 Agent Skills spec portability gaps.
 
 ---

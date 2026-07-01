@@ -9,74 +9,46 @@ layout: default
 
 ## Goal
 
-Install the local toolchain, put the `ge` command on your PATH, open the operator
-console, and understand the difference between **local** and **remote** mode — all
+Understand the difference between **local** and **remote** mode, and see how
+the fast DevEx gate and one-command smoke proof fit into the loop — all
 without touching a cloud project.
 
-## Prerequisites
+## Prerequisites + install
 
-- A clone of the repo (you are at the repo root).
-- [Bun](https://bun.sh) available (the `Makefile` calls `bun install` and
-  `bun tools/ge.mjs`). `make setup` installs the rest (uv, agents-cli,
-  Antigravity SDK into `.venv`).
-- Optional for cloud ops later: `gcloud`. Not required for local mode.
+**→ For the full step-by-step (clone, prerequisites, `mise run setup`,
+`mise run doctor-local`, first command, optional cloud setup), see
+[`SETUP.md`](../../SETUP.md) at the repo root.** The short version:
+
+```bash
+mise run setup          # install deps, sync catalog/skills, install the `ge` command, start the daemon
+mise run doctor-local    # check local tools: Bun, uv, Python, agents-cli, cache, harness wiring
+mise run console         # open the operator UI → http://localhost:18260
+```
 
 ## Steps
 
-1. **Install everything in one shot.**
+1. **Run the fast DevEx gate.**
 
    ```bash
-   make setup
-   ```
-
-   This runs `bun install`, generates the use-case catalog, installs the local
-   toolchain (`make deps`: uv, `google-agents-cli`, a repo `.venv` with the
-   `google-antigravity` SDK, the Snowfakery data runtime, terraform), installs
-   the `ge` command into `~/.local/bin`, syncs the harness skills, and starts the
-   daemon.
-
-   > If `~/.local/bin` is not on your PATH, `make setup` prints the `export PATH=...`
-   > line to add.
-
-2. **Check your local tools are healthy.**
-
-   ```bash
-   make doctor-local
-   ```
-
-   This is `ge doctor --local` under the hood — it checks the uv toolchain,
-   Python 3.11, `agents-cli`, the shared cache, and harness wiring.
-
-3. **Run the fast DevEx gate.**
-
-   ```bash
-   make devex-check
+   mise run devex-check
    ```
 
    This is `ge devex check`: local doctor, GitHub Pages link check, and generated
    workspace manifest contract validation in one fast command.
 
-4. **Prove one local workspace end to end.**
+2. **Prove one local workspace end to end.**
 
    ```bash
-   make devex-smoke
+   mise run devex-smoke
    ```
 
-   This runs local readiness, sets local mode, builds one canary workspace to the
-   `validated` stage, and prints the workspace path, `workspace.json`, eval
-   config, and next commands. It is the fastest proof that the repo is usable on
-   this machine.
+   This runs local readiness, sets local mode, builds one **canary** workspace
+   (a single throwaway agent used to prove the pipeline works, as opposed to
+   building the whole catalog) to the `validated` stage, and prints the
+   workspace path, `workspace.json`, eval config, and next commands. It is the
+   fastest proof that the repo is usable on this machine.
 
-5. **Open the console (the main operator UI).**
-
-   ```bash
-   make console
-   ```
-
-   Serves the Pipeline / specs / Fleet / Activity / Doctor UI at
-   **http://localhost:18260**.
-
-6. **Understand which mode you're in.**
+3. **Understand which mode you're in.**
 
    ```bash
    ge mode
@@ -84,29 +56,31 @@ without touching a cloud project.
 
    - `ge mode` with no argument **reports** the active mode (defaults to
      `remote` when unset).
-   - `ge mode local` — this machine runs *generate → validate* up to the build
-     boundary; deploy/register/publish are cloud-only steps.
+   - `ge mode local` — this machine runs *generate → validate* up to the
+     **build boundary** (the `previewed` stage — the last stage that runs with
+     no cloud credentials; everything after it touches your Google Cloud
+     project); deploy/register/publish are cloud-only steps.
    - `ge mode remote` — this machine submits + observes; the cloud factory
      builds, deploys, and publishes.
 
-   The `Makefile` also exposes `make mode-local` and `make mode-remote` as
+   `mise.toml` also exposes `mise run mode-local` and `mise run mode-remote` as
    thin wrappers.
 
-7. **(Optional) Build one agent locally to the preview boundary.**
+4. **(Optional) Build one agent locally to the preview boundary.**
 
    ```bash
-   make mode-local && make provision-local CANARY=1
+   mise run mode-local && CANARY=1 mise run provision-local
    ```
 
-   `make provision-local CANARY=1` is `ge agents build --local --canary` — it
+   `CANARY=1 mise run provision-local` is `ge agents build --local --canary` — it
    builds a single agent on this machine up to the `previewed` build boundary.
 
 ## Verify
 
 ```bash
-make doctor-local      # local toolchain section is all green
-make devex-check       # local doctor + docs links + workspace manifest contracts
-make devex-smoke       # validates one canary workspace and prints workspace.json
+mise run doctor-local      # local toolchain section is all green
+mise run devex-check       # local doctor + docs links + workspace manifest contracts
+mise run devex-smoke       # validates one canary workspace and prints workspace.json
 ge mode                # prints: mode: local (or remote)
 ge state paths         # shows where state lands (.ge/...)
 ```
@@ -115,12 +89,11 @@ The console should load at http://localhost:18260 and show the Doctor tab.
 
 ## Troubleshoot
 
-- **`bun: command not found`** — install Bun first; `make setup` cannot run without it.
-- **`google.antigravity NOT importable`** during `make deps` — local (Antigravity)
-  mode will fail. Re-run `make deps`; it installs `google-antigravity` into `.venv`.
-- **`ge: command not found`** — `~/.local/bin` is not on PATH. Add the `export PATH=...`
-  line that `make install` printed, or run via `bun tools/ge.mjs ...`.
-- **Mock/simulator data pauses** — `make data-runtime` warms the Snowfakery
+See [`SETUP.md`](../../SETUP.md#troubleshoot) for install-time issues (missing
+Bun, `~/.local/bin` not on PATH, `google.antigravity` not importable). Specific
+to this cookbook's loop:
+
+- **Mock/simulator data pauses** — `mise run data-runtime` warms the Snowfakery
   runtime; it needs network/cache the first time.
-- **Status board / next step** — run `make next` or bare `ge` for a status-based
+- **Status board / next step** — run `mise run next` or bare `ge` for a status-based
   recommendation.

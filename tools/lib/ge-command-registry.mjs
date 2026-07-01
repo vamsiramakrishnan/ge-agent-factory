@@ -199,6 +199,25 @@ export const GE_COMMANDS = {
       return argv;
     },
   },
+  "daemon.start": {
+    id: "daemon.start",
+    method: "POST",
+    path: "/api/ge/daemon/start",
+    cli: "ge daemon start",
+    label: "Start local daemon",
+    summary: "Start the local GE runtime daemon (idempotent — no-op if already running)",
+    risk: "starts-local-workloads",
+    expectedDuration: "under 10s",
+    observability: {
+      mode: "command-output",
+      events: false,
+    },
+    requirements: {
+      bins: ["node"],
+      config: [],
+    },
+    argv: () => ["daemon", "start"],
+  },
 };
 
 export const GE_COMMAND_LIST = Object.values(GE_COMMANDS).map(commandMetaFromCommand);

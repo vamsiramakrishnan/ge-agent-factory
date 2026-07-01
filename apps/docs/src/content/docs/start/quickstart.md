@@ -8,7 +8,7 @@ Get from a fresh clone to a validated agent workspace — no cloud required unti
 ## 1. Set up the toolchain
 
 ```bash
-make setup    # JS deps + Python/uv toolchain + put `ge` on PATH
+mise run setup    # JS deps + Python/uv toolchain + put `ge` on PATH
 ge doctor     # toolchain + factory + data/MCP plane health
 ```
 
