@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
 import { mkdirSync, rmSync } from "node:fs";
-import { mkdir, readFile } from "node:fs/promises";
+import { mkdir } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
+import { readJsonAsync } from "@ge/std/json-io";
+import { resolveGcpProject } from "@ge/std/gcp-config";
 import { runPreflight } from "./preflight.js";
 import { loadSkillRegistry } from "./skill-registry.js";
 import { scaffoldWithAgentsCli } from "./agents-cli-scaffold.js";
@@ -313,7 +315,7 @@ async function runCommand(args) {
         permissionProfile: flags["permission-profile"] || "review",
         model: flags.model || "default",
         vertex: wantsVertex(flags),
-        project: flags.project || flags["gcp-project"] || process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT || null,
+        project: resolveGcpProject({ explicit: flags.project || flags["gcp-project"] }),
         location: flags.location || flags.region || process.env.GOOGLE_CLOUD_LOCATION || process.env.GOOGLE_GENAI_LOCATION || null,
         timeoutSec: Number(flags["timeout-sec"] || 0),
         onEvent: streamEvents ? streamHarnessEvent : null,
@@ -396,7 +398,7 @@ async function runCommand(args) {
 }
 
 function buildControlPlanePlanFromFlags(options = {}) {
-  const project = options.project || process.env.GOOGLE_CLOUD_PROJECT;
+  const project = resolveGcpProject({ explicit: options.project });
   if (!project) throw new Error("--project required or set GOOGLE_CLOUD_PROJECT");
   return buildControlPlanePlan({
     project,
@@ -450,7 +452,7 @@ function runLocal(command, args, opts = {}) {
 async function submitFactoryRun(options = {}) {
   const workspaceId = options.workspace || options["workspace-id"];
   if (!workspaceId) throw new Error("--workspace required");
-  const projectId = options.project || process.env.GOOGLE_CLOUD_PROJECT;
+  const projectId = resolveGcpProject({ explicit: options.project });
   if (!projectId) throw new Error("--project required or set GOOGLE_CLOUD_PROJECT");
   const region = options.region || options["runtime-region"] || process.env.GE_AGENT_RUNTIME_REGION || "us-central1";
   const bucket = options.bucket || process.env.GE_AGENT_FACTORY_BUCKET || `${projectId}-ge-agent-factory`;
@@ -614,13 +616,8 @@ async function submitFactoryRun(options = {}) {
   };
 }
 
-async function readJsonIfExists(path, fallback = null) {
-  try {
-    return JSON.parse(await readFile(path, "utf8"));
-  } catch (error) {
-    if (error?.code === "ENOENT") return fallback;
-    return fallback;
-  }
+function readJsonIfExists(path, fallback = null) {
+  return readJsonAsync(path, fallback);
 }
 
 function inferUseCaseId(manifest = {}, project = {}) {

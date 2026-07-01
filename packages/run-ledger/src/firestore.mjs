@@ -15,6 +15,7 @@
 // local ledger and the cloud mirror can never drift in how they interpret the
 // generator's stream.
 
+import { resolveGcpProject } from "@ge/std/gcp-config";
 import { factoryEventToLedgerOp } from "./store.mjs";
 
 const DEFAULT_COLLECTION = "factoryRuns";
@@ -168,7 +169,7 @@ function summarizeRunDoc(doc, { events = [], items = [] } = {}) {
 }
 
 export async function createFirestoreLedgerReader({
-  projectId = process.env.GOOGLE_CLOUD_PROJECT || process.env.GE_PROJECT,
+  projectId = resolveGcpProject({ fallbackEnvVars: ["GE_PROJECT"] }),
   databaseId = process.env.GE_FIRESTORE_DATABASE || DEFAULT_DATABASE,
   collection = process.env.GE_FIRESTORE_COLLECTION || DEFAULT_COLLECTION,
   db = null,
@@ -226,7 +227,7 @@ export async function createFirestoreLedgerReader({
 }
 
 export async function createFirestoreEventMirror({
-  projectId = process.env.GOOGLE_CLOUD_PROJECT || process.env.GE_PROJECT,
+  projectId = resolveGcpProject({ fallbackEnvVars: ["GE_PROJECT"] }),
   databaseId = process.env.GE_FIRESTORE_DATABASE || DEFAULT_DATABASE,
   collection = process.env.GE_FIRESTORE_COLLECTION || DEFAULT_COLLECTION,
 } = {}) {

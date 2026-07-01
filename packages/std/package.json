@@ -11,7 +11,9 @@
     "./json-io": "./src/json-io.mjs",
     "./json-repair": "./src/json-repair.mjs",
     "./csv-io": "./src/csv-io.mjs",
-    "./list": "./src/list.mjs"
+    "./list": "./src/list.mjs",
+    "./gcp-config": "./src/gcp-config.mjs",
+    "./merge": "./src/merge.mjs"
   },
   "scripts": {
     "test": "bun test src"

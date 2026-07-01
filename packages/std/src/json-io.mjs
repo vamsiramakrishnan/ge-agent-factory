@@ -10,6 +10,7 @@ import {
   unlinkSync,
   writeSync,
 } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { basename, dirname, join } from "node:path";
 
 export function readJson(path, fallback = null) {
@@ -17,6 +18,28 @@ export function readJson(path, fallback = null) {
   try {
     return JSON.parse(readFileSync(path, "utf8"));
   } catch {
+    return fallback;
+  }
+}
+
+// Async counterpart of readJson, via fs/promises for callers already in
+// async code paths (avoids the sync-read block on the event loop). ~8 call
+// sites across apps/factory hand-rolled this readFile+JSON.parse+catch
+// wrapper before this was extracted; each keeps its own fallback value.
+//
+// By default this mirrors the sync readJson: return `fallback` on ANY
+// read/parse error, never throw. Most of the original call sites, though,
+// only treated a missing file (ENOENT) as "use the fallback" and re-threw
+// anything else (a permissions error, a directory where a file was expected,
+// etc.) — pass `{ rethrowUnexpected: true }` to preserve that stricter
+// behavior at those call sites instead of silently widening what gets
+// swallowed.
+export async function readJsonAsync(path, fallback = null, { rethrowUnexpected = false } = {}) {
+  if (!path) return fallback;
+  try {
+    return JSON.parse(await readFile(path, "utf8"));
+  } catch (error) {
+    if (rethrowUnexpected && error?.code !== "ENOENT") throw error;
     return fallback;
   }
 }
