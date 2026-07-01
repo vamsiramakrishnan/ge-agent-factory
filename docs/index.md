@@ -20,6 +20,10 @@ into your own Google Cloud project.
 
 It is an agent **factory**, not a prompt-only demo generator.
 
+<p align="center">
+  <img src="assets/diagrams/system-map.svg" alt="A use case enters the factory's three planes (factory, data, tool) and the result reaches Gemini Enterprise as a deployed agent" width="900">
+</p>
+
 [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/?cloudshell_git_repo=https://github.com/vamsiramakrishnan/ge-agent-factory&cloudshell_workspace=installer&cloudshell_tutorial=installer/TUTORIAL.md)
 
 ![Architecture](architecture.svg)
@@ -102,6 +106,7 @@ Run `mise run help` for every target, or `mise run next` for a status-based reco
 | Complete a task step by step | **[Cookbooks](./cookbooks/)** |
 | Deploy, operate, troubleshoot, and recover the factory | **[Operations](./OPERATIONS.html)** |
 | Expose the factory or generated agents through MCP | **[MCP](./MCP.html)** |
+| Add or edit a docs page or diagram | **[Docs design system](./DESIGN.html)** |
 
 ## Read this first if you are new
 

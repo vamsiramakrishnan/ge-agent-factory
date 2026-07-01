@@ -34,10 +34,24 @@ steps:
     args: ['run', 'catalog']
     waitFor: ['install']
 
+  # Docs-specific gate: link/image/blockquote correctness (tools/docs-check.mjs),
+  # diagram-source-vs-generated-SVG drift (tools/gen-docs-diagrams.mjs --check),
+  # and design-token drift across packages/design/src/tokens.css,
+  # docs/_sass/color_schemes/ge.scss, and tools/lib/docs-diagram-theme.mjs
+  # (tools/check-design-tokens.mjs). See docs/DESIGN.md.
+  - id: docs-gate
+    name: 'oven/bun:1.3'
+    entrypoint: bun
+    args: ['run', 'docs:gate']
+    waitFor: ['install']
+
+  # apps + tools + packages, gated against tools/known-test-failures.json so a
+  # name not already in that list fails the build — see AGENTS.md's
+  # "Before you commit" section for how that list works and its known gaps.
   - id: test
     name: 'oven/bun:1.3'
     entrypoint: bun
-    args: ['test', 'apps', 'tools']
+    args: ['run', 'test:gated']
     waitFor: ['hygiene', 'catalog']
 
 options:

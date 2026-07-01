@@ -2,17 +2,24 @@
 // from the same Google Cloud Console palette the console/presentation apps use
 // (packages/design/src/tokens.css) so the docs site and the product UI read as
 // one system instead of a generic canned theme.
+//
+// Values come from packages/design/src/palette.mjs (the single JS source of
+// truth for the brand palette) rather than hardcoded hex literals, so this
+// file can't silently drift from tokens.css / ge.scss — see
+// tools/check-design-tokens.mjs, which cross-checks all three.
+import { PALETTE } from "../../packages/design/src/palette.mjs";
+
 export const DIAGRAM_THEME = {
-  bg: "#ffffff",
-  fg: "#202124", // --color-on-surface
-  accent: "#1a73e8", // --color-primary
-  line: "#5f6368", // --color-secondary
+  bg: PALETTE.surface,
+  fg: PALETTE.onSurface, // --color-on-surface
+  accent: PALETTE.primary, // --color-primary
+  line: PALETTE.secondary, // --color-secondary
   muted: "#80868b",
-  surface: "#eef3f9", // --color-surface-container
-  border: "#dadce0", // --color-outline-variant
+  surface: PALETTE.surfaceContainer, // --color-surface-container
+  border: PALETTE.outlineVariant, // --color-outline-variant
   font: "Inter",
 };
 
 // Secondary accent (--color-tertiary) for classDef use in flowcharts that
 // need to distinguish a second category of node (e.g. release/cloud stages).
-export const DIAGRAM_TERTIARY = "#34a853";
+export const DIAGRAM_TERTIARY = PALETTE.tertiary;

@@ -194,3 +194,4 @@ the console's Systems field.
 - Console Tour: [docs/reference/console-tour.md](docs/reference/console-tour.md)
 - Operator runbook: [docs/OPERATIONS.md](docs/OPERATIONS.md)
 - CLI internals: [tools/README.md](tools/README.md)
+- Docs design system (theme, diagrams, callouts): [docs/DESIGN.md](docs/DESIGN.md)
