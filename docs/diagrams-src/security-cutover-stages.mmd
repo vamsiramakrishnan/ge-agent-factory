@@ -1,0 +1,21 @@
+flowchart TD
+    S0(["Stage 0\nBaseline + rollback snapshot"])
+    A["Stage A\nMCP ingress -> internal"]
+    B["Stage B\nRunner SA least-privilege"]
+    C["Stage C\nWorker ingress (C1 adopted)"]
+    D["Stage D\nGateway authz DRY_RUN -> ENFORCED"]
+    Done(["Post-cutover reconcile"])
+
+    S0 --> A
+    S0 --> B
+    S0 --> C
+    S0 --> D
+    A --> Done
+    B --> Done
+    C --> Done
+    D --> Done
+
+    classDef done fill:#e6f4ea,stroke:#34a853,color:#202124
+    classDef pending fill:#fce8e6,stroke:#c5221f,color:#202124
+    class B,C done
+    class A,D pending

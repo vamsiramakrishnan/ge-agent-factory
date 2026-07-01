@@ -16,6 +16,12 @@ the local GE runtime daemon (default port `17654`).
 - Server: `apps/console/src/server/`
 - Client: `apps/console/src/services/geClient.ts`
 
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
 ---
 
 ## Views
@@ -139,4 +145,6 @@ The `ge` export wraps every endpoint. Representative mappings:
 
 These use `EventSource`; when auth is enabled the Firebase token is appended to the
 URL (EventSource cannot set headers). The Run Drawer subscribes via the
-`useRunStream` hook, which calls `streamLedgerRun` and de-dups on the event `seq`.
+`useRunStream` hook, which calls `streamLedgerRun` and de-dups on the event `seq`
+— see the [Run Drawer + Now pulse flow](console-tour.html#run-drawer--now-pulse)
+for the sequence.

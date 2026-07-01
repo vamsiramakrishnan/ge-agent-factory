@@ -15,6 +15,12 @@ runnable [`agents-cli`](https://github.com/vamsiramakrishnan/ge-agent-factory)
 workspace. The reference example is
 [`generated-agents/account-reconciliation-agent/`](https://github.com/vamsiramakrishnan/ge-agent-factory).
 
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
 ---
 
 ## Workspace layout
@@ -43,6 +49,7 @@ account-reconciliation-agent/
 > emitted **conditionally** (see below), and this committed snapshot predates
 > them. New builds emit `app/knowledge/` whenever the spec carries a
 > behavior contract.
+{: .warning }
 
 ---
 
@@ -178,3 +185,4 @@ covered. On a mismatch it edits `app/agent.py` to self-correct, leaving
 > The SDK driver wires all of Antigravity's capabilities but is default-off;
 > `--dry-run` validates headlessly. The committed sample reflects a build where the
 > refine step had not (re)emitted the conditional bundle/topology.
+{: .note }
