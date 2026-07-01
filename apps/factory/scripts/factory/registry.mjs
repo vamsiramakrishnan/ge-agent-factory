@@ -17,21 +17,156 @@ import { defineCommand } from "citty";
 // working unchanged even when the caller passes the alias `--regenerate-agent`
 // instead. Existing flag names are never removed or renamed — aliases are
 // additive only.
+//
+// ── Rendering boundary ───────────────────────────────────────────────────
+// Every command handler in factory.mjs (cmdInit, cmdGenerate, ...) used to
+// print its own JSON directly (via the old process-printing ok()/fail()) and,
+// on failure, process.exit(1) the whole CLI. Handlers now RETURN a plain data
+// object on success and THROW on failure; this module is the single place
+// that turns that return-or-throw into console output + exit code. This is
+// what makes commands composable in-process (from-usecase/batch-audit call
+// other cmd* functions directly and can now catch their failures instead of
+// the whole process dying) and opens the door to non-JSON output.
+//
+// Output format is NEVER decided by a flag the caller must remember to pass.
+// It's decided by whether stdout is a real terminal:
+//   - stdout is NOT a TTY (piped, redirected, captured by execFileSync/spawn —
+//     which is what every subprocess caller in this repo does) → JSON, byte-
+//     identical to what the old ok()/fail() printed. This is the default and
+//     requires zero flags; dozens of scripts/tests parse this JSON today.
+//   - stdout IS a real TTY and the caller did not pass --json → human-
+//     friendly text. --json always forces JSON even at a real TTY.
+// This mirrors the isTTY-gating already used for the interactive `factory
+// init` prompt wizard (see shouldPromptForInit in factory.mjs): default
+// behavior for scripted/CI/subprocess usage never changes; only an actual
+// human at an actual terminal (and only when they haven't asked for --json)
+// sees anything different.
+
+function isRealTTY({ isTTY = Boolean(process.stdout.isTTY) } = {}) {
+  return isTTY;
+}
+
+// Renders a successful command result. `result` is exactly what the handler
+// returned (already shaped like { ok: true, ...data } by factory.mjs's own
+// ok() helper — see there for why handlers return that shape rather than this
+// module re-wrapping it). `opts.isTTY` is injectable for tests; `opts.json`
+// forces the JSON path even at a real TTY.
+function renderResult(name, result, opts = {}) {
+  const useHuman = isRealTTY(opts) && !opts.json;
+  if (!useHuman) {
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+  const renderer = HUMAN_RENDERERS[name] || renderGenericSuccess;
+  renderer(name, result);
+}
+
+// Renders a failed command. `error` is whatever the handler threw — normally
+// a FactoryCommandError from factory.mjs's fail(), but this renders ANY
+// thrown error the same way, matching fail()'s original contract (before
+// this refactor, essentially every reachable command failure went through
+// fail() one way or another).
+function renderError(name, error, opts = {}) {
+  const message = error?.message ?? String(error);
+  const useHuman = isRealTTY(opts) && !opts.json;
+  if (!useHuman) {
+    console.error(JSON.stringify({ ok: false, error: message }, null, 2));
+    return;
+  }
+  console.error(`✗ ${message}`);
+}
+
+// ── Human renderers ──────────────────────────────────────────────────────
+// Flagship renderers for the commands a new user hits first. Everything else
+// falls back to renderGenericSuccess below. Adding a new flagship renderer
+// later is just one more entry in this map — no plumbing changes needed.
+function renderInit(name, result) {
+  console.log(`✓ Initialized "${result.name}" (${result.domain}) -> ${result.dir}`);
+}
+
+function renderGenerate(name, result) {
+  const tableCount = result.tables?.length ?? 0;
+  const rows = typeof result.totalRows === "number" ? result.totalRows.toLocaleString() : result.totalRows;
+  console.log(`✓ Generated ${tableCount} table${tableCount === 1 ? "" : "s"}, ${rows} rows -> ${result.manifest}`);
+}
+
+function renderTools(name, result) {
+  const fnCount = result.functions?.length ?? 0;
+  console.log(`✓ Rendered ${fnCount} tool function${fnCount === 1 ? "" : "s"} -> ${result.output}`);
+}
+
+function renderStatus(name, result) {
+  const lines = [`Agent: ${result.name} (${result.domain})`];
+  for (const step of result.pipeline || []) {
+    const mark = step.status === "done" ? "✓" : step.status === "failed" ? "✗" : "·";
+    lines.push(`  ${mark} ${step.step}`);
+  }
+  if (result.nextCommand) lines.push(`Next: ${result.nextCommand}`);
+  console.log(lines.join("\n"));
+}
+
+// Generic fallback: works for any command's result shape without a bespoke
+// renderer. Surfaces a couple of obviously-useful fields (a path/output, a
+// step name) when present, and always stays a single short line.
+function renderGenericSuccess(name, result) {
+  const hint = result?.output || result?.dir || result?.manifest || result?.markdown || null;
+  console.log(hint ? `✓ ${name} done -> ${hint}` : `✓ ${name} done`);
+}
+
+const HUMAN_RENDERERS = {
+  init: renderInit,
+  generate: renderGenerate,
+  tools: renderTools,
+  status: renderStatus,
+};
+
+// Wraps a handler invocation so:
+//   - a resolved value is rendered as success and returned (dirCmd/legacy's
+//     own run() then resolves normally — citty sees no error, so it never
+//     falls back to its own non-JSON `console.error(error, "\n")` handling).
+//   - a thrown error (FactoryCommandError from fail(), or any other error) is
+//     rendered as failure and swallowed HERE, with process.exitCode set to 1
+//     instead of process.exit(1)ing. process.exitCode lets Node finish
+//     flushing stdout/stderr and exit normally once the event loop drains —
+//     unlike process.exit(1), which could truncate output mid-write.
+async function dispatch(name, handlerPromise, opts) {
+  try {
+    const result = await handlerPromise;
+    renderResult(name, result, opts);
+    return result;
+  } catch (error) {
+    renderError(name, error, opts);
+    process.exitCode = 1;
+    return undefined;
+  }
+}
+
+// citty's builtin --json isn't a thing; declare it ourselves on every command
+// that goes through dispatch() so `factory <cmd> --json` forces JSON even at
+// a real TTY. Doesn't collide with any existing flag name in this file.
+const withJsonFlag = (args) => ({ ...args, json: { type: "boolean", description: "Force JSON output even at an interactive terminal" } });
+
 export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
   const typed = (name, description, args, run) =>
     defineCommand({ meta: { name, description }, args, run });
 
   // dir-taking typed command whose handler reads its flags off the parsed args.
+  // Routed through dispatch() so success/failure both render exactly once and
+  // failure never process.exit()s (see module doc comment above).
   const dirCmd = (name, description, flags, handler) =>
-    typed(name, description, { dir: { type: "string", description: "Workspace directory", default: "." }, ...flags },
-      ({ args }) => handler(resolveDir(args.dir), args));
+    typed(name, description, withJsonFlag({ dir: { type: "string", description: "Workspace directory", default: "." }, ...flags }),
+      ({ args }) => dispatch(name, handler(resolveDir(args.dir), args), { json: args.json }));
 
   const legacy = (name, description, handler, takesDir = true) =>
     defineCommand({
       meta: { name, description },
       run: (ctx) => {
         const flags = parseLegacy(ctx.rawArgs);
-        return takesDir ? handler(resolveDir(flags.dir || "."), flags) : handler(flags);
+        return dispatch(
+          name,
+          takesDir ? handler(resolveDir(flags.dir || "."), flags) : handler(flags),
+          { json: flags.json === true || flags.json === "true" },
+        );
       },
     });
 
@@ -40,17 +175,22 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
   return {
     // ── Typed (flags-only handlers) ──────────────────────────────────────────
     status: typed("status", "Status board for a generated workspace",
-      { dir: { type: "string", description: "Workspace directory", default: "." } },
-      ({ args }) => handlers.status(resolveDir(args.dir))),
+      withJsonFlag({ dir: { type: "string", description: "Workspace directory", default: "." } }),
+      ({ args }) => dispatch("status", handlers.status(resolveDir(args.dir)), { json: args.json })),
     "list-usecases": typed("list-usecases", "List use cases in the catalog",
       { department: str("Filter by department"), search: str("Filter by search term"), limit: str("Max results"), json: { type: "boolean", description: "Emit JSON" } },
-      ({ args }) => handlers.listUsecases(args)),
+      ({ args }) => dispatch("list-usecases", handlers.listUsecases(args), { json: args.json })),
+    // NOTE: no --json override flag here — `sources` already has its own
+    // `--json <path>` (a FILE PATH to write, not a boolean); adding a same-
+    // named boolean --json would collide with and break that existing flag.
+    // `sources` always renders through the default TTY-gated path (JSON at a
+    // non-TTY, generic human summary at a real terminal) with no override.
     sources: typed("sources", "Analyze use-case data sources (writes the source map + doc)",
       { json: str("Output JSON path"), md: str("Output markdown path"), slides: str("Slides source directory") },
-      ({ args }) => handlers.sources(args)),
+      ({ args }) => dispatch("sources", handlers.sources(args), {})),
     "pack-coverage": typed("pack-coverage", "Report scenario-pack coverage across the catalog",
-      { out: str("Write the full report to this path") },
-      ({ args }) => handlers.packCoverage(args)),
+      withJsonFlag({ out: str("Write the full report to this path") }),
+      ({ args }) => dispatch("pack-coverage", handlers.packCoverage(args), { json: args.json })),
 
     // ── Typed (dir + clean string-value flags) ───────────────────────────────
     "promotion-gate": dirCmd("promotion-gate", "Evaluate the promotion gate (blocks deploy on failure)",
@@ -113,3 +253,8 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
     "batch-audit": legacy("batch-audit", "Audit use-case specs in batch", handlers.batchAudit, false),
   };
 }
+
+// Exported for the render-boundary unit test (renderResult/renderError take an
+// injectable isTTY so tests never need a real terminal — see the isTTY-
+// injection pattern already used for shouldPromptForInit in factory.mjs).
+export const __test = { renderResult, renderError, isRealTTY, HUMAN_RENDERERS };
