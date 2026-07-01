@@ -80,19 +80,28 @@ function renderError(name, error, opts = {}) {
 // Flagship renderers for the commands a new user hits first. Everything else
 // falls back to renderGenericSuccess below. Adding a new flagship renderer
 // later is just one more entry in this map — no plumbing changes needed.
+// Every flagship renderer (and the generic fallback below) appends this same
+// trailing "Next: <command>" line when the result carries a nextCommand —
+// the human-render equivalent of the nextCommand field factory.mjs's cmd*
+// handlers now attach to their return value (see nextCommandFor in
+// factory.mjs). Centralized so a new flagship renderer gets this for free.
+function withNextLine(line, result) {
+  return result?.nextCommand ? `${line}\nNext: ${result.nextCommand}` : line;
+}
+
 function renderInit(name, result) {
-  console.log(`✓ Initialized "${result.name}" (${result.domain}) -> ${result.dir}`);
+  console.log(withNextLine(`✓ Initialized "${result.name}" (${result.domain}) -> ${result.dir}`, result));
 }
 
 function renderGenerate(name, result) {
   const tableCount = result.tables?.length ?? 0;
   const rows = typeof result.totalRows === "number" ? result.totalRows.toLocaleString() : result.totalRows;
-  console.log(`✓ Generated ${tableCount} table${tableCount === 1 ? "" : "s"}, ${rows} rows -> ${result.manifest}`);
+  console.log(withNextLine(`✓ Generated ${tableCount} table${tableCount === 1 ? "" : "s"}, ${rows} rows -> ${result.manifest}`, result));
 }
 
 function renderTools(name, result) {
   const fnCount = result.functions?.length ?? 0;
-  console.log(`✓ Rendered ${fnCount} tool function${fnCount === 1 ? "" : "s"} -> ${result.output}`);
+  console.log(withNextLine(`✓ Rendered ${fnCount} tool function${fnCount === 1 ? "" : "s"} -> ${result.output}`, result));
 }
 
 function renderStatus(name, result) {
@@ -105,12 +114,35 @@ function renderStatus(name, result) {
   console.log(lines.join("\n"));
 }
 
+// Quickstart runs 5 stages in-process (init/schema/generate/tools/test) and
+// returns each stage's own result embedded under init/schema/generate/tools/
+// test — same nested-result convention cmdFromUseCase already uses for its
+// harnessReview/harnessRefine fields. One line per stage, then a summary +
+// next-step suggestion, matching the "what you just built and where it is"
+// shape asked for.
+function renderQuickstart(name, result) {
+  const lines = [`✓ quickstart: "${result.name}" (${result.domain}) built in ${result.dir}`];
+  lines.push(`  ✓ init      -> ${result.dir}`);
+  lines.push(`  ✓ schema    -> ${result.tables ?? "?"} table(s)`);
+  const rows = typeof result.totalRows === "number" ? result.totalRows.toLocaleString() : result.totalRows ?? "?";
+  lines.push(`  ✓ generate  -> ${rows} rows`);
+  lines.push(`  ✓ tools     -> ${result.functions?.length ?? "?"} function(s)`);
+  const test = result.test;
+  if (test?.skipped) lines.push(`  · test      -> skipped (${test.reason})`);
+  else if (test?.ran) lines.push(`  ${test.passed ? "✓" : "✗"} test      -> ${test.passed ? "passed" : "failed"} (${result.dir}/tests)`);
+  else lines.push(`  ✓ test      -> generated (not run)`);
+  lines.push(`\nWhat you built: a local agent workspace at ${result.dir} with mock data, generated ADK tools, and smoke tests.`);
+  if (result.nextCommand) lines.push(`Next: ${result.nextCommand}`);
+  console.log(lines.join("\n"));
+}
+
 // Generic fallback: works for any command's result shape without a bespoke
 // renderer. Surfaces a couple of obviously-useful fields (a path/output, a
-// step name) when present, and always stays a single short line.
+// step name) when present, and always stays a single short line (plus an
+// optional trailing Next: line — see withNextLine above).
 function renderGenericSuccess(name, result) {
   const hint = result?.output || result?.dir || result?.manifest || result?.markdown || null;
-  console.log(hint ? `✓ ${name} done -> ${hint}` : `✓ ${name} done`);
+  console.log(withNextLine(hint ? `✓ ${name} done -> ${hint}` : `✓ ${name} done`, result));
 }
 
 const HUMAN_RENDERERS = {
@@ -118,6 +150,7 @@ const HUMAN_RENDERERS = {
   generate: renderGenerate,
   tools: renderTools,
   status: renderStatus,
+  quickstart: renderQuickstart,
 };
 
 // Wraps a handler invocation so:
@@ -227,6 +260,16 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
         "run-tests-after-refine": str("Run smoke tests after refine (true/false)"),
         out: str("Write the run report to this path"),
       }, handlers.fromUseCase),
+    quickstart: dirCmd("quickstart", "Zero-flag local pipeline for a brand-new workspace: init -> schema -> generate -> tools -> test",
+      {
+        name: str("Agent name"),
+        domain: str("Domain"),
+        "add-table": str("Override the default seed table (JSON) added during the schema step"),
+        seed: str("Faker seed"),
+        rows: str("Default rows per table"),
+        "force-agent": { type: "string", alias: ["regenerate-agent"], description: "Force regeneration of app/agent.py even if it already exists (true/false; alias: --regenerate-agent)" },
+        "run-tests": str("Set to 'false' to skip generating + running smoke tests (default: true)"),
+      }, handlers.quickstart),
 
     // ── Legacy passthrough — each kept legacy for a CONCRETE reason citty's
     //    strict parsing would break; not yet typed:

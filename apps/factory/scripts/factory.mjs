@@ -8,6 +8,7 @@
  * The LLM calls one command at a time; the CLI tracks where you are.
  *
  * USAGE:
+ *   factory quickstart --dir <workspace-dir> [--name <name> --domain <domain>]  (init->schema->generate->tools->test, zero flags required)
  *   factory init     --name <name> --domain <domain> --dir <workspace-dir>
  *   factory schema   --dir <dir> --add-table <json>
  *   factory generate --dir <dir> [--seed N] [--rows N]
@@ -169,6 +170,49 @@ function requireStep(pipeline, step) {
   if (!pipeline.steps[step] || pipeline.steps[step].status !== "done") {
     fail(`Step "${step}" has not been completed yet. Run "factory ${step}" first.`);
   }
+}
+
+// STEPS entries are camelCase pipeline-state keys; the CLI subcommand for a
+// few of them is kebab-case and/or spelled differently (harnessReview →
+// harness-review, sourceIntegration → source-integration-plan). Anything not
+// listed here has an identical CLI name (init, schema, generate, tools, test,
+// serve, deploy, register, publish).
+const STEP_CLI_COMMAND = {
+  harnessReview: "harness-review",
+  harnessRefine: "harness-refine",
+  sourceIntegration: "source-integration-plan",
+};
+
+// Cloud steps (deploy/register/publish) need operator-supplied values (GCP
+// project, Gemini Enterprise app id, ...) this function can't infer from the
+// workspace alone, so the suggested command carries a placeholder — same
+// convention already used by cmdRegister's own nextStep/nextCommand and by
+// cmdFromUseCase's nextSteps list.
+const STEP_CLI_PLACEHOLDER_ARGS = {
+  deploy: "--project <gcp-project> --region <region>",
+  register: "--as adk|mcp|a2a",
+  publish: "--app-id <GEMINI_ENTERPRISE_APP_ID>",
+};
+
+// Pure: "what's the next command a human should run" derived from the SAME
+// pipeline.steps state markStep/requireStep already track, walking the SAME
+// STEPS sequence and using the SAME "blocks progress" rule cmdStatus already
+// uses for its own nextStep (a step only blocks if it's missing/"pending" or
+// explicitly "failed" — any other status, e.g. tools' terminal "done", or
+// test's "created" when --run false skipped actually executing pytest, or
+// deploy's transitional "running", means the pipeline has moved past it).
+// Centralized here so every cmd* function below can attach a consistent
+// nextCommand field to its return value instead of each one reimplementing
+// (or omitting, or subtly diverging from cmdStatus's own notion of "next").
+function nextCommandFor(pipeline, dir) {
+  const nextStep = STEPS.find((step) => {
+    const status = pipeline.steps?.[step]?.status || "pending";
+    return status === "pending" || status === "failed";
+  }) || null;
+  if (!nextStep) return null;
+  const cliName = STEP_CLI_COMMAND[nextStep] || nextStep;
+  const placeholder = STEP_CLI_PLACEHOLDER_ARGS[nextStep];
+  return `factory ${cliName} --dir ${dir}${placeholder ? ` ${placeholder}` : ""}`;
 }
 
 // Run a child process via execa, preserving the historical contract callers
@@ -365,7 +409,7 @@ async function cmdInit(dir, flags) {
   pipeline.createdAt = new Date().toISOString();
   markStep(pipeline, "init", "done", { name, domain });
   await savePipeline(dir, pipeline);
-  return ok({ step: "init", name, domain, dir, schemaPath: schemaPath(dir) });
+  return ok({ step: "init", name, domain, dir, schemaPath: schemaPath(dir), nextCommand: nextCommandFor(pipeline, dir) });
 }
 
 async function cmdSchema(dir, flags) {
@@ -382,7 +426,7 @@ async function cmdSchema(dir, flags) {
     const analysis = classifyTable(tableDef);
     markStep(pipeline, "schema", "done", { tables: schema.tables.length });
     await savePipeline(dir, pipeline);
-    return ok({ step: "schema", action: "add-table", table: tableDef.name, analysis, totalTables: schema.tables.length });
+    return ok({ step: "schema", action: "add-table", table: tableDef.name, analysis, totalTables: schema.tables.length, nextCommand: nextCommandFor(pipeline, dir) });
   }
 
   if (flags["from-file"]) {
@@ -393,11 +437,11 @@ async function cmdSchema(dir, flags) {
     await writeJson(schemaPath(dir), schema);
     markStep(pipeline, "schema", "done", { tables: schema.tables.length });
     await savePipeline(dir, pipeline);
-    return ok({ step: "schema", action: "import", tables: schema.tables.length });
+    return ok({ step: "schema", action: "import", tables: schema.tables.length, nextCommand: nextCommandFor(pipeline, dir) });
   }
 
   const analysis = schema.tables.map(classifyTable);
-  return ok({ step: "schema", tables: analysis, totalTables: schema.tables.length, schemaPath: schemaPath(dir) });
+  return ok({ step: "schema", tables: analysis, totalTables: schema.tables.length, schemaPath: schemaPath(dir), nextCommand: nextCommandFor(pipeline, dir) });
 }
 
 async function cmdGenerate(dir, flags) {
@@ -520,7 +564,7 @@ async function cmdGenerate(dir, flags) {
 
   markStep(pipeline, "generate", "done", { tables: manifestTables.length, totalRows: manifest.totalRows, seed });
   await savePipeline(dir, pipeline);
-  return ok({ step: "generate", tables: manifestTables.map((t) => ({ name: t.name, rows: t.rowCount })), totalRows: manifest.totalRows, manifest: manifestPath(dir) });
+  return ok({ step: "generate", tables: manifestTables.map((t) => ({ name: t.name, rows: t.rowCount })), totalRows: manifest.totalRows, manifest: manifestPath(dir), nextCommand: nextCommandFor(pipeline, dir) });
 }
 
 // ── Behavior-contract codegen helpers ─────────────────────────
@@ -814,6 +858,7 @@ async function cmdTools(dir, flags) {
     agentsCliEvalSetPath,
     okfKnowledgeBundle: okfBundleDir,
     agentGenerated: !existsSync(agentPath) || true,
+    nextCommand: nextCommandFor(pipeline, dir),
   });
 }
 
@@ -1035,7 +1080,7 @@ async function cmdTest(dir, flags) {
   const testStatus = testResult.ran ? (testResult.passed ? "done" : "failed") : "created";
   markStep(pipeline, "test", testStatus, { output: testPath, ...testResult });
   await savePipeline(dir, pipeline);
-  return ok({ step: "test", output: testPath, tests: tables.length * 2 + 2, ...testResult });
+  return ok({ step: "test", output: testPath, tests: tables.length * 2 + 2, ...testResult, nextCommand: nextCommandFor(pipeline, dir) });
 }
 
 async function cmdEval(dir, flags) {
@@ -1078,7 +1123,7 @@ async function cmdEval(dir, flags) {
     agentsCliEval: evalResult,
   });
   await savePipeline(dir, pipeline);
-  return ok({ step: "eval", ...evalResult });
+  return ok({ step: "eval", ...evalResult, nextCommand: nextCommandFor(pipeline, dir) });
 }
 
 function shouldRunFlag(flags, key, fallback = true) {
@@ -1226,7 +1271,7 @@ async function cmdQualityGate(dir, flags) {
       commands: report.commands,
     });
     await savePipeline(dir, pipeline);
-    return ok({ step: "quality-gate", ...report });
+    return ok({ step: "quality-gate", ...report, nextCommand: nextCommandFor(pipeline, dir) });
   } catch (e) {
     const report = {
       kind: "ge.agents_cli.quality_gate",
@@ -1406,6 +1451,7 @@ async function cmdHarnessReview(dir, flags) {
     okToPromote: review.ok_to_promote,
     score: review.agent_quality_score,
     specToCodeScore: review.spec_to_code_score,
+    nextCommand: nextCommandFor(pipeline, dir),
   };
   // See NOTE above: bare `return summary;` — the registry wraps ok:true for
   // top-level rendering; internal callers embed this value as-is.
@@ -1641,6 +1687,7 @@ async function cmdHarnessRefine(dir, flags) {
     provider,
     output: `artifacts/${provider}-harness-refine.json`,
     changedFiles: refine.changed_files || [],
+    nextCommand: nextCommandFor(pipeline, dir),
   };
   // See NOTE in cmdHarnessReview above: bare return, not return ok(...).
   return summary;
@@ -2068,6 +2115,7 @@ async function cmdMcp(dir, flags) {
         project,
         registryBehavior: "First-party Google MCP servers are automatically registered in Agent Registry when the supported API is enabled.",
         adkUsage: `from google.adk.tools import ApiRegistry\ntools = ApiRegistry.get_toolset("${svc.api}")`,
+        nextCommand: nextCommandFor(pipeline, dir),
       });
     } catch (e) {
       fail(`Failed to enable ${svc.api}: ${e.message}`);
@@ -2133,7 +2181,7 @@ async function cmdDeploy(dir, flags) {
 
       markStep(pipeline, "deploy", "done", { project, region, target, serviceName, serviceUrl });
       await savePipeline(dir, pipeline);
-      return ok({ step: "deploy", target, project, region, serviceName, serviceUrl });
+      return ok({ step: "deploy", target, project, region, serviceName, serviceUrl, nextCommand: nextCommandFor(pipeline, dir) });
     } catch (e) {
       markStep(pipeline, "deploy", "failed", { error: e.message });
       await savePipeline(dir, pipeline);
@@ -2180,7 +2228,7 @@ async function cmdDeploy(dir, flags) {
       isA2a: meta?.is_a2a || false,
     });
     await savePipeline(dir, pipeline);
-    return ok({ step: "deploy", target, project, region, runtimeId, deploymentMetadata: metaPath });
+    return ok({ step: "deploy", target, project, region, runtimeId, deploymentMetadata: metaPath, nextCommand: nextCommandFor(pipeline, dir) });
   } catch (e) {
     if (e.message === "timeout") {
       const operation = parseOperationId(`${e.stdout || ""}\n${e.stderr || ""}`);
@@ -2233,7 +2281,7 @@ async function cmdDeployStatus(dir, flags) {
     }
     markStep(pipeline, "deploy", "done", { project, region, target: "agent_runtime", runtimeId, isA2a: meta?.is_a2a || false });
     await savePipeline(dir, pipeline);
-    return ok({ step: "deploy-status", status: "done", project, region, runtimeId, deploymentMetadata: metaPath });
+    return ok({ step: "deploy-status", status: "done", project, region, runtimeId, deploymentMetadata: metaPath, nextCommand: nextCommandFor(pipeline, dir) });
   } catch (e) {
     markStep(pipeline, "deploy", "failed", { error: e.message, project, region, target: "agent_runtime" });
     await savePipeline(dir, pipeline);
@@ -2285,7 +2333,7 @@ async function cmdVerifyLive(dir, flags) {
       exitCode: result.exitCode,
     });
     await savePipeline(dir, pipeline);
-    return ok({ step: "verify-live", ...report });
+    return ok({ step: "verify-live", ...report, nextCommand: nextCommandFor(pipeline, dir) });
   } catch (e) {
     markStep(pipeline, "verifyLive", "failed", { error: e.message, target, mode });
     await savePipeline(dir, pipeline);
@@ -2477,6 +2525,7 @@ async function cmdRegister(dir, flags) {
           `)`,
         ].join("\n"),
         gcloudCommand: `gcloud alpha agent-registry services describe ${serverName} --project=${project} --location=${region}`,
+        nextCommand: nextCommandFor(pipeline, dir),
       });
     } catch (e) {
       fail(`Agent Registry registration failed: ${e.message}`);
@@ -2551,6 +2600,7 @@ async function cmdRegister(dir, flags) {
           `    tools=[remote_agent]`,
           `)`,
         ].join("\n"),
+        nextCommand: nextCommandFor(pipeline, dir),
       });
     } catch (e) {
       fail(`A2A registration failed: ${e.message}`);
@@ -2569,6 +2619,7 @@ async function cmdRegister(dir, flags) {
     mode: "adk",
     runtimeId,
     nextStep: `factory publish --dir ${dir} --app-id <GEMINI_ENTERPRISE_APP_ID>`,
+    nextCommand: nextCommandFor(pipeline, dir),
   });
 }
 
@@ -2624,7 +2675,7 @@ async function cmdPublish(dir, flags) {
     await writeJson(join(dir, "gemini_enterprise_registration.json"), registration);
     markStep(pipeline, "publish", "done", registration);
     await savePipeline(dir, pipeline);
-    return ok({ step: "publish", appId, rawAppId, appIdResolution: resolvedApp.matched, projectNumber, regType, runtimeId, displayName, registration: join(dir, "gemini_enterprise_registration.json") });
+    return ok({ step: "publish", appId, rawAppId, appIdResolution: resolvedApp.matched, projectNumber, regType, runtimeId, displayName, registration: join(dir, "gemini_enterprise_registration.json"), nextCommand: nextCommandFor(pipeline, dir) });
   } catch (e) {
     markStep(pipeline, "publish", "failed", { error: e.message });
     await savePipeline(dir, pipeline);
@@ -2656,7 +2707,7 @@ async function cmdStatus(dir) {
     cloudDataPlan: pipeline.steps.cloudDataPlan || null,
     sourceIntegrationPlan: pipeline.steps.sourceIntegration || null,
     nextStep,
-    nextCommand: nextStep !== "done" ? `factory ${nextStep} --dir ${dir}` : null,
+    nextCommand: nextCommandFor(pipeline, dir),
     schema: schema ? {
       tables: schema.tables.length,
       structured: structuredTables,
@@ -2679,7 +2730,7 @@ async function cmdReset(dir, flags) {
   }
   pipeline.currentStep = idx > 0 ? STEPS[idx - 1] : null;
   await savePipeline(dir, pipeline);
-  return ok({ step: "reset", resetFrom: step, currentStep: pipeline.currentStep });
+  return ok({ step: "reset", resetFrom: step, currentStep: pipeline.currentStep, nextCommand: nextCommandFor(pipeline, dir) });
 }
 
 async function cmdSources(flags) {
@@ -2822,6 +2873,13 @@ async function cmdFromUseCase(dir, flags) {
   }
 
   console.error(`\nPipeline complete through '${refineResult.skipped ? (reviewResult.skipped ? "test" : "harnessReview") : "harnessRefine"}'. Ready to serve.`);
+  const finalPipeline = await loadPipeline(targetDir);
+  const nextSteps = [
+    reviewResult.skipped ? `factory harness-review --dir ${targetDir} --vertex true --project <project> --location <location>` : null,
+    refineResult.skipped ? `factory harness-refine --dir ${targetDir} --vertex true --project <project> --location <location>` : null,
+    `factory serve --dir ${targetDir}`,
+    `factory status --dir ${targetDir}`,
+  ].filter(Boolean);
   return ok({
     step: "from-usecase",
     useCase: { id: useCase.id, title: useCase.title, department: useCase.department },
@@ -2830,12 +2888,90 @@ async function cmdFromUseCase(dir, flags) {
     anomalies: schema.anomalies?.length || 0,
     harnessReview: reviewResult,
     harnessRefine: refineResult,
-    nextSteps: [
-      reviewResult.skipped ? `factory harness-review --dir ${targetDir} --vertex true --project <project> --location <location>` : null,
-      refineResult.skipped ? `factory harness-refine --dir ${targetDir} --vertex true --project <project> --location <location>` : null,
-      `factory serve --dir ${targetDir}`,
-      `factory status --dir ${targetDir}`,
-    ].filter(Boolean),
+    nextSteps,
+    // Singular convenience field alongside the richer nextSteps list above,
+    // matching the nextCommand convention every other pipeline command carries
+    // (derived the same way cmdStatus derives it — from pipeline.steps).
+    nextCommand: nextSteps[0] || nextCommandFor(finalPipeline, targetDir),
+  });
+}
+
+// ── Quickstart (zero-flag local pipeline: init → schema → generate → tools → test) ──
+//
+// A brand-new workspace, end to end, with nothing but --dir/--name/--domain.
+// Composes cmd* functions in-process (same pattern cmdFromUseCase already
+// uses to chain cmdInit → cmdGenerate → cmdTools → cmdTest) instead of
+// shelling out to `factory <step>` subprocesses. Deliberately stops at `test`
+// — deploy/register/publish stay explicit, opt-in, cloud-touching commands a
+// human runs on purpose; quickstart never reaches for gcloud/agents-cli.
+const QUICKSTART_DEFAULT_TABLE = {
+  name: "records",
+  rows: 25,
+  columns: [
+    { name: "id", type: "seq", pattern: "REC-{n:4}" },
+    { name: "name", type: "person.fullName" },
+    { name: "status", type: "enum", values: ["open", "in_progress", "closed"] },
+    { name: "created_at", type: "date", min: "2024-01-01", max: "2026-12-31" },
+    { name: "notes", type: "lorem.sentence" },
+  ],
+};
+
+async function cmdQuickstart(dir, flags) {
+  const name = flags.name || basename(dir);
+  const domain = flags.domain || "general";
+  const runTests = flags["run-tests"] !== "false";
+
+  console.error(`quickstart: building "${name}" (${domain}) in ${dir}`);
+
+  // Step 1: init. Pass name/domain explicitly so this never engages the
+  // interactive @clack/prompts wizard (shouldPromptForInit only fires when
+  // BOTH are absent from flags) — quickstart is a one-shot, zero-prompt run
+  // even at a real TTY.
+  console.error("  [1/5] init...");
+  const initResult = await cmdInit(dir, { name, domain });
+
+  // Step 2: schema. Use whatever the caller supplied via --add-table, else a
+  // minimal default table so a brand-new workspace has something to generate
+  // fixtures from with zero required flags.
+  console.error("  [2/5] schema...");
+  const schemaResult = await cmdSchema(dir, { "add-table": flags["add-table"] || JSON.stringify(QUICKSTART_DEFAULT_TABLE) });
+
+  // Step 3: generate fixtures.
+  console.error("  [3/5] generate...");
+  const generateResult = await cmdGenerate(dir, { seed: flags.seed, rows: flags.rows });
+
+  // Step 4: tools + agent scaffold.
+  console.error("  [4/5] tools...");
+  const toolsResult = await cmdTools(dir, { "force-agent": flags["force-agent"] });
+
+  // Step 5: smoke tests. Off by default reasons (uv/pytest unavailable, or a
+  // caller that just wants the scaffold fast) are handled the same way
+  // cmdFromUseCase already handles harness review/refine being skipped: a
+  // { skipped: true, reason } stand-in instead of omitting the field.
+  console.error("  [5/5] test...");
+  const testResult = runTests
+    ? await cmdTest(dir, {})
+    : { skipped: true, reason: "Pass --run-tests true (the default) to generate + run tests, or omit --run-tests false." };
+
+  const pipeline = await loadPipeline(dir);
+  const nextCommand = nextCommandFor(pipeline, dir) || `factory serve --dir ${dir}`;
+  console.error(`\nquickstart complete: ${name} (${domain}) is ready in ${dir}`);
+  console.error(`Next: ${nextCommand}`);
+
+  return ok({
+    step: "quickstart",
+    name,
+    domain,
+    dir,
+    init: initResult,
+    schema: schemaResult,
+    generate: generateResult,
+    tools: toolsResult,
+    test: testResult,
+    tables: schemaResult.totalTables ?? schemaResult.tables?.length ?? null,
+    totalRows: generateResult.totalRows ?? null,
+    functions: toolsResult.functions ?? null,
+    nextCommand,
   });
 }
 
@@ -3320,6 +3456,10 @@ function printHelp() {
   console.log(`
 factory — Unified mock system pipeline
 
+Quickstart:
+  quickstart Zero-flag local pipeline: init → schema → generate → tools → test
+                                              [--dir <dir> --name <n> --domain <d>] [--run-tests false]
+
 Local Development:
   init      Create workspace structure          --name <n> --domain <d> --dir <dir>
   schema    Add/inspect table schemas           --dir <dir> --add-table '<json>'
@@ -3361,6 +3501,7 @@ Register modes (uses gcloud alpha agent-registry services create):
   a2a   Cloud Run service → register as A2A remote agent in Agent Registry
 
 Examples:
+  factory quickstart --dir ./hr-agent --name hr-demo --domain hr
   factory init --dir ./hr-agent --name hr-demo --domain hr
   factory schema --dir ./hr-agent --add-table '{"name":"employees","rows":50,"columns":[{"name":"id","type":"seq","pattern":"EMP-{n:4}"},{"name":"name","type":"person.fullName"},{"name":"dept","type":"enum","values":["HR","IT","Finance"]}]}'
   factory generate --dir ./hr-agent --seed 42
@@ -3428,6 +3569,7 @@ async function main() {
       planData: cmdPlanData,
       fromUseCase: cmdFromUseCase,
       batchAudit: cmdBatchAudit,
+      quickstart: cmdQuickstart,
     },
   });
   const wantsHelp = argv.some((a) => a === "--help" || a === "-h");
