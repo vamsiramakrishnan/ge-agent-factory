@@ -2907,6 +2907,11 @@ async function cmdFromUseCase(dir, flags) {
 const QUICKSTART_DEFAULT_TABLE = {
   name: "records",
   rows: 25,
+  // Without a source system, the generated query tool's smoke test (which
+  // asserts source_system is set) fails on a workspace built with nothing
+  // but --dir — every catalog-driven spec already has one; quickstart's
+  // synthetic default table needs its own for the same reason.
+  _sourceSystem: "Quickstart Demo Data",
   columns: [
     { name: "id", type: "seq", pattern: "REC-{n:4}" },
     { name: "name", type: "person.fullName" },
