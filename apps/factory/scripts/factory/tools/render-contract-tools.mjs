@@ -6,7 +6,7 @@
 // the intent; byte output is identical to the former inline emitter.
 
 import { safePyName, snakeCase } from "@ge/std/naming";
-import { pyEscape, pyTripleEscape } from "./py-emit.mjs";
+import { pyEscape, pyTripleEscape, pyJson } from "./py-emit.mjs";
 
 // Render a single behavior-contract intent to its Python tool source (one string).
 export function renderContractToolPython(intent) {
@@ -15,7 +15,7 @@ export function renderContractToolPython(intent) {
   const kind = pyEscape(intent.kind || "action");
   const description = pyTripleEscape(intent.description || `${intent.kind || "Tool"} for ${intent.sourceSystemId || "source system"}`);
   const evidenceFallback = intent.kind === "evidence_lookup" ? ["document_reference"] : ["api_response", "generated_audit_trail"];
-  const evidenceLiteral = JSON.stringify((intent.evidenceEmitted && intent.evidenceEmitted.length) ? intent.evidenceEmitted : evidenceFallback);
+  const evidenceLiteral = pyJson((intent.evidenceEmitted && intent.evidenceEmitted.length) ? intent.evidenceEmitted : evidenceFallback);
   const producesList = intent.produces && intent.produces.length ? intent.produces : [];
 
   if (intent.kind === "evidence_lookup") {
@@ -113,7 +113,7 @@ export function renderContractToolPython(intent) {
     producesDict,
     `        "audit_trail": audit_trail,`,
     `        "evidence": ${evidenceLiteral},`,
-    `        "produces": ${JSON.stringify(actionProducesList)},`,
+    `        "produces": ${pyJson(actionProducesList)},`,
     `    }`,
     `    _append_action_event("${fnName}", result)`,
     `    return result`,

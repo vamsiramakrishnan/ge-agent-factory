@@ -7,6 +7,7 @@
 import { snakeCase } from "@ge/std/naming";
 import { tablePrimaryKey } from "../core/contract-schema.mjs";
 import { canonicalIntentToolName, tableToolName } from "./tool-naming.mjs";
+import { pyJson } from "./py-emit.mjs";
 
 // Returns the tools.py source lines for every table's query_<table> tool.
 export function renderQueryToolLines({ tables, contractIntents }) {
@@ -54,7 +55,7 @@ export function renderQueryToolLines({ tables, contractIntents }) {
     for (const spec of filterSpecs) {
       lines.push(`    if ${spec.param}: rows = [r for r in rows if str(r.get("${spec.column}","")).lower() == ${spec.param}.lower()]`);
     }
-    lines.push(`    return {"source_system": ${JSON.stringify(t.sourceSystem || null)}, "source_system_id": ${JSON.stringify(t.sourceSystemId || null)}, "table": "${t.name}", "rows": rows[:max(1,min(limit,100))], "total": len(rows), "produces": ${JSON.stringify(produces)}, "evidence": ${JSON.stringify(evidence)}}`, ``);
+    lines.push(`    return {"source_system": ${pyJson(t.sourceSystem || null)}, "source_system_id": ${pyJson(t.sourceSystemId || null)}, "table": "${t.name}", "rows": rows[:max(1,min(limit,100))], "total": len(rows), "produces": ${pyJson(produces)}, "evidence": ${pyJson(evidence)}}`, ``);
   }
   return lines;
 }

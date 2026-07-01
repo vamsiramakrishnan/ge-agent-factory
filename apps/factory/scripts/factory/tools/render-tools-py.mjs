@@ -9,6 +9,7 @@ import { renderToolsModule } from "../runtime/tools-backend.mjs";
 import { tableToolName } from "./tool-naming.mjs";
 import { renderQueryToolLines } from "./render-query-tools.mjs";
 import { renderContractToolLines } from "./render-contract-tools.mjs";
+import { pyJson } from "./py-emit.mjs";
 
 // Assemble the complete app/tools.py source. Owns the whole layout: preamble +
 // per-table query tools + document tools + behavior-contract tools + the
@@ -73,7 +74,7 @@ export function renderToolsPreambleLines({ manifest, tables }) {
     `    with ACTION_EVENTS.open("a", encoding="utf-8") as f:`,
     `        f.write(json.dumps({"tool": tool_name, **result}, sort_keys=True) + "\\n")`,
     ``,
-    `_CONTRACT_DOCUMENTS = ${JSON.stringify((manifest.documents || []).map((d) => ({ id: d.id, title: d.title, type: d.type, path: d.path, source_system_id: d.sourceSystemId || d.source_system_id || null })))}`,
+    `_CONTRACT_DOCUMENTS = ${pyJson((manifest.documents || []).map((d) => ({ id: d.id, title: d.title, type: d.type, path: d.path, source_system_id: d.sourceSystemId || d.source_system_id || null })))}`,
     ``,
     `def _deterministic_id(prefix: str, *parts: Any) -> str:`,
     `    """Stable identifier for action tools — keeps audit trails reproducible without external state."""`,
@@ -93,7 +94,7 @@ export function renderToolsPreambleLines({ manifest, tables }) {
     ``,
     `def list_systems() -> dict[str, Any]:`,
     `    """List canonical source systems, tables, and evidence documents for this scenario."""`,
-    `    return {"scenario": "${manifest.id}", "systems": ${JSON.stringify(manifest.systems || [])}, "tables": ${JSON.stringify(tables.map((t) => ({ name: t.name, sourceSystem: t.sourceSystem, sourceSystemId: t.sourceSystemId })))}}`,
+    `    return {"scenario": "${manifest.id}", "systems": ${pyJson(manifest.systems || [])}, "tables": ${pyJson(tables.map((t) => ({ name: t.name, sourceSystem: t.sourceSystem, sourceSystemId: t.sourceSystemId })))}}`,
     ``,
   ];
 }
@@ -104,11 +105,11 @@ export function renderDocumentToolLines(docs) {
   return [
     `def list_documents() -> dict[str, Any]:`,
     `    """List all available evidence documents and their metadata."""`,
-    `    return {"documents": ${JSON.stringify(docs.map((d) => ({ id: d.id, title: d.title, type: d.type, path: d.path, wordCount: d.wordCount })))}}`,
+    `    return {"documents": ${pyJson(docs.map((d) => ({ id: d.id, title: d.title, type: d.type, path: d.path, wordCount: d.wordCount })))}}`,
     ``,
     `def read_document(document_id: str) -> dict[str, Any]:`,
     `    """Read the full text of a document by its ID. Use for citing evidence."""`,
-    `    docs = ${JSON.stringify(docs.map((d) => ({ id: d.id, path: d.path, title: d.title })))}`,
+    `    docs = ${pyJson(docs.map((d) => ({ id: d.id, path: d.path, title: d.title })))}`,
     `    doc = next((d for d in docs if d["id"] == document_id), None)`,
     `    if not doc: return {"error": f"Document {document_id} not found"}`,
     `    path = FIXTURES / doc["path"]`,
@@ -118,7 +119,7 @@ export function renderDocumentToolLines(docs) {
     `def search_documents(query: str = "") -> dict[str, Any]:`,
     `    """Search documents by keyword. Returns matching document IDs and snippets."""`,
     `    results = []`,
-    `    for doc_meta in ${JSON.stringify(docs.map((d) => ({ id: d.id, path: d.path, title: d.title })))}:`,
+    `    for doc_meta in ${pyJson(docs.map((d) => ({ id: d.id, path: d.path, title: d.title })))}:`,
     `        path = FIXTURES / doc_meta["path"]`,
     `        if not path.exists(): continue`,
     `        text = path.read_text(encoding="utf-8")`,
