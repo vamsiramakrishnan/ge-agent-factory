@@ -71,20 +71,22 @@ and an MCP server.
 
 ## Running the gates (before a PR)
 
-CI is the source hygiene check plus the full Bun test suite (see
-[`cloudbuild.ci.yaml`](cloudbuild.ci.yaml)). Run the same gate locally with:
+CI is source hygiene + typecheck + catalog + the docs gate + the gated test
+suite (see [`cloudbuild.ci.yaml`](cloudbuild.ci.yaml)). Run the same gate
+locally with:
 
 ```bash
-mise run ci             # source:hygiene → catalog → bun test apps tools  (mirrors CI)
+mise run ci             # source:hygiene → lint → catalog → docs:gate → test:gated  (mirrors CI)
 ```
 
 Or run the individual checks:
 
 ```bash
-bun run source:hygiene          # repo hygiene guard (tools/source-hygiene.mjs)
-bun run lint                    # typecheck every workspace (tsc --noEmit, per app)
-bun test apps tools             # the JS test suite (CI runs this)
-bun test apps tools packages    # include the packages workspace tests too
+bun run source:hygiene   # repo hygiene guard (tools/source-hygiene.mjs)
+bun run lint             # typecheck every workspace (tsc --noEmit, per app)
+bun run docs:gate        # docs link/image/blockquote + diagram-drift + design-token checks
+bun run test:gated       # bun test apps tools packages, cross-checked against
+                         # tools/known-test-failures.json (see AGENTS.md)
 ```
 
 For the Python MCP service (run from a `python3` that has pytest — see above):
@@ -156,7 +158,7 @@ Agent Skills spec portability gaps.
 
 The factory's spec is the spine of generation. Specs round-trip to **OKF (Open
 Knowledge Format) v0.1**, a portable BRD exchange format, via the converters in
-`scripts/` (`spec-to-okf.mjs` / `okf-to-spec.mjs`).
+`apps/factory/scripts/` (`spec-to-okf.mjs` / `okf-to-spec.mjs`).
 
 - Concept: [Specs & OKF](docs/concepts/specs-and-okf.md)
 - Reference: [Spec schema](docs/reference/spec-schema.md) · [OKF](docs/reference/okf.md)
