@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Loader2, Play, RotateCw, Wrench } from "lucide-react";
 import { ge, type AutopilotDetail, type AutopilotRun, type Fleet, type FleetAgent, type MissionPlan, type StatusBoard } from "../services/geClient";
 import { StatusPill } from "../components/StatusPill";
+import { ErrorBanner } from "../components/ErrorBanner";
 
 interface AutopilotProps {
   status: StatusBoard | null;
@@ -160,7 +161,7 @@ export default function Autopilot({ status }: AutopilotProps) {
         </button>
       </div>
 
-      {error && <div className="mb-4 px-4 py-2 bg-amber-500/10 border border-amber-400/20 text-amber-700 text-sm rounded-lg">{error}</div>}
+      {error && <ErrorBanner tone="amber" message={error} onRetry={load} />}
 
       <div className="grid grid-cols-1 xl:grid-cols-[420px_1fr] gap-6">
         <section className="editorial-micro-card rounded-lg p-4">

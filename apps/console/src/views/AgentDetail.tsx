@@ -30,6 +30,7 @@ import {
 import { StatusPill } from "../components/StatusPill";
 import { StatusChip, normalizeStatus } from "../lib/runStatus";
 import { Lifecycle } from "../components/Lifecycle";
+import { ErrorBanner } from "../components/ErrorBanner";
 import { actionCommand, planNavigates } from "../lib/actionPlans";
 
 interface AgentDetailProps {
@@ -413,7 +414,7 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
         )}
       </div>
 
-      {error && <div className="mb-4 rounded-md border border-amber-400/20 bg-amber-500/10 px-4 py-2 text-sm text-amber-700">{error}</div>}
+      {error && <ErrorBanner tone="amber" message={error} onRetry={() => load()} />}
 
       <section className="mb-6 grid gap-3 md:grid-cols-4">
         <Metric label="Health" value={health} status={health} />
