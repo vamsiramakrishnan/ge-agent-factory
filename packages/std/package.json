@@ -13,7 +13,8 @@
     "./csv-io": "./src/csv-io.mjs",
     "./list": "./src/list.mjs",
     "./gcp-config": "./src/gcp-config.mjs",
-    "./merge": "./src/merge.mjs"
+    "./merge": "./src/merge.mjs",
+    "./spec-gaps": "./src/spec-gaps.mjs"
   },
   "scripts": {
     "test": "bun test src"
