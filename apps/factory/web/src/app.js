@@ -126,7 +126,7 @@ async function settleCompletedRun() {
       interviewAnswers: state.interviewAnswers,
       generatedText: brief,
     }).then(() => createVersionApi(projectId, { generatedText: brief }))
-      .catch(() => {});
+      .catch((e) => console.error('[app] saveBrief/createVersion failed:', e));
   }
 
   await advanceAgentStage();
