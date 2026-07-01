@@ -229,7 +229,7 @@ export default function Interview({ status }: { status?: StatusBoard | null }) {
             <div>
               <div className="text-sm font-semibold text-amber-800">Runtime daemon needs a refresh</div>
               <p className="mt-1 text-sm text-amber-700">
-                The current daemon does not advertise interview harness support. Restart it once so the console can start Antigravity interview runs.
+                The local runtime daemon is running older code and doesn't support interview runs yet. Restart it once so the console can start a new interview.
               </p>
               {runtimeStatus?.error && <div className="mt-1 text-xs text-amber-700/80">{runtimeStatus.error}</div>}
             </div>
