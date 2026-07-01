@@ -67,7 +67,7 @@ import { applyScenarioBindings } from "./factory/packs/index.mjs";
 import { analyzePackCoverage } from "./factory/packs/coverage.mjs";
 import { getUseCases } from "../src/use-cases.js";
 import { readPromotionGate } from "../src/promotion-packet.js";
-import { DOMAIN_CATALOG } from "../src/domains.generated.js";
+import { DOMAIN_CATALOG, DOMAIN_SUMMARY } from "../src/domains.generated.js";
 import { APP_ROOT, GENERATOR_DATA_ROOT } from "../src/state-paths.js";
 import { DEFAULT_AGENT_MODEL, assertKnownModel } from "../src/known-models.js";
 import { sourceTimestamp } from "../src/source-clock.js";
@@ -255,9 +255,83 @@ function classifyTable(tableDef) {
 
 // ── COMMANDS ─────────────────────────────────────────────────
 
+// Canonical short domain list for the coarse `factory init --domain` field —
+// the department keys used across DOMAIN_DOC_SETS/DOMAIN_SUMMARY (not the 46
+// fine-grained DOMAIN_CATALOG entries, which are a different, finer axis).
+const INIT_DOMAIN_CHOICES = ["general", ...Object.keys(DOMAIN_SUMMARY)];
+
+// Pure: does this invocation need to prompt at all? Never true unless BOTH
+// `name` and `domain` are absent from flags AND we're at a real interactive
+// TTY. Any flag already supplied, or a non-TTY stream (CI, scripts, pipes),
+// skips prompting entirely — zero behavior change for scripted/CI usage.
+function shouldPromptForInit(flags, { isTTY = Boolean(process.stdin.isTTY && process.stdout.isTTY) } = {}) {
+  if (!isTTY) return false;
+  if (flags?.yes || flags?.["non-interactive"]) return false;
+  return !flags?.name || !flags?.domain;
+}
+
+// Pure: what's already provided vs. what's missing, and the exact fallback
+// values `cmdInit` would use today. Isolates the "flags vs defaults" logic so
+// it's unit-testable without touching @clack/prompts.
+function resolveInitPromptPlan(dir, flags) {
+  return {
+    needsName: !flags?.name,
+    needsDomain: !flags?.domain,
+    nameDefault: flags?.name || basename(dir),
+    domainDefault: flags?.domain || "general",
+    domainChoices: INIT_DOMAIN_CHOICES,
+  };
+}
+
+// Interactive boundary: the only place that touches @clack/prompts. Prompts
+// ONLY for fields resolveInitPromptPlan marked missing; anything already on
+// `flags` is used as-is. Cancels (Ctrl+C) exit cleanly, matching clack's
+// documented isCancel() pattern.
+async function promptForMissingInit(dir, flags) {
+  const plan = resolveInitPromptPlan(dir, flags);
+  if (!plan.needsName && !plan.needsDomain) return { name: plan.nameDefault, domain: plan.domainDefault };
+
+  const clack = await import("@clack/prompts");
+  clack.intro("factory init");
+
+  let name = flags?.name;
+  if (plan.needsName) {
+    name = await clack.text({
+      message: "Agent name",
+      placeholder: plan.nameDefault,
+      defaultValue: plan.nameDefault,
+    });
+    if (clack.isCancel(name)) {
+      clack.cancel("Cancelled.");
+      process.exit(1);
+    }
+  }
+
+  let domain = flags?.domain;
+  if (plan.needsDomain) {
+    domain = await clack.select({
+      message: "Domain",
+      options: plan.domainChoices.map((value) => ({ value, label: value })),
+      initialValue: plan.domainDefault,
+    });
+    if (clack.isCancel(domain)) {
+      clack.cancel("Cancelled.");
+      process.exit(1);
+    }
+  }
+
+  clack.outro(`Scaffolding ${name || plan.nameDefault} (${domain || plan.domainDefault})`);
+  return { name: name || plan.nameDefault, domain: domain || plan.domainDefault };
+}
+
 async function cmdInit(dir, flags) {
-  const name = flags.name || basename(dir);
-  const domain = flags.domain || "general";
+  let name = flags.name || basename(dir);
+  let domain = flags.domain || "general";
+  if (shouldPromptForInit(flags)) {
+    const answers = await promptForMissingInit(dir, flags);
+    name = answers.name;
+    domain = answers.domain;
+  }
   await mkdir(join(dir, "mock_systems", "scenarios"), { recursive: true });
   await mkdir(join(dir, "fixtures", "tables"), { recursive: true });
   await mkdir(join(dir, "fixtures", "documents"), { recursive: true });
@@ -3368,6 +3442,9 @@ export const __test = {
   deriveSchemaFromGenerationSpec,
   // Bind the injected dependency so the test-facing signature stays (useCase, rows).
   deriveSchemaFromUseCase: (useCase, defaultRows) => deriveSchemaFromUseCase(useCase, defaultRows, { buildAgentQualityPlan }),
+  shouldPromptForInit,
+  resolveInitPromptPlan,
+  INIT_DOMAIN_CHOICES,
 };
 
 // Run the CLI only when this file is the process entry point. When imported by a
