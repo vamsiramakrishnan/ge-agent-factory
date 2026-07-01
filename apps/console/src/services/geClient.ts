@@ -294,7 +294,7 @@ export interface GeCommand {
   cli: string;
   label: string;
   summary: string;
-  risk: "mutates-cloud" | "starts-workloads" | "writes-repo" | string;
+  risk: "mutates-cloud" | "starts-workloads" | "starts-local-workloads" | "writes-repo" | string;
   expectedDuration: string;
   requirements?: {
     bins?: string[];

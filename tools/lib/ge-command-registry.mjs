@@ -1,3 +1,50 @@
+/**
+ * Single source of truth wiring a `ge` CLI command into the console (route,
+ * CLI invocation, risk level, requirements, observability shape) — see
+ * `commandForRoute`, `commandMeta`, and `factory/registry.mjs`'s `dispatch()`
+ * for how this table is consumed.
+ *
+ * Field contract for each entry:
+ * - `risk` (string): one of
+ *   - "mutates-cloud" — calls out to GCP/Terraform and changes cloud state.
+ *   - "starts-workloads" — kicks off cloud-side (remote) build/run work.
+ *   - "starts-local-workloads" — starts a process on the operator's machine
+ *     (local factory harness, daemon, etc.), no cloud mutation.
+ *   - "writes-repo" — writes/commits files into the local git repo.
+ *   Keep `apps/console/src/services/geClient.ts`'s `GeCommand.risk` union in
+ *   sync with any new value added here.
+ * - `requirements` (object, all keys optional): preflight checks the console
+ *   runs before allowing the command to be invoked.
+ *   - `bins` (string[]) — CLI binaries that must be on PATH.
+ *   - `config` (string[]) — `.ge.json` keys that must already be set.
+ *   - `cloudAuth` (boolean) — requires an authenticated gcloud session.
+ *   - `terraformRoot` (boolean) — requires a Terraform root to be present.
+ *   - `configWritable` (boolean) — `.ge.json` must be writable (command may
+ *     merge new values into it).
+ *   - `localToolchain` (boolean) — requires the local dev toolchain (e.g.
+ *     `uv`) provisioned by `mise run setup`.
+ *   - `toolPlane` (boolean) — requires the MCP tool plane to be deployed.
+ *   - `bigQueryHard` (boolean) — hard preflight blocker: BigQuery API must be
+ *     enabled (not a soft warning).
+ *   - `shipHandoff` (boolean) — requires the cloud-run-proxy gcloud component
+ *     and gateway agent-provision flag for the ship handoff.
+ *   - `dataGenerationRuntime` (boolean) — requires the local data-generation
+ *     runtime to be available.
+ * - `observability` (object, optional — defaults to
+ *   `{ mode: "command-output", events: false }` via `commandMetaFromCommand`):
+ *   - `mode` (string): one of
+ *     - "command-output" — no structured events; console shows raw stdout.
+ *     - "remote-stage-logs" — cloud factory stage logs, polled via
+ *       `statusCommand`.
+ *     - "local-factory-events" — local harness emits a JSONL event log
+ *       (`eventLog`) plus generated `artifacts`.
+ *     - "runtime-events" — mission-graph runtime events, polled via
+ *       `statusCommand`.
+ *   - `events` (boolean) — whether the command streams structured events.
+ *   - `statusCommand` (string, optional) — CLI command to poll status.
+ *   - `eventLog` (string, optional) — path to a JSONL event log.
+ *   - `artifacts` (string[], optional) — generated file globs to surface.
+ */
 export const GE_COMMANDS = {
   "up": {
     id: "up",
