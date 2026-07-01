@@ -26,25 +26,25 @@ artifact into a governed project.
 ## What to run first
 
 ```bash
-make setup
-make doctor-local
-make devex-check
-make devex-smoke
-make console
-make mode-local
-make provision-local CANARY=1
+mise run setup
+mise run doctor-local
+mise run devex-check
+mise run devex-smoke
+mise run console
+mise run mode-local
+CANARY=1 mise run provision-local
 ```
 
 The local path installs the toolchain, checks docs and workspace contracts,
 proves one validated canary workspace, starts the daemon, opens the console at
 `http://localhost:18260`, and can build one agent up to the build boundary. The
-default `make devex-smoke` path does not require cloud credentials.
+default `mise run devex-smoke` path does not require cloud credentials.
 
 For cloud release work:
 
 ```bash
 export GEMINI_ENTERPRISE_APP_ID=projects/<num>/locations/global/collections/default_collection/engines/<app>
-make bootstrap CANARY=1
+CANARY=1 mise run bootstrap
 ```
 
 ## Repo map
@@ -115,7 +115,7 @@ manifest path, then gives the next commands to run.
 ### Console change
 
 1. Edit `apps/console/src/*`.
-2. Run `make console`.
+2. Run `mise run console`.
 3. Exercise the affected view in the browser.
 4. Update [Console & APIs](./reference/console-and-apis.html) or
    [Console Tour](./reference/console-tour.html) if routes, views, or payloads changed.
@@ -123,7 +123,7 @@ manifest path, then gives the next commands to run.
 ### Generator or generated-agent change
 
 1. Edit `apps/factory/src/*` or the relevant generator scripts.
-2. Build one canary locally with `make mode-local && make provision-local CANARY=1`.
+2. Build one canary locally with `mise run mode-local && CANARY=1 mise run provision-local`.
 3. Inspect the generated workspace under `.ge/factory/workspaces/`.
 4. Run evals when the change affects behavior contracts.
 5. Update [Agent generation](./reference/agent-generation.html),
@@ -154,12 +154,12 @@ merging shared behavior.
 
 | Change type | Focused check | Broader check |
 |---|---|---|
-| Docs only | `bun run docs:check` and local Jekyll build if Ruby is available | `make devex-check` |
-| CLI/core | `bun test tools` and the touched `ge` command | `make devex-check`, then `make ci` |
-| Console | `bun run build:console` | `make ci` |
-| Presentation | `bun run build:presentation` | `make ci` |
-| Generator | Relevant `apps/factory` tests | `make ci` plus canary build |
-| Python simulator runtime | `npm run test:py` | `make ci` plus simulator conformance test |
+| Docs only | `bun run docs:check` and local Jekyll build if Ruby is available | `mise run devex-check` |
+| CLI/core | `bun test tools` and the touched `ge` command | `mise run devex-check`, then `mise run ci` |
+| Console | `bun run build:console` | `mise run ci` |
+| Presentation | `bun run build:presentation` | `mise run ci` |
+| Generator | Relevant `apps/factory` tests | `mise run ci` plus canary build |
+| Python simulator runtime | `npm run test:py` | `mise run ci` plus simulator conformance test |
 | Terraform/platform | `ge infra plan`, `ge doctor` | Canary bootstrap in a test project |
 
 ## Documentation rules

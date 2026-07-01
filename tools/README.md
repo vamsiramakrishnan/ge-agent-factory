@@ -3,7 +3,7 @@
 Operator tooling for the GE Agent Factory.
 
 > First time setting up? See [`SETUP.md`](../SETUP.md) at the repo root for
-> the step-by-step (clone → prerequisites → `make setup` → `make doctor-local`
+> the step-by-step (clone → prerequisites → `mise run setup` → `mise run doctor-local`
 > → first command → optional cloud setup). This doc is a command reference,
 > not a setup walkthrough.
 

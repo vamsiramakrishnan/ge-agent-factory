@@ -15,9 +15,9 @@ run that has blocked.
 
 ## Prerequisites
 
-- Local toolchain installed (`make setup`); the daemon running
+- Local toolchain installed (`mise run setup`); the daemon running
   (`ge daemon status`).
-- Console running for the live views: `make console` → http://localhost:18260.
+- Console running for the live views: `mise run console` → http://localhost:18260.
 - For remote runs, the cloud planes provisioned. See
   [Provision the platform](provision-the-platform.html).
 
@@ -40,7 +40,7 @@ run that has blocked.
    ge agents build --remote --all      # force remote
    ```
 
-   (Makefile equivalents: `make provision CANARY=1`, `make provision-local CANARY=1`.)
+   (`mise run` equivalents: `CANARY=1 mise run provision`, `CANARY=1 mise run provision-local`.)
 
 3. **Watch it live in the console.** Open the console; the Run Drawer follows any
    run (including remote runs via the run ledger SSE stream), and the Activity
@@ -89,10 +89,10 @@ run that has blocked.
 
 ## Troubleshoot
 
-- **Build won't start** — daemon down. `ge daemon start` (or `make setup` starts
+- **Build won't start** — daemon down. `ge daemon start` (or `mise run setup` starts
   it).
 - **Remote build rejected / unhealthy** — run cloud readiness checks:
   `ge doctor` (or scoped: `ge doctor --command agents.build`).
-- **Run stuck at data readiness** — warm the data runtime: `make data-runtime`.
+- **Run stuck at data readiness** — warm the data runtime: `mise run data-runtime`.
 - **Resume does nothing** — confirm the task id and that it's actually blocked
   (`ge runtime task <id>`).

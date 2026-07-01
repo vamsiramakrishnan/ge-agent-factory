@@ -16,11 +16,11 @@ confirm the result carries `behaviorContract.workflow` and
 
 ## Prerequisites
 
-- Local toolchain installed and the daemon running (`make setup`). See
+- Local toolchain installed and the daemon running (`mise run setup`). See
   [Getting started locally](getting-started.html).
-- The console running: `make console` → http://localhost:18260.
+- The console running: `mise run console` → http://localhost:18260.
 - The interview fires an Antigravity harness run, so local (Antigravity) mode
-  must be healthy (`make doctor-local`).
+  must be healthy (`mise run doctor-local`).
 
 ## Steps
 
@@ -98,7 +98,7 @@ confirm the result carries `behaviorContract.workflow` and
 ## Troubleshoot
 
 - **Interview never streams a spec** — the harness run failed. Confirm local
-  Antigravity mode is healthy (`make doctor-local`) and the daemon is up
+  Antigravity mode is healthy (`mise run doctor-local`) and the daemon is up
   (`ge daemon status`).
 - **No `workflow` / `answerableQueries` in the spec** — re-run the interview;
   the prompt requires both. Older specs predate these fields.

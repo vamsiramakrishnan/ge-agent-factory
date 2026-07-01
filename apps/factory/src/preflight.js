@@ -168,7 +168,7 @@ export async function runPreflight({
     findings.push({
       level: "warn",
       code: "ANTIGRAVITY_SDK_MISSING",
-      message: "google-antigravity Python SDK is not importable from the harness interpreter; programmatic Antigravity harness runs will fail. Fix: `make deps` (creates the repo .venv via uv and installs it there)",
+      message: "google-antigravity Python SDK is not importable from the harness interpreter; programmatic Antigravity harness runs will fail. Fix: `mise run deps` (creates the repo .venv via uv and installs it there)",
     });
   }
 

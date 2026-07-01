@@ -193,7 +193,7 @@ export function classifyReadinessCheck(section, check) {
   let action = check.fix || "inspect doctor output";
   if (/uv|python|agents-cli|antigravity|skill|workspace registry|projects\.json|openapi|local|harness/.test(text)) {
     category = "local-substrate";
-    action = check.fix || "make setup";
+    action = check.fix || "mise run setup";
   } else if (/config|unset|\.ge\.json|agentidentityorgid|project|geappid|gatewayurl/.test(text)) {
     category = "setup-config";
     action = check.fix || "ge init";

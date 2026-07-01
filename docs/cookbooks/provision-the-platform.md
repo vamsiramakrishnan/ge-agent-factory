@@ -22,8 +22,8 @@ doctor. Or use the guided self-service installer for a turnkey deploy.
   export GEMINI_ENTERPRISE_APP_ID=projects/<num>/locations/global/collections/default_collection/engines/<app>
   ```
 
-- `terraform` (installed by `make deps`) and `jq`.
-- Local toolchain installed (`make setup`).
+- `terraform` (installed by `mise run deps`) and `jq`.
+- Local toolchain installed (`mise run setup`).
 
 ## Steps
 
@@ -39,7 +39,7 @@ doctor. Or use the guided self-service installer for a turnkey deploy.
    Or do all of toolchain + `ge init` + `ge up` in one shot:
 
    ```bash
-   make bootstrap            # add CANARY=1 to also build one agent end-to-end
+   mise run bootstrap            # add CANARY=1 to also build one agent end-to-end
    ```
 
 2. **Stand up the data plane** (GCS / BigQuery / AlloyDB / Bigtable / Firestore):
@@ -70,15 +70,15 @@ doctor. Or use the guided self-service installer for a turnkey deploy.
    ge doctor --command up         # also: data.up | mcp.deploy | agents.build | agents.ship
    ```
 
-   Makefile wrappers exist for each: `make up`, `make data`, `make mcp-deploy`,
-   `make doctor`, `make data-doctor`, `make mcp-doctor`.
+   `mise` task wrappers exist for each: `mise run up`, `mise run data`, `mise run mcp-deploy`,
+   `mise run doctor`, `mise run data-doctor`, `mise run mcp-doctor`.
 
 ### Path B — self-service installer (Cloud Shell)
 
 For a guided, turnkey install (see `installer/TUTORIAL.md`):
 
 ```bash
-make setup                                  # local setup + skills + daemon
+mise run setup                                  # local setup + skills + daemon
 cd installer
 cp values.example.tfvars values.tfvars      # fill project_id, project_number, gemini_enterprise_app_id
 cd terraform && terraform init && terraform apply -var-file=../values.tfvars
@@ -105,10 +105,10 @@ Installer path: `./installer/verify.sh` returns all checks passing.
 ## Troubleshoot
 
 - **`Set GEMINI_ENTERPRISE_APP_ID first`** — export it (or have a `.ge.json`)
-  before `make bootstrap` / `ge up`.
+  before `mise run bootstrap` / `ge up`.
 - **`gcloud not found`** — install the Cloud SDK and `gcloud auth login`.
 - **`Error 409: Already Exists` (Firestore)** — the project already has a default
   database; use a fresh project (Firestore can't be deleted in-place).
-- **Adopt a hand-managed project into Terraform** — `ge cutover` (plan; `make
-  cutover APPLY=1` to apply).
+- **Adopt a hand-managed project into Terraform** — `ge cutover` (plan;
+  `APPLY=1 mise run cutover` to apply).
 - **Re-run is safe** — `ge up` / installer steps are designed to be idempotent.

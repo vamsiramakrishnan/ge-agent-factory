@@ -623,7 +623,7 @@ const devexSmoke = defineCommand({
           out(`  ${ICON[check.status]} ${check.name.padEnd(30)} ${pc.dim(check.detail)}`);
           if (check.fix) out(`      ${pc.dim("fix:")} ${check.fix}`);
         }
-        out(pc.dim(`\n  next: ${r.next || "make setup"}`));
+        out(pc.dim(`\n  next: ${r.next || "mise run setup"}`));
         return;
       }
       out(pc.green(`  passed → ${r.target}`));
@@ -1495,7 +1495,7 @@ const stateReset = defineCommand({
       out(pc.green(`✓ reset local GE state under ${r.canonicalRoot}`));
       if (r.stoppedDaemon) out(pc.dim(`  stopped daemon pid=${r.stoppedDaemon}`));
       if (r.removed.length) out(pc.dim(`  removed ${r.removed.length} state path(s)`));
-      out(pc.dim("  next: make setup && ge daemon start"));
+      out(pc.dim("  next: mise run setup && ge daemon start"));
     });
   },
 });

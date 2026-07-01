@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 //
 // Order:
 //   1. GE_HARNESS_PYTHON          — explicit override (set by `ensureLocalUv`)
-//   2. <repo>/.venv/bin/python    — repo-local venv created by uv (`make deps`),
+//   2. <repo>/.venv/bin/python    — repo-local venv created by uv (`mise run deps`),
 //                                    walking up from cwd and from this module.
 //                                    This is the fix for the "airlock": instead of
 //                                    `pip install --break-system-packages` into a

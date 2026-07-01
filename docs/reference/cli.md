@@ -25,7 +25,7 @@ the same core for model/harness callers.
 ## `ge` — operator CLI
 
 Source: [`tools/ge.mjs`](https://github.com/vamsiramakrishnan/ge-agent-factory).
-Install with `make install` (writes `~/.local/bin/ge` → `bun tools/ge.mjs`), or
+Install with `mise run install` (writes `~/.local/bin/ge` → `bun tools/ge.mjs`), or
 call `bun tools/ge.mjs <cmd>` directly.
 
 ### Shared flags
@@ -231,57 +231,60 @@ factory publish --dir ./hr-agent --app-id my-gemini-enterprise-app-id
 
 ---
 
-## `make` targets
+## `mise` tasks
 
-Source: [`Makefile`](https://github.com/vamsiramakrishnan/ge-agent-factory). Run
-bare `make` (or `make help`) for the grouped listing; `make next` for a
-status-based recommendation.
+Source: [`mise.toml`](https://github.com/vamsiramakrishnan/ge-agent-factory). Run
+`mise tasks` for the full list with descriptions, `mise run help` for the grouped
+big-picture listing, or `mise run next` for a status-based recommendation. Any
+task also runs via the bare shorthand `mise <task>` (e.g. `mise console`) except
+the handful that collide with a built-in mise command name (`doctor`, `install`,
+`uninstall`, `sync`, `deps`, `mcp`, `up`) — use `mise run <task>` for those.
 
 ### Setup & toolchain
 
 | Target | What it does |
 |---|---|
-| `make setup` | Install JS + Python/uv deps, sync catalog/skills, put `ge` on PATH, start the daemon |
-| `make devex-check` | Run `ge devex check`: local doctor + docs links + workspace manifest contracts |
-| `make devex-smoke` | Run `ge devex smoke`: local doctor → local mode → one validated canary workspace |
-| `make bootstrap [CANARY=1]` | End-to-end: toolchain + `ge init` + `ge up`. `CANARY=1` also builds one agent. Needs `GEMINI_ENTERPRISE_APP_ID` + gcloud auth |
-| `make all` | Alias for `bootstrap` |
-| `make deps` / `make data-runtime` / `make deps-terraform` | Toolchain pieces: uv + agents-cli + `.venv` (google-antigravity); Snowfakery runtime; terraform |
-| `make install` / `make uninstall` | Install / remove the `ge` command |
-| `make ci` | Run the CI gate locally (source hygiene + `bun test apps tools`) |
-| `make install-hooks` | Install the pre-commit hook (source hygiene) |
-| `make catalog` | Regenerate the use-case catalog build artifact |
+| `mise run setup` | Install JS + Python/uv deps, sync catalog/skills, put `ge` on PATH, start the daemon |
+| `mise run devex-check` | Run `ge devex check`: local doctor + docs links + workspace manifest contracts |
+| `mise run devex-smoke` | Run `ge devex smoke`: local doctor → local mode → one validated canary workspace |
+| `mise run bootstrap [CANARY=1]` | End-to-end: toolchain + `ge init` + `ge up`. `CANARY=1` also builds one agent. Needs `GEMINI_ENTERPRISE_APP_ID` + gcloud auth |
+| `mise run all` | Alias for `bootstrap` |
+| `mise run deps` / `mise run data-runtime` / `mise run deps-terraform` | Toolchain pieces: uv + agents-cli + `.venv` (google-antigravity); Snowfakery runtime; terraform |
+| `mise run install` / `mise run uninstall` | Install / remove the `ge` command |
+| `mise run ci` | Run the CI gate locally (source hygiene + `bun test apps tools`) |
+| `mise run install-hooks` | Install the pre-commit hook (source hygiene) |
+| `mise run catalog` | Regenerate the use-case catalog build artifact |
 
 ### Skills
 
-`make skills-sync` · `skills-doctor` · `skills-spec-audit` · `skills-install`
-(link repo skills into a headless harness at `AGENTS_SKILLS_DIR`, default
-`~/.agents/skills`).
+`mise run skills-sync` · `mise run skills-doctor` · `mise run skills-spec-audit` ·
+`mise run skills-install` (link repo skills into a headless harness at
+`AGENTS_SKILLS_DIR`, default `~/.agents/skills`).
 
 ### Platform ops
 
 | Target | Wraps |
 |---|---|
-| `make doctor` / `make doctor-local` | `ge doctor` / `ge doctor --local` |
-| `make up` | `ge up` |
-| `make cutover [APPLY=1]` | `ge cutover [--apply]` |
-| `make data` / `make data-doctor` | `ge data up` / `ge data doctor` |
-| `make mcp-deploy` / `make mcp-doctor` | `ge mcp deploy` / `ge mcp doctor` |
-| `make status` | bare `ge` |
-| `make mode-local` / `make mode-remote` | `ge mode local` / `ge mode remote` |
-| `make provision [CANARY=1]` | `ge agents build` (`--canary` or `--all`) |
-| `make provision-local [CANARY=1]` | `ge agents build --local` |
-| `make sync` / `make sync-local` | `ge agents sync --push` / `--local --create --push` |
-| `make mcp-server` / `make mcp` | Run the factory's MCP server (stdio) |
+| `mise run doctor` / `mise run doctor-local` | `ge doctor` / `ge doctor --local` |
+| `mise run up` | `ge up` |
+| `mise run cutover [APPLY=1]` | `ge cutover [--apply]` |
+| `mise run data` / `mise run data-doctor` | `ge data up` / `ge data doctor` |
+| `mise run mcp-deploy` / `mise run mcp-doctor` | `ge mcp deploy` / `ge mcp doctor` |
+| `mise run status` | bare `ge` |
+| `mise run mode-local` / `mise run mode-remote` | `ge mode local` / `ge mode remote` |
+| `mise run provision [CANARY=1]` | `ge agents build` (`--canary` or `--all`) |
+| `mise run provision-local [CANARY=1]` | `ge agents build --local` |
+| `mise run sync` / `mise run sync-local` | `ge agents sync --push` / `--local --create --push` |
+| `mise run mcp-server` / `mise run mcp` | Run the factory's MCP server (stdio) |
 
 ### Run one app locally
 
 | Target | App | URL |
 |---|---|---|
-| `make console` | Operator UI (Pipeline, Fleet, Activity, Doctor) | `http://localhost:18260` |
-| `make presentation` | Transformation deck + source use-case catalog | `http://localhost:18250` |
-| `make generator` | Generator workbench (mock data, harness, workspaces) | `http://localhost:17655` |
-| `make build-console` / `build-presentation` | Production builds (`dist/`) | — |
-| `make serve-console` / `serve-presentation` | Serve the built app via Bun | `PORT` (default 8261 / 8251) |
+| `mise run console` | Operator UI (Pipeline, Fleet, Activity, Doctor) | `http://localhost:18260` |
+| `mise run presentation` | Transformation deck + source use-case catalog | `http://localhost:18250` |
+| `mise run generator` | Generator workbench (mock data, harness, workspaces) | `http://localhost:17655` |
+| `mise run build-console` / `build-presentation` | Production builds (`dist/`) | — |
+| `mise run serve-console` / `serve-presentation` | Serve the built app via Bun | `PORT` (default 8261 / 8251) |
 
-> Bare `make dev` is a guard: it explains the three apps and starts nothing.
+> Bare `mise run dev` is a guard: it explains the three apps and starts nothing.

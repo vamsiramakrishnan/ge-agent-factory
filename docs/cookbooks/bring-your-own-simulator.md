@@ -15,7 +15,7 @@ sample rows — mount it into the running MCP service via the runtime overlay, a
 
 ## Prerequisites
 
-- Local toolchain installed (`make setup`).
+- Local toolchain installed (`mise run setup`).
 - The synthesis CLI runs `synthesis.py` from the mcp-service. The interpreter is
   resolved as `$GE_HARNESS_PYTHON` → the repo `.venv/bin/python` → `python3`.
 - NL synthesis uses Vertex; pass `--no-llm` to force the offline heuristic tier.

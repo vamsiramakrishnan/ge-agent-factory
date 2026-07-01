@@ -90,9 +90,9 @@ async function main() {
 
   if (CHECK_MODE) {
     const existing = await readExistingManifest();
-    if (!existing) throw new Error(`${relative(REPO_ROOT, MANIFEST_PATH)} is missing; run make skills-sync`);
+    if (!existing) throw new Error(`${relative(REPO_ROOT, MANIFEST_PATH)} is missing; run mise run skills-sync`);
     if (stableManifest(existing) !== stableManifest(manifest)) {
-      throw new Error(`${relative(REPO_ROOT, MANIFEST_PATH)} is stale; run make skills-sync`);
+      throw new Error(`${relative(REPO_ROOT, MANIFEST_PATH)} is stale; run mise run skills-sync`);
     }
     console.log(`Harness skills manifest is current: ${relative(REPO_ROOT, MANIFEST_PATH)}`);
     return;
