@@ -1,6 +1,6 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
+import { readJsonAsync } from "@ge/std/json-io";
 
 export const HARNESS_STAGE_SKILLS = {
   harness_review: ["running-factory", "checking-workspaces", "recording-evidence"],
@@ -65,13 +65,8 @@ export async function writeHarnessWorkItem(workspaceDir, workItem, artifactName 
   return path;
 }
 
-export async function readJsonIfExists(path, fallback = null) {
-  if (!existsSync(path)) return fallback;
-  try {
-    return JSON.parse(await readFile(path, "utf8"));
-  } catch {
-    return fallback;
-  }
+export function readJsonIfExists(path, fallback = null) {
+  return readJsonAsync(path, fallback);
 }
 
 export async function buildHarnessRefinePrompt({

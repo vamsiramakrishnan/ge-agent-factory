@@ -1,4 +1,5 @@
 import { snakeCase } from "@ge/std/naming";
+import { mergeByKey } from "@ge/std/merge";
 import { findSimulatorForSystem, loadSimulatorRegistry } from "../simulators/registry.mjs";
 
 function nodesForSystem(graph, systemName) {
@@ -87,26 +88,36 @@ function projectionForBridge(bridge, simulator) {
   };
 }
 
+function mergeCollectionMapping(existing, mapping) {
+  const current = existing || {
+    simulatorCollection: mapping.simulatorCollection,
+    graphKinds: [],
+    realizedObjects: [],
+    mergeMode: mapping.mergeMode,
+  };
+  current.graphKinds = Array.from(new Set([...(current.graphKinds || []), ...(mapping.graphKinds || [])]));
+  current.realizedObjects = Array.from(new Set([...(current.realizedObjects || []), ...(mapping.realizedObjects || [])]));
+  current.mergeMode = current.mergeMode || mapping.mergeMode;
+  return current;
+}
+
 function mergeProjection(existing, next) {
   if (!existing) return next;
-  const byCollection = new Map((existing.collectionMappings || []).map((mapping) => [mapping.simulatorCollection, { ...mapping }]));
-  for (const mapping of next.collectionMappings || []) {
-    const current = byCollection.get(mapping.simulatorCollection) || {
-      simulatorCollection: mapping.simulatorCollection,
-      graphKinds: [],
-      realizedObjects: [],
-      mergeMode: mapping.mergeMode,
-    };
-    current.graphKinds = Array.from(new Set([...(current.graphKinds || []), ...(mapping.graphKinds || [])]));
-    current.realizedObjects = Array.from(new Set([...(current.realizedObjects || []), ...(mapping.realizedObjects || [])]));
-    current.mergeMode = current.mergeMode || mapping.mergeMode;
-    byCollection.set(mapping.simulatorCollection, current);
-  }
+  // Clone existing mappings up front: mergeCollectionMapping mutates `current`
+  // in place, and this array can be fed back in as `existing` on a later
+  // merge call, so each call needs its own fresh copies to mutate.
+  const clonedExisting = (existing.collectionMappings || []).map((mapping) => ({ ...mapping }));
+  const collectionMappings = mergeByKey(
+    clonedExisting,
+    next.collectionMappings || [],
+    (mapping) => mapping.simulatorCollection,
+    mergeCollectionMapping,
+  );
   return {
     ...existing,
     sourceSystems: Array.from(new Set([...(existing.sourceSystems || []), ...(next.sourceSystems || [])])),
-    packBridges: Array.from(new Map([...(existing.packBridges || []), ...(next.packBridges || [])].map((bridge) => [bridge.packId, bridge])).values()),
-    collectionMappings: [...byCollection.values()],
+    packBridges: mergeByKey(existing.packBridges || [], next.packBridges || [], (bridge) => bridge.packId, (_current, bridge) => bridge),
+    collectionMappings,
   };
 }
 

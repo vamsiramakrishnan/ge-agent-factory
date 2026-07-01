@@ -1,16 +1,12 @@
 import { readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { readJsonAsync } from "@ge/std/json-io";
 import { buildSpecCodeTrace, candidateIntentToolNames } from "./spec-code-trace.js";
 import { DATA_PATHS, REQUIRED_WORKSPACE_FILES, WORKSPACE_PATHS } from "./workspace-contract.js";
 
-async function readJson(path, fallback = null) {
-  try {
-    return JSON.parse(await readFile(path, "utf8"));
-  } catch (error) {
-    if (error?.code === "ENOENT") return fallback;
-    throw error;
-  }
+function readJson(path, fallback = null) {
+  return readJsonAsync(path, fallback, { rethrowUnexpected: true });
 }
 
 function check(id, ok, message, detail = {}) {

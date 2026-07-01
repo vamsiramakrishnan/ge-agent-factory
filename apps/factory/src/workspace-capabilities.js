@@ -1,7 +1,8 @@
-import { access, mkdir, readFile, writeFile } from "node:fs/promises";
+import { access, mkdir, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { writeJson } from "@ge/std/json-io";
+import { readJsonAsync, writeJson } from "@ge/std/json-io";
+import { mergeByKey } from "@ge/std/merge";
 import { loadSkillRegistry, selectSkillsForContext } from "./skill-registry.js";
 import { ARTIFACT_PATHS, DATA_PATHS, REQUIRED_WORKSPACE_FILES, WORKSPACE_PATHS } from "./workspace-contract.js";
 
@@ -19,13 +20,8 @@ export const CAPABILITY_ORDER = [
   "published",
 ];
 
-async function readJson(path, fallback = null) {
-  try {
-    return JSON.parse(await readFile(path, "utf8"));
-  } catch (error) {
-    if (error?.code === "ENOENT") return fallback;
-    throw error;
-  }
+function readJson(path, fallback = null) {
+  return readJsonAsync(path, fallback, { rethrowUnexpected: true });
 }
 
 async function canAccess(path) {
@@ -55,14 +51,7 @@ function fileItem(workspaceDir, kind, relPath, required = false) {
 }
 
 function mergeItems(existingItems = [], generatedItems = []) {
-  const byPath = new Map();
-  for (const item of existingItems) {
-    if (item?.path) byPath.set(item.path, item);
-  }
-  for (const item of generatedItems) {
-    if (item?.path) byPath.set(item.path, { ...byPath.get(item.path), ...item });
-  }
-  return Array.from(byPath.values());
+  return mergeByKey(existingItems, generatedItems, (item) => item?.path);
 }
 
 function generatedFileItems(workspaceDir) {
