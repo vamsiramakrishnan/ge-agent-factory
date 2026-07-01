@@ -143,15 +143,33 @@ function markStep(pipeline, step, status, meta = {}) {
   pipeline.currentStep = step;
 }
 
+// Thrown by fail() (and requireStep()) instead of exiting the process. A thrown
+// error unwinds exactly like process.exit(1) did (immediately, past every call
+// site — no call-site edits needed since `fail(msg);` and `return fail(msg);`
+// behave identically once fail throws), EXCEPT that a JS exception, unlike
+// process.exit, DOES unwind through any enclosing try/catch. Every existing
+// try/catch in this file has been audited for that difference (see registry.mjs
+// dispatch boundary + the from-usecase catch-guard below); this is intentional,
+// not a gap.
+class FactoryCommandError extends Error {}
+
+// Returns the same shape ok() used to print, so a bare `ok(data);` statement
+// (now a no-op — see below) doesn't change behavior for internal callers that
+// only rely on the function's own `return summary;`, while `return ok(data);`
+// gives the registry's render boundary a value to print/render.
+function ok(data) { return { ok: true, ...data }; }
+// Throws instead of exiting so composed in-process command calls (from-usecase,
+// batch-audit, quality-gate) can catch/aggregate failures instead of killing the
+// whole process. The registry's dispatch boundary renders the JSON/human error
+// and sets process.exitCode = 1 (not process.exit) so this matches the old
+// exit-code contract without bypassing citty's own cleanup/promise chain.
+function fail(msg) { throw new FactoryCommandError(msg); }
+
 function requireStep(pipeline, step) {
   if (!pipeline.steps[step] || pipeline.steps[step].status !== "done") {
-    console.error(`Step "${step}" has not been completed yet. Run "factory ${step}" first.`);
-    process.exit(1);
+    fail(`Step "${step}" has not been completed yet. Run "factory ${step}" first.`);
   }
 }
-
-function ok(data) { console.log(JSON.stringify({ ok: true, ...data }, null, 2)); }
-function fail(msg) { console.error(JSON.stringify({ ok: false, error: msg }, null, 2)); process.exit(1); }
 
 // Run a child process via execa, preserving the historical contract callers
 // rely on: resolves to { code, stdout, stderr }; throws `${cmd} exited N: …`
@@ -347,7 +365,7 @@ async function cmdInit(dir, flags) {
   pipeline.createdAt = new Date().toISOString();
   markStep(pipeline, "init", "done", { name, domain });
   await savePipeline(dir, pipeline);
-  ok({ step: "init", name, domain, dir, schemaPath: schemaPath(dir) });
+  return ok({ step: "init", name, domain, dir, schemaPath: schemaPath(dir) });
 }
 
 async function cmdSchema(dir, flags) {
@@ -364,8 +382,7 @@ async function cmdSchema(dir, flags) {
     const analysis = classifyTable(tableDef);
     markStep(pipeline, "schema", "done", { tables: schema.tables.length });
     await savePipeline(dir, pipeline);
-    ok({ step: "schema", action: "add-table", table: tableDef.name, analysis, totalTables: schema.tables.length });
-    return;
+    return ok({ step: "schema", action: "add-table", table: tableDef.name, analysis, totalTables: schema.tables.length });
   }
 
   if (flags["from-file"]) {
@@ -376,12 +393,11 @@ async function cmdSchema(dir, flags) {
     await writeJson(schemaPath(dir), schema);
     markStep(pipeline, "schema", "done", { tables: schema.tables.length });
     await savePipeline(dir, pipeline);
-    ok({ step: "schema", action: "import", tables: schema.tables.length });
-    return;
+    return ok({ step: "schema", action: "import", tables: schema.tables.length });
   }
 
   const analysis = schema.tables.map(classifyTable);
-  ok({ step: "schema", tables: analysis, totalTables: schema.tables.length, schemaPath: schemaPath(dir) });
+  return ok({ step: "schema", tables: analysis, totalTables: schema.tables.length, schemaPath: schemaPath(dir) });
 }
 
 async function cmdGenerate(dir, flags) {
@@ -504,7 +520,7 @@ async function cmdGenerate(dir, flags) {
 
   markStep(pipeline, "generate", "done", { tables: manifestTables.length, totalRows: manifest.totalRows, seed });
   await savePipeline(dir, pipeline);
-  ok({ step: "generate", tables: manifestTables.map((t) => ({ name: t.name, rows: t.rowCount })), totalRows: manifest.totalRows, manifest: manifestPath(dir) });
+  return ok({ step: "generate", tables: manifestTables.map((t) => ({ name: t.name, rows: t.rowCount })), totalRows: manifest.totalRows, manifest: manifestPath(dir) });
 }
 
 // ── Behavior-contract codegen helpers ─────────────────────────
@@ -788,7 +804,7 @@ async function cmdTools(dir, flags) {
     okfKnowledgeBundle: okfBundleDir,
   });
   await savePipeline(dir, pipeline);
-  ok({
+  return ok({
     step: "tools",
     output: outPath,
     functions: fns,
@@ -1019,7 +1035,7 @@ async function cmdTest(dir, flags) {
   const testStatus = testResult.ran ? (testResult.passed ? "done" : "failed") : "created";
   markStep(pipeline, "test", testStatus, { output: testPath, ...testResult });
   await savePipeline(dir, pipeline);
-  ok({ step: "test", output: testPath, tests: tables.length * 2 + 2, ...testResult });
+  return ok({ step: "test", output: testPath, tests: tables.length * 2 + 2, ...testResult });
 }
 
 async function cmdEval(dir, flags) {
@@ -1062,7 +1078,7 @@ async function cmdEval(dir, flags) {
     agentsCliEval: evalResult,
   });
   await savePipeline(dir, pipeline);
-  ok({ step: "eval", ...evalResult });
+  return ok({ step: "eval", ...evalResult });
 }
 
 function shouldRunFlag(flags, key, fallback = true) {
@@ -1210,7 +1226,7 @@ async function cmdQualityGate(dir, flags) {
       commands: report.commands,
     });
     await savePipeline(dir, pipeline);
-    ok({ step: "quality-gate", ...report });
+    return ok({ step: "quality-gate", ...report });
   } catch (e) {
     const report = {
       kind: "ge.agents_cli.quality_gate",
@@ -1363,7 +1379,13 @@ async function cmdHarnessReview(dir, flags) {
     if (soft) {
       const summary = { step: "harness-review", provider, skipped: true, degraded: true, reason };
       console.error(`⚠  ${provider} harness review degraded (deterministic code kept): ${reason}`);
-      ok(summary);
+      // NOTE: intentionally `return summary;` (bare), not `return ok(summary);`.
+      // This function is both a top-level command handler (registry wraps its
+      // return value in {ok:true,...} at render time) AND an internal helper
+      // called directly by cmdFromUseCase/cmdBatchAudit/cmdQualityGate, which
+      // embed this exact return value verbatim (e.g. `harnessReview: reviewResult`
+      // in from-usecase's own ok({...}) payload). Wrapping here would double-wrap
+      // ok:true into that nested position and change byte-identical JSON output.
       return summary;
     }
     fail(`${provider} harness review ${reason}`);
@@ -1385,7 +1407,8 @@ async function cmdHarnessReview(dir, flags) {
     score: review.agent_quality_score,
     specToCodeScore: review.spec_to_code_score,
   };
-  ok(summary);
+  // See NOTE above: bare `return summary;` — the registry wraps ok:true for
+  // top-level rendering; internal callers embed this value as-is.
   return summary;
 }
 
@@ -1451,11 +1474,14 @@ async function assertPromotable(dir, flags) {
 async function cmdPromotionGate(dir, flags) {
   const gate = await readPromotionGate(dir);
   const base = { step: "promotion-gate", ok: gate.ok, specToCodeScore: gate.specToCodeScore, specToCodeFidelity: gate.specToCodeFidelity, blockers: gate.blockers };
-  if (gate.ok) { ok(base); return gate; }
+  // cmdPromotionGate is only ever invoked as a top-level command (never composed
+  // internally by another cmd* function), so — unlike cmdHarnessReview/Refine —
+  // there's no internal caller relying on the bare `gate` object; it's safe (and
+  // needed, for the registry to have something to render) to return ok(...) here.
+  if (gate.ok) return ok(base);
   if (truthyFlag(flags.force) || envOff("GE_ALLOW_UNPROMOTED")) {
     console.error(`⚠ promotion gate blocked but overridden (${gate.blockers.length} blocker(s))`);
-    ok({ ...base, overridden: true });
-    return gate;
+    return ok({ ...base, overridden: true });
   }
   fail(`Promotion gate blocked (${gate.blockers.length} blocker(s)):\n${gate.blockers.map((b) => `  - ${b}`).join("\n")}`);
 }
@@ -1572,7 +1598,7 @@ async function cmdHarnessRefine(dir, flags) {
     if (truthyFlag(flags.soft)) {
       const summary = { step: "harness-refine", provider, skipped: true, degraded: true, reason };
       console.error(`⚠  ${provider} harness refine degraded (deterministic code kept): ${reason}`);
-      ok(summary);
+      // See NOTE in cmdHarnessReview above: bare return, not return ok(...).
       return summary;
     }
     fail(`${provider} harness refine ${reason}`);
@@ -1616,7 +1642,7 @@ async function cmdHarnessRefine(dir, flags) {
     output: `artifacts/${provider}-harness-refine.json`,
     changedFiles: refine.changed_files || [],
   };
-  ok(summary);
+  // See NOTE in cmdHarnessReview above: bare return, not return ok(...).
   return summary;
 }
 
@@ -1731,7 +1757,7 @@ async function buildCloudDataArtifacts(dir, flags = {}) {
 async function cmdDataPlan(dir, flags) {
   const plan = await buildCloudDataArtifacts(dir, flags);
   const integrationPlan = await buildSourceIntegrationPlan(dir, flags, { cloudPlan: plan });
-  ok({
+  return ok({
     step: "data-plan",
     target: plan.target,
     googleCloud: plan.googleCloud,
@@ -1745,7 +1771,7 @@ async function cmdDataPlan(dir, flags) {
 
 async function cmdSourceIntegrationPlan(dir, flags) {
   const plan = await buildSourceIntegrationPlan(dir, flags);
-  ok({
+  return ok({
     step: "source-integration-plan",
     output: plan.artifacts.plan,
     toolRegistryPlan: plan.artifacts.toolRegistryPlan,
@@ -1835,7 +1861,7 @@ async function cmdSnowfakeryRecipe(dir, flags) {
   await writeJson(join(outDir, "manifest.json"), manifest);
   pipeline.steps.snowfakeryRecipe = { status: "done", completedAt: manifest.generatedAt, recipePath: manifest.recipePath };
   await savePipeline(dir, pipeline);
-  ok({ step: "snowfakery-recipe", ...manifest });
+  return ok({ step: "snowfakery-recipe", ...manifest });
 }
 
 // ── gcloud helpers ───────────────────────────────────────────
@@ -2017,11 +2043,10 @@ async function cmdMcp(dir, flags) {
       console.error("Checking Agent Registry services...");
       const r = await runCommand("gcloud", ["alpha", "agent-registry", "services", "list", "--project", project, "--location", await getGcloudRegion(flags), "--format=json"], { timeout: 15000, allowFail: true });
       const registryServices = r.stdout.trim() ? JSON.parse(r.stdout) : [];
-      ok({ step: "mcp", action: "list", project, managedServices: results, registryServices });
+      return ok({ step: "mcp", action: "list", project, managedServices: results, registryServices });
     } catch {
-      ok({ step: "mcp", action: "list", project, managedServices: results, registryServices: [] });
+      return ok({ step: "mcp", action: "list", project, managedServices: results, registryServices: [] });
     }
-    return;
   }
 
   if (action === "enable") {
@@ -2035,7 +2060,7 @@ async function cmdMcp(dir, flags) {
       await runCommand("gcloud", ["services", "enable", svc.api, `--project=${project}`], { stream: true, timeout: 60000 });
       markStep(pipeline, "register", "done", { mode: "mcp", service: svc.id, project });
       await savePipeline(dir, pipeline);
-      ok({
+      return ok({
         step: "mcp",
         action: "enable",
         service: svc.id,
@@ -2047,7 +2072,6 @@ async function cmdMcp(dir, flags) {
     } catch (e) {
       fail(`Failed to enable ${svc.api}: ${e.message}`);
     }
-    return;
   }
 
   if (action === "disable") {
@@ -2058,11 +2082,10 @@ async function cmdMcp(dir, flags) {
     console.error(`Disabling MCP for ${svc.api}...`);
     try {
       await runCommand("gcloud", ["beta", "services", "mcp", "disable", svc.api, `--project=${project}`], { stream: true, timeout: 60000 });
-      ok({ step: "mcp", action: "disable", service: svc.id });
+      return ok({ step: "mcp", action: "disable", service: svc.id });
     } catch (e) {
       fail(`Failed to disable: ${e.message}`);
     }
-    return;
   }
 
   fail(`Unknown mcp action: ${action}. Use: plan, list, enable, disable`);
@@ -2110,13 +2133,12 @@ async function cmdDeploy(dir, flags) {
 
       markStep(pipeline, "deploy", "done", { project, region, target, serviceName, serviceUrl });
       await savePipeline(dir, pipeline);
-      ok({ step: "deploy", target, project, region, serviceName, serviceUrl });
+      return ok({ step: "deploy", target, project, region, serviceName, serviceUrl });
     } catch (e) {
       markStep(pipeline, "deploy", "failed", { error: e.message });
       await savePipeline(dir, pipeline);
       fail(`Cloud Run deploy failed: ${e.message}`);
     }
-    return;
   }
 
   console.error(`Deploying to Agent Runtime in ${project} / ${region}...`);
@@ -2141,7 +2163,7 @@ async function cmdDeploy(dir, flags) {
         statusCommand: `factory deploy-status --dir ${dir} --project ${project} --region ${region}`,
       });
       await savePipeline(dir, pipeline);
-      ok({
+      return ok({
         step: "deploy",
         status: "running",
         target,
@@ -2150,7 +2172,6 @@ async function cmdDeploy(dir, flags) {
         operation,
         statusCommand: `factory deploy-status --dir ${dir} --project ${project} --region ${region}`,
       });
-      return;
     }
 
     markStep(pipeline, "deploy", "done", {
@@ -2159,7 +2180,7 @@ async function cmdDeploy(dir, flags) {
       isA2a: meta?.is_a2a || false,
     });
     await savePipeline(dir, pipeline);
-    ok({ step: "deploy", target, project, region, runtimeId, deploymentMetadata: metaPath });
+    return ok({ step: "deploy", target, project, region, runtimeId, deploymentMetadata: metaPath });
   } catch (e) {
     if (e.message === "timeout") {
       const operation = parseOperationId(`${e.stdout || ""}\n${e.stderr || ""}`);
@@ -2172,7 +2193,7 @@ async function cmdDeploy(dir, flags) {
         statusCommand: `factory deploy-status --dir ${dir} --project ${project} --region ${region}`,
       });
       await savePipeline(dir, pipeline);
-      ok({
+      return ok({
         step: "deploy",
         status: "running",
         target,
@@ -2181,7 +2202,6 @@ async function cmdDeploy(dir, flags) {
         operation,
         statusCommand: `factory deploy-status --dir ${dir} --project ${project} --region ${region}`,
       });
-      return;
     }
     markStep(pipeline, "deploy", "failed", { error: e.message });
     await savePipeline(dir, pipeline);
@@ -2209,12 +2229,11 @@ async function cmdDeployStatus(dir, flags) {
         statusCommand: `factory deploy-status --dir ${dir} --project ${project} --region ${region}`,
       });
       await savePipeline(dir, pipeline);
-      ok({ step: "deploy-status", status: "running", project, region, runtimeId: null });
-      return;
+      return ok({ step: "deploy-status", status: "running", project, region, runtimeId: null });
     }
     markStep(pipeline, "deploy", "done", { project, region, target: "agent_runtime", runtimeId, isA2a: meta?.is_a2a || false });
     await savePipeline(dir, pipeline);
-    ok({ step: "deploy-status", status: "done", project, region, runtimeId, deploymentMetadata: metaPath });
+    return ok({ step: "deploy-status", status: "done", project, region, runtimeId, deploymentMetadata: metaPath });
   } catch (e) {
     markStep(pipeline, "deploy", "failed", { error: e.message, project, region, target: "agent_runtime" });
     await savePipeline(dir, pipeline);
@@ -2266,7 +2285,7 @@ async function cmdVerifyLive(dir, flags) {
       exitCode: result.exitCode,
     });
     await savePipeline(dir, pipeline);
-    ok({ step: "verify-live", ...report });
+    return ok({ step: "verify-live", ...report });
   } catch (e) {
     markStep(pipeline, "verifyLive", "failed", { error: e.message, target, mode });
     await savePipeline(dir, pipeline);
@@ -2419,7 +2438,7 @@ async function cmdRegister(dir, flags) {
 
       markStep(pipeline, "register", "done", { mode: "mcp", serverName, serviceUrl, protocol: protocolInput, specPath, reachability, egressGranted });
       await savePipeline(dir, pipeline);
-      ok({
+      return ok({
         step: "register",
         mode: "mcp",
         serverName,
@@ -2462,7 +2481,6 @@ async function cmdRegister(dir, flags) {
     } catch (e) {
       fail(`Agent Registry registration failed: ${e.message}`);
     }
-    return;
   }
 
   if (mode === "a2a") {
@@ -2486,7 +2504,7 @@ async function cmdRegister(dir, flags) {
 
       markStep(pipeline, "register", "done", { mode: "a2a", serverName, serviceUrl, reachability });
       await savePipeline(dir, pipeline);
-      ok({
+      return ok({
         step: "register",
         mode: "a2a",
         serverName,
@@ -2537,7 +2555,6 @@ async function cmdRegister(dir, flags) {
     } catch (e) {
       fail(`A2A registration failed: ${e.message}`);
     }
-    return;
   }
 
   // mode === "adk" — Agent Runtime, ready for Gemini Enterprise publish
@@ -2547,7 +2564,7 @@ async function cmdRegister(dir, flags) {
 
   markStep(pipeline, "register", "done", { mode: "adk", runtimeId });
   await savePipeline(dir, pipeline);
-  ok({
+  return ok({
     step: "register",
     mode: "adk",
     runtimeId,
@@ -2607,7 +2624,7 @@ async function cmdPublish(dir, flags) {
     await writeJson(join(dir, "gemini_enterprise_registration.json"), registration);
     markStep(pipeline, "publish", "done", registration);
     await savePipeline(dir, pipeline);
-    ok({ step: "publish", appId, rawAppId, appIdResolution: resolvedApp.matched, projectNumber, regType, runtimeId, displayName, registration: join(dir, "gemini_enterprise_registration.json") });
+    return ok({ step: "publish", appId, rawAppId, appIdResolution: resolvedApp.matched, projectNumber, regType, runtimeId, displayName, registration: join(dir, "gemini_enterprise_registration.json") });
   } catch (e) {
     markStep(pipeline, "publish", "failed", { error: e.message });
     await savePipeline(dir, pipeline);
@@ -2632,7 +2649,7 @@ async function cmdStatus(dir) {
   const mixedTables = analysis.filter((t) => t.tableKind === "mixed").length;
   const unstructuredTables = analysis.filter((t) => t.tableKind === "unstructured").length;
 
-  ok({
+  return ok({
     name: pipeline.name,
     domain: pipeline.domain,
     pipeline: status,
@@ -2662,7 +2679,7 @@ async function cmdReset(dir, flags) {
   }
   pipeline.currentStep = idx > 0 ? STEPS[idx - 1] : null;
   await savePipeline(dir, pipeline);
-  ok({ step: "reset", resetFrom: step, currentStep: pipeline.currentStep });
+  return ok({ step: "reset", resetFrom: step, currentStep: pipeline.currentStep });
 }
 
 async function cmdSources(flags) {
@@ -2676,7 +2693,7 @@ async function cmdSources(flags) {
   args.push("--md", mdPath);
   await runCommand("node", args, { cwd: resolve("."), allowFail: false, timeout: 120000 });
   const sourceMap = await readJson(resolve(jsonPath), null);
-  ok({
+  return ok({
     step: "sources",
     useCases: sourceMap?.useCases?.length || 0,
     json: resolve(jsonPath),
@@ -2692,7 +2709,7 @@ async function cmdPlanData(dir, flags) {
   await runCommand("node", args, { cwd: resolve("."), allowFail: false, timeout: 120000 });
   const plan = await readJson(join(dir, "mock_data", "plan", "data-plan.json"), null);
   const integrationPlan = await buildSourceIntegrationPlan(dir, flags, { dataPlan: plan });
-  ok({
+  return ok({
     step: "plan-data",
     usecase: plan?.id || flags.usecase,
     datastores: (plan?.datastores || []).map((item) => ({
@@ -2737,11 +2754,18 @@ async function cmdFromUseCase(dir, flags) {
         });
         if (matches.length === 1) useCase = matches[0];
         else if (matches.length > 1) {
-          ok({ step: "from-usecase", error: "ambiguous", matches: matches.slice(0, 10).map((u) => ({ id: u.id, title: u.title, department: u.department })) });
-          return;
+          return ok({ step: "from-usecase", error: "ambiguous", matches: matches.slice(0, 10).map((u) => ({ id: u.id, title: u.title, department: u.department })) });
         } else fail(`Use case "${useCaseId}" not found. Use factory list-usecases to browse.`);
       }
     } catch (e) {
+      // fail() now throws FactoryCommandError instead of process.exit(1)-ing, so
+      // the "not found" fail() a few lines up (and any other fail() inside this
+      // try) would otherwise land HERE and get re-wrapped as a misleading
+      // "Could not load use case catalog: ..." message. Before this refactor that
+      // could never happen (process.exit bypassed this catch entirely); guard by
+      // re-throwing FactoryCommandError as-is and only wrapping genuine catalog
+      // load/parse errors.
+      if (e instanceof FactoryCommandError) throw e;
       fail(`Could not load use case catalog: ${e.message}`);
     }
   } else {
@@ -2798,7 +2822,7 @@ async function cmdFromUseCase(dir, flags) {
   }
 
   console.error(`\nPipeline complete through '${refineResult.skipped ? (reviewResult.skipped ? "test" : "harnessReview") : "harnessRefine"}'. Ready to serve.`);
-  ok({
+  return ok({
     step: "from-usecase",
     useCase: { id: useCase.id, title: useCase.title, department: useCase.department },
     dir: targetDir,
@@ -2820,7 +2844,7 @@ async function cmdPackCoverage(flags) {
   if (flags.out) {
     await writeJson(resolve(flags.out), report);
   }
-  ok({
+  return ok({
     step: "pack-coverage",
     totals: report.totals,
     depthCoverage: report.totals.depthCoverage,
@@ -3018,7 +3042,7 @@ async function cmdBatchAudit(flags) {
   const mdPath = resolve(flags.md || join(root, "batch-audit.md"));
   await writeJson(outPath, report);
   await writeText(mdPath, renderBatchAuditMarkdown(report));
-  ok({
+  return ok({
     step: "batch-audit",
     totals: report.totals,
     byFailureCategory,
@@ -3074,7 +3098,7 @@ async function cmdListUseCases(flags) {
       const q = flags.search.toLowerCase();
       cases = cases.filter((u) => u.title.toLowerCase().includes(q) || u.id.includes(q));
     }
-    ok({
+    return ok({
       total: cases.length,
       departments: [...new Set(cases.map((u) => u.department))],
       useCases: cases.slice(0, Number(flags.limit) || 20).map((u) => ({
