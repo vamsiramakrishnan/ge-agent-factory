@@ -14,7 +14,8 @@ AGENTS_SKILLS_DIR ?= $(HOME)/.agents/skills
 
 .PHONY: help next bootstrap all setup install uninstall deps data-runtime deps-terraform skills-sync skills-doctor skills-spec-audit skills-install doctor doctor-local devex-check devex-smoke up cutover \
         provision provision-local sync sync-local mcp dev build \
-        console presentation generator build-console build-presentation serve-console serve-presentation
+        console presentation generator build-console build-presentation serve-console serve-presentation \
+        build-ge-binary
 
 help: ## Show this help (grouped by section)
 	@printf "\n\033[1mGE Agent Factory — what should I run?\033[0m\n"
@@ -173,6 +174,13 @@ install: ## Install the `ge` command into ~/.local/bin (override with BIN=...)
 
 uninstall: ## Remove the `ge` command
 	@rm -f "$(BIN)/ge" && echo "removed $(BIN)/ge"
+
+build-ge-binary: ## Compile `ge` into a standalone native binary (dist/ge) — alternative to the bash wrapper `make install` uses
+	@mkdir -p dist
+	@bun build --compile -e better-sqlite3 -e pg tools/ge.mjs --outfile dist/ge
+	@echo "Built: dist/ge ($$(du -h dist/ge | cut -f1))"
+	@echo "  Run directly: ./dist/ge --help"
+	@echo "  Note: not wired into 'make install' yet — that still installs the bun-wrapper script."
 
 ##@ Skills (harness)
 
