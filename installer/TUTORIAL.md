@@ -42,7 +42,7 @@ Cloud Shell toolbar to refresh your environment.</walkthrough-footnote>
 From the repository root, run:
 
 ```bash
-make setup
+mise run setup
 ```
 
 This installs local dependencies, puts `ge` on PATH, warms the shared local
@@ -54,7 +54,7 @@ factory runs, workspace checks, release, and evidence learning.
 To verify the skill substrate later:
 
 ```bash
-make skills-doctor
+mise run skills-doctor
 bun apps/factory/src/cli.js skills
 ge state paths
 ```

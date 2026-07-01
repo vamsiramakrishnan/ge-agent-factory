@@ -14,7 +14,7 @@ cd ge-agent-factory
 
 ## 2. Prerequisites
 
-- **[Bun](https://bun.sh)** — required. `make setup` checks for it first and
+- **[Bun](https://bun.sh)** — required. `mise run setup` checks for it first and
   exits with an error if it's missing:
 
   ```bash
@@ -22,18 +22,18 @@ cd ge-agent-factory
   ```
 
 - **Optional, for cloud ops later:** `gcloud` (Google Cloud CLI). Not required
-  for local mode — `make setup`/`make deps` will print a warning (not an
+  for local mode — `mise run setup`/`mise run deps` will print a warning (not an
   error) if it's missing, since it's only needed for `up`/`data`/`mcp`/
   `provision` against a real GCP project.
 
 Everything else (`uv`, `google-agents-cli`, a repo-local `.venv` with the
 `google-antigravity` SDK, the Snowfakery data runtime, Terraform) is installed
-by `make setup` itself — you don't need to install these by hand.
+by `mise run setup` itself — you don't need to install these by hand.
 
-## 3. `make setup`
+## 3. `mise run setup`
 
 ```bash
-make setup
+mise run setup
 ```
 
 This one command:
@@ -41,16 +41,16 @@ This one command:
 1. Guards on Bun being present (fails fast with a clear message if not).
 2. Runs `bun install` (JS/TS workspace deps).
 3. Generates the use-case catalog build artifact.
-4. Installs the local toolchain (`make deps`): `uv`, `google-agents-cli`, a
+4. Installs the local toolchain (`mise run deps`): `uv`, `google-agents-cli`, a
    repo `.venv` with the `google-antigravity` SDK, the Snowfakery data
    runtime, and Terraform.
-5. Installs the `ge` command into `~/.local/bin` (`make install`).
+5. Installs the `ge` command into `~/.local/bin` (`mise run install`).
 6. Syncs the harness skills manifest.
 7. Starts the background daemon.
 
 ### `~/.local/bin` on your PATH
 
-`make install` (run as part of `make setup`) puts the `ge` command at
+`mise run install` (run as part of `mise run setup`) puts the `ge` command at
 `~/.local/bin/ge`. If `~/.local/bin` is not already on your `PATH`, setup
 prints a boxed warning with the exact line to add — it will **not** edit your
 shell profile for you. Add it yourself, e.g. to `~/.bashrc` or `~/.zshrc`:
@@ -79,10 +79,10 @@ auto-loads it from the repo root); each app's own `.env` covers that app's
 specific knobs (provisioning flags, Firebase auth, Vite build-time config).
 See the comments in each file — most vars are optional with sane defaults.
 
-## 5. `make doctor-local`
+## 5. `mise run doctor-local`
 
 ```bash
-make doctor-local
+mise run doctor-local
 ```
 
 This is `ge doctor --local` under the hood. It checks:
@@ -112,21 +112,21 @@ For narrower, scoped checks, use `ge data doctor` (data plane only) or
 Open the operator console (Pipeline / specs / Fleet / Activity / Doctor UI):
 
 ```bash
-make console          # → http://localhost:18260
+mise run console          # → http://localhost:18260
 ```
 
 Or build one agent locally, up to the preview/build boundary:
 
 ```bash
-make mode-local
-make provision-local CANARY=1
+mise run mode-local
+CANARY=1 mise run provision-local
 ```
 
 Or run the fast DevEx gate / one-command local proof:
 
 ```bash
-make devex-check      # local doctor + docs links + workspace manifest contracts
-make devex-smoke      # doctor → local mode → one validated canary workspace
+mise run devex-check      # local doctor + docs links + workspace manifest contracts
+mise run devex-smoke      # doctor → local mode → one validated canary workspace
 ```
 
 ## 7. (Optional) Cloud setup
@@ -140,22 +140,22 @@ plane into **your own** GCP project (single-tenant, ~15 min):
 
   ```bash
   export GEMINI_ENTERPRISE_APP_ID=projects/<num>/locations/global/collections/default_collection/engines/<app>
-  make bootstrap CANARY=1   # toolchain → ge init → ge up (factory + data + tool planes) → prove one agent
+  CANARY=1 mise run bootstrap   # toolchain → ge init → ge up (factory + data + tool planes) → prove one agent
   ```
 
 ## Troubleshoot
 
-- **`✗ Bun is required...`** from `make setup` — install Bun first (step 2);
+- **`✗ Bun is required...`** from `mise run setup` — install Bun first (step 2);
   setup cannot run without it.
-- **`google.antigravity NOT importable`** during `make deps` — local
-  (Antigravity) mode will fail. Re-run `make deps`; it installs
+- **`google.antigravity NOT importable`** during `mise run deps` — local
+  (Antigravity) mode will fail. Re-run `mise run deps`; it installs
   `google-antigravity` into `.venv`.
 - **`ge: command not found`** — `~/.local/bin` is not on `PATH`. Add the
-  `export PATH=...` line printed by `make install` (see step 3), or run via
+  `export PATH=...` line printed by `mise run install` (see step 3), or run via
   `bun tools/ge.mjs ...` in the meantime.
-- **Mock/simulator data pauses** — `make data-runtime` warms the Snowfakery
+- **Mock/simulator data pauses** — `mise run data-runtime` warms the Snowfakery
   runtime; it needs network/cache the first time.
-- **Status board / next step** — run `make next` or bare `ge` for a
+- **Status board / next step** — run `mise run next` or bare `ge` for a
   status-based recommendation.
 
 ## More

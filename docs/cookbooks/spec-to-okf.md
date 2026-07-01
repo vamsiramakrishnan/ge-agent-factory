@@ -14,9 +14,9 @@ Knowledge Bundle, inspect what's inside, and round-trip it back into a spec.
 
 ## Prerequisites
 
-- Local toolchain installed (`make setup`).
+- Local toolchain installed (`mise run setup`).
 - Either a use-case id present in the catalog
-  (`generated/use-cases.generated.json` — produced by `make catalog`) or a spec
+  (`generated/use-cases.generated.json` — produced by `mise run catalog`) or a spec
   JSON file on disk.
 
 > Path note: the OKF scripts live under **`apps/factory/scripts/`**,
@@ -94,7 +94,7 @@ bun test apps/factory/scripts/spec-to-okf.test.mjs
 
 - **`Provide --id <useCaseId> or --spec <path.json>`** — you passed neither;
   they're mutually exclusive and one is required.
-- **`--id` can't find the spec** — run `make catalog` to (re)generate
+- **`--id` can't find the spec** — run `mise run catalog` to (re)generate
   `generated/use-cases.generated.json`, or use `--spec <path.json>` directly.
 - **Missing `workflow/` or `queries/` concepts** — the source spec has no
   `behaviorContract.workflow.steps` / answerable queries. Re-author via the

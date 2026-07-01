@@ -61,18 +61,18 @@ GE Agent Factory exists to make the handoff explicit:
 Local development — no cloud credentials required:
 
 ```bash
-make setup          # install deps, sync catalog/skills, install the `ge` command, start the daemon
-make doctor-local   # check local tools: Bun, uv, Python, agents-cli, cache, harness wiring
-make devex-check    # fast gate: local doctor, docs links, workspace manifest contracts
-make devex-smoke    # prove the path: doctor → local mode → one validated canary workspace
-make console        # open the operator UI (Pipeline · Fleet · Activity · Doctor) → http://localhost:18260
+mise run setup          # install deps, sync catalog/skills, install the `ge` command, start the daemon
+mise run doctor-local   # check local tools: Bun, uv, Python, agents-cli, cache, harness wiring
+mise run devex-check    # fast gate: local doctor, docs links, workspace manifest contracts
+mise run devex-smoke    # prove the path: doctor → local mode → one validated canary workspace
+mise run console        # open the operator UI (Pipeline · Fleet · Activity · Doctor) → http://localhost:18260
 ```
 
 Build one agent locally, up to the preview/build boundary:
 
 ```bash
-make mode-local
-make provision-local CANARY=1
+mise run mode-local
+CANARY=1 mise run provision-local
 ```
 
 Deploy to your own GCP project:
@@ -83,10 +83,10 @@ Deploy to your own GCP project:
 
   ```bash
   export GEMINI_ENTERPRISE_APP_ID=projects/<num>/locations/global/collections/default_collection/engines/<app>
-  make bootstrap CANARY=1   # stand up the planes and prove one agent end to end
+  CANARY=1 mise run bootstrap   # stand up the planes and prove one agent end to end
   ```
 
-Run `make help` for every target, or `make next` for a status-based recommendation.
+Run `mise run help` for every target, or `mise run next` for a status-based recommendation.
 
 ## Documentation map
 
@@ -102,9 +102,9 @@ Run `make help` for every target, or `make next` for a status-based recommendati
 ## Read this first if you are new
 
 - If you are a **developer**, read the [Developer Guide](./developers.html), run
-  `make setup`, then open `make console`.
+  `mise run setup`, then open `mise run console`.
 - If you are an **operator**, read [Operations](./OPERATIONS.html), set
-  `GEMINI_ENTERPRISE_APP_ID`, then run `make bootstrap CANARY=1`.
+  `GEMINI_ENTERPRISE_APP_ID`, then run `CANARY=1 mise run bootstrap`.
 - If you are a **platform reviewer**, read [Architecture](./reference/architecture.html),
   [Security and the Agent Gateway](./concepts/security-and-the-agent-gateway.html),
   and [MCP](./MCP.html).

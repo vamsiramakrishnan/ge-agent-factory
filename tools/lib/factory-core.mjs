@@ -377,7 +377,7 @@ export function ensureBin(bin, hint) {
   throw new Error(`${bin} not found on PATH.${hint ? " " + hint : ""}`);
 }
 const ensureGcloud = () => ensureBin("gcloud", "Install the Google Cloud CLI: https://cloud.google.com/sdk/docs/install");
-const ensureTerraform = () => ensureBin("terraform", "Install it: `make deps-terraform` (or https://developer.hashicorp.com/terraform/install).");
+const ensureTerraform = () => ensureBin("terraform", "Install it: `mise run deps-terraform` (or https://developer.hashicorp.com/terraform/install).");
 
 function binCheck(bin, args = ["--version"]) {
   const r = run(bin, args, { allowFail: true });
@@ -1626,9 +1626,9 @@ export function devexCheck(_cfg = {}, {
       items: workspaceItems,
     },
     next: ok
-      ? ["ge devex smoke --target validated --force", "make console"]
+      ? ["ge devex smoke --target validated --force", "mise run console"]
       : [
-        doctor?.fails ? "make setup" : null,
+        doctor?.fails ? "mise run setup" : null,
         docsResult && !docsResult.ok ? "node tools/docs-check.mjs" : null,
         workspaceFails ? "ge devex smoke --target validated --force" : null,
       ].filter(Boolean),
@@ -1934,7 +1934,7 @@ export function localPreflight() {
   const addStatus = (name, status, detail, fix) => checks.push({ name, status, detail, fix: fix || null });
   const uv = run("uv", ["--version"], { allowFail: true });
   const bun = run("bun", ["--version"], { allowFail: true });
-  add("bun installed", bun.ok, bun.ok ? `v${bun.out}` : "not found", "Install Bun from https://bun.sh before running `make setup`");
+  add("bun installed", bun.ok, bun.ok ? `v${bun.out}` : "not found", "Install Bun from https://bun.sh before running `mise run setup`");
   add("uv installed", uv.ok, uv.ok ? uv.out : "not found", "curl -LsSf https://astral.sh/uv/install.sh | sh");
   const py = run("uv", ["python", "find", "3.11"], { allowFail: true });
   add("python 3.11", py.ok, py.ok ? py.out : "not found", "uv python install 3.11");
@@ -1944,11 +1944,11 @@ export function localPreflight() {
   const harnessPy = process.env.GE_HARNESS_PYTHON || (existsSync(venvPy) ? venvPy : "python3");
   const ag = run(harnessPy, ["-c", "import google.antigravity"], { allowFail: true });
   const where = harnessPy === venvPy ? ".venv" : harnessPy === "python3" ? "python3" : harnessPy;
-  add("google-antigravity SDK", ag.ok, ag.ok ? `importable (${where})` : `not importable (${where})`, "make deps  (creates .venv via uv + installs the SDK)");
+  add("google-antigravity SDK", ag.ok, ag.ok ? `importable (${where})` : `not importable (${where})`, "mise run deps  (creates .venv via uv + installs the SDK)");
   add("shared uv cache", true, process.env.UV_CACHE_DIR || UV_CACHE, null);
   add("link mode", true, process.env.UV_LINK_MODE || "hardlink", "export UV_LINK_MODE=hardlink");
   const skills = readJson(HARNESS_SKILLS_MANIFEST, null);
-  add("harness skills manifest", !!skills?.skills?.length, skills?.skills?.length ? `${skills.skills.length} skills discoverable` : `${displayStatePath(HARNESS_SKILLS_MANIFEST)} missing or empty`, "make skills-sync");
+  add("harness skills manifest", !!skills?.skills?.length, skills?.skills?.length ? `${skills.skills.length} skills discoverable` : `${displayStatePath(HARNESS_SKILLS_MANIFEST)} missing or empty`, "mise run skills-sync");
   const store = readJson(LOCAL_PROJECT_STORE, { workspaces: [] });
   const projectIds = workspaceStoreItems(store).map((project) => project.id).filter(Boolean);
   const missingProjectDirs = projectIds.filter((id) => !existsSync(join(LOCAL_PROJECTS, id)));
@@ -1986,7 +1986,7 @@ export function localPreflight() {
     "root workspace deps installed",
     rootDepsInstalled,
     rootDepsInstalled ? `${displayStatePath(join(REPO_ROOT, "node_modules"))} present` : "node_modules missing at repo root",
-    "bun install  (or: make setup)",
+    "bun install  (or: mise run setup)",
   );
   // GCP project: not required for local mode itself, but cloud-facing commands
   // (provision/up/data/mcp) and both apps' read paths need it. Falls back to
@@ -2126,7 +2126,7 @@ export async function devexSmoke(cfg, {
       finishedAt: new Date().toISOString(),
       doctor,
       fixes: doctor.checks.filter((check) => check.status === "fail").map((check) => check.fix).filter(Boolean),
-      next: "make setup",
+      next: "mise run setup",
     };
   }
 
@@ -2507,7 +2507,7 @@ export function commandDoctor(cfg, { commandId = "up", selection = null } = {}) 
     const fix = bin === "gcloud"
       ? "Install Google Cloud CLI: https://cloud.google.com/sdk/docs/install"
       : bin === "terraform"
-        ? "make deps-terraform"
+        ? "mise run deps-terraform"
         : bin === "uv"
           ? "curl -LsSf https://astral.sh/uv/install.sh | sh"
           : null;
@@ -2555,7 +2555,7 @@ export function commandDoctor(cfg, { commandId = "up", selection = null } = {}) 
       const local = localPreflight();
       for (const check of local.checks) add(`local ${check.name}`, check.status, check.detail, check.fix);
     } catch (e) {
-      add("local toolchain", "fail", e.message, "make deps");
+      add("local toolchain", "fail", e.message, "mise run deps");
     }
   }
 

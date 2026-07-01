@@ -128,7 +128,7 @@ won't usually call it directly, but you'll see its fingerprints in generated
 workspaces and its evalset format.
 
 **Where you'll meet it:** `docs/concepts/agents-and-adk.md` ("the
-ADK/`agents-cli` command surface"); `make doctor-local` checks whether it's
+ADK/`agents-cli` command surface"); `mise run doctor-local` checks whether it's
 installed; `apps/factory/src/agents-cli-scaffold.js` is where the factory
 locates and invokes it.
 

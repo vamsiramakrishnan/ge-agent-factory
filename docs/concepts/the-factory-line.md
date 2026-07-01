@@ -54,7 +54,7 @@ Conceptually the line is three movements:
 The **build boundary** is the conceptual line between *making* an agent and
 *releasing* it to the cloud.
 
-- **Local mode** (`make mode-local`, `make provision-local CANARY=1`) runs the
+- **Local mode** (`mise run mode-local`, `CANARY=1 mise run provision-local`) runs the
   build-and-validate movement **on your machine**, up to and including `preview`.
   No cloud credentials are needed — the agent is generated, its data is
   synthesized, it is refined by the Antigravity harness, and it is gated by
@@ -122,10 +122,10 @@ engine**. Nothing re-executes a stage from those values today.
 
 ## Where to drive it from
 
-- **`make` targets** are the human entry points: `make console` opens the operator
-  UI; `make mode-local` + `make provision-local CANARY=1` builds one agent locally
-  to the boundary; `make bootstrap CANARY=1` stands up the planes and proves one
-  agent end to end. Run `make help` for the grouped menu or `make next` for a
+- **`mise run` tasks** are the human entry points: `mise run console` opens the operator
+  UI; `mise run mode-local` + `CANARY=1 mise run provision-local` builds one agent locally
+  to the boundary; `CANARY=1 mise run bootstrap` stands up the planes and proves one
+  agent end to end. Run `mise run help` for the grouped menu or `mise run next` for a
   status-based recommendation.
 - The **console** is the day-to-day UI (Pipeline · Fleet · Activity · Doctor) with
   a live Run Drawer over the same ledger.
