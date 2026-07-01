@@ -1,11 +1,23 @@
 // Minimal YAML + Snowfakery-expression renderers for the mock-data planner.
 // Extracted from plan-mock-data.mjs verbatim — pure string functions, byte output
 // identical to the former inline helpers.
+//
+// renderYaml's overall document shape (forced double-quoting of every string
+// scalar, "- \n  " block layout for array items that are objects, no line
+// folding) is a hand-rolled convention that does not match the `yaml` package's
+// idiomatic stringify() output, so the recursive traversal stays custom. The
+// leaf-scalar string-escaping rules, however, are delegated to `yaml`'s
+// double-quoted scalar emitter (with line folding disabled and JSON-style
+// escapes) — verified byte-identical to the former JSON.stringify-based
+// escaping across ASCII, unicode, control-character, and long-string inputs.
+import { stringify as yamlStringify } from "yaml";
+
+const SCALAR_STRING_OPTIONS = { defaultStringType: "QUOTE_DOUBLE", lineWidth: 0, doubleQuotedAsJSON: true };
 
 export function yamlScalar(value) {
   if (value === null || value === undefined) return "null";
   if (typeof value === "number" || typeof value === "boolean") return String(value);
-  return JSON.stringify(String(value));
+  return yamlStringify(String(value), SCALAR_STRING_OPTIONS).trim();
 }
 
 export function snowExpression(expression) {
