@@ -1,12 +1,12 @@
 // tools/ge/apply.mjs — `ge apply` (declarative reconcile, ADR 0001 phase 5).
 // Moved verbatim out of tools/ge.mjs.
 import { defineCommand } from "citty";
-import { common, cfgFrom, emit, out, pc, elog, core } from "./shared.mjs";
+import { guarded, common, cfgFrom, emit, out, pc, elog, core } from "./shared.mjs";
 
 export const apply = defineCommand({
   meta: { name: "apply", description: "Reconcile actual → desired platform + fleet from a manifest (ge.manifest.json). Plans by default; --yes executes." },
   args: { ...common, yes: { type: "boolean", description: "Execute the plan in dependency order (default: plan only)" }, manifest: { type: "string", description: "Path to a manifest JSON (default ge.manifest.json)" } },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const cfg = cfgFrom(args);
     const manifest = args.manifest ? core.readJson(args.manifest, {}) : null;
     if (args.yes) {
@@ -22,5 +22,5 @@ export const apply = defineCommand({
       for (const s of r.steps) out(`  ${pc.cyan(String(s.id).padEnd(16))} ${s.command}\n      ${pc.dim(s.reason)}`);
       out(pc.dim("\n  run `ge apply --yes` to execute in order"));
     });
-  },
+  }),
 });
