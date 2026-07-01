@@ -387,7 +387,7 @@ export function ensureBin(bin, hint) {
   throw new Error(`${bin} not found on PATH.${hint ? " " + hint : ""}`);
 }
 const ensureGcloud = () => ensureBin("gcloud", "Install the Google Cloud CLI: https://cloud.google.com/sdk/docs/install");
-const ensureTerraform = () => ensureBin("terraform", "Install it: `mise run deps-terraform` (or https://developer.hashicorp.com/terraform/install).");
+const ensureTerraform = () => ensureBin("terraform", "Install it: `mise install` (terraform is provisioned via mise.toml's pinned [tools] block; or https://developer.hashicorp.com/terraform/install).");
 
 function binCheck(bin, args = ["--version"]) {
   const r = run(bin, args, { allowFail: true });
@@ -840,7 +840,9 @@ export async function registerSpec({ input, allowDraft = false, syncCatalog = tr
   const registered = run("node", args, { cwd: GEN_DIR, allowFail: true });
   if (!registered.ok) throw new Error((registered.err || registered.out || "spec registration failed").trim());
   let result = {};
-  try { result = JSON.parse(registered.out); } catch {}
+  try { result = JSON.parse(registered.out); } catch (err) {
+    console.warn(`registerSpec: failed to parse register-agent-spec.mjs output as JSON (${err.message}); continuing with empty result`);
+  }
   let sync = null;
   if (syncCatalog) {
     sync = run("node", ["scripts/sync-use-cases-from-slides.mjs"], { cwd: GEN_DIR, allowFail: true });

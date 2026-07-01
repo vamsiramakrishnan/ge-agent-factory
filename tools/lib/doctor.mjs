@@ -184,7 +184,7 @@ export function createDoctorPlane({ run, gcloud, ensureBin, binCheck, dataPlane,
       const fix = bin === "gcloud"
         ? "Install Google Cloud CLI: https://cloud.google.com/sdk/docs/install"
         : bin === "terraform"
-          ? "mise run deps-terraform"
+          ? "mise install (terraform is provisioned via mise.toml's pinned [tools] block)"
           : bin === "uv"
             ? "curl -LsSf https://astral.sh/uv/install.sh | sh"
             : null;
