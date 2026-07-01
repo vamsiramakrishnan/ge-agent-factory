@@ -1,0 +1,24 @@
+flowchart LR
+    UC(["use case\nor interview"]) --> SPEC["spec (OKF)\nthe contract"]
+    SPEC --> FACTORY
+
+    subgraph FACTORY["the factory: three planes"]
+        direction TB
+        FP["factory plane\ngateway, queue, worker\nbuild + validate + refine"]
+        FP --> DP[("data plane\nGCS, AlloyDB, Firestore,\nBigQuery, Bigtable")]
+        FP --> TP["tool plane\nAgent Gateway +\nMCP services + registry"]
+        DP --> FP
+        TP --> FP
+    end
+
+    FACTORY --> AGENT["deployed agent\nAgent Runtime, your GCP project"]
+    AGENT --> GE(["Gemini Enterprise\npublished, discoverable"])
+
+    classDef contract fill:#e8f0fe,stroke:#1a73e8,color:#202124
+    classDef data fill:#e8f0fe,stroke:#1a73e8,color:#202124
+    classDef tool fill:#e6f4ea,stroke:#34a853,color:#202124
+    classDef release fill:#e6f4ea,stroke:#34a853,color:#202124
+    class SPEC contract
+    class DP data
+    class TP tool
+    class AGENT,GE release
