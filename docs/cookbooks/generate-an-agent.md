@@ -10,7 +10,8 @@ layout: default
 ## Goal
 
 Build one agent end-to-end from a spec, on your machine, and know exactly what
-lands on disk: the multi-agent ADK app, fixtures, the OKF knowledge bundle, and
+lands on disk: the multi-agent [ADK](https://google.github.io/adk-docs/)
+(Google's Agent Development Kit) app, fixtures, the OKF knowledge bundle, and
 evals.
 
 ## Prerequisites

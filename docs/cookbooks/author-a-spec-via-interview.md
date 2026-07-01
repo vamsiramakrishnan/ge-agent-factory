@@ -10,17 +10,21 @@ layout: default
 ## Goal
 
 Use the console's artifact-driven interview to produce an agent spec — upload a
-BRD, drive the spec with chat/forms, watch it render in the spec canvas — and
-confirm the result carries `behaviorContract.workflow` and
-`behaviorContract.answerableQueries`. Then export it as an OKF knowledge bundle.
+BRD (Business Requirements Document), drive the spec with chat/forms, watch it
+render in the spec canvas — and confirm the result carries
+`behaviorContract.workflow` and `behaviorContract.answerableQueries`. Then
+export it as an OKF (Open Knowledge Format) knowledge bundle — a portable,
+Markdown version of the spec (see the [Glossary](../GLOSSARY.html)).
 
 ## Prerequisites
 
 - Local toolchain installed and the daemon running (`mise run setup`). See
   [Getting started locally](getting-started.html).
 - The console running: `mise run console` → http://localhost:18260.
-- The interview fires an Antigravity harness run, so local (Antigravity) mode
-  must be healthy (`mise run doctor-local`).
+- The interview fires a **harness** run — the local, LLM-driven check that a
+  generated agent matches its spec (see the [Glossary](../GLOSSARY.html)) —
+  powered by the Antigravity SDK, so local (Antigravity) mode must be healthy
+  (`mise run doctor-local`).
 
 ## Steps
 

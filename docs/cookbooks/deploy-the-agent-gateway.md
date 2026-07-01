@@ -15,13 +15,17 @@ egress — landing in audit (DRY_RUN) mode.
 
 ## Prerequisites
 
+- The factory/tool plane already provisioned — see
+  [Provision the platform](provision-the-platform.html). The gateway fronts
+  the MCP servers that step deploys; it has nothing to front otherwise.
 - `gcloud` authenticated; `terraform` installed.
 - A project id (`PROJECT_ID` env or a gcloud default project).
 - **The Agent Gateway is REGIONAL** — use a region (e.g. `us-central1`), never
   `global` (`global` returns HTTP 501). Gemini Enterprise `global`/`us` →
   gateway `us-central1`; `eu` → `europe-west1`.
-- For egress enforcement later: register the MCP servers in Agent Registry first
-  (egress blocks unregistered hosts).
+- For egress enforcement later: register the MCP servers in the **Agent
+  Registry** first (the directory of MCP servers/tools that the gateway and
+  generated agents resolve by name — egress blocks unregistered hosts).
 
 ## Steps
 
@@ -84,9 +88,11 @@ extension and policy are imported, and the runner has `roles/iap.egressor`.
 ## Troubleshoot
 
 - **`Error 501: unimplemented`** — you used `location=global`. Agent Gateway is
-  regional; use `us-central1` (or `europe-west1` for `eu`). The access form is
-  for semantic-governance/Agent-Runtime features, *not* a prerequisite to create
-  a gateway.
+  regional; use `us-central1` (or `europe-west1` for `eu`). If you've seen a
+  Google-provided early-access/allowlist form for this feature elsewhere, it's
+  for semantic-governance/Agent-Runtime features, *not* a prerequisite to
+  create a gateway — the region fix alone resolves this error. See
+  `installer/AGENT-GATEWAY.md` for the full story.
 - **Governed MCP calls blocked after enforcement** — the target host isn't in
   `registries`. Register the MCP servers first; egress blocks unregistered hosts.
 - **Registry mismatch** — Agent Runtime uses a *regional* registry, Gemini

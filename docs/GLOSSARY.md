@@ -136,6 +136,11 @@ locates and invokes it.
 
 ### A few more terms that trip people up
 
+- **Canary** — a build of exactly **one** agent, used to prove the pipeline
+  works end to end before committing to the whole catalog. `--canary` on
+  `ge agents build` (or `CANARY=1` on the `mise run provision*` tasks) is the
+  opposite of `--all`. Nothing to do with feature-flag canary releases — it's
+  just "one workspace, all the way through."
 - **Interview** — the guided, conversational flow where a business user (or
   agent) describes a use case and the factory turns it into a formal spec.
   See `apps/console/src/views/Interview.tsx`.

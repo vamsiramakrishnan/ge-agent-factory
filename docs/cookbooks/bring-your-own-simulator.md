@@ -10,8 +10,10 @@ layout: default
 ## Goal
 
 Create a new simulated source system — from natural language, an OpenAPI spec, or
-sample rows — mount it into the running MCP service via the runtime overlay, and
-(optionally) promote it into the curated corpus so it loads as a built-in.
+sample rows — and mount it via the runtime overlay into the running MCP
+(Model Context Protocol) service, the layer generated agents call through to
+reach source systems. Optionally promote it into the curated corpus so it
+loads as a built-in.
 
 ## Prerequisites
 
