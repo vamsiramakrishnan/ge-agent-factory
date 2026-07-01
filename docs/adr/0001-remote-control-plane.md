@@ -102,6 +102,10 @@ Negative / costs:
 
 ## Migration (incremental; each phase removes one contraption smell)
 
+<p align="center">
+  <img src="../assets/diagrams/control-plane-migration.svg" alt="Five migration phases, run ledger through the ge apply reconciler, all landed in sequence, feeding into remaining live-environment flips" width="800">
+</p>
+
 1. **Run ledger first** — AlloyDB schema for runs/agents/stages; `provision`/`ship` write
    it, console/CLI read it. Kills state drift. Lowest risk, highest leverage.
    **✅ Landed (phase 1):** `tools/lib/run-ledger.mjs` — an event-sourced ledger

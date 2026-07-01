@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant U as Operator
+    participant N as Now pulse
+    participant D as Run Drawer
+    participant H as useRunStream
+    participant A as /api/ge/ledger/runs/:id/events
+    participant L as Durable run ledger
+
+    N->>N: poll ledger on a calm cadence
+    U->>N: click Now pulse
+    N->>D: open Runs, pick a run to Follow
+    D->>H: subscribe(runId)
+    H->>A: EventSource GET (SSE)
+    loop live run
+        L->>A: append ledger event
+        A-->>H: event (seq, stage, log line)
+        H-->>D: reduce into stage timeline + log tail
+    end
+    A-->>H: stream drop
+    H-->>D: show reconnecting indicator
+    H->>A: EventSource auto-reconnect

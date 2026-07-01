@@ -179,6 +179,7 @@ so older specs gain queries/tests without re-authoring:
 each stage's label/description against the tool intents to produce the multi-agent
 `workflow`.
 
-> **Note:** the `account-reconciliation-agent` sample lives in
+> The `account-reconciliation-agent` sample lives in
 > `apps/factory/generated/use-cases.generated.json` (under the app dir),
 > not at the repo root.
+{: .note }

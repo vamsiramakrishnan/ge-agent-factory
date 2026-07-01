@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1018.7069999999999 320.5" width="1018.7069999999999" height="320.5" style="--bg:#ffffff;--fg:#202124;--line:#5f6368;--accent:#1a73e8;--muted:#80868b;--surface:#eef3f9;--border:#dadce0;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<polyline class="edge" data-from="S0" data-to="A" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="456.9277499999999,93.80000000000001 456.9277499999999,123.80000000000001 129.51749999999998,123.80000000000001 129.51749999999998,153.8" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="S0" data-to="B" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="456.9277499999999,93.80000000000001 456.9277499999999,123.80000000000001 343.22149999999993,123.80000000000001 343.22149999999993,153.8" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="S0" data-to="C" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="456.9277499999999,93.80000000000001 456.9277499999999,123.80000000000001 570.6339999999999,123.80000000000001 570.6339999999999,153.8" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="S0" data-to="D" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="456.9277499999999,93.80000000000001 456.9277499999999,123.80000000000001 840.2834999999999,123.80000000000001 840.2834999999999,153.8" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="A" data-to="Done" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="129.51749999999998,207.60000000000002 129.51749999999998,225.60000000000002 456.9277499999999,225.60000000000002 456.9277499999999,243.60000000000002" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="B" data-to="Done" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="343.22149999999993,207.60000000000002 343.22149999999993,225.60000000000002 456.9277499999999,225.60000000000002 456.9277499999999,243.60000000000002" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="C" data-to="Done" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="570.6339999999999,207.60000000000002 570.6339999999999,225.60000000000002 456.9277499999999,225.60000000000002 456.9277499999999,243.60000000000002" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="D" data-to="Done" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="840.2834999999999,207.60000000000002 840.2834999999999,225.60000000000002 456.9277499999999,225.60000000000002 456.9277499999999,243.60000000000002" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<g class="node" data-id="S0" data-label="Stage 0
+Baseline + rollback snapshot" data-shape="stadium">
+  <rect x="351.1082499999999" y="40" width="211.639" height="53.800000000000004" rx="26.900000000000002" ry="26.900000000000002" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="456.9277499999999" y="66.9" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="456.9277499999999" dy="-3.9000000000000012">Stage 0</tspan><tspan x="456.9277499999999" dy="16.900000000000002">Baseline + rollback snapshot</tspan></text>
+</g>
+<g class="node" data-id="A" data-label="Stage A
+MCP ingress -&gt; internal" data-shape="rectangle">
+  <rect x="40" y="153.8" width="179.03499999999997" height="53.800000000000004" rx="0" ry="0" fill="#fce8e6" stroke="#c5221f" stroke-width="0.75" />
+  <text x="129.51749999999998" y="180.70000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="129.51749999999998" dy="-3.9000000000000012">Stage A</tspan><tspan x="129.51749999999998" dy="16.900000000000002">MCP ingress -&gt; internal</tspan></text>
+</g>
+<g class="node" data-id="B" data-label="Stage B
+Runner SA least-privilege" data-shape="rectangle">
+  <rect x="247.03499999999997" y="153.8" width="192.37299999999996" height="53.800000000000004" rx="0" ry="0" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <text x="343.22149999999993" y="180.70000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="343.22149999999993" dy="-3.9000000000000012">Stage B</tspan><tspan x="343.22149999999993" dy="16.900000000000002">Runner SA least-privilege</tspan></text>
+</g>
+<g class="node" data-id="C" data-label="Stage C
+Worker ingress (C1 adopted)" data-shape="rectangle">
+  <rect x="467.4079999999999" y="153.8" width="206.452" height="53.800000000000004" rx="0" ry="0" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <text x="570.6339999999999" y="180.70000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="570.6339999999999" dy="-3.9000000000000012">Stage C</tspan><tspan x="570.6339999999999" dy="16.900000000000002">Worker ingress (C1 adopted)</tspan></text>
+</g>
+<g class="node" data-id="D" data-label="Stage D
+Gateway authz DRY_RUN -&gt; ENFORCED" data-shape="rectangle">
+  <rect x="701.8599999999999" y="153.8" width="276.8469999999999" height="53.800000000000004" rx="0" ry="0" fill="#fce8e6" stroke="#c5221f" stroke-width="0.75" />
+  <text x="840.2834999999999" y="180.70000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="840.2834999999999" dy="-3.9000000000000012">Stage D</tspan><tspan x="840.2834999999999" dy="16.900000000000002">Gateway authz DRY_RUN -&gt; ENFORCED</tspan></text>
+</g>
+<g class="node" data-id="Done" data-label="Post-cutover reconcile" data-shape="stadium">
+  <rect x="368.5217499999999" y="243.60000000000002" width="176.81199999999998" height="36.900000000000006" rx="18.450000000000003" ry="18.450000000000003" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="456.9277499999999" y="262.05" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Post-cutover reconcile</text>
+</g>
+</svg>

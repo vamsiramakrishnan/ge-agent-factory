@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1258.728 228.97500000000002" width="1258.728" height="228.97500000000002" style="--bg:#ffffff;--fg:#202124;--line:#5f6368;--accent:#1a73e8;--muted:#80868b;--surface:#eef3f9;--border:#dadce0;background:var(--bg)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1258.728 219.70000000000002" width="1258.728" height="219.70000000000002" style="--bg:#ffffff;--fg:#202124;--line:#5f6368;--accent:#1a73e8;--muted:#80868b;--surface:#eef3f9;--border:#dadce0;background:var(--bg)">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
   text { font-family: 'Inter', system-ui, sans-serif; }
@@ -27,7 +27,7 @@
   </marker>
 </defs>
 <polyline class="edge" data-from="A" data-to="B" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="GE_DATA_BACKEND=fixtures
-local / eval" points="114.554,99.47500000000001 150.554,99.47500000000001 150.554,65.44999999999999 358.01200000000006,65.45" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+local / eval" points="114.554,99.47500000000001 150.554,99.47500000000001 150.554,65.45 358.01200000000006,65.45" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
 <polyline class="edge" data-from="A" data-to="C" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="GE_DATA_BACKEND=mcp
 cloud" points="114.554,111.775 150.55400000000012,111.775 150.55400000000012,145.8 358.01200000000006,145.8" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
 <polyline class="edge" data-from="C" data-to="D" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="486.65900000000005,145.8 526.3430000000001,145.8" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
@@ -48,38 +48,34 @@ cloud">
   <text x="77.277" y="105.62500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">agent</text>
 </g>
 <g class="node" data-id="B" data-label="local fixture files" data-shape="cylinder">
-  <rect x="358.01200000000006" y="47" width="135.31600000000003" height="36.900000000000006" fill="var(--_node-fill)" stroke="none" />
-  <line x1="358.01200000000006" y1="47" x2="358.01200000000006" y2="83.9" stroke="var(--_node-stroke)" stroke-width="0.75" />
-  <line x1="493.3280000000001" y1="47" x2="493.3280000000001" y2="83.9" stroke="var(--_node-stroke)" stroke-width="0.75" />
-  <ellipse cx="425.6700000000001" cy="83.9" rx="67.65800000000002" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
-  <ellipse cx="425.6700000000001" cy="47" rx="67.65800000000002" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
-  <text x="425.6700000000001" y="65.45" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">local fixture files</text>
+  <rect x="358.01200000000006" y="47" width="135.31600000000003" height="36.900000000000006" fill="#e8f0fe" stroke="none" />
+  <line x1="358.01200000000006" y1="47" x2="358.01200000000006" y2="83.9" stroke="#1a73e8" stroke-width="0.75" />
+  <line x1="493.3280000000001" y1="47" x2="493.3280000000001" y2="83.9" stroke="#1a73e8" stroke-width="0.75" />
+  <ellipse cx="425.6700000000001" cy="83.9" rx="67.65800000000002" ry="7" fill="#e8f0fe" stroke="#1a73e8" stroke-width="0.75" />
+  <ellipse cx="425.6700000000001" cy="47" rx="67.65800000000002" ry="7" fill="#e8f0fe" stroke="#1a73e8" stroke-width="0.75" />
+  <text x="425.6700000000001" y="65.45" text-anchor="middle" font-size="13" font-weight="500" fill="#202124" dy="4.55">local fixture files</text>
 </g>
 <g class="node" data-id="C" data-label="MCP toolset
 Agent Registry" data-shape="rectangle">
-  <rect x="358.01200000000006" y="118.9" width="128.647" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
-  <text x="422.3355" y="145.8" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="422.3355" dy="-3.9000000000000012">MCP toolset</tspan><tspan x="422.3355" dy="16.900000000000002">Agent Registry</tspan></text>
+  <rect x="358.01200000000006" y="118.9" width="128.647" height="53.800000000000004" rx="0" ry="0" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <text x="422.3355" y="145.8" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="422.3355" dy="-3.9000000000000012">MCP toolset</tspan><tspan x="422.3355" dy="16.900000000000002">Agent Registry</tspan></text>
 </g>
 <g class="node" data-id="D" data-label="per-department FastMCP" data-shape="rectangle">
-  <rect x="526.3430000000001" y="127.35000000000002" width="189.40899999999996" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
-  <text x="621.0475" y="145.8" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">per-department FastMCP</text>
+  <rect x="526.3430000000001" y="127.35000000000001" width="189.40899999999996" height="36.900000000000006" rx="0" ry="0" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <text x="621.0475" y="145.8" text-anchor="middle" font-size="13" font-weight="500" fill="#202124" dy="4.55">per-department FastMCP</text>
 </g>
 <g class="node" data-id="E" data-label="generic engine +
 agent's per-agent store" data-shape="rectangle">
-  <rect x="763.7520000000001" y="118.9" width="177.55300000000003" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
-  <text x="852.5285000000001" y="145.8" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="852.5285000000001" dy="-3.9000000000000012">generic engine +</tspan><tspan x="852.5285000000001" dy="16.900000000000002">agent&#39;s per-agent store</tspan></text>
+  <rect x="763.7520000000001" y="118.9" width="177.55300000000003" height="53.800000000000004" rx="0" ry="0" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <text x="852.5285000000001" y="145.8" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="852.5285000000001" dy="-3.9000000000000012">generic engine +</tspan><tspan x="852.5285000000001" dy="16.900000000000002">agent&#39;s per-agent store</tspan></text>
 </g>
 <g class="node" data-id="F" data-label="source-system envelope
 looks like Workday / Ariba / SAP" data-shape="cylinder">
-  <rect x="989.3050000000001" y="118.9" width="229.423" height="53.80000000000001" fill="var(--_node-fill)" stroke="none" />
-  <line x1="989.3050000000001" y1="118.9" x2="989.3050000000001" y2="172.70000000000002" stroke="var(--_node-stroke)" stroke-width="0.75" />
-  <line x1="1218.728" y1="118.9" x2="1218.728" y2="172.70000000000002" stroke="var(--_node-stroke)" stroke-width="0.75" />
-  <ellipse cx="1104.0165000000002" cy="172.70000000000002" rx="114.7115" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
-  <ellipse cx="1104.0165000000002" cy="118.9" rx="114.7115" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
-  <text x="1104.0165000000002" y="145.8" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="1104.0165000000002" dy="-3.9000000000000012">source-system envelope</tspan><tspan x="1104.0165000000002" dy="16.900000000000002">looks like Workday / Ariba / SAP</tspan></text>
-</g>
-<g class="node" data-id="class" data-label="class" data-shape="rectangle">
-  <rect x="40.000000000000114" y="152.07500000000002" width="74.554" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
-  <text x="77.27700000000011" y="170.52500000000003" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">class</text>
+  <rect x="989.3050000000001" y="118.9" width="229.423" height="53.80000000000001" fill="#e6f4ea" stroke="none" />
+  <line x1="989.3050000000001" y1="118.9" x2="989.3050000000001" y2="172.70000000000002" stroke="#34a853" stroke-width="0.75" />
+  <line x1="1218.728" y1="118.9" x2="1218.728" y2="172.70000000000002" stroke="#34a853" stroke-width="0.75" />
+  <ellipse cx="1104.0165000000002" cy="172.70000000000002" rx="114.7115" ry="7" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <ellipse cx="1104.0165000000002" cy="118.9" rx="114.7115" ry="7" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <text x="1104.0165000000002" y="145.8" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="1104.0165000000002" dy="-3.9000000000000012">source-system envelope</tspan><tspan x="1104.0165000000002" dy="16.900000000000002">looks like Workday / Ariba / SAP</tspan></text>
 </g>
 </svg>

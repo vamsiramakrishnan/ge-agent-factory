@@ -1,0 +1,14 @@
+flowchart LR
+    P1["Phase 1\nRun ledger\n(AlloyDB / SQLite)"]
+    P2["Phase 2\nLive run state\n(Firestore stream)"]
+    P3["Phase 3\nEnqueue not proxy\n(direct transport)"]
+    P4["Phase 4\nPipeline state machine\n(ledger transitions)"]
+    P5["Phase 5\nge apply reconciler\n(drift diffing)"]
+    Flip["Remaining flips\n(gated on live env)"]
+
+    P1 --> P2 --> P3 --> P4 --> P5 --> Flip
+
+    classDef landed fill:#e6f4ea,stroke:#34a853,color:#202124
+    classDef pending fill:#fce8e6,stroke:#c5221f,color:#202124
+    class P1,P2,P3,P4,P5 landed
+    class Flip pending

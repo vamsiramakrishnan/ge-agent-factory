@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 603.7800833333333 1273.7709999999997" width="603.7800833333333" height="1273.7709999999997" style="--bg:#ffffff;--fg:#202124;--line:#5f6368;--accent:#1a73e8;--muted:#80868b;--surface:#eef3f9;--border:#dadce0;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<polyline class="edge" data-from="Start" data-to="Q1" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="271.78683333333333,93.80000000000001 271.78683333333333,141.8" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="Q1" data-to="UseSystem" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="yes" points="242.64066666666665,287.53083333333336 242.64066666666665,717.068 143.37383333333335,717.068 143.37383333333335,805.818" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="Q1" data-to="Q2" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="no" points="300.933,287.53083333333336 300.933,328.677 400.1998333333333,328.677 400.1998333333333,408.97700000000003" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="Q2" data-to="UseGlobal" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="yes" points="352.0346666666666,649.8028333333332 352.0346666666666,733.968 317.91416666666663,733.968 317.91416666666663,805.818" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="Q2" data-to="UseDefault" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="no" points="448.3649999999999,649.8028333333333 448.3649999999999,733.9679999999998 482.0430833333333,733.9679999999998 482.0430833333333,805.818" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="UseSystem" data-to="Degrade" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="143.37383333333335,859.6179999999999 143.37383333333335,883.6179999999999 213.58374999999998,883.6179999999999 213.58374999999998,907.6179999999998" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="UseGlobal" data-to="Degrade" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="317.91416666666663,842.718 317.91416666666663,883.6179999999999 213.58374999999998,883.6179999999999 213.58374999999998,907.6179999999998" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="Degrade" data-to="Durable" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="yes" points="186.1665833333333,1044.7038333333333 186.1665833333333,1099.6709999999998 120.62549999999999,1099.6709999999998 120.62549999999999,1179.9709999999998" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="Degrade" data-to="Fallback" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="no" points="241.00091666666663,1044.7038333333333 241.00091666666663,1099.6709999999998 306.542,1099.6709999999998 306.542,1179.9709999999998" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="UseDefault" data-to="Fallback2" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="482.0430833333333,859.6179999999999 482.0430833333333,907.6179999999998" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<g class="edge-label" data-from="Q1" data-to="UseSystem" data-label="yes">
+  <rect x="125.37383333333334" y="724.068" width="35.47" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="143.10883333333334" y="739.218" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">yes</text>
+</g>
+<g class="edge-label" data-from="Q1" data-to="Q2" data-label="no">
+  <rect x="385.1998333333333" y="335.677" width="29.53" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="399.9648333333333" y="350.827" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">no</text>
+</g>
+<g class="edge-label" data-from="Q2" data-to="UseGlobal" data-label="yes">
+  <rect x="299.91416666666663" y="740.968" width="35.47" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="317.64916666666664" y="756.1179999999999" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">yes</text>
+</g>
+<g class="edge-label" data-from="Q2" data-to="UseDefault" data-label="no">
+  <rect x="467.0430833333333" y="740.9679999999998" width="29.53" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="481.8080833333333" y="756.1179999999998" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">no</text>
+</g>
+<g class="edge-label" data-from="Degrade" data-to="Durable" data-label="yes">
+  <rect x="102.62549999999999" y="1106.6709999999998" width="35.47" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="120.36049999999999" y="1121.821" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">yes</text>
+</g>
+<g class="edge-label" data-from="Degrade" data-to="Fallback" data-label="no">
+  <rect x="291.542" y="1106.6709999999998" width="29.53" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="306.30699999999996" y="1121.821" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">no</text>
+</g>
+<g class="node" data-id="Start" data-label="Resolve state backend
+for a system" data-shape="stadium">
+  <rect x="184.1218333333333" y="40" width="175.32999999999998" height="53.800000000000004" rx="26.900000000000002" ry="26.900000000000002" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="271.78683333333333" y="66.9" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="271.78683333333333" dy="-3.9000000000000012">Resolve state backend</tspan><tspan x="271.78683333333333" dy="16.900000000000002">for a system</tspan></text>
+</g>
+<g class="node" data-id="Q1" data-label="registry.json
+stateBackend set?" data-shape="diamond">
+  <polygon points="271.78683333333333,141.8 359.2253333333333,229.23850000000002 271.78683333333333,316.677 184.34833333333333,229.23850000000002" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="271.78683333333333" y="229.23850000000002" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="271.78683333333333" dy="-3.9000000000000012">registry.json</tspan><tspan x="271.78683333333333" dy="16.900000000000002">stateBackend set?</tspan></text>
+</g>
+<g class="node" data-id="Q2" data-label="GE_SIMULATOR_STATE_BACKEND
+env set?" data-shape="diamond">
+  <polygon points="400.1998333333333,408.97700000000003 544.6953333333332,553.4725 400.1998333333333,697.9679999999998 255.70433333333335,553.4725" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="400.1998333333333" y="553.4725" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="400.1998333333333" dy="-3.9000000000000012">GE_SIMULATOR_STATE_BACKEND</tspan><tspan x="400.1998333333333" dy="16.900000000000002">env set?</tspan></text>
+</g>
+<g class="node" data-id="UseSystem" data-label="Use per-system value
+(firestore / alloydb)" data-shape="rectangle">
+  <rect x="59.04333333333335" y="805.818" width="168.661" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="143.37383333333335" y="832.718" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="143.37383333333335" dy="-3.9000000000000012">Use per-system value</tspan><tspan x="143.37383333333335" dy="16.900000000000002">(firestore / alloydb)</tspan></text>
+</g>
+<g class="node" data-id="UseGlobal" data-label="Use global override" data-shape="rectangle">
+  <rect x="239.1411666666666" y="805.818" width="157.54600000000002" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="317.91416666666663" y="824.268" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Use global override</text>
+</g>
+<g class="node" data-id="UseDefault" data-label="Use memory
+(default)" data-shape="rectangle">
+  <rect x="425.1295833333333" y="805.818" width="113.827" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="482.0430833333333" y="832.718" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="482.0430833333333" dy="-3.9000000000000012">Use memory</tspan><tspan x="482.0430833333333" dy="16.900000000000002">(default)</tspan></text>
+</g>
+<g class="node" data-id="Degrade" data-label="Dependency or
+config available?" data-shape="diamond">
+  <polygon points="213.58374999999998,907.6179999999998 295.83525,989.8694999999998 213.58374999999998,1072.1209999999999 131.33225,989.8694999999998" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="213.58374999999998" y="989.8694999999998" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="213.58374999999998" dy="-3.9000000000000012">Dependency or</tspan><tspan x="213.58374999999998" dy="16.900000000000002">config available?</tspan></text>
+</g>
+<g class="node" data-id="Durable" data-label="Durable store
+(Firestore / AlloyDB)" data-shape="rectangle">
+  <rect x="39.99999999999997" y="1179.9709999999998" width="161.251" height="53.800000000000004" rx="0" ry="0" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <text x="120.62549999999997" y="1206.8709999999999" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="120.62549999999997" dy="-3.9000000000000012">Durable store</tspan><tspan x="120.62549999999997" dy="16.900000000000002">(Firestore / AlloyDB)</tspan></text>
+</g>
+<g class="node" data-id="Fallback" data-label="Degrade to memory
+(log warning)" data-shape="rectangle">
+  <rect x="229.25099999999998" y="1179.9709999999998" width="154.582" height="53.800000000000004" rx="0" ry="0" fill="#fce8e6" stroke="#c5221f" stroke-width="0.75" />
+  <text x="306.542" y="1206.8709999999999" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="306.542" dy="-3.9000000000000012">Degrade to memory</tspan><tspan x="306.542" dy="16.900000000000002">(log warning)</tspan></text>
+</g>
+<g class="node" data-id="Fallback2" data-label="memory
+(no degrade needed)" data-shape="rectangle">
+  <rect x="400.3060833333333" y="907.6179999999998" width="163.474" height="53.800000000000004" rx="0" ry="0" fill="#fce8e6" stroke="#c5221f" stroke-width="0.75" />
+  <text x="482.04308333333324" y="934.5179999999998" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="482.04308333333324" dy="-3.9000000000000012">memory</tspan><tspan x="482.04308333333324" dy="16.900000000000002">(no degrade needed)</tspan></text>
+</g>
+</svg>

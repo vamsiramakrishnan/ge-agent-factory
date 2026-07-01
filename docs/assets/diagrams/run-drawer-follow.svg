@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1041.1375 618" width="1041.1375" height="618" style="--bg:#ffffff;--fg:#202124;--line:#5f6368;--accent:#1a73e8;--muted:#80868b;--surface:#eef3f9;--border:#dadce0;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="seq-arrow" markerWidth="8" markerHeight="5" refX="8" refY="2.5" orient="auto-start-reverse">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" />
+  </marker>
+  <marker id="seq-arrow-open" markerWidth="8" markerHeight="5" refX="8" refY="2.5" orient="auto-start-reverse">
+    <polyline points="0 0, 8 2.5, 0 5" fill="none" stroke="var(--_arrow)" stroke-width="1" />
+  </marker>
+</defs>
+<g class="block" data-type="loop" data-label="live run">
+  <rect x="291.4785" y="308" width="719.6590000000001" height="140" rx="0" ry="0" fill="none" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="291.4785" y="308" width="87.61" height="18" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="297.4785" y="317" font-size="11" font-weight="600" fill="var(--_text-sec)" dy="3.8499999999999996">loop [live run]</text>
+</g>
+<line class="lifeline" data-actor="U" x1="73.651" y1="70" x2="73.651" y2="588" stroke="var(--_line)" stroke-width="0.75" stroke-dasharray="6 4" />
+<line class="lifeline" data-actor="N" x1="213.651" y1="70" x2="213.651" y2="588" stroke="var(--_line)" stroke-width="0.75" stroke-dasharray="6 4" />
+<line class="lifeline" data-actor="D" x1="353.651" y1="70" x2="353.651" y2="588" stroke="var(--_line)" stroke-width="0.75" stroke-dasharray="6 4" />
+<line class="lifeline" data-actor="H" x1="506.51750000000004" y1="70" x2="506.51750000000004" y2="588" stroke="var(--_line)" stroke-width="0.75" stroke-dasharray="6 4" />
+<line class="lifeline" data-actor="A" x1="711.6245" y1="70" x2="711.6245" y2="588" stroke="var(--_line)" stroke-width="0.75" stroke-dasharray="6 4" />
+<line class="lifeline" data-actor="L" x1="928.5875" y1="70" x2="928.5875" y2="588" stroke="var(--_line)" stroke-width="0.75" stroke-dasharray="6 4" />
+<g class="message" data-from="N" data-to="N" data-label="poll ledger on a calm cadence" data-line-style="solid" data-arrow-head="filled" data-self="true">
+  <polyline points="213.651,90 243.651,90 243.651,110 213.651,110" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="251.651" y="100" font-size="11" text-anchor="start" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">poll ledger on a calm cadence</text>
+</g>
+<g class="message" data-from="U" data-to="N" data-label="click Now pulse" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="73.651" y1="160" x2="213.651" y2="160" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="143.651" y="150" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">click Now pulse</text>
+</g>
+<g class="message" data-from="N" data-to="D" data-label="open Runs, pick a run to Follow" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="213.651" y1="200" x2="353.651" y2="200" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="283.651" y="190" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">open Runs, pick a run to Follow</text>
+</g>
+<g class="message" data-from="D" data-to="H" data-label="subscribe(runId)" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="353.651" y1="240" x2="506.51750000000004" y2="240" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="430.08425" y="230" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">subscribe(runId)</text>
+</g>
+<g class="message" data-from="H" data-to="A" data-label="EventSource GET (SSE)" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="506.51750000000004" y1="280" x2="711.6245" y2="280" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="609.071" y="270" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">EventSource GET (SSE)</text>
+</g>
+<g class="message" data-from="L" data-to="A" data-label="append ledger event" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="928.5875" y1="348" x2="711.6245" y2="348" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="820.106" y="338" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">append ledger event</text>
+</g>
+<g class="message" data-from="A" data-to="H" data-label="event (seq, stage, log line)" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="711.6245" y1="388" x2="506.51750000000004" y2="388" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="609.071" y="378" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">event (seq, stage, log line)</text>
+</g>
+<g class="message" data-from="H" data-to="D" data-label="reduce into stage timeline + log tail" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="506.51750000000004" y1="428" x2="353.651" y2="428" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="430.08425" y="418" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">reduce into stage timeline + log tail</text>
+</g>
+<g class="message" data-from="A" data-to="H" data-label="stream drop" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="711.6245" y1="468" x2="506.51750000000004" y2="468" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="609.071" y="458" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">stream drop</text>
+</g>
+<g class="message" data-from="H" data-to="D" data-label="show reconnecting indicator" data-line-style="dashed" data-arrow-head="filled" data-self="false">
+  <line x1="506.51750000000004" y1="508" x2="353.651" y2="508" stroke="var(--_line)" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#seq-arrow)" />
+  <text x="430.08425" y="498" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">show reconnecting indicator</text>
+</g>
+<g class="message" data-from="H" data-to="A" data-label="EventSource auto-reconnect" data-line-style="solid" data-arrow-head="filled" data-self="false">
+  <line x1="506.51750000000004" y1="548" x2="711.6245" y2="548" stroke="var(--_line)" stroke-width="1" marker-end="url(#seq-arrow)" />
+  <text x="609.071" y="538" font-size="11" text-anchor="middle" font-weight="400" fill="var(--_text-muted)" dy="3.8499999999999996">EventSource auto-reconnect</text>
+</g>
+<g class="actor" data-id="U" data-label="Operator" data-type="participant">
+  <rect x="30" y="30" width="87.30199999999999" height="40" rx="4" ry="4" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="73.651" y="50" font-size="13" text-anchor="middle" font-weight="500" fill="var(--_text)" dy="4.55">Operator</text>
+</g>
+<g class="actor" data-id="N" data-label="Now pulse" data-type="participant">
+  <rect x="166.6655" y="30" width="93.971" height="40" rx="4" ry="4" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="213.651" y="50" font-size="13" text-anchor="middle" font-weight="500" fill="var(--_text)" dy="4.55">Now pulse</text>
+</g>
+<g class="actor" data-id="D" data-label="Run Drawer" data-type="participant">
+  <rect x="301.4785" y="30" width="104.345" height="40" rx="4" ry="4" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="353.651" y="50" font-size="13" text-anchor="middle" font-weight="500" fill="var(--_text)" dy="4.55">Run Drawer</text>
+</g>
+<g class="actor" data-id="H" data-label="useRunStream" data-type="participant">
+  <rect x="445.8235" y="30" width="121.388" height="40" rx="4" ry="4" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="506.51750000000004" y="50" font-size="13" text-anchor="middle" font-weight="500" fill="var(--_text)" dy="4.55">useRunStream</text>
+</g>
+<g class="actor" data-id="A" data-label="/api/ge/ledger/runs/:id/events" data-type="participant">
+  <rect x="607.2115" y="30" width="208.82599999999994" height="40" rx="4" ry="4" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="711.6245" y="50" font-size="13" text-anchor="middle" font-weight="500" fill="var(--_text)" dy="4.55">/api/ge/ledger/runs/:id/events</text>
+</g>
+<g class="actor" data-id="L" data-label="Durable run ledger" data-type="participant">
+  <rect x="856.0374999999999" y="30" width="145.10000000000002" height="40" rx="4" ry="4" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="928.5875" y="50" font-size="13" text-anchor="middle" font-weight="500" fill="var(--_text)" dy="4.55">Durable run ledger</text>
+</g>
+</svg>

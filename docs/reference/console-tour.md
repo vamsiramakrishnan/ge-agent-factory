@@ -109,6 +109,10 @@ you want to watch a run progress stage-by-stage — local or remote — in real 
 The **Now pulse** (top bar) is the always-on summary of live run counts that feeds
 this drawer; click it to open Runs and pick a run to Follow.
 
+<p align="center">
+  <img src="../assets/diagrams/run-drawer-follow.svg" alt="Now pulse polls the ledger; Follow subscribes the Run Drawer to a run's SSE event stream, which reduces into the stage timeline and log tail, and auto-reconnects on drop" width="700">
+</p>
+
 <!-- screenshot: Run Drawer following a live run -->
 
 ## Readiness (Doctor)

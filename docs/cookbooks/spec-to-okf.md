@@ -19,8 +19,9 @@ Knowledge Bundle, inspect what's inside, and round-trip it back into a spec.
   (`generated/use-cases.generated.json` — produced by `mise run catalog`) or a spec
   JSON file on disk.
 
-> Path note: the OKF scripts live under **`apps/factory/scripts/`**,
-> not the top-level `scripts/`.
+> The OKF scripts live under **`apps/factory/scripts/`**, not the top-level
+> `scripts/`.
+{: .note }
 
 ## Steps
 

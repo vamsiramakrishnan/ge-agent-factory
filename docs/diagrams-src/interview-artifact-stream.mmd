@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant O as Operator
+    participant C as Console (SpecCanvas)
+    participant R as POST /api/runtime/tasks
+    participant H as Harness (Antigravity)
+    participant S as Spec store
+
+    O->>C: start interview, provide brief + BRD
+    C->>R: runtimeStart(harness.run)
+    R->>H: launch interview run
+    loop streaming spec
+        H-->>C: artifact identifier="agent-spec" chunk
+        C-->>O: canvas renders workflow / answerable queries incrementally
+    end
+    O->>C: edit + confirm spec
+    C->>S: POST /api/interviews/:id/spec
+    O->>S: GET /api/interviews/:id/okf
+    S-->>O: OKF Knowledge Bundle (files, conceptCount)

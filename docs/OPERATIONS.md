@@ -7,12 +7,20 @@ layout: default
 # GE Agent Factory — Operations
 
 The canonical runbook for deploying the factory and shipping agents. Everything
-is driven by `bun tools/ge.mjs` (`ge`). Config resolves: flags > env > `.ge.json`
-> terraform outputs > gcloud discovery.
+is driven by `bun tools/ge.mjs` (`ge`). Config resolves: flags > env >
+`.ge.json` > terraform outputs > gcloud discovery.
 
 Use this page when the question is operational: how to stand up the platform,
 what each cloud component owns, which stage failed, how local and remote mode
 split responsibility, and how to recover without inventing a one-off path.
+
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ## Components
 
@@ -223,6 +231,10 @@ impersonation, so programmatic IAP access uses the proxy, not minted tokens.
 
 Two tiers, both **external ingress, never `allUsers`**:
 
+<p align="center">
+  <img src="assets/diagrams/access-posture-tiers.svg" alt="Gateway and worker use IAM/OIDC authenticated-only ingress with no IAP, while console and presentation use direct Cloud Run IAP restricted to iap_members" width="700">
+</p>
+
 - **gateway + worker** — `INGRESS_TRAFFIC_ALL` but **authenticated-only** via IAM/OIDC,
   **no IAP**. Cloud Tasks invokes the worker with an OIDC token as the runner SA;
   the `ge` CLI reaches the gateway via the auto-managed `run.invoker` proxy. (The
@@ -253,11 +265,12 @@ off the gateway/worker (IAM/OIDC, not IAP) — `doctor` warns if it's on and pri
 The hosted demo is hand-managed. Rename the live stack by standing up the
 new-named services **in parallel**, then cutting over — never rename in place.
 
-> **Shortcut:** `ge cutover` automates steps 1–3 (new SAs + IAM + queue/topic/AR
+> `ge cutover` automates steps 1–3 (new SAs + IAM + queue/topic/AR
 > repo, then build/deploy/wire). Plan-by-default — `ge cutover` prints the exact
 > gcloud for your project; `ge cutover --apply` runs it; then `ge doctor` verifies
 > and prints fixes for anything left. Steps 5–6 (IAP/DNS cutover, deleting the old
 > stack + repo) stay manual.
+{: .tip }
 
 1. **New identities/infra** (additive): create `ge-agent-factory-runner` /
    `-builder` / `-runtime` SAs, the `ge-agent-factory-stages` queue, the
