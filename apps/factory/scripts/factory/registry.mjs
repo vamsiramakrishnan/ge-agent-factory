@@ -273,8 +273,12 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
 
     // ── Legacy passthrough — each kept legacy for a CONCRETE reason citty's
     //    strict parsing would break; not yet typed:
-    //    test          — uses `"flag" in flags` presence detection; citty fills
-    //                    declared flags with defaults, so `in` is always true.
+    //    test          — reads flags.out/flags["run"]/flags["include-integration"],
+    //                    the same shape as the already-typed `eval` command, so
+    //                    the `"flag" in flags` presence-detection hazard (real in
+    //                    shouldRunFlag/wantsVertex/shouldRunHarnessReview elsewhere
+    //                    in factory.mjs) doesn't apply here; retyping `test` is
+    //                    deferred as its own decision, not blocked on that hazard.
     //    quality-gate  — `--lint-fix`/`--lint-mypy` are `=== "true"` checks used
     //                    bare; runs agents-cli (can't verify parsing offline).
     //    harness-review/refine — `--soft`/`--vertex` are passed WITH values
