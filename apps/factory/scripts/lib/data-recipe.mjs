@@ -23,6 +23,7 @@
  */
 
 import { snakeCase } from "@ge/std/naming";
+import { yamlScalar, snowExpression as snowExpr } from "../factory/data/yaml-render.mjs";
 
 // Re-exported for back-compat; the canonical (change-case) implementation lives
 // in @ge/std/naming so the simulator-seed pipeline shares one casing.
@@ -431,16 +432,6 @@ function snowfakeryStringField(generator) {
     default:
       return ["      fake: Word"];
   }
-}
-
-function snowExpr(expression) {
-  return `\${{${expression}}}`;
-}
-
-function yamlScalar(value) {
-  if (value === null || value === undefined) return "null";
-  if (typeof value === "number" || typeof value === "boolean") return String(value);
-  return JSON.stringify(String(value));
 }
 
 // ── scenarioCoverageRows ────────────────────────────────────────────────────────
