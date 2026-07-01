@@ -130,5 +130,5 @@ engine**. Nothing re-executes a stage from those values today.
 - The **console** is the day-to-day UI (Pipeline · Fleet · Activity · Doctor) with
   a live Run Drawer over the same ledger.
 
-See the [Reference](../reference/) for the full `make` and `ge` command surface,
+See the [Reference](../reference/) for the full `mise` and `ge` command surface,
 and the [Cookbooks](../cookbooks/) for "build a canary" and "ship to the cloud".
