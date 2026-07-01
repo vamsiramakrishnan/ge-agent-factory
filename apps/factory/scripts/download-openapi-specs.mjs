@@ -6,6 +6,7 @@ import { writeJson } from "@ge/std/json-io";
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import pRetry, { AbortError } from "p-retry";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, "../../..");
@@ -152,27 +153,94 @@ function docsUrls(source) {
     .filter(Boolean);
 }
 
+// Network-level error codes that indicate a transient condition (connection
+// reset/refused, DNS hiccup, timeout at the socket layer) rather than a
+// structural problem with the request itself. These are safe to retry as-is.
+const TRANSIENT_ERROR_CODES = new Set([
+  "ECONNRESET",
+  "ECONNREFUSED",
+  "ETIMEDOUT",
+  "EPIPE",
+  "EAI_AGAIN",
+  "ENOTFOUND",
+  "ENETUNREACH",
+  "EHOSTUNREACH",
+]);
+
+// HTTP statuses worth retrying: 429 (rate limited) and 5xx (server-side —
+// may well succeed on the next attempt). Everything else — 4xx client
+// errors like 400/401/403/404 — is a structural problem with the request
+// that a retry cannot fix, so it must fail fast.
+export function isRetryableStatus(status) {
+  return status === 429 || (status >= 500 && status <= 599);
+}
+
+// Pure classifier: given an error thrown while attempting a fetch, decide if
+// retrying has any chance of succeeding. Exported (and unit tested in
+// download-openapi-specs.test.mjs) independently of p-retry itself, since
+// it's plain logic with no dependency on the retry library.
+//   - Our own AbortController firing via the `setTimeout(() =>
+//     controller.abort(), timeoutMs)` below raises a DOMException/Error
+//     named "AbortError" (Node/undici) — that's OUR timeout expiring
+//     because the request was too slow, which is transient.
+//   - Node-level connection errors (ECONNRESET, ETIMEDOUT, ...) are transient.
+//   - A malformed URL raises a TypeError ("Invalid URL") synchronously,
+//     before any network activity happens — retrying can never fix that,
+//     so it is NOT retryable.
+//   - Anything else (programmer errors, etc.) is treated as not retryable —
+//     fail fast rather than mask an unexpected bug behind retries.
+export function isRetryableFetchError(error) {
+  if (!error) return false;
+  if (error.code && TRANSIENT_ERROR_CODES.has(error.code)) return true;
+  if (error.name === "TimeoutError" || error.name === "AbortError") return true;
+  return false;
+}
+
+// At most 3 total attempts (1 initial + 2 retries) with short exponential
+// backoff, so worst-case added latency stays roughly within 3x the caller's
+// own per-attempt timeout — this is a CLI, users are watching, not a
+// background job queue.
+const RETRY_OPTIONS = { retries: 2, minTimeout: 250, maxTimeout: 2000, factor: 2 };
+
 async function fetchWithTimeout(url, timeoutMs) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  let lastRetryableResponse = null;
   try {
-    const response = await fetch(url, {
-      headers: {
-        accept: "application/json, application/yaml, text/yaml, text/plain;q=0.8, */*;q=0.5",
-        "user-agent": "ge-agent-factory-openapi-cache/1.0",
-      },
-      signal: controller.signal,
-    });
-    const body = Buffer.from(await response.arrayBuffer());
-    return {
-      ok: response.ok,
-      status: response.status,
-      statusText: response.statusText,
-      contentType: response.headers.get("content-type") || "",
-      body,
-    };
-  } finally {
-    clearTimeout(timer);
+    return await pRetry(async () => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      let response;
+      try {
+        response = await fetch(url, {
+          headers: {
+            accept: "application/json, application/yaml, text/yaml, text/plain;q=0.8, */*;q=0.5",
+            "user-agent": "ge-agent-factory-openapi-cache/1.0",
+          },
+          signal: controller.signal,
+        });
+      } catch (error) {
+        if (isRetryableFetchError(error)) throw error; // let p-retry retry
+        throw new AbortError(error); // malformed URL, etc. — fail fast
+      } finally {
+        clearTimeout(timer);
+      }
+      const body = Buffer.from(await response.arrayBuffer());
+      const result = {
+        ok: response.ok,
+        status: response.status,
+        statusText: response.statusText,
+        contentType: response.headers.get("content-type") || "",
+        body,
+      };
+      if (isRetryableStatus(response.status)) {
+        lastRetryableResponse = result;
+        throw new Error(`retryable HTTP ${response.status}`); // triggers a retry
+      }
+      return result; // success or non-retryable 4xx — returned as-is, same shape as before
+    }, RETRY_OPTIONS);
+  } catch (error) {
+    if (lastRetryableResponse) return lastRetryableResponse; // exhausted retries on 429/5xx — same shape as before, not a throw
+    if (error instanceof AbortError) throw error.originalError || error;
+    throw error;
   }
 }
 
@@ -351,7 +419,9 @@ async function main() {
   if (flags.check === "true" && !report.ok) process.exit(2);
 }
 
-main().catch((error) => {
-  console.error(error.stack || error.message);
-  process.exit(1);
-});
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((error) => {
+    console.error(error.stack || error.message);
+    process.exit(1);
+  });
+}
