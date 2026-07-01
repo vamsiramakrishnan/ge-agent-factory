@@ -10,6 +10,13 @@ import { defineCommand } from "citty";
 // (=== "true"), ambiguous --soft (true/false/valueless), sub-action dispatch
 // (mcp), or commands that FORWARD arbitrary flags to others (batch-audit).
 // Handlers are INJECTED (not imported) → no import cycle back to factory.mjs.
+//
+// Flag aliases: a TYPED arg may declare `alias: [...]` (citty); citty mirrors
+// the value onto both the canonical key and every alias key in the parsed
+// `args` object, so a legacy handler reading `args["force-agent"]` keeps
+// working unchanged even when the caller passes the alias `--regenerate-agent`
+// instead. Existing flag names are never removed or renamed — aliases are
+// additive only.
 export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
   const typed = (name, description, args, run) =>
     defineCommand({ meta: { name, description }, args, run });
@@ -51,14 +58,14 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
     init: dirCmd("init", "Initialize a workspace", { name: str("Agent name"), domain: str("Domain") }, handlers.init),
     schema: dirCmd("schema", "Derive / edit the schema", { "add-table": str("Add a table (JSON)"), "from-file": str("Import schema JSON") }, handlers.schema),
     generate: dirCmd("generate", "Generate mock data", { seed: str("Faker seed"), rows: str("Default rows per table") }, handlers.generate),
-    eval: dirCmd("eval", "Run evals", { run: str("Set to 'false' to skip running"), "eval-timeout": str("Eval timeout (s)"), "timeout-ms": str("Command timeout (ms)") }, handlers.eval),
+    eval: dirCmd("eval", "Run evals", { run: str("Set to 'false' to skip running"), "eval-timeout": str("Eval timeout in SECONDS (s)"), "timeout-ms": str("Command timeout in MILLISECONDS (ms) — note: --eval-timeout above is in seconds, not ms") }, handlers.eval),
     serve: dirCmd("serve", "Serve the agent locally (adk web)", { port: str("Port (default 8080)") }, handlers.serve),
     "data-plan": dirCmd("data-plan", "Build the cloud data plan", {}, handlers.dataPlan),
     "source-integration-plan": dirCmd("source-integration-plan", "Plan source-system integration", {}, handlers.sourceIntegrationPlan),
     "snowfakery-recipe": dirCmd("snowfakery-recipe", "Emit the Snowfakery recipe", { rows: str("Rows per object") }, handlers.snowfakeryRecipe),
     "deploy-status": dirCmd("deploy-status", "Check deploy status", {}, handlers.deployStatus),
     "verify-live": dirCmd("verify-live", "Verify the deployed agent",
-      { url: str("Override URL"), mode: str("adk|a2a"), prompt: str("Prompt"), "app-name": str("App name"), "timeout-ms": str("Timeout (ms)") }, handlers.verifyLive),
+      { url: str("Override URL"), mode: str("adk|a2a"), prompt: str("Prompt"), "app-name": str("App name"), "timeout-ms": str("Request timeout in MILLISECONDS (ms)") }, handlers.verifyLive),
     publish: dirCmd("publish", "Publish to Gemini Enterprise",
       { location: str("Location"), region: str("Region"), "project-number": str("Project number"), "app-id": str("GE app id"), "display-name": str("Display name"), description: str("Description") }, handlers.publish),
     reset: dirCmd("reset", "Reset workspace pipeline state", { step: str("Reset from this step") }, handlers.reset),
@@ -66,7 +73,7 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
 
     // ── Newly typed (clean string flags; parse-verified) ────────────────────
     tools: dirCmd("tools", "Render app/tools.py and scaffold",
-      { out: str("Output path for tools.py"), "force-agent": str("Regenerate app/agent.py (true/false)") }, handlers.tools),
+      { out: str("Output path for tools.py"), "force-agent": { type: "string", alias: ["regenerate-agent"], description: "Force regeneration of app/agent.py even if it already exists (true/false; alias: --regenerate-agent)" } }, handlers.tools),
     "from-usecase": dirCmd("from-usecase", "Generate a full workspace from a use case",
       {
         usecase: str("Use case id from the enterprise catalog"),
@@ -76,7 +83,7 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
         seed: str("Faker seed"),
         domain: str("Department / domain slug"),
         systems: str("Comma-separated source systems"),
-        "force-agent": str("Regenerate app/agent.py (true/false)"),
+        "force-agent": { type: "string", alias: ["regenerate-agent"], description: "Force regeneration of app/agent.py even if it already exists (true/false; alias: --regenerate-agent)" },
         "run-tests-after-refine": str("Run smoke tests after refine (true/false)"),
         out: str("Write the run report to this path"),
       }, handlers.fromUseCase),

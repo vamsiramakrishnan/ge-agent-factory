@@ -37,9 +37,17 @@ const cfgFrom = (a) => core.loadConfig({
 });
 
 // Shared args every command accepts.
+//
+// Boolean-flag convention: most toggles here (e.g. `vertex`/`no-vertex`) are real
+// citty booleans — pass `--flag` for true, `--no-flag` for false. A few flags
+// elsewhere in this CLI tree (and in apps/factory/scripts/factory/registry.mjs)
+// are typed as strings and compared against the literal "true"/"false" (e.g.
+// `--force-agent true`) for backwards compatibility with existing scripts;
+// both styles are supported and neither will be removed — check a given
+// command's `--help` for which style it uses.
 const common = {
   json: { type: "boolean", description: "Machine-readable JSON result on stdout" },
-  project: { type: "string", description: "GCP project id" },
+  project: { type: "string", description: "GCP project id", alias: ["gcp-project"] },
   region: { type: "string", description: "Region (default us-central1)" },
   agentIdentityOrgId: { type: "string", description: "Organization ID for Agent Identity principalSet trust domain" },
 };
@@ -313,7 +321,7 @@ const LOCAL_BUILD_BOUNDARY = "previewed";
 
 const agentsBuild = defineCommand({
   meta: { name: "build", description: "Build agents. Uses the active mode (ge mode); --local/--remote override" },
-  args: { ...common, canary: { type: "boolean" }, all: { type: "boolean" }, dept: { type: "string" }, ids: { type: "string" }, concurrency: { type: "string" }, force: { type: "boolean" }, "no-proxy": { type: "boolean" }, local: { type: "boolean", description: "Override: run on this machine via the harness" }, remote: { type: "boolean", description: "Override: submit to the cloud factory" }, limit: { type: "string" }, target: { type: "string", description: `Harness target (local; default ${LOCAL_BUILD_BOUNDARY})` }, vertex: { type: "boolean", description: "Use Vertex for local harness review/preview stages (default true)" }, "no-vertex": { type: "boolean" }, location: { type: "string", description: "Vertex/GenAI location for local harness stages" }, model: { type: "string", description: "Model for harness review/refine + generated agents (local and remote)" }, "max-output-tokens": { type: "string", description: "Override generated-agent max_output_tokens (local and remote); default unset = model default" }, "no-refine": { type: "boolean", description: "Skip the cloud Antigravity refine stage (REFINE=0)" }, warm: { type: "boolean", description: "Pre-warm the shared uv cache before running (local)" } },
+  args: { ...common, canary: { type: "boolean" }, all: { type: "boolean" }, dept: { type: "string" }, ids: { type: "string" }, concurrency: { type: "string" }, force: { type: "boolean" }, "no-proxy": { type: "boolean" }, local: { type: "boolean", description: "Override: run on this machine via the harness" }, remote: { type: "boolean", description: "Override: submit to the cloud factory" }, limit: { type: "string" }, target: { type: "string", description: `Harness target (local; default ${LOCAL_BUILD_BOUNDARY})` }, vertex: { type: "boolean", description: "Use Vertex for local harness review/preview stages (default true)" }, "no-vertex": { type: "boolean", description: "Disable Vertex-backed harness stages (negates --vertex; same as --vertex=false)" }, location: { type: "string", description: "Vertex/GenAI location for local harness stages" }, model: { type: "string", description: "Model for harness review/refine + generated agents (local and remote)" }, "max-output-tokens": { type: "string", description: "Override generated-agent max_output_tokens (local and remote); default unset = model default" }, "no-refine": { type: "boolean", description: "Skip the cloud Antigravity refine stage (REFINE=0)" }, warm: { type: "boolean", description: "Pre-warm the shared uv cache before running (local)" } },
   async run({ args }) {
     const cfg = cfgFrom(args);
     const scope = args.canary ? "canary" : args.all ? "all" : undefined;
@@ -641,7 +649,7 @@ const devex = defineCommand({
 // ── polish: status board · full up · unified doctor ───────────────────────────
 
 const doctor = defineCommand({
-  meta: { name: "doctor", description: "Unified health: toolchain · factory · data plane · tool plane (--local/--cloud/--data/--mcp to filter)" },
+  meta: { name: "doctor", description: "Unified health: toolchain · factory · data plane · tool plane (--local/--cloud/--data/--mcp to filter). Narrower scoped checks: `ge data doctor` (data plane only), `ge mcp doctor` (tool plane / MCP services only)." },
   args: { ...common, local: { type: "boolean", description: "Include the uv toolchain section" }, cloud: { type: "boolean", description: "Only the factory section" }, data: { type: "boolean", description: "Only the data plane section" }, mcp: { type: "boolean", description: "Only the tool plane section" }, command: { type: "string", description: "Check readiness for a mutating command (up|data.up|mcp.deploy|agents.build|agents.build.local|agents.ship|agents.sync)" } },
   run({ args }) {
     const cfg = cfgFrom(args);
