@@ -184,6 +184,7 @@ build engine the factory drives per stage; it emits one agent workspace into
 
 | Command | Purpose | Key flags |
 |---|---|---|
+| `quickstart` | Zero-flag local pipeline for a brand-new workspace: init → schema → generate → tools → test | `--dir` `[--name] [--domain] [--seed] [--rows] [--run-tests]` |
 | `init` | Create the workspace structure | `--name <n>` `--domain <d>` `--dir <dir>` |
 | `from-usecase` | Materialize a workspace from an enterprise catalog use case | `--usecase <id>` (or `--freeform '<description>'`) `--dir` |
 | `schema` | Add / inspect table schemas | `--dir` `--add-table '<json>'` |
@@ -219,6 +220,7 @@ build engine the factory drives per stage; it emits one agent workspace into
 | `status` | Show pipeline state + data analysis | `--dir` |
 | `reset` | Reset the pipeline from a step | `--dir` `--step <step>` |
 | `list-usecases` | Browse the enterprise use-case catalog | — |
+| `promotion-gate` | Evaluate the promotion gate (blocks deploy on failure) | `--dir` `[--force]` |
 | `pack-coverage` | Report simulator-pack coverage | `[--out artifacts/pack-coverage.json]` |
 | `batch-audit` | Audit many generated workspaces | `[--limit N]` `[--department hr]` `[--root <dir>]` `[--run]` `[--harness-review]` |
 
