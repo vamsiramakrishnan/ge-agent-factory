@@ -36,6 +36,9 @@ import { renderAgentPy } from "./factory/agents/render-agent-py.mjs";
 import { writeOkfArtifacts } from "./factory/agents/okf-artifacts.mjs";
 import { renderAgentsCliEvalSet, renderEvalConfig, renderGoldenEvals, renderOptimizationConfig } from "./factory/evals/render-eval-artifacts.mjs";
 import { ensureAgentsCliPyprojectMetadata } from "./factory/runtime/agents-cli-metadata.mjs";
+import { bigQueryNumericType, bigQuerySafeName, bigQueryType, rowsToNdjson } from "./factory/data/bigquery-types.mjs";
+import { mcpToolDescriptors } from "./factory/data/mcp-tool-descriptors.mjs";
+import { buildCloudDataPlan, buildCloudTableRecord, buildDocumentManifest, renderCloudLoadScript } from "./factory/data/render-cloud-data-plan.mjs";
 import { deriveColumnsForEntity, matchEntityColumnSchema } from "./factory/use-case/entity-column-schemas.mjs";
 import { deriveSchemaFromGenerationSpec } from "./factory/use-case/schema-from-generation-spec.mjs";
 import { deriveSchemaFromUseCase } from "./factory/use-case/schema-derivation.mjs";
@@ -57,7 +60,7 @@ import { CONTRACT_INTENT_KINDS, ensureContractQueryTables } from "./factory/core
 import { MANAGED_MCP_SERVICES, buildSourceIntegrationPlan } from "./factory/integration/source-integration.mjs";
 import { pyEscape, pyTripleEscape } from "./factory/tools/py-emit.mjs";
 import { canonicalIntentToolName, tableToolName } from "./factory/tools/tool-naming.mjs";
-import { findSimulatorForSystem, loadSimulatorRegistry, simulatorBindingForTool } from "./factory/simulators/registry.mjs";
+import { loadSimulatorRegistry } from "./factory/simulators/registry.mjs";
 import { buildStepInstruction, deriveAgentWorkflow, sharedAgentGuardrails } from "./factory/agents/agent-workflow-derivation.mjs";
 import { buildSemanticModel } from "./factory/data/semantic-model.mjs";
 import { applyScenarioBindings } from "./factory/packs/index.mjs";
@@ -1564,57 +1567,6 @@ async function cmdServe(dir, flags) {
 
 // ── Cloud data packaging ─────────────────────────────────────
 
-// Field names that conceptually carry decimals even if a small sample happens
-// to be whole numbers (e.g. an `amount` whose first few rows are round). Used
-// only as a backstop — value-based inference below is the primary signal.
-const DECIMAL_NAME_HINT = /(amount|amt|rate|pct|percent|ratio|price|cost|value|metric|balance|total|avg|average|score|variance|tax|fee|spend|revenue|margin)/i;
-
-function isIntegerValue(v) {
-  return typeof v === "number" && Number.isFinite(v) && Number.isInteger(v);
-}
-
-// Decide a BigQuery numeric type for a "number"/"float" column. Sampling the
-// actual generated values is the real fix for the "first row was whole" trap:
-// a field is INT64 only when EVERY sampled value is an integer; any decimal
-// (or a decimal-ish field name) forces FLOAT64 so `bq load` accepts the data.
-function bigQueryNumericType(col, sampledValues = []) {
-  const type = String(col?.type || "").toLowerCase();
-  if (type === "float") return "FLOAT64";
-  const name = String(col?.name || "");
-  const numbers = sampledValues.filter((v) => typeof v === "number" && Number.isFinite(v));
-  if (numbers.some((v) => !Number.isInteger(v))) return "FLOAT64";
-  // Backstop: decimal-ish names go FLOAT64 unless the sample proves integer-only
-  // AND there is enough of a sample to trust it.
-  if (DECIMAL_NAME_HINT.test(name) && numbers.length === 0) return "FLOAT64";
-  if (DECIMAL_NAME_HINT.test(name) && numbers.length > 0 && numbers.every(isIntegerValue)) {
-    // Name says decimal but every sampled value is whole — trust the data only
-    // when the sample is meaningful; otherwise stay FLOAT64 to be safe.
-    return numbers.length >= 8 ? "INT64" : "FLOAT64";
-  }
-  return "INT64";
-}
-
-function bigQueryType(col, sampledValues = []) {
-  const type = String(col?.type || "string").toLowerCase();
-  if (type === "number" || type === "float") return bigQueryNumericType(col, sampledValues);
-  if (type === "boolean") return "BOOL";
-  if (type === "date") return "DATE";
-  // Schema may not declare a numeric type (e.g. columns rebuilt from generated
-  // rows collapse to "number"); fall back to the sampled values to catch decimals.
-  if (sampledValues.some((v) => typeof v === "number" && Number.isFinite(v))) {
-    return bigQueryNumericType(col, sampledValues);
-  }
-  return "STRING";
-}
-
-function bigQuerySafeName(name) {
-  return snakeCase(name || "table").replace(/^([^a-zA-Z_])/, "_$1").slice(0, 1024);
-}
-
-function rowsToNdjson(rows) {
-  return rows.map((row) => JSON.stringify(row)).join("\n") + (rows.length ? "\n" : "");
-}
-
 async function buildCloudDataArtifacts(dir, flags = {}) {
   const pipeline = await loadPipeline(dir);
   requireStep(pipeline, "generate");
@@ -1635,140 +1587,25 @@ async function buildCloudDataArtifacts(dir, flags = {}) {
 
   const tables = [];
   for (const table of manifest.tables || []) {
-    const tableId = bigQuerySafeName(table.name);
     const sourcePath = table.jsonPath || table.path;
     const rows = await readJson(join(fixturesDir(dir), sourcePath), null);
     if (!Array.isArray(rows)) fail(`Cloud data packaging requires JSON fixture rows for ${table.name}`);
-    const schema = (table.columns || []).map((col) => {
-      // Sample the actual generated values for this column so decimal-bearing
-      // fields are typed FLOAT64 even when the schema collapsed them to "number".
-      const sampledValues = rows.map((r) => r?.[col.name]).filter((v) => v != null);
-      return {
-        name: bigQuerySafeName(col.name),
-        type: bigQueryType(col, sampledValues),
-        mode: "NULLABLE",
-        description: `Generated mock field from ${manifest.id || "scenario"} fixture ${table.name}.${col.name}`,
-      };
+    const { schema, schemaPathRel, ndjsonPathRel, record } = buildCloudTableRecord({
+      table, rows, project, location, dataset, bucket, prefix, manifestId: manifest.id,
     });
-    const schemaPathRel = `mock_data/cloud/bigquery/schemas/${tableId}.schema.json`;
-    const ndjsonPathRel = `mock_data/cloud/bigquery/ndjson/${tableId}.jsonl`;
     await writeJson(join(dir, schemaPathRel), schema);
     await writeText(join(dir, ndjsonPathRel), rowsToNdjson(rows));
-    tables.push({
-      name: table.name,
-      tableId,
-      rowCount: rows.length,
-      primaryKey: table.primaryKey || "id",
-      schemaPath: schemaPathRel,
-      ndjsonPath: ndjsonPathRel,
-      gcsUri: `gs://${bucket}/${prefix}/tables/${tableId}.jsonl`,
-      bigQueryTable: `${project}.${dataset}.${tableId}`,
-      loadCommand: `bq load --location=${location} --replace --source_format=NEWLINE_DELIMITED_JSON ${project}:${dataset}.${tableId} gs://${bucket}/${prefix}/tables/${tableId}.jsonl ${schemaPathRel}`,
-    });
+    tables.push(record);
   }
 
-  const documentRows = (manifest.documents || []).map((doc) => ({
-    id: doc.id,
-    title: doc.title,
-    type: doc.type || "document",
-    source_path: doc.path,
-    gcs_uri: `gs://${bucket}/${prefix}/${doc.path}`,
-    word_count: doc.wordCount || null,
-    linked_entities: Array.isArray(doc.linkedEntities) ? doc.linkedEntities.join(",") : "",
-  }));
-  const documentManifestSchema = [
-    { name: "id", type: "STRING", mode: "REQUIRED" },
-    { name: "title", type: "STRING", mode: "NULLABLE" },
-    { name: "type", type: "STRING", mode: "NULLABLE" },
-    { name: "source_path", type: "STRING", mode: "NULLABLE" },
-    { name: "gcs_uri", type: "STRING", mode: "NULLABLE" },
-    { name: "word_count", type: "INT64", mode: "NULLABLE" },
-    { name: "linked_entities", type: "STRING", mode: "NULLABLE" },
-  ];
+  const { documentRows, documentManifestSchema } = buildDocumentManifest(manifest, { bucket, prefix });
   await writeJson(join(outDir, "bigquery", "schemas", "documents_manifest.schema.json"), documentManifestSchema);
   await writeText(join(outDir, "bigquery", "ndjson", "documents_manifest.jsonl"), rowsToNdjson(documentRows));
 
-  const commands = [
-    "#!/usr/bin/env bash",
-    "set -euo pipefail",
-    "",
-    `PROJECT="${"${GOOGLE_CLOUD_PROJECT:-"}${project}${"}"}"`,
-    `LOCATION="${"${GOOGLE_CLOUD_LOCATION:-"}${location}${"}"}"`,
-    `DATASET="${"${BQ_DATASET:-"}${dataset}${"}"}"`,
-    `BUCKET="${"${GCS_BUCKET:-"}${bucket}${"}"}"`,
-    `PREFIX="${"${GCS_PREFIX:-"}${prefix}${"}"}"`,
-    "",
-    "if [ \"${GE_SKIP_SERVICE_ENABLE:-0}\" != \"1\" ]; then",
-    "  gcloud services enable storage.googleapis.com bigquery.googleapis.com --project \"${PROJECT}\"",
-    "else",
-    "  echo \"Skipping API enablement; factory provision owns required APIs.\"",
-    "fi",
-    "if [ \"${GE_SKIP_BUCKET_CREATE:-0}\" = \"1\" ]; then",
-    "  echo \"Skipping bucket creation/check; factory provision owns gs://${BUCKET}.\"",
-    "elif ! gcloud storage buckets describe \"gs://${BUCKET}\" >/dev/null 2>&1; then",
-    "  gcloud storage buckets create \"gs://${BUCKET}\" --project \"${PROJECT}\" --location \"${LOCATION}\"",
-    "fi",
-    `bq --location="\${LOCATION}" mk --dataset --description ${JSON.stringify(`GE mock data for ${scenario}`)} "\${PROJECT}:\${DATASET}" >/dev/null 2>&1 || true`,
-    "",
-    "gcloud storage cp mock_data/cloud/bigquery/ndjson/*.jsonl \"gs://${BUCKET}/${PREFIX}/tables/\"",
-    "if [ -d fixtures/documents ]; then gcloud storage cp --recursive fixtures/documents \"gs://${BUCKET}/${PREFIX}/documents\"; fi",
-    "",
-    "# Publish this agent's MCP tool manifest to the shared agent-data bucket so the",
-    "# per-department MCP service can resolve it at runtime via ?agent=<id>. The worker",
-    "# sets GE_AGENT_DATA_BUCKET + GE_AGENT_ID; skipped (degrades) when unset (local runs).",
-    "if [ -n \"${GE_AGENT_DATA_BUCKET:-}\" ] && [ -n \"${GE_AGENT_ID:-}\" ] && [ -f mock_data/cloud/mcp-tools.json ]; then",
-    "  gcloud storage cp mock_data/cloud/mcp-tools.json \"gs://${GE_AGENT_DATA_BUCKET}/agents/${GE_AGENT_ID}/mcp-tools.json\"",
-    "  echo \"Published MCP tool manifest → gs://${GE_AGENT_DATA_BUCKET}/agents/${GE_AGENT_ID}/mcp-tools.json\"",
-    "else",
-    "  echo \"Skipping MCP tool manifest publish (needs GE_AGENT_DATA_BUCKET + GE_AGENT_ID + mock_data/cloud/mcp-tools.json)\"",
-    "fi",
-    "",
-    ...tables.map((table) => `bq load --location="\${LOCATION}" --replace --source_format=NEWLINE_DELIMITED_JSON "\${PROJECT}:\${DATASET}.${table.tableId}" "gs://\${BUCKET}/\${PREFIX}/tables/${table.tableId}.jsonl" "${table.schemaPath}"`),
-    `bq load --location="\${LOCATION}" --replace --source_format=NEWLINE_DELIMITED_JSON "\${PROJECT}:\${DATASET}.documents_manifest" "gs://\${BUCKET}/\${PREFIX}/tables/documents_manifest.jsonl" "mock_data/cloud/bigquery/schemas/documents_manifest.schema.json"`,
-    "",
-    `echo "Loaded GE mock data to BigQuery dataset \${PROJECT}:\${DATASET} and Cloud Storage gs://\${BUCKET}/\${PREFIX}"`,
-    "",
-  ];
   const scriptPath = join(outDir, "load-to-google-cloud.sh");
-  await writeText(scriptPath, commands.join("\n"));
+  await writeText(scriptPath, renderCloudLoadScript({ project, location, dataset, bucket, prefix, scenario, tables }));
 
-  const plan = {
-    id: `${scenario}-cloud-data`,
-    generatedAt: GENERATED_AT,
-    mode: "mock_data_cloud_plan",
-    target: {
-      structured: "BigQuery native tables",
-      unstructured: "Cloud Storage objects plus BigQuery documents_manifest table",
-      reason: "BigQuery is the right deploy target for deterministic relational mock tables; Cloud Storage keeps source documents inspectable and portable.",
-    },
-    googleCloud: {
-      project,
-      location,
-      dataset,
-      bucket,
-      prefix,
-      requiredApis: ["storage.googleapis.com", "bigquery.googleapis.com"],
-    },
-    artifacts: {
-      directory: "mock_data/cloud",
-      loadScript: "mock_data/cloud/load-to-google-cloud.sh",
-      deployPlan: "artifacts/deploy-plan.json",
-      mcpToolManifest: "mock_data/cloud/mcp-tools.json",
-    },
-    tables,
-    documents: {
-      count: documentRows.length,
-      manifestTable: `${project}.${dataset}.documents_manifest`,
-      manifestNdjsonPath: "mock_data/cloud/bigquery/ndjson/documents_manifest.jsonl",
-      manifestSchemaPath: "mock_data/cloud/bigquery/schemas/documents_manifest.schema.json",
-      storageUriPrefix: `gs://${bucket}/${prefix}/documents/`,
-    },
-    validation: {
-      deterministicSeed: manifest.seed,
-      totalRows: manifest.totalRows,
-      sourceManifest: "fixtures/manifest.json",
-    },
-  };
+  const plan = buildCloudDataPlan({ scenario, generatedAt: GENERATED_AT, project, location, dataset, bucket, prefix, tables, documentRows, manifest });
 
   await writeJson(join(outDir, "cloud-data-manifest.json"), plan);
 
@@ -2364,81 +2201,6 @@ async function cmdVerifyLive(dir, flags) {
 }
 
 // ── Register (Agent Registry via gcloud alpha agent-registry) ─
-
-// Compute the agent's MCP tool descriptors from its fixture manifest. Single
-// source of truth for BOTH the Agent Registry tool spec (buildToolSpec) and the
-// per-agent GCS manifest the department MCP service reads at runtime
-// (mock_data/cloud/mcp-tools.json → gs://<dataBucket>/agents/<id>/mcp-tools.json).
-// Shape matches mcp-service/server.py: [{ name, description, inputSchema }].
-function mcpToolDescriptors(manifest) {
-  const tables = manifest?.tables || [];
-  const simulatorRegistry = loadSimulatorRegistry();
-  const tools = [
-    {
-      name: "list_systems",
-      description: `List all tables and documents in the ${manifest?.id || "mock"} scenario.`,
-      inputSchema: { type: "object", properties: {} },
-    },
-  ];
-  for (const t of tables) {
-    const props = {};
-    const filterCols = (t.columns || []).filter((c) => c.type === "string" && !["id", "name", "email"].includes(c.name)).slice(0, 3);
-    for (const c of filterCols) {
-      props[c.name] = { type: "string", description: `Filter by ${c.name}` };
-    }
-    props.limit = { type: "integer", description: "Max rows to return (default 20)" };
-    tools.push({
-      name: `query_${snakeCase(t.name)}`,
-      description: `Query ${t.name} table. ${t.rowCount || "N"} rows. Columns: ${(t.columns || []).map((c) => c.name).join(", ")}.`,
-      inputSchema: { type: "object", properties: props },
-    });
-  }
-  const behaviorContract = manifest?.useCaseSpec?.behaviorContract || null;
-  const contractToolKinds = new Set(["action", "notification", "evidence_lookup", "calculation"]);
-  for (const intent of behaviorContract?.toolIntents || []) {
-    if (!intent?.name || !contractToolKinds.has(intent.kind)) continue;
-    const name = safePyName(intent.name);
-    const props = {};
-    for (const input of intent.requiredInputs || []) {
-      props[input] = { type: "string", description: `Required input: ${input}` };
-    }
-    const tool = {
-      name,
-      description: `[${intent.kind}/${intent.sourceSystemId}] ${intent.description || intent.name}`,
-      inputSchema: {
-        type: "object",
-        properties: props,
-        required: intent.requiredInputs || [],
-      },
-    };
-    const simulator = simulatorBindingForTool({
-      sourceSystemId: intent.sourceSystemId,
-      sourceSystem: intent.sourceSystem,
-      toolName: name,
-    }, simulatorRegistry);
-    if (simulator) tool.simulator = simulator;
-    tools.push(tool);
-  }
-  const existingToolNames = new Set(tools.map((tool) => tool.name));
-  for (const system of manifest?.systems || []) {
-    const simulator = findSimulatorForSystem(system.id || system.name, simulatorRegistry);
-    if (!simulator?.toolCatalog?.tools?.length) continue;
-    for (const toolSpec of simulator.toolCatalog.tools) {
-      if (!toolSpec?.name || existingToolNames.has(toolSpec.name)) continue;
-      tools.push({
-        name: toolSpec.name,
-        description: toolSpec.description || `${simulator.displayName} simulator tool ${toolSpec.name}`,
-        inputSchema: toolSpec.inputSchema || { type: "object", properties: {} },
-        simulator: {
-          system_id: simulator.id,
-          tool: toolSpec.name,
-        },
-      });
-      existingToolNames.add(toolSpec.name);
-    }
-  }
-  return tools;
-}
 
 async function buildToolSpec(dir, manifest) {
   const maxBytes = 10 * 1024;

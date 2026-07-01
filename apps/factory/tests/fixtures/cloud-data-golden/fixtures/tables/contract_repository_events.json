@@ -1,0 +1,57 @@
+[
+  {
+    "id": "id-001",
+    "counterparty": "counterparty-1",
+    "value": 100.25,
+    "currency": "USD",
+    "start_date": "2026-01-15T00:00:00Z",
+    "end_date": "2026-01-15T00:00:00Z",
+    "status": "open",
+    "auto_renew": true,
+    "contract_repository_record_id": "contract_repository_record_id-1"
+  },
+  {
+    "id": "id-002",
+    "counterparty": "counterparty-2",
+    "value": 101,
+    "currency": "USD",
+    "start_date": "2026-02-15T00:00:00Z",
+    "end_date": "2026-02-15T00:00:00Z",
+    "status": "closed",
+    "auto_renew": false,
+    "contract_repository_record_id": "contract_repository_record_id-2"
+  },
+  {
+    "id": "id-003",
+    "counterparty": "counterparty-3",
+    "value": 102,
+    "currency": "USD",
+    "start_date": "2026-03-15T00:00:00Z",
+    "end_date": "2026-03-15T00:00:00Z",
+    "status": "pending",
+    "auto_renew": true,
+    "contract_repository_record_id": "contract_repository_record_id-3"
+  },
+  {
+    "id": "id-004",
+    "counterparty": "counterparty-4",
+    "value": 103,
+    "currency": "USD",
+    "start_date": "2026-04-15T00:00:00Z",
+    "end_date": "2026-04-15T00:00:00Z",
+    "status": "open",
+    "auto_renew": false,
+    "contract_repository_record_id": "contract_repository_record_id-4"
+  },
+  {
+    "id": "id-005",
+    "counterparty": "counterparty-5",
+    "value": 104,
+    "currency": "USD",
+    "start_date": "2026-05-15T00:00:00Z",
+    "end_date": "2026-05-15T00:00:00Z",
+    "status": "closed",
+    "auto_renew": true,
+    "contract_repository_record_id": "contract_repository_record_id-5"
+  }
+]
