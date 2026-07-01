@@ -28,14 +28,22 @@ import { LEGACY_STATE_PATHS, STATE_PATHS, displayStatePath, DEPARTMENTS } from "
 // NOT directly from apps/factory — factory-core keeps zero app imports (enforced
 // by tools/check-no-app-imports.mjs).
 import { loadInterviewSpecEntries, slug, validateGenerationSpec } from "./factory-catalog.mjs";
-import { openRunLedger } from "./run-ledger.mjs";
-import { planWorkItem } from "./pipeline-state-machine.mjs";
 import { planReconcile } from "./reconcile.mjs";
 import { createGatewayClient, getJson, postJson } from "./gateway-client.mjs";
 import { createDoctorPlane } from "./doctor.mjs";
 import { createProvisionOps } from "./provision.mjs";
 import { localWorkspaceIndexByUseCase, resolveLocalWorkspaceId, localWorkspaceExists } from "./local-workspaces.mjs";
 import { selectionDepartments, toolPlaneChecks, shipProxyCheck, gatewayProvisionCheck, bigQueryApiCheck, selectWorkspacesForRegen } from "./tool-plane-checks.mjs";
+import {
+  runLedger,
+  ledgerWrite,
+  ledgerReadsEnabled,
+  ledgerRuns,
+  ledgerRun,
+  ledgerFleet,
+  ledgerPlan,
+  ledgerBackfillFromDisk,
+} from "./factory-ledger.mjs";
 
 export {
   selectionDepartments,
@@ -46,6 +54,7 @@ export {
   selectWorkspacesForRegen,
 } from "./tool-plane-checks.mjs";
 export { HARNESS_VENV_DIR, harnessVenvPython } from "./doctor.mjs";
+export { runLedger, ledgerRuns, ledgerRun, ledgerFleet, ledgerPlan, ledgerBackfillFromDisk } from "./factory-ledger.mjs";
 
 
 export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -1118,68 +1127,12 @@ export async function sync(cfg, { ids = "", force = false, commit = true, push =
 const GEN_DIR = join(REPO_ROOT, "apps/factory");
 const FACTORY_DATA_ROOT = STATE_PATHS.factory.root;
 const LOCAL_PROJECTS = STATE_PATHS.factory.workspaces;
-const LEDGER_PATH = join(FACTORY_HARNESS_DIR, "ledger.sqlite");
 
-// Durable run ledger (ADR 0001). Best-effort + cached: opens a local SQLite ledger
-// when a driver is available (bun:sqlite / better-sqlite3), else returns null and
-// callers fall back to the legacy files. Set GE_LEDGER=0 to disable. The cloud
-// control plane points this at AlloyDB via pgAdapter (future phase).
-let _ledgerPromise = null;
-export async function runLedger() {
-  if (process.env.GE_LEDGER === "0") return null;
-  if (!_ledgerPromise) _ledgerPromise = openRunLedger(LEDGER_PATH).catch(() => null);
-  return _ledgerPromise;
-}
-// Never let a ledger write break a build/ship: best-effort, swallow errors.
-async function ledgerWrite(fn) {
-  try {
-    const l = await runLedger();
-    if (l) await fn(l);
-  } catch (error) {
-    // The ledger is a shadow store in phase 1, so a write failure is never fatal to
-    // the build/ship — but silently dropping it means a run/submission can vanish
-    // from the durable ledger with no trace, leaving the UI/CLI disagreeing about
-    // run state. Surface the reason; the swallow (and fallback to file state) is unchanged.
-    console.warn(`[factory-core] ledger write skipped — durable run/job record not persisted: ${error?.message || String(error)}`);
-  }
-}
+// Ledger read/write (runLedger/ledgerWrite/ledgerReadsEnabled/ledgerRuns/ledgerRun/
+// ledgerFleet/ledgerPlan/ledgerBackfillFromDisk) now live in factory-ledger.mjs;
+// imported above and re-exported for the public API contract (see
+// factory-core.export-surface.json / factory-core.export-surface.test.mjs).
 
-// Read cutover (default ON; set GE_LEDGER_READS=0 to disable): fleetStatus and
-// listFactoryRuns treat the ledger as authoritative and fall back to the legacy
-// files for anything it doesn't cover. Safe to default on because both readers
-// merge per-item — an empty/partial ledger never drops file-only state.
-function ledgerReadsEnabled() {
-  return process.env.GE_LEDGER_READS !== "0";
-}
-
-// Read APIs over the ledger (used by `ge ledger …`; the console can adopt these to
-// replace the file-based fleet/runs reads once validated against a live install).
-export async function ledgerRuns({ limit = 25 } = {}) {
-  const l = await runLedger();
-  return l ? l.listRuns({ limit }) : [];
-}
-export async function ledgerRun(id) {
-  const l = await runLedger();
-  return l ? l.getRun(id) : null;
-}
-export async function ledgerFleet() {
-  const l = await runLedger();
-  if (!l) return [];
-  return [...l.fleetByUseCase().entries()].map(([useCaseId, s]) => ({ useCaseId, ...s }));
-}
-// Next action per work item, from the ledger's latest state + the pipeline state
-// machine (ADR 0001 phase 4). One authoritative "what happens next" for build /
-// ship / retry / regenerate — replacing ad-hoc stageReached skipping.
-export async function ledgerPlan({ targetStage = "previewed", mode = null } = {}) {
-  const l = await runLedger();
-  if (!l) return [];
-  const effectiveMode = mode || "local";
-  return [...l.fleetByUseCase().entries()].map(([useCaseId, s]) => ({
-    useCaseId,
-    workspaceId: s.workspaceId || null,
-    ...planWorkItem({ stage: s.stage, status: s.status === "failed" ? "failed" : "done" }, { targetStage, mode: effectiveMode }),
-  }));
-}
 // ── declarative reconcile (ADR 0001 phase 5) ──────────────────────────────────
 const APPLY_MANIFEST_PATH = join(REPO_ROOT, "ge.manifest.json");
 
@@ -1218,21 +1171,6 @@ export async function applyApply(cfg, { manifest = null, log = noop } = {}) {
   return { applied: planResult.steps.length, plan: planResult };
 }
 
-// One-shot import of the legacy file stores (.ge-state.json + factory-run-*.json)
-// into the ledger. Idempotent — safe to re-run.
-export async function ledgerBackfillFromDisk() {
-  const l = await runLedger();
-  if (!l) return { runs: 0, items: 0, note: "ledger unavailable (no sqlite driver — run under bun)" };
-  const stateJson = readJson(STATE_PATH, null);
-  const factoryRuns = [];
-  if (existsSync(FACTORY_HARNESS_DIR)) {
-    for (const f of readdirSync(FACTORY_HARNESS_DIR).filter((name) => /^factory-run-.*\.json$/.test(name))) {
-      const run = readJson(join(FACTORY_HARNESS_DIR, f), null);
-      if (run) factoryRuns.push(run);
-    }
-  }
-  return l.backfill({ stateJson, factoryRuns });
-}
 function missingWorkspaceReport({ id, workspaceId, stage }) {
   return {
     kind: "ge.workspace_doctor",
