@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import { createServer } from "node:http";
-import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync, rmSync, readdirSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { existsSync, mkdirSync, writeFileSync, appendFileSync, rmSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { homedir } from "node:os";
 import * as core from "./factory-core.mjs";
 import { readJson, writeJson } from "@ge/std/json-io";
@@ -20,7 +20,26 @@ import { isDataMissionNodeKind, missionNodeCommand, safeMissionNodeCommand, vali
 import { summarizeMissionNode } from "./mission-node-summary.mjs";
 import { buildMissionGraph, nextRunnableMissionNode, patchMissionNode, resetMissionGraphForResume } from "./mission-plan.mjs";
 import { normalizeRuntimeTask } from "./runtime-contract.mjs";
-import { LEGACY_STATE_PATHS, REPO_ROOT, STATE_PATHS, ensureStateLayout } from "./state-paths.mjs";
+import { LEGACY_STATE_PATHS, REPO_ROOT, STATE_PATHS } from "./state-paths.mjs";
+import {
+  appendEvent,
+  appendResumeAttempt,
+  commandOutput,
+  createRun,
+  ensureStore,
+  interactionDir,
+  listEvents,
+  listRuns,
+  listSequencedEvents,
+  newTaskId,
+  runMetaPath,
+  runOutput,
+  taskStatusState,
+  terminalStatusForCode,
+  updateRun,
+  updateRunOutput,
+  waitForTaskTerminal,
+} from "./daemon/run-store.mjs";
 
 const GE_CLI = join(REPO_ROOT, "tools", "ge.mjs");
 const HARNESS_CLI = join(REPO_ROOT, "apps", "factory", "src", "cli.js");
@@ -32,7 +51,6 @@ const LOG_PATH = STATE_PATHS.runtime.log;
 const DEFAULT_UV_CACHE_DIR = STATE_PATHS.cache.uv;
 const DEFAULT_PORT = 17654;
 const DAEMON_PROTOCOL_VERSION = 2;
-const MAX_MACHINE_OUTPUT_BYTES = 2 * 1024 * 1024;
 const SUPPORTED_TASK_KINDS = [
   "ge.command",
   "process.command",
@@ -50,60 +68,6 @@ const json = (res, status, body) => {
   res.writeHead(status, { "content-type": "application/json" });
   res.end(JSON.stringify(body, null, 2));
 };
-
-function ensureStore() {
-  ensureStateLayout();
-  mkdirSync(RUNS_DIR, { recursive: true });
-}
-
-// readJson/writeJson come from the shared atomic json-io helper (see import above).
-
-function runDir(id) {
-  return join(RUNS_DIR, id);
-}
-
-function runMetaPath(id) {
-  return join(runDir(id), "run.json");
-}
-
-function runEventsPath(id) {
-  return join(runDir(id), "events.jsonl");
-}
-
-function interactionDir(id) {
-  return join(runDir(id), "interactions");
-}
-
-function newTaskId(prefix) {
-  return `${prefix}-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
-}
-
-function appendEvent(id, event) {
-  const ev = { ts: new Date().toISOString(), ...event };
-  appendFileSync(runEventsPath(id), JSON.stringify(ev) + "\n", "utf8");
-  return ev;
-}
-
-function listEvents(id) {
-  const path = runEventsPath(id);
-  if (!existsSync(path)) return [];
-  return readFileSync(path, "utf8").split("\n").filter(Boolean).map((line) => {
-    try { return JSON.parse(line); } catch { return null; }
-  }).filter(Boolean);
-}
-
-function listSequencedEvents(id) {
-  return listEvents(id).map((event, index) => ({ seq: index + 1, event }));
-}
-
-function taskStatusState(status) {
-  if (status === "done") return "done";
-  if (status === "skipped") return "skipped";
-  if (["blocked", "failed"].includes(status)) return "blocked";
-  if (status === "paused") return "paused";
-  if (["running", "queued"].includes(status)) return "running";
-  return status || "blocked";
-}
 
 export function safeGeCommand(argv = []) {
   const args = Array.isArray(argv) ? argv.map(String) : [];
@@ -165,16 +129,6 @@ function runtimeEnv(extra = {}) {
     UV_CACHE_DIR: process.env.UV_CACHE_DIR || DEFAULT_UV_CACHE_DIR,
     CLOUDSDK_CORE_DISABLE_PROMPTS: "1",
     ...extra,
-  };
-}
-
-function commandOutput(result = {}, { preserveMachineStdout = false } = {}) {
-  const stdout = String(result.stdout || "");
-  const stderr = String(result.stderr || "");
-  return {
-    stdout: stdout.slice(-4000),
-    stderr: stderr.slice(-4000),
-    ...(preserveMachineStdout ? { stdoutFull: stdout.slice(-MAX_MACHINE_OUTPUT_BYTES) } : {}),
   };
 }
 
@@ -387,60 +341,8 @@ function normalizedTaskDetail(run) {
   return detail ? normalizeRuntimeTask(detail) : null;
 }
 
-function updateRun(id, patch) {
-  const current = readJson(runMetaPath(id), {});
-  const next = { ...current, ...patch, updatedAt: new Date().toISOString() };
-  writeJson(runMetaPath(id), next);
-  return next;
-}
-
-function listRuns(limit = 50) {
-  return existsSync(RUNS_DIR)
-    ? readdirSafe(RUNS_DIR)
-      .map((id) => readJson(runMetaPath(id), null))
-      .filter(Boolean)
-      .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
-      .slice(0, Math.max(1, Math.min(Number(limit) || 50, 200)))
-    : [];
-}
-
 function listRunSummaries(limit = 50) {
   return listRuns(limit).map(normalizedTaskSummary).filter(Boolean);
-}
-
-function createRun({ id = newTaskId("task"), kind, input = {}, status = "running" }) {
-  ensureStore();
-  mkdirSync(runDir(id), { recursive: true });
-  const run = {
-    id,
-    kind,
-    status,
-    input,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    endedAt: null,
-  };
-  writeJson(runMetaPath(id), run);
-  return run;
-}
-
-function runOutput(id) {
-  return readJson(runMetaPath(id), {}).output || {};
-}
-
-function updateRunOutput(id, patch) {
-  const current = readJson(runMetaPath(id), {});
-  return updateRun(id, { output: { ...(current.output || {}), ...patch } });
-}
-
-function appendResumeAttempt(id, patch) {
-  const output = runOutput(id);
-  const attempts = Array.isArray(output.resumeAttempts) ? output.resumeAttempts : [];
-  updateRunOutput(id, { resumeAttempts: [...attempts, { ts: new Date().toISOString(), ...patch }] });
-}
-
-function terminalStatusForCode(code) {
-  return code === 0 ? "done" : "failed";
 }
 
 function doctorArgv({ scope = "all", command } = {}) {
@@ -825,30 +727,6 @@ function startMissionNodeCommandTask(kind, input = {}) {
   });
 
   return run;
-}
-
-function taskTerminal(run) {
-  return run && !["running", "queued"].includes(run.status);
-}
-
-function waitForTaskTerminal(id, { intervalMs = 300, onEvent = null } = {}) {
-  return new Promise((resolve) => {
-    let sent = 0;
-    const tick = () => {
-      if (onEvent) {
-        const events = listSequencedEvents(id);
-        for (let i = sent; i < events.length; i += 1) onEvent(events[i]);
-        sent = events.length;
-      }
-      const run = readJson(runMetaPath(id), null);
-      if (taskTerminal(run)) {
-        resolve(run);
-        return;
-      }
-      setTimeout(tick, intervalMs);
-    };
-    tick();
-  });
 }
 
 function childStatusToNodeStatus(status) {
@@ -1508,16 +1386,6 @@ function daemonStatus(port) {
     dataDir: DAEMON_DIR,
     runs: listRunSummaries(20),
   };
-}
-
-function readdirSafe(path) {
-  try {
-    return existsSync(path)
-      ? readdirSync(path, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name)
-      : [];
-  } catch {
-    return [];
-  }
 }
 
 export function startDaemonServer({ host = "127.0.0.1", port = DEFAULT_PORT, foreground = true } = {}) {
