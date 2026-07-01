@@ -20,6 +20,7 @@ import {
 } from "./artifacts/specArtifact";
 import { SpecSectionRenderer } from "./SpecSectionRenderer";
 import { SpecFieldEditor } from "./SpecFieldEditor";
+import { describeGap } from "@ge/std/spec-gaps";
 
 type Spec = Record<string, any>;
 
@@ -448,7 +449,7 @@ export function SpecCanvas({
             </div>
             <ul className="space-y-2">
               {gaps.slice(0, 12).map((gap) => (
-                <li key={gap} className="rounded-md bg-amber-500/10 px-3 py-2 text-xs font-medium text-amber-700">{gap}</li>
+                <li key={gap} className="rounded-md bg-amber-500/10 px-3 py-2 text-xs font-medium text-amber-700">{describeGap(gap).message}</li>
               ))}
             </ul>
           </section>
