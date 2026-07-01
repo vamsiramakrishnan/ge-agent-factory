@@ -1,0 +1,26 @@
+flowchart TD
+    Start(["Resolve state backend\nfor a system"])
+    Q1{"registry.json\nstateBackend set?"}
+    Q2{"GE_SIMULATOR_STATE_BACKEND\nenv set?"}
+    UseSystem["Use per-system value\n(firestore / alloydb)"]
+    UseGlobal["Use global override"]
+    UseDefault["Use memory\n(default)"]
+    Degrade{"Dependency or\nconfig available?"}
+    Durable["Durable store\n(Firestore / AlloyDB)"]
+    Fallback["Degrade to memory\n(log warning)"]
+
+    Start --> Q1
+    Q1 -->|yes| UseSystem
+    Q1 -->|no| Q2
+    Q2 -->|yes| UseGlobal
+    Q2 -->|no| UseDefault
+    UseSystem --> Degrade
+    UseGlobal --> Degrade
+    Degrade -->|yes| Durable
+    Degrade -->|no| Fallback
+    UseDefault --> Fallback2["memory\n(no degrade needed)"]
+
+    classDef durable fill:#e6f4ea,stroke:#34a853,color:#202124
+    classDef fallback fill:#fce8e6,stroke:#c5221f,color:#202124
+    class Durable durable
+    class Fallback,Fallback2 fallback

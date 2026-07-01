@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 801.694 236.60000000000002" width="801.694" height="236.60000000000002" style="--bg:#ffffff;--fg:#202124;--line:#5f6368;--accent:#1a73e8;--muted:#80868b;--surface:#eef3f9;--border:#dadce0;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<polyline class="edge" data-from="T" data-to="F" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="GE_DATA_BACKEND=fixtures
+default, local / eval" points="185.69,109.33333333333334 221.69,109.33333333333334 221.69,73.9 429.14799999999997,73.9" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="T" data-to="R" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="GE_DATA_BACKEND=mcp
+cloud" points="185.69,127.26666666666668 221.69000000000005,127.26666666666668 221.69000000000005,162.70000000000002 429.14799999999997,162.70000000000002" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="R" data-to="M" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="573.356,162.70000000000002 613.04,162.70000000000002" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<g class="edge-label" data-from="T" data-to="F" data-label="GE_DATA_BACKEND=fixtures
+default, local / eval">
+  <rect x="229.69" y="50.900000000000006" width="163.77399999999997" height="44.6" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="311.577" y="73.2" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)"><tspan x="311.577" dy="-3.3000000000000007">GE_DATA_BACKEND=fixtures</tspan><tspan x="311.577" dy="14.3">default, local / eval</tspan></text>
+</g>
+<g class="edge-label" data-from="T" data-to="R" data-label="GE_DATA_BACKEND=mcp
+cloud">
+  <rect x="229.69000000000005" y="139.70000000000002" width="147.14199999999997" height="44.6" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="303.261" y="162.00000000000003" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)"><tspan x="303.261" dy="-3.3000000000000007">GE_DATA_BACKEND=mcp</tspan><tspan x="303.261" dy="14.3">cloud</tspan></text>
+</g>
+<g class="node" data-id="T" data-label="app/tools.py
+source_adapters" data-shape="rectangle">
+  <rect x="40" y="91.4" width="145.69" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="112.845" y="118.30000000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="112.845" dy="-3.9000000000000012">app/tools.py</tspan><tspan x="112.845" dy="16.900000000000002">source_adapters</tspan></text>
+</g>
+<g class="node" data-id="F" data-label="local fixture files
+JSON / CSV" data-shape="cylinder">
+  <rect x="429.14799999999997" y="47" width="135.31600000000003" height="53.80000000000001" fill="#e8f0fe" stroke="none" />
+  <line x1="429.14799999999997" y1="47" x2="429.14799999999997" y2="100.80000000000001" stroke="#1a73e8" stroke-width="0.75" />
+  <line x1="564.4639999999999" y1="47" x2="564.4639999999999" y2="100.80000000000001" stroke="#1a73e8" stroke-width="0.75" />
+  <ellipse cx="496.806" cy="100.80000000000001" rx="67.65800000000002" ry="7" fill="#e8f0fe" stroke="#1a73e8" stroke-width="0.75" />
+  <ellipse cx="496.806" cy="47" rx="67.65800000000002" ry="7" fill="#e8f0fe" stroke="#1a73e8" stroke-width="0.75" />
+  <text x="496.806" y="73.9" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="496.806" dy="-3.9000000000000012">local fixture files</tspan><tspan x="496.806" dy="16.900000000000002">JSON / CSV</tspan></text>
+</g>
+<g class="node" data-id="R" data-label="Agent Registry
+get_mcp_toolset()" data-shape="rectangle">
+  <rect x="429.14799999999997" y="135.8" width="144.208" height="53.800000000000004" rx="0" ry="0" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <text x="501.25199999999995" y="162.70000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="501.25199999999995" dy="-3.9000000000000012">Agent Registry</tspan><tspan x="501.25199999999995" dy="16.900000000000002">get_mcp_toolset()</tspan></text>
+</g>
+<g class="node" data-id="M" data-label="per-agent store
+via MCP tool plane" data-shape="cylinder">
+  <rect x="613.04" y="135.8" width="148.654" height="53.80000000000001" fill="#e6f4ea" stroke="none" />
+  <line x1="613.04" y1="135.8" x2="613.04" y2="189.60000000000002" stroke="#34a853" stroke-width="0.75" />
+  <line x1="761.694" y1="135.8" x2="761.694" y2="189.60000000000002" stroke="#34a853" stroke-width="0.75" />
+  <ellipse cx="687.367" cy="189.60000000000002" rx="74.327" ry="7" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <ellipse cx="687.367" cy="135.8" rx="74.327" ry="7" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <text x="687.367" y="162.70000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="687.367" dy="-3.9000000000000012">per-agent store</tspan><tspan x="687.367" dy="16.900000000000002">via MCP tool plane</tspan></text>
+</g>
+</svg>

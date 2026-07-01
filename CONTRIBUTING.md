@@ -38,7 +38,7 @@ The repo's test scripts invoke pytest as **`python3 -m pytest`** — so they use
 whatever `python3` resolves to on your `PATH`, and that interpreter must have pytest
 installed.
 
-> **Note:** the repo `.venv` (created by `mise run deps` for the `google-antigravity`
+> The repo `.venv` (created by `mise run deps` for the `google-antigravity`
 > SDK) does **not** include pytest, so a bare `python3 -m pytest` will fail with
 > `No module named pytest` if `.venv` is first on your `PATH`. Either install the dev
 > deps into the interpreter you run tests with —
@@ -46,6 +46,7 @@ installed.
 > `uv pip install -e '…[dev]'`) — or run pytest from an interpreter that already has
 > it (on the maintainer's machine that is the Anaconda Python, not `.venv`). Confirm
 > with `python3 -m pytest --version` before assuming a clean run.
+{: .warning }
 
 ---
 
@@ -101,10 +102,11 @@ bun run build:presentation
 ```
 
 > CI typechecks with `bun run lint` because `vite build` strips types — a TS error
-> can otherwise ship silently. Note `apps/factory` has no `lint` script, so
+> can otherwise ship silently. `apps/factory` has no `lint` script, so
 > `bun run lint` typechecks the console and presentation apps. The Python tests are
 > **not** part of the `bun`/Cloud Build CI gate today — run them yourself when you
 > touch `mcp-service` or the simulator packs.
+{: .note }
 
 ---
 
@@ -192,3 +194,4 @@ the console's Systems field.
 - Console Tour: [docs/reference/console-tour.md](docs/reference/console-tour.md)
 - Operator runbook: [docs/OPERATIONS.md](docs/OPERATIONS.md)
 - CLI internals: [tools/README.md](tools/README.md)
+- Docs design system (theme, diagrams, callouts): [docs/DESIGN.md](docs/DESIGN.md)

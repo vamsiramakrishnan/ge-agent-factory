@@ -1,0 +1,5 @@
+flowchart TD
+    A(["description / samples / OpenAPI"]) --> B["sketch\ncollections, keys, fields,\noptional state machine"]
+    B --> C["contract\ntool bindings, workflows,\nprojection / materialization"]
+    C --> D["seed\nreferentially-consistent rows +\nscenario-coverage rows"]
+    D --> E(["overlay\nregistered inline, resolvable\nby the generic engine"])

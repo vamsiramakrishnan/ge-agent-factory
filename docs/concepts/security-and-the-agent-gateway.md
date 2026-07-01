@@ -60,18 +60,9 @@ plus Google-managed 1P MCP endpoints for direct store access. The identity model
 here is the subtle part — *resolving* a toolset and *invoking* it are separate
 grants:
 
-```
-  agent (Agent Runtime per-agent SPIFFE identity / principalSet)
-     │  resolve toolset                 agentregistry.viewer
-     ▼
-  Agent Registry  ──────────────────────────────────────────────
-     │  invoke registered MCP server    iap.egressor (on the mcpServer)
-     ▼
-  per-department FastMCP (Cloud Run)    run.invoker
-     │  read/write per-agent store      bigquery.dataEditor / datastore.user / …
-     ▼
-  per-agent store (the simulated source system)
-```
+<p align="center">
+  <img src="../assets/diagrams/tool-authz-chain.svg" alt="agent identity resolves a toolset from the Agent Registry, invokes the per-department FastMCP service, which reads or writes the per-agent store" width="420">
+</p>
 
 Generated agents run under the **Agent Runtime per-agent identity** (Preview):
 IAM is granted to the **principalSet**, not a SA email, and ADC returns an
@@ -110,12 +101,9 @@ read-only MCP tools (`request.auth.type=='MCP' && mcp.tool.isReadOnly`).
 
 ## The mental model
 
-```
-  Operator/console ──(authenticated)──▶ gateway (runtime SA)
-        Cloud Tasks ──(OIDC as runner)─▶ worker  (runner SA, no-allow-unauth)
-  Generated agent  ──(agent identity, mTLS)──▶ [Agent Gateway, governed]
-                                                    └─▶ MCP plane ─▶ per-agent store
-```
+<p align="center">
+  <img src="../assets/diagrams/security-mental-model.svg" alt="Three authenticated paths: operator to gateway, Cloud Tasks to worker, and generated agent through the governed Agent Gateway to the MCP plane and per-agent store" width="700">
+</p>
 
 Every arrow is an authenticated identity with a bounded role; the gateway is the
 one place an agent's tool access can be governed by policy across the whole fleet.

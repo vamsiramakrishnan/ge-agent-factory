@@ -20,6 +20,12 @@ The factory exposes three command surfaces:
 `--json` (structured result on stdout, progress on stderr); the MCP server drives
 the same core for model/harness callers.
 
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
 ---
 
 ## `ge` — operator CLI
@@ -228,6 +234,7 @@ factory publish --dir ./hr-agent --app-id my-gemini-enterprise-app-id
 > `factory` also exports pure build helpers (`deriveAgentWorkflow`,
 > `canonicalIntentToolName`, …) under `__test`; importing the module does **not**
 > execute the CLI.
+{: .note }
 
 ---
 
@@ -288,3 +295,4 @@ the handful that collide with a built-in mise command name (`doctor`, `install`,
 | `mise run serve-console` / `serve-presentation` | Serve the built app via Bun | `PORT` (default 8261 / 8251) |
 
 > Bare `mise run dev` is a guard: it explains the three apps and starts nothing.
+{: .note }

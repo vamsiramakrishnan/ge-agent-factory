@@ -5,7 +5,6 @@ exact commands, a verification step, and a rollback. Do NOT batch stages — ver
 each against the live pipeline before the next. Run a real factory build end-to-end
 after Stage B and Stage C.
 
-> **Status:**
 > - **Stage B build-SA — DONE in code.** `factory-worker.js` submits builds with
 >   `--service-account=<builder>` + `--gcs-log-dir=gs://<factory-bucket>/cloudbuild-logs`
 >   (env-overridable: `GE_AGENT_FACTORY_BUILDER_SA`, `GE_AGENT_FACTORY_BUILD_LOGS_DIR`).
@@ -23,6 +22,11 @@ after Stage B and Stage C.
 >   (DRY_RUN default) renders the authz-extension YAML; see Stage D below.
 >
 > The live `gcloud`/`terraform apply` ops below are now mechanical and match the IaC.
+{: .status }
+
+<p align="center">
+  <img src="../assets/diagrams/security-cutover-stages.svg" alt="Stage 0 baseline snapshot fans out to independently verifiable Stages A, B, C, D, which converge on a post-cutover reconcile" width="700">
+</p>
 
 Context (already done): the browser-facing services run as dedicated least-privilege
 SAs (`runtime@`/`runner@`), not the default compute SA — see
@@ -76,6 +80,7 @@ gcloud run services update ge-agent-factory-worker --project $PROJECT --region $
 > `private-ranges-only` keeps public egress (Vertex, GCS, Firestore) on the default
 > path and only sends RFC-1918 + Google internal through the VPC — enough to reach
 > internal Cloud Run. Use `all-traffic` only if you also need egress firewalling.
+{: .note }
 
 ### A2. Flip MCP ingress to internal
 ```bash
@@ -133,9 +138,10 @@ identical (same `--no-source --config cloudbuild.factory-stage.yaml`, same
 substitutions). **Action:** rebuild + redeploy the worker image; verify the revision
 is Ready.
 
-> Note: `--gcs-log-dir` is required because a user-specified build SA cannot use the
+> `--gcs-log-dir` is required because a user-specified build SA cannot use the
 > default logs bucket. If you ever switch to a regional/private worker pool you may use
 > `--default-buckets-behavior` instead, but `--gcs-log-dir` is the portable choice here.
+{: .note }
 
 ### B3. Verify builds still succeed (as builder)
 Trigger a real factory build end-to-end (the same "known good" build from Stage 0).
@@ -147,11 +153,12 @@ gcloud builds list --project $PROJECT --region $REGION --limit=1 \
 
 ### B4. Remove build privileges from runner (the actual tightening) — DONE + verified 2026-06-20
 
-⚠️ **`roles/cloudbuild.builds.editor` is the ONLY role granting the runner
-`cloudbuild.builds.create`.** Submitting a build — even one that *runs as* the builder
-SA via `--service-account` — still requires the **caller** to hold `builds.create`. So
-removing editor *alone* breaks build submission. Give the runner a minimal custom role
-FIRST, then drop editor:
+> `roles/cloudbuild.builds.editor` is the ONLY role granting the runner
+> `cloudbuild.builds.create`. Submitting a build — even one that *runs as* the builder
+> SA via `--service-account` — still requires the **caller** to hold `builds.create`. So
+> removing editor *alone* breaks build submission. Give the runner a minimal custom role
+> FIRST, then drop editor.
+{: .important }
 ```bash
 # 1) Minimal submit+poll role (codified as google_project_iam_custom_role.build_submitter):
 gcloud iam roles create geAgentFactoryBuildSubmitter --project=$PROJECT \
@@ -174,11 +181,12 @@ gcloud builds submit --no-source --config /tmp/smoke.yaml \
   --impersonate-service-account="$RUNNER" --project $PROJECT   # → STATUS: SUCCESS
 ```
 
-> **IaC matches the verified live state** (`installer/terraform/iam.tf`):
+> IaC matches the verified live state (`installer/terraform/iam.tf`):
 > `cloudbuild.builds.editor` removed from `runner_roles`; the
 > `build_submitter` custom role + `runner_build_submitter` binding added; the runner→builder
 > `roles/iam.serviceAccountTokenCreator` binding present; `iam.serviceAccountUser` KEPT for
 > the ship stage. `terraform apply` converges to exactly what was applied + verified live.
+{: .tip }
 
 ### B-Rollback
 ```bash
@@ -189,11 +197,12 @@ gcloud projects add-iam-policy-binding $PROJECT --member="serviceAccount:$RUNNER
 
 ## Stage C — Worker ingress (constraint-aware)
 
-⚠️ **The worker cannot be `ingress=internal` while Cloud Tasks delivers to it over
-HTTP.** Cloud Tasks hits the public `run.app` endpoint; internal-only ingress blocks
-it → the pipeline stalls. The worker is already authenticated-only (no `allUsers`;
-OIDC `run.invoker` required), so the residual risk is "a valid Google identity with
-the invoker role could reach the endpoint" — low.
+> The worker cannot be `ingress=internal` while Cloud Tasks delivers to it over
+> HTTP. Cloud Tasks hits the public `run.app` endpoint; internal-only ingress blocks
+> it → the pipeline stalls. The worker is already authenticated-only (no `allUsers`;
+> OIDC `run.invoker` required), so the residual risk is "a valid Google identity with
+> the invoker role could reach the endpoint" — low.
+{: .important }
 
 Pick one:
 

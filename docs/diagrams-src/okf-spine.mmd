@@ -1,0 +1,9 @@
+flowchart LR
+    I(["interview"]) --> S["spec (OKF)\nauthorable by humans or agents"]
+    S --> G["generate\nreal ADK from the contract"]
+    G --> V["validate\npytest, agents-cli eval, Antigravity"]
+    V --> T["test\ngolden evals from the contract"]
+    T --> R(["runtime grounding\nagent cites the same systems / entities"])
+
+    classDef contract fill:#e8f0fe,stroke:#1a73e8,color:#202124
+    class S contract

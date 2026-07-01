@@ -39,6 +39,10 @@ Move the execution spine to the platform. The gateway stops being a dumb proxy a
 **durable control plane**; the CLI and console become thin clients that submit *intent* and
 stream *state*.
 
+<p align="center">
+  <img src="../assets/diagrams/durable-control-plane.svg" alt="CLI to gateway to Cloud Tasks to worker to the Firestore/AlloyDB ledger, looping until the run completes" width="700">
+</p>
+
 ### Execution spine
 - **Cloud Tasks** as the work queue — one task per `(agent, stage)`. The platform owns
   retries, backoff, rate-limiting, and dedup, replacing the local `pool()`.
@@ -97,6 +101,10 @@ Negative / costs:
 - Migration touches CLI, daemon/API, and console together; must be phased.
 
 ## Migration (incremental; each phase removes one contraption smell)
+
+<p align="center">
+  <img src="../assets/diagrams/control-plane-migration.svg" alt="Five migration phases, run ledger through the ge apply reconciler, all landed in sequence, feeding into remaining live-environment flips" width="800">
+</p>
 
 1. **Run ledger first** — AlloyDB schema for runs/agents/stages; `provision`/`ship` write
    it, console/CLI read it. Kills state drift. Lowest risk, highest leverage.

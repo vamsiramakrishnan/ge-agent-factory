@@ -14,6 +14,12 @@ is a **pack** (six JSON files) interpreted by a generic Python runtime under
 Bring-your-own (BYO) systems are mounted at runtime through a lazy layered registry
 and an overlay.
 
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
 ---
 
 ## The pack contract (six files)

@@ -69,11 +69,12 @@ So the evalset is the runnable projection of the spec's test concepts.
    agents-cli eval optimize --config tests/eval/optimization_config.json
    ```
 
-   > Flag caveat: `--all` and the JSON config paths are what the factory invokes
-   > today (verified in `factory.mjs`). `agents-cli` flags can change between
+   > `--all` and the JSON config paths are what the factory invokes today
+   > (verified in `factory.mjs`). `agents-cli` flags can change between
    > releases — confirm with `agents-cli eval run --help` before relying on them.
    > The pin is `google-agents-cli>=0.2,<0.3` (see `mise run deps`), which keeps
    > `eval run --all`.
+   {: .warning }
 
 ## Verify
 

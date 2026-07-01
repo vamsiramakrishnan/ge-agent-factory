@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 465.69949999999994 763.266" width="465.69949999999994" height="763.266" style="--bg:#ffffff;--fg:#202124;--line:#5f6368;--accent:#1a73e8;--muted:#80868b;--surface:#eef3f9;--border:#dadce0;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<polyline class="edge" data-from="A" data-to="B" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="251.37474999999995,76.9 251.37474999999995,124.9" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="B" data-to="C" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="inputs ok, idempotency key present,
+≥N systems of evidence" points="218.64708333333328,288.5383333333333 218.64708333333328,357.26599999999996 168.41999999999996,357.26599999999996 168.41999999999996,460.31600000000003" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="B" data-to="D" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="missing input, no key,
+or not enough evidence" points="284.1024166666666,288.5383333333333 284.1024166666666,357.26599999999996 334.32949999999994,357.26599999999996 334.32949999999994,460.31600000000003" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="C" data-to="E" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="168.41999999999996,497.216 168.41999999999996,553.666" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="E" data-to="F" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="168.41999999999996,607.466 168.41999999999996,655.466" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<g class="edge-label" data-from="B" data-to="C" data-label="inputs ok, idempotency key present,
+≥N systems of evidence">
+  <rect x="76.41999999999997" y="364.26599999999996" width="183.97" height="44.6" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="168.40499999999997" y="386.566" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)"><tspan x="168.40499999999997" dy="-3.3000000000000007">inputs ok, idempotency key present,</tspan><tspan x="168.40499999999997" dy="14.3">≥N systems of evidence</tspan></text>
+</g>
+<g class="edge-label" data-from="B" data-to="D" data-label="missing input, no key,
+or not enough evidence">
+  <rect x="270.32949999999994" y="364.26599999999996" width="127.54" height="44.6" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="334.0994999999999" y="386.566" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)"><tspan x="334.0994999999999" dy="-3.3000000000000007">missing input, no key,</tspan><tspan x="334.0994999999999" dy="14.3">or not enough evidence</tspan></text>
+</g>
+<g class="node" data-id="A" data-label="model calls a write tool" data-shape="stadium">
+  <rect x="166.67374999999996" y="40" width="169.402" height="36.900000000000006" rx="18.450000000000003" ry="18.450000000000003" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="251.37474999999995" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">model calls a write tool</text>
+</g>
+<g class="node" data-id="B" data-label="before_tool_callback
+enforce_tool_contract" data-shape="diamond">
+  <polygon points="251.37474999999995,124.9 349.55774999999994,223.083 251.37474999999995,321.26599999999996 153.19174999999996,223.083" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="251.37474999999995" y="223.083" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="251.37474999999995" dy="-3.9000000000000012">before_tool_callback</tspan><tspan x="251.37474999999995" dy="16.900000000000002">enforce_tool_contract</tspan></text>
+</g>
+<g class="node" data-id="C" data-label="tool runs" data-shape="rectangle">
+  <rect x="121.88049999999996" y="460.31600000000003" width="93.079" height="36.900000000000006" rx="0" ry="0" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <text x="168.41999999999996" y="478.766" text-anchor="middle" font-size="13" font-weight="500" fill="#202124" dy="4.55">tool runs</text>
+</g>
+<g class="node" data-id="D" data-label="return error / escalation
+call blocked" data-shape="rectangle">
+  <rect x="242.95949999999993" y="460.31600000000003" width="182.73999999999998" height="53.800000000000004" rx="0" ry="0" fill="#fce8e6" stroke="#c5221f" stroke-width="0.75" />
+  <text x="334.32949999999994" y="487.216" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="334.32949999999994" dy="-3.9000000000000012">return error / escalation</tspan><tspan x="334.32949999999994" dy="16.900000000000002">call blocked</tspan></text>
+</g>
+<g class="node" data-id="E" data-label="after_tool_callback
+capture_tool_evidence" data-shape="rectangle">
+  <rect x="79.27299999999997" y="553.666" width="178.29399999999998" height="53.800000000000004" rx="0" ry="0" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <text x="168.41999999999996" y="580.566" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="168.41999999999996" dy="-3.9000000000000012">after_tool_callback</tspan><tspan x="168.41999999999996" dy="16.900000000000002">capture_tool_evidence</tspan></text>
+</g>
+<g class="node" data-id="F" data-label="session state
+source_system, evidence, audit_trail" data-shape="cylinder">
+  <rect x="40" y="662.466" width="256.8399999999999" height="53.80000000000001" fill="var(--_node-fill)" stroke="none" />
+  <line x1="40" y1="662.466" x2="40" y2="716.2660000000001" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <line x1="296.8399999999999" y1="662.466" x2="296.8399999999999" y2="716.2660000000001" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <ellipse cx="168.41999999999996" cy="716.2660000000001" rx="128.41999999999996" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <ellipse cx="168.41999999999996" cy="662.466" rx="128.41999999999996" ry="7" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="168.41999999999996" y="689.366" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="168.41999999999996" dy="-3.9000000000000012">session state</tspan><tspan x="168.41999999999996" dy="16.900000000000002">source_system, evidence, audit_trail</tspan></text>
+</g>
+</svg>

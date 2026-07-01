@@ -72,6 +72,10 @@ the same generated workspace and quality gates; they differ in **where work runs
 hard build boundary: everything up to validate/preview is pure computation; everything after
 touches GCP.
 
+<p align="center">
+  <img src="docs/assets/diagrams/factory-line.svg" alt="Author and Build, Validate and Refine, Release, with the build boundary between them" width="620">
+</p>
+
 | Mode | What runs here | Use it for |
 |------|----------------|------------|
 | **Local** | generate → validate → preview on your machine, against fixtures | fast iteration, offline tests, coding-agent review |

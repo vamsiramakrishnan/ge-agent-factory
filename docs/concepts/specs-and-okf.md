@@ -44,13 +44,9 @@ and *what the factory builds*. It is computed in exactly one place,
 [`scripts/factory/agent-workflow.mjs`](https://github.com/vamsiramakrishnan/ge-agent-factory),
 shared by two consumers so authoring and build can never drift:
 
-```
-  architecture.pipeline           agent-workflow.mjs            consumers
-  (upstream narrative:    ──▶  matchPipelineSteps()  ──▶  1. spec generation WRITES
-   [{label, description}])      (stage ⇄ tool-intent       behaviorContract.workflow
-                                 matching, one place)      2. build derives the
-                                                              multi-agent topology
-```
+<p align="center">
+  <img src="../assets/diagrams/workflow-spine.svg" alt="architecture.pipeline feeds matchPipelineSteps(), which both spec generation and build consume" width="550">
+</p>
 
 At **authoring time** the workflow steps carry tool-*intent* names (the names on
 `behaviorContract.toolIntents`). At **build time** the generator resolves those
@@ -96,14 +92,9 @@ ingest. Consumers tolerate unknown types/keys and broken links.
 
 OKF is not a side export — it is the **portable spine of the whole pipeline**:
 
-```
-  interview ──▶ spec (OKF) ──▶ generate ──▶ validate ──▶ test ──▶ runtime grounding
-     │            │              │             │           │            │
-  produces     authorable     real ADK     pytest +     golden     the agent cites
-  a use case   by humans      from the     agents-cli   evals      the same systems/
-               or agents      contract     eval +       from the   entities the spec
-               (Markdown)                  Antigravity  contract   declared
-```
+<p align="center">
+  <img src="../assets/diagrams/okf-spine.svg" alt="interview to spec (OKF) to generate to validate to test to runtime grounding" width="800">
+</p>
 
 A hand-authored OKF bundle can re-enter the factory: ingest it back to a partial
 spec, run it through the interview/normalize step to enrich and register it, then

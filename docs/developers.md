@@ -78,6 +78,10 @@ factory or `ge agents ship`.
 
 The three platform planes are:
 
+<p align="center">
+  <img src="assets/diagrams/three-planes.svg" alt="ge CLI and console drive the factory plane, which reads and writes the data plane and the tool (MCP) plane" width="650">
+</p>
+
 | Plane | Owns |
 |---|---|
 | Factory plane | Gateway, worker, Cloud Tasks queue, Cloud Build, run orchestration |

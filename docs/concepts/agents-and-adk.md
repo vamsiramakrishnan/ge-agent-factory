@@ -59,18 +59,9 @@ runs on every turn regardless of what the model says. Two callbacks do the work:
   audit-trail line into session state — without changing the tool result. This is
   what later turns (and the write-guard's multi-system check) read from.
 
-```
-   model wants a write tool
-            │
-   before_tool_callback ──▶ missing inputs? no idempotency key?
-   (enforce_tool_contract)   < N source systems of evidence?
-            │  pass                 │ fail
-            ▼                       ▼
-        tool runs            return {error, escalation}  (call blocked)
-            │
-   after_tool_callback ──▶ append {source_system, evidence, audit_trail}
-   (capture_tool_evidence)  to session state
-```
+<p align="center">
+  <img src="../assets/diagrams/write-guard-flow.svg" alt="before_tool_callback checks inputs, idempotency key, and evidence count before letting a write tool run; after_tool_callback records evidence to session state" width="420">
+</p>
 
 Action tools themselves are deterministic: they mint **stable, reproducible ids**
 (sha1 of the inputs) and emit an `audit_trail`, so audit records are consistent
@@ -93,16 +84,9 @@ consequence of the contract, not a fixed template.
 The same generated code runs two ways, switched at runtime by the
 **`GE_DATA_BACKEND`** environment variable in `app/tools.py`:
 
-```
-  GE_DATA_BACKEND=fixtures (default, local / eval)
-      └─ source_adapters = in-process FunctionTools over local fixture files
-         (JSON/CSV under fixtures/) — fully offline, deterministic, eval-ready
-
-  GE_DATA_BACKEND=mcp (cloud)
-      └─ source_adapters = MCP toolsets resolved by name from the Agent Registry
-         registry.get_mcp_toolset("mcpServers/<agent>")
-         auth: ADC via the Agent Runtime per-agent identity (GcpAuthProvider)
-```
+<p align="center">
+  <img src="../assets/diagrams/dual-backend.svg" alt="app/tools.py switches between local fixture files and the MCP tool plane based on GE_DATA_BACKEND" width="650">
+</p>
 
 The two backends present the **same tool names and the same result envelopes**, so
 the agent's instructions, tests, and evals are identical across them. Locally you
