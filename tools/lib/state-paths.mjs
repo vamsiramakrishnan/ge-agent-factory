@@ -4,6 +4,12 @@ import { fileURLToPath } from "node:url";
 
 export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
+// Single source of truth for the department list — factory-core.mjs and
+// tool-plane-checks.mjs both need it and would form an import cycle importing
+// it from each other, so it lives here instead (a dependency-free leaf both
+// already import for REPO_ROOT/STATE_PATHS).
+export const DEPARTMENTS = ["finance", "hr", "it", "marketing", "procurement"];
+
 const DEFAULT_STATE_ROOT = join(REPO_ROOT, ".ge");
 const stateRoot = resolve(process.env.GE_STATE_ROOT || DEFAULT_STATE_ROOT);
 
