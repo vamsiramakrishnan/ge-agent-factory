@@ -90,6 +90,7 @@ bootstrap: ## END-TO-END: toolchain + `ge init` + `ge up` (factory+data+tool pla
 all: bootstrap ## Alias for `bootstrap`
 
 setup: ## Install JS deps + Python/uv toolchain + put `ge` on PATH
+	@command -v bun >/dev/null 2>&1 || { echo "✗ Bun is required — install it from https://bun.sh before running \`make setup\`"; exit 1; }
 	bun install
 	@chmod +x tools/ge.mjs tools/mcp-server.mjs 2>/dev/null || true
 	@$(MAKE) -s catalog
@@ -170,7 +171,16 @@ install: ## Install the `ge` command into ~/.local/bin (override with BIN=...)
 	@chmod +x "$(BIN)/ge"
 	@echo "Installed: $(BIN)/ge"
 	@case ":$$PATH:" in *":$(BIN):"*) : ;; \
-	  *) echo "⚠  $(BIN) is not on PATH. Add:  export PATH=\"$(BIN):$$PATH\"" ;; esac
+	  *) echo ""; \
+	     echo "############################################################"; \
+	     echo "  ⚠  $(BIN) is NOT on your PATH — the 'ge' command won't be found."; \
+	     echo "  Add this line to your shell profile (~/.bashrc, ~/.zshrc, etc.):"; \
+	     echo ""; \
+	     echo "      export PATH=\"$(BIN):\$$PATH\""; \
+	     echo ""; \
+	     echo "  Then restart your shell (or run: source ~/.bashrc)."; \
+	     echo "############################################################"; \
+	     echo "" ;; esac
 
 uninstall: ## Remove the `ge` command
 	@rm -f "$(BIN)/ge" && echo "removed $(BIN)/ge"

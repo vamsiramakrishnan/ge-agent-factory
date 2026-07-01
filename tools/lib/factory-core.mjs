@@ -10,6 +10,7 @@ import { parseList } from "@ge/std/list";
 import { accessSync, constants, existsSync, readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync, statSync } from "node:fs";
 import { basename, join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { homedir } from "node:os";
 import { createConnection } from "node:net";
 import { pool } from "./gcp.mjs";
 import { findOpenPort } from "./net.mjs";
@@ -1932,6 +1933,8 @@ export function localPreflight() {
   const add = (name, ok, detail, fix) => checks.push({ name, status: ok ? "pass" : "fail", detail, fix: fix || null });
   const addStatus = (name, status, detail, fix) => checks.push({ name, status, detail, fix: fix || null });
   const uv = run("uv", ["--version"], { allowFail: true });
+  const bun = run("bun", ["--version"], { allowFail: true });
+  add("bun installed", bun.ok, bun.ok ? `v${bun.out}` : "not found", "Install Bun from https://bun.sh before running `make setup`");
   add("uv installed", uv.ok, uv.ok ? uv.out : "not found", "curl -LsSf https://astral.sh/uv/install.sh | sh");
   const py = run("uv", ["python", "find", "3.11"], { allowFail: true });
   add("python 3.11", py.ok, py.ok ? py.out : "not found", "uv python install 3.11");
@@ -1969,6 +1972,21 @@ export function localPreflight() {
     gitignore.includes("apps/factory/simulator-systems/_openapi/") ? "pass" : "warn",
     gitignore.includes("apps/factory/simulator-systems/_openapi/") ? "private-key-like generated payloads excluded" : "generated OpenAPI payloads can trip remote private-key scanners",
     "Add apps/factory/simulator-systems/_openapi/ to .gitignore",
+  );
+  const localBin = join(homedir(), ".local", "bin");
+  const pathDirs = String(process.env.PATH || "").split(process.platform === "win32" ? ";" : ":").filter(Boolean);
+  addStatus(
+    "~/.local/bin on PATH",
+    pathDirs.includes(localBin) ? "pass" : "warn",
+    pathDirs.includes(localBin) ? `${localBin} is on PATH` : `${localBin} is not on PATH — the ge command may not be found`,
+    `Add to your shell profile:  export PATH="${localBin}:$PATH"`,
+  );
+  const rootDepsInstalled = existsSync(join(REPO_ROOT, "node_modules"));
+  add(
+    "root workspace deps installed",
+    rootDepsInstalled,
+    rootDepsInstalled ? `${displayStatePath(join(REPO_ROOT, "node_modules"))} present` : "node_modules missing at repo root",
+    "bun install  (or: make setup)",
   );
   return { mode: "local", cacheDir: process.env.UV_CACHE_DIR || UV_CACHE, checks, fails: checks.filter((c) => c.status === "fail").length };
 }

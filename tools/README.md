@@ -2,6 +2,11 @@
 
 Operator tooling for the GE Agent Factory.
 
+> First time setting up? See [`SETUP.md`](../SETUP.md) at the repo root for
+> the step-by-step (clone → prerequisites → `make setup` → `make doctor-local`
+> → first command → optional cloud setup). This doc is a command reference,
+> not a setup walkthrough.
+
 ## `ge` — the CLI (canonical)
 
 `bun tools/ge.mjs <command>`. Built on [citty]; every command supports `--json`
