@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1384.1249999999998 190.25" width="1384.1249999999998" height="190.25" style="--bg:#ffffff;--fg:#202124;--line:#5f6368;--accent:#1a73e8;--muted:#80868b;--surface:#eef3f9;--border:#dadce0;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<polyline class="edge" data-from="UC" data-to="SPEC" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="146.7875,66.9 184.043,66.9" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="SPEC" data-to="GEN" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="294.906,66.9 342.906,66.9" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="GEN" data-to="VR" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="503.416,66.9 551.4159999999999,66.9" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="VR" data-to="SIM" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="787.5079999999999,66.9 835.5079999999999,66.9" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="SIM" data-to="DEP" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="958.968,66.9 1006.9679999999998,66.9" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="DEP" data-to="PUB" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1149.6939999999997,66.9 1197.6939999999997,66.9" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<g class="node" data-id="UC" data-label="use case" data-shape="stadium">
+  <rect x="50.744499999999995" y="48.45" width="96.04299999999999" height="36.900000000000006" rx="18.450000000000003" ry="18.450000000000003" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="98.76599999999999" y="66.9" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">use case</text>
+</g>
+<g class="node" data-id="SPEC" data-label="spec (OKF)
+the contract" data-shape="rectangle">
+  <rect x="184.043" y="40" width="110.86299999999999" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="239.4745" y="66.9" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="239.4745" dy="-3.9000000000000012">spec (OKF)</tspan><tspan x="239.4745" dy="16.900000000000002">the contract</tspan></text>
+</g>
+<g class="node" data-id="GEN" data-label="generate
+real ADK, not a mock" data-shape="rectangle">
+  <rect x="342.906" y="40" width="160.51" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="423.161" y="66.9" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="423.161" dy="-3.9000000000000012">generate</tspan><tspan x="423.161" dy="16.900000000000002">real ADK, not a mock</tspan></text>
+</g>
+<g class="node" data-id="VR" data-label="validate + refine
+pytest, agents-cli eval, Antigravity" data-shape="rectangle">
+  <rect x="551.4159999999999" y="40" width="236.09199999999993" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="669.4619999999999" y="66.9" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="669.4619999999999" dy="-3.9000000000000012">validate + refine</tspan><tspan x="669.4619999999999" dy="16.900000000000002">pytest, agents-cli eval, Antigravity</tspan></text>
+</g>
+<g class="node" data-id="SIM" data-label="simulate
+fixtures / MCP" data-shape="rectangle">
+  <rect x="835.5079999999999" y="40" width="123.45999999999998" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="897.2379999999999" y="66.9" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="897.2379999999999" dy="-3.9000000000000012">simulate</tspan><tspan x="897.2379999999999" dy="16.900000000000002">fixtures / MCP</tspan></text>
+</g>
+<g class="node" data-id="DEP" data-label="deploy
+your GCP project" data-shape="rectangle">
+  <rect x="1006.9679999999998" y="40" width="142.726" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1078.331" y="66.9" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="1078.331" dy="-3.9000000000000012">deploy</tspan><tspan x="1078.331" dy="16.900000000000002">your GCP project</tspan></text>
+</g>
+<g class="node" data-id="PUB" data-label="publish
+Gemini Enterprise" data-shape="stadium">
+  <rect x="1197.6939999999997" y="40" width="146.431" height="53.800000000000004" rx="26.900000000000002" ry="26.900000000000002" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1270.9094999999998" y="66.9" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="1270.9094999999998" dy="-3.9000000000000012">publish</tspan><tspan x="1270.9094999999998" dy="16.900000000000002">Gemini Enterprise</tspan></text>
+</g>
+<g class="node" data-id="class" data-label="class" data-shape="rectangle">
+  <rect x="50.744499999999995" y="113.35000000000001" width="74.554" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="88.0215" y="131.8" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">class</text>
+</g>
+</svg>

@@ -35,19 +35,14 @@ The stage graph is defined declaratively in
 | `publish_enterprise` | Gemini Enterprise registration | Cloud Build |
 | `verify_live` | a live-verification report | Cloud Run worker |
 
-Conceptually the line is three movements:
+Conceptually the line is three movements, with the **build boundary** sitting
+between the first two and the third — everything above it is pure computation;
+everything in **Release** touches your Google Cloud project. Stages shaded
+green run in Cloud Build rather than on the worker directly.
 
-```
-  AUTHOR & BUILD            VALIDATE & REFINE              RELEASE
-  ───────────────           ─────────────────              ───────
-  plan                      harness_refine (Antigravity)   plan_deploy
-  generate_workspace        validate (pytest + lint)       load_data
-  generate_data             preview (smoke)                deploy_runtime → poll_runtime
-  package_data                                             register_tools
-                                                           publish_enterprise
-                                                           verify_live
-        └──────── the "build boundary" ────────┘
-```
+<p align="center">
+  <img src="../assets/diagrams/factory-line.svg" alt="The factory line: Author and Build, Validate and Refine, Release, with the build boundary between them" width="700">
+</p>
 
 ## The build boundary: local build vs remote release
 
@@ -78,21 +73,12 @@ Early on, a build was a long-lived process on a laptop — if it died, the run
 died. The factory now runs on a **durable control plane** (ADR 0001) so a run
 survives restarts, can be followed live, and resumes itself stage by stage.
 
-```
-            ┌──────────────┐   enqueue next stage   ┌──────────────┐
-            │  Cloud Tasks │ ─────────────────────▶ │   worker     │
-            │  (per-stage  │   OIDC-authed HTTP      │ (Cloud Run / │
-            │   queue)     │ ◀───────────────────── │  Cloud Build)│
-            └──────────────┘   schedule +30s/+120s   └──────┬───────┘
-                                                            │ records every event
-                                                            ▼
-                                                   ┌──────────────────┐
-                                                   │ Firestore        │  ← console subscribes
-                                                   │ run ledger       │    (onSnapshot, live)
-                                                   │ factoryRuns/{id} │
-                                                   └──────────────────┘
-                                                   + GCS artifacts/logs, Pub/Sub fanout
-```
+<p align="center">
+  <img src="../assets/diagrams/durable-control-plane.svg" alt="The durable control plane: CLI to gateway to Cloud Tasks to worker to the Firestore/AlloyDB ledger, looping until the run completes" width="700">
+</p>
+
+The console subscribes to the ledger live (`onSnapshot`); GCS holds artifacts
+and logs, and Pub/Sub fans the same events out to other subscribers.
 
 The key ideas:
 

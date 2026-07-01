@@ -1,0 +1,10 @@
+flowchart LR
+    UC(["use case"]) --> SPEC["spec (OKF)\nthe contract"]
+    SPEC --> GEN["generate\nreal ADK, not a mock"]
+    GEN --> VR["validate + refine\npytest, agents-cli eval, Antigravity"]
+    VR --> SIM["simulate\nfixtures / MCP"]
+    SIM --> DEP["deploy\nyour GCP project"]
+    DEP --> PUB(["publish\nGemini Enterprise"])
+
+    classDef contract fill:#e8f0fe,stroke:#1a73e8,color:#202124;
+    class SPEC contract;

@@ -59,6 +59,10 @@ agents** get real tools. Two tiers, switched at runtime by `GE_DATA_BACKEND`
 (`fixtures` locally, `mcp` in the cloud). Design:
 `docs/superpowers/specs/2026-06-01-mcp-tool-plane-design.md`.
 
+<p align="center">
+  <img src="assets/diagrams/mcp-tool-tiers.svg" alt="a generated agent reaches Tier 1 managed MCP endpoints directly, or Tier 2 per-department FastMCP, both over per-agent stores" width="550">
+</p>
+
 **Tier 1 — 1P managed MCP** (store access). Every per-agent store has a Google
 managed MCP endpoint (`bigquery.googleapis.com/mcp`, `firestore…`, `bigtable…`,
 `alloydb…`, `storage…`). `app/tools.py` builds an `MCPToolset` per endpoint the

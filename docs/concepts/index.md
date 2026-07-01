@@ -31,13 +31,9 @@ bundle). Generation, validation, simulation, evals, and runtime grounding all re
 from that one contract — so the agent the factory builds *is* the agent the spec
 described, and you can trace any line of generated code back to a spec intent.
 
-```
- use case ──▶ spec (OKF) ──▶ generate ──▶ validate/refine ──▶ simulate ──▶ eval ──▶ deploy ──▶ publish
-              │                  │              │                  │                    │
-          the contract       real ADK     pytest +           simulated            your GCP
-          everything         (not a       agents-cli eval    source systems       project
-          reads from         mock)        + Antigravity      (fixtures / MCP)     (single-tenant)
-```
+<p align="center">
+  <img src="../assets/diagrams/concept-pipeline.svg" alt="use case to spec (OKF, the contract) to generate to validate and refine to simulate to deploy to publish" width="800">
+</p>
 
 ## Read these in order
 

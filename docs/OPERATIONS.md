@@ -29,9 +29,9 @@ Supporting: Cloud Tasks queue `ge-agent-factory-stages`, Pub/Sub topic
 
 ## Stage graph (per agent)
 
-`plan → generate_workspace → generate_data → package_data → harness_refine →
-validate → preview → plan_deploy → load_data → deploy_runtime → poll_runtime →
-register_tools → publish_enterprise → verify_live`
+<p align="center">
+  <img src="assets/diagrams/factory-line.svg" alt="plan, generate_workspace, generate_data, package_data, harness_refine, validate, preview, plan_deploy, load_data, deploy_runtime, poll_runtime, register_tools, publish_enterprise, verify_live" width="700">
+</p>
 
 Release stages (`validate`, `preview`, `deploy_runtime`, `poll_runtime`,
 `publish_enterprise`) run in Cloud Build via `cloudbuild.factory-stage.yaml`;

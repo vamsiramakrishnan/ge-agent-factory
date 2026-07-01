@@ -45,6 +45,10 @@ GE Agent Factory exists to make the handoff explicit:
 
 ## The factory path
 
+<p align="center">
+  <img src="assets/diagrams/concept-pipeline.svg" alt="use case to spec (OKF, the contract) to generate to validate and refine to simulate to deploy to publish" width="800">
+</p>
+
 1. **Interview or choose a use case.** Start from business intent, not an
    implementation guess.
 2. **Materialize the spec.** The spec is the contract: systems, entities, tools,

@@ -1,0 +1,9 @@
+flowchart LR
+    T["app/tools.py\nsource_adapters"] -->|"GE_DATA_BACKEND=fixtures\ndefault, local / eval"| F[("local fixture files\nJSON / CSV")]
+    T -->|"GE_DATA_BACKEND=mcp\ncloud"| R["Agent Registry\nget_mcp_toolset()"]
+    R --> M[("per-agent store\nvia MCP tool plane")]
+
+    classDef local fill:#e8f0fe,stroke:#1a73e8,color:#202124;
+    classDef cloud fill:#e6f4ea,stroke:#34a853,color:#202124;
+    class F local;
+    class R,M cloud;
