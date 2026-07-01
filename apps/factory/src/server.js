@@ -81,7 +81,9 @@ const runs = createRunService({
     });
     if (run.projectId && status === "succeeded") {
       const dir = join(PROJECTS_ROOT, run.projectId);
-      recordRunArtifacts(dir, run.id, run.agentId || null, run.projectId).catch(() => {});
+      recordRunArtifacts(dir, run.id, run.agentId || null, run.projectId).catch((err) => {
+        console.warn(`recordRunArtifacts failed for run ${run.id}:`, err);
+      });
     }
   },
 });
@@ -89,7 +91,8 @@ const runs = createRunService({
 function appendActivity(type, { projectId = null, actor = "daemon", entityType = null, entityId = null, payload = {} } = {}) {
   try {
     return appendActivityEventDb({ projectId, actor, type, entityType, entityId, payload });
-  } catch {
+  } catch (err) {
+    console.warn(`appendActivity failed for type "${type}":`, err);
     return null;
   }
 }
