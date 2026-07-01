@@ -28,8 +28,9 @@ what has to exist first, which commands do we run, and how do we know it worked?
 | 8 | [Deploy the Agent Gateway](deploy-the-agent-gateway.html) | Provision the managed gateway + authz extension/policy |
 | 9 | [Run evals](run-evals.html) | Run the per-agent behavior-contract eval set |
 
-> All commands are verified against the repo. Where a path or flag differs from
-> common assumptions, the recipe calls it out explicitly.
+> Where a path or flag differs from common assumptions, the recipe calls it out
+> explicitly.
+{: .note }
 
 ## Recommended paths
 

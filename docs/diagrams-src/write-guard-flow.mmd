@@ -1,0 +1,11 @@
+flowchart TD
+    A(["model calls a write tool"]) --> B{"before_tool_callback\nenforce_tool_contract"}
+    B -->|"inputs ok, idempotency key present,\n≥N systems of evidence"| C["tool runs"]
+    B -->|"missing input, no key,\nor not enough evidence"| D["return error / escalation\ncall blocked"]
+    C --> E["after_tool_callback\ncapture_tool_evidence"]
+    E --> F[("session state\nsource_system, evidence, audit_trail")]
+
+    classDef blocked fill:#fce8e6,stroke:#c5221f,color:#202124
+    classDef pass fill:#e6f4ea,stroke:#34a853,color:#202124
+    class D blocked
+    class C,E pass

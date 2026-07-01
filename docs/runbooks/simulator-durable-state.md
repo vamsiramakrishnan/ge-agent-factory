@@ -26,6 +26,10 @@ Backend selection precedence (in `get_state_store` / `generic.py`):
    that leaves `stateBackend` at its default (`memory` / absent).
 3. **Default** — `memory`.
 
+<p align="center">
+  <img src="../assets/diagrams/state-backend-precedence.svg" alt="Per-system stateBackend beats the global env override beats the memory default, then a durable choice degrades to memory if its dependency or config is missing" width="600">
+</p>
+
 If a cloud backend is requested but its dependency or config is missing at
 runtime, the store **logs a warning and degrades to memory** rather than failing
 the run. So a misconfigured deploy never hard-fails demos — but state is then
@@ -107,6 +111,7 @@ gcloud run services update ge-agent-factory-mcp-<dept> \
 
 > Per `docs/OPERATIONS.md`, Terraform/`ge` own Cloud Run config; prefer the
 > `deployEnvVars` edit + `ge mcp deploy` path so the next apply doesn't revert it.
+{: .note }
 
 ## 3. Choose what flips to durable
 

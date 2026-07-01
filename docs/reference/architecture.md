@@ -17,9 +17,19 @@ See also: the rendered diagram at
 and [ADR 0001 — remote control plane](https://github.com/vamsiramakrishnan/ge-agent-factory)
 (`docs/adr/0001-remote-control-plane.md`).
 
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
 ---
 
 ## The three planes
+
+<p align="center">
+  <img src="../assets/diagrams/three-planes.svg" alt="ge CLI and console drive the factory plane (gateway, Cloud Tasks, worker), which reads and writes the data plane and the tool (MCP) plane" width="650">
+</p>
 
 | Plane | What it is | Provisioned by |
 |---|---|---|
@@ -68,19 +78,9 @@ AlloyDB).
 
 A remote build is a chain of HTTP tasks, one per `(runId, item, stage)`:
 
-```
-ge agents build --remote
-        │  ID token (gcloud auth print-identity-token, audience = gateway URL)
-        ▼
-Cloud Run gateway  ── enqueues ──▶  Cloud Tasks queue (ge-agent-factory-stages)
-                                            │  OIDC, signed as the runner SA
-                                            ▼
-                                   Cloud Run worker  ── runs one stage ──┐
-                                            │                            │
-                          writes Firestore events + AlloyDB ledger row   │
-                                            │                            │
-                          enqueues the next stage's task ◀───────────────┘
-```
+<p align="center">
+  <img src="../assets/diagrams/durable-control-plane.svg" alt="ge CLI to gateway to Cloud Tasks to worker to the Firestore/AlloyDB ledger, looping until the run completes" width="700">
+</p>
 
 - **Gateway** (`ge-agent-factory-gateway`, `cloud_run.tf`) authenticates the
   caller and enqueues stage tasks; the gateway service account holds
@@ -139,8 +139,8 @@ proxy` tunnel (the default, no public ingress needed) or a direct HTTPS call wit
 a bearer ID token. The managed **Agent Gateway** governs the MCP plane — only its
 Service Extensions identity is granted `roles/run.invoker` on the MCP services.
 
-> **Not fully traced in code at writing time:** the exact CLI→gateway request
-> payload shape and the optional legacy IAP load-balancer path are referenced in
-> ADR 0001 and the Terraform module but were not line-by-line verified here.
-> Treat those specifics as advisory and confirm against `factory-core.mjs` /
-> `installer/terraform/` before relying on them.
+> The exact CLI→gateway request payload shape and the optional legacy IAP
+> load-balancer path are referenced in ADR 0001 and the Terraform module but were
+> not line-by-line verified here. Treat those specifics as advisory and confirm
+> against `factory-core.mjs` / `installer/terraform/` before relying on them.
+{: .warning }

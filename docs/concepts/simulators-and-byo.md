@@ -45,26 +45,18 @@ it immediately. No redeploy, no new code.
 
 The pipeline (`mcp-service/synthesis.py`) is:
 
-```
-   description / samples / OpenAPI
-            │
-        sketch         compact intermediate: collections, primary keys,
-            │          fields, optional per-collection state machine
-            │          (NL via Vertex `global` with a strict schema +
-            │           deterministic offline fallback; or inferred from
-            │           samples / OpenAPI)
-            ▼
-        contract       full enriched contract the engine consumes:
-            │          EXPLICIT tool bindings (no naming-convention guessing),
-            │          workflows (transitions + gates), projection/materialization
-            ▼
-        seed           referentially-consistent rows (FK closure) + scenario-
-            │          coverage rows so demos actually hit approval gates /
-            │          invalid transitions
-            ▼
-        overlay        registered as an INLINE pack (no files) — resolvable
-                       by the same generic engine immediately
-```
+<p align="center">
+  <img src="../assets/diagrams/byo-synthesis.svg" alt="description, samples, or OpenAPI to sketch to contract to seed to overlay" width="320">
+</p>
+
+**sketch** — a compact intermediate (collections, primary keys, fields,
+optional per-collection state machine), produced by NL via Vertex `global`
+with a strict schema and a deterministic offline fallback, or inferred from
+samples/OpenAPI directly. **contract** — the full enriched contract the engine
+consumes: explicit tool bindings (no naming-convention guessing), workflows
+(transitions + gates), projection/materialization. **seed** — referentially
+consistent rows (FK closure) plus scenario-coverage rows so demos actually hit
+approval gates and invalid transitions.
 
 The **runtime overlay** (`simulator_runtime/overlay.py`) is what turns the corpus
 from a build-time artifact into a *runtime-instantiable* capability. Synthesized
@@ -80,15 +72,9 @@ The simulator plane is the *cloud-side* answer to the same question the
 [fixtures](./agents-and-adk.html) answer offline — and both present the **same tool
 names and result envelopes**, so a generated agent is unchanged across them:
 
-```
-   GE_DATA_BACKEND=fixtures (local / eval)
-       agent ─▶ in-process FunctionTools ─▶ local fixture files
-
-   GE_DATA_BACKEND=mcp (cloud)
-       agent ─▶ MCP toolset (Agent Registry) ─▶ per-department FastMCP service
-                                              ─▶ generic engine + agent's per-agent store
-                                              ─▶ source-system envelope (looks like Workday/Ariba/SAP)
-```
+<p align="center">
+  <img src="../assets/diagrams/simulator-backend-flow.svg" alt="agent switches between local fixture files and the MCP tool plane, which wraps results in a source-system envelope" width="800">
+</p>
 
 In the cloud, the custom per-department MCP service resolves `?agent=<id>`, loads
 that agent's `mcp-tools.json`, and maps each tool's binding (`{op, store, entity,

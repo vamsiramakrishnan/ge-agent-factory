@@ -28,6 +28,10 @@ Markdown version of the spec (see the [Glossary](../GLOSSARY.html)).
 
 ## Steps
 
+<p align="center">
+  <img src="../assets/diagrams/interview-artifact-stream.svg" alt="Operator drives the console interview, which streams a spec artifact from the harness into the spec canvas, then saves and exports it as an OKF bundle" width="650">
+</p>
+
 1. **Open the interview in the console.**
 
    From the console, start a new interview for a use case. The "start" action is
@@ -83,10 +87,11 @@ Markdown version of the spec (see the [Glossary](../GLOSSARY.html)).
    It returns `{ id, conceptCount, files }` — a path→markdown map of the OKF
    Knowledge Bundle.
 
-   > Caveat: this route works server-side but is **not** wired to a console
-   > button today. Call it directly (e.g. with `curl` against the console's
+   > This route works server-side but is **not** wired to a console button
+   > today. Call it directly (e.g. with `curl` against the console's
    > `/api/...` origin), or use the CLI path in
    > [Spec ⇄ OKF](spec-to-okf.html) for a file-on-disk bundle.
+   {: .warning }
 
 ## Verify
 

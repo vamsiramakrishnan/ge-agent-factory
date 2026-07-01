@@ -217,6 +217,10 @@ run = "bun tools/ge.mjs doctor --local"
 description = "Fast DevEx gate: local doctor + docs links + workspace manifest contracts (ID=<workspace-or-usecase>)"
 run = 'bun tools/ge.mjs devex check ${ID:+--id "$ID"}'
 
+[tasks.docs-gate]
+description = "Docs-specific gate: link/image/blockquote check, diagram freshness, design-token drift"
+run = "bun run docs:gate"
+
 [tasks.devex-smoke]
 description = "One-command local proof: doctor → local mode → one validated canary workspace (ID=<usecase> TARGET=validated|previewed)"
 run = 'bun tools/ge.mjs devex smoke ${ID:+--id "$ID"} ${TARGET:+--target "$TARGET"}'

@@ -1,0 +1,7 @@
+flowchart TD
+    A["agent\nAgent Runtime per-agent SPIFFE identity"] -->|"resolve toolset\nagentregistry.viewer"| B["Agent Registry"]
+    B -->|"invoke registered MCP server\niap.egressor on the mcpServer"| C["per-department FastMCP\nCloud Run"]
+    C -->|"read / write per-agent store\nbigquery.dataEditor, datastore.user, ..."| D[("per-agent store\nsimulated source system")]
+
+    classDef identity fill:#e8f0fe,stroke:#1a73e8,color:#202124
+    class A identity
