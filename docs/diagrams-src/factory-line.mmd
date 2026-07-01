@@ -1,0 +1,17 @@
+flowchart TD
+    subgraph AB["Author and Build"]
+        direction LR
+        plan --> generate_workspace --> generate_data --> package_data
+    end
+    subgraph VR["Validate and Refine"]
+        direction LR
+        harness_refine --> validate --> preview
+    end
+    subgraph REL["Release — touches your GCP project"]
+        direction LR
+        plan_deploy --> load_data --> deploy_runtime --> poll_runtime --> register_tools --> publish_enterprise --> verify_live
+    end
+    AB --> VR --> REL
+
+    classDef cloudbuild fill:#e6f4ea,stroke:#34a853,color:#202124;
+    class validate,preview,deploy_runtime,poll_runtime,publish_enterprise cloudbuild;

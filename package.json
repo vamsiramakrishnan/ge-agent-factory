@@ -74,6 +74,7 @@
   },
   "devDependencies": {
     "@google-cloud/discoveryengine": "^2.7.0",
-    "@google-cloud/firestore": "^8.6.0"
+    "@google-cloud/firestore": "^8.6.0",
+    "beautiful-mermaid": "^1.1.3"
   }
 }
