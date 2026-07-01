@@ -23,7 +23,8 @@ doctor. Or use the guided self-service installer for a turnkey deploy.
   ```
 
 - `terraform` (installed by `mise run deps`) and `jq`.
-- Local toolchain installed (`mise run setup`).
+- Local toolchain installed (`mise run setup`). See
+  [Getting started locally](getting-started.html) if you haven't run this yet.
 
 ## Steps
 

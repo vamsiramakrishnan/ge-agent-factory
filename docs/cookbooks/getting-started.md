@@ -42,10 +42,11 @@ mise run console         # open the operator UI → http://localhost:18260
    mise run devex-smoke
    ```
 
-   This runs local readiness, sets local mode, builds one canary workspace to the
-   `validated` stage, and prints the workspace path, `workspace.json`, eval
-   config, and next commands. It is the fastest proof that the repo is usable on
-   this machine.
+   This runs local readiness, sets local mode, builds one **canary** workspace
+   (a single throwaway agent used to prove the pipeline works, as opposed to
+   building the whole catalog) to the `validated` stage, and prints the
+   workspace path, `workspace.json`, eval config, and next commands. It is the
+   fastest proof that the repo is usable on this machine.
 
 3. **Understand which mode you're in.**
 
@@ -55,8 +56,10 @@ mise run console         # open the operator UI → http://localhost:18260
 
    - `ge mode` with no argument **reports** the active mode (defaults to
      `remote` when unset).
-   - `ge mode local` — this machine runs *generate → validate* up to the build
-     boundary; deploy/register/publish are cloud-only steps.
+   - `ge mode local` — this machine runs *generate → validate* up to the
+     **build boundary** (the `previewed` stage — the last stage that runs with
+     no cloud credentials; everything after it touches your Google Cloud
+     project); deploy/register/publish are cloud-only steps.
    - `ge mode remote` — this machine submits + observes; the cloud factory
      builds, deploys, and publishes.
 
