@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant CLI as ge CLI
+    participant GW as Cloud Run gateway
+    participant CT as Cloud Tasks queue
+    participant W as Cloud Run worker
+    participant L as Firestore + AlloyDB ledger
+
+    CLI->>GW: build --remote (gcloud identity token)
+    GW->>CT: enqueue stage task
+    loop one stage at a time, self-advancing
+        CT->>W: deliver task (OIDC, runner SA)
+        W->>L: record stage event
+        W->>CT: enqueue next stage
+    end
+    L-->>CLI: run observable live (console, ge ledger tail)
