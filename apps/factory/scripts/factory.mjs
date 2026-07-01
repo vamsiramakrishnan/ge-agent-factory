@@ -37,31 +37,19 @@ import { renderAgentPy } from "./factory/agents/render-agent-py.mjs";
 import { writeOkfArtifacts } from "./factory/agents/okf-artifacts.mjs";
 import { renderAgentsCliEvalSet, renderEvalConfig, renderGoldenEvals, renderOptimizationConfig } from "./factory/evals/render-eval-artifacts.mjs";
 import { ensureAgentsCliPyprojectMetadata } from "./factory/runtime/agents-cli-metadata.mjs";
-import { bigQueryNumericType, bigQuerySafeName, bigQueryType, rowsToNdjson } from "./factory/data/bigquery-types.mjs";
-import { mcpToolDescriptors } from "./factory/data/mcp-tool-descriptors.mjs";
-import { buildCloudDataPlan, buildCloudTableRecord, buildDocumentManifest, renderCloudLoadScript } from "./factory/data/render-cloud-data-plan.mjs";
+import { bigQueryNumericType, bigQuerySafeName, bigQueryType } from "./factory/data/bigquery-types.mjs";
+import { buildCloudDataArtifacts } from "./factory/data/build-cloud-data-artifacts.mjs";
 import { deriveColumnsForEntity, matchEntityColumnSchema } from "./factory/use-case/entity-column-schemas.mjs";
 import { deriveSchemaFromGenerationSpec } from "./factory/use-case/schema-from-generation-spec.mjs";
 import { deriveSchemaFromUseCase } from "./factory/use-case/schema-derivation.mjs";
 import { harnessRefineSchema, harnessReviewSchema } from "./schemas/harness-schemas.mjs";
-
-// Non-fatal: validate parsed harness output against its zod source of truth.
-// Warns (keeps the output) so a contract drift surfaces without breaking a run.
-function validateHarnessOutput(schema, value, label) {
-  const result = schema.safeParse(value);
-  if (!result.success) {
-    console.error(`⚠  ${label} output failed schema validation (kept anyway): ${result.error.issues.map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`).join("; ")}`);
-  }
-  return result.success;
-}
 import { runHarnessTask } from "../src/harness-runner.js";
 import { buildHarnessRefinePrompt, buildHarnessRunSummary, buildHarnessWorkItem, writeHarnessWorkItem } from "../src/harness-work-item.js";
 import { canonicalSystemId, safePyName, snakeCase, titleCase, validPythonIdentifierName } from "@ge/std/naming";
 import { CONTRACT_INTENT_KINDS, ensureContractQueryTables } from "./factory/core/contract-schema.mjs";
-import { MANAGED_MCP_SERVICES, buildSourceIntegrationPlan } from "./factory/integration/source-integration.mjs";
+import { buildSourceIntegrationPlan } from "./factory/integration/source-integration.mjs";
 import { pyEscape, pyTripleEscape } from "./factory/tools/py-emit.mjs";
 import { canonicalIntentToolName, tableToolName } from "./factory/tools/tool-naming.mjs";
-import { loadSimulatorRegistry } from "./factory/simulators/registry.mjs";
 import { buildStepInstruction, deriveAgentWorkflow, sharedAgentGuardrails } from "./factory/agents/agent-workflow-derivation.mjs";
 import { buildSemanticModel } from "./factory/data/semantic-model.mjs";
 import { applyScenarioBindings } from "./factory/packs/index.mjs";
@@ -72,6 +60,8 @@ import { DOMAIN_CATALOG, DOMAIN_SUMMARY } from "../src/domains.generated.js";
 import { APP_ROOT, GENERATOR_DATA_ROOT } from "../src/state-paths.js";
 import { DEFAULT_AGENT_MODEL, assertKnownModel } from "../src/known-models.js";
 import { sourceTimestamp } from "../src/source-clock.js";
+import { cmdHarnessReview as harnessCmdReview, cmdHarnessRefine as harnessCmdRefine } from "./factory/harness/harness.mjs";
+import { cmdMcp as lifecycleCmdMcp, cmdDeploy as lifecycleCmdDeploy, cmdDeployStatus as lifecycleCmdDeployStatus, cmdVerifyLive as lifecycleCmdVerifyLive, cmdRegister as lifecycleCmdRegister, cmdPublish as lifecycleCmdPublish } from "./factory/lifecycle/deploy.mjs";
 
 // Model for all generated agents. Override with GE_AGENT_MODEL. Validated against
 // the known-models allowlist so an invalid id fails generation here rather than
@@ -1291,171 +1281,29 @@ async function cmdQualityGate(dir, flags) {
 
 // extractFirstJsonObject now lives in @ge/std/json-repair (imported above) so the
 // harness parsers and any other consumer share one repair-tolerant extractor.
+//
+// cmdHarnessReview/cmdHarnessRefine (and the helpers only they use —
+// readWorkspaceReviewContext, applyHarnessReviewFeedback, refineSessionId,
+// refineResumeOptions) now live in ./factory/harness/harness.mjs. This file
+// still owns pipeline state I/O, the ok()/fail() contract, the harness-runner
+// / harness-work-item bridges, the zod schemas, and the shared flag
+// predicates below — injected into the extracted module as `deps`, matching
+// the injection pattern already used for buildAgentQualityPlan elsewhere in
+// this tree (not importing back up, which would create a cycle).
 
-async function readWorkspaceReviewContext(dir) {
-  const files = [
-    "mock_systems/usecase-spec.json",
-    "fixtures/manifest.json",
-    "app/agent.py",
-    "app/tools.py",
-    "evals/golden.json",
-    "tests/eval/eval_config.json",
-    "tests/eval/evalsets/ge_behavior_contract.evalset.json",
-    "artifacts/validation-report.json",
-    "README.md",
-  ];
-  const parts = [];
-  for (const rel of files) {
-    const path = join(dir, rel);
-    if (!existsSync(path)) continue;
-    const text = await readFile(path, "utf8").catch(() => "");
-    parts.push([
-      `## ${rel}`,
-      "```",
-      text.slice(0, 24000),
-      text.length > 24000 ? "\n[truncated]" : "",
-      "```",
-    ].join("\n"));
-  }
-  return parts.join("\n\n");
-}
+const harnessDeps = () => ({
+  readJson, manifestPath, fail, ok, mkdir, writeText, writeJson,
+  loadPipeline, savePipeline, markStep, nextCommandFor,
+  runHarnessTask, REPO_ROOT, HARNESS_DATA_ROOT,
+  harnessReviewSchema, harnessRefineSchema,
+  wantsVertex, truthyFlag, envOff,
+  harnessResponseSchemaFile, reviewFanoutOptions,
+  basename, GENERATED_AT,
+  buildHarnessWorkItem, writeHarnessWorkItem, buildHarnessRefinePrompt, buildHarnessRunSummary,
+});
 
 async function cmdHarnessReview(dir, flags) {
-  const manifest = await readJson(manifestPath(dir), null);
-  const spec = await readJson(join(dir, "mock_systems", "usecase-spec.json"), null);
-  if (!manifest && !spec) fail("No generated workspace context found. Run 'factory from-usecase' or 'factory tools' first.");
-  await mkdir(join(dir, "artifacts"), { recursive: true }).catch(() => {});
-
-  const provider = flags.agent || flags.provider || "antigravity-sdk";
-  const context = await readWorkspaceReviewContext(dir);
-  const message = [
-    "Review this generated GE ADK agent workspace for spec-to-code generation quality. Do not edit files.",
-    "",
-    "Source of truth: mock_systems/usecase-spec.json and fixtures/manifest.json.",
-    "Your job is to audit whether the generated code and eval assets faithfully implement that spec, not whether the workspace merely imports.",
-    "",
-    "Required checks:",
-    "- Every behaviorContract.toolIntent resolves to a canonical implemented Python tool; non-query intents are included in source_adapters.",
-    "- app/agent.py renders the behavior contract into role, objective, scope, tool playbook, evidence requirements, escalation/refusal triggers, and hard guardrails.",
-    "- app/tools.py uses source-system-specific names and returns evidence/audit fields promised by the contract.",
-    "- Required inputs and produced IDs from toolIntents are represented in function signatures and results.",
-    "- evals/golden.json and tests/eval/evalsets/ge_behavior_contract.evalset.json mirror goldenEvals and expected tool trajectories.",
-    "- ADK runtime details are real: root_agent, generation config, output_key, callback wiring, and callback signatures compatible with ADK keyword invocation.",
-    "- Validation artifacts either pass or explain a concrete generator/harness gap.",
-    "",
-    "Return only a single JSON object with this schema:",
-    JSON.stringify({
-      ok_to_promote: false,
-      agent_quality_score: 0,
-      spec_to_code_score: 0,
-      spec_gaps: [],
-      agent_logic_gaps: [],
-      tool_gaps: [],
-      mock_data_gaps: [],
-      eval_gaps: [],
-      adk_capability_gaps: [],
-      recommended_generator_changes: [],
-      recommended_pack_changes: [],
-      required_follow_up_commands: [],
-    }, null, 2),
-    "",
-    context,
-  ].join("\n");
-
-  const result = await runHarnessTask({
-    repoRoot: REPO_ROOT,
-    dataRoot: HARNESS_DATA_ROOT,
-    workspaceDir: dir,
-    agentId: provider,
-    message,
-    stages: ["review", "validate", "eval", "adk"],
-    permissionProfile: flags["permission-profile"] || "review",
-    model: flags.model || "default",
-    vertex: wantsVertex(flags),
-    project: flags.project || flags["gcp-project"] || process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT || null,
-    location: flags.location || flags.region || process.env.GOOGLE_CLOUD_LOCATION || process.env.GOOGLE_GENAI_LOCATION || null,
-    responseSchemaFile: harnessResponseSchemaFile("harness-review"),
-    ...reviewFanoutOptions(),
-    timeoutSec: Number(flags["timeout-sec"] || 300),
-  });
-
-  await writeText(join(dir, "artifacts", `${provider}-harness-review.raw.txt`), result.text || result.stdout || "");
-  await writeJson(join(dir, "artifacts", `${provider}-harness-review.events.json`), {
-    ok: result.ok,
-    status: result.status,
-    code: result.code,
-    signal: result.signal,
-    stderr: result.stderr,
-    runtime: {
-      adapterId: result.plan.adapterId,
-      permissionProfile: result.plan.permissionProfile.id,
-      requestedCapabilities: result.plan.requestedCapabilities,
-      skills: result.plan.skills.map((skill) => ({
-        id: skill.id,
-        path: skill.relativePath,
-        workspacePath: skill.workspaceRelativePath,
-        capability: skill.capability,
-      })),
-    },
-    events: result.events,
-    diagnostics: result.summary?.diagnostics || [],
-    runSummary: result.summary || null,
-  });
-
-  let review = null;
-  let parseError = null;
-  try {
-    review = extractFirstJsonObject(result.text || result.stdout || "");
-    validateHarnessOutput(harnessReviewSchema, review, "harness review");
-    await writeJson(join(dir, "artifacts", `${provider}-harness-review.json`), review);
-    await writeJson(join(dir, "artifacts", "harness-review.json"), {
-      provider,
-      ...review,
-    });
-    await applyHarnessReviewFeedback(dir, provider, review);
-  } catch (error) {
-    parseError = error.message;
-  }
-  const soft = truthyFlag(flags.soft);
-  if (!result.ok || !review) {
-    const reason = !result.ok
-      ? `harness run failed: ${result.stderr || result.status}`
-      : `did not return parseable JSON: ${parseError}`;
-    if (soft) {
-      const summary = { step: "harness-review", provider, skipped: true, degraded: true, reason };
-      console.error(`⚠  ${provider} harness review degraded (deterministic code kept): ${reason}`);
-      // NOTE: intentionally `return summary;` (bare), not `return ok(summary);`.
-      // This function is both a top-level command handler (registry wraps its
-      // return value in {ok:true,...} at render time) AND an internal helper
-      // called directly by cmdFromUseCase/cmdBatchAudit/cmdQualityGate, which
-      // embed this exact return value verbatim (e.g. `harnessReview: reviewResult`
-      // in from-usecase's own ok({...}) payload). Wrapping here would double-wrap
-      // ok:true into that nested position and change byte-identical JSON output.
-      return summary;
-    }
-    fail(`${provider} harness review ${reason}`);
-  }
-  const pipeline = await loadPipeline(dir);
-  markStep(pipeline, "harnessReview", "done", {
-    provider,
-    output: `artifacts/${provider}-harness-review.json`,
-    okToPromote: review.ok_to_promote,
-    score: review.agent_quality_score,
-    specToCodeScore: review.spec_to_code_score,
-  });
-  await savePipeline(dir, pipeline);
-  const summary = {
-    step: "harness-review",
-    provider,
-    output: `artifacts/${provider}-harness-review.json`,
-    okToPromote: review.ok_to_promote,
-    score: review.agent_quality_score,
-    specToCodeScore: review.spec_to_code_score,
-    nextCommand: nextCommandFor(pipeline, dir),
-  };
-  // See NOTE above: bare `return summary;` — the registry wraps ok:true for
-  // top-level rendering; internal callers embed this value as-is.
-  return summary;
+  return harnessCmdReview(dir, flags, harnessDeps());
 }
 
 // Resolve the bundled response-schema asset for a harness stage. Returns null
@@ -1481,23 +1329,6 @@ function reviewFanoutOptions() {
     enableSubagents: true,
     disableTools: ["CREATE_FILE", "EDIT_FILE", "DELETE_FILE", "WRITE_FILE", "RUN_COMMAND"],
   };
-}
-
-// Resumable refine: a stable session id + save dir so a re-run of refine on the
-// same work item resumes the persisted conversation instead of starting over.
-function refineSessionId(dir, workItem) {
-  const base = workItem.runId && workItem.itemId
-    ? `${workItem.runId}-${workItem.itemId}`
-    : `refine-${basename(dir)}`;
-  return base.replace(/[^A-Za-z0-9._-]/g, "_");
-}
-
-async function refineResumeOptions(dir, workItem) {
-  if (envOff("GE_HARNESS_NO_RESUME")) return {};
-  const id = refineSessionId(dir, workItem);
-  const saveDir = join(HARNESS_DATA_ROOT, "harness-sessions", id);
-  await mkdir(saveDir, { recursive: true }).catch(() => {});
-  return { conversationId: id, saveDir };
 }
 
 // Promotion gate enforcement. Refuse to deploy a workspace whose validation /
@@ -1532,165 +1363,8 @@ async function cmdPromotionGate(dir, flags) {
   fail(`Promotion gate blocked (${gate.blockers.length} blocker(s)):\n${gate.blockers.map((b) => `  - ${b}`).join("\n")}`);
 }
 
-async function applyHarnessReviewFeedback(dir, provider, review) {
-  const feedback = {
-    kind: "ge.harness_review.feedback",
-    provider,
-    generatedAt: GENERATED_AT,
-    okToPromote: review.ok_to_promote === true,
-    score: Number(review.agent_quality_score || 0),
-    specToCodeScore: Number(review.spec_to_code_score || 0),
-    specGaps: Array.isArray(review.spec_gaps) ? review.spec_gaps : [],
-    agentLogicGaps: Array.isArray(review.agent_logic_gaps) ? review.agent_logic_gaps : [],
-    toolGaps: Array.isArray(review.tool_gaps) ? review.tool_gaps : [],
-    mockDataGaps: Array.isArray(review.mock_data_gaps) ? review.mock_data_gaps : [],
-    evalGaps: Array.isArray(review.eval_gaps) ? review.eval_gaps : [],
-    adkCapabilityGaps: Array.isArray(review.adk_capability_gaps) ? review.adk_capability_gaps : [],
-    recommendedGeneratorChanges: Array.isArray(review.recommended_generator_changes) ? review.recommended_generator_changes : [],
-    recommendedPackChanges: Array.isArray(review.recommended_pack_changes) ? review.recommended_pack_changes : [],
-    requiredFollowUpCommands: Array.isArray(review.required_follow_up_commands) ? review.required_follow_up_commands : [],
-  };
-  await writeJson(join(dir, "artifacts", "generator-feedback.json"), feedback);
-  const specPath = join(dir, "mock_systems", "usecase-spec.json");
-  const spec = await readJson(specPath, null);
-  if (spec) {
-    spec.agentQualityPlan = {
-      ...(spec.agentQualityPlan || {}),
-      harnessFeedback: feedback,
-    };
-    await writeJson(specPath, spec);
-  }
-  return feedback;
-}
-
 async function cmdHarnessRefine(dir, flags) {
-  const manifest = await readJson(manifestPath(dir), null);
-  const spec = await readJson(join(dir, "mock_systems", "usecase-spec.json"), null);
-  if (!manifest && !spec) fail("No generated workspace context found. Run 'factory from-usecase' or 'factory tools' first.");
-  await mkdir(join(dir, "artifacts"), { recursive: true }).catch(() => {});
-
-  const provider = flags.agent || flags.provider || "antigravity-sdk";
-  const workItem = buildHarnessWorkItem({
-    runId: flags["run-id"] || process.env.GE_AGENT_FACTORY_RUN_ID || null,
-    itemId: flags["item-id"] || process.env.GE_AGENT_FACTORY_ITEM_ID || null,
-    workspaceDir: dir,
-    stage: "harness_refine",
-    adapter: provider,
-    locality: flags.locality || process.env.GE_HARNESS_LOCALITY || (process.env.K_SERVICE ? "remote" : "local"),
-    project: flags.project || flags["gcp-project"] || process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT || null,
-    location: flags.location || flags.region || process.env.GOOGLE_CLOUD_LOCATION || process.env.GOOGLE_GENAI_LOCATION || null,
-    targetGate: flags["target-gate"] || "validate",
-    permissionProfile: flags["permission-profile"] || "workspace_write",
-    model: flags.model || "default",
-    soft: truthyFlag(flags.soft),
-  });
-  await writeHarnessWorkItem(dir, workItem);
-  const reviewPath = join(dir, "artifacts", `${provider}-harness-review.json`);
-  const feedbackPath = join(dir, "artifacts", "generator-feedback.json");
-  const review = await readJson(reviewPath, null);
-  const feedback = await readJson(feedbackPath, null);
-  const context = await readWorkspaceReviewContext(dir);
-  const message = await buildHarnessRefinePrompt({ workItem, workspaceContext: context, review, feedback });
-  const resumeOpts = await refineResumeOptions(dir, workItem);
-
-  const result = await runHarnessTask({
-    repoRoot: REPO_ROOT,
-    dataRoot: HARNESS_DATA_ROOT,
-    workspaceDir: dir,
-    agentId: provider,
-    message,
-    stages: ["implementation", "repair", "validate", "eval", "adk"],
-    permissionProfile: workItem.permissionProfile,
-    model: workItem.model,
-    vertex: wantsVertex(flags),
-    project: flags.project || flags["gcp-project"] || process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT || null,
-    location: flags.location || flags.region || process.env.GOOGLE_CLOUD_LOCATION || process.env.GOOGLE_GENAI_LOCATION || null,
-    responseSchemaFile: harnessResponseSchemaFile("harness-refine"),
-    protectFiles: ["tools.py"],
-    // Refine fixes generated code in place; it never deletes workspace files or
-    // generates images. Remove those builtins from the model's context entirely.
-    disableTools: ["DELETE_FILE", "GENERATE_IMAGE"],
-    // Resumable session: re-running refine on the same work item resumes rather
-    // than starting from scratch.
-    ...resumeOpts,
-    timeoutSec: Number(flags["timeout-sec"] || 600),
-  });
-
-  await writeText(join(dir, "artifacts", `${provider}-harness-refine.raw.txt`), result.text || result.stdout || "");
-  await writeJson(join(dir, "artifacts", `${provider}-harness-refine.events.json`), {
-    workItem,
-    ok: result.ok,
-    status: result.status,
-    code: result.code,
-    signal: result.signal,
-    stderr: result.stderr,
-    runtime: {
-      adapterId: result.plan.adapterId,
-      permissionProfile: result.plan.permissionProfile.id,
-      requestedCapabilities: result.plan.requestedCapabilities,
-      skills: result.plan.skills.map((skill) => ({
-        id: skill.id,
-        path: skill.relativePath,
-        workspacePath: skill.workspaceRelativePath,
-        capability: skill.capability,
-      })),
-    },
-    events: result.events,
-    diagnostics: result.summary?.diagnostics || [],
-    runSummary: result.summary || null,
-  });
-  if (!result.ok) {
-    const reason = `harness run failed: ${result.stderr || result.status}`;
-    if (truthyFlag(flags.soft)) {
-      const summary = { step: "harness-refine", provider, skipped: true, degraded: true, reason };
-      console.error(`⚠  ${provider} harness refine degraded (deterministic code kept): ${reason}`);
-      // See NOTE in cmdHarnessReview above: bare return, not return ok(...).
-      return summary;
-    }
-    fail(`${provider} harness refine ${reason}`);
-  }
-
-  let refine = null;
-  try {
-    refine = extractFirstJsonObject(result.text || result.stdout || "");
-  } catch {
-    refine = {
-      changed_files: [],
-      summary: String(result.text || result.stdout || "").slice(0, 4000),
-      verification_commands: [],
-      remaining_gaps: ["Harness did not return parseable JSON completion packet."],
-    };
-  }
-  validateHarnessOutput(harnessRefineSchema, refine, "harness refine");
-  await writeJson(join(dir, "artifacts", `${provider}-harness-refine.json`), refine);
-  await writeJson(join(dir, "artifacts", "harness-refine.json"), {
-    provider,
-    workItem,
-    ...refine,
-  });
-  await writeJson(join(dir, "artifacts", "harness-run-summary.json"), await buildHarnessRunSummary({
-    workItem,
-    result,
-    provider,
-    output: `artifacts/${provider}-harness-refine.json`,
-    changedFiles: refine.changed_files || [],
-  }));
-  const pipeline = await loadPipeline(dir);
-  markStep(pipeline, "harnessRefine", "done", {
-    provider,
-    output: `artifacts/${provider}-harness-refine.json`,
-    changedFiles: refine.changed_files || [],
-  });
-  await savePipeline(dir, pipeline);
-  const summary = {
-    step: "harness-refine",
-    provider,
-    output: `artifacts/${provider}-harness-refine.json`,
-    changedFiles: refine.changed_files || [],
-    nextCommand: nextCommandFor(pipeline, dir),
-  };
-  // See NOTE in cmdHarnessReview above: bare return, not return ok(...).
-  return summary;
+  return harnessCmdRefine(dir, flags, harnessDeps());
 }
 
 async function cmdServe(dir, flags) {
@@ -1713,96 +1387,18 @@ async function cmdServe(dir, flags) {
 }
 
 // ── Cloud data packaging ─────────────────────────────────────
-
-async function buildCloudDataArtifacts(dir, flags = {}) {
-  const pipeline = await loadPipeline(dir);
-  requireStep(pipeline, "generate");
-  const manifest = await readJson(manifestPath(dir), null);
-  if (!manifest) fail("No fixture manifest. Run 'factory generate' first.");
-
-  const project = flags.project || "<gcp-project>";
-  const location = flags.location || flags.region || "US";
-  const scenario = bigQuerySafeName(manifest.id || pipeline.name || basename(dir));
-  const dataset = bigQuerySafeName(flags.dataset || `ge_mock_${scenario}`);
-  const bucket = flags.bucket || `${project}-factory-${scenario}`.toLowerCase().replace(/[^a-z0-9._-]/g, "-");
-  const prefix = (flags.prefix || `factory/${scenario}`).replace(/^\/+|\/+$/g, "");
-  const outDir = cloudDataDir(dir);
-
-  await mkdir(join(outDir, "bigquery", "schemas"), { recursive: true });
-  await mkdir(join(outDir, "bigquery", "ndjson"), { recursive: true });
-  await mkdir(join(outDir, "storage"), { recursive: true });
-
-  const tables = [];
-  for (const table of manifest.tables || []) {
-    const sourcePath = table.jsonPath || table.path;
-    const rows = await readJson(join(fixturesDir(dir), sourcePath), null);
-    if (!Array.isArray(rows)) fail(`Cloud data packaging requires JSON fixture rows for ${table.name}`);
-    const { schema, schemaPathRel, ndjsonPathRel, record } = buildCloudTableRecord({
-      table, rows, project, location, dataset, bucket, prefix, manifestId: manifest.id,
-    });
-    await writeJson(join(dir, schemaPathRel), schema);
-    await writeText(join(dir, ndjsonPathRel), rowsToNdjson(rows));
-    tables.push(record);
-  }
-
-  const { documentRows, documentManifestSchema } = buildDocumentManifest(manifest, { bucket, prefix });
-  await writeJson(join(outDir, "bigquery", "schemas", "documents_manifest.schema.json"), documentManifestSchema);
-  await writeText(join(outDir, "bigquery", "ndjson", "documents_manifest.jsonl"), rowsToNdjson(documentRows));
-
-  const scriptPath = join(outDir, "load-to-google-cloud.sh");
-  await writeText(scriptPath, renderCloudLoadScript({ project, location, dataset, bucket, prefix, scenario, tables }));
-
-  const plan = buildCloudDataPlan({ scenario, generatedAt: GENERATED_AT, project, location, dataset, bucket, prefix, tables, documentRows, manifest });
-
-  await writeJson(join(outDir, "cloud-data-manifest.json"), plan);
-
-  // Per-agent MCP tool manifest in the shape mcp-service/server.py expects
-  // ({ tools: [{name,description,inputSchema}] }). load_data uploads this to
-  // gs://<dataBucket>/agents/<id>/mcp-tools.json so the dept MCP service can
-  // serve this agent's tools at runtime (resolved via ?agent=<id>).
-  await writeJson(join(outDir, "mcp-tools.json"), {
-    id: `${scenario}_mcp_tools`,
-    generatedAt: plan.generatedAt,
-    agentId: manifest.id || scenario,
-    simulatorRegistry: {
-      path: "apps/factory/simulator-systems/registry.json",
-      version: loadSimulatorRegistry().version,
-    },
-    tools: mcpToolDescriptors(manifest),
-  });
-  await writeJson(deployPlanPath(dir), {
-    ...plan,
-    nextCommands: [
-      `bash mock_data/cloud/load-to-google-cloud.sh`,
-      `factory deploy --dir ${dir} --project ${project} --region ${flags.region || "us-central1"} --target agent_runtime`,
-    ],
-  });
-
-  manifest.cloud = {
-    status: "plan_ready",
-    target: "bigquery_and_cloud_storage",
-    dataset,
-    bucket,
-    prefix,
-    manifestPath: "mock_data/cloud/cloud-data-manifest.json",
-    loadScript: "mock_data/cloud/load-to-google-cloud.sh",
-  };
-  await writeJson(manifestPath(dir), manifest);
-
-  pipeline.steps.cloudDataPlan = {
-    status: "done",
-    completedAt: plan.generatedAt,
-    target: "bigquery_and_cloud_storage",
-    dataset,
-    bucket,
-    prefix,
-  };
-  await savePipeline(dir, pipeline);
-  return plan;
-}
-
+//
+// buildCloudDataArtifacts itself now lives in
+// ./factory/data/build-cloud-data-artifacts.mjs — it's the file-writing
+// orchestration around the pure derivers already extracted into
+// ./factory/data/render-cloud-data-plan.mjs. Pipeline state I/O and the
+// ok()/fail() contract are injected as `deps`.
 async function cmdDataPlan(dir, flags) {
-  const plan = await buildCloudDataArtifacts(dir, flags);
+  const plan = await buildCloudDataArtifacts(dir, flags, {
+    loadPipeline, requireStep, readJson, fail, mkdir, writeJson, writeText,
+    savePipeline, manifestPath, fixturesDir, cloudDataDir, deployPlanPath,
+    GENERATED_AT,
+  });
   const integrationPlan = await buildSourceIntegrationPlan(dir, flags, { cloudPlan: plan });
   return ok({
     step: "data-plan",
@@ -1911,777 +1507,52 @@ async function cmdSnowfakeryRecipe(dir, flags) {
   return ok({ step: "snowfakery-recipe", ...manifest });
 }
 
-// ── gcloud helpers ───────────────────────────────────────────
-
-async function getGcloudProject(flags) {
-  const p = flags.project || process.env.GOOGLE_CLOUD_PROJECT;
-  if (p) return p;
-  try {
-    const r = await runCommand("gcloud", ["config", "get-value", "project"], { timeout: 10000 });
-    const val = r.stdout.trim();
-    if (val && val !== "(unset)") return val;
-  } catch {}
-  return null;
-}
-
-async function getGcloudProjectNumber(project) {
-  if (process.env.GOOGLE_CLOUD_PROJECT_NUMBER) return process.env.GOOGLE_CLOUD_PROJECT_NUMBER;
-  if (!project || project.includes("<")) return null;
-  try {
-    const r = await runCommand("gcloud", ["projects", "describe", project, "--format=value(projectNumber)"], { timeout: 15000, allowFail: true });
-    return r.stdout.trim() || null;
-  } catch {
-    return null;
-  }
-}
-
-async function getGcloudRegion(flags) {
-  return flags.region || process.env.GOOGLE_CLOUD_LOCATION || "us-central1";
-}
-
-function parseAgentRuntimeId(meta, fallback = null) {
-  const candidates = [
-    meta?.remote_agent_runtime_id,
-    meta?.agent_runtime_id,
-    meta?.resource_name,
-    meta?.reasoning_engine,
-    fallback,
-    process.env.AGENT_RUNTIME_ID,
-  ].filter(Boolean).map(String);
-  const valid = candidates.find((value) => value && value !== "None" && value.includes("/reasoningEngines/"));
-  return valid || candidates.find((value) => value && value !== "None") || null;
-}
-
-function agentRuntimeRunUrl(runtimeId) {
-  const text = String(runtimeId || "");
-  const parts = text.split("/");
-  const project = parts[parts.indexOf("projects") + 1];
-  const location = parts[parts.indexOf("locations") + 1];
-  const engine = parts[parts.indexOf("reasoningEngines") + 1];
-  if (!project || !location || !engine) return null;
-  return `https://${location}-aiplatform.googleapis.com/v1/projects/${project}/locations/${location}/reasoningEngines/${engine}`;
-}
-
-async function hydrateDeployStepFromMetadata(dir, pipeline, flags = {}) {
-  if (pipeline.steps?.deploy?.status === "done") return pipeline.steps.deploy;
-  const metaPath = join(dir, "deployment_metadata.json");
-  const meta = await readJson(metaPath, null);
-  const runtimeId = parseAgentRuntimeId(meta, pipeline.steps?.deploy?.runtimeId);
-  if (!runtimeId) return pipeline.steps?.deploy || null;
-
-  const project = flags.project || process.env.GOOGLE_CLOUD_PROJECT || runtimeId.match(/^projects\/([^/]+)/)?.[1] || null;
-  const region = flags.region || flags.location || process.env.GOOGLE_CLOUD_LOCATION || runtimeId.match(/\/locations\/([^/]+)/)?.[1] || null;
-  markStep(pipeline, "deploy", "done", {
-    ...(pipeline.steps?.deploy || {}),
-    project,
-    region,
-    target: meta?.deployment_target || pipeline.steps?.deploy?.target || "agent_runtime",
-    runtimeId,
-    isA2a: meta?.is_a2a || false,
-    deploymentMetadata: metaPath,
-    hydratedFromMetadata: true,
-  });
-  await savePipeline(dir, pipeline);
-  return pipeline.steps.deploy;
-}
-
-function parseOperationId(output) {
-  const text = String(output || "");
-  return text.match(/projects\/[^ \n]+\/locations\/[^ \n]+\/[^ \n]*operations\/[A-Za-z0-9_-]+/)?.[0]
-    || text.match(/Operation:\s*([^\s]+)/)?.[1]
-    || text.match(/operation(?: name)?:\s*([^\s]+)/i)?.[1]
-    || null;
-}
-
-function safeAgentsCliProjectName(value) {
-  const normalized = String(value || "ge-agent")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  const prefixed = /^[a-z]/.test(normalized) ? normalized : `ge-${normalized}`;
-  return (prefixed || "ge-agent").slice(0, 26).replace(/-+$/g, "") || "ge-agent";
-}
-
-function normalizeGeminiEnterpriseAppResource(value, project, location = "global") {
-  const raw = String(value || "").trim();
-  if (!raw) return null;
-  if (raw.startsWith("projects/") && raw.includes("/engines/")) return raw;
-  if (raw.includes("/engines/")) {
-    const idx = raw.indexOf("projects/");
-    return idx >= 0 ? raw.slice(idx) : raw;
-  }
-  if (project && /^[a-z][a-z0-9_-]*$/i.test(raw) && !/\s/.test(raw)) {
-    return `projects/${project}/locations/${location}/collections/default_collection/engines/${raw}`;
-  }
-  return raw;
-}
-
-function parseGeminiEnterpriseApps(text) {
-  const apps = [];
-  for (const line of String(text || "").split("\n")) {
-    const resource = line.match(/projects\/[^ \t│]+\/locations\/[^ \t│]+\/collections\/[^ \t│]+\/engines\/[^ \t│]+/)?.[0];
-    if (!resource) continue;
-    const cells = line.split("│").map((cell) => cell.trim()).filter(Boolean);
-    const displayName = cells.find((cell) => !cell.startsWith("projects/") && !["Display Name", "Location", "Resource"].includes(cell)) || null;
-    const id = resource.match(/\/engines\/([^/]+)$/)?.[1] || null;
-    apps.push({ displayName, id, resource });
-  }
-  return apps;
-}
-
-async function resolveGeminiEnterpriseAppId(rawAppId, { project, projectNumber, location }) {
-  const raw = String(rawAppId || "").trim();
-  if (!raw) return { appId: null, matched: null };
-  if (raw.startsWith("projects/") && raw.includes("/engines/")) return { appId: raw, matched: "full_resource" };
-
-  try {
-    const listArgs = ["publish", "gemini-enterprise", "--list"];
-    if (projectNumber) listArgs.push("--project-number", projectNumber);
-    const listed = await runCommand("agents-cli", listArgs, { timeout: 30000, allowFail: true, env: { COLUMNS: "240" } });
-    const apps = parseGeminiEnterpriseApps(`${listed.stdout}\n${listed.stderr}`);
-    const exact = apps.find((app) => app.id === raw || app.displayName === raw || app.resource === raw);
-    if (exact?.resource) return { appId: exact.resource, matched: exact.displayName === raw ? "display_name" : "engine_id", apps };
-  } catch {}
-
-  if (project) {
-    try {
-      const discovered = await runCommand("gcloud", [
-        "discovery-engine", "engines", "list",
-        `--project=${project}`,
-        `--location=${location || "global"}`,
-        "--collection=default_collection",
-        "--format=json(name,displayName)",
-      ], { timeout: 30000, allowFail: true });
-      const parsed = discovered.stdout.trim() ? JSON.parse(discovered.stdout) : [];
-      const match = parsed.find((app) => app.name === raw || app.displayName === raw || app.name?.endsWith(`/engines/${raw}`));
-      if (match?.name) return { appId: match.name, matched: match.displayName === raw ? "display_name" : "engine_id", apps: parsed };
-    } catch {}
-  }
-
-  return { appId: normalizeGeminiEnterpriseAppResource(raw, project, location), matched: "constructed_or_raw" };
-}
-
-// ── MCP Server Management ────────────────────────────────────
+// ── Cloud lifecycle (MCP tool-plane, deploy, register, publish) ──────────
+//
+// cmdMcp/cmdDeploy/cmdDeployStatus/cmdVerifyLive/cmdRegister/cmdPublish, and
+// every gcloud/agents-cli helper only they use, now live in
+// ./factory/lifecycle/deploy.mjs — a real seam: they're tightly coupled to
+// EACH OTHER (register/publish/deploy-status all read
+// deployment_metadata.json through the same parseAgentRuntimeId/
+// hydrateDeployStepFromMetadata path) but only loosely coupled to the rest
+// of this file's local pipeline commands. This file still owns pipeline
+// state I/O, the ok()/fail() contract, runCommand, runLifecycleCommand,
+// assertPromotable, and the resolved AGENT_MODEL — injected into the
+// extracted module as `deps`, matching the injection pattern already used
+// for buildAgentQualityPlan elsewhere in this tree.
+const lifecycleDeps = () => ({
+  readJson, writeJson, writeText, mkdir,
+  loadPipeline, savePipeline, markStep, requireStep, nextCommandFor,
+  fail, ok, runCommand, runLifecycleCommand, assertPromotable,
+  manifestPath, GENERATED_AT, AGENT_MODEL,
+  cmdSourceIntegrationPlan,
+});
 
 async function cmdMcp(dir, flags) {
-  const pipeline = await loadPipeline(dir);
-  const action = flags.action || flags._sub || "list";
-
-  if (action === "plan") {
-    return cmdSourceIntegrationPlan(dir, flags);
-  }
-
-  const project = await getGcloudProject(flags);
-  if (!project) fail("--project required (or set GOOGLE_CLOUD_PROJECT / gcloud config)");
-
-  if (action === "list" || action === "ls") {
-    console.error(`Listing managed MCP servers for project ${project}...`);
-    const results = [];
-    for (const svc of MANAGED_MCP_SERVICES) {
-      try {
-        const r = await runCommand("gcloud", ["services", "list", "--enabled", "--filter", `name:${svc.api}`, "--project", project, "--format=value(name)"], { timeout: 15000 });
-        results.push({ ...svc, enabled: r.stdout.trim().includes(svc.api) });
-      } catch {
-        results.push({ ...svc, enabled: false, error: "check failed" });
-      }
-    }
-    try {
-      console.error("Checking Agent Registry services...");
-      const r = await runCommand("gcloud", ["alpha", "agent-registry", "services", "list", "--project", project, "--location", await getGcloudRegion(flags), "--format=json"], { timeout: 15000, allowFail: true });
-      const registryServices = r.stdout.trim() ? JSON.parse(r.stdout) : [];
-      return ok({ step: "mcp", action: "list", project, managedServices: results, registryServices });
-    } catch {
-      return ok({ step: "mcp", action: "list", project, managedServices: results, registryServices: [] });
-    }
-  }
-
-  if (action === "enable") {
-    const serviceId = flags.service;
-    if (!serviceId) fail("--service required (e.g., bigquery, maps, spanner)");
-    const svc = MANAGED_MCP_SERVICES.find((s) => s.id === serviceId);
-    if (!svc) fail(`Unknown service: ${serviceId}. Available: ${MANAGED_MCP_SERVICES.map((s) => s.id).join(", ")}`);
-
-    console.error(`Enabling ${svc.api} in project ${project}; Agent Registry auto-discovers supported first-party MCP tools for enabled Google Cloud APIs...`);
-    try {
-      await runCommand("gcloud", ["services", "enable", svc.api, `--project=${project}`], { stream: true, timeout: 60000 });
-      markStep(pipeline, "register", "done", { mode: "mcp", service: svc.id, project });
-      await savePipeline(dir, pipeline);
-      return ok({
-        step: "mcp",
-        action: "enable",
-        service: svc.id,
-        api: svc.api,
-        project,
-        registryBehavior: "First-party Google MCP servers are automatically registered in Agent Registry when the supported API is enabled.",
-        adkUsage: `from google.adk.tools import ApiRegistry\ntools = ApiRegistry.get_toolset("${svc.api}")`,
-        nextCommand: nextCommandFor(pipeline, dir),
-      });
-    } catch (e) {
-      fail(`Failed to enable ${svc.api}: ${e.message}`);
-    }
-  }
-
-  if (action === "disable") {
-    const serviceId = flags.service;
-    if (!serviceId) fail("--service required");
-    const svc = MANAGED_MCP_SERVICES.find((s) => s.id === serviceId);
-    if (!svc) fail(`Unknown service: ${serviceId}`);
-    console.error(`Disabling MCP for ${svc.api}...`);
-    try {
-      await runCommand("gcloud", ["beta", "services", "mcp", "disable", svc.api, `--project=${project}`], { stream: true, timeout: 60000 });
-      return ok({ step: "mcp", action: "disable", service: svc.id });
-    } catch (e) {
-      fail(`Failed to disable: ${e.message}`);
-    }
-  }
-
-  fail(`Unknown mcp action: ${action}. Use: plan, list, enable, disable`);
+  return lifecycleCmdMcp(dir, flags, lifecycleDeps());
 }
 
-// ── Deploy (Agent Runtime or Cloud Run) ──────────────────────
-
 async function cmdDeploy(dir, flags) {
-  const pipeline = await loadPipeline(dir);
-  requireStep(pipeline, "tools");
-  await assertPromotable(dir, flags);
-  const project = await getGcloudProject(flags);
-  const region = await getGcloudRegion(flags);
-  if (!project) fail("--project required (or set GOOGLE_CLOUD_PROJECT)");
-  const target = flags.target || "agent_runtime";
-
-  console.error(`Enhancing scaffold for ${target} deployment...`);
-  try {
-    const projectName = safeAgentsCliProjectName(pipeline.name || basename(dir));
-    await runCommand("agents-cli", ["scaffold", "enhance", ".", "--name", projectName, "--deployment-target", target, "--agent-directory", "app", "--yes"], { cwd: dir, stream: true, timeout: 60000 });
-    await runCommand("uv", ["lock"], { cwd: dir, stream: true, timeout: 120000 });
-  } catch (e) {
-    console.error(`Scaffold enhance: ${e.message}`);
-  }
-
-  if (target === "cloud_run") {
-    console.error(`Deploying to Cloud Run in ${project} / ${region}...`);
-    try {
-      const serviceName = snakeCase(pipeline.name || "mock-agent").replace(/_/g, "-");
-      await runCommand("gcloud", [
-        "run", "deploy", serviceName,
-        "--source", ".",
-        "--project", project,
-        "--region", region,
-        "--allow-unauthenticated",
-        "--set-env-vars", `GOOGLE_CLOUD_PROJECT=${project}`,
-      ], { cwd: dir, stream: true, timeout: 300000 });
-
-      const urlResult = await runCommand("gcloud", [
-        "run", "services", "describe", serviceName,
-        "--project", project, "--region", region,
-        "--format=value(status.url)",
-      ], { timeout: 15000 });
-      const serviceUrl = urlResult.stdout.trim();
-
-      markStep(pipeline, "deploy", "done", { project, region, target, serviceName, serviceUrl });
-      await savePipeline(dir, pipeline);
-      return ok({ step: "deploy", target, project, region, serviceName, serviceUrl, nextCommand: nextCommandFor(pipeline, dir) });
-    } catch (e) {
-      markStep(pipeline, "deploy", "failed", { error: e.message });
-      await savePipeline(dir, pipeline);
-      fail(`Cloud Run deploy failed: ${e.message}`);
-    }
-  }
-
-  console.error(`Deploying to Agent Runtime in ${project} / ${region}...`);
-  try {
-    const noWait = flags.wait === "true" ? false : true;
-    const deployArgs = ["deploy", "--project", project, "--region", region, "--no-confirm-project"];
-    if (noWait) deployArgs.push("--no-wait");
-    const timeoutMs = Number(flags["deploy-timeout-ms"] || process.env.GE_DEPLOY_TIMEOUT_MS || (noWait ? 180000 : 900000));
-    const deployResult = await runCommand("agents-cli", deployArgs, { cwd: dir, stream: true, timeout: timeoutMs });
-
-    const metaPath = join(dir, "deployment_metadata.json");
-    const meta = await readJson(metaPath, null);
-    const runtimeId = parseAgentRuntimeId(meta);
-    const operation = parseOperationId(`${deployResult.stdout}\n${deployResult.stderr}`);
-
-    if (noWait && !runtimeId) {
-      markStep(pipeline, "deploy", "running", {
-        project,
-        region,
-        target,
-        operation,
-        statusCommand: `factory deploy-status --dir ${dir} --project ${project} --region ${region}`,
-      });
-      await savePipeline(dir, pipeline);
-      return ok({
-        step: "deploy",
-        status: "running",
-        target,
-        project,
-        region,
-        operation,
-        statusCommand: `factory deploy-status --dir ${dir} --project ${project} --region ${region}`,
-      });
-    }
-
-    markStep(pipeline, "deploy", "done", {
-      project, region, target,
-      runtimeId,
-      isA2a: meta?.is_a2a || false,
-    });
-    await savePipeline(dir, pipeline);
-    return ok({ step: "deploy", target, project, region, runtimeId, deploymentMetadata: metaPath, nextCommand: nextCommandFor(pipeline, dir) });
-  } catch (e) {
-    if (e.message === "timeout") {
-      const operation = parseOperationId(`${e.stdout || ""}\n${e.stderr || ""}`);
-      markStep(pipeline, "deploy", "running", {
-        project,
-        region,
-        target,
-        operation,
-        timeoutMs: Number(flags["deploy-timeout-ms"] || process.env.GE_DEPLOY_TIMEOUT_MS || 900000),
-        statusCommand: `factory deploy-status --dir ${dir} --project ${project} --region ${region}`,
-      });
-      await savePipeline(dir, pipeline);
-      return ok({
-        step: "deploy",
-        status: "running",
-        target,
-        project,
-        region,
-        operation,
-        statusCommand: `factory deploy-status --dir ${dir} --project ${project} --region ${region}`,
-      });
-    }
-    markStep(pipeline, "deploy", "failed", { error: e.message });
-    await savePipeline(dir, pipeline);
-    fail(`Deploy failed: ${e.message}`);
-  }
+  return lifecycleCmdDeploy(dir, flags, lifecycleDeps());
 }
 
 async function cmdDeployStatus(dir, flags) {
-  const pipeline = await loadPipeline(dir);
-  const project = await getGcloudProject(flags);
-  const region = await getGcloudRegion(flags);
-  if (!project) fail("--project required (or set GOOGLE_CLOUD_PROJECT)");
-  console.error(`Checking Agent Runtime deploy status in ${project} / ${region}...`);
-  try {
-    const statusResult = await runCommand("agents-cli", ["deploy", "--status", "--project", project, "--region", region, "--no-confirm-project"], { cwd: dir, stream: true, timeout: 180000 });
-    const metaPath = join(dir, "deployment_metadata.json");
-    const meta = await readJson(metaPath, null);
-    const runtimeId = parseAgentRuntimeId(meta);
-    if (!runtimeId) {
-      markStep(pipeline, "deploy", "running", {
-        project,
-        region,
-        target: "agent_runtime",
-        operation: parseOperationId(`${statusResult.stdout}\n${statusResult.stderr}`) || pipeline.steps.deploy?.operation || null,
-        statusCommand: `factory deploy-status --dir ${dir} --project ${project} --region ${region}`,
-      });
-      await savePipeline(dir, pipeline);
-      return ok({ step: "deploy-status", status: "running", project, region, runtimeId: null });
-    }
-    markStep(pipeline, "deploy", "done", { project, region, target: "agent_runtime", runtimeId, isA2a: meta?.is_a2a || false });
-    await savePipeline(dir, pipeline);
-    return ok({ step: "deploy-status", status: "done", project, region, runtimeId, deploymentMetadata: metaPath, nextCommand: nextCommandFor(pipeline, dir) });
-  } catch (e) {
-    markStep(pipeline, "deploy", "failed", { error: e.message, project, region, target: "agent_runtime" });
-    await savePipeline(dir, pipeline);
-    fail(`Deploy status failed: ${e.message}`);
-  }
+  return lifecycleCmdDeployStatus(dir, flags, lifecycleDeps());
 }
 
 async function cmdVerifyLive(dir, flags) {
-  const pipeline = await loadPipeline(dir);
-  await hydrateDeployStepFromMetadata(dir, pipeline, flags);
-  requireStep(pipeline, "deploy");
-  const deployStep = pipeline.steps.deploy || {};
-  const meta = await readJson(join(dir, "deployment_metadata.json"), null);
-  const runtimeId = parseAgentRuntimeId(meta, deployStep.runtimeId);
-  const target = flags.url || deployStep.serviceUrl || agentRuntimeRunUrl(runtimeId);
-  const mode = flags.mode || (runtimeId ? "adk" : "a2a");
-  const prompt = flags.prompt || "hello";
-  if (!target) fail("No deployed URL or Agent Runtime metadata found. Run deploy-status first or pass --url.");
-
-  try {
-    await mkdir(join(dir, "artifacts"), { recursive: true }).catch(() => {});
-    const args = ["run", prompt, "--url", target, "--mode", mode];
-    if (flags["app-name"]) args.push("--app-name", flags["app-name"]);
-    const result = await runLifecycleCommand({
-      dir,
-      name: "verify-live",
-      args,
-      timeout: Number(flags["timeout-ms"] || 180000),
-      artifact: "agents-cli-verify-live.log.md",
-    });
-    const report = {
-      kind: "ge.agents_cli.verify_live",
-      ok: result.ok,
-      generatedAt: GENERATED_AT,
-      target,
-      mode,
-      prompt,
-      runtimeId,
-      command: result.command,
-      exitCode: result.exitCode,
-      stdoutTail: result.stdout,
-      stderrTail: result.stderr,
-    };
-    await writeJson(join(dir, "artifacts", "agents-cli-verify-live.json"), report);
-    markStep(pipeline, "verifyLive", result.ok ? "done" : "failed", {
-      output: "artifacts/agents-cli-verify-live.json",
-      target,
-      mode,
-      exitCode: result.exitCode,
-    });
-    await savePipeline(dir, pipeline);
-    return ok({ step: "verify-live", ...report, nextCommand: nextCommandFor(pipeline, dir) });
-  } catch (e) {
-    markStep(pipeline, "verifyLive", "failed", { error: e.message, target, mode });
-    await savePipeline(dir, pipeline);
-    fail(`Live verification failed: ${e.message}`);
-  }
-}
-
-// ── Register (Agent Registry via gcloud alpha agent-registry) ─
-
-async function buildToolSpec(dir, manifest) {
-  const maxBytes = 10 * 1024;
-  const tools = mcpToolDescriptors(manifest);
-  const specPath = join(dir, "mock_systems", "toolspec.json");
-  let spec = { tools };
-  let content = JSON.stringify(spec, null, 2) + "\n";
-  if (Buffer.byteLength(content, "utf8") > maxBytes) {
-    const compactTools = tools.map((tool) => ({
-      name: tool.name,
-      description: String(tool.description || tool.name).slice(0, 160),
-      ...(tool.simulator ? { simulator: tool.simulator } : {}),
-      inputSchema: tool.inputSchema?.properties ? {
-        type: "object",
-        properties: Object.fromEntries(Object.entries(tool.inputSchema.properties).slice(0, 4).map(([key, value]) => [
-          key,
-          { type: value?.type || "string" },
-        ])),
-        ...(tool.inputSchema.required?.length ? { required: tool.inputSchema.required.slice(0, 4) } : {}),
-      } : { type: "object", properties: {} },
-    }));
-    spec = { tools: compactTools };
-    content = JSON.stringify(spec, null, 2) + "\n";
-  }
-  if (Buffer.byteLength(content, "utf8") > maxBytes) {
-    const baseTools = spec.tools.slice(0, Math.max(1, spec.tools.findIndex((tool) => String(tool.name || "").startsWith("query_"))));
-    const queryTools = spec.tools.filter((tool) => String(tool.name || "").startsWith("query_")).slice(0, 20);
-    const actionTools = spec.tools.filter((tool) => !String(tool.name || "").startsWith("query_") && tool.name !== "list_systems").slice(0, 20);
-    spec = { tools: [...baseTools, ...queryTools, ...actionTools] };
-    content = JSON.stringify(spec, null, 2) + "\n";
-  }
-  if (Buffer.byteLength(content, "utf8") > maxBytes) {
-    fail(`Generated toolspec.json exceeds 10 KB Agent Registry limit after compaction (${Buffer.byteLength(content, "utf8")} bytes). Reduce exposed tools or split the MCP server by source system.`);
-  }
-  await writeText(specPath, content);
-  return specPath;
-}
-
-async function testServiceReachability(url) {
-  console.error(`Testing reachability of Cloud Run service at ${url}...`);
-  try {
-    const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), 10000); // 10s timeout
-    const res = await fetch(url, { signal: controller.signal, method: "GET" });
-    clearTimeout(id);
-    console.error(`Reachability check result: HTTP ${res.status} (${res.statusText})`);
-    return { ok: true, status: res.status, statusText: res.statusText };
-  } catch (e) {
-    console.error(`Warning: Reachability check failed: ${e.message}`);
-    return { ok: false, error: e.message };
-  }
-}
-
-function normalizeAgentRegistryProtocol(protocolInput) {
-  const value = String(protocolInput || "sse").toLowerCase().replace(/_/g, "-");
-  if (value === "sse" || value === "jsonrpc" || value === "json-rpc") return "JSONRPC";
-  if (value === "http-json" || value === "httpjson") return "HTTP_JSON";
-  if (value === "grpc") return "GRPC";
-  return String(protocolInput || "JSONRPC").toUpperCase().replace(/-/g, "_");
-}
-
-function assertSupportedAgentRegistryLocation(location) {
-  const value = String(location || "").toLowerCase();
-  if (value === "us" || value === "eu") {
-    fail("Manual Agent Registry MCP registration is not supported in the us or eu multi-region locations. Use a supported region or global.");
-  }
+  return lifecycleCmdVerifyLive(dir, flags, lifecycleDeps());
 }
 
 async function cmdRegister(dir, flags) {
-  const pipeline = await loadPipeline(dir);
-  await hydrateDeployStepFromMetadata(dir, pipeline, flags);
-  requireStep(pipeline, "deploy");
-  const project = await getGcloudProject(flags);
-  const region = await getGcloudRegion(flags);
-  const mode = flags.as || "adk";
-  const deployStep = pipeline.steps.deploy || {};
-  const manifest = await readJson(manifestPath(dir), null);
-  const serverName = snakeCase(pipeline.name || "mock-agent").replace(/_/g, "-");
-  const displayName = flags["display-name"] || pipeline.name || "Mock Agent";
-
-  if (mode === "mcp") {
-    assertSupportedAgentRegistryLocation(region);
-    // Per-department multi-tenant MCP service: register this agent at the dept URL
-    // scoped by ?agent=<id>. --service-url comes from .ge.json mcpServices[<dept>]
-    // (the worker passes it); fall back to a per-agent deploy serviceUrl if present.
-    const agentId = flags["agent-id"] || snakeCase(pipeline.name || "mock-agent").replace(/_/g, "-");
-    let serviceUrl = flags["service-url"] || deployStep.serviceUrl;
-    if (!serviceUrl) fail("No --service-url (department MCP) and no deploy serviceUrl. Run `ge mcp deploy` and pass --service-url.");
-    const u = new URL(serviceUrl.endsWith("/mcp") ? serviceUrl : `${serviceUrl.replace(/\/$/, "")}/mcp`);
-    u.searchParams.set("agent", agentId);
-    serviceUrl = u.toString();
-
-    const protocolInput = flags.protocol || "jsonrpc";
-    const protocolBinding = normalizeAgentRegistryProtocol(protocolInput);
-
-    // Warm-up and Reachability Check
-    const reachability = await testServiceReachability(serviceUrl);
-
-    console.error(`Building tool spec from manifest...`);
-    const specPath = await buildToolSpec(dir, manifest);
-
-    console.error(`Registering "${serverName}" as MCP service in Agent Registry...`);
-    console.error(`Project: ${project} | Region: ${region}`);
-    console.error(`URL: ${serviceUrl} | ProtocolBinding: ${protocolBinding}`);
-    try {
-      await runCommand("gcloud", [
-        "alpha", "agent-registry", "services", "create", serverName,
-        `--project=${project}`,
-        `--location=${region}`,
-        `--display-name=${displayName}`,
-        "--mcp-server-spec-type=tool-spec",
-        `--mcp-server-spec-content=${specPath}`,
-        `--interfaces=url=${serviceUrl},protocolBinding=${protocolBinding}`,
-      ], { stream: true, timeout: 60000 });
-
-      // Authorize the agent identity to call this MCP server (governed agent→MCP egress).
-      // Per gemini-enterprise-agent-platform/govern/policies/assign-identity-iam#agent-to-mcp-server,
-      // the role is roles/iap.egressor bound on the mcpServer (optionally read-only conditioned).
-      let principalSet = flags["agent-principalset"] || flags.principalset || "";
-      if (!principalSet) {
-        const pn = await runCommand("gcloud", ["projects", "describe", project, "--format=value(projectNumber)"], { stream: false });
-        const num = (pn.stdout || "").trim();
-        const orgId = flags["agent-identity-org-id"] || flags["agent-org-id"] || process.env.GE_AGENT_IDENTITY_ORG_ID || "";
-        if (num && orgId) principalSet = `principalSet://agents.global.org-${orgId}.system.id.goog/attribute.platformContainer/aiplatform/projects/${num}`;
-      }
-      let egressGranted = false;
-      if (principalSet) {
-        const egress = ["beta", "iap", "web", "add-iam-policy-binding",
-          `--project=${project}`, `--region=${region}`, `--mcpServer=${serverName}`,
-          `--member=${principalSet}`, "--role=roles/iap.egressor"];
-        if (flags["read-only"]) egress.push("--condition=expression=request.auth.type == 'MCP' && mcp.tool.isReadOnly,title=read-only-egress");
-        else egress.push("--condition=None");
-        console.error(`Granting roles/iap.egressor (agent→MCP) on mcpServer ${serverName}${flags["read-only"] ? " [read-only]" : ""}…`);
-        const g = await runCommand("gcloud", egress, { stream: false });
-        egressGranted = g.code === 0;
-        console.error(egressGranted
-          ? `  ✓ iap.egressor → ${principalSet}`
-          : `  ⚠ iap.egressor grant failed (verify 'gcloud beta iap web add-iam-policy-binding --mcpServer' on your authed host): ${(g.stderr || "").split("\n")[0]}`);
-      } else {
-        console.error("  ⚠ skipped iap.egressor grant: no agent principalSet (pass --agent-principalset or set GE_AGENT_IDENTITY_ORG_ID)");
-      }
-
-      markStep(pipeline, "register", "done", { mode: "mcp", serverName, serviceUrl, protocol: protocolInput, specPath, reachability, egressGranted });
-      await savePipeline(dir, pipeline);
-      return ok({
-        step: "register",
-        mode: "mcp",
-        serverName,
-        serviceUrl,
-        protocol: protocolInput,
-        toolSpec: specPath,
-        reachability,
-        adkUsage: [
-          `# Authentic ADK code with GCP Authentication for Agent Registry:`,
-          `import os`,
-          `from google.adk.agents.llm_agent import LlmAgent`,
-          `from google.adk.auth.credential_manager import CredentialManager`,
-          `from google.adk.integrations.agent_identity import GcpAuthProvider`,
-          `from google.adk.integrations.agent_registry import AgentRegistry`,
-          ``,
-          `# 1. Register the GCP auth provider for automatic credential binding`,
-          `CredentialManager.register_auth_provider(GcpAuthProvider())`,
-          ``,
-          `# 2. Initialize the registry client using ADC`,
-          `registry = AgentRegistry(`,
-          `    project_id=os.environ.get("GOOGLE_CLOUD_PROJECT", "${project}"),`,
-          `    location=os.environ.get("GOOGLE_CLOUD_LOCATION", "${region}"),`,
-          `)`,
-          ``,
-          `# 3. Retrieve the authenticated MCP toolset (bindings are resolved automatically)`,
-          `mcp_tools = registry.get_mcp_toolset(`,
-          `    mcp_server_name="projects/${project}/locations/${region}/mcpServers/${serverName}"`,
-          `)`,
-          ``,
-          `# 4. Compose your agent with the toolset`,
-          `agent = LlmAgent(`,
-          `    name="orchestrator_agent",`,
-          `    model="${AGENT_MODEL}",`,
-          `    instruction="Use the registered MCP tools to answer questions.",`,
-          `    tools=[mcp_tools]`,
-          `)`,
-        ].join("\n"),
-        gcloudCommand: `gcloud alpha agent-registry services describe ${serverName} --project=${project} --location=${region}`,
-        nextCommand: nextCommandFor(pipeline, dir),
-      });
-    } catch (e) {
-      fail(`Agent Registry registration failed: ${e.message}`);
-    }
-  }
-
-  if (mode === "a2a") {
-    const serviceUrl = deployStep.serviceUrl;
-    if (!serviceUrl) fail("No serviceUrl from deploy. Deploy with --target cloud_run first.");
-
-    const a2aUrl = serviceUrl.endsWith("/") ? `${serviceUrl}.well-known/agent.json` : `${serviceUrl}/.well-known/agent.json`;
-    
-    // Warm-up and Reachability Check
-    const reachability = await testServiceReachability(a2aUrl);
-
-    console.error(`Registering "${serverName}" as A2A agent in Agent Registry...`);
-    try {
-      await runCommand("gcloud", [
-        "alpha", "agent-registry", "services", "create", serverName,
-        `--project=${project}`,
-        `--location=${region}`,
-        `--display-name=${displayName}`,
-        `--interfaces=url=${a2aUrl},protocolBinding=HTTP_JSON`,
-      ], { stream: true, timeout: 60000 });
-
-      markStep(pipeline, "register", "done", { mode: "a2a", serverName, serviceUrl, reachability });
-      await savePipeline(dir, pipeline);
-      return ok({
-        step: "register",
-        mode: "a2a",
-        serverName,
-        serviceUrl,
-        reachability,
-        adkUsage: [
-          `# Authentic ADK code with GCP Authentication for Agent Registry (A2A):`,
-          `import os`,
-          `import httpx`,
-          `import google.auth`,
-          `from google.auth.transport.requests import Request`,
-          `from google.adk.integrations.agent_registry import AgentRegistry`,
-          `from google.adk.agents.llm_agent import LlmAgent`,
-          ``,
-          `class GoogleAuth(httpx.Auth):`,
-          `    def __init__(self):`,
-          `        self.creds, _ = google.auth.default()`,
-          `    def auth_flow(self, request):`,
-          `        if not self.creds.valid:`,
-          `            self.creds.refresh(Request())`,
-          `        request.headers["Authorization"] = f"Bearer {self.creds.token}"`,
-          `        yield request`,
-          ``,
-          `# Initialize the registry client`,
-          `registry = AgentRegistry(`,
-          `    project_id=os.environ.get("GOOGLE_CLOUD_PROJECT", "${project}"),`,
-          `    location=os.environ.get("GOOGLE_CLOUD_LOCATION", "${region}"),`,
-          `)`,
-          ``,
-          `# Configure the HTTP client with GoogleAuth and a timeout`,
-          `httpx_client = httpx.AsyncClient(auth=GoogleAuth(), timeout=httpx.Timeout(60.0))`,
-          ``,
-          `# Retrieve the remote A2A agent`,
-          `remote_agent = registry.get_remote_a2a_agent(`,
-          `    agent_name="projects/${project}/locations/${region}/agents/${serverName}",`,
-          `    httpx_client=httpx_client`,
-          `)`,
-          ``,
-          `# Compose your orchestrator`,
-          `orchestrator = LlmAgent(`,
-          `    name="orchestrator_agent",`,
-          `    model="${AGENT_MODEL}",`,
-          `    instruction="Delegate tasks to the remote A2A agent when needed.",`,
-          `    tools=[remote_agent]`,
-          `)`,
-        ].join("\n"),
-        nextCommand: nextCommandFor(pipeline, dir),
-      });
-    } catch (e) {
-      fail(`A2A registration failed: ${e.message}`);
-    }
-  }
-
-  // mode === "adk" — Agent Runtime, ready for Gemini Enterprise publish
-  const meta = await readJson(join(dir, "deployment_metadata.json"), null);
-  const runtimeId = parseAgentRuntimeId(meta, deployStep.runtimeId);
-  if (!runtimeId) fail("No runtime ID. Deploy with --target agent_runtime first, or use --as mcp/a2a for Cloud Run services.");
-
-  markStep(pipeline, "register", "done", { mode: "adk", runtimeId });
-  await savePipeline(dir, pipeline);
-  return ok({
-    step: "register",
-    mode: "adk",
-    runtimeId,
-    nextStep: `factory publish --dir ${dir} --app-id <GEMINI_ENTERPRISE_APP_ID>`,
-    nextCommand: nextCommandFor(pipeline, dir),
-  });
+  return lifecycleCmdRegister(dir, flags, lifecycleDeps());
 }
-
-// ── Publish (Gemini Enterprise) ──────────────────────────────
 
 async function cmdPublish(dir, flags) {
-  const pipeline = await loadPipeline(dir);
-  await hydrateDeployStepFromMetadata(dir, pipeline, flags);
-  requireStep(pipeline, "deploy");
-  const project = await getGcloudProject(flags);
-  const location = flags.location || flags.region || process.env.GEMINI_ENTERPRISE_LOCATION || "global";
-  const projectNumber = flags["project-number"] || await getGcloudProjectNumber(project);
-  const rawAppId = flags["app-id"] || process.env.GEMINI_ENTERPRISE_APP_ID || process.env.ID;
-  if (!rawAppId) fail("--app-id required (or set GEMINI_ENTERPRISE_APP_ID)");
-  const resolvedApp = await resolveGeminiEnterpriseAppId(rawAppId, { project, projectNumber, location });
-  const appId = resolvedApp.appId;
-
-  const meta = await readJson(join(dir, "deployment_metadata.json"), null);
-  const regType = meta?.is_a2a ? "a2a" : "adk";
-  const runtimeId = parseAgentRuntimeId(meta, pipeline.steps.deploy?.runtimeId);
-  if (regType === "adk" && !runtimeId) {
-    fail("No valid Agent Runtime ID found. Run factory deploy-status until deployment writes deployment_metadata.json before publishing.");
-  }
-  const displayName = flags["display-name"] || pipeline.name || "Mock Demo Agent";
-  const description = flags.description || `Generated mock agent for ${pipeline.domain} domain`;
-
-  console.error(`Publishing to Gemini Enterprise (${regType})...`);
-  try {
-    const publishArgs = ["publish", "gemini-enterprise",
-      "--gemini-enterprise-app-id", appId,
-      "--display-name", displayName,
-      "--description", description,
-      "--tool-description", description,
-      "--registration-type", regType];
-    if (project) publishArgs.push("--project-id", project);
-    if (projectNumber) publishArgs.push("--project-number", projectNumber);
-    if (runtimeId && regType === "adk") publishArgs.push("--agent-runtime-id", runtimeId);
-    await runCommand("agents-cli", publishArgs, { cwd: dir, stream: true, timeout: 180000 });
-
-    const registration = {
-      generatedAt: GENERATED_AT,
-      appId,
-      rawAppId,
-      appIdResolution: resolvedApp.matched,
-      project,
-      projectNumber,
-      location,
-      regType,
-      runtimeId,
-      displayName,
-      description,
-    };
-    await writeJson(join(dir, "gemini_enterprise_registration.json"), registration);
-    markStep(pipeline, "publish", "done", registration);
-    await savePipeline(dir, pipeline);
-    return ok({ step: "publish", appId, rawAppId, appIdResolution: resolvedApp.matched, projectNumber, regType, runtimeId, displayName, registration: join(dir, "gemini_enterprise_registration.json"), nextCommand: nextCommandFor(pipeline, dir) });
-  } catch (e) {
-    markStep(pipeline, "publish", "failed", { error: e.message });
-    await savePipeline(dir, pipeline);
-    fail(`Publish failed: ${e.message}`);
-  }
+  return lifecycleCmdPublish(dir, flags, lifecycleDeps());
 }
+
+
 
 async function cmdStatus(dir) {
   const pipeline = await loadPipeline(dir);
