@@ -1,9 +1,8 @@
 import { test, expect } from "bun:test";
-import { execFileSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, cpSync, readFileSync, writeFileSync, readdirSync, statSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join, dirname, relative } from "node:path";
+import { mkdirSync, cpSync, writeFileSync } from "node:fs";
+import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { runGoldenOracle, walkAndSnapshot, stableSnapshotJson, compareOrUpdateGolden } from "./golden-test-helpers.mjs";
 
 // PARITY ORACLE for buildCloudDataArtifacts (factory.mjs), invoked via `factory
 // data-plan`. Given a manifest with JSON-backed table fixtures, it is fully
@@ -32,41 +31,35 @@ const FIXTURE_DIR = join(HERE, "fixtures", "cloud-data-golden", "fixtures");
 const FACTORY = join(HERE, "..", "scripts", "factory.mjs");
 const GOLDEN = join(HERE, "fixtures", "cloud-data-golden", "snapshot.json");
 
-function walk(dir, base, out) {
-  for (const name of readdirSync(dir).sort()) {
-    const abs = join(dir, name);
-    if (statSync(abs).isDirectory()) walk(abs, base, out);
-    else out[relative(base, abs)] = readFileSync(abs, "utf8");
-  }
-  return out;
-}
-
 function generate() {
-  const ws = mkdtempSync(join(tmpdir(), "ge-cloud-data-golden-"));
-  mkdirSync(join(ws, "mock_systems"), { recursive: true });
-  cpSync(FIXTURE_DIR, join(ws, "fixtures"), { recursive: true });
-  writeFileSync(
-    join(ws, "mock_systems", "pipeline.json"),
-    JSON.stringify({
-      name: "asc606",
-      domain: "finance",
-      steps: { init: { status: "done" }, schema: { status: "done" }, generate: { status: "done" } },
-      currentStep: "generate",
-    }),
-  );
-  const env = { ...process.env, GE_SOURCE_DATE: "2026-01-01T00:00:00Z" };
-  execFileSync("node", [FACTORY, "data-plan", "--dir", ws], { stdio: "ignore", env });
-  const files = walk(join(ws, "mock_data", "cloud"), join(ws, "mock_data", "cloud"), {});
-  rmSync(ws, { recursive: true, force: true });
-  return JSON.stringify(files, Object.keys(files).sort(), 2);
+  return runGoldenOracle({
+    tmpPrefix: "ge-cloud-data-golden-",
+    setupFixture(ws) {
+      mkdirSync(join(ws, "mock_systems"), { recursive: true });
+      cpSync(FIXTURE_DIR, join(ws, "fixtures"), { recursive: true });
+      writeFileSync(
+        join(ws, "mock_systems", "pipeline.json"),
+        JSON.stringify({
+          name: "asc606",
+          domain: "finance",
+          steps: { init: { status: "done" }, schema: { status: "done" }, generate: { status: "done" } },
+          currentStep: "generate",
+        }),
+      );
+    },
+    command: "node",
+    args: (ws) => [FACTORY, "data-plan", "--dir", ws],
+    env: () => ({ ...process.env, GE_SOURCE_DATE: "2026-01-01T00:00:00Z" }),
+    snapshot: (ws) => {
+      const dir = join(ws, "mock_data", "cloud");
+      return stableSnapshotJson(walkAndSnapshot(dir));
+    },
+  });
 }
 
 test("buildCloudDataArtifacts emits byte-identical mock_data/cloud/** (parity oracle)", () => {
   const snap = generate();
-  if (process.env.GE_UPDATE_GOLDEN === "1") {
-    writeFileSync(GOLDEN, snap);
-    return;
-  }
-  const golden = readFileSync(GOLDEN, "utf8");
+  const { golden, updated } = compareOrUpdateGolden({ snap, goldenPath: GOLDEN });
+  if (updated) return;
   expect(snap).toBe(golden);
 });

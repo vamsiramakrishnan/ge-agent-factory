@@ -1,9 +1,8 @@
 import { test, expect } from "bun:test";
-import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync, readdirSync, statSync, existsSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join, dirname, relative, sep } from "node:path";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { runGoldenOracle, walkAndSnapshot } from "./golden-test-helpers.mjs";
 
 // PARITY ORACLE for the scaffold-simulator-pack.mjs decomposition.
 //
@@ -24,30 +23,16 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = join(HERE, "..", "scripts", "scaffold-simulator-pack.mjs");
 const GOLDEN_PATH = join(HERE, "fixtures", "scaffold-simulator-pack-golden", "snapshot.json");
 
-function listFilesSorted(root) {
-  const out = [];
-  const walk = (dir) => {
-    for (const name of readdirSync(dir).sort()) {
-      const full = join(dir, name);
-      if (statSync(full).isDirectory()) walk(full);
-      else out.push(full);
-    }
-  };
-  walk(root);
-  return out
-    .map((full) => relative(root, full).split(sep).join("/"))
-    .sort();
-}
-
 function snapshot() {
-  const ws = mkdtempSync(join(tmpdir(), "ge-scaffold-golden-"));
-  execFileSync("node", [SCRIPT, "--id", "demo_pack", "--root", ws], { stdio: "ignore" });
-  const relpaths = listFilesSorted(ws);
-  const files = {};
-  for (const rel of relpaths) {
-    files[rel] = readFileSync(join(ws, rel), "utf8");
-  }
-  return { files };
+  return runGoldenOracle({
+    tmpPrefix: "ge-scaffold-golden-",
+    command: "node",
+    args: (ws) => [SCRIPT, "--id", "demo_pack", "--root", ws],
+    snapshot: (ws) => ({ files: walkAndSnapshot(ws) }),
+    // Original test never cleaned up its tmpdir; preserve that (harmless OS-tmpdir
+    // scratch, but changing it is outside the scope of this scaffolding refactor).
+    cleanup: false,
+  });
 }
 
 test("scaffold-simulator-pack emits byte-identical pack + registry (parity oracle)", () => {
