@@ -8,7 +8,7 @@ import { readDotEnv } from "./dotenv.mjs";
 import { detectAgents, getAgentDef } from "./agents.js";
 import { DEPARTMENTS, INTERVIEW_QUESTIONS } from "./departments.js";
 import { getDomainsByDepartment } from "./domains.generated.js";
-import { MOCK_SYSTEMS, renderSystemPrompt } from "./systems.js";
+import { MOCK_SYSTEMS } from "./systems.js";
 import { readJson, writeJson } from "@ge/std/json-io";
 import { getUseCases } from "./use-cases.js";
 import {
@@ -20,7 +20,7 @@ import {
   workspaceManifestPath,
 } from "./projects.js";
 import { createOutputParser, detectFormat } from "./output-parsers.js";
-import { buildHandoffPacket, buildHarnessRunPlan } from "./harness-runtime.js";
+import { buildHarnessRunPlan } from "./harness-runtime.js";
 import { loadSkillRegistry, materializeSkillsForWorkspace, selectSkillsForContext } from "./skill-registry.js";
 import { recordRunArtifacts } from "./artifacts.js";
 import { validateAgentWorkspace } from "./agent-workspace-pipeline.js";
@@ -58,6 +58,7 @@ import { createCatalogRoutes } from "./routes/catalog.mjs";
 import { createWorkspaceRoutes } from "./routes/workspaces.mjs";
 import { createRunRoutes } from "./routes/runs.mjs";
 import { materializeWorkspaceCommandShims } from "./runtime/workspace-command-shims.js";
+import { buildRunPrompt } from "./runtime/build-run-prompt.js";
 
 const REPO_ROOT = APP_ROOT;
 const WEB_ROOT = join(REPO_ROOT, "web");
@@ -1024,55 +1025,7 @@ async function startAgentRun(payload, res = null, req = null) {
     skills: plan.skills.map((skill) => ({ id: skill.id, path: skill.relativePath, workspacePath: skill.workspaceRelativePath, capability: skill.capability })),
   };
 
-  const promptParts = [
-    "# Instructions",
-    renderSystemPrompt(),
-    "",
-    `Project: ${project.name} (${project.id})`,
-    `Workspace: ${cwd}`,
-    `Repository root: ${REPO_ROOT}`,
-  ];
-  if (agentRecord) {
-    promptParts.push(
-      "",
-      `# Active Agent`,
-      `Agent: ${agentRecord.name} (${agentRecord.id})`,
-      `Directory: ${run.agentDirName ? `${run.agentDirName}/` : "./ (workspace root)"}`,
-      `Stage: ${agentRecord.stage}`,
-      agentRecord.useCaseId ? `Use Case: ${agentRecord.useCaseId}` : "",
-      agentRecord.departmentId ? `Department: ${agentRecord.departmentId}` : "",
-      "",
-      `Write all generated files inside ${cwd}. This is the agent's isolated working directory.`,
-      "Workspace-local commands are on PATH: `ge validate`, `ge status`, `factory status`. Do not change directory to the repository root from this sandboxed run.",
-    );
-  } else {
-    promptParts.push("", "Write files for this task inside the workspace unless the user explicitly asks to change the harness repo itself.", "Workspace-local commands are on PATH: `ge validate`, `ge status`, `factory status`.");
-  }
-  if (payload.task && typeof payload.task === "object") {
-    promptParts.push(
-      "",
-      "# Assigned Task",
-      `Task ID: ${payload.task.id}`,
-      `Title: ${payload.task.title}`,
-      payload.task.goal ? `Goal: ${payload.task.goal}` : "",
-      payload.task.priority ? `Priority: ${payload.task.priority}` : "",
-      payload.task.description ? `Description:\n${payload.task.description}` : "",
-    );
-  }
-  promptParts.push(
-    "",
-    buildHandoffPacket({
-      receiver: plan.adapterId,
-      run,
-      project,
-      cwd,
-      repoRoot: REPO_ROOT,
-      userRequest: message,
-      task: payload.task,
-      plan,
-    }),
-  );
-  const prompt = promptParts.filter(Boolean).join("\n");
+  const prompt = buildRunPrompt({ project, cwd, repoRoot: REPO_ROOT, agentRecord, run, payload, message, plan });
   const def = await getAgentDef(plan.adapterId);
   const requestedSecrets = [
     ...(Array.isArray(payload.secretNames) ? payload.secretNames : []),
