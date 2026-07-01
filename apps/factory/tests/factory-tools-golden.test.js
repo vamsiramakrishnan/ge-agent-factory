@@ -1,9 +1,8 @@
 import { test, expect } from "bun:test";
-import { execFileSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, copyFileSync, readFileSync, writeFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { mkdirSync, copyFileSync, readFileSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { runGoldenOracle } from "./golden-test-helpers.mjs";
 
 // PARITY ORACLE for the cmdTools / factory.mjs decomposition.
 //
@@ -36,35 +35,38 @@ const FIXTURE_DIR = join(HERE, "fixtures", "tools-golden");
 const FACTORY = join(HERE, "..", "scripts", "factory.mjs");
 
 function generate() {
-  const ws = mkdtempSync(join(tmpdir(), "ge-tools-golden-"));
-  mkdirSync(join(ws, "fixtures"), { recursive: true });
-  mkdirSync(join(ws, "mock_systems"), { recursive: true });
-  copyFileSync(join(FIXTURE_DIR, "manifest.json"), join(ws, "fixtures", "manifest.json"));
-  writeFileSync(
-    join(ws, "mock_systems", "pipeline.json"),
-    JSON.stringify({
-      name: "asc606",
-      domain: "finance",
-      steps: { init: { status: "done" }, schema: { status: "done" }, generate: { status: "done" } },
-      currentStep: "generate",
+  return runGoldenOracle({
+    tmpPrefix: "ge-tools-golden-",
+    setupFixture(ws) {
+      mkdirSync(join(ws, "fixtures"), { recursive: true });
+      mkdirSync(join(ws, "mock_systems"), { recursive: true });
+      copyFileSync(join(FIXTURE_DIR, "manifest.json"), join(ws, "fixtures", "manifest.json"));
+      writeFileSync(
+        join(ws, "mock_systems", "pipeline.json"),
+        JSON.stringify({
+          name: "asc606",
+          domain: "finance",
+          steps: { init: { status: "done" }, schema: { status: "done" }, generate: { status: "done" } },
+          currentStep: "generate",
+        }),
+      );
+    },
+    command: "node",
+    args: (ws) => [FACTORY, "tools", "--dir", ws],
+    // Pin the run clock so the timestamped eval artifact (golden.json) is byte-reproducible.
+    env: () => ({ ...process.env, GE_SOURCE_DATE: "2026-01-01T00:00:00Z" }),
+    snapshot: (ws) => ({
+      toolsPy: readFileSync(join(ws, "app", "tools.py"), "utf8"),
+      agentPy: readFileSync(join(ws, "app", "agent.py"), "utf8"),
+      goldenEvals: readFileSync(join(ws, "evals", "golden.json"), "utf8"),
+      evalSet: readFileSync(join(ws, "tests", "eval", "evalsets", "ge_behavior_contract.evalset.json"), "utf8"),
+      evalConfig: readFileSync(join(ws, "tests", "eval", "eval_config.json"), "utf8"),
+      optimizationConfig: readFileSync(join(ws, "tests", "eval", "optimization_config.json"), "utf8"),
+      pyproject: readFileSync(join(ws, "pyproject.toml"), "utf8"),
+      agentsCliManifest: readFileSync(join(ws, "agents-cli-manifest.yaml"), "utf8"),
+      agentEngineConfig: readFileSync(join(ws, ".agent_engine_config.json"), "utf8"),
     }),
-  );
-  // Pin the run clock so the timestamped eval artifact (golden.json) is byte-reproducible.
-  const env = { ...process.env, GE_SOURCE_DATE: "2026-01-01T00:00:00Z" };
-  execFileSync("node", [FACTORY, "tools", "--dir", ws], { stdio: "ignore", env });
-  const out = {
-    toolsPy: readFileSync(join(ws, "app", "tools.py"), "utf8"),
-    agentPy: readFileSync(join(ws, "app", "agent.py"), "utf8"),
-    goldenEvals: readFileSync(join(ws, "evals", "golden.json"), "utf8"),
-    evalSet: readFileSync(join(ws, "tests", "eval", "evalsets", "ge_behavior_contract.evalset.json"), "utf8"),
-    evalConfig: readFileSync(join(ws, "tests", "eval", "eval_config.json"), "utf8"),
-    optimizationConfig: readFileSync(join(ws, "tests", "eval", "optimization_config.json"), "utf8"),
-    pyproject: readFileSync(join(ws, "pyproject.toml"), "utf8"),
-    agentsCliManifest: readFileSync(join(ws, "agents-cli-manifest.yaml"), "utf8"),
-    agentEngineConfig: readFileSync(join(ws, ".agent_engine_config.json"), "utf8"),
-  };
-  rmSync(ws, { recursive: true, force: true });
-  return out;
+  });
 }
 
 test("cmdTools generates byte-identical tools.py (parity oracle)", () => {

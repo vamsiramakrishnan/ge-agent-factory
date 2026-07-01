@@ -1,9 +1,7 @@
 import { test, expect } from "bun:test";
-import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync, readdirSync, statSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join, dirname, relative } from "node:path";
+import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { runGoldenOracle, walkAndSnapshot, stableSnapshotJson, compareOrUpdateGolden } from "./golden-test-helpers.mjs";
 
 // PARITY ORACLE for the plan-mock-data.mjs decomposition.
 //
@@ -24,31 +22,24 @@ const SOURCE_MAP = join(HERE, "..", "src", "use-case-source-map.generated.json")
 const GOLDEN = join(HERE, "fixtures", "plan-mock-data-golden", "snapshot.json");
 const USECASE = "0";
 
-function walk(dir, base, out) {
-  for (const name of readdirSync(dir).sort()) {
-    const abs = join(dir, name);
-    if (statSync(abs).isDirectory()) walk(abs, base, out);
-    // Mask the lone non-deterministic value (generatedAt ISO-8601 timestamps).
-    else out[relative(base, abs)] = readFileSync(abs, "utf8").replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/g, "<TS>");
-  }
-  return out;
-}
+// Mask the lone non-deterministic value (generatedAt ISO-8601 timestamps).
+const TIMESTAMP_RE = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/g;
 
 function snapshot() {
-  const ws = mkdtempSync(join(tmpdir(), "ge-pmd-golden-"));
-  execFileSync("node", [SCRIPT, "--dir", ws, "--usecase", USECASE, "--sourceMap", SOURCE_MAP], { stdio: "ignore" });
-  const files = walk(join(ws, "mock_data"), join(ws, "mock_data"), {});
-  rmSync(ws, { recursive: true, force: true });
-  // Stable key order so the snapshot is independent of filesystem walk order.
-  return JSON.stringify(files, Object.keys(files).sort(), 2);
+  return runGoldenOracle({
+    tmpPrefix: "ge-pmd-golden-",
+    command: "node",
+    args: (ws) => [SCRIPT, "--dir", ws, "--usecase", USECASE, "--sourceMap", SOURCE_MAP],
+    snapshot: (ws) => {
+      const dir = join(ws, "mock_data");
+      return stableSnapshotJson(walkAndSnapshot(dir, { mask: TIMESTAMP_RE }));
+    },
+  });
 }
 
 test("plan-mock-data emits byte-identical artifacts (parity oracle)", () => {
   const snap = snapshot();
-  if (process.env.GE_UPDATE_GOLDEN === "1") {
-    writeFileSync(GOLDEN, snap);
-    return;
-  }
-  const golden = readFileSync(GOLDEN, "utf8");
+  const { golden, updated } = compareOrUpdateGolden({ snap, goldenPath: GOLDEN });
+  if (updated) return;
   expect(snap).toBe(golden);
 });
