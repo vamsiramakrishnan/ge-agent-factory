@@ -1,0 +1,344 @@
+[
+  {
+    "relPath": "index",
+    "fields": {
+      "okf_version": "0.1",
+      "type": "Knowledge Bundle",
+      "title": "OKF Golden Agent",
+      "description": "Close the books accurately and on time.",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# OKF Golden Agent\n\n> A representative spec for byte-parity testing.\n\n## Overview\n\n- **Persona:** Operations Analyst\n- **Department:** Finance\n- **Objective:** Close the books accurately and on time.\n\n## KPI summary\n\n- **Cycle time**: 5 days → 1 day\n- **Manual touches**: 12 → 2\n\n## Contents\n\n- [Playbook — role, scope, guardrails](/playbook.md)\n- [Source Systems](/systems/index.md)\n- [Data Entities](/tables/index.md)\n- [Agent Tools](/tools/index.md)\n- [Workflow Stages](/workflow/index.md)\n- [Query Capabilities](/queries/index.md)\n- [Eval Scenarios](/tests/index.md)\n- [Source Documents](/documents/index.md)\n- [KPIs](/kpis.md)\n- [Golden Evals](/evals.md)"
+  },
+  {
+    "relPath": "log",
+    "fields": {
+      "type": "Log",
+      "title": "History",
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Log\n\n- 2026-01-01T00:00:00.000Z — Generated from spec `okf-golden-agent` at 2026-01-01T00:00:00.000Z."
+  },
+  {
+    "relPath": "playbook",
+    "fields": {
+      "type": "Playbook",
+      "title": "OKF Golden Agent — Playbook",
+      "description": "Operating contract for the OKF Golden Agent agent.",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Playbook\n\n## Role\n\nReconcile and close ledger periods.\n\n## Primary objective\n\nClose the books accurately and on time.\n\n## In scope\n\n- Pull balances\n- Reconcile entries\n\n## Out of scope\n\n- Tax filing\n\n## Escalation rules\n\n| Trigger | Action | Rationale |\n| --- | --- | --- |\n| Variance > 1% | Notify manager | Material threshold |\n\n## Refusal rules\n\n- Never post without approval\n\n## Hard guardrails\n\n- Never post without approval\n- Every published claim must cite its source-system evidence (see evidence requirements).\n\n## See also\n\n- [Agent Tools](/tools/index.md)\n- [Workflow Stages](/workflow/index.md)\n\n# Citations\n\n- [Controls Playbook](/documents/controls-playbook.md)"
+  },
+  {
+    "relPath": "systems/index",
+    "fields": {
+      "type": "Index",
+      "title": "Source Systems",
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Source Systems\n\n- [Core Ledger](/systems/core-ledger.md)\n- [Notification Service](/systems/notify-svc.md)"
+  },
+  {
+    "relPath": "systems/core-ledger",
+    "fields": {
+      "type": "Source System",
+      "title": "Core Ledger",
+      "description": "Primary ledger of record.",
+      "resource": "ledger://core",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Core Ledger\n\nPrimary ledger of record.\n\n- **Protocol:** rest\n- **Local backing:** ledger.duckdb\n\n# Schema\n\n- [GLEntry](/tables/glentry.md)\n\n## Tools using this system\n\n- [query_core_ledger_gl](/tools/query-core-ledger-gl.md)"
+  },
+  {
+    "relPath": "systems/notify-svc",
+    "fields": {
+      "type": "Source System",
+      "title": "Notification Service",
+      "description": "Notification Service source system.",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Notification Service\n\n- **Protocol:** —\n\n# Schema\n\n_No entities._\n\n## Tools using this system\n\n- [notify_manager](/tools/notify-manager.md)\n- [notify-manager](/tools/notify-manager-2.md)"
+  },
+  {
+    "relPath": "tables/index",
+    "fields": {
+      "type": "Index",
+      "title": "Data Entities",
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Data Entities\n\n- [GLEntry](/tables/glentry.md)\n- [Orphan](/tables/orphan.md)"
+  },
+  {
+    "relPath": "tables/glentry",
+    "fields": {
+      "type": "Data Entity",
+      "title": "GLEntry",
+      "description": "Data entity GLEntry owned by Core Ledger.",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# GLEntry\n\n# Schema\n\n| Field | Type | Constraints |\n| --- | --- | --- |\n| entryId | string | required; primary key |\n| status | enum | values: open, closed |\n| rawNote |  |  |\n\n# Citations\n\n- Owned by [Core Ledger](/systems/core-ledger.md)"
+  },
+  {
+    "relPath": "tables/orphan",
+    "fields": {
+      "type": "Data Entity",
+      "title": "Orphan",
+      "description": "Data entity Orphan.",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Orphan\n\n# Schema\n\n_No fields defined._\n"
+  },
+  {
+    "relPath": "tools/index",
+    "fields": {
+      "type": "Index",
+      "title": "Agent Tools",
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Agent Tools\n\n- [query_core_ledger_gl](/tools/query-core-ledger-gl.md)\n- [notify_manager](/tools/notify-manager.md)\n- [notify-manager](/tools/notify-manager-2.md)"
+  },
+  {
+    "relPath": "tools/query-core-ledger-gl",
+    "fields": {
+      "type": "Agent Tool",
+      "title": "query_core_ledger_gl",
+      "description": "Read GL entries.",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# query_core_ledger_gl\n\nRead GL entries.\n\n- **Kind:** query\n- **Source system:** [Core Ledger](/systems/core-ledger.md)\n\n## Required inputs\n\n- period\n\n## Produces\n\n- balances\n\n## Evidence emitted\n\n- gl_entry\n\n# Examples\n\n```\nquery_core_ledger_gl(period=<period>)\n```\n\n## Used by\n\n- [balance_pull](/workflow/balance-pull.md)"
+  },
+  {
+    "relPath": "tools/notify-manager",
+    "fields": {
+      "type": "Agent Tool",
+      "title": "notify_manager",
+      "description": "underscore variant",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# notify_manager\n\nunderscore variant\n\n- **Kind:** action\n- **Source system:** [Notification Service](/systems/notify-svc.md)\n\n## Required inputs\n\n_None specified._\n\n## Produces\n\n_None specified._\n\n## Evidence emitted\n\n_None specified._\n\n# Examples\n\n```\nnotify_manager()\n```\n\n## Used by\n\n- [reconcile](/workflow/reconcile.md)"
+  },
+  {
+    "relPath": "tools/notify-manager-2",
+    "fields": {
+      "type": "Agent Tool",
+      "title": "notify-manager",
+      "description": "hyphen variant",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# notify-manager\n\nhyphen variant\n\n- **Kind:** action\n- **Source system:** [Notification Service](/systems/notify-svc.md)\n\n## Required inputs\n\n_None specified._\n\n## Produces\n\n_None specified._\n\n## Evidence emitted\n\n_None specified._\n\n# Examples\n\n```\nnotify-manager()\n```\n\n## Used by\n\n- [reconcile](/workflow/reconcile.md)"
+  },
+  {
+    "relPath": "workflow/index",
+    "fields": {
+      "type": "Index",
+      "title": "Workflow Stages",
+      "description": "Workflow mode: sequential.",
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Workflow Stages\n\n- **Mode:** sequential\n\n1. [Balance Pull](/workflow/balance-pull.md)\n2. [Reconcile](/workflow/reconcile.md)"
+  },
+  {
+    "relPath": "workflow/balance-pull",
+    "fields": {
+      "type": "Workflow Stage",
+      "title": "Balance Pull",
+      "description": "Pull period balances.",
+      "source_id": "balance_pull",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Balance Pull\n\nPull period balances.\n\n- **Mode:** sequential\n- **Stage:** 1 of 2\n\n## Tools\n\n- [query_core_ledger_gl](/tools/query-core-ledger-gl.md)\n\nNext: [Reconcile](/workflow/reconcile.md)"
+  },
+  {
+    "relPath": "workflow/reconcile",
+    "fields": {
+      "type": "Workflow Stage",
+      "title": "Reconcile",
+      "description": "Reconcile",
+      "source_id": "reconcile",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Reconcile\n\n- **Mode:** sequential\n- **Stage:** 2 of 2\n\n## Tools\n\n- [notify_manager](/tools/notify-manager.md)\n- [notify-manager](/tools/notify-manager-2.md)"
+  },
+  {
+    "relPath": "documents/index",
+    "fields": {
+      "type": "Index",
+      "title": "Source Documents",
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Source Documents\n\n- [Controls Playbook](/documents/controls-playbook.md)"
+  },
+  {
+    "relPath": "documents/controls-playbook",
+    "fields": {
+      "type": "Source Document",
+      "title": "Controls Playbook",
+      "description": "Internal controls reference.",
+      "source_id": "controls-playbook",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Controls Playbook\n\nInternal controls reference.\n\n- **Type:** policy\n\n## Citation anchors\n\n- section-3\n- section-4"
+  },
+  {
+    "relPath": "queries/index",
+    "fields": {
+      "type": "Index",
+      "title": "Query Capabilities",
+      "description": "The questions and requests this agent can answer, each with the tools it uses.",
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Query Capabilities\n\n- [Pull period balances.](/queries/balance-pull.md)\n- [Reconcile](/queries/reconcile.md)"
+  },
+  {
+    "relPath": "queries/balance-pull",
+    "fields": {
+      "type": "Query Capability",
+      "title": "Pull period balances.",
+      "description": "Pull period balances.",
+      "source_id": "balance-pull",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Pull period balances.\n\n## Tools used\n\n- [query_core_ledger_gl](/tools/query-core-ledger-gl.md)\n\n## Runs in\n\n- [balance_pull](/workflow/balance-pull.md)\n\n## Evidence expected\n\n- gl_entry\n\n# Citations\n\n- [Controls Playbook](/documents/controls-playbook.md)"
+  },
+  {
+    "relPath": "queries/reconcile",
+    "fields": {
+      "type": "Query Capability",
+      "title": "Reconcile",
+      "description": "Reconcile",
+      "source_id": "reconcile",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Reconcile\n\n## Tools used\n\n- [notify_manager](/tools/notify-manager.md)\n- [notify-manager](/tools/notify-manager-2.md)\n\n## Runs in\n\n- [reconcile](/workflow/reconcile.md)\n\n## Evidence expected\n\n_None specified._\n\n# Citations\n\n- [Controls Playbook](/documents/controls-playbook.md)"
+  },
+  {
+    "relPath": "tests/index",
+    "fields": {
+      "type": "Index",
+      "title": "Eval Scenarios",
+      "description": "How each Query Capability is tested: the mechanisms (tools) a test must exercise.",
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Eval Scenarios\n\n- [Close the current period end-to-end.](/tests/e2e-close.md)\n- [Plain string eval prompt.](/tests/plain-string-eval-prompt.md)"
+  },
+  {
+    "relPath": "tests/e2e-close",
+    "fields": {
+      "type": "Eval Scenario",
+      "title": "Close the current period end-to-end.",
+      "description": "Close the current period end-to-end.",
+      "source_id": "e2e-close",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Close the current period end-to-end.\n\n## Validates\n\n- [balance-pull](/queries/balance-pull.md)\n\n## Mechanisms to call\n\n- [query_core_ledger_gl](/tools/query-core-ledger-gl.md)\n\n## Success rubric\n\nPulls balances and cites the controls playbook.\n\n# Citations\n\n- [Controls Playbook](/documents/controls-playbook.md)"
+  },
+  {
+    "relPath": "tests/plain-string-eval-prompt",
+    "fields": {
+      "type": "Eval Scenario",
+      "title": "Plain string eval prompt.",
+      "description": "Plain string eval prompt.",
+      "source_id": "plain-string-eval-prompt",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Plain string eval prompt.\n\n## Mechanisms to call\n\n_No mechanisms specified._\n\n## Success rubric\n\nExercises every mechanism above and grounds its answer in the cited evidence."
+  },
+  {
+    "relPath": "kpis",
+    "fields": {
+      "type": "KPIs",
+      "title": "KPIs",
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# KPIs\n\n| KPI | Before | After |\n| --- | --- | --- |\n| Cycle time | 5 days | 1 day |\n| Manual touches | 12 | 2 |"
+  },
+  {
+    "relPath": "evals",
+    "fields": {
+      "type": "Evals",
+      "title": "Golden Evals",
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Golden Evals\n\n### Eval 1\n- **Prompt:** Close the current period end-to-end.\n- **Expected:** Pulls balances and cites the controls playbook.\n\n### Eval 2\n- **Prompt:** Plain string eval prompt."
+  }
+]

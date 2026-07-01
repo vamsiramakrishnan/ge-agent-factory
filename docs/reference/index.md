@@ -19,7 +19,7 @@ field, endpoint, file, stage, or contract. For task order, use
 
 | Page | What it covers |
 |---|---|
-| [CLI](cli.html) | The `ge` CLI (`bun tools/ge.mjs`), the `factory` generator CLI, and the `make` targets. |
+| [CLI](cli.html) | The `ge` CLI (`bun tools/ge.mjs`), the `factory` generator CLI, and the `mise` tasks. |
 | [Architecture](architecture.html) | The three planes, local vs remote mode, the durable control plane (ADR 0001), the run ledger, and the request/auth flow. |
 | [Spec schema](spec-schema.html) | The use-case spec: `generationSpec`, `behaviorContract` (incl. `workflow`, `answerableQueries`, eval `mechanisms`), and `architecture.pipeline`. |
 | [OKF](okf.html) | The Open Knowledge Format integration — concept types, the bundle layout, and the `spec-to-okf` / `okf-to-spec` converters. |

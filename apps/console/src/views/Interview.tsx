@@ -11,6 +11,7 @@ import {
 } from "../services/geClient";
 import { InterviewPane } from "../components/interview/InterviewPane";
 import { SpecCanvas } from "../components/interview/SpecCanvas";
+import { ErrorBanner } from "../components/ErrorBanner";
 import { combinedGroundingText, type GroundedDocument } from "../components/interview/DocumentPreview";
 import { slugify, startInterview, humanizeInterviewError } from "../lib/startInterview";
 
@@ -219,9 +220,7 @@ export default function Interview({ status }: { status?: StatusBoard | null }) {
         </div>
       </div>
 
-      {error && (
-        <div className="mx-6 mt-3 rounded-lg border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-700">{error}</div>
-      )}
+      {error && <ErrorBanner tone="amber" message={error} className="mx-6 mt-3" />}
 
       {runtimeProblem && (
         <div className="mx-6 mt-3 rounded-lg border border-amber-400/20 bg-amber-500/10 p-4">
@@ -229,7 +228,7 @@ export default function Interview({ status }: { status?: StatusBoard | null }) {
             <div>
               <div className="text-sm font-semibold text-amber-800">Runtime daemon needs a refresh</div>
               <p className="mt-1 text-sm text-amber-700">
-                The current daemon does not advertise interview harness support. Restart it once so the console can start Antigravity interview runs.
+                The local runtime daemon is running older code and doesn't support interview runs yet. Restart it once so the console can start a new interview.
               </p>
               {runtimeStatus?.error && <div className="mt-1 text-xs text-amber-700/80">{runtimeStatus.error}</div>}
             </div>

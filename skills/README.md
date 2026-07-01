@@ -40,12 +40,12 @@ So for factory/Antigravity runs there is no manual install — just keep the man
 ## Headless install + run
 
 ```bash
-make skills-sync       # validate + write .ge/skills/{manifest.json,env.sh}
-make skills-doctor     # verify the manifest is current + skills are discoverable
+mise run skills-sync       # validate + write .ge/skills/{manifest.json,env.sh}
+mise run skills-doctor     # verify the manifest is current + skills are discoverable
 
 # Optional: expose the skills to a bare agent harness (Antigravity/agents-cli/Codex/Gemini)
 # by symlinking them into the cross-runtime dir it scans (default ~/.agents/skills):
-make skills-install                                  # or: AGENTS_SKILLS_DIR=/path make skills-install
+mise run skills-install                                  # or: AGENTS_SKILLS_DIR=/path mise run skills-install
 
 # Drive the factory headless (no console) — same path the console uses:
 source .ge/skills/env.sh
@@ -58,7 +58,7 @@ curl -s localhost:17654/api/tasks -X POST -H 'content-type: application/json' -d
 # …or expose the factory as MCP for an external model: ge mcp-server
 ```
 
-`make skills-install` symlinks (so edits propagate); `AGENTS_SKILLS_DIR` overrides the
+`mise run skills-install` symlinks (so edits propagate); `AGENTS_SKILLS_DIR` overrides the
 target. Note: this repo's own registry loads operator/station skills from `skills/`
 directly — `~/.agents/skills/` matters only when a *non-factory* harness is the driver.
 
@@ -72,5 +72,5 @@ directly — `~/.agents/skills/` matters only when a *non-factory* harness is th
    `## Common mistakes`, `## Done when`. Keep it tight (single responsibility).
 2. Bind it in `apps/factory/src/skill-registry.js` (`FACTORY_SKILL_BINDINGS`
    capability→stages→skill, and any `CAPABILITY_ALIASES`).
-3. `make skills-sync && make skills-doctor` (both must pass; the manifest is gitignored —
+3. `mise run skills-sync && mise run skills-doctor` (both must pass; the manifest is gitignored —
    never commit `.ge/skills/manifest.json`).

@@ -1,16 +1,12 @@
 import { readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { readJsonAsync } from "@ge/std/json-io";
 import { snakeCase } from "@ge/std/naming";
 import { WORKSPACE_PATHS } from "./workspace-contract.js";
 
-async function readJson(path, fallback = null) {
-  try {
-    return JSON.parse(await readFile(path, "utf8"));
-  } catch (error) {
-    if (error?.code === "ENOENT") return fallback;
-    throw error;
-  }
+function readJson(path, fallback = null) {
+  return readJsonAsync(path, fallback, { rethrowUnexpected: true });
 }
 
 async function readText(path) {

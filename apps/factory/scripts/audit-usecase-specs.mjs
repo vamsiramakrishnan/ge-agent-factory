@@ -26,6 +26,7 @@ import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join, relative, resolve } from "node:path";
 import { loadInterviewSpecEntries } from "../src/agent-spec-registry.js";
 import { buildWorkflowFromPipeline } from "./factory/agent-workflow.mjs";
+import { describeGap } from "@ge/std/spec-gaps";
 
 const repoRoot = resolve(new URL("..", import.meta.url).pathname);
 const monorepoRoot = resolve(repoRoot, "..", "..");
@@ -582,7 +583,7 @@ for (const item of weakest) {
   md.push(`- **Source kind:** ${item.sourceKind || "unknown"}`);
   md.push(`- **Maturity:** ${item.maturity}`);
   md.push(`- **Systems (slide):** ${item.systems.join(", ") || "—"}`);
-  md.push(`- **Gaps:** ${item.gaps.join(", ") || "—"}`);
+  md.push(`- **Gaps:** ${item.gaps.map((gap) => `${gap} — ${describeGap(gap).message}`).join("; ") || "—"}`);
   if (item.suggestions?.sourceSystems?.length) {
     md.push(`- **Suggested source systems:** ${item.suggestions.sourceSystems.map((s) => `${s.name} (\`${s.id}\`)`).join(", ")}`);
   }

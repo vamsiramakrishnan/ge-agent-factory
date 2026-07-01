@@ -1,0 +1,80 @@
+import { useState } from "react";
+
+// Pull a copyable fix command out of an error message. Several server errors
+// already embed the exact fix as a backtick-quoted shell command (e.g. "run
+// `npm run use-cases:sync`" from the missing-catalog error) — this just makes
+// that command a one-click Copy affordance instead of inert prose the operator
+// has to select by hand.
+function extractCommand(message: string): string | null {
+  const match = message.match(/`([^`]+)`/);
+  return match ? match[1] : null;
+}
+
+interface ErrorBannerProps {
+  message: string;
+  tone?: "rose" | "amber";
+  label?: string;
+  onRetry?: () => void;
+  className?: string;
+}
+
+const TONE_CLASSES: Record<"rose" | "amber", { box: string; text: string; button: string }> = {
+  rose: {
+    box: "border-rose-400/20 bg-rose-500/10",
+    text: "text-rose-700",
+    button: "border-rose-400/30 text-rose-700 hover:bg-rose-500/10",
+  },
+  amber: {
+    box: "border-amber-400/20 bg-amber-500/10",
+    text: "text-amber-700",
+    button: "border-amber-400/30 text-amber-700 hover:bg-amber-500/10",
+  },
+};
+
+// A dead-end-proof error surface: names the problem (the raw message), then —
+// whenever the message carries a `backtick command` — offers a Copy button so
+// the fix is one click away instead of a plain wall of red/amber text. Falls
+// back to a Retry button (or nothing) when there's no embedded command.
+export function ErrorBanner({ message, tone = "rose", label, onRetry, className = "" }: ErrorBannerProps) {
+  const [copied, setCopied] = useState(false);
+  const command = extractCommand(message);
+  const cls = TONE_CLASSES[tone];
+
+  const handleCopy = async () => {
+    if (!command) return;
+    try {
+      await navigator.clipboard.writeText(command);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch { /* ignore */ }
+  };
+
+  return (
+    <div className={`mb-4 rounded-lg border px-4 py-3 text-sm ${cls.box} ${cls.text} ${className}`}>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          {label && <span className="font-medium">{label} </span>}
+          {message}
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          {command && (
+            <button
+              onClick={handleCopy}
+              className={`rounded-md border px-2.5 py-1 text-xs font-medium transition-colors ${cls.button}`}
+            >
+              {copied ? "Copied" : `Copy: ${command}`}
+            </button>
+          )}
+          {onRetry && (
+            <button
+              onClick={onRetry}
+              className={`rounded-md border px-2.5 py-1 text-xs font-medium transition-colors ${cls.button}`}
+            >
+              Retry
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -17,7 +17,7 @@ agent, and understand how it's derived from the spec's OKF test mechanisms.
 - A generated agent workspace (see [Generate an agent](generate-an-agent.html)).
   The agent must have `behaviorContract.goldenEvals` — otherwise no eval set is
   produced.
-- `agents-cli` installed (via `make deps` / `make setup`).
+- `agents-cli` installed (via `mise run deps` / `mise run setup`).
 
 ## What gets generated
 
@@ -72,7 +72,7 @@ So the evalset is the runnable projection of the spec's test concepts.
    > Flag caveat: `--all` and the JSON config paths are what the factory invokes
    > today (verified in `factory.mjs`). `agents-cli` flags can change between
    > releases — confirm with `agents-cli eval run --help` before relying on them.
-   > The pin is `google-agents-cli>=0.2,<0.3` (see `make deps`), which keeps
+   > The pin is `google-agents-cli>=0.2,<0.3` (see `mise run deps`), which keeps
    > `eval run --all`.
 
 ## Verify
@@ -87,7 +87,7 @@ agents-cli eval run --all                                          # cases pass
 - **No `evalset.json`** — the agent has no `behaviorContract.goldenEvals`; the
   factory returns `null` and writes nothing. Add golden evals to the spec (the
   [interview](author-a-spec-via-interview.html) emits them) and rebuild.
-- **`agents-cli: command not found`** — run `make deps` (installs
+- **`agents-cli: command not found`** — run `mise run deps` (installs
   `google-agents-cli`).
 - **`eval run --all` flag rejected** — your `agents-cli` is outside the
   `>=0.2,<0.3` pin (newer versions removed `--all`). Reinstall the pinned version

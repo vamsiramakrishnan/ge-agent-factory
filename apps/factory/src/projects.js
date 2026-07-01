@@ -2,6 +2,8 @@ import { mkdir, readFile, readdir, realpath, rm, stat, writeFile } from "node:fs
 import { existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
+import { readJsonAsync } from "@ge/std/json-io";
+import { mergeByKey } from "@ge/std/merge";
 import { buildReadiness, nextActionsForReadiness } from "./workspace-capabilities.js";
 import {
   ARTIFACT_PATHS,
@@ -68,13 +70,8 @@ export async function ensureProjectDir(projectsRoot, projectId) {
   return dir;
 }
 
-async function readJson(path, fallback) {
-  try {
-    return JSON.parse(await readFile(path, "utf8"));
-  } catch (error) {
-    if (error && error.code === "ENOENT") return fallback;
-    throw error;
-  }
+function readJson(path, fallback) {
+  return readJsonAsync(path, fallback, { rethrowUnexpected: true });
 }
 
 async function writeJson(path, value) {
@@ -100,14 +97,7 @@ function fileItem(workspaceDir, kind, relPath, required = false) {
 }
 
 function mergeArtifactItems(existingItems = [], generatedItems = []) {
-  const byPath = new Map();
-  for (const item of existingItems) {
-    if (item?.path) byPath.set(item.path, item);
-  }
-  for (const item of generatedItems) {
-    if (item?.path) byPath.set(item.path, { ...byPath.get(item.path), ...item });
-  }
-  return Array.from(byPath.values());
+  return mergeByKey(existingItems, generatedItems, (item) => item?.path);
 }
 
 function buildWorkspaceCommands(project) {

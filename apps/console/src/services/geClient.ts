@@ -561,6 +561,9 @@ export const ge = {
   up: (planes?: string[]) => post("/api/ge/up", { planes }),
   dataUp: () => post("/api/ge/data/up", {}),
   mcpDeploy: () => post("/api/ge/mcp/deploy", {}),
+  // Idempotent: no-ops (with a friendly "already running" line) if the daemon is
+  // already up. Backs the header pill + Doctor's "Start daemon" action.
+  daemonStart: () => post("/api/ge/daemon/start", {}),
   build: (b: { scope?: string; ids?: string; dept?: string; local?: boolean; force?: boolean }) => post("/api/ge/agents/build", b),
   ship: (b: { ids?: string; startStage?: string; targetStage?: string }) => post("/api/ge/agents/ship", b),
   sync: (b: { ids?: string | string[]; push?: boolean; local?: boolean; remoteMode?: boolean; remote?: string; create?: boolean; noCommit?: boolean }) => post("/api/ge/agents/sync", b),

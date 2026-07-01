@@ -8,7 +8,7 @@ layout: default
 # Console Tour
 
 A walkthrough of the operator console's surfaces — what each one does and when
-you'd reach for it. The console (`make console`, <http://localhost:18260>) is the
+you'd reach for it. The console (`mise run console`, <http://localhost:18260>) is the
 main UI over the factory core; its Bun server exposes the same `/api/ge/*` JSON the
 `ge` CLI emits, so the console and CLI are two views of one engine.
 

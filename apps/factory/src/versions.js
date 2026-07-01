@@ -1,16 +1,12 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { readJsonAsync } from "@ge/std/json-io";
 
 const SAFE_ID = /^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$/;
 
-async function readJson(path, fallback) {
-  try {
-    return JSON.parse(await readFile(path, "utf8"));
-  } catch (error) {
-    if (error?.code === "ENOENT") return fallback;
-    throw error;
-  }
+function readJson(path, fallback) {
+  return readJsonAsync(path, fallback, { rethrowUnexpected: true });
 }
 
 async function writeJson(path, value) {

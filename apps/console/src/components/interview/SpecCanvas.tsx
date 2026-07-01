@@ -20,6 +20,7 @@ import {
 } from "./artifacts/specArtifact";
 import { SpecSectionRenderer } from "./SpecSectionRenderer";
 import { SpecFieldEditor } from "./SpecFieldEditor";
+import { describeGap } from "@ge/std/spec-gaps";
 
 type Spec = Record<string, any>;
 
@@ -305,7 +306,7 @@ export function SpecCanvas({
       setOkfBundle(bundle);
       return bundle;
     } catch (err: any) {
-      setOkfError(err.detail || err.message || "Failed to build the OKF bundle");
+      setOkfError(err.detail || err.message || "Failed to build the Knowledge Bundle (OKF)");
       return null;
     } finally {
       setOkfLoading(false);
@@ -331,7 +332,7 @@ export function SpecCanvas({
       const blob = await zip.generateAsync({ type: "blob" });
       triggerDownload(blob, `${bundle.id || usecaseId}-okf.zip`);
     } catch (err: any) {
-      setOkfError(err.detail || err.message || "Failed to package the OKF bundle");
+      setOkfError(err.detail || err.message || "Failed to package the Knowledge Bundle (OKF)");
     }
   };
 
@@ -448,7 +449,7 @@ export function SpecCanvas({
             </div>
             <ul className="space-y-2">
               {gaps.slice(0, 12).map((gap) => (
-                <li key={gap} className="rounded-md bg-amber-500/10 px-3 py-2 text-xs font-medium text-amber-700">{gap}</li>
+                <li key={gap} className="rounded-md bg-amber-500/10 px-3 py-2 text-xs font-medium text-amber-700">{describeGap(gap).message}</li>
               ))}
             </ul>
           </section>
@@ -495,10 +496,14 @@ export function SpecCanvas({
             onClick={previewOkf}
             disabled={!okfAvailable || okfLoading}
             className="inline-flex items-center gap-1.5 rounded-md border border-outline-variant/50 px-3 py-1.5 text-xs font-medium text-secondary hover:bg-surface-container disabled:opacity-50"
-            title={okfAvailable ? "Preview and download the spec as an OKF Knowledge Bundle" : "Save or register the spec first to export OKF"}
+            title={
+              okfAvailable
+                ? "Preview and download this spec as a Knowledge Bundle (OKF) — a folder of plain Markdown files the agent reads at runtime"
+                : "Save or register the spec first to export the Knowledge Bundle (OKF)"
+            }
           >
             {okfLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Package className="h-3.5 w-3.5" />}
-            Export OKF
+            Export Knowledge Bundle
           </button>
           {dirty && (
             <button
@@ -584,7 +589,7 @@ function OkfPreview({
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label="OKF Knowledge Bundle preview"
+      aria-label="Knowledge Bundle (OKF) preview"
     >
       <div
         className="flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-outline-variant/40 bg-surface shadow-xl"
@@ -594,7 +599,7 @@ function OkfPreview({
           <div className="flex min-w-0 items-center gap-2">
             <Package className="h-4 w-4 shrink-0 text-primary" />
             <div className="min-w-0">
-              <h3 className="text-sm font-semibold text-on-surface">OKF Knowledge Bundle</h3>
+              <h3 className="text-sm font-semibold text-on-surface">Knowledge Bundle (OKF)</h3>
               <div className="truncate text-[11px] text-secondary">
                 {bundle ? `${bundle.conceptCount} concept${bundle.conceptCount === 1 ? "" : "s"} · ${files.length} file${files.length === 1 ? "" : "s"}` : "Building…"}
               </div>

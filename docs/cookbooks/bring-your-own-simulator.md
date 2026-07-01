@@ -10,12 +10,14 @@ layout: default
 ## Goal
 
 Create a new simulated source system — from natural language, an OpenAPI spec, or
-sample rows — mount it into the running MCP service via the runtime overlay, and
-(optionally) promote it into the curated corpus so it loads as a built-in.
+sample rows — and mount it via the runtime overlay into the running MCP
+(Model Context Protocol) service, the layer generated agents call through to
+reach source systems. Optionally promote it into the curated corpus so it
+loads as a built-in.
 
 ## Prerequisites
 
-- Local toolchain installed (`make setup`).
+- Local toolchain installed (`mise run setup`).
 - The synthesis CLI runs `synthesis.py` from the mcp-service. The interpreter is
   resolved as `$GE_HARNESS_PYTHON` → the repo `.venv/bin/python` → `python3`.
 - NL synthesis uses Vertex; pass `--no-llm` to force the offline heuristic tier.

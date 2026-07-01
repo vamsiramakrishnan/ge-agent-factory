@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useActivity } from "../hooks/useActivity";
 import { useUrlParam } from "../lib/useUrlState";
 import { StatusPill } from "../components/StatusPill";
+import { ErrorBanner } from "../components/ErrorBanner";
 import { StatusChip, normalizeStatus, type RunStatus } from "../lib/runStatus";
 import { useRunFollow } from "../state/runFollow";
 import {
@@ -299,16 +300,8 @@ export default function Activity() {
         </p>
       </div>
 
-      {error && (
-        <div className="mb-4 px-4 py-3 bg-amber-500/10 border border-amber-400/20 text-amber-700 text-sm rounded-lg">
-          {error}
-        </div>
-      )}
-      {jobsError && (
-        <div className="mb-4 px-4 py-3 bg-amber-500/10 border border-amber-400/20 text-amber-700 text-sm rounded-lg">
-          {jobsError}
-        </div>
-      )}
+      {error && <ErrorBanner tone="amber" message={error} onRetry={refresh} />}
+      {jobsError && <ErrorBanner tone="amber" message={jobsError} onRetry={refreshJobs} />}
 
       <section className="mb-8">
         <div className="mb-3 flex flex-col gap-3">
@@ -369,7 +362,9 @@ export default function Activity() {
           </div>
         ) : unifiedRows.length === 0 ? (
           <div className="editorial-micro-card rounded-lg p-5 text-sm text-secondary">
-            No runs recorded yet. Build an agent or start a mission to see activity here.
+            No runs recorded yet.{" "}
+            <a href="#/journey" className="font-medium text-primary hover:underline">Open the Pipeline</a>{" "}
+            to build an agent or start a mission — it'll show up here.
           </div>
         ) : filteredRows.length === 0 ? (
           <div className="editorial-micro-card rounded-lg p-5 text-sm text-secondary">
@@ -415,7 +410,9 @@ export default function Activity() {
         <div className="editorial-micro-card rounded-lg p-12 text-center">
           <div className="text-secondary mb-2">No active runs yet</div>
           <div className="text-sm text-secondary">
-            Build an agent from the Agents view to get started.
+            <a href="#/journey" className="font-medium text-primary hover:underline">Start a run from the Pipeline</a>{" "}
+            or build an agent from the{" "}
+            <a href="#/fleet" className="font-medium text-primary hover:underline">Fleet</a> to get started.
           </div>
         </div>
       ) : (

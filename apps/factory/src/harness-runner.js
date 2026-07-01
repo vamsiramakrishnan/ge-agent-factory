@@ -11,6 +11,7 @@ import { detectAgents, getAgentDef } from "./agents.js";
 import { buildHandoffPacket, buildHarnessRunPlan } from "./harness-runtime.js";
 import { openJournal, recordRun } from "./harness-journal.js";
 import { writeJson } from "@ge/std/json-io";
+import { resolveGcpProject } from "@ge/std/gcp-config";
 import { createOutputParser, detectFormat } from "./output-parsers.js";
 import { readSecretsEnv } from "./secrets.js";
 import { loadSkillRegistry, materializeSkillsForWorkspace, selectSkillsForContext } from "./skill-registry.js";
@@ -135,12 +136,7 @@ async function loadGeConfig(repoRoot) {
 
 async function resolveVertexDefaults({ repoRoot, project, location, vertex }) {
   const cfg = await loadGeConfig(repoRoot);
-  const resolvedProject = project
-    || process.env.GOOGLE_CLOUD_PROJECT
-    || process.env.GCLOUD_PROJECT
-    || process.env.GCP_PROJECT_ID
-    || cfg.project
-    || null;
+  const resolvedProject = resolveGcpProject({ explicit: project, fallbackEnvVars: ["GCP_PROJECT_ID"] }) || cfg.project || null;
   const resolvedLocation = location
     || process.env.GOOGLE_CLOUD_LOCATION
     || process.env.GOOGLE_GENAI_LOCATION

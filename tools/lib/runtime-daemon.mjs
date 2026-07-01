@@ -5,6 +5,7 @@ import { dirname, join, resolve } from "node:path";
 import { homedir } from "node:os";
 import * as core from "./factory-core.mjs";
 import { readJson, writeJson } from "@ge/std/json-io";
+import { resolveGcpProject } from "@ge/std/gcp-config";
 import { execStream } from "./exec-stream.mjs";
 import {
   autopilotCounts,
@@ -74,7 +75,7 @@ function interactionDir(id) {
 }
 
 function newTaskId(prefix) {
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  return `${prefix}-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
 }
 
 function appendEvent(id, event) {
@@ -689,13 +690,10 @@ function resolveHarnessRunInput(input = {}) {
   return {
     ...input,
     vertex: useVertex,
-    project: input.project
-      || input.vertexProject
-      || cfg.project
-      || process.env.GOOGLE_CLOUD_PROJECT
-      || process.env.GCLOUD_PROJECT
-      || process.env.GCP_PROJECT_ID
-      || null,
+    project: resolveGcpProject({
+      explicit: input.project || input.vertexProject || cfg.project,
+      fallbackEnvVars: ["GCP_PROJECT_ID"],
+    }),
     location: input.location
       || input.vertexLocation
       || cfg.geLocation

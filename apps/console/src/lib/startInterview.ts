@@ -199,13 +199,13 @@ export function humanizeInterviewError(message: string, restartCommand: string):
     return "Antigravity could not find the Vertex project/location. The runtime now reads .ge.json from the repository root; restart the daemon and retry the interview.";
   }
   if (/unsupported task kind:\s*harness\.run/i.test(message)) {
-    return `The local runtime daemon is running older code and does not support interview harness tasks yet. Restart it, then retry: ${restartCommand}`;
+    return `The local runtime daemon is running older code and does not support interview runs yet. Restart it, then retry: \`${restartCommand}\``;
   }
   if (/harness run input is not classified safe/i.test(message)) {
     return "The interview request was blocked by the runtime safety gate. Check that the prompt, workspace, agent, and stages are valid.";
   }
   if (/failed to fetch|ECONNREFUSED|stopped|unavailable/i.test(message)) {
-    return `The local runtime daemon is not reachable. Start it, then retry: ge daemon start`;
+    return "The local runtime daemon is not reachable. Start it, then retry: `ge daemon start`";
   }
   return message;
 }
