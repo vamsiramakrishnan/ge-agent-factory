@@ -1,0 +1,16 @@
+[test]
+# `bun test`'s per-test default timeout is 5000ms (see `bun test --help`). Several
+# golden-oracle tests under apps/factory/tests/**/*.test.js and
+# apps/factory/scripts/factory-workflow.test.mjs spawn real Node subprocesses
+# (execFileSync running factory.mjs / plan-mock-data.mjs / scaffold-simulator-pack.mjs
+# end-to-end) that routinely take 0.5-1.5s solo and measurably more under load —
+# comfortably survivable most of the time, but tight enough to flake under a busy
+# CI runner or a cold first run in a session.
+#
+# NOTE: bunfig.toml's documented `[test] timeout = <ms>` key does NOT actually change
+# bun's per-test default in bun 1.3.11 (verified empirically: a deliberately-slow test
+# still times out at 5000ms with `timeout = 20000` set here — this matches the known gap
+# tracked upstream at https://github.com/oven-sh/bun/issues/7789). The mechanism that
+# DOES work is calling `setDefaultTimeout()` from `bun:test` inside a `[test] preload`
+# script, which this repo uses via ./bunfig.test-preload.mjs below.
+preload = ["./bunfig.test-preload.mjs"]
