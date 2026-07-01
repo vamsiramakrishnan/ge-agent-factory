@@ -14,7 +14,7 @@ The factory exposes three command surfaces:
 - **`factory`** — the lower-level generator CLI
   (`node apps/factory/scripts/factory.mjs`) that emits one agent
   workspace step by step.
-- **`make`** — task runner that wraps both for the common flows.
+- **`mise run <task>`** — task runner that wraps both for the common flows.
 
 `ge` is a thin renderer over `tools/lib/factory-core.mjs`. Every command accepts
 `--json` (structured result on stdout, progress on stderr); the MCP server drives

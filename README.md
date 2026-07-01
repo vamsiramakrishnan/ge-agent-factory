@@ -28,7 +28,7 @@ The full docs site (sidebar + search) is published with GitHub Pages:
 
 - **[Developer Guide](https://vamsiramakrishnan.github.io/ge-agent-factory/developers.html)** — purpose, repo map, development loops, quality gates, and docs rules.
 - **[Concepts](https://vamsiramakrishnan.github.io/ge-agent-factory/concepts/)** — the factory model: local vs remote mode, the stage graph, OKF specs, the data plane, the MCP tool plane.
-- **[Reference](https://vamsiramakrishnan.github.io/ge-agent-factory/reference/)** — the `ge` CLI, `make` targets, configuration, and the apps.
+- **[Reference](https://vamsiramakrishnan.github.io/ge-agent-factory/reference/)** — the `ge` CLI, `mise` tasks, configuration, and the apps.
 - **[Cookbooks](https://vamsiramakrishnan.github.io/ge-agent-factory/cookbooks/)** — task-oriented guides: build a canary, run a mission, bring your own simulator, ship to the cloud.
 - **[Operations](https://vamsiramakrishnan.github.io/ge-agent-factory/OPERATIONS.html)** — deploy, operate, troubleshoot, and recover the factory.
 - **[MCP](https://vamsiramakrishnan.github.io/ge-agent-factory/MCP.html)** — factory MCP tools plus the generated-agent MCP tool plane.
@@ -43,6 +43,7 @@ The site is sourced from [`docs/`](docs/) (start at [`docs/index.md`](docs/index
 Local development — no cloud credentials required:
 
 ```bash
+curl https://mise.run | sh   # one-time, if you don't have mise yet — see SETUP.md
 mise run setup          # install deps, sync catalog/skills, install the `ge` command, start the daemon
 mise run doctor-local   # check local tools: Bun, uv, Python, agents-cli, cache, harness wiring
 mise run console        # open the operator UI (Pipeline · Fleet · Activity · Doctor) → http://localhost:18260

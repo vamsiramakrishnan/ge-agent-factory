@@ -14,21 +14,29 @@ cd ge-agent-factory
 
 ## 2. Prerequisites
 
-- **[Bun](https://bun.sh)** — required. `mise run setup` checks for it first and
-  exits with an error if it's missing:
+- **[mise](https://mise.jdx.dev)** — the one thing you install by hand. One line:
 
   ```bash
-  curl -fsSL https://bun.sh/install | bash
+  curl https://mise.run | sh
   ```
+
+  Then either restart your shell or activate it for the current one (the
+  installer prints the exact line for your shell, typically
+  `eval "$(~/.local/bin/mise activate bash)"` or `zsh`).
 
 - **Optional, for cloud ops later:** `gcloud` (Google Cloud CLI). Not required
   for local mode — `mise run setup`/`mise run deps` will print a warning (not an
   error) if it's missing, since it's only needed for `up`/`data`/`mcp`/
   `provision` against a real GCP project.
 
-Everything else (`uv`, `google-agents-cli`, a repo-local `.venv` with the
-`google-antigravity` SDK, the Snowfakery data runtime, Terraform) is installed
-by `mise run setup` itself — you don't need to install these by hand.
+Everything else — **Bun, Python 3.11, uv, Terraform** — is pinned in
+[`mise.toml`](mise.toml) and installed automatically the first time you run
+any `mise run ...` task below (mise resolves and installs pinned tool
+versions before running a task, so `mise run setup` provisions the whole
+toolchain in one shot). `google-agents-cli`, the repo-local `.venv` with the
+`google-antigravity` SDK, and the Snowfakery data runtime are then installed
+by `mise run setup` itself on top of that. You don't install any of this by
+hand.
 
 ## 3. `mise run setup`
 
@@ -36,17 +44,18 @@ by `mise run setup` itself — you don't need to install these by hand.
 mise run setup
 ```
 
-This one command:
+By the time this runs, mise has already provisioned Bun, Python 3.11, uv, and
+Terraform (that's what `[tools]` in `mise.toml` is for — see step 2). The task
+itself then:
 
-1. Guards on Bun being present (fails fast with a clear message if not).
-2. Runs `bun install` (JS/TS workspace deps).
-3. Generates the use-case catalog build artifact.
-4. Installs the local toolchain (`mise run deps`): `uv`, `google-agents-cli`, a
-   repo `.venv` with the `google-antigravity` SDK, the Snowfakery data
-   runtime, and Terraform.
-5. Installs the `ge` command into `~/.local/bin` (`mise run install`).
-6. Syncs the harness skills manifest.
-7. Starts the background daemon.
+1. Runs `bun install` (JS/TS workspace deps).
+2. Generates the use-case catalog build artifact.
+3. Installs the rest of the local toolchain (`mise run deps`):
+   `google-agents-cli`, a repo `.venv` with the `google-antigravity` SDK, and
+   the Snowfakery data runtime.
+4. Installs the `ge` command into `~/.local/bin` (`mise run install`).
+5. Syncs the harness skills manifest.
+6. Starts the background daemon.
 
 ### `~/.local/bin` on your PATH
 
@@ -145,8 +154,13 @@ plane into **your own** GCP project (single-tenant, ~15 min):
 
 ## Troubleshoot
 
-- **`✗ Bun is required...`** from `mise run setup` — install Bun first (step 2);
-  setup cannot run without it.
+- **`mise: command not found`** — mise itself isn't installed or isn't on
+  `PATH` yet (step 2). Run the installer, then restart your shell (or
+  `eval "$(~/.local/bin/mise activate bash)"` for the current one).
+- **A `mise run ...` task hangs or fails on first run trying to fetch a tool**
+  — mise is downloading the pinned Bun/Python/uv/Terraform version; this needs
+  network access. Re-run once your connection is stable, or run `mise install`
+  directly to provision the toolchain without running a task.
 - **`google.antigravity NOT importable`** during `mise run deps` — local
   (Antigravity) mode will fail. Re-run `mise run deps`; it installs
   `google-antigravity` into `.venv`.
