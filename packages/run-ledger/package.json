@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "description": "Framework-agnostic 'follow any long-running pipeline' observability core: a durable run/stage ledger (SQLite/Postgres adapters, lazy Firestore backend), the SSE frame/event schema, status normalization, and a pure frames→state reducer. No React, no DOM.",
+  "scripts": {
+    "test": "bun test src/index.test.mjs"
+  },
   "main": "./src/index.mjs",
   "types": "./src/index.d.ts",
   "exports": {
