@@ -151,7 +151,7 @@ function parseLastJson(text) {
   for (let i = raw.lastIndexOf("{"); i >= 0; i = raw.lastIndexOf("{", i - 1)) {
     try {
       return JSON.parse(raw.slice(i));
-    } catch {}
+    } catch { /* best-effort: scanning backwards for the last parseable JSON packet; non-JSON tails are expected */ }
   }
   return null;
 }
@@ -787,7 +787,7 @@ export async function getFactoryRunSnapshot(runId) {
         const gsObject = `${runPrefixObject}/factory-${stage}-result.json`;
         const content = await readGcsFile(run.bucket, gsObject, token);
         artifacts[stage] = content;
-      } catch {}
+      } catch { /* best-effort: a stage that has not run yet has no artifact object in GCS */ }
     }));
     return { ok: true, run, artifacts };
   } else {
