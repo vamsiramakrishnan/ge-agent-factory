@@ -328,7 +328,7 @@ async function cmdGenerate(dir, flags) {
   const pipeline = await loadPipeline(dir);
   requireStep(pipeline, "init");
   const schema = ensureContractQueryTables(await readJson(schemaPath(dir), null));
-  if (!schema || !schema.tables?.length) fail("No schema found. Run 'factory schema --add-table ...' first.");
+  if (!schema || !schema.tables?.length) fail("No schema found. Run 'factory schema --add-table ...' first.", "GE0002");
 
   const seed = Number(flags.seed) || schema.seed || 42;
   const defaultRows = Number(flags.rows) || 50;
@@ -635,7 +635,7 @@ async function cmdTools(dir, flags) {
   const pipeline = await loadPipeline(dir);
   requireStep(pipeline, "generate");
   const manifest = await readJson(manifestPath(dir), null);
-  if (!manifest) fail("No manifest found. Run 'factory generate' first.");
+  if (!manifest) fail("No manifest found. Run 'factory generate' first.", "GE0003");
 
   const tables = manifest.tables || [];
   const behaviorContract = manifest?.useCaseSpec?.behaviorContract || null;
@@ -746,7 +746,7 @@ async function cmdTest(dir, flags) {
   const pipeline = await loadPipeline(dir);
   requireStep(pipeline, "tools");
   const manifest = await readJson(manifestPath(dir), null);
-  if (!manifest) fail("No manifest. Run 'factory generate' first.");
+  if (!manifest) fail("No manifest. Run 'factory generate' first.", "GE0003");
 
   const testPath = flags.out || join(dir, "tests", "test_smoke.py");
   const tables = manifest.tables || [];
@@ -967,7 +967,7 @@ async function cmdEval(dir, flags) {
   const pipeline = await loadPipeline(dir);
   requireStep(pipeline, "tools");
   const manifest = await readJson(manifestPath(dir), null);
-  if (!manifest) fail("No manifest. Run 'factory generate' first.");
+  if (!manifest) fail("No manifest. Run 'factory generate' first.", "GE0003");
   await ensureAgentsCliPyprojectMetadata(dir, manifest);
 
   const behaviorContract = manifest?.useCaseSpec?.behaviorContract || null;
@@ -1077,7 +1077,7 @@ async function cmdQualityGate(dir, flags) {
   const pipeline = await loadPipeline(dir);
   requireStep(pipeline, "tools");
   const manifest = await readJson(manifestPath(dir), null);
-  if (!manifest) fail("No manifest. Run 'factory generate' first.");
+  if (!manifest) fail("No manifest. Run 'factory generate' first.", "GE0003");
   await ensureAgentsCliPyprojectMetadata(dir, manifest);
   await mkdir(join(dir, "artifacts"), { recursive: true }).catch(warnMkdirFailure(join(dir, "artifacts")));
 
@@ -1165,7 +1165,7 @@ async function cmdQualityGate(dir, flags) {
     await writeJson(join(dir, "artifacts", "agents-cli-quality-gate.json"), report);
     markStep(pipeline, "qualityGate", "failed", { output: "artifacts/agents-cli-quality-gate.json", error: e.message });
     await savePipeline(dir, pipeline);
-    fail(`Quality gate failed: ${e.message}`);
+    fail(`Quality gate failed: ${e.message}`, "GE0007");
   }
 }
 
@@ -1235,7 +1235,7 @@ async function assertPromotable(dir, flags) {
     console.error(`⚠ promotion gate has ${gate.blockers.length} blocker(s); overridden by --force / GE_ALLOW_UNPROMOTED:\n${lines}`);
     return gate;
   }
-  fail(`Promotion gate blocked — refusing to deploy (${gate.blockers.length} blocker(s)):\n${lines}\nResolve the blockers, or re-run with --force (or GE_ALLOW_UNPROMOTED=1) to override.`);
+  fail(`Promotion gate blocked — refusing to deploy (${gate.blockers.length} blocker(s)):\n${lines}\nResolve the blockers, or re-run with --force (or GE_ALLOW_UNPROMOTED=1) to override.`, "GE0006");
 }
 
 async function cmdPromotionGate(dir, flags) {
@@ -1250,7 +1250,7 @@ async function cmdPromotionGate(dir, flags) {
     console.error(`⚠ promotion gate blocked but overridden (${gate.blockers.length} blocker(s))`);
     return ok({ ...base, overridden: true });
   }
-  fail(`Promotion gate blocked (${gate.blockers.length} blocker(s)):\n${gate.blockers.map((b) => `  - ${b}`).join("\n")}`);
+  fail(`Promotion gate blocked (${gate.blockers.length} blocker(s)):\n${gate.blockers.map((b) => `  - ${b}`).join("\n")}`, "GE0006");
 }
 
 async function cmdHarnessRefine(dir, flags) {
@@ -1319,7 +1319,7 @@ async function cmdSnowfakeryRecipe(dir, flags) {
   const pipeline = await loadPipeline(dir);
   requireStep(pipeline, "schema");
   const schema = await readJson(schemaPath(dir), null);
-  if (!schema?.tables?.length) fail("No schema tables found. Run 'factory schema' first.");
+  if (!schema?.tables?.length) fail("No schema tables found. Run 'factory schema' first.", "GE0002");
   const scenario = snakeCase(pipeline.name || basename(dir));
   const outDir = join(dir, "mock_data", "snowfakery");
   const recipePath = join(outDir, `${scenario}.recipe.yml`);
@@ -1528,7 +1528,7 @@ async function cmdFromUseCase(dir, flags) {
         if (matches.length === 1) useCase = matches[0];
         else if (matches.length > 1) {
           return ok({ step: "from-usecase", error: "ambiguous", matches: matches.slice(0, 10).map((u) => ({ id: u.id, title: u.title, department: u.department })) });
-        } else fail(`Use case "${useCaseId}" not found. Use factory list-usecases to browse.`);
+        } else fail(`Use case "${useCaseId}" not found. Use factory list-usecases to browse.`, "GE0005");
       }
     } catch (e) {
       // fail() now throws FactoryCommandError instead of process.exit(1)-ing, so
@@ -1539,7 +1539,7 @@ async function cmdFromUseCase(dir, flags) {
       // re-throwing FactoryCommandError as-is and only wrapping genuine catalog
       // load/parse errors.
       if (e instanceof FactoryCommandError) throw e;
-      fail(`Could not load use case catalog: ${e.message}`);
+      fail(`Could not load use case catalog: ${e.message}`, "GE0005");
     }
   } else {
     useCase = {
@@ -1974,7 +1974,7 @@ async function cmdListUseCases(flags) {
       })),
     });
   } catch (e) {
-    fail(`Could not load catalog: ${e.message}`);
+    fail(`Could not load catalog: ${e.message}`, "GE0005");
   }
 }
 
