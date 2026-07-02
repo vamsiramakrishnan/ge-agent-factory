@@ -40,16 +40,8 @@ const ROOT = join(HERE, "..", "..", "..");
 // few non-palette lines a region carries), and an optional trailing comment
 // rendered verbatim. Row order is emission order.
 //
-// KNOWN DISCREPANCY, deliberately preserved: setup.scss shipped
-// `$green-200: #1e8e3e` (a darker Google green than --color-tertiary) from
-// the first commit of the docs theme, while palette.mjs's `tertiarySwatch`
-// comment claims $green-200 "matches --color-tertiary exactly" (#34a853) —
-// a claim that was never true of the shipped file. Emitted values are frozen
-// (generating must not change any color), and palette.mjs is outside this
-// track's write-set, so $green-200 is pinned as a raw literal below until
-// palette.mjs grows a real entry for it (or the ramp is deliberately
-// re-tinted). Fix by adding e.g. `tertiarySwatchDark: "#1e8e3e"` to PALETTE
-// and swapping the raw pin for that key.
+// $green-200 ships darker than --color-tertiary on purpose (the tip-callout
+// accent) — it traces to PALETTE.tertiarySwatchDark, not tertiarySwatch.
 export const TOKEN_TABLE = [
   // ── packages/design/src/tokens.css — the --color-* @theme block ──
   { file: "tokens.css", name: "--color-primary", key: "primary" },
@@ -94,8 +86,7 @@ export const TOKEN_TABLE = [
   { file: "setup.scss", name: "$blue-300", key: "primaryDark" },
   { file: "setup.scss", name: "$green-000", key: "tertiaryContainerBright" },
   { file: "setup.scss", name: "$green-100", key: "tertiaryContainerDark" },
-  // Raw pin — see "KNOWN DISCREPANCY" above before touching this line.
-  { file: "setup.scss", name: "$green-200", raw: "#1e8e3e" },
+  { file: "setup.scss", name: "$green-200", key: "tertiarySwatchDark" },
   { file: "setup.scss", name: "$green-300", key: "tertiaryDark" },
 ];
 
