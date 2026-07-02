@@ -12,6 +12,17 @@ import { makeEvent } from "../../../tools/lib/events.mjs";
 import { nextEventSeq, STAGE_ERROR_TYPE, stageErrorFrameData } from "@ge/run-ledger/frames";
 
 const RELEASE_STAGES = new Set(["validate", "preview", "deploy_runtime", "poll_runtime", "publish_enterprise"]);
+
+// Timeout triangle (taste-campaign 09 §C1): every HTTP task carries an explicit
+// dispatchDeadline equal to the worker's Cloud Run request timeout
+// (installer/terraform/cloud_run.tf: timeout = "1800s"). Cloud Tasks defaults to
+// 600s, so without this any stage running longer than 10 minutes got a DUPLICATE
+// concurrent redelivery while attempt 1 was still executing. 1800s is also the
+// Cloud Tasks maximum. The invariant
+//   dispatchDeadline === Cloud Run timeout >= longest stage expectation
+// is asserted by factory-worker-timeouts.test.mjs, which reads the Terraform
+// sources as text — drift on either side fails that test.
+export const TASK_DISPATCH_DEADLINE = "1800s";
 const CLOUD_BUILD_TERMINAL_SUCCESS = new Set(["SUCCESS"]);
 const CLOUD_BUILD_TERMINAL_FAILURE = new Set(["FAILURE", "INTERNAL_ERROR", "TIMEOUT", "CANCELLED", "EXPIRED"]);
 const serviceUrlCache = new Map();
@@ -476,6 +487,10 @@ export async function buildCloudTaskCommand(payload, { taskId = null, scheduleTi
 export async function enqueueFactoryStage(payload, options = {}) {
   if (!payload.cloud?.projectId) return { skipped: true, reason: "missing projectId" };
   const [cmd, args] = await buildCloudTaskCommand(payload, options);
+  // NOTE: the gcloud fallback transport cannot set dispatchDeadline —
+  // `gcloud tasks create-http-task` has no flag for it — so tasks created this way
+  // keep the 600s Cloud Tasks default. The REST path below (the default transport,
+  // used by the worker's own stage-to-stage enqueues) sets TASK_DISPATCH_DEADLINE.
   if (options.transport === "gcloud") {
     const result = await runCommand(cmd, args, { stream: false });
     const duplicate = /ALREADY_EXISTS|already exists/i.test(`${result.stderr}\n${result.stdout}`);
@@ -501,6 +516,9 @@ export async function enqueueFactoryStage(payload, options = {}) {
   const task = {
     task: {
       name: `${parent}/tasks/${taskId}`,
+      // Match the worker's Cloud Run timeout so a long stage is never redelivered
+      // concurrently while attempt 1 still executes (see TASK_DISPATCH_DEADLINE).
+      dispatchDeadline: TASK_DISPATCH_DEADLINE,
       httpRequest: {
         httpMethod: "POST",
         url,
