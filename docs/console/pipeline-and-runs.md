@@ -28,6 +28,10 @@ Use it to drive a single agent (or a bulk scope) from contract to generated,
 validated workspace. The CLI equivalents are `ge pipeline plan|run` and
 `ge agents build`.
 
+<p align="center">
+  <img src="../assets/screenshots/pipeline.png" alt="Pipeline wizard's Source step: a Choose the route card offering Deploy from registered specs or Interview to registered spec, with a Next: Configure action" width="820">
+</p>
+
 ## Runs — everything, chronologically
 
 One timeline over all three run sources — pipeline runs, builds, and jobs —

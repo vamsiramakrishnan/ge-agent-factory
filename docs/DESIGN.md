@@ -212,6 +212,67 @@ invent a different status palette for docs:
   both renderers.
 - Always write a real `alt` describing the flow, not the filename.
 
+## Screenshots
+
+Real screenshots of the operator console (`apps/console`), captured by a
+deterministic factory — never hand-drawn, never mocked. Every screenshot in
+`docs/` must come from this pipeline; if you need a new one, add a view (and
+a seed fixture, if the existing seed doesn't cover it) rather than pasting in
+a manually-taken image.
+
+### How it works
+
+- **Seed** (`tools/docs-shots/seed.mjs`) builds a small, throwaway `.ge`-style
+  state directory: one fully-built local workspace (real generator output —
+  the checked-in `apps/factory/tests/fixtures/tools-golden` and
+  `data-gen-unit` golden fixtures, reused verbatim, plus a real entry from the
+  generated use-case catalog) and a handful of console job/repair records
+  covering `running`, `passed`, and `failed`/repair-needed states. Every id
+  and timestamp in the seed is a hardcoded literal — no `Date.now()`, no
+  `randomUUID()` — and it never touches a real developer's `.ge/` (it reads
+  and writes only under the gitignored `.ge-docs-shots/` directory, via
+  `GE_STATE_ROOT`/`GE_CONSOLE_JOB_STORE`).
+- **Capture** (`tools/docs-shots/capture.mjs`) builds the console
+  (`vite build`), serves the production bundle (`apps/console/server.js`)
+  against that seeded state, and drives it with headless Chromium
+  (Playwright) at a fixed **1440×900** viewport — wide enough for the
+  console's widest view (Pipeline's two-pane wizard) without horizontal
+  scroll. It freezes the browser clock (`page.clock.setFixedTime`) so any
+  wall-clock-derived text (e.g. a "Synced HH:MM:SS" indicator) renders the
+  same on every run, disables CSS animations/reduced-motion, and waits for
+  each view's own "settled" marker (not just network-idle) before shooting.
+- Output lands in `docs/assets/screenshots/<view-name>.png`.
+
+### Regenerating
+
+```bash
+bun run docs:shots
+```
+
+Regenerate whenever a captured view's layout changes, or the seed data goes
+stale enough to look wrong next to the surrounding prose.
+
+### Determinism guarantee
+
+Running `bun run docs:shots` twice in a row produces byte-identical PNGs
+(verified via `sha256sum` across all views as part of building this
+pipeline). If a screenshot you add differs between two runs, the cause is
+almost always one of: a live timestamp/relative-time string, an
+uncontrolled animation, or a randomly-generated id somewhere in the seed —
+fix the source, don't paper over it with a longer `waitForTimeout`.
+
+### Embedding a screenshot in a page
+
+```html
+<p align="center">
+  <img src="../assets/screenshots/fleet.png" alt="describe what the view shows and why it matters" width="820">
+</p>
+```
+
+Same rules as diagrams above: relative path, explicit `width` (no `style=`),
+and a real `alt` — describe the state shown (e.g. "1 blocked agent with a
+missing-OpenAPI-operation error"), not just the view's name.
+
 ## Terminal frames and annotations
 
 ### Terminal frames
