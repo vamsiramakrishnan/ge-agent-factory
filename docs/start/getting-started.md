@@ -114,6 +114,37 @@ See [`SETUP.md`](../../SETUP.md#troubleshoot) for install-time issues (missing
 Bun, `~/.local/bin` not on PATH, `google.antigravity` not importable). Specific
 to this cookbook's loop:
 
+Real output from running the DevEx gate on a clean clone, before `mise run
+setup` has installed `agents-cli`/Antigravity/skills — this is what "not
+ready yet" looks like, and every line names its own fix:
+
+```text title="bun tools/ge.mjs devex check" {3,6,9}
+DevEx Check
+  failed
+
+  Local Doctor
+  ✗ agents-cli                     not found
+      fix: uv tool install google-agents-cli
+  ✗ google-antigravity SDK         not importable (python3)
+      fix: mise run deps  (creates .venv via uv + installs the SDK)
+  ✗ harness skills manifest        .ge/skills/manifest.json missing or empty
+      fix: mise run skills-sync
+  ▲ GOOGLE_CLOUD_PROJECT           not set — required for cloud ops (provision/up/data/mcp) and both apps' read paths
+      fix: cp .env.example .env  then set GOOGLE_CLOUD_PROJECT=<your-project-id>  (or: gcloud config set project <id>)
+
+  Docs
+  ✓ 99 markdown files checked
+
+  Workspace Contracts
+  checked 0 · failed 0 · warnings 0
+
+  Next
+  $ mise run setup
+```
+
+`mise run setup` runs exactly the three fixes above in order — this is why
+step 1 of "Prerequisites + install" is a single command instead of three.
+
 - **Mock/simulator data pauses** — `mise run data-runtime` warms the Snowfakery
   runtime; it needs network/cache the first time.
 - **Status board / next step** — run `mise run next` or bare `ge` for a status-based
