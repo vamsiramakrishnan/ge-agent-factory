@@ -1,9 +1,10 @@
 // tools/lib/daemon/doctor-run.mjs — the "doctor" run-kind: spawns
 // `ge doctor --json` as a child process, replays its section/check report as
 // daemon events, and persists a terminal report (blocked/done) on the run.
-// Moved verbatim out of tools/lib/runtime-daemon.mjs — one of the six
-// independent run-kind implementations that file used to interleave with the
-// filesystem run store and the other five run-kinds.
+// Unlike the streamed kinds (task-runner.mjs), doctor buffers stdout to parse
+// a JSON report, so it keeps its own spawn executor — but start and resume
+// share it (they used to be two verbatim ~50-line copies) and differ only in
+// their terminal event vocabulary.
 import { spawn } from "node:child_process";
 import { join } from "node:path";
 import { REPO_ROOT } from "../state-paths.mjs";
@@ -49,15 +50,11 @@ export function replayDoctorReport(id, report) {
   }
 }
 
-export function startDoctorTask({ scope = "all", command } = {}) {
-  const run = createRun({
-    id: newTaskId("doctor"),
-    kind: "doctor",
-    input: { scope, command: command || null },
-  });
-  const { id } = run;
-  appendEvent(id, { type: "doctor_started", line: command ? `doctor ${scope} readiness for ${command}` : `doctor ${scope}`, data: { scope, command: command || null } });
-
+// One doctor subprocess execution, shared by start and resume. The `resume`
+// flag only switches the terminal event vocabulary (doctor_blocked/doctor_done
+// vs resume_blocked/resume_done + a resume-attempt record) — the spawn,
+// stderr replay, report parsing, and fallback-report shapes are identical.
+function executeDoctorProcess(id, { scope, command, resume = false }) {
   const child = spawn(process.execPath, [GE_CLI, ...doctorArgv({ scope, command })], {
     cwd: REPO_ROOT,
     env: { ...process.env, CLOUDSDK_CORE_DISABLE_PROMPTS: "1" },
@@ -82,7 +79,8 @@ export function startDoctorTask({ scope = "all", command } = {}) {
       fails: 1,
     };
     replayDoctorReport(id, report);
-    appendEvent(id, { type: "doctor_blocked", level: "error", line: "doctor subprocess failed", report });
+    appendEvent(id, { type: resume ? "resume_failed" : "doctor_blocked", level: "error", line: "doctor subprocess failed", report });
+    if (resume) appendResumeAttempt(id, { status: "failed", action: "rerun_doctor", error: error.message || String(error) });
     updateRun(id, { status: "failed", code: 1, endedAt: new Date().toISOString(), report });
   });
   child.on("close", (code) => {
@@ -103,14 +101,26 @@ export function startDoctorTask({ scope = "all", command } = {}) {
       report.fails = 1;
     }
     replayDoctorReport(id, report);
+    const status = report.fails ? "blocked" : "done";
     appendEvent(id, {
-      type: report.fails ? "doctor_blocked" : "doctor_done",
+      type: report.fails ? (resume ? "resume_blocked" : "doctor_blocked") : (resume ? "resume_done" : "doctor_done"),
       level: report.fails ? "error" : "info",
       line: report.fails ? `blocked by ${report.fails} failure${report.fails === 1 ? "" : "s"}` : "all checks passed",
       report,
     });
-    updateRun(id, { status: report.fails ? "blocked" : "done", code, endedAt: new Date().toISOString(), report });
+    if (resume) appendResumeAttempt(id, { status, action: "rerun_doctor", code, fails: report.fails || 0 });
+    updateRun(id, { status, code, endedAt: new Date().toISOString(), report });
   });
+}
+
+export function startDoctorTask({ scope = "all", command } = {}) {
+  const run = createRun({
+    id: newTaskId("doctor"),
+    kind: "doctor",
+    input: { scope, command: command || null },
+  });
+  appendEvent(run.id, { type: "doctor_started", line: command ? `doctor ${scope} readiness for ${command}` : `doctor ${scope}`, data: { scope, command: command || null } });
+  executeDoctorProcess(run.id, { scope, command });
   return run;
 }
 
@@ -119,56 +129,5 @@ export function resumeDoctorTask(run) {
   const command = run.input?.command || "";
   updateRun(run.id, { status: "running", endedAt: null, error: null });
   appendEvent(run.id, { type: "doctor_started", line: command ? `doctor ${scope} readiness for ${command} (resume)` : `doctor ${scope} (resume)`, data: { scope, command: command || null } });
-  const child = spawn(process.execPath, [GE_CLI, ...doctorArgv({ scope, command })], {
-    cwd: REPO_ROOT,
-    env: { ...process.env, CLOUDSDK_CORE_DISABLE_PROMPTS: "1" },
-    stdio: ["ignore", "pipe", "pipe"],
-  });
-  let stdout = "";
-  let stderr = "";
-  child.stdout.on("data", (chunk) => { stdout += String(chunk); });
-  child.stderr.on("data", (chunk) => {
-    const text = String(chunk);
-    stderr += text;
-    for (const line of text.split(/\r?\n/).filter(Boolean)) {
-      appendEvent(run.id, { type: "doctor_log", level: /fail|error|blocked/i.test(line) ? "error" : /warn|unset|not found/i.test(line) ? "warn" : "info", line });
-    }
-  });
-  child.on("error", (error) => {
-    const report = {
-      mode: "all",
-      project: null,
-      region: null,
-      sections: [{ name: "doctor", checks: [{ name: "doctor subprocess", status: "fail", detail: error.message || String(error), fix: "ge doctor --json" }], fails: 1 }],
-      fails: 1,
-    };
-    replayDoctorReport(run.id, report);
-    appendEvent(run.id, { type: "resume_failed", level: "error", line: "doctor subprocess failed", report });
-    appendResumeAttempt(run.id, { status: "failed", action: "rerun_doctor", error: error.message || String(error) });
-    updateRun(run.id, { status: "failed", code: 1, endedAt: new Date().toISOString(), report });
-  });
-  child.on("close", (code) => {
-    let report;
-    try {
-      report = JSON.parse(stdout || "{}");
-    } catch {
-      report = {
-        mode: "all",
-        project: null,
-        region: null,
-        sections: [{ name: "doctor", checks: [{ name: "doctor output", status: "fail", detail: (stderr || stdout || "no output").slice(-1000), fix: "ge doctor --json" }], fails: 1 }],
-        fails: 1,
-      };
-    }
-    replayDoctorReport(run.id, report);
-    const status = report.fails ? "blocked" : "done";
-    appendEvent(run.id, {
-      type: report.fails ? "resume_blocked" : "resume_done",
-      level: report.fails ? "error" : "info",
-      line: report.fails ? `blocked by ${report.fails} failure${report.fails === 1 ? "" : "s"}` : "all checks passed",
-      report,
-    });
-    appendResumeAttempt(run.id, { status, action: "rerun_doctor", code, fails: report.fails || 0 });
-    updateRun(run.id, { status, code, endedAt: new Date().toISOString(), report });
-  });
+  executeDoctorProcess(run.id, { scope, command, resume: true });
 }
