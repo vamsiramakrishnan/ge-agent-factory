@@ -1,10 +1,13 @@
 import { describe, expect, test } from "bun:test";
 import {
   bucketTestResults,
+  failingTestcasesFromJUnit,
   failingTestNamesFromJUnit,
   formatTestResultsReport,
   fullTestName,
+  normalizeKnownFailureEntries,
   parseJUnitTestcases,
+  staleBugEntries,
 } from "./test-results.mjs";
 
 // Synthetic JUnit fixtures modeled on real `bun test --reporter=junit` output:
@@ -32,11 +35,17 @@ const SAMPLE_XML = `<?xml version="1.0" encoding="UTF-8"?>
 describe("parseJUnitTestcases", () => {
   test("extracts every testcase with name, classname, and pass/fail status", () => {
     const cases = parseJUnitTestcases(SAMPLE_XML);
+    const FILE = "tools/lib/example.test.mjs";
     expect(cases).toHaveLength(5);
-    expect(cases).toContainEqual({ name: "top level passes", classname: "", failed: false });
-    expect(cases).toContainEqual({ name: "top level fails", classname: "", failed: true });
-    expect(cases).toContainEqual({ name: "passes in group", classname: "grouped describe", failed: false });
-    expect(cases).toContainEqual({ name: "fails in group", classname: "grouped describe", failed: true });
+    expect(cases).toContainEqual({ name: "top level passes", classname: "", failed: false, file: FILE });
+    expect(cases).toContainEqual({ name: "top level fails", classname: "", failed: true, file: FILE });
+    expect(cases).toContainEqual({ name: "passes in group", classname: "grouped describe", failed: false, file: FILE });
+    expect(cases).toContainEqual({ name: "fails in group", classname: "grouped describe", failed: true, file: FILE });
+  });
+
+  test("testcases without a file attribute get file: null", () => {
+    const cases = parseJUnitTestcases('<testcase name="orphan" classname=""><failure /></testcase>');
+    expect(cases).toEqual([{ name: "orphan", classname: "", failed: true, file: null }]);
   });
 
   test("decodes XML entities in names", () => {
@@ -74,6 +83,62 @@ describe("failingTestNamesFromJUnit", () => {
     // have closing tags around now-empty bodies, so they should read as passing.
     const names = failingTestNamesFromJUnit(xml);
     expect(names).toEqual([]);
+  });
+});
+
+describe("failingTestcasesFromJUnit", () => {
+  test("returns full name + file for only the failing/erroring testcases", () => {
+    const failing = failingTestcasesFromJUnit(SAMPLE_XML);
+    expect(failing.map((tc) => tc.name).sort()).toEqual(
+      ["grouped describe > fails in group", "top level fails"].sort(),
+    );
+    expect(failing.every((tc) => tc.file === "tools/lib/example.test.mjs")).toBe(true);
+  });
+});
+
+describe("normalizeKnownFailureEntries", () => {
+  test("keeps entry-object metadata and defaults absent fields to null", () => {
+    const entries = normalizeKnownFailureEntries({
+      failures: [
+        { name: "a", kind: "bug", addedAt: "2026-07-01", notes: "real defect" },
+        { name: "b", kind: "env" },
+      ],
+    });
+    expect(entries).toEqual([
+      { name: "a", kind: "bug", addedAt: "2026-07-01", notes: "real defect" },
+      { name: "b", kind: "env", addedAt: null, notes: null },
+    ]);
+  });
+
+  test("tolerates legacy bare-string entries", () => {
+    expect(normalizeKnownFailureEntries({ failures: ["legacy name"] })).toEqual([
+      { name: "legacy name", kind: null, addedAt: null, notes: null },
+    ]);
+  });
+
+  test("returns an empty list for a missing failures array", () => {
+    expect(normalizeKnownFailureEntries({})).toEqual([]);
+  });
+});
+
+describe("staleBugEntries", () => {
+  const entries = normalizeKnownFailureEntries({
+    failures: [
+      { name: "old bug", kind: "bug", addedAt: "2026-05-01" },
+      { name: "fresh bug", kind: "bug", addedAt: "2026-06-25" },
+      { name: "old env", kind: "env", addedAt: "2026-01-01" },
+      { name: "undated bug", kind: "bug" },
+    ],
+  });
+
+  test("flags only bug entries older than maxAgeDays", () => {
+    const stale = staleBugEntries(entries, { now: new Date("2026-07-02") });
+    expect(stale).toEqual([{ name: "old bug", addedAt: "2026-05-01", ageDays: 62 }]);
+  });
+
+  test("boundary: exactly maxAgeDays old is not yet stale", () => {
+    const stale = staleBugEntries(entries, { now: new Date("2026-05-31"), maxAgeDays: 30 });
+    expect(stale).toEqual([]);
   });
 });
 

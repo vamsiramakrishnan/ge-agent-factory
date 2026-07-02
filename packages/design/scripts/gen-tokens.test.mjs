@@ -37,13 +37,17 @@ test("the checked-in stylesheets match the generator (repo is not stale)", () =>
   expect(result.ok).toBe(true);
 });
 
-test("$green-200 traces to PALETTE.tertiarySwatchDark (the deliberately-darker callout green)", () => {
+test("$green-200 keeps its shipped value, now traced to PALETTE.tertiarySwatchDark", () => {
   // setup.scss shipped $green-200: #1e8e3e darker than --color-tertiary on
-  // purpose; palette.mjs now carries it as tertiarySwatchDark and TOKEN_TABLE
-  // maps the ramp entry to that key — no raw hex pins remain in the table.
+  // purpose (the tip-callout accent); palette.mjs carries it as
+  // tertiarySwatchDark and TOKEN_TABLE maps the ramp entry to that key —
+  // no raw hex pins remain anywhere in the table.
   expect(renderRegion("setup.scss")).toContain("$green-200: #1e8e3e;");
   expect(PALETTE.tertiarySwatchDark).toBe("#1e8e3e");
-  expect(TOKEN_TABLE.some((row) => row.raw && /^#/.test(row.raw))).toBe(false);
+  const row = TOKEN_TABLE.find((r) => r.name === "$green-200");
+  expect(row?.key).toBe("tertiarySwatchDark");
+  expect(row?.raw).toBeUndefined();
+  expect(TOKEN_TABLE.some((r) => r.raw && /^#/.test(r.raw))).toBe(false);
 });
 
 test("splitRegion throws on missing, reversed, and duplicated markers", () => {

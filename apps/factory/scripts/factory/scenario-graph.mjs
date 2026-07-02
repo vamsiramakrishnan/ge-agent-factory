@@ -1,4 +1,5 @@
 import { snakeCase } from "@ge/std/naming";
+import { sourceTimestamp } from "../../src/source-clock.js";
 
 function stableId(prefix, ...parts) {
   const suffix = snakeCase(parts.filter(Boolean).join("_")).slice(0, 72) || "default";
@@ -195,7 +196,7 @@ export function buildScenarioGraph(useCase = {}, sources = []) {
   return {
     id: stableId("scenario_graph", useCase.id || useCase.title || "scenario"),
     version: 1,
-    generatedAt: new Date().toISOString(),
+    generatedAt: sourceTimestamp(),
     scenario: scenario.id,
     nodes: [...nodesById.values()],
     edges,

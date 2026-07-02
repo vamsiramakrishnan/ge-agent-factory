@@ -19,3 +19,12 @@
 import { setDefaultTimeout } from "bun:test";
 
 setDefaultTimeout(20000);
+
+// Determinism pin: apps/factory/src/source-clock.js (the centralized generation
+// clock) reads GE_SOURCE_DATE, falling back to wall-clock time. Pinning it here
+// makes every test (and every subprocess a test spawns, since child env inherits
+// process.env) see the same instant, so generator output is byte-reproducible
+// under test by default instead of only when a golden test remembers to pass the
+// pin itself. `||=` keeps an explicit caller-provided GE_SOURCE_DATE (e.g. a
+// golden-regeneration invocation) authoritative over this default.
+process.env.GE_SOURCE_DATE ||= "2026-01-01T00:00:00.000Z";

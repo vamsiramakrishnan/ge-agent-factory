@@ -1,8 +1,31 @@
-import { describe, expect, test } from "bun:test";
+import { beforeAll, describe, expect, test } from "bun:test";
+import { execFileSync } from "node:child_process";
+import { existsSync } from "node:fs";
 import { mkdir, rm, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { reviewSpec } from "./factory-core.mjs";
 import { STATE_PATHS } from "./state-paths.mjs";
+
+const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
+// The use-case catalog is a git-ignored build artifact (`bun run catalog`), so a
+// fresh clone/worktree doesn't have it and reviewSpec() can't resolve catalog
+// specs. Bootstrap it once here instead of failing (CI already runs the sync as
+// its own step; this closes the same gap for local/agent worktrees). Note the
+// sync also rewrites the tracked src/agent-spec-registry.generated.json — a
+// known determinism bug in that writer (taste-campaign 08-next-horizon A1), so
+// this runs ONLY when the catalog is actually missing.
+const CATALOG_PATH = join(REPO_ROOT, "apps", "factory", "generated", "use-cases.generated.json");
+
+beforeAll(() => {
+  if (existsSync(CATALOG_PATH)) return;
+  console.log("factory-core.test: use-cases.generated.json missing — bootstrapping via `bun run catalog`");
+  execFileSync("bun", [join(REPO_ROOT, "apps", "factory", "scripts", "sync-use-cases-from-slides.mjs")], {
+    cwd: REPO_ROOT,
+    stdio: "ignore",
+    timeout: 60_000,
+  });
+});
 
 describe("factory core spec review", () => {
   test("resolves existing catalog specs without requiring interview artifacts", async () => {

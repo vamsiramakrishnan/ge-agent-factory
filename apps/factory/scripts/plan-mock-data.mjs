@@ -10,6 +10,7 @@ import { renderYaml, snowExpression } from "./factory/data/yaml-render.mjs";
 import { columnSet, entitiesFor, lakehouseClass, referenceTargetFor, targetFor } from "./factory/data/lakehouse-targets.mjs";
 import { resolveUseCase, useCaseFromSpec, useCaseNotFoundMessage } from "./factory/data/use-case-resolve.mjs";
 import { attachPackBridgesToUseCase, packBridgesForUseCase } from "./factory/data/pack-bridges.mjs";
+import { sourceTimestamp } from "../src/source-clock.js";
 
 const parseArgs = (argv) => parseFlagArgs(argv).flags;
 
@@ -788,7 +789,10 @@ async function main() {
     id: snakeCase(match.id),
     title: match.title,
     department: match.department,
-    generatedAt: new Date().toISOString(),
+    // Injectable clock (GE_SOURCE_DATE) instead of wall time: every generatedAt
+    // in the emitted mock_data/** artifacts derives from this one value (or the
+    // scenario graph's, from the same clock), keeping regeneration byte-stable.
+    generatedAt: sourceTimestamp(),
     sourceSlide: match.path,
     packBridges,
     taxonomy: ["OLTP", "OLTP_NOSQL", "OLAP", "UNSTRUCTURED_BLOB", "RUNTIME"],
