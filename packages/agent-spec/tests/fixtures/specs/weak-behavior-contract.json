@@ -1,0 +1,58 @@
+{
+  "id": "weak-behavior-contract",
+  "title": "Weak Behavior Contract",
+  "department": "qa",
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": { "defaultRowsPerEntity": 25, "minimumRowsPerEntity": 10, "rationale": "enough" },
+    "sourceSystems": [
+      {
+        "id": "sys",
+        "name": "Sys",
+        "owns": ["t"],
+        "protocol": "REST",
+        "localBacking": ["alloydb"],
+        "toolNames": ["q"],
+        "evidence": ["sql_result"]
+      }
+    ],
+    "entities": [
+      {
+        "name": "t",
+        "primaryKey": "id",
+        "columns": [{ "name": "id" }, { "name": "a" }, { "name": "b" }],
+        "datastore": "alloydb",
+        "rowCount": 10,
+        "sourceSystemId": "sys"
+      }
+    ],
+    "documents": [
+      { "id": "d", "title": "D", "requiredSections": ["x"], "citationAnchors": ["y"], "minimumWordCount": 100 }
+    ],
+    "anomalies": [
+      { "id": "a1", "description": "gap", "affectedEntities": ["t"], "expectedEvidence": ["sql_result"] }
+    ],
+    "datastorePackaging": {},
+    "validation": { "smokePrompt": "go", "assertions": ["a", "b"] },
+    "behaviorContract": {
+      "role": "assistant",
+      "primaryObjective": "Too short.",
+      "inScope": "single item as string",
+      "outOfScope": [],
+      "toolIntents": [
+        {
+          "name": "only_action",
+          "kind": "action",
+          "description": "d",
+          "requiredInputs": ["i"],
+          "produces": ["o"],
+          "evidenceEmitted": ["api_response"]
+        }
+      ],
+      "evidenceRequirements": [],
+      "escalationRules": [{ "trigger": "x", "action": "refuse", "rationale": "r" }],
+      "refusalRules": ["only one"],
+      "goldenEvals": []
+    }
+  }
+}
