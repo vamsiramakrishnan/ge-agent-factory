@@ -6,6 +6,7 @@ sidebar:
 ---
 
 import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+import CommandCard from '../../../components/CommandCard.astro';
 
 Get from a fresh clone to a validated agent workspace. Nothing touches the
 cloud until you choose to ship — the everyday loop is entirely local.
@@ -31,6 +32,11 @@ cloud until you choose to ship — the everyday loop is entirely local.
    machine against fixtures and simulators. See
    [the factory line](/ge-agent-factory/concepts/the-factory-line/) for what
    each stage produces.
+
+   Under the hood this is one operator command — rendered here straight from
+   the command registry, so it can't drift:
+
+   <CommandCard id="agents.build.local" />
 
 3. **Inspect what was generated.**
 

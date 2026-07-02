@@ -1,0 +1,36 @@
+---
+// Risk-tier badge for operator commands. The tiers and their meanings are the
+// registry's field contract (tools/lib/ge-command-registry.mjs, `risk`);
+// colors go from calm (read-only) to hot (mutates-cloud).
+const { risk } = Astro.props;
+
+const TIERS = {
+  "read-only": { label: "read-only", tone: "#188038", bg: "rgba(24, 128, 56, 0.12)" },
+  "starts-local-workloads": { label: "starts local workloads", tone: "#1a73e8", bg: "rgba(26, 115, 232, 0.12)" },
+  "writes-repo": { label: "writes repo", tone: "#7627bb", bg: "rgba(118, 39, 187, 0.12)" },
+  "starts-workloads": { label: "starts cloud workloads", tone: "#b26c00", bg: "rgba(227, 116, 0, 0.14)" },
+  "mutates-cloud": { label: "mutates cloud", tone: "#c5221f", bg: "rgba(197, 34, 31, 0.12)" },
+};
+const tier = TIERS[risk] ?? { label: risk, tone: "var(--sl-color-gray-2)", bg: "var(--sl-color-gray-6)" };
+---
+
+<span class="risk-badge" style={`--risk-tone: ${tier.tone}; --risk-bg: ${tier.bg};`}>{tier.label}</span>
+
+<style>
+  .risk-badge {
+    display: inline-block;
+    padding: 0.1rem 0.55rem;
+    border: 1px solid color-mix(in srgb, var(--risk-tone) 45%, transparent);
+    border-radius: 999px;
+    background: var(--risk-bg);
+    color: var(--risk-tone);
+    font-family: var(--sl-font-system-mono, monospace);
+    font-size: var(--sl-text-xs);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  :global([data-theme="dark"]) .risk-badge {
+    color: color-mix(in srgb, var(--risk-tone) 55%, white);
+  }
+</style>
