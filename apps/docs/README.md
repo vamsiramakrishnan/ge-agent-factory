@@ -54,6 +54,23 @@ link check for the site.
 - `src/content/docs/index.mdx` — the landing page (splash + cards)
 - `src/content/docs/start/quickstart.mdx` — Steps/Tabs quickstart
 
+## LLM-readable exports: `/llms.txt` and `/llms-full.txt`
+
+Two custom static endpoints (`src/pages/llms.txt.js`, `llms-full.txt.js` —
+built into `dist/` by `astro build`) make the whole site one-fetch legible to
+agents, per [llmstxt.org](https://llmstxt.org/):
+
+- **`/llms.txt`** — the index: site title, one-line description, then every
+  published page (absolute URL + description), grouped by sidebar section in
+  deterministic sidebar-then-slug order.
+- **`/llms-full.txt`** — every page concatenated as plain markdown:
+  frontmatter dropped, MDX imports/components and the glossary linker's
+  tooltip anchors stripped back out, page links absolutized.
+
+Both are rendered from the same synced content collection Starlight renders
+(logic in `src/lib/llms.mjs`, exercised by `tests/llms-txt.test.mjs`), so the
+published set can't drift from what agents see.
+
 ## Theme
 
 `src/styles/custom.css` derives everything from the product's design tokens

@@ -9,6 +9,26 @@
 // per emitted file, at sync time.
 import { createRequire } from "node:module";
 
+// ── fenced-block sheltering ─────────────────────────────────────────────────
+// Shelter fenced code blocks from prose transforms, restore at the end. Used
+// by the sync (docs/ → .mdx) and by the llms.txt plain-markdown rendering
+// (src/lib/llms.mjs). The delimiters are NUL bytes (written escaped so this
+// file stays text for git): NUL cannot occur in markdown, so the token can
+// never collide with prose, and — unlike a space delimiter — it doesn't
+// change what line-anchored prose transforms see next to the token.
+export function shelterFences(text) {
+  const blocks = [];
+  const sheltered = text.replace(/^(```|~~~)[\s\S]*?^\1[^\n]*$/gm, (block) => {
+    blocks.push(block);
+    return `\u0000FENCE${blocks.length - 1}\u0000`;
+  });
+  return { sheltered, blocks };
+}
+
+export function restoreFences(text, blocks) {
+  return text.replace(/\u0000FENCE(\d+)\u0000/g, (_, i) => blocks[Number(i)]);
+}
+
 // ── inline-code sheltering ──────────────────────────────────────────────────
 // Fenced blocks are sheltered by the sync script before any prose transform;
 // inline code spans (`…`, ``…``) need the same treatment because CommonMark
