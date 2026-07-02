@@ -20,7 +20,8 @@ excluded: `runbooks/`, `adr/`, `plans/`, …) and, per page:
 
 1. keeps `title`/`description`, maps Jekyll `nav_order` → Starlight
    `sidebar.order`, and points `editUrl` at the `docs/` source file
-2. converts kramdown callouts (`> …` + `{: .note }`) into Starlight asides
+2. converts kramdown callouts (`> …` + `{: .note }`) into Starlight asides —
+   including callouts indented inside list items, which keep their step
 3. strips kramdown TOC blocks (Starlight renders its own)
 4. rewrites relative `.html`/`.md` links to site routes; links that leave the
    published set (`SETUP.md`, `docs/runbooks/…`) become GitHub blob URLs
@@ -35,6 +36,11 @@ excluded: `runbooks/`, `adr/`, `plans/`, …) and, per page:
    glossary page, with the entry's first sentence as an `<a title>` hover
    tooltip (never inside code, links, or headings — see
    `scripts/lib/glossary.mjs`)
+8. upgrades plain-markdown conventions to Starlight components
+   (`scripts/lib/enrich.mjs`): a cookbook's `**Scope:** <label> — …` strip
+   becomes a `<Badge>` (green `local-only`, orange `cloud`), and a
+   `## Steps` ordered list is wrapped in `<Steps>`; the needed import line
+   is injected automatically, so `docs/` authors never write JSX
 
 Because pages are MDX, generated and curated content can use the components
 in `src/components/` — e.g. `CommandCard.astro`, which renders a command's
