@@ -2495,6 +2495,23 @@ export const __test = {
   shouldPromptForInit,
   resolveInitPromptPlan,
   INIT_DOMAIN_CHOICES,
+  // Temporary extension (WS3): expose the faker data-gen, snowfakery-recipe,
+  // and pipeline-state clusters so seed-pinned unit tests can pin their
+  // behavior BEFORE they are extracted into domain modules. The tests flip to
+  // importing the modules directly after the move; these re-exports stay as a
+  // compatibility shim.
+  generateDocument,
+  generateDomainDocuments,
+  generateParagraph,
+  pickEntityRefs,
+  generateValue,
+  snowfakeryFakeForColumn,
+  renderYamlValue,
+  loadPipeline,
+  savePipeline,
+  markStep,
+  requireStep,
+  nextCommandFor,
 };
 
 // Run the CLI only when this file is the process entry point. When imported by a
