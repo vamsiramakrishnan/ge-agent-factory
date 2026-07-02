@@ -14,6 +14,10 @@ is a **pack** (six JSON files) interpreted by a generic Python runtime under
 Bring-your-own (BYO) systems are mounted at runtime through a lazy layered registry
 and an overlay.
 
+<p align="center">
+  <img src="../assets/diagrams/simulator-backend-flow.svg" alt="An agent reads local fixture files when GE_DATA_BACKEND=fixtures, or resolves an MCP toolset from the Agent Registry when GE_DATA_BACKEND=mcp, reaching the per-department FastMCP service, the generic engine with the agent's per-agent store, and a source-system envelope that looks like Workday, Ariba, or SAP" width="750">
+</p>
+
 ## Table of contents
 {: .no_toc .text-delta }
 
@@ -148,6 +152,10 @@ hydrated from the pack's seed; mutations are written back through the store.
 Selection: the per-system `stateBackend` contract field wins; the global
 `GE_SIMULATOR_STATE_BACKEND` env var is the fallback override. An unknown backend
 or missing dependency falls back to `memory`.
+
+<p align="center">
+  <img src="../assets/diagrams/state-backend-precedence.svg" alt="Backend resolution: a per-system stateBackend in registry.json wins, else the GE_SIMULATOR_STATE_BACKEND env var, else memory; a durable choice degrades to memory with a logged warning when its dependency or config is unavailable" width="600">
+</p>
 
 ---
 

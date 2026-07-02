@@ -7,6 +7,8 @@ layout: default
 
 # Add a `ge` command to the shared registry
 
+**Scope:** repo change — code + tests only; nothing runs in the cloud.
+
 ## Goal
 
 Wire an existing `ge` CLI command into the shared command registry
@@ -39,6 +41,10 @@ precedent AGENTS.md points at).
 {: .important }
 
 ## How an entry flows through the system
+
+<p align="center">
+  <img src="../assets/diagrams/ge-command-flow.svg" alt="One registry entry backs both the ge CLI and a console route; a matched route runs preflight from the entry's requirements — a failure persists a blocked job with the failing checks, a pass submits the argv to the daemon (falling back to a local spawn if the daemon is unreachable), and events stream to the browser over SSE, labeled with the entry's risk" width="520">
+</p>
 
 One registry entry is consumed at five places. All paths are real and current:
 

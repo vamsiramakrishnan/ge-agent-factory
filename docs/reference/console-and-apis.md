@@ -54,6 +54,16 @@ Routes are dispatched in `apps/console/src/server/ge-api-router.mjs` (with handl
 in `ge-api.mjs`, `interview-docs.mjs`, `systems.mjs`). `(SSE)` marks a streaming
 endpoint.
 
+Most mutating `/api/ge/*` routes are not bespoke handlers — they come from the
+shared command registry (`tools/lib/ge-command-registry.mjs`), which gives each
+one preflight gating, risk labeling, and job streaming for free:
+
+<p align="center">
+  <img src="../assets/diagrams/ge-command-flow.svg" alt="One registry entry backs both the ge CLI and a console route; a matched route runs preflight from the entry's requirements — a failure persists a blocked job, a pass submits the argv to the daemon (with a local spawn fallback), and events stream to the browser over SSE labeled with the entry's risk" width="520">
+</p>
+
+See [Add a ge command](../cookbooks/add-a-ge-command.html) for the full walkthrough.
+
 ### `/api/ge/*` — factory core
 
 | Method · Path | Purpose |

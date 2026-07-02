@@ -7,10 +7,16 @@ layout: default
 
 # Run evals
 
+**Scope:** local-only — runs against the generated workspace's offline fixtures.
+
 ## Goal
 
 Run the per-agent behavior-contract eval set that the factory generates for every
 agent, and understand how it's derived from the spec's OKF test mechanisms.
+
+<p align="center">
+  <img src="../assets/diagrams/eval-derivation.svg" alt="The spec's goldenEvals feed deriveTestMechanisms (the same helper that emits the OKF test concepts), tool names are filtered to real generated tools, producing the ge_behavior_contract evalset that agents-cli eval run executes" width="800">
+</p>
 
 ## Prerequisites
 
