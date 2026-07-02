@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { createServer } from "node:http";
-import { parseWorkerPayload, readPayloadArg, runFactoryWorker } from "../src/factory-worker.js";
+import { logStage, parseWorkerPayload, readPayloadArg, runFactoryWorker } from "../src/factory-worker.js";
 
 function readRequestBody(req, { limitBytes = 100_000 } = {}) {
   return new Promise((resolve, reject) => {
@@ -33,7 +33,7 @@ async function handleHttpRequest(req, res) {
     const rawBody = await readRequestBody(req);
     const parsed = rawBody.trim() ? JSON.parse(rawBody) : {};
     const payload = parseWorkerPayload(parsed);
-    console.log(`[factory-worker] start stage=${payload.stage} run=${payload.runId} item=${payload.itemId}`);
+    logStage("INFO", { runId: payload.runId, itemId: payload.itemId, stage: payload.stage, attempt: payload.attempt, message: `stage started: ${payload.stage} (run ${payload.runId}, item ${payload.itemId})` });
     const result = await runFactoryWorker(payload, { dryRun: false });
     // Cloud Tasks retry contract: 2xx = delivered (no retry); 5xx/429 = retry.
     // A PERMANENT (deterministic) stage failure must NOT loop — the failure is
@@ -46,16 +46,25 @@ async function handleHttpRequest(req, res) {
     const transient = failed && result.retryable === true;
     const statusCode = transient ? 503 : 200;
     if (failed) {
-      console.error(`[factory-worker] stage=${payload.stage} run=${payload.runId} item=${payload.itemId} FAILED retryable=${Boolean(result.retryable)} → HTTP ${statusCode}: ${result.error || "unknown error"}`);
+      logStage("ERROR", {
+        runId: payload.runId,
+        itemId: payload.itemId,
+        stage: payload.stage,
+        attempt: payload.attempt,
+        retryable: Boolean(result.retryable),
+        httpStatus: statusCode,
+        message: `stage failed (retryable=${Boolean(result.retryable)} → HTTP ${statusCode}): ${result.error || "unknown error"}`,
+      });
     }
     res.writeHead(statusCode, { "content-type": "application/json" });
     res.end(JSON.stringify({ ok: !failed, retryable: Boolean(result.retryable), ...result }));
   } catch (error) {
-    // Never an empty ERROR body: log the message + stack as one structured line.
+    // Never an empty ERROR body: log the message + stack as one structured line
+    // (the stack inside `message` is what Error Reporting groups on).
     // A malformed payload / parse error is deterministic → ack with 400 (Cloud
     // Tasks treats non-429 4xx as permanent, so it won't redeliver a poison body).
     const message = error?.message || String(error);
-    console.error(`[factory-worker] REQUEST FAILED: ${message}\n${error?.stack || ""}`);
+    logStage("ERROR", { message: `request failed: ${message}\n${error?.stack || ""}` });
     res.writeHead(400, { "content-type": "application/json" });
     res.end(JSON.stringify({ ok: false, retryable: false, error: message }));
   }
@@ -66,7 +75,7 @@ async function main() {
     const port = Number(process.env.PORT);
     const server = createServer(handleHttpRequest);
     server.listen(port, () => {
-      console.log(`[factory-worker] HTTP service listening on port ${port}`);
+      logStage("INFO", { message: `HTTP service listening on port ${port}` });
     });
     return;
   }

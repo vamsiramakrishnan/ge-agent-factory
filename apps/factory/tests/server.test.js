@@ -755,9 +755,15 @@ test("factory control plane models managed release orchestration", () => {
   assert.equal(plan.services.cloudBuild.ownsStages.includes("publish_enterprise"), true);
   assert.ok(plan.commands.some((cmd) => cmd.includes("cloudbuild.googleapis.com")));
   assert.ok(plan.commands.some((cmd) => cmd.includes("gcloud tasks queues create")));
+  // C8: the worker-service step must NOT gcloud-run-deploy — Terraform owns the
+  // Cloud Run worker config (installer/terraform/cloud_run.tf; see the deploy
+  // contract in docs/OPERATIONS.md). The step only points at that ownership.
   const workerStep = plan.provisionSteps.find((step) => step.id === "worker-service");
-  assert.ok(workerStep.apply.includes("--no-allow-unauthenticated"));
-  assert.ok(workerStep.apply.includes("--timeout"));
+  assert.equal(workerStep.kind, "note");
+  assert.equal(workerStep.apply, undefined);
+  assert.ok(workerStep.description.includes("Terraform-owned"));
+  assert.ok(workerStep.description.includes("installer/terraform/cloud_run.tf"));
+  assert.ok(!plan.provisionSteps.some((step) => Array.isArray(step.apply) && step.apply.includes("deploy")));
 });
 
 test("factory worker parses payloads and dispatches release stages to Cloud Build", async () => {
