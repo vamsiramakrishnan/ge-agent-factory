@@ -32,8 +32,9 @@ these workstreams need a live GCP project for verification, so they are
 No `httpTarget.dispatchDeadline` is set anywhere; Cloud Tasks defaults to
 10 min while the worker's Cloud Run timeout is 1800s (`cloud_run.tf:13`) and
 `max_retry_duration="600s"` (`tasks.tf:17`). Consequence: any stage running
->10 min gets a **duplicate concurrent redelivery** while attempt 1 still
-executes, and the retry window expires before long transients can retry.
+longer than 10 minutes gets a **duplicate concurrent redelivery** while
+attempt 1 still executes, and the retry window expires before long
+transients can retry.
 **Fix:** set dispatchDeadline (max 1800s) on task creation, drop
 `max_retry_duration` in favor of `max_attempts`-only bounding, and assert the
 invariant `dispatchDeadline ≥ Cloud Run timeout ≥ longest stage` in a unit
