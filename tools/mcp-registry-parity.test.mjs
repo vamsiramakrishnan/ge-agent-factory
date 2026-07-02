@@ -1,0 +1,61 @@
+// Parity oracle freezing the MCP tool surface as declared in the command
+// registry. EXPECTED_TOOLS is a byte-level transcription of the tool surface
+// tools/mcp-server.mjs exposed BEFORE it became a registry consumer (tool
+// names + param names/optionality, captured 2026-07-02). Any drift in the
+// registry's `mcp` blocks — a renamed tool, a dropped/added param, a flipped
+// optionality — fails here first. Widening the MCP surface is a deliberate
+// act: update this fixture in the same commit, and say so in the subject.
+import { test, expect } from "bun:test";
+import { GE_COMMANDS } from "./lib/ge-command-registry.mjs";
+
+const EXPECTED_TOOLS = {
+  factory_list_usecases: ["department?", "search?", "limit?"],
+  factory_doctor: [],
+  factory_status: ["noProxy?"],
+  factory_logs: ["runId", "stage?", "item?"],
+  factory_provision: ["scope?", "dept?", "ids?", "concurrency?", "force?", "noProxy?", "local?", "vertex?", "target?", "limit?"],
+  factory_sync: ["force?", "push?", "commit?", "local?", "remote?", "create?"],
+  factory_ship: ["ids?", "startStage?", "targetStage?", "noProxy?"],
+  factory_mcp_deploy: [],
+  factory_mcp_doctor: [],
+};
+
+const KNOWN_RISKS = ["mutates-cloud", "starts-workloads", "starts-local-workloads", "writes-repo", "read-only"];
+
+const PARAM_TYPES = ["string", "boolean", "number"];
+
+test("every registry mcp block matches the frozen tool surface", () => {
+  const entries = Object.values(GE_COMMANDS).filter((c) => c.mcp);
+  const byTool = Object.fromEntries(entries.map((c) => [c.mcp.tool,
+    Object.entries(c.mcp.params || {}).map(([n, p]) => p.optional ? `${n}?` : n)]));
+  expect(byTool).toEqual(EXPECTED_TOOLS);
+});
+
+test("mcp tool names are unique and factory_-prefixed", () => {
+  const tools = Object.values(GE_COMMANDS).filter((c) => c.mcp).map((c) => c.mcp.tool);
+  expect(new Set(tools).size).toBe(tools.length);
+  for (const tool of tools) expect(tool).toMatch(/^factory_[a-z0-9_]+$/);
+});
+
+test("every mcp block carries a real description and typed params", () => {
+  for (const command of Object.values(GE_COMMANDS)) {
+    if (!command.mcp) continue;
+    expect(typeof command.mcp.description).toBe("string");
+    expect(command.mcp.description.length).toBeGreaterThan(0);
+    for (const [name, param] of Object.entries(command.mcp.params || {})) {
+      expect(PARAM_TYPES).toContain(param.type);
+      if (param.enum !== undefined) {
+        expect(Array.isArray(param.enum)).toBe(true);
+        expect(param.enum.length).toBeGreaterThan(0);
+      }
+      if (param.optional !== undefined) expect(param.optional).toBe(true);
+      expect(name.length).toBeGreaterThan(0);
+    }
+  }
+});
+
+test("every registry entry declares one of the known risk values", () => {
+  for (const command of Object.values(GE_COMMANDS)) {
+    expect(KNOWN_RISKS).toContain(command.risk);
+  }
+});
