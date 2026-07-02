@@ -23,7 +23,6 @@ import { STATE_PATHS, DEPARTMENTS } from "./state-paths.mjs";
 // Week-4: app-domain ops are imported via the two cycle-break boundary modules,
 // NOT directly from apps/factory — factory-core keeps zero app imports (enforced
 // by tools/check-no-app-imports.mjs).
-import { planReconcile } from "./reconcile.mjs";
 import { createGatewayClient, getJson, postJson } from "./gateway-client.mjs";
 import { createDoctorPlane } from "./doctor.mjs";
 import { createProvisionOps } from "./provision.mjs";
@@ -34,7 +33,6 @@ import {
   ledgerRuns,
   ledgerRun,
   ledgerFleet,
-  ledgerPlan,
   ledgerBackfillFromDisk,
 } from "./factory-ledger.mjs";
 import { mergeLedgerAndFileRuns, listFactoryRuns } from "./factory-runs.mjs";
@@ -44,6 +42,7 @@ import { registerSpecWith } from "./register-spec.mjs";
 import { createAgentIdentityOps } from "./agent-identity.mjs";
 import { createWorkspaceDoctorOps } from "./workspace-doctor.mjs";
 import { createFleetOps } from "./fleet-ops.mjs";
+import { createApplyOps } from "./apply-ops.mjs";
 
 export {
   selectionDepartments,
@@ -318,43 +317,9 @@ const FACTORY_DATA_ROOT = STATE_PATHS.factory.root;
 // imported above and re-exported for the public API contract (see
 // factory-core.export-surface.json / factory-core.export-surface.test.mjs).
 
-// ── declarative reconcile (ADR 0001 phase 5) ──────────────────────────────────
-const APPLY_MANIFEST_PATH = join(REPO_ROOT, "ge.manifest.json");
-
-// Gather actual platform + fleet state and diff it against the desired manifest.
-export async function applyPlan(cfg, { manifest = null } = {}) {
-  const board = statusBoard(cfg);
-  const planes = {};
-  for (const p of board.planes || []) {
-    const n = (p.name || "").toLowerCase();
-    const key = n.includes("tool") || n.includes("mcp") ? "mcp" : n.includes("data") ? "data" : "infra";
-    planes[key] = !!p.up;
-  }
-  const source = manifest ? "inline" : existsSync(APPLY_MANIFEST_PATH) ? "ge.manifest.json" : "default";
-  const m = manifest || readJson(APPLY_MANIFEST_PATH, {});
-  const plan = await ledgerPlan({ targetStage: m?.fleet?.target || "previewed", mode: cfg.mode });
-  return { ...planReconcile(m, { planes, plan }), source };
-}
-
-// Execute the reconcile plan in dependency order (gateway → data → tool plane →
-// agents). Reuses the same tested core operations the CLI/console already call.
-export async function applyApply(cfg, { manifest = null, log = noop } = {}) {
-  const planResult = await applyPlan(cfg, { manifest });
-  for (const step of planResult.steps) {
-    log(`→ ${step.id}: ${step.command}`);
-    if (step.kind === "platform") {
-      if (step.plane === "infra") await up(cfg, { planes: ["infra"], log });
-      else if (step.plane === "data") await dataUp(cfg, { log });
-      else if (step.plane === "mcp") mcpDeploy(cfg, { log });
-    } else if (step.kind === "fleet") {
-      const ids = step.agents.join(",");
-      if (cfg.mode === "remote") await provisionOps.provision(cfg, { ids, log });
-      else await provisionOps.provisionLocal(cfg, { ids, log });
-    }
-    log(`✓ ${step.id}`);
-  }
-  return { applied: planResult.steps.length, plan: planResult };
-}
+// Declarative reconcile (ADR 0001 phase 5: applyPlan/applyApply) now lives in
+// apply-ops.mjs; wired further down (after the provisionOps composition it
+// depends on) — see the createApplyOps call below the provision exports.
 
 // Workspace doctor/repair (single-workspace inspect/repair) now live in
 // workspace-doctor.mjs; `run`/GEN_DIR are injected the same way factory-core
@@ -445,6 +410,13 @@ const provisionOps = createProvisionOps({
   genDir: GEN_DIR,
 });
 export const { provision, provisionLocal, setMode, devexSmoke, devexCheck, syncLocal, ship } = provisionOps;
+
+// Declarative reconcile (applyPlan/applyApply) now lives in apply-ops.mjs; wired
+// here — after the provisionOps composition it executes fleet steps through —
+// with the platform bring-up ops injected. `up`/`dataUp`/`mcpDeploy`/`statusBoard`
+// are hoisted function declarations, so referencing them here is safe; they only
+// run at call time, once every plane below is composed.
+export const { applyPlan, applyApply } = createApplyOps({ statusBoard, up, dataUp, mcpDeploy, provisionOps });
 
 export function build(cfg, { target, log = noop } = {}) {
   return factoryPlane.build(cfg, { target, log });
