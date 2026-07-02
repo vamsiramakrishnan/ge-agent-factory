@@ -162,6 +162,9 @@ Knowledge Format) v0.1**, a portable BRD exchange format, via the converters in
 
 - Concept: [Specs & OKF](docs/concepts/specs-and-okf.md)
 - Reference: [Spec schema](docs/reference/spec-schema.md) · [OKF](docs/reference/okf.md)
+- Adding a new spec field? The shape is duck-typed across ~13 consumer files —
+  follow the [consumer checklist](docs/reference/spec-schema.md#adding-a-new-spec-field--the-consumer-checklist)
+  so the field survives the OKF round-trip.
 - Cookbook: [Spec ⇄ OKF](docs/cookbooks/spec-to-okf.md) · [Author a spec via interview](docs/cookbooks/author-a-spec-via-interview.md)
 - Skill: [`authoring-okf-specs`](skills/authoring-okf-specs/SKILL.md)
 
