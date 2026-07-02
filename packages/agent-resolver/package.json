@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "description": "Pure id-algebra for the deck<->console agent identity thread (uc-/A-/number normalization).",
+  "scripts": {
+    "test": "bun test src/resolve.test.ts"
+  },
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts"
