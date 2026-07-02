@@ -28,10 +28,19 @@ import {
 } from "@ge/run-ledger";
 import type { RunStatus } from "@ge/run-ledger/status";
 import type { LedgerEvent } from "@ge/run-ledger/frames";
+import type {
+  LedgerAdapter,
+  LedgerOp,
+  RunLedger,
+  RunSummary,
+  FleetWorkItemState,
+} from "@ge/run-ledger";
 import {
   normalizeFirestoreLedgerEvent,
   createFirestoreLedgerReader,
   createFirestoreEventMirror,
+  type FirestoreCollectionLike,
+  type FirestoreDatabaseLike,
 } from "@ge/run-ledger/firestore";
 
 // ── status vocabulary ─────────────────────────────────────────────────────────
@@ -64,7 +73,7 @@ const isLog: boolean = isStageLogFrame(logFrame);
 const stages: readonly string[] = LEDGER_STAGES;
 
 const rows: Record<string, unknown>[] = [];
-const adapter = {
+const adapter: LedgerAdapter = {
   run(_sql: string, _params: ReadonlyArray<string | number | null> = []): void {},
   all(_sql: string, _params: ReadonlyArray<string | number | null> = []) {
     return rows;
@@ -93,17 +102,32 @@ ledger.recordTransition({
   ts: "2026-01-01T00:00:01.000Z",
 });
 
+// The mistakes the store types must catch:
+// @ts-expect-error "finished" is not a LedgerTransitionStatus (started/done/failed/reset/submitted)
+ledger.recordTransition({ runId: "run-1", workItemId: "uc1", status: "finished" });
+// @ts-expect-error status is required on a transition
+ledger.recordTransition({ runId: "run-1", workItemId: "uc1" });
+// @ts-expect-error startRun requires an id (it throws at runtime without one)
+ledger.startRun({ mode: "local" });
+
 // factoryEventToLedgerOp output feeds back into the ledger exactly the way
 // applyFactoryEvent does internally.
-const op = factoryEventToLedgerOp({
+const op: LedgerOp | null = factoryEventToLedgerOp({
   type: "stage_done",
   stage: "created",
   useCaseId: "uc1",
   ts: "2026-01-01T00:00:02.000Z",
 });
 if (op && op.kind === "transition") {
+  // Narrowed branch: the mapper only emits started/done/failed transitions.
+  const mapped: "started" | "done" | "failed" = op.status;
+  void mapped;
   const { kind, ...transition } = op;
   ledger.recordTransition({ runId: "run-1", ...transition });
+}
+if (op && op.kind === "complete") {
+  const ok: boolean | null = op.ok;
+  void ok;
 }
 ledger.applyFactoryEvent("run-1", { type: "run_done", ok: true, ts: "2026-01-01T00:00:03.000Z" });
 ledger.completeRun({ runId: "run-1", ok: true, finishedAt: "2026-01-01T00:00:03.000Z" });
@@ -113,9 +137,11 @@ for (const ev of ledger.events("run-1", { afterSeq: 0, limit: 100 })) {
   applyEvent(ev, acc.stages, acc.signals);
 }
 
-const run = ledger.getRun("run-1");
-const runsList = ledger.listRuns({ limit: 5 });
-const fleet = ledger.fleetByUseCase();
+const run: RunSummary | null = ledger.getRun("run-1");
+const runStatus: RunStatus | undefined = run?.status;
+const stageName: string | undefined = run?.results[0]?.stages[0]?.name;
+const runsList: RunSummary[] = ledger.listRuns({ limit: 5 });
+const fleet: Map<string, FleetWorkItemState> = ledger.fleetByUseCase();
 ledger.recordReset({ runId: "run-1", workItemId: "uc1" });
 ledger.recordRemoteSubmission({
   runId: "remote-1",
@@ -135,11 +161,12 @@ ledger.close();
 
 // ── adapters open asynchronously ──────────────────────────────────────────────
 async function openAdapters(): Promise<void> {
-  const sqlite = await sqliteAdapter(":memory:");
+  const sqlite: LedgerAdapter = await sqliteAdapter(":memory:");
   createRunLedger(sqlite);
-  const pg = await pgAdapter("postgres://localhost/ge");
+  const pg: LedgerAdapter = await pgAdapter("postgres://localhost/ge");
   createRunLedger(pg);
-  const maybeLedger = await openRunLedger(":memory:");
+  // Best-effort open: null when no sqlite driver is available.
+  const maybeLedger: RunLedger | null = await openRunLedger(":memory:");
   if (maybeLedger) maybeLedger.listRuns({ limit: 1 });
 }
 void openAdapters;
@@ -150,8 +177,35 @@ const normalized: LedgerEvent = normalizeFirestoreLedgerEvent(
   0,
 );
 void normalized;
-void createFirestoreLedgerReader;
-void createFirestoreEventMirror;
+
+// A plain-object fake database, the way firestore.mjs's tests inject one.
+const fakeCollection: FirestoreCollectionLike = {
+  get: async () => ({ docs: [] }),
+  doc: (_id: string) => ({
+    collection: (_name: string) => fakeCollection,
+    get: async () => ({ exists: false }),
+  }),
+};
+const fakeDb: FirestoreDatabaseLike = { collection: (_name: string) => fakeCollection };
+
+async function readFirestore(): Promise<void> {
+  const reader = await createFirestoreLedgerReader({ projectId: "demo", db: fakeDb });
+  const events: LedgerEvent[] = await reader.events("run-1", { afterSeq: 0 });
+  const summary: RunSummary | null = await reader.getRun("run-1");
+  const unsubscribe: (() => void) | null = reader.listenEvents(
+    "run-1",
+    { afterSeq: 0 },
+    (next: LedgerEvent[]) => void next,
+  );
+  void events;
+  void summary;
+  void unsubscribe;
+
+  const mirror = await createFirestoreEventMirror({ projectId: "demo" });
+  await mirror.applyFactoryEvent("run-1", { type: "stage_done", stage: "build" });
+  await mirror.completeRun("run-1", { ok: true });
+}
+void readFirestore;
 
 // Referenced-but-unused sinks (this file only exists to be type-checked).
 void status;
