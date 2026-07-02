@@ -221,6 +221,10 @@ run = 'bun tools/ge.mjs devex check ${ID:+--id "$ID"}'
 description = "Docs-specific gate: link/image/blockquote check, diagram freshness, design-token drift"
 run = "bun run docs:gate"
 
+[tasks.docs-site]
+description = "Run the docs website locally (Astro/Starlight; content synced from docs/ on start)"
+run = "bun run docs:site:dev"
+
 [tasks.devex-smoke]
 description = "One-command local proof: doctor → local mode → one validated canary workspace (ID=<usecase> TARGET=validated|previewed)"
 run = 'bun tools/ge.mjs devex smoke ${ID:+--id "$ID"} ${TARGET:+--target "$TARGET"}'
