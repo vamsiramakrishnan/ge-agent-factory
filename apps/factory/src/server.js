@@ -1,14 +1,14 @@
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
 import { createServer as createNetServer } from "node:net";
-import { chmodSync, cpSync, createWriteStream, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { cpSync, createWriteStream, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { delimiter, extname, join, resolve } from "node:path";
 import { Hono } from "hono";
 import { readDotEnv } from "./dotenv.mjs";
 import { detectAgents, getAgentDef } from "./agents.js";
 import { DEPARTMENTS, INTERVIEW_QUESTIONS } from "./departments.js";
 import { getDomainsByDepartment } from "./domains.generated.js";
-import { MOCK_SYSTEMS, renderSystemPrompt } from "./systems.js";
+import { MOCK_SYSTEMS } from "./systems.js";
 import { readJson, writeJson } from "@ge/std/json-io";
 import { getUseCases } from "./use-cases.js";
 import {
@@ -19,8 +19,7 @@ import {
   touchProject,
   workspaceManifestPath,
 } from "./projects.js";
-import { createOutputParser, detectFormat } from "./output-parsers.js";
-import { buildHandoffPacket, buildHarnessRunPlan } from "./harness-runtime.js";
+import { buildHarnessRunPlan } from "./harness-runtime.js";
 import { loadSkillRegistry, materializeSkillsForWorkspace, selectSkillsForContext } from "./skill-registry.js";
 import { recordRunArtifacts } from "./artifacts.js";
 import { validateAgentWorkspace } from "./agent-workspace-pipeline.js";
@@ -57,6 +56,9 @@ import {
 import { createCatalogRoutes } from "./routes/catalog.mjs";
 import { createWorkspaceRoutes } from "./routes/workspaces.mjs";
 import { createRunRoutes } from "./routes/runs.mjs";
+import { materializeWorkspaceCommandShims } from "./runtime/workspace-command-shims.js";
+import { buildRunPrompt } from "./runtime/build-run-prompt.js";
+import { spawnAndStreamAgentSubprocess } from "./runtime/run-agent-subprocess.js";
 
 const REPO_ROOT = APP_ROOT;
 const WEB_ROOT = join(REPO_ROOT, "web");
@@ -136,105 +138,6 @@ function buildWorkspaceEnv(extra = {}, workspaceDir = null) {
     PATH: [extra.GE_HARNESS_BIN, join(REPO_ROOT, "node_modules", ".bin"), env.PATH].filter(Boolean).join(delimiter),
     ...extra,
   };
-}
-
-function materializeWorkspaceCommandShims(workspaceDir) {
-  const binDir = join(workspaceDir, ".ge-harness", "bin");
-  mkdirSync(binDir, { recursive: true });
-  const script = `#!/usr/bin/env node
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
-import { spawnSync } from "node:child_process";
-
-const cwd = process.cwd();
-const args = process.argv.slice(2);
-const cmd = args[0] || "status";
-
-// readJson/writeJson come from the shared atomic json-io helper (imported above).
-
-function status() {
-  const manifest = readJson(join(cwd, "workspace.json"), {});
-  const fixtures = readJson(join(cwd, "fixtures", "manifest.json"), {});
-  const pipeline = readJson(join(cwd, "mock_systems", "pipeline.json"), null);
-  const tables = Array.isArray(fixtures.tables) ? fixtures.tables : [];
-  console.log(JSON.stringify({
-    ok: true,
-    workspace: manifest.id || cwd,
-    capabilities: manifest.capabilities || [],
-    readiness: manifest.readiness || {},
-    nextAction: manifest.nextAction || (manifest.nextActions || [])[0] || null,
-    fixtures: {
-      tables: tables.length,
-      totalRows: tables.reduce((total, table) => total + Number(table.rowCount || table.rows || 0), 0),
-    },
-    pipeline: pipeline && pipeline.pipeline ? pipeline.pipeline : undefined,
-  }, null, 2));
-}
-
-function validate() {
-  const checks = [];
-  const has = (path, label) => {
-    const ok = existsSync(join(cwd, path));
-    checks.push({ id: label, ok, path });
-    return ok;
-  };
-  has("pyproject.toml", "pyproject");
-  has("app/agent.py", "agent");
-  has("app/tools.py", "tools");
-  has("fixtures/manifest.json", "fixtures");
-  has("tests", "tests");
-  let testExitCode = null;
-  if (existsSync(join(cwd, "pyproject.toml")) && existsSync(join(cwd, "tests"))) {
-    const env = { ...process.env, PYTHONPATH: [cwd, process.env.PYTHONPATH].filter(Boolean).join(":") };
-    const command = existsSync(join(cwd, ".venv")) ? ["uv", ["run", "pytest"]] : ["python3", ["-m", "pytest"]];
-    let result = spawnSync(command[0], command[1], { cwd, stdio: "inherit", env });
-    if ((result.error || result.status === 127) && command[0] !== "uv") {
-      result = spawnSync("uv", ["run", "pytest"], { cwd, stdio: "inherit", env });
-    }
-    testExitCode = result.status == null ? 1 : result.status;
-  }
-  const ok = checks.every((check) => check.ok) && (testExitCode == null || testExitCode === 0);
-  mkdirSync(join(cwd, "artifacts"), { recursive: true });
-  const report = { ok, checks, testExitCode, generatedAt: new Date().toISOString() };
-  writeJson(join(cwd, "artifacts", "validation-report.json"), report);
-  const pipelinePath = join(cwd, "mock_systems", "pipeline.json");
-  const pipeline = readJson(pipelinePath, { steps: {} });
-  pipeline.steps = pipeline.steps || {};
-  pipeline.steps.test = {
-    ...(pipeline.steps.test || {}),
-    status: ok ? "done" : "failed",
-    exitCode: testExitCode,
-    completedAt: report.generatedAt,
-  };
-  writeJson(pipelinePath, pipeline);
-  const manifestPath = join(cwd, "workspace.json");
-  const manifest = readJson(manifestPath, {});
-  if (manifest && Object.keys(manifest).length) {
-    manifest.readiness = manifest.readiness || {};
-    manifest.readiness.tests = {
-      status: ok ? "passing" : "failing",
-      lastExitCode: testExitCode,
-      output: "tests/test_smoke.py",
-    };
-    manifest.capabilities = Array.from(new Set([...(manifest.capabilities || []), ...(ok ? ["smoke_tests"] : [])]));
-    manifest.nextActions = ok ? ["preview"] : ["validate"];
-    manifest.nextAction = manifest.nextActions[0];
-    manifest.updatedAt = report.generatedAt;
-    writeJson(manifestPath, manifest);
-  }
-  console.log(JSON.stringify(report, null, 2));
-  process.exit(ok ? 0 : 1);
-}
-
-if (cmd === "validate") validate();
-else status();
-`;
-  for (const name of ["ge", "factory"]) {
-    const target = join(binDir, name);
-    writeFileSync(target, script, "utf8");
-    chmodSync(target, 0o755);
-  }
-  return binDir;
 }
 
 function ensureProjectInDb(pid) {
@@ -1125,55 +1028,7 @@ async function startAgentRun(payload, res = null, req = null) {
     skills: plan.skills.map((skill) => ({ id: skill.id, path: skill.relativePath, workspacePath: skill.workspaceRelativePath, capability: skill.capability })),
   };
 
-  const promptParts = [
-    "# Instructions",
-    renderSystemPrompt(),
-    "",
-    `Project: ${project.name} (${project.id})`,
-    `Workspace: ${cwd}`,
-    `Repository root: ${REPO_ROOT}`,
-  ];
-  if (agentRecord) {
-    promptParts.push(
-      "",
-      `# Active Agent`,
-      `Agent: ${agentRecord.name} (${agentRecord.id})`,
-      `Directory: ${run.agentDirName ? `${run.agentDirName}/` : "./ (workspace root)"}`,
-      `Stage: ${agentRecord.stage}`,
-      agentRecord.useCaseId ? `Use Case: ${agentRecord.useCaseId}` : "",
-      agentRecord.departmentId ? `Department: ${agentRecord.departmentId}` : "",
-      "",
-      `Write all generated files inside ${cwd}. This is the agent's isolated working directory.`,
-      "Workspace-local commands are on PATH: `ge validate`, `ge status`, `factory status`. Do not change directory to the repository root from this sandboxed run.",
-    );
-  } else {
-    promptParts.push("", "Write files for this task inside the workspace unless the user explicitly asks to change the harness repo itself.", "Workspace-local commands are on PATH: `ge validate`, `ge status`, `factory status`.");
-  }
-  if (payload.task && typeof payload.task === "object") {
-    promptParts.push(
-      "",
-      "# Assigned Task",
-      `Task ID: ${payload.task.id}`,
-      `Title: ${payload.task.title}`,
-      payload.task.goal ? `Goal: ${payload.task.goal}` : "",
-      payload.task.priority ? `Priority: ${payload.task.priority}` : "",
-      payload.task.description ? `Description:\n${payload.task.description}` : "",
-    );
-  }
-  promptParts.push(
-    "",
-    buildHandoffPacket({
-      receiver: plan.adapterId,
-      run,
-      project,
-      cwd,
-      repoRoot: REPO_ROOT,
-      userRequest: message,
-      task: payload.task,
-      plan,
-    }),
-  );
-  const prompt = promptParts.filter(Boolean).join("\n");
+  const prompt = buildRunPrompt({ project, cwd, repoRoot: REPO_ROOT, agentRecord, run, payload, message, plan });
   const def = await getAgentDef(plan.adapterId);
   const requestedSecrets = [
     ...(Array.isArray(payload.secretNames) ? payload.secretNames : []),
@@ -1186,109 +1041,26 @@ async function startAgentRun(payload, res = null, req = null) {
     return run;
   }
 
-  const args = def.buildArgs(prompt, { cwd, model: payload.model || "default", permissionProfile: plan.permissionProfile.id });
-  const child = spawn(def.resolvedBin, args, {
+  return spawnAndStreamAgentSubprocess({
+    def,
+    prompt,
     cwd,
-    env: buildWorkspaceEnv({
-      GE_HARNESS_DAEMON_URL: payload.daemonUrl || "",
-      GE_HARNESS_RUN_ID: run.id,
-      GE_HARNESS_PROJECT_ID: project.id,
-      GE_HARNESS_WORKSPACE: cwd,
-      GE_HARNESS_BIN: workspaceBin,
-      GE_HARNESS_REPO_ROOT: REPO_ROOT,
-      ...secretEnv,
-    }, cwd),
-    stdio: ["pipe", "pipe", "pipe"],
-  });
-  run.child = child;
-  emit(run, "plan", {
-    adapterId: plan.adapterId,
-    adapterName: plan.adapterName,
+    payload,
+    plan,
+    project,
+    run,
+    workspaceBin,
+    secretEnv,
+    repoRoot: REPO_ROOT,
     requestedAgentId,
-    fallbackFrom: plan.fallbackFrom,
-    selectionReason: plan.selectionReason,
-    permissionProfile: plan.permissionProfile.id,
-    requestedCapabilities: plan.requestedCapabilities,
-    skills: plan.skills.map((skill) => ({ id: skill.id, path: skill.relativePath, workspacePath: skill.workspaceRelativePath, capability: skill.capability })),
-    ownedPaths: plan.ownedPaths,
-    avoidPaths: plan.avoidPaths,
+    agentRecord,
+    heartbeatPolicy,
+    buildWorkspaceEnv,
+    emit,
+    finish,
+    terminateChild,
+    appendActivity,
   });
-  emit(run, "status", { label: "spawned", agentId: def.id, pid: child.pid });
-  appendActivity("run.started", {
-    projectId: project.id,
-    entityType: "run",
-    entityId: run.id,
-    payload: {
-      agentId: def.id,
-      requestedAgentId,
-      permissionProfile: plan.permissionProfile.id,
-      requestedCapabilities: plan.requestedCapabilities,
-      skills: plan.skills.map((skill) => ({ id: skill.id, path: skill.relativePath, workspacePath: skill.workspaceRelativePath, capability: skill.capability })),
-      fallbackFrom: plan.fallbackFrom,
-      selectedAgentId: agentRecord?.id || null,
-      taskId: payload.task?.id || payload.taskId || null,
-      wakeupReason: run.wakeupReason,
-      secretNames: Object.keys(secretEnv),
-    },
-  });
-
-  const timeoutSec = Number(payload.timeoutSec || heartbeatPolicy?.timeoutSec || 0);
-  const graceSec = Number(payload.graceSec ?? heartbeatPolicy?.graceSec ?? 10);
-  let forceTimer = null;
-  const timeoutTimer = timeoutSec > 0 ? setTimeout(() => {
-    emit(run, "error", { code: "RUN_TIMEOUT", message: `run exceeded ${timeoutSec}s timeout` });
-    terminateChild(child, "SIGTERM");
-    if (graceSec >= 0) {
-      forceTimer = setTimeout(() => terminateChild(child, "SIGKILL"), graceSec * 1000);
-      forceTimer.unref?.();
-    }
-  }, timeoutSec * 1000) : null;
-  timeoutTimer?.unref?.();
-
-  if (def.promptViaStdin) {
-    child.stdin.end(prompt);
-  }
-
-  const outputFormat = def.streamFormat === "json-lines" ? detectFormat(def.id) : "plain";
-  const parser = createOutputParser(outputFormat);
-
-  child.stdout.on("data", (chunk) => {
-    const events = parser.feed(chunk.toString("utf8"));
-    for (const ev of events) {
-      if (ev.kind === "text") emit(run, "agent", { type: "text_delta", delta: ev.text });
-      else if (ev.kind === "thinking") emit(run, "agent", { type: "thinking", delta: ev.text });
-      else if (ev.kind === "tool_use") emit(run, "agent", { type: "tool_use", eventType: "tool_call_made", name: ev.name, id: ev.id, raw: ev });
-      else if (ev.kind === "tool_result") emit(run, "agent", { type: "tool_result", eventType: "tool_call_result", toolUseId: ev.toolUseId, delta: ev.content, isError: ev.isError });
-      else if (ev.kind === "error") emit(run, "agent", { type: "stderr", delta: ev.text || "" });
-      else if (ev.kind === "status") emit(run, "status", { label: ev.label, runId: run.id });
-      else if (ev.kind === "usage") emit(run, "agent", { type: "usage", inputTokens: ev.inputTokens, outputTokens: ev.outputTokens, costUsd: ev.costUsd });
-      else if (ev.kind === "raw") emit(run, "agent", { type: "json_event", raw: ev.raw, delta: JSON.stringify(ev.raw) });
-    }
-  });
-  child.stderr.on("data", (chunk) => {
-    emit(run, "agent", { type: "stderr", delta: chunk.toString("utf8") });
-  });
-  child.on("error", (error) => {
-    if (timeoutTimer) clearTimeout(timeoutTimer);
-    if (forceTimer) clearTimeout(forceTimer);
-    emit(run, "error", { code: "SPAWN_FAILED", message: error.message });
-    finish(run, "failed", 1);
-  });
-  child.on("close", (code, signal) => {
-    if (timeoutTimer) clearTimeout(timeoutTimer);
-    if (forceTimer) clearTimeout(forceTimer);
-    for (const ev of parser.flush()) {
-      if (ev.kind === "text") emit(run, "agent", { type: "text_delta", delta: ev.text });
-      else emit(run, "agent", { type: "json_event", raw: ev.raw || ev, delta: ev.text || "" });
-    }
-    if (run.cancelRequested) {
-      finish(run, "canceled", code, signal || "SIGTERM");
-      return;
-    }
-    const timedOut = run.events.some((event) => event.event === "error" && event.data?.code === "RUN_TIMEOUT");
-    finish(run, timedOut ? "failed" : code === 0 ? "succeeded" : "failed", code, signal);
-  });
-  return run;
 }
 
 async function wakeProjectAgent(projectId, body = {}) {
