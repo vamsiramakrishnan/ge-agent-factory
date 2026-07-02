@@ -4,7 +4,15 @@
   "private": true,
   "type": "module",
   "description": "The agent-spec contract: zod schemas + inferred types for the use-case generation spec, behavior contract, and normalized registry entry, plus the shipped imperative validators (moved verbatim from apps/factory/src/agent-spec-registry.js — their { ok, maturity, gaps } output is a byte-stable downstream contract). Leaf package: no apps/* or tools/* imports.",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema.ts"
+  },
   "scripts": {
     "test": "bun test tests"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
   }
 }
