@@ -4,7 +4,13 @@ resource "google_cloud_tasks_queue" "factory_stages" {
 
   rate_limits {
     max_dispatches_per_second = 10
-    max_concurrent_dispatches = 100
+    # Mirrors the worker's real fleet-wide parallelism: cloud_run.tf caps the
+    # worker at max_instance_count = 10 × max_instance_request_concurrency = 1.
+    # Dispatching more than 10 concurrent tasks just piles requests onto a
+    # saturated service and burns attempts against retry_config.max_attempts.
+    # Scale-up path (raise BOTH together, it's a cost decision needing a live
+    # env): docs/plans/taste-campaign/09-cloud-factory.md §C7.
+    max_concurrent_dispatches = 10
   }
 
   # Retry backstop: even if the worker misclassifies a deterministic failure as
