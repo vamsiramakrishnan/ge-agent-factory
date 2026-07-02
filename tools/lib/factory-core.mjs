@@ -15,9 +15,9 @@ import { buildFactoryConfig, explainFactoryConfig } from "./config-schema.mjs";
 import { commandMeta, commandRequirements } from "./ge-command-registry.mjs";
 import { runDoctorSection } from "./factory-doctor.mjs";
 import { runCommand } from "./factory-exec.mjs";
-import { createDataPlane } from "./data-plane.mjs";
-import { createMcpPlane } from "./mcp-plane.mjs";
-import { createFactoryPlane, serviceUrl } from "./factory-plane.mjs";
+import { createDataPlane } from "./planes/data-plane.mjs";
+import { createMcpPlane } from "./planes/mcp-plane.mjs";
+import { createFactoryPlane, serviceUrl } from "./planes/factory-plane.mjs";
 import { STATE_PATHS, DEPARTMENTS } from "./state-paths.mjs";
 // Week-4: app-domain ops are imported via the two cycle-break boundary modules,
 // NOT directly from apps/factory — factory-core keeps zero app imports (enforced
@@ -25,7 +25,7 @@ import { STATE_PATHS, DEPARTMENTS } from "./state-paths.mjs";
 import { createGatewayClient, postJson } from "./gateway-client.mjs";
 import { createDoctorPlane } from "./doctor.mjs";
 import { createProvisionOps } from "./provision.mjs";
-import { selectionDepartments, toolPlaneChecks, shipProxyCheck, gatewayProvisionCheck, bigQueryApiCheck, selectWorkspacesForRegen } from "./tool-plane-checks.mjs";
+import { selectionDepartments, toolPlaneChecks, shipProxyCheck, gatewayProvisionCheck, bigQueryApiCheck, selectWorkspacesForRegen } from "./planes/tool-plane-checks.mjs";
 import {
   runLedger,
   ledgerWrite,
@@ -51,7 +51,7 @@ export {
   gatewayProvisionCheck,
   bigQueryApiCheck,
   selectWorkspacesForRegen,
-} from "./tool-plane-checks.mjs";
+} from "./planes/tool-plane-checks.mjs";
 export { HARNESS_VENV_DIR, harnessVenvPython } from "./doctor.mjs";
 export { runLedger, ledgerRuns, ledgerRun, ledgerFleet, ledgerPlan, ledgerBackfillFromDisk } from "./factory-ledger.mjs";
 export { mergeLedgerAndFileRuns, listFactoryRuns } from "./factory-runs.mjs";

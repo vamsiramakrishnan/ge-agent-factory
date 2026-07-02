@@ -1,9 +1,9 @@
 import { spawnSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { createCheckCollector } from "./factory-doctor.mjs";
-import { STATE_PATHS } from "./state-paths.mjs";
-import { assertRemoteAuthorized } from "./remote-guard.mjs";
+import { createCheckCollector } from "../factory-doctor.mjs";
+import { STATE_PATHS } from "../state-paths.mjs";
+import { assertRemoteAuthorized } from "../remote-guard.mjs";
 
 const noop = () => {};
 const DEFAULT_UV_CACHE_DIR = STATE_PATHS.cache.uv;

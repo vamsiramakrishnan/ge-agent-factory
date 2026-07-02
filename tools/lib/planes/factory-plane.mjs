@@ -1,6 +1,6 @@
 import { join } from "node:path";
-import { createCheckCollector } from "./factory-doctor.mjs";
-import { assertRemoteAuthorized } from "./remote-guard.mjs";
+import { createCheckCollector } from "../factory-doctor.mjs";
+import { assertRemoteAuthorized } from "../remote-guard.mjs";
 
 const noop = () => {};
 
