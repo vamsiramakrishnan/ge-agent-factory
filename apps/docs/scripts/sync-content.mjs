@@ -39,7 +39,12 @@ import {
 } from "node:fs";
 import { dirname, join, posix, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { convertCallouts, convertScopeStrip, wrapSteps } from "./lib/enrich.mjs";
+import {
+  convertCallouts,
+  convertIndexTables,
+  convertScopeStrip,
+  wrapSteps,
+} from "./lib/enrich.mjs";
 import { linkGlossaryTerms, parseGlossary } from "./lib/glossary.mjs";
 import {
   convertAutolinks,
@@ -262,13 +267,21 @@ function transform(srcRel, mapped) {
   text = rewriteLinks(text, srcRel);
   // Plain-markdown conventions → Starlight components (lib/enrich.mjs): the
   // cookbooks' `**Scope:** …` strip becomes a Badge, a `## Steps` ordered
-  // list becomes <Steps>. Both are added *here* so docs/ authors never write
+  // list becomes <Steps>, and a section index's link tables become a
+  // <CardGrid> of <LinkCard>s. All added *here* so docs/ authors never write
   // JSX; the import line for whatever was used is injected below.
   const scope = convertScopeStrip(text);
   text = scope.text;
   const steps = wrapSteps(text);
   text = steps.text;
-  const components = [scope.used && "Badge", steps.used && "Steps"].filter(Boolean);
+  const cards = isSectionIndex ? convertIndexTables(text) : { text, used: false };
+  text = cards.text;
+  const components = [
+    scope.used && "Badge",
+    steps.used && "Steps",
+    cards.used && "CardGrid",
+    cards.used && "LinkCard",
+  ].filter(Boolean);
   // MDX safety: the page is emitted as .mdx, but docs/ is plain CommonMark —
   // escape what MDX would read as JSX ({expr}, <placeholder>) and self-close
   // void tags. Code is sheltered; only prose is touched.
