@@ -221,19 +221,21 @@ The website renders code fences through Starlight's built-in Expressive Code
 the product palette). Use its features deliberately, not just a bare fence:
 
 - **Title a command block** with the working directory or a short label when
-  it isn't obvious from context: <code>&#96;&#96;&#96;bash title="from a clean checkout"</code>.
-  Skip the title when the page's prose already says where the command runs.
-- **Highlight the line that matters** in a long output block —
-  <code>&#96;&#96;&#96;text {3}</code> — instead of a prose pointer like "note the third
-  line." Prefer this over adding inline comments to captured output, which
-  would make it no longer a faithful capture.
-- **Diff marks** (<code>ins={n} del={n}</code>) for before/after snippets — a
-  contract field changing, a config gaining a key — over a hand-written
-  "before" and "after" pair of blocks.
+  it isn't obvious from context — a fenced block opened with
+  `` ```bash title="from a clean checkout" `` . Skip the title when the
+  page's prose already says where the command runs.
+- **Highlight the line that matters** in a long output block — a fenced
+  block opened with `` ```text {3} `` — instead of a prose pointer like
+  "note the third line." Prefer this over adding inline comments to
+  captured output, which would make it no longer a faithful capture.
+- **Diff marks** (`ins={n}` / `del={n}` on the fence's opening line) for
+  before/after snippets — a contract field changing, a config gaining a key
+  — over a hand-written "before" and "after" pair of blocks.
 - **Collapse** long captured output (a full build log, a long file tree)
-  with <code>collapse={8-40}</code> rather than truncating it — the guide
-  templates below require the *real* output, and collapsing keeps a 200-line
-  log from dominating the page while still being there to expand.
+  with `collapse={8-40}` on the fence's opening line rather than truncating
+  it — the guide templates below require the *real* output, and collapsing
+  keeps a 200-line log from dominating the page while still being there to
+  expand.
 - Every command block pairs with its real captured output block immediately
   after, per the "executed, not imagined" rule in the mission brief this
   system serves — a command with no output block, or output that doesn't
