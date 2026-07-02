@@ -56,12 +56,6 @@
       "notes": "Same spec-to-okf.mjs round-trip normalization discrepancy as above (same file, same underlying id-mangling behavior)."
     },
     {
-      "name": "skill registry maps harness capabilities to repository skills",
-      "kind": "env",
-      "addedAt": "2026-07-01",
-      "notes": "loadSkillRegistry() picks up extra skills installed under /root/.agents/skills (e.g. google-agents-cli-publish, google-agents-cli-observability) that aren't present in a clean checkout — an environment/machine-local skills directory leaking into the registry, not a code defect."
-    },
-    {
       "name": "synthesizeSystem returns a live system for an NL description (offline)",
       "kind": "env",
       "addedAt": "2026-07-01",
