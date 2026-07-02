@@ -40,11 +40,11 @@ GE Agent Factory exists to make the handoff explicit:
 
 | Problem | Factory answer |
 |---|---|
-| Use cases are ambiguous | Normalize the business request into a versioned spec and OKF bundle |
+| Use cases are ambiguous | Normalize the business request into a versioned spec and [OKF](./GLOSSARY.html#okf--knowledge-bundle) (Open Knowledge Format — the spec's portable Markdown form) bundle |
 | Agents are demos, not systems | Generate ADK code, tools, fixtures, evals, and deployment artifacts |
-| Data access is hand-wired | Use simulator packs locally and governed MCP/data planes in cloud |
-| Quality is manual | Gate every workspace with tests, evals, and harness review/refine |
-| Releases are not repeatable | Run a stage graph with a durable ledger and resumable cloud control plane |
+| Data access is hand-wired | Use simulator packs locally and governed MCP/data [planes](./GLOSSARY.html#planes) (the platform's infrastructure layers) in cloud |
+| Quality is manual | Gate every workspace with tests, evals, and [harness](./GLOSSARY.html#harness) (LLM spec-fidelity check) review/refine |
+| Releases are not repeatable | Run a stage graph with a durable [ledger](./GLOSSARY.html#ledger) (the event record every status view reads) and resumable cloud control plane |
 | Enterprise data needs boundaries | Deploy into your own single-tenant Google Cloud project |
 
 ## The factory path
@@ -107,6 +107,9 @@ Run `mise run help` for every target, or `mise run next` for a status-based reco
 | Deploy, operate, troubleshoot, and recover the factory | **[Operations](./OPERATIONS.html)** |
 | Expose the factory or generated agents through MCP | **[MCP](./MCP.html)** |
 | Add or edit a docs page or diagram | **[Docs design system](./DESIGN.html)** |
+
+Unfamiliar term? See the [Glossary](./GLOSSARY.html) — plain-language
+translations of the jargon (harness, OKF, canary, planes, missions, …).
 
 ## Read this first if you are new
 
