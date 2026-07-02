@@ -14,6 +14,7 @@ import { accessSync, constants, existsSync, mkdirSync, readdirSync, readFileSync
 import { join } from "node:path";
 import { homedir } from "node:os";
 import { readJson } from "@ge/std/json-io";
+import { resolveGcpProject } from "@ge/std/gcp-config";
 import { buildDoctorReport, createCheckCollector, runDoctorSection } from "./factory-doctor.mjs";
 import { STATE_PATHS, REPO_ROOT, displayStatePath } from "./state-paths.mjs";
 import { workspaceStoreItems, LOCAL_PROJECTS, LOCAL_PROJECT_STORE } from "./local-workspaces.mjs";
@@ -151,9 +152,9 @@ export function createDoctorPlane({ run, gcloud, ensureBin, binCheck, dataPlane,
     // GCP project: not required for local mode itself, but cloud-facing commands
     // (provision/up/data/mcp) and both apps' read paths need it. Falls back to
     // `gcloud config get-value project` / the ge config file when unset here, so
-    // this is a warn (not a fail) — mirrors resolveGcpProject's precedence in
-    // packages/std/src/gcp-config.mjs.
-    const envProject = process.env.GOOGLE_CLOUD_PROJECT || process.env.GCP_PROJECT_ID || process.env.GCLOUD_PROJECT;
+    // this is a warn (not a fail). Uses the canonical resolver (GCP_PROJECT_ID
+    // kept as a trailing fallback for `ge`'s own config var).
+    const envProject = resolveGcpProject({ fallbackEnvVars: ["GCP_PROJECT_ID"] });
     const gcloudProject = envProject ? null : gcloud(["config", "get-value", "project"], { allowFail: true });
     const resolvedProject = envProject || (gcloudProject?.ok ? gcloudProject.out : "");
     addStatus(

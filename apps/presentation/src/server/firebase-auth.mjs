@@ -1,4 +1,5 @@
 import { importX509, jwtVerify, decodeProtectedHeader } from "jose";
+import { resolveGcpProject } from "@ge/std/gcp-config";
 const CERTS_URL = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com";
 let cache = { expMs: 0, certs: {} };
 async function getCerts() {
@@ -13,7 +14,10 @@ async function getCerts() {
 export function firebaseAuthMode() {
   return String(process.env.GE_AUTH_MODE || "").toLowerCase() === "firebase";
 }
-function projectId() { return process.env.FIREBASE_PROJECT_ID || process.env.GOOGLE_CLOUD_PROJECT || ""; }
+// FIREBASE_PROJECT_ID intentionally checked first (the `explicit` slot), then
+// the canonical GOOGLE_CLOUD_PROJECT / GCLOUD_PROJECT precedence — mirrors
+// apps/console/src/server/firebase-auth.mjs.
+function projectId() { return resolveGcpProject({ explicit: process.env.FIREBASE_PROJECT_ID }) || ""; }
 export function bearerFrom(authHeader, url) {
   const m = /^Bearer\s+(.+)$/i.exec(authHeader || "");
   if (m) return m[1];
