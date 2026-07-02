@@ -2,7 +2,7 @@
 
 **Date:** 2026-06-01
 **Status:** Active design, partially implemented
-**Related:** `docs/superpowers/specs/2026-06-01-mcp-tool-plane-design.md`
+**Related:** `docs/design-specs/specs/2026-06-01-mcp-tool-plane-design.md`
 
 ## Purpose
 

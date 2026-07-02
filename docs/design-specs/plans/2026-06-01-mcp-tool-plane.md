@@ -8,7 +8,7 @@
 
 **Tech Stack:** Terraform (google/google-beta ~>6.0), Node ESM (citty CLI, factory-core), Python (ADK `MCPToolset`/`StreamableHTTPConnectionParams`, `fastmcp`), Cloud Run, Agent Registry (`gcloud alpha agent-registry`).
 
-**Spec:** `docs/superpowers/specs/2026-06-01-mcp-tool-plane-design.md`
+**Spec:** `docs/design-specs/specs/2026-06-01-mcp-tool-plane-design.md`
 
 **Environment note:** In the sandbox, `terraform`, `gcloud`, and a GCP-authenticated Python env are unavailable. Terraform tasks verify with HCL brace/reference checks; JS with `node --check` and `bun test`; Python with `python -m py_compile` and an offline fixtures smoke test. Live deploy/registration is run on the authed machine.
 
@@ -103,7 +103,7 @@ with:
 # MCP tool plane IAM. The runner + runtime SAs call 1P managed MCP servers
 # (roles/mcp.toolUser → mcp.tools.call) and register custom MCP servers in Agent
 # Registry (roles/agentregistry.editor). Per-product data roles are granted by
-# data_plane.tf. See docs/superpowers/specs/2026-06-01-mcp-tool-plane-design.md.
+# data_plane.tf. See docs/design-specs/specs/2026-06-01-mcp-tool-plane-design.md.
 
 locals {
   mcp_sas = [google_service_account.runner.email, google_service_account.gateway.email]
@@ -140,7 +140,7 @@ Grants the full runtime role set + `run.invoker` to the Agent Runtime agent-iden
 # role set granted to the runtime SA in data_plane.tf/mcp.tf, but target the SPIFFE
 # principalSet so every agent in the project carries them. SA remains the fallback
 # when identity_type is unset at deploy. See
-# docs/superpowers/specs/2026-06-01-mcp-tool-plane-design.md (Agent Identity).
+# docs/design-specs/specs/2026-06-01-mcp-tool-plane-design.md (Agent Identity).
 
 locals {
   agent_identity_trust_domain = var.agent_identity_org_id != "" ? "agents.global.org-${var.agent_identity_org_id}.system.id.goog" : "agents.global.project-${var.project_number}.system.id.goog"

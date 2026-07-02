@@ -8,7 +8,7 @@
 
 **Tech Stack:** React 19, Vite 6, Tailwind v4, motion, lucide-react (mirror `apps/presentation`). Bun runtime. `factory-core.mjs` over HTTP + SSE.
 
-**Spec:** `docs/superpowers/specs/2026-06-02-console-app-design.md`
+**Spec:** `docs/design-specs/specs/2026-06-02-console-app-design.md`
 
 **Environment note:** The UI builds, type-checks, and dev-runs in the sandbox. `factory-core` read ops shell out to `gcloud`/`terraform` (CAA-blocked / absent here) — endpoints return clean error JSON and the UI renders the empty/error states; live data is on an authed host. Verify backend logic with `node --check` + unit tests on the pure pieces (exec-stream splitter, event schema, handler routing).
 
