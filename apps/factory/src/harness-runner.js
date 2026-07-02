@@ -547,7 +547,7 @@ export async function runHarnessTask({
       recordRun(runsDir, { runId: run.id, agentId: plan.adapterId, stage: "run", status: code === 0 ? "done" : "failed" });
       Promise.resolve()
         .then(async () => {
-          const agentLog = existsSync(agentLogFilePath) ? await readFile(agentLogFilePath, "utf8").catch(() => "") : "";
+          const agentLog = existsSync(agentLogFilePath) ? await readFile(agentLogFilePath, "utf8").catch(() => "") : ""; // best-effort: summary excerpt only; log may vanish between the existsSync check and the read
           const summary = {
             schemaVersion: 1,
             runId: run.id,

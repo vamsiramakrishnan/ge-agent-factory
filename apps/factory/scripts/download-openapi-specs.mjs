@@ -312,7 +312,7 @@ async function downloadSource(source, { outDir, refresh, timeoutMs }) {
     return { systemId: source.systemId, status: baseMetadata.status, cached: false, docs: docsUrls(source), docsCached: docsOk(docs) };
   }
 
-  const prior = await readJson(metadataPath).catch(() => null);
+  const prior = await readJson(metadataPath).catch(() => null); // best-effort: missing/corrupt cache metadata just means re-download
   if (!refresh && prior?.cached && prior?.file) {
     if (docs && docs.ok) {
       await writeJson(metadataPath, { ...prior, fetchedAt: baseMetadata.fetchedAt, docsCache: docs });

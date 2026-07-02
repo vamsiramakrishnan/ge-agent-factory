@@ -101,7 +101,7 @@ async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
       ...(init?.headers || {}),
     },
   });
-  const data = await response.json().catch(() => ({}));
+  const data = await response.json().catch(() => ({})); // best-effort: non-JSON body falls back to the HTTP-status error below
   if (!response.ok) {
     throw new Error(data?.message || data?.error || `Factory request failed with HTTP ${response.status}`);
   }
