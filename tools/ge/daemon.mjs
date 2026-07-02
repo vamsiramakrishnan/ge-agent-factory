@@ -25,7 +25,7 @@ const GE_CLI_PATH = fileURLToPath(new URL("../ge.mjs", import.meta.url));
 
 const daemonStart = defineCommand({
   meta: { name: "start", description: "Start the local GE runtime daemon" },
-  args: { foreground: { type: "boolean" }, port: { type: "string" }, host: { type: "string" } },
+  args: { foreground: { type: "boolean", description: "Run the daemon in this process instead of detaching" }, port: { type: "string", description: "Daemon port (default 17654)" }, host: { type: "string", description: "Bind host (default 127.0.0.1)" } },
   run: guarded(async ({ args }) => {
     const port = Number(args.port || process.env.GE_DAEMON_PORT || daemonPaths().defaultPort);
     const host = args.host || process.env.GE_DAEMON_HOST || "127.0.0.1";
@@ -82,7 +82,7 @@ const daemonStart = defineCommand({
 
 const daemonStatus = defineCommand({
   meta: { name: "status", description: "Show local GE runtime daemon status" },
-  args: { json: { type: "boolean" }, port: { type: "string" } },
+  args: { json: { type: "boolean", description: "Machine-readable JSON result on stdout" }, port: { type: "string", description: "Daemon port (default 17654)" } },
   run: guarded(async ({ args }) => {
     const port = Number(args.port || process.env.GE_DAEMON_PORT || daemonPaths().defaultPort);
     const status = await daemonStatusSnapshot(port);
@@ -101,7 +101,7 @@ const daemonStatus = defineCommand({
 
 const daemonTasks = defineCommand({
   meta: { name: "tasks", description: "List recent local GE runtime daemon tasks" },
-  args: { json: { type: "boolean" }, port: { type: "string" }, limit: { type: "string" } },
+  args: { json: { type: "boolean", description: "Machine-readable JSON result on stdout" }, port: { type: "string", description: "Daemon port (default 17654)" }, limit: { type: "string", description: "Max tasks to list (default 20)" } },
   run: guarded(async ({ args }) => {
     const port = Number(args.port || process.env.GE_DAEMON_PORT || daemonPaths().defaultPort);
     const status = await daemonStatusSnapshot(port);
@@ -123,7 +123,7 @@ const daemonTasks = defineCommand({
 
 const daemonTask = defineCommand({
   meta: { name: "task", description: "Show one local GE runtime daemon task" },
-  args: { id: { type: "positional", required: true }, json: { type: "boolean" }, port: { type: "string" } },
+  args: { id: { type: "positional", required: true, description: "Runtime task id" }, json: { type: "boolean", description: "Machine-readable JSON result on stdout" }, port: { type: "string", description: "Daemon port (default 17654)" } },
   run: guarded(async ({ args }) => {
     const port = Number(args.port || process.env.GE_DAEMON_PORT || daemonPaths().defaultPort);
     const response = await fetch(`http://127.0.0.1:${port}/api/tasks/${encodeURIComponent(args.id)}`, {
@@ -149,7 +149,7 @@ const daemonTask = defineCommand({
 
 const runtimeResume = defineCommand({
   meta: { name: "resume", description: "Resume a runtime task using its deterministic resumePlan" },
-  args: { id: { type: "positional", required: true }, json: { type: "boolean" }, port: { type: "string" } },
+  args: { id: { type: "positional", required: true, description: "Runtime task id" }, json: { type: "boolean", description: "Machine-readable JSON result on stdout" }, port: { type: "string", description: "Daemon port (default 17654)" } },
   run: guarded(async ({ args }) => {
     const port = daemonPort(args);
     const daemon = await daemonStatusSnapshot(port);
@@ -167,7 +167,7 @@ const runtimeResume = defineCommand({
 
 const daemonEvents = defineCommand({
   meta: { name: "events", description: "Show or follow one local GE runtime task event stream" },
-  args: { id: { type: "positional", required: true }, json: { type: "boolean" }, port: { type: "string" }, follow: { type: "boolean" } },
+  args: { id: { type: "positional", required: true, description: "Runtime task id" }, json: { type: "boolean", description: "Machine-readable JSON result on stdout" }, port: { type: "string", description: "Daemon port (default 17654)" }, follow: { type: "boolean", description: "Follow the live event stream (SSE)" } },
   run: guarded(async ({ args }) => {
     const port = Number(args.port || process.env.GE_DAEMON_PORT || daemonPaths().defaultPort);
     if (args.follow) {
@@ -209,7 +209,7 @@ const daemonEvents = defineCommand({
 
 const runtimeStartAutopilot = defineCommand({
   meta: { name: "autopilot", description: "Start an Autopilot runtime task" },
-  args: { ids: { type: "string" }, stage: { type: "string" }, repair: { type: "boolean" }, attempts: { type: "string" }, runPreview: { type: "boolean" }, json: { type: "boolean" }, port: { type: "string" } },
+  args: { ids: { type: "string", description: "Comma-separated agent/workspace ids" }, stage: { type: "string", description: "Target convergence stage (default preview)" }, repair: { type: "boolean", description: "Run repair on blockers (default true; --no-repair to observe only)" }, attempts: { type: "string", description: "Repair attempts per item (default 3)" }, runPreview: { type: "boolean", description: "Run preview after repair when supported" }, json: { type: "boolean", description: "Machine-readable JSON result on stdout" }, port: { type: "string", description: "Daemon port (default 17654)" } },
   run: guarded(async ({ args }) => {
     const port = Number(args.port || process.env.GE_DAEMON_PORT || daemonPaths().defaultPort);
     const body = {
@@ -238,7 +238,7 @@ const runtimeStartAutopilot = defineCommand({
 
 const runtimeStartJob = defineCommand({
   meta: { name: "job", description: "Start a GE command runtime task; pass command args after --" },
-  args: { json: { type: "boolean" }, port: { type: "string" } },
+  args: { json: { type: "boolean", description: "Machine-readable JSON result on stdout" }, port: { type: "string", description: "Daemon port (default 17654)" } },
   run: guarded(async ({ args }) => {
     const separator = process.argv.indexOf("--");
     const argv = separator >= 0 ? process.argv.slice(separator + 1) : [];

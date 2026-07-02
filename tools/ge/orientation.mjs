@@ -74,7 +74,7 @@ export const doctor = defineCommand({
 
 export const up = defineCommand({
   meta: { name: "up", description: "Stand up the platform: infra + data + tool planes → unified doctor (--infra/--data/--mcp for one)" },
-  args: { ...common, infra: { type: "boolean" }, data: { type: "boolean" }, mcp: { type: "boolean" } },
+  args: { ...common, infra: { type: "boolean", description: "Stand up the infra plane only (combinable with --data/--mcp)" }, data: { type: "boolean", description: "Stand up the data plane only (combinable with --infra/--mcp)" }, mcp: { type: "boolean", description: "Stand up the tool (MCP) plane only (combinable with --infra/--data)" } },
   run: guarded(async ({ args }) => {
     const any = args.infra || args.data || args.mcp;
     const planes = any ? ["infra", "data", "mcp"].filter((p) => args[p]) : ["infra", "data", "mcp"];
@@ -88,7 +88,7 @@ export const up = defineCommand({
 
 const configExplain = defineCommand({
   meta: { name: "explain", description: "Show each config value and where it came from (flag · env · .ge.json · default)" },
-  args: { ...common, projectNumber: { type: "string" }, gatewayUrl: { type: "string" }, geApp: { type: "string" }, mode: { type: "string" }, agentsRepo: { type: "string" }, bucket: { type: "string" } },
+  args: { ...common, projectNumber: { type: "string", description: "GCP project number override" }, gatewayUrl: { type: "string", description: "Factory gateway URL override" }, geApp: { type: "string", description: "Gemini Enterprise app id override" }, mode: { type: "string", description: "Operating mode override (local|remote)" }, agentsRepo: { type: "string", description: "Generated-agents git repo override" }, bucket: { type: "string", description: "GCS bucket override" } },
   run: guarded(({ args }) => {
     const res = core.explainLoadedConfig({
       project: args.project, projectNumber: args.projectNumber, agentIdentityOrgId: args.agentIdentityOrgId, region: args.region,
