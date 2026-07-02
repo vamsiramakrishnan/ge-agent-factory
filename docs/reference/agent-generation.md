@@ -98,6 +98,10 @@ These three callbacks are the runtime enforcement of the
 
 ### Multi-agent topology
 
+<p align="center">
+  <img src="../assets/diagrams/workflow-spine.svg" alt="architecture.pipeline steps flow through matchPipelineSteps in agent-workflow.mjs — the one shared place — which both writes behaviorContract.workflow during spec generation and derives the multi-agent topology at build time" width="700">
+</p>
+
 When the spec's `behaviorContract.workflow` qualifies (≥2 tool-bearing stages over
 ≥2 distinct tools), `factory` emits a multi-agent topology instead of a single
 `Agent`:
@@ -116,6 +120,10 @@ reference sample).
 
 Tools are real `FunctionTool`s over the offline fixtures. The backend is selected
 by the **`GE_DATA_BACKEND`** env var:
+
+<p align="center">
+  <img src="../assets/diagrams/dual-backend.svg" alt="app/tools.py's source_adapters read local fixture files when GE_DATA_BACKEND=fixtures (the default for local and eval runs) or resolve MCP toolsets from the Agent Registry when GE_DATA_BACKEND=mcp, reaching the per-agent store through the MCP tool plane" width="700">
+</p>
 
 ```python
 from google.adk.tools import FunctionTool

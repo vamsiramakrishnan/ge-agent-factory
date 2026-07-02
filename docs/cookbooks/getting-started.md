@@ -7,6 +7,8 @@ layout: default
 
 # Getting started locally
 
+**Scope:** local-only — no cloud project or credentials required.
+
 ## Goal
 
 Understand the difference between **local** and **remote** mode, and see how
@@ -54,6 +56,10 @@ mise run console         # open the operator UI → http://localhost:18260
 
 3. **Understand which mode you're in.**
 
+   <p align="center">
+     <img src="../assets/diagrams/factory-line.svg" alt="The factory line's three phases: Author and Build, then Validate and Refine (ending at preview, the build boundary), then Release — only the Release phase touches your GCP project" width="700">
+   </p>
+
    ```bash
    ge mode
    ```
@@ -69,6 +75,11 @@ mise run console         # open the operator UI → http://localhost:18260
 
    `mise.toml` also exposes `mise run mode-local` and `mise run mode-remote` as
    thin wrappers.
+
+   > The mode defaults to `remote` when unset. If you're exploring on a fresh
+   > clone with no cloud project, run `ge mode local` first so nothing tries to
+   > reach Google Cloud.
+   {: .note }
 
 4. **(Optional) Build one agent locally to the preview boundary.**
 

@@ -7,12 +7,19 @@ layout: default
 
 # Generate an agent
 
+**Scope:** local-only — stops at the `previewed` build boundary; no cloud
+credentials touched.
+
 ## Goal
 
 Build one agent end-to-end from a spec, on your machine, and know exactly what
 lands on disk: the multi-agent [ADK](https://google.github.io/adk-docs/)
 (Google's Agent Development Kit) app, fixtures, the OKF knowledge bundle, and
 evals.
+
+<p align="center">
+  <img src="../assets/diagrams/canary-workspace.svg" alt="A spec goes through ge agents build --canary and produces a workspace containing app/agent.py (real ADK plus three callbacks), app/tools.py (dual fixtures/mcp backend), app/knowledge (OKF grounding bundle), and tests/eval plus fixtures" width="750">
+</p>
 
 ## Prerequisites
 
@@ -55,6 +62,10 @@ evals.
    CANARY=1 mise run provision-local   # ge agents build --local --canary
    CANARY=1 mise run provision         # ge agents build --canary  (active mode)
    ```
+
+   > Always canary first. `--canary` proves the whole pipeline on one agent in
+   > minutes; only reach for `--all` once the canary workspace verifies clean.
+   {: .tip }
 
 3. **Find the workspace.** Local builds report `Workspaces in <dir>`. The
    canonical location is:

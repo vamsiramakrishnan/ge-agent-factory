@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1394.6619999999998 150.7" width="1394.6619999999998" height="150.7" style="--bg:#ffffff;--fg:#202124;--line:#5f6368;--accent:#1a73e8;--muted:#80868b;--surface:#eef3f9;--border:#dadce0;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<polyline class="edge" data-from="G" data-to="M" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="262.75399999999996,75.35 310.75399999999996,75.35" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="M" data-to="F" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="500.16299999999995,75.35 548.163,75.35" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="F" data-to="E" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="766.471,75.35 814.471,75.35" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="E" data-to="R" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1062.4189999999999,75.35 1110.4189999999999,75.35" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<g class="node" data-id="G" data-label="spec
+behaviorContract.goldenEvals" data-shape="rectangle">
+  <rect x="40" y="48.45" width="222.75399999999996" height="53.800000000000004" rx="0" ry="0" fill="#e8f0fe" stroke="#1a73e8" stroke-width="0.75" />
+  <text x="151.37699999999998" y="75.35000000000001" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="151.37699999999998" dy="-3.9000000000000012">spec</tspan><tspan x="151.37699999999998" dy="16.900000000000002">behaviorContract.goldenEvals</tspan></text>
+</g>
+<g class="node" data-id="M" data-label="deriveTestMechanisms()
+same helper that emits
+OKF tests/&lt;id&gt;.md" data-shape="rectangle">
+  <rect x="310.75399999999996" y="40" width="189.40899999999996" height="70.7" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="405.45849999999996" y="75.35" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="405.45849999999996" dy="-12.350000000000001">deriveTestMechanisms()</tspan><tspan x="405.45849999999996" dy="16.900000000000002">same helper that emits</tspan><tspan x="405.45849999999996" dy="16.900000000000002">OKF tests/&lt;id&gt;.md</tspan></text>
+</g>
+<g class="node" data-id="F" data-label="keep only real generated tools
+list_systems, query_&lt;table&gt;,
+contract action tools" data-shape="rectangle">
+  <rect x="548.163" y="40" width="218.30799999999996" height="70.7" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="657.317" y="75.35" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="657.317" dy="-12.350000000000001">keep only real generated tools</tspan><tspan x="657.317" dy="16.900000000000002">list_systems, query_&lt;table&gt;,</tspan><tspan x="657.317" dy="16.900000000000002">contract action tools</tspan></text>
+</g>
+<g class="node" data-id="E" data-label="ge_behavior_contract.evalset.json
+one eval_case per golden eval,
+expected tool trajectory" data-shape="rectangle">
+  <rect x="814.471" y="40" width="247.94799999999992" height="70.7" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="938.4449999999999" y="75.35" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="938.4449999999999" dy="-12.350000000000001">ge_behavior_contract.evalset.json</tspan><tspan x="938.4449999999999" dy="16.900000000000002">one eval_case per golden eval,</tspan><tspan x="938.4449999999999" dy="16.900000000000002">expected tool trajectory</tspan></text>
+</g>
+<g class="node" data-id="R" data-label="agents-cli eval run --all
+--config tests/eval/eval_config.json" data-shape="stadium">
+  <rect x="1110.4189999999999" y="48.45" width="244.24299999999994" height="53.800000000000004" rx="26.900000000000002" ry="26.900000000000002" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <text x="1232.5404999999998" y="75.35000000000001" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="1232.5404999999998" dy="-3.9000000000000012">agents-cli eval run --all</tspan><tspan x="1232.5404999999998" dy="16.900000000000002">--config tests/eval/eval_config.json</tspan></text>
+</g>
+</svg>

@@ -15,6 +15,12 @@ sentence, and where you're likely to first bump into it.
 If a term you needed isn't here, it's probably still worth a doc PR — this
 list is deliberately focused, not exhaustive.
 
+## Table of contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
 ---
 
 ### Harness

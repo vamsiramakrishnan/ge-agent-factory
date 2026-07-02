@@ -7,11 +7,18 @@ layout: default
 
 # Run the factory
 
+**Scope:** local or remote — remote mode builds, deploys, and publishes in your
+Google Cloud project.
+
 ## Goal
 
 Run an agent build through the pipeline — local on your machine or remote in the
 cloud factory — watch it live in the console (Run Drawer / Activity), and resume a
 run that has blocked.
+
+<p align="center">
+  <img src="../assets/diagrams/factory-line.svg" alt="The factory line: Author and Build stages, then Validate and Refine ending at preview (the local build boundary), then the Release stages that touch your GCP project — the part only a remote run performs" width="700">
+</p>
 
 ## Prerequisites
 
@@ -30,6 +37,11 @@ run that has blocked.
    # or
    ge mode remote    # submit to the cloud factory (builds, deploys, publishes)
    ```
+
+   > Everything up to `preview` runs with no cloud credentials; every stage
+   > after it mutates your Google Cloud project. If you only want to validate
+   > generation, stay local.
+   {: .note }
 
 2. **Kick off a build.**
 

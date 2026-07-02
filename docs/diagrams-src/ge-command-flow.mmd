@@ -1,0 +1,16 @@
+flowchart TD
+    E["GE_COMMANDS entry\n{ path, cli, risk, requirements, argv }"] --> CLI["ge CLI\nsame argv, same core"]
+    E --> RT["console route\ncommandForRoute() → job sentinel"]
+    RT --> P{"preflight\ncommandDoctor(requirements)"}
+    P -->|fail| B["job blocked\nfailing checks listed,\nnothing spawned"]
+    P -->|pass| D["daemon run\nPOST /api/tasks →\nnode tools/ge.mjs argv"]
+    D -.->|daemon unreachable| F["local spawn fallback\n'Daemon unavailable' event"]
+    D --> S["SSE job stream\nGET /api/ge/jobs/:id/logs\n→ JobToast, risk-labeled"]
+    F --> S
+
+    classDef blocked fill:#fce8e6,stroke:#c5221f,color:#202124
+    classDef pass fill:#e6f4ea,stroke:#34a853,color:#202124
+    classDef entry fill:#e8f0fe,stroke:#1a73e8,color:#202124
+    class B blocked
+    class S pass
+    class E entry
