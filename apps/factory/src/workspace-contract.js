@@ -14,7 +14,7 @@ import {
   requiredGeneratedWorkspaceFiles,
   workspacePath as resolveWorkspacePath,
   workspacePaths as resolveWorkspacePaths,
-} from "../../../packages/agent-workspace/src/index.mjs";
+} from "@ge/agent-workspace";
 
 export {
   ARTIFACT_PATHS,
