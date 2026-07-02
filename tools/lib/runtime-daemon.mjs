@@ -267,8 +267,12 @@ export function startDaemonServer({ host = "127.0.0.1", port = DEFAULT_PORT, for
     if (foreground && !backgroundChild) console.log(line.trim());
   });
   const stop = () => {
-    try { server.close(); } catch {}
-    try { rmSync(PID_PATH, { force: true }); } catch {}
+    try { server.close(); } catch {} // already-closed server: expected on double shutdown
+    // force:true already tolerates a missing pidfile; a rejection here is a real
+    // fs error and leaves a stale pidfile behind, so make it visible.
+    try { rmSync(PID_PATH, { force: true }); } catch (error) {
+      console.warn(`ge daemon: could not remove pidfile ${PID_PATH} — ${error?.message || String(error)}`);
+    }
   };
   process.on("SIGINT", () => { stop(); process.exit(0); });
   process.on("SIGTERM", () => { stop(); process.exit(0); });

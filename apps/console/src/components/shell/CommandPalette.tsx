@@ -121,7 +121,10 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                 fleetCache.current = f.agents || [];
                 return f;
               }),
-          ge.runtimeTasks(25).catch(() => ({ tasks: [] as RuntimeTaskSummary[] })),
+          ge.runtimeTasks(25).catch((err) => {
+            console.warn("[console] command palette: runtime tasks unavailable:", err);
+            return { tasks: [] as RuntimeTaskSummary[] };
+          }),
         ]);
         if (cancelled) return;
         const fleetAgents = fleet.agents || [];
