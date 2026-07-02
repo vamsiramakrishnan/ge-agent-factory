@@ -7,3 +7,4 @@ export * from "./EmptyState";
 export * from "./Stat";
 export * from "./Field";
 export * from "./Segmented";
+export * from "./CommandChip";

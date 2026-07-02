@@ -4,13 +4,14 @@
 // of the suite — which sometimes branches on `typeof window` — is untouched.
 import { unregisterDom } from "./test-setup";
 import { afterAll, afterEach, describe, expect, test } from "bun:test";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { Inbox } from "lucide-react";
 import { Button, ButtonLink, buttonClass } from "./Button";
 import { EmptyState } from "./EmptyState";
 import { Stat } from "./Stat";
 import { Field, Select, CONTROL_CLASS } from "./Field";
 import { Segmented } from "./Segmented";
+import { CommandChip } from "./CommandChip";
 import { cx } from "./cx";
 
 afterEach(cleanup);
@@ -97,6 +98,24 @@ describe("Field/Select", () => {
     const select = getByLabelText("Target") as HTMLSelectElement;
     expect(select.tagName).toBe("SELECT");
     expect(select.className).toContain(CONTROL_CLASS.split(" ")[0]);
+  });
+});
+
+describe("CommandChip", () => {
+  test("renders the command text with the $ prefix", () => {
+    const { getByText } = render(<CommandChip command="ge mcp deploy" />);
+    expect(getByText("ge mcp deploy")).toBeDefined();
+    expect(getByText("$")).toBeDefined();
+  });
+
+  test("exposes a copy button that survives a click", async () => {
+    // Don't assert on the clipboard itself — happy-dom may not provide one;
+    // the component's try/catch makes the click a no-op in that case. The
+    // async act() flushes the post-await state update either way.
+    const { getByRole } = render(<CommandChip command="ge up --data" />);
+    const button = getByRole("button", { name: "Copy command" });
+    await act(async () => { fireEvent.click(button); });
+    expect(getByRole("button", { name: "Copy command" })).toBeDefined();
   });
 });
 

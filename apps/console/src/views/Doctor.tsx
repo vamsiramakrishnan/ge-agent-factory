@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Button, Segmented, Select } from "@ge/ui";
+import { Button, CommandChip, Segmented, Select } from "@ge/ui";
 import { streamDoctor, startJob, type StatusBoard, type DoctorReport as DoctorReportData, type DoctorEvent } from "../services/geClient";
 import { DoctorReport } from "../components/DoctorReport";
 import { RuntimeStatusCard } from "../components/RuntimeStatusBadge";
@@ -168,10 +168,6 @@ export default function Doctor({ status }: DoctorProps) {
     if (recommended) void runFix(recommended, followRun);
   };
 
-  const handleCopyRecommended = async () => {
-    if (recommended) { try { await navigator.clipboard.writeText(recommended); } catch { /* ignore */ } }
-  };
-
   const handleFixAll = async () => {
     setFixingAll(true);
     try {
@@ -258,19 +254,12 @@ export default function Doctor({ status }: DoctorProps) {
           </div>
           {!loading && (counts.fail > 0 || counts.warn > 0) && recommended && (
             <div className="flex flex-wrap items-center gap-2">
-              {resolveFix(recommended) ? (
+              {resolveFix(recommended) && (
                 <Button variant="primary" size="sm" onClick={handleRunRecommended}>
                   Run <code className="font-mono">{resolveFix(recommended)!.label}</code>
                 </Button>
-              ) : (
-                <span className="rounded-lg bg-surface-container-low px-3 py-2 text-xs font-mono text-on-surface">{recommended}</span>
               )}
-              <button
-                onClick={handleCopyRecommended}
-                className="rounded-lg px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
-              >
-                Copy
-              </button>
+              <CommandChip command={recommended} />
               {runnableRepairs.length >= 2 && (
                 <button
                   onClick={handleFixAll}

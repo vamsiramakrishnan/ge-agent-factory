@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button, ButtonLink, EmptyState } from "@ge/ui";
+import { Button, ButtonLink, CommandChip, EmptyState } from "@ge/ui";
 import { useGeQuery } from "../lib/query";
 import { ge, startJob, type StatusBoard, type Fleet, type RuntimeTaskSummary, type ReconcilePlan } from "../services/geClient";
 import { PlaneCard } from "../components/PlaneCard";
@@ -440,8 +440,9 @@ export default function Overview({ status, refresh }: OverviewProps) {
           })}
         </div>
         {mode === "remote" && !toolPlaneReady && (
-          <div className="mt-4 rounded border border-amber-400/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-700">
-            Tool plane not deployed — remote agents will have no tools. Fix from local: <code className="font-mono">ge mcp deploy</code>
+          <div className="mt-4 flex flex-wrap items-center gap-2 rounded border border-amber-400/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-700">
+            <span>Tool plane not deployed — remote agents will have no tools. Fix from local:</span>
+            <CommandChip command="ge mcp deploy" />
           </div>
         )}
       </div>
@@ -459,16 +460,18 @@ export default function Overview({ status, refresh }: OverviewProps) {
             </p>
           ) : (
             <>
-              <p className="text-xs text-secondary mb-3">
-                {reconcile.steps.length} step{reconcile.steps.length === 1 ? "" : "s"} to reach desired state. Run <code className="font-mono">ge apply --yes</code> to execute in order.
-              </p>
+              <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-secondary">
+                <span>{reconcile.steps.length} step{reconcile.steps.length === 1 ? "" : "s"} to reach desired state. Run</span>
+                <CommandChip command="ge apply --yes" />
+                <span>to execute in order.</span>
+              </div>
               <div className="space-y-1.5">
                 {reconcile.steps.map((step) => (
                   <div key={step.id} className="flex items-start gap-2 rounded border border-outline-variant/30 bg-surface px-3 py-2">
                     <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide bg-on-surface/[0.05] text-secondary">{step.kind}</span>
                     <div className="min-w-0">
-                      <code className="text-xs font-mono text-primary break-all">{step.command}</code>
-                      <div className="text-[11px] text-secondary">{step.reason}</div>
+                      <CommandChip command={step.command} />
+                      <div className="mt-1 text-[11px] text-secondary">{step.reason}</div>
                     </div>
                   </div>
                 ))}

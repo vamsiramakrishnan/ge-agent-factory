@@ -1,4 +1,5 @@
 import { FileText, MessageSquareText, Radio } from "lucide-react";
+import { CommandChip } from "@ge/ui";
 import { StatusPill } from "../StatusPill";
 import type { JourneyStage, RuntimeTaskSummary } from "../../services/geClient";
 
@@ -13,9 +14,11 @@ export function NextActionPanel({ next }: { next: JourneyStage }) {
       <p className="mt-1 text-xs leading-5 text-secondary">
         {next.blocker?.message || next.actionPlan?.label || "Continue the next incomplete stage."}
       </p>
-      {next.actionPlan?.commands?.[0] && (
-        <div className="mt-3 rounded-md bg-surface px-3 py-2 font-mono text-[11px] text-secondary">
-          {next.actionPlan.commands[0]}
+      {!!next.actionPlan?.commands?.length && (
+        <div className="mt-3 flex flex-col items-start gap-1.5">
+          {next.actionPlan.commands.map((command) => (
+            <CommandChip key={command} command={command} />
+          ))}
         </div>
       )}
     </div>

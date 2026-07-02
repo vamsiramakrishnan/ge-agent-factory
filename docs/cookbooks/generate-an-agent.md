@@ -87,6 +87,7 @@ Inside a generated workspace (the multi-agent ADK app):
 ```bash
 ge agents status            # shows the run and its stages
 ge agents status --watch    # loops every 15s until runs are terminal
+ge runs events <runId> --follow   # stream one run's events live
 ls .ge/factory/workspaces   # the workspace directory exists
 ```
 

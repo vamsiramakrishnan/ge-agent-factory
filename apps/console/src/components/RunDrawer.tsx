@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Copy, ExternalLink, Loader2, Pin, PinOff, Wifi, X } from "lucide-react";
-import { ge } from "../services/geClient";
+import { Copy, ExternalLink, Loader2, Pause, Pin, PinOff, Play, Wifi, X } from "lucide-react";
+import { ge, type LedgerEvent } from "../services/geClient";
 import { useRunStream, type RunStageView } from "../hooks/useRunStream";
+import { useRunScrubber } from "../hooks/useRunScrubber";
 import { useRunFollow } from "../state/runFollow";
 import { StatusChip, statusStyle, type RunStatus } from "../lib/runStatus";
 
@@ -12,6 +13,31 @@ export function RunDrawer() {
   const stream = useRunStream(open ? runId : null);
   const panelRef = useRef<HTMLDivElement>(null);
   const completeFired = useRef(false);
+
+  // Replay: once the run is terminal its event list is complete, and any
+  // position in the run is a pure fold over a prefix (useRunScrubber). scrub
+  // is the event position being viewed; null = live/latest.
+  const [scrub, setScrub] = useState<number | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const scrubView = useRunScrubber(stream.events, scrub);
+  useEffect(() => {
+    setScrub(null);
+    setPlaying(false);
+  }, [runId]);
+  useEffect(() => {
+    if (!playing) return;
+    const timer = window.setInterval(() => {
+      setScrub((position) => {
+        const next = (position ?? 0) + 1;
+        if (next >= stream.events.length) {
+          setPlaying(false);
+          return null; // reached the end: hand back to the live/latest view
+        }
+        return next;
+      });
+    }, 90);
+    return () => window.clearInterval(timer);
+  }, [playing, stream.events.length]);
 
   // Reset the fire-once guard whenever we start following a different run.
   // Keying the reset on runId (not on inferring a transient complete=false
@@ -51,20 +77,40 @@ export function RunDrawer() {
       aria-label="Live run"
       className="fixed right-0 top-0 z-40 flex h-screen w-[420px] max-w-[calc(100vw-1rem)] flex-col border-l border-outline-variant/40 bg-surface shadow-ambient-lg outline-none transition-transform duration-200 motion-reduce:transition-none"
     >
-      <Header runId={runId} meta={meta} status={stream.status} reconnecting={stream.reconnecting} pinned={pinned} onPin={pin} onUnpin={unpin} onClose={unfollow} />
+      <Header runId={runId} meta={meta} status={scrubView ? scrubView.status : stream.status} reconnecting={stream.reconnecting} pinned={pinned} onPin={pin} onUnpin={unpin} onClose={unfollow} />
 
       <div className="flex-1 overflow-y-auto px-4 py-4" aria-live="polite">
         {!stream.hasEvents ? (
           <WaitingState />
         ) : (
-          <StageTimeline stages={stream.stages} activeStage={stream.activeStage} logTail={stream.logTail} />
+          <StageTimeline
+            stages={scrubView ? scrubView.stages : stream.stages}
+            activeStage={scrubView ? null : stream.activeStage}
+            logTail={scrubView ? [] : stream.logTail}
+          />
         )}
-        {blocked && stream.blockedReason && (
+        {scrubView?.lastEvent && (
+          <div className="mt-3 truncate font-mono text-[10px] text-secondary" title={describeEvent(scrubView.lastEvent)}>
+            {describeEvent(scrubView.lastEvent)}
+          </div>
+        )}
+        {!scrubView && blocked && stream.blockedReason && (
           <div className="mt-4 rounded-md border border-amber-400/25 bg-amber-500/10 px-3 py-2 text-xs leading-5 text-amber-800">
             {stream.blockedReason}
           </div>
         )}
       </div>
+
+      {stream.complete && stream.events.length > 1 && (
+        <ReplayControls
+          total={stream.events.length}
+          position={scrub}
+          playing={playing}
+          onSeek={(next) => { setPlaying(false); setScrub(next >= stream.events.length ? null : next); }}
+          onPlay={() => { setScrub((position) => (position == null || position >= stream.events.length ? 0 : position)); setPlaying(true); }}
+          onPause={() => setPlaying(false)}
+        />
+      )}
 
       <Footer runId={runId} blocked={blocked} blockedReason={stream.blockedReason} onClose={unfollow} />
     </aside>
@@ -261,4 +307,51 @@ function formatElapsed(ms: number) {
   const mins = Math.floor(total / 60);
   const secs = total % 60;
   return `${mins}:${String(secs).padStart(2, "0")}`;
+}
+
+function describeEvent(ev: LedgerEvent): string {
+  const stage = ev.stage ? `[${ev.stage}] ` : "";
+  return `${stage}${String(ev.type).replace(/_/g, " ")}${ev.error ? ` — ${ev.error}` : ""}`;
+}
+
+// Replay scrubber for a terminal run: play/pause + a position slider over the
+// recorded event stream. Position N renders the run as it looked after event
+// N (a pure reducer fold); the far right is the live/latest view.
+function ReplayControls({
+  total, position, playing, onSeek, onPlay, onPause,
+}: {
+  total: number;
+  position: number | null;
+  playing: boolean;
+  onSeek: (position: number) => void;
+  onPlay: () => void;
+  onPause: () => void;
+}) {
+  const value = position ?? total;
+  return (
+    <div className="border-t border-outline-variant/30 px-4 py-2.5">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={playing ? onPause : onPlay}
+          className="rounded-md p-1.5 text-primary transition-colors hover:bg-primary/10"
+          title={playing ? "Pause replay" : "Replay this run"}
+          aria-label={playing ? "Pause replay" : "Replay this run"}
+        >
+          {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+        </button>
+        <input
+          type="range"
+          min={0}
+          max={total}
+          value={value}
+          onChange={(event) => onSeek(Number(event.target.value))}
+          className="w-full accent-primary"
+          aria-label="Replay position"
+        />
+        <span className="w-16 shrink-0 text-right font-mono text-[10px] text-secondary tabular-nums">
+          {position == null ? "latest" : `${value}/${total}`}
+        </span>
+      </div>
+    </div>
+  );
 }
