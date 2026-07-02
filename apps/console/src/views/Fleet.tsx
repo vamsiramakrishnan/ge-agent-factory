@@ -289,7 +289,7 @@ export default function Fleet({ status, refresh }: FleetProps) {
           </button>
         </div>
         <p className="text-sm text-secondary mb-2">
-          The persistent roster of every agent. To take a spec through the build &amp; deploy flow, use the <a href="#/journey" className="text-primary hover:underline">Pipeline</a>.
+          The persistent roster of every agent. To take a spec through the build &amp; deploy flow, use the <a href="#/pipeline" className="text-primary hover:underline">Pipeline</a>.
         </p>
 
         <div className="flex items-center gap-4 text-sm">

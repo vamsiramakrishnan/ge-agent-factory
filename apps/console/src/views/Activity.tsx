@@ -363,7 +363,7 @@ export default function Activity() {
         ) : unifiedRows.length === 0 ? (
           <div className="editorial-micro-card rounded-lg p-5 text-sm text-secondary">
             No runs recorded yet.{" "}
-            <a href="#/journey" className="font-medium text-primary hover:underline">Open the Pipeline</a>{" "}
+            <a href="#/pipeline" className="font-medium text-primary hover:underline">Open the Pipeline</a>{" "}
             to build an agent or start a mission — it'll show up here.
           </div>
         ) : filteredRows.length === 0 ? (
@@ -410,7 +410,7 @@ export default function Activity() {
         <div className="editorial-micro-card rounded-lg p-12 text-center">
           <div className="text-secondary mb-2">No active runs yet</div>
           <div className="text-sm text-secondary">
-            <a href="#/journey" className="font-medium text-primary hover:underline">Start a run from the Pipeline</a>{" "}
+            <a href="#/pipeline" className="font-medium text-primary hover:underline">Start a run from the Pipeline</a>{" "}
             or build an agent from the{" "}
             <a href="#/fleet" className="font-medium text-primary hover:underline">Fleet</a> to get started.
           </div>

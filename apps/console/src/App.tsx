@@ -16,9 +16,9 @@ const Fleet = lazy(() => import("./views/Fleet"));
 const Doctor = lazy(() => import("./views/Doctor"));
 const Activity = lazy(() => import("./views/Activity"));
 const AgentDetail = lazy(() => import("./views/AgentDetail"));
-const Autopilot = lazy(() => import("./views/Autopilot"));
+const RepairQueue = lazy(() => import("./views/RepairQueue"));
 const Interview = lazy(() => import("./views/Interview"));
-const Journey = lazy(() => import("./views/Journey"));
+const Pipeline = lazy(() => import("./views/Pipeline"));
 const SpecReview = lazy(() => import("./views/SpecReview"));
 
 function ViewFallback() {
@@ -29,17 +29,21 @@ function ViewFallback() {
   );
 }
 
-type Route = "overview" | "journey" | "interview" | "spec-review" | "fleet" | "autopilot" | "doctor" | "activity" | "agent";
+type Route = "overview" | "pipeline" | "interview" | "spec-review" | "fleet" | "repair" | "doctor" | "activity" | "agent";
 
 interface ParsedRoute {
   route: Route;
   params: Record<string, string>;
 }
 
+// Pre-consolidation hashes keep working: old bookmarks and deep links land on
+// the canonical route (journey → pipeline, autopilot → repair).
+const LEGACY_ROUTES: Record<string, Route> = { journey: "pipeline", autopilot: "repair" };
+
 function parseHash(hash: string): ParsedRoute {
   // Strip "#/" and any "?query" — filters live in the query (see useUrlState) and
   // must not affect route matching.
-  const path = hash.slice(2).split("?")[0] || "journey";
+  const path = hash.slice(2).split("?")[0] || "pipeline";
   if (path.startsWith("agent/")) {
     const id = path.slice(6);
     return { route: "agent", params: { id } };
@@ -48,7 +52,7 @@ function parseHash(hash: string): ParsedRoute {
     const usecaseId = decodeURIComponent(path.slice("spec-review/".length));
     return { route: "spec-review", params: { usecaseId } };
   }
-  return { route: path as Route, params: {} };
+  return { route: LEGACY_ROUTES[path] ?? (path as Route), params: {} };
 }
 
 export default function App() {
@@ -103,11 +107,11 @@ export default function App() {
 
     switch (route) {
       case "overview": return <Overview {...viewProps} />;
-      case "journey": return <Journey {...viewProps} />;
+      case "pipeline": return <Pipeline {...viewProps} />;
       case "interview": return <Interview status={status} />;
       case "spec-review": return <SpecReview usecaseId={params.usecaseId} />;
       case "fleet": return <Fleet {...viewProps} />;
-      case "autopilot": return <Autopilot {...viewProps} />;
+      case "repair": return <RepairQueue {...viewProps} />;
       case "doctor": return <Doctor {...viewProps} />;
       case "activity": return <Activity />;
       case "agent": return <AgentDetail id={params.id} {...viewProps} />;

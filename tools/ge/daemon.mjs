@@ -19,6 +19,7 @@ import {
   guarded, emit, out, pc, core,
   readPidFile, processAlive, processLooksLikeDaemon, daemonStatusSnapshot,
   renderResumePlan, daemonPort, daemonRequest, statusText, followTaskEvents,
+  displayTaskKind, deprecatedAlias,
 } from "./shared.mjs";
 
 const GE_CLI_PATH = fileURLToPath(new URL("../ge.mjs", import.meta.url));
@@ -115,7 +116,7 @@ const daemonTasks = defineCommand({
       }
       for (const task of tasks.slice(0, Math.max(1, Math.min(Number(args.limit) || 20, 200)))) {
         const statusText = task.status === "done" ? pc.green(task.status) : task.status === "running" ? pc.cyan(task.status) : pc.yellow(task.status);
-        out(`  ${statusText.padEnd(14)} ${String(task.kind || "task").padEnd(12)} ${task.id} ${pc.dim(task.updatedAt || task.createdAt || "")}`);
+        out(`  ${statusText.padEnd(14)} ${String(displayTaskKind(task.kind) || "task").padEnd(14)} ${task.id} ${pc.dim(task.updatedAt || task.createdAt || "")}`);
       }
     });
   }),
@@ -133,13 +134,13 @@ const daemonTask = defineCommand({
     const task = await response.json();
     emit(args, task, (t) => {
       out(pc.bold(`\nGE Runtime Task ${t.id}`));
-      out(`  kind      ${pc.cyan(t.kind || "task")}`);
+      out(`  kind      ${pc.cyan(displayTaskKind(t.kind) || "task")}`);
       out(`  status    ${t.status === "done" ? pc.green(t.status) : t.status === "running" ? pc.cyan(t.status) : pc.yellow(t.status)}`);
       out(`  created   ${pc.dim(t.createdAt || "")}`);
       out(`  updated   ${pc.dim(t.updatedAt || "")}`);
       if (t.output?.run) {
         const r = t.output.run;
-        out(`  autopilot ${r.passed || 0} passed · ${r.repaired || 0} repaired · ${r.blocked || 0} blocked · ${r.total || 0} total`);
+        out(`  repair    ${r.passed || 0} passed · ${r.repaired || 0} repaired · ${r.blocked || 0} blocked · ${r.total || 0} total`);
       }
       renderResumePlan(t.summary?.resumePlan);
       if (t.error) out(`  error     ${pc.red(t.error)}`);
@@ -160,7 +161,7 @@ const runtimeResume = defineCommand({
       out(`  kind      ${pc.cyan(t.kind || "task")}`);
       out(`  status    ${statusText(t.status)}`);
       renderResumePlan(t.summary?.resumePlan);
-      out(pc.dim(`\n  events: ge runtime events ${t.id} --follow`));
+      out(pc.dim(`\n  events: ge runs events ${t.id} --follow`));
     });
   }),
 });
@@ -213,7 +214,7 @@ const runtimeStartAutopilot = defineCommand({
     const task = await response.json();
     emit(args, task, (t) => {
       out(pc.green(`✓ started autopilot task ${t.id}`));
-      out(pc.dim(`  next: ge runtime events ${t.id} --follow`));
+      out(pc.dim(`  next: ge runs events ${t.id} --follow`));
     });
   }),
 });
@@ -237,15 +238,27 @@ const runtimeStartJob = defineCommand({
     const task = await response.json();
     emit(args, task, (t) => {
       out(pc.green(`✓ started job task ${t.id}`));
-      out(pc.dim(`  next: ge runtime events ${t.id} --follow`));
+      out(pc.dim(`  next: ge runs events ${t.id} --follow`));
     });
   }),
 });
 
 const runtimeStart = defineCommand({
-  meta: { name: "start", description: "Start runtime tasks: autopilot · job" },
-  subCommands: { autopilot: runtimeStartAutopilot, job: runtimeStartJob },
+  meta: { name: "start", description: "Start runtime tasks: repair (canonical) · autopilot (deprecated) · job" },
+  // `autopilot` stays for compatibility; `repair` is the same command under
+  // the canonical noun (blocker convergence = a fleet repair run).
+  subCommands: { autopilot: runtimeStartAutopilot, repair: runtimeStartAutopilot, job: runtimeStartJob },
 });
+
+// Leaf commands re-used by the canonical `ge runs` group (tools/ge/runs.mjs).
+export const runtimeLeaves = {
+  tasks: daemonTasks,
+  task: daemonTask,
+  events: daemonEvents,
+  resume: runtimeResume,
+  status: daemonStatus,
+  startJob: runtimeStartJob,
+};
 
 const daemonStop = defineCommand({
   meta: { name: "stop", description: "Stop the local GE runtime daemon" },
@@ -279,6 +292,6 @@ export const daemon = defineCommand({
 });
 
 export const runtime = defineCommand({
-  meta: { name: "runtime", description: "Unified runtime activity: status · tasks · task · events · resume · start" },
+  meta: { name: "runtime", description: "(deprecated → ge runs · ge fleet repair) runtime task plumbing: status · tasks · task · events · resume · start" },
   subCommands: { status: daemonStatus, tasks: daemonTasks, task: daemonTask, events: daemonEvents, resume: runtimeResume, start: runtimeStart },
 });

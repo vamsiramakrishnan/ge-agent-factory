@@ -33,7 +33,7 @@ export function GetStartedCard({ hasAgents, hasRuns, hasDeployed, mode, onDismis
         ? "Pick a registered spec (or interview a new one) — the cloud factory builds it for you."
         : "Pick a registered spec (or interview a new one) — it builds on this machine, no cloud credentials needed.",
       done: hasAgents || hasRuns,
-      cta: { label: "Open Pipeline", hash: "#/journey" },
+      cta: { label: "Open Pipeline", hash: "#/pipeline" },
       Icon: MessageSquareText,
     },
     {

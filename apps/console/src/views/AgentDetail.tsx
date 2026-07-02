@@ -191,7 +191,7 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
         return;
       }
 
-      if (plan.kind === "run_mission" || plan.kind === "run_preview" || command.startsWith("ge mission run")) {
+      if (plan.kind === "run_mission" || plan.kind === "run_preview" || command.startsWith("ge pipeline run") || command.startsWith("ge mission run")) {
         await ge.missionRun({
           scenario: agent.id,
           ids: [agent.id],
@@ -360,7 +360,7 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
               type="button"
               onClick={() => {
                 window.localStorage.setItem("ge.pipeline.selectedSpecId", agent.id);
-                location.hash = "#/journey";
+                location.hash = "#/pipeline";
               }}
               className="inline-flex items-center gap-2 rounded-md border border-outline/30 px-3 py-2 text-sm font-medium text-on-surface transition-colors hover:bg-surface-container"
             >
@@ -770,7 +770,7 @@ function fallbackStages(agent: FleetAgent, actionPlan: FleetActionPlan | null): 
     { id: "simulator", label: "Simulator", owner: "runtime" },
     { id: "build", label: "Agent Build", owner: "factory" },
     { id: "eval", label: "Eval", owner: "antigravity" },
-    { id: "preview", label: "Preview", owner: "autopilot" },
+    { id: "preview", label: "Preview", owner: "repair" },
     { id: "deploy", label: "Deploy", owner: "factory" },
   ];
   const stageId = agent.stage || "spec";

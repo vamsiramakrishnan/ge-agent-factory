@@ -17,6 +17,7 @@ import type {
   JourneyPlan,
   JourneyStage,
   MissionArtifactRef,
+  RiskLevel,
 } from "@ge/contracts";
 export type {
   Fleet,
@@ -294,7 +295,10 @@ export interface GeCommand {
   cli: string;
   label: string;
   summary: string;
-  risk: "mutates-cloud" | "starts-workloads" | "starts-local-workloads" | "writes-repo" | "read-only" | string;
+  // Typed from @ge/contracts (parity with the registry is enforced by
+  // tools/contracts-registry-parity.test.mjs); `string & {}` keeps unknown
+  // future risks assignable without erasing autocompletion.
+  risk: RiskLevel | (string & {});
   expectedDuration: string;
   requirements?: {
     bins?: string[];

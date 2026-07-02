@@ -210,7 +210,7 @@ export default function Interview({ status }: { status?: StatusBoard | null }) {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <a href="#/journey" className="inline-flex items-center gap-2 rounded-md border border-outline-variant/50 px-3 py-1.5 text-xs font-medium text-secondary hover:bg-surface-container">
+          <a href="#/pipeline" className="inline-flex items-center gap-2 rounded-md border border-outline-variant/50 px-3 py-1.5 text-xs font-medium text-secondary hover:bg-surface-container">
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to Pipeline
           </a>

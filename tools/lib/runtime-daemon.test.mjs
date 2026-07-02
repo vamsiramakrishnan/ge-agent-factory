@@ -37,7 +37,7 @@ describe("runtime resume plan", () => {
     expect(plan.safeToRun).toBe(true);
     expect(plan.state).toBe("blocked");
     expect(plan.nextAction).toBe("resume_autopilot");
-    expect(plan.commands).toContain("ge runtime resume auto-1");
+    expect(plan.commands).toContain("ge runs resume auto-1");
     expect(plan.blockers[0].id).toBe("missing-preview");
   });
 
@@ -148,7 +148,7 @@ describe("runtime resume plan", () => {
 
     expect(plan.safeToRun).toBe(true);
     expect(plan.nextAction).toBe("rerun_harness");
-    expect(plan.commands).toContain("ge runtime resume harness-1");
+    expect(plan.commands).toContain("ge runs resume harness-1");
   });
 
   test("harness run input resolves Vertex project and global location from config", () => {
@@ -215,7 +215,7 @@ describe("runtime resume plan", () => {
 
     expect(plan.safeToRun).toBe(true);
     expect(plan.nextAction).toBe("resume_mission");
-    expect(plan.commands).toContain("ge mission resume mission-1");
+    expect(plan.commands).toContain("ge pipeline resume mission-1");
     expect(plan.blockers[0].id).toBe("preview-missing");
   });
 

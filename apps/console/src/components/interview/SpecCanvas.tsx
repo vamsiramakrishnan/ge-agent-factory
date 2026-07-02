@@ -473,7 +473,7 @@ export function SpecCanvas({
         <div className="flex items-center gap-2">
           {registered && (
             <a
-              href="#/journey"
+              href="#/pipeline"
               className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-500/15"
             >
               Build {registered.id}

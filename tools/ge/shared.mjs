@@ -3,10 +3,13 @@
 // behavior change). See tools/ge.mjs for the composition root that wires
 // these command groups into the citty command tree.
 import pc from "picocolors";
+import { defineCommand } from "citty";
 import { parseList } from "@ge/std/list";
 import { existsSync, readFileSync } from "node:fs";
 import * as core from "../lib/factory-core.mjs";
-import { daemonPaths, getDaemonStatus } from "../lib/runtime-daemon.mjs";
+import { daemonPaths, getDaemonStatus, displayTaskKind } from "../lib/runtime-daemon.mjs";
+
+export { displayTaskKind };
 // Stable-error-code registry — a dependency-free data leaf that lives beside
 // FactoryCommandError (whose fail(msg, code) mints the codes). This is a
 // CLI-boundary file, not tools/lib/*, so the tools/lib → apps/factory layering
@@ -50,6 +53,22 @@ export function emit(args, result, human) {
 }
 
 export const ICON = { pass: pc.green("✓"), warn: pc.yellow("▲"), fail: pc.red("✗") };
+
+// ── Deprecated aliases ──────────────────────────────────────────────────────
+// The orchestration surface collapsed (journey/mission → pipeline,
+// autopilot → fleet repair, runtime observability → runs). Old verbs keep
+// working forever as aliases: identical args and behavior, plus one dim
+// stderr pointer at the canonical spelling — no breakage, no mystery.
+export function deprecatedAlias({ name, hint, command, run }) {
+  return defineCommand({
+    meta: { name, description: `(deprecated → ${hint}) ${command.meta.description}` },
+    args: command.args,
+    run: async (ctx) => {
+      process.stderr.write(pc.dim(`▲ deprecated spelling — canonical: ${hint}`) + "\n");
+      return (run || command.run)(ctx);
+    },
+  });
+}
 
 // ── Duration feedback ───────────────────────────────────────────────────────
 // Long operations should say up front how long they usually take, and say at
@@ -200,26 +219,55 @@ export async function daemonRequest(port, path, { method = "GET", body, timeoutM
 
 // Follow one daemon task's live SSE event stream, printing each event as a
 // human line (or NDJSON with json=true). Returns when the stream ends. Shared
-// by `ge runtime events --follow` and the `--follow` flags on mission/journey/
+// by `ge runs events --follow` and the `--follow` flags on pipeline/fleet-repair/
 // autopilot run, so "start it" and "watch it" can be one command.
 export async function followTaskEvents(port, id, { json = false } = {}) {
-  const response = await fetch(`http://127.0.0.1:${port}/api/tasks/${encodeURIComponent(id)}/events`);
-  if (!response.ok || !response.body) throw new Error(`daemon task events failed: ${response.status}`);
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
+  // The daemon's SSE frames carry `id:` (the event seq) and support
+  // Last-Event-ID resume (protocol v3) — so a dropped connection reconnects
+  // and continues from the last event seen instead of losing the tail or
+  // replaying from zero. A clean server close (run reached a terminal state)
+  // ends the follow; only mid-stream network errors trigger reconnects.
+  let lastEventId = 0;
+  let retries = 0;
   for (;;) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    let idx;
-    while ((idx = buffer.indexOf("\n\n")) >= 0) {
-      const frame = buffer.slice(0, idx);
-      buffer = buffer.slice(idx + 2);
-      const line = frame.split(/\r?\n/).find((part) => part.startsWith("data: "));
-      if (!line) continue;
-      const event = JSON.parse(line.slice(6));
-      out(json ? JSON.stringify(event) : `${pc.dim(event.ts || "")} ${event.level === "error" ? pc.red(event.type) : pc.cyan(event.type)} ${event.line || ""}`);
+    let response;
+    try {
+      response = await fetch(`http://127.0.0.1:${port}/api/tasks/${encodeURIComponent(id)}/events`, {
+        headers: lastEventId ? { "Last-Event-ID": String(lastEventId) } : undefined,
+      });
+    } catch (error) {
+      if (++retries > 5) throw new Error(`daemon task events failed after ${retries} attempts: ${error.message}`);
+      elog(`stream dropped — reconnecting from event ${lastEventId} (${retries}/5)`);
+      await new Promise((resolve) => setTimeout(resolve, 500 * retries));
+      continue;
+    }
+    if (!response.ok || !response.body) throw new Error(`daemon task events failed: ${response.status}`);
+    retries = 0;
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    try {
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) return; // server closed cleanly: the run is terminal
+        buffer += decoder.decode(value, { stream: true });
+        let idx;
+        while ((idx = buffer.indexOf("\n\n")) >= 0) {
+          const frame = buffer.slice(0, idx);
+          buffer = buffer.slice(idx + 2);
+          const lines = frame.split(/\r?\n/);
+          const idLine = lines.find((part) => part.startsWith("id: "));
+          if (idLine) lastEventId = Number(idLine.slice(4)) || lastEventId;
+          const line = lines.find((part) => part.startsWith("data: "));
+          if (!line) continue;
+          const event = JSON.parse(line.slice(6));
+          out(json ? JSON.stringify(event) : `${pc.dim(event.ts || "")} ${event.level === "error" ? pc.red(event.type) : pc.cyan(event.type)} ${event.line || ""}`);
+        }
+      }
+    } catch (error) {
+      if (++retries > 5) throw new Error(`daemon task events failed after ${retries} attempts: ${error.message}`);
+      elog(`stream dropped — reconnecting from event ${lastEventId} (${retries}/5)`);
+      await new Promise((resolve) => setTimeout(resolve, 500 * retries));
     }
   }
 }
@@ -235,11 +283,11 @@ export function parseIds(ids) {
   return parseList(String(ids || ""));
 }
 
-export function renderAutopilotSummary(task) {
+export function renderRepairSummary(task) {
   const run = task.output?.run || {};
   const summary = task.summary || {};
   const counts = task.output?.counts || summary.counts || run;
-  out(pc.bold(`\nAutopilot ${task.id}`));
+  out(pc.bold(`\nRepair run ${task.id}`));
   out(`  status    ${statusText(run.status || task.status)}`);
   out(`  target    ${pc.cyan(run.targetStage || task.input?.targetStage || summary.input?.targetStage || "preview")}`);
   out(`  mode      ${pc.dim(run.options?.mode || "<unknown>")}`);
@@ -321,7 +369,7 @@ export function renderMissionBrief(graph) {
 }
 
 export function renderMissionGraph(graph) {
-  out(pc.bold(`\nMission ${graph.id}`));
+  out(pc.bold(`\nPipeline run ${graph.id}`));
   out(`  status    ${statusText(graph.status)}`);
   out(`  target    ${pc.cyan(graph.input?.targetStage || "preview")}`);
   out(`  nodes     ${graph.counts?.done || 0} done · ${graph.counts?.blocked || 0} blocked · ${graph.counts?.pending || 0} pending · ${graph.counts?.total || 0} total`);
@@ -338,7 +386,7 @@ export function renderMissionGraph(graph) {
 }
 
 export function renderJourneyPlan(journey) {
-  out(pc.bold(`\nJourney ${journey.id}`));
+  out(pc.bold(`\nPipeline ${journey.id}`));
   out(`  status    ${statusText(journey.status)}`);
   out(`  target    ${pc.cyan(journey.targetStage || "preview")}`);
   if (journey.input?.scenario) out(`  scenario  ${pc.cyan(journey.input.scenario)}`);

@@ -17,7 +17,7 @@ const WIZARD_STEPS: StepDef[] = [
   { id: 3, label: "Review" },
 ];
 
-interface JourneyProps {
+interface PipelineProps {
   status: StatusBoard | null;
   refresh: () => Promise<void>;
 }
@@ -53,7 +53,7 @@ function readPreferredSpecId() {
   return window.localStorage.getItem("ge.pipeline.selectedSpecId") || "";
 }
 
-export default function Journey({ status, refresh }: JourneyProps) {
+export default function Pipeline({ status, refresh }: PipelineProps) {
   const initialSeed = useMemo(() => readInterviewSeed(), []);
   const initialGeneratedSpec = useMemo(() => readGeneratedSpecIdentity(), []);
   const initialPreferredSpecId = useMemo(() => readPreferredSpecId(), []);
@@ -261,7 +261,7 @@ export default function Journey({ status, refresh }: JourneyProps) {
       location.hash = nav;
       return;
     }
-    if ((plan.kind === "resume_harness" || plan.kind === "resume_mission" || plan.kind === "resume_autopilot" || command.startsWith("ge runtime resume")) && plan.taskId) {
+    if ((plan.kind === "resume_harness" || plan.kind === "resume_mission" || plan.kind === "resume_autopilot" || command.startsWith("ge runs resume") || command.startsWith("ge runtime resume")) && plan.taskId) {
       setBusy("run");
       try {
         await ge.runtimeResume(plan.taskId);
@@ -275,7 +275,7 @@ export default function Journey({ status, refresh }: JourneyProps) {
       }
       return;
     }
-    if (plan.kind === "run_mission" || plan.kind === "run_preview" || command.startsWith("ge mission run")) {
+    if (plan.kind === "run_mission" || plan.kind === "run_preview" || command.startsWith("ge pipeline run") || command.startsWith("ge mission run")) {
       await startJourney();
       return;
     }

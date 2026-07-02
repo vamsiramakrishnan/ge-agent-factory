@@ -199,11 +199,11 @@ export default function Overview({ status, refresh }: OverviewProps) {
       return;
     }
     if (next.startsWith("ge agents build")) {
-      location.hash = "#/journey";
+      location.hash = "#/pipeline";
       return;
     }
     showToast(`Next: \`${next}\` — opening the Pipeline.`);
-    location.hash = "#/journey";
+    location.hash = "#/pipeline";
   };
 
   const planeKey = (name: string) => {
@@ -324,7 +324,7 @@ export default function Overview({ status, refresh }: OverviewProps) {
             </p>
           </div>
           <button
-            onClick={() => { location.hash = "#/journey"; }}
+            onClick={() => { location.hash = "#/pipeline"; }}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/10 transition-colors rounded-lg"
           >
             Open Pipeline <ArrowRight className="w-4 h-4" />
@@ -398,7 +398,7 @@ export default function Overview({ status, refresh }: OverviewProps) {
 
       {/* Pipeline vs Fleet — two distinct surfaces, made explicit. */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <button onClick={() => { location.hash = "#/journey"; }} className="editorial-micro-card rounded-lg p-5 text-left hover:bg-surface-container-low transition-colors">
+        <button onClick={() => { location.hash = "#/pipeline"; }} className="editorial-micro-card rounded-lg p-5 text-left hover:bg-surface-container-low transition-colors">
           <div className="flex items-center gap-2 mb-2">
             <GitBranch className="w-4 h-4 text-primary" />
             <h2 className="text-sm font-semibold text-on-surface">Pipeline</h2>

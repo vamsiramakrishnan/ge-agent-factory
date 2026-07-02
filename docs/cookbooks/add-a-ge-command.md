@@ -77,7 +77,7 @@ One registry entry is consumed at five places. All paths are real and current:
    They are persisted per job (console `job-store.mjs`, daemon run store) and
    streamed to the browser over SSE via `GET /api/ge/jobs/:id/logs`
    (`streamJob` in `transport.mjs`); the console's `JobToast` renders them,
-   labeled with the entry's `risk`. `ge runtime events <task-id> --follow`
+   labeled with the entry's `risk`. `ge runs events <run-id> --follow`
    shows the same stream from the CLI.
 5. **Console client + doctor** — `GET /api/ge/commands` returns
    `GE_COMMAND_LIST`, typed as `GeCommand` in
@@ -206,7 +206,7 @@ tools/check-design-tokens.mjs`) and `bun run test:gated`.
 - **Command runs but the UI shows no live output** — the daemon path streams
   events from the daemon's run store; if the daemon is down the job falls
   back to a local spawn (look for the "Daemon unavailable" warning event).
-  `ge daemon status` / `ge runtime tasks` to inspect.
+  `ge daemon status` / `ge runs list` to inspect.
 - **TypeScript error on `risk`** — you introduced a new risk value; widen the
   union in `apps/console/src/services/geClient.ts` (and keep the registry
   JSDoc's vocabulary list current in the same change).

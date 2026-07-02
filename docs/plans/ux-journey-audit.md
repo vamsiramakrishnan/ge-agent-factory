@@ -100,11 +100,65 @@ kept as the rationale record for the changes shipped alongside this document.
   glossary's Ledger entry points at it). Renaming either vocabulary — or
   generating the table from source — remains a taste-campaign item.
 
+## Wave 2 — ruthless consolidation + platform modernization
+
+The four orchestration nouns are collapsed, and the daemon/transport layer is
+modernized in the same change series:
+
+### One vocabulary, everywhere
+
+- **`ge pipeline`** (plan · run · status · resume · graph · runs) absorbs
+  `ge journey` (the stage view) and `ge mission` (the executable DAG) — one
+  noun for the view and the engine, matching the console's "Pipeline" label.
+- **`ge fleet`** (status · repair · repairs) absorbs `ge agents fleet` and
+  `ge autopilot` — convergence lives with the roster it converges, matching
+  the console's "Repair Queue".
+- **`ge runs`** (list · show · events · resume · job) is the one
+  observability surface over every daemon-backed run, absorbing the
+  `ge runtime` task verbs.
+- **Every old spelling keeps working** as a deprecated alias (identical args
+  and behavior + one dim stderr pointer), built on a single
+  `deprecatedAlias()` helper. Console route ids renamed to match
+  (`#/pipeline`, `#/repair`) with legacy hash redirects.
+- **Persisted identifiers never rename.** Daemon wire kinds stay
+  `mission.run`/`autopilot.run`; the canonical `pipeline.run`/`repair.run`
+  are accepted and normalized at the POST boundary, and wire kinds render
+  back as canonical in human surfaces (`displayTaskKind`). The glossary's
+  four-noun disambiguation table is now the consolidation record.
+
+### Daemon modernization (protocol v3)
+
+- **Hono + zod replace the hand-rolled HTTP layer** — the daemon predated the
+  repo's own hono-on-node pattern (apps/factory/src/server.js). Routes are a
+  declarative table (`tools/lib/daemon/http-app.mjs`); task creation is
+  zod-validated per kind (`task-schemas.mjs`) so malformed input fails as one
+  field-level 400 before any run state exists. The node bridge streams
+  responses (SSE-safe), unlike the factory's buffering strangler bridge.
+- **SSE grew up:** frames carry `id:` (event seq) and an initial `retry:`
+  hint, `: ping` heartbeats keep idle streams alive, and reconnects resume
+  from `Last-Event-ID`/`?afterSeq=` — server-side, in both stream and JSON
+  modes. The CLI's `followTaskEvents` auto-reconnects with `Last-Event-ID`;
+  the console's runtime SSE proxy forwards ids and Last-Event-ID through to
+  the daemon; the repair transport passes `afterSeq` server-side instead of
+  re-downloading the whole event log each poll.
+- **Contract locked by tests**, not comments: `daemon/http-app.test.mjs`
+  pins routing/validation/SSE framing hermetically via `app.fetch`, and
+  `tools/contracts-registry-parity.test.mjs` structurally enforces
+  registry ↔ `@ge/contracts` parity (the stale RiskLevel/GeCommandId enums
+  are fixed and can't silently drift again; `geClient.ts` now types risk
+  from contracts instead of hand-mirroring).
+
 ## Known gaps, deliberately not fixed here
 
 - **Run replay** (`ge run replay` / console scrubber) is the flagship item in
   `08-next-horizon.md` B9 and stays there.
 - **Interview wizard continuity** relies on the "Continue Interview" pill +
   localStorage; a persistent cross-view journey thread is a larger IA change.
-- **Four orchestration nouns** (mission/journey/autopilot/factory run) still
-  coexist; renaming is a breaking-surface decision.
+- **The console's parallel job store** (`jobs.sqlite`) still duplicates the
+  daemon task system — deliberately, as the daemon-down fallback. Folding
+  console jobs into daemon tasks needs a supervised always-on daemon first;
+  the transports now share the daemon's resume/afterSeq semantics, which is
+  the prerequisite step.
+- **The five start/resume clone pairs** inside `tools/lib/daemon/*` (~500
+  LOC) should collapse into one kind→executor registry; the HTTP-level tests
+  added here are the safety net that refactor was missing.
