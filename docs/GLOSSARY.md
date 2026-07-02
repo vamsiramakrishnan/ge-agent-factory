@@ -202,6 +202,12 @@ and resumable after a crash.
 `docs/concepts/the-factory-line.md`; `ge ledger backfill`;
 `tools/lib/ledger/run-ledger.mjs` (shim over `packages/run-ledger`).
 
+Note the ledger records **milestones** (`created`, `previewed`, `deployed` —
+past-tense states), which are deliberately *not* the same names as the cloud
+line's **stations** (`generate_workspace`, `preview`, `deploy_runtime` —
+verbs). The mapping between the two vocabularies is in "Stations vs.
+milestones" in `docs/concepts/the-factory-line.md`.
+
 ---
 
 ### Doctor
