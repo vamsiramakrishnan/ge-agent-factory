@@ -27,6 +27,11 @@ import { describe, expect, test } from "bun:test";
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import {
+  validateAgentSpecQuality,
+  validateCatalogParity,
+  validateGenerationSpec,
+} from "@ge/agent-spec";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, "..", "..", "..");
@@ -37,20 +42,16 @@ const FACTORY_DIR = join(REPO_ROOT, "apps", "factory");
 const SNAPSHOT_PATH = join(HERE, "fixtures", "validator-parity.json");
 const LOCAL_FIXTURE_DIR = join(HERE, "fixtures", "specs");
 
-// The validators under test. `loadInterviewSpecEntries` is factory-side file
-// IO and deliberately stays in the factory registry, so it is resolved via a
-// computed file URL: packages/* must not statically import apps/*
-// (tools/check-no-app-imports.mjs), and this oracle is the one sanctioned
-// reach-back — it exists precisely to pin the factory registry's validator
-// behavior. The validators themselves are imported from this package once
-// they move here (WS2 Step 4); before the move they come from the registry.
+// The validators under test are imported from this package (they moved here
+// in WS2 Step 4 — the pre-move snapshot was taken against the factory
+// registry and must stay byte-identical). `loadInterviewSpecEntries` is
+// factory-side file IO and deliberately stays in the factory registry, so it
+// is resolved via a computed file URL: packages/* must not statically import
+// apps/* (tools/check-no-app-imports.mjs), and this oracle is the one
+// sanctioned reach-back — its corpus is, by definition, the factory's
+// on-disk catalog.
 const registryUrl = pathToFileURL(join(FACTORY_DIR, "src", "agent-spec-registry.js")).href;
-const {
-  validateGenerationSpec,
-  validateCatalogParity,
-  validateAgentSpecQuality,
-  loadInterviewSpecEntries,
-} = await import(registryUrl);
+const { loadInterviewSpecEntries } = await import(registryUrl);
 
 /** Recursively collect *.json files under `dir` (sorted, repo-relative-stable). */
 function walkJson(dir) {
