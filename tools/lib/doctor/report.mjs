@@ -1,4 +1,4 @@
-import { classifyReadinessCheck, classifyReadinessSection } from "./config-schema.mjs";
+import { classifyReadinessCheck, classifyReadinessSection } from "../config-schema.mjs";
 
 export function createCheckCollector() {
   const checks = [];

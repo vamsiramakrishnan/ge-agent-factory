@@ -119,7 +119,7 @@ test("build returns gateway and worker image tags", () => {
 });
 
 test("worker cloudbuild.worker.yaml is well-formed and uses repo-root context", () => {
-  const yamlPath = join(HERE, "..", "..", "apps", "factory", "cloudbuild.worker.yaml");
+  const yamlPath = join(HERE, "..", "..", "..", "apps", "factory", "cloudbuild.worker.yaml");
   const yaml = readFileSync(yamlPath, "utf8");
   expect(yaml).toContain("steps:");
   expect(yaml).toContain("gcr.io/cloud-builders/docker");

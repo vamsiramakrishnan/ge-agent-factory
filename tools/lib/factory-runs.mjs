@@ -8,7 +8,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { basename, join, dirname, resolve } from "node:path";
 import { readJson } from "@ge/std/json-io";
 import { STATE_PATHS } from "./state-paths.mjs";
-import { runLedger, ledgerReadsEnabled } from "./factory-ledger.mjs";
+import { runLedger, ledgerReadsEnabled } from "./ledger/factory-ledger.mjs";
 
 const FACTORY_HARNESS_DIR = STATE_PATHS.factory.root;
 

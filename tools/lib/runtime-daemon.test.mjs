@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { buildMissionGraph } from "./mission-plan.mjs";
+import { buildMissionGraph } from "./mission/mission-plan.mjs";
 import { resumePlanFor, safeGeCommand, safeHarnessRunInput, safeMissionRuntimeCommand, safeProcessCommand, toolAugmentedPath, __test } from "./runtime-daemon.mjs";
 
 describe("toolAugmentedPath", () => {

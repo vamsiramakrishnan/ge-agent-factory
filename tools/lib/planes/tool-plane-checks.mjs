@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { parseList } from "@ge/std/list";
 import { mcpServiceName } from "./mcp-plane.mjs";
 import { serviceEnv } from "./factory-plane.mjs";
-import { REPO_ROOT, DEPARTMENTS } from "./state-paths.mjs";
+import { REPO_ROOT, DEPARTMENTS } from "../state-paths.mjs";
 
 const CATALOG_PATH = join(REPO_ROOT, "apps/factory/generated/use-cases.generated.json");
 
