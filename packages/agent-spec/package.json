@@ -12,7 +12,9 @@
     "./constants": "./src/constants.mjs"
   },
   "scripts": {
-    "test": "bun test tests"
+    "test": "bun test tests scripts",
+    "gen:spec-reference": "node scripts/gen-spec-reference.mjs",
+    "gen:spec-reference:check": "node scripts/gen-spec-reference.mjs --check"
   },
   "dependencies": {
     "zod": "^4.4.3"
