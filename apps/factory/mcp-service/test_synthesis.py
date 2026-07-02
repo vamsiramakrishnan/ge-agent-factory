@@ -115,6 +115,14 @@ def test_invalid_transition_is_enforced_on_synthesized_system():
     assert res["error"]["code"] in {"invalid_state_transition", "missing_approval"}
 
 
+def test_terminal_states_order_is_deterministic():
+    """Set-iteration order is randomized per process (PYTHONHASHSEED); _terminal_states
+    must return first-seen order so synthesized contracts are byte-identical across
+    otherwise-identical CLI invocations (and golden-testable at all)."""
+    transitions = {"open": ["pending_approval"], "pending_approval": ["approved", "rejected"], "approved": ["closed"]}
+    assert synthesis._terminal_states(transitions) == ["rejected", "closed", "approved"]
+
+
 def test_validate_contract_flags_unknown_ref():
     sketch = {
         "id": "byo_v", "displayName": "V",

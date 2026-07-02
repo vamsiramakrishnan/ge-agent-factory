@@ -115,7 +115,10 @@ def _state_machine(collection: dict[str, Any]) -> dict[str, Any] | None:
 
 
 def _terminal_states(transitions: dict[str, list[str]]) -> list[str]:
-    targets = {t for ts in transitions.values() for t in ts}
+    # First-seen order (not a set): set iteration is randomized per process
+    # (PYTHONHASHSEED), which made synthesized contracts differ byte-wise
+    # across otherwise-identical CLI invocations.
+    targets = list(dict.fromkeys(t for ts in transitions.values() for t in ts))
     sources = set(transitions)
     terminal = [t for t in targets if t not in sources]
     hinted = [t for t in targets if any(h in t for h in _TERMINAL_HINTS)]
