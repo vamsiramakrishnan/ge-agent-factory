@@ -219,7 +219,7 @@ test("LEDGER_STAGES matches the harness order head", () => {
   ]);
 });
 
-import { mergeLedgerAndFileRuns } from "./factory-core.mjs";
+import { mergeLedgerAndFileRuns } from "../factory-core.mjs";
 
 describe("mergeLedgerAndFileRuns (read-cutover dedup)", () => {
   const ledgerRuns = [{ id: "L1", startedAt: "2026-06-15T10:00:00.000Z" }];
