@@ -24,6 +24,17 @@ const DEPT_AURORA: Record<string, [string, string]> = {
 };
 const DEFAULT_AURORA: [string, string] = ["#1a73e8", "#9aa6b8"];
 
+// Some deep-dive slides omit `department`; inherit it from the parent chain so
+// location-aware UX (atmosphere hues, level jumping) works everywhere.
+function departmentOf(slide: (typeof SLIDES)[number] | undefined): string | undefined {
+  let node = slide;
+  while (node) {
+    if (node.department) return node.department;
+    node = node.parent ? SLIDES.find(s => s.id === node!.parent) : undefined;
+  }
+  return undefined;
+}
+
 const SHORTCUTS: Array<[string, string]> = [
   ["← →", "Previous / next"],
   ["Space", "Next"],
@@ -87,7 +98,8 @@ export default function App() {
   }, [currentSlide, current.level]);
 
   // ── Atmosphere hues for the current location ─────────────────────────────
-  const [atmo1, atmo2] = (current.department && DEPT_AURORA[current.department]) || DEFAULT_AURORA;
+  const currentDepartment = departmentOf(current);
+  const [atmo1, atmo2] = (currentDepartment && DEPT_AURORA[currentDepartment]) || DEFAULT_AURORA;
 
   // Build breadcrumbs from parent chain
   const breadcrumbs = useMemo(() => {
@@ -100,7 +112,7 @@ export default function App() {
         if (parentSlide) { slide = parentSlide; } else break;
       } else break;
     }
-    if (current.level >= 1) crumbs.unshift({ id: "title", title: "Story" });
+    if (current.level >= 1) crumbs.unshift({ id: "landing", title: "Story" });
     return crumbs;
   }, [current]);
 
@@ -147,21 +159,36 @@ export default function App() {
     }
   }, [history]);
 
+  // Jump to a level, staying inside the current department/domain when the
+  // current slide implies one — falling back to the first slide at that level.
   const jumpToLevel = useCallback((level: number) => {
     if (level === 0) {
-      goToSlide("title");
-    } else if (level === 1) {
+      goToSlide("landing");
+      return;
+    }
+    if (level === 1) {
       goToSlide("domain-map");
-    } else if (level === 2) {
-      const deptId = current.department === "procurement" ? "dept-procurement" : "dept-hr";
-      goToSlide(deptId);
-    } else if (level === 3) {
-      const domainId = current.domain ? `domain-${current.domain}` : "domain-1";
-      goToSlide(domainId);
-    } else if (level === 4) {
+      return;
+    }
+    const department = departmentOf(current);
+    if (level === 2) {
+      const dept = SLIDES.find(s => s.level === 2 && s.department === department)
+        || SLIDES.find(s => s.level === 2);
+      if (dept) goToSlide(dept.id);
+      return;
+    }
+    if (level === 3) {
+      const domainCatalog = (current.domain && SLIDES.find(s => s.level === 3 && s.domain === current.domain))
+        || SLIDES.find(s => s.level === 3 && s.department === department)
+        || SLIDES.find(s => s.level === 3);
+      if (domainCatalog) goToSlide(domainCatalog.id);
+      return;
+    }
+    if (level === 4) {
       if (current.level === 4) return;
-      const domain = current.domain || 1;
-      const firstAgent = SLIDES.find(s => s.level === 4 && s.domain === domain);
+      const firstAgent = (current.domain && SLIDES.find(s => s.level === 4 && s.domain === current.domain))
+        || SLIDES.find(s => s.level === 4 && departmentOf(s) === department)
+        || SLIDES.find(s => s.level === 4);
       if (firstAgent) goToSlide(firstAgent.id);
     }
   }, [current, goToSlide]);

@@ -204,7 +204,7 @@ Check the per-department MCP services + Agent Registry readiness
 
 ### `ge agents`
 
-Agent lifecycle: build · ship · status · fleet · logs · sync
+Agent lifecycle: build · resume · ship · status · fleet · logs · sync
 
 ### `ge agents build`
 
@@ -230,6 +230,19 @@ Build agents. Uses the active mode (ge mode); --local/--remote override
 | `--max-output-tokens` | string | Override generated-agent max_output_tokens (local and remote); default unset = model default |
 | `--no-refine` | boolean | Skip the cloud Antigravity refine stage (REFINE=0) |
 | `--warm` | boolean | Pre-warm the shared uv cache before running (local) |
+| `--watch` | boolean | Remote: after submitting, watch run status until all runs are terminal |
+
+### `ge agents resume`
+
+Resume interrupted/failed builds from the ledger: retry failed stages, finish local work, ship past the boundary
+
+| Flag | Type | Description |
+|---|---|---|
+| `--ids` | string | Only resume these comma-separated use-case/workspace ids |
+| `--target` | string | Target stage (default: previewed in local mode, published in remote mode) |
+| `--local` | boolean | Override: plan against local mode |
+| `--remote` | boolean | Override: plan against remote mode |
+| `--run` | boolean | Execute the resume plan (default: print it) |
 
 ### `ge agents ship`
 
@@ -300,6 +313,7 @@ Start daemon-native Autopilot convergence
 | `--no-repair` | boolean | Observe blockers without running repair |
 | `--attempts` | string | Repair attempts per item (default 3) |
 | `--run-preview` | boolean | Run preview after repair when supported |
+| `--follow` | boolean | Stay attached and stream the run's live events |
 | `--port` | string | Daemon port (default 17654) |
 
 ### `ge autopilot status`
@@ -362,6 +376,7 @@ Run a mission graph as daemon child runtime tasks
 | `--harness-agent` | string | Harness agent for mission review node (default antigravity-sdk) |
 | `--model` | string | Model for the Antigravity mission review node |
 | `--location` | string | Location for the Antigravity mission review node |
+| `--follow` | boolean | Stay attached and stream the run's live events |
 | `--port` | string | Daemon port (default 17654) |
 
 ### `ge mission status`
@@ -431,6 +446,7 @@ Start the journey by running the durable mission graph
 | `--no-antigravity` | boolean | Do not include the Antigravity review node |
 | `--model` | string | Model for the Antigravity review node |
 | `--location` | string | Location for the Antigravity review node |
+| `--follow` | boolean | Stay attached and stream the run's live events |
 
 ### `ge daemon`
 

@@ -6,6 +6,7 @@ import { useToast } from "../lib/toast";
 import { StatusChip } from "../lib/runStatus";
 import { User, GitBranch, Boxes, ArrowRight, Check } from "lucide-react";
 import { CloudShellCta } from "../components/CloudShellCta";
+import { GetStartedCard } from "../components/GetStartedCard";
 
 interface OverviewProps {
   status: StatusBoard | null;
@@ -37,7 +38,24 @@ export default function Overview({ status, refresh }: OverviewProps) {
   const [loading, setLoading] = useState(true);
   const [busyPlanes, setBusyPlanes] = useState<Set<string>>(new Set());
   const [busyPreview, setBusyPreview] = useState(false);
+  const [getStartedDismissed, setGetStartedDismissed] = useState(() => {
+    try {
+      return window.localStorage.getItem("ge.getStarted.dismissed") === "1";
+    } catch {
+      // No storage → show the card; it's only ever additive.
+      return false;
+    }
+  });
   const notify = useToast();
+
+  const dismissGetStarted = () => {
+    setGetStartedDismissed(true);
+    try {
+      window.localStorage.setItem("ge.getStarted.dismissed", "1");
+    } catch {
+      // Best-effort: without storage the dismissal lasts for this session only.
+    }
+  };
 
   const fetchOverview = async () => {
     try {
@@ -138,41 +156,54 @@ export default function Overview({ status, refresh }: OverviewProps) {
     }
   };
 
+  // Route the status board's `next` command. Matched on the exact command
+  // prefixes statusBoard() emits (ge init / ge up [--plane] / ge agents build)
+  // rather than loose substrings, so "up" inside another word can't misfire and
+  // an unrecognized command lands on the Pipeline — the place work starts —
+  // with the command surfaced, not silently on the Fleet roster.
   const handleNextStep = async () => {
-    if (!status?.next) return;
-    const next = status.next.toLowerCase();
+    const next = (status?.next || "").trim();
+    if (!next) return;
 
-    if (next.includes("up")) {
-      const planes: string[] = [];
-      if (next.includes("--infra")) planes.push("infra");
-      if (next.includes("--data")) planes.push("data");
-      if (next.includes("--mcp")) planes.push("mcp");
-      if (planes.length === 0) planes.push("infra", "data", "mcp");
-
+    if (next.startsWith("ge init")) {
+      showToast("This machine has no GCP project configured — run `ge init` in a terminal, then refresh.", 7000);
+      location.hash = "#/doctor";
+      return;
+    }
+    if (next.startsWith("ge data up") || next.startsWith("ge up --data")) {
       try {
-        if (next.includes("data up") || (planes.length === 1 && planes[0] === "data")) {
-          await startJob("ge data up", ge.dataUp());
-        } else if (next.includes("mcp deploy") || (planes.length === 1 && planes[0] === "mcp")) {
-          await startJob("ge mcp deploy", ge.mcpDeploy());
-        } else {
-          await startJob(status.next, ge.up(planes.length > 0 ? planes : undefined));
-        }
-        showToast("Started. Open Runs for the full timeline.");
+        await startJob("ge data up", ge.dataUp());
+        showToast("Data plane started. Open Runs for the full timeline.");
       } catch (err: any) {
         showToast(`Failed: ${err.message}`, 6000);
       }
-    } else if (next.includes("build")) {
-      location.hash = "#/fleet";
-    } else if (next.includes("mcp deploy")) {
+      return;
+    }
+    if (next.startsWith("ge mcp deploy") || next.startsWith("ge up --mcp")) {
       try {
         await startJob("ge mcp deploy", ge.mcpDeploy());
         showToast("Tool services started. Open Runs for the full timeline.");
       } catch (err: any) {
         showToast(`Failed: ${err.message}`, 6000);
       }
-    } else {
-      location.hash = "#/fleet";
+      return;
     }
+    if (next.startsWith("ge up")) {
+      const planes = ["infra", "data", "mcp"].filter((plane) => next.includes(`--${plane}`));
+      try {
+        await startJob(next, ge.up(planes.length > 0 ? planes : undefined));
+        showToast("Started. Open Runs for the full timeline.");
+      } catch (err: any) {
+        showToast(`Failed: ${err.message}`, 6000);
+      }
+      return;
+    }
+    if (next.startsWith("ge agents build")) {
+      location.hash = "#/journey";
+      return;
+    }
+    showToast(`Next: \`${next}\` — opening the Pipeline.`);
+    location.hash = "#/journey";
   };
 
   const planeKey = (name: string) => {
@@ -267,6 +298,19 @@ export default function Overview({ status, refresh }: OverviewProps) {
 
       {/* Self-service install — bring the whole factory up in your own project. */}
       <CloudShellCta />
+
+      {/* Guided first journey with honest effort estimates. Steps check off
+          from live state, so this is also the resume point if the user leaves
+          halfway. Auto-retires on the first deployed agent; dismissable. */}
+      {totalDeployed === 0 && !getStartedDismissed && (
+        <GetStartedCard
+          hasAgents={total > 0 && totalNone < total}
+          hasRuns={runtimeTasks.length > 0}
+          hasDeployed={totalDeployed > 0}
+          mode={mode}
+          onDismiss={dismissGetStarted}
+        />
+      )}
 
       {/* Pipeline rail — the build→ship→deploy→run flow, mode-aware. */}
       <div className="editorial-micro-card rounded-lg p-5 mb-6">

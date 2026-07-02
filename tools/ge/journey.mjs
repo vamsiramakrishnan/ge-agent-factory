@@ -6,7 +6,7 @@ import { buildJourneyPlan } from "../lib/journey-plan.mjs";
 import {
   guarded, common, cfgFrom, emit, out, pc, core,
   daemonPort, daemonStatusSnapshot, daemonRequest, parseIds,
-  renderMissionGraph, renderJourneyPlan,
+  renderMissionGraph, renderJourneyPlan, followTaskEvents,
 } from "./shared.mjs";
 
 const journeyArgs = {
@@ -88,6 +88,7 @@ const journeyRunCmd = defineCommand({
     "no-antigravity": { type: "boolean", description: "Do not include the Antigravity review node" },
     model: { type: "string", description: "Model for the Antigravity review node" },
     location: { type: "string", description: "Location for the Antigravity review node" },
+    follow: { type: "boolean", description: "Stay attached and stream the run's live events" },
   },
   run: guarded(async ({ args }) => {
     const port = daemonPort(args);
@@ -122,9 +123,13 @@ const journeyRunCmd = defineCommand({
     emit(args, task, (t) => {
       out(pc.green(`✓ started journey mission ${t.id}`));
       if (t.output?.graph) renderMissionGraph(t.output.graph);
-      out(pc.dim(`\n  status: ge journey status --scenario ${args.scenario || args.usecase || "<scenario>"}`));
-      out(pc.dim(`  events: ge runtime events ${t.id} --follow`));
+      if (!args.follow) {
+        out(pc.dim(`\n  status: ge journey status --scenario ${args.scenario || args.usecase || "<scenario>"}`));
+        out(pc.dim(`  events: ge runtime events ${t.id} --follow`));
+        out(pc.dim(`  (or start with --follow to stream events inline)`));
+      }
     });
+    if (args.follow && !args.json) await followTaskEvents(port, task.id);
   }),
 });
 

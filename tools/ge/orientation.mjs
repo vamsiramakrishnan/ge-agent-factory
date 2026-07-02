@@ -3,7 +3,7 @@
 // tools/ge.mjs. (The bare zero-args status board stays in tools/ge.mjs
 // itself — it's the root command's own `run`, not a noun group.)
 import { defineCommand } from "citty";
-import { guarded, common, cfgFrom, emit, out, pc, core, ICON, blog, elog } from "./shared.mjs";
+import { guarded, common, cfgFrom, emit, out, pc, core, ICON, blog, elog, announceExpectedDuration } from "./shared.mjs";
 
 export const cutover = defineCommand({
   meta: { name: "cutover", description: "Adopt a hand-managed project into Terraform (plan by default; --apply to run)" },
@@ -33,7 +33,9 @@ export const mode = defineCommand({
       return;
     }
     const cfg = cfgFrom(args);
-    const res = { mode: cfg.mode || "remote" };
+    // Fallback mirrors the config contract's fail-safe default (local never
+    // touches GCP) — see config-schema.mjs.
+    const res = { mode: cfg.mode || "local" };
     emit(args, res, (r) => {
       out(pc.bold(`\nmode: ${pc.cyan(r.mode)}`));
       out(r.mode === "local"
@@ -78,6 +80,7 @@ export const up = defineCommand({
   run: guarded(async ({ args }) => {
     const any = args.infra || args.data || args.mcp;
     const planes = any ? ["infra", "data", "mcp"].filter((p) => args[p]) : ["infra", "data", "mcp"];
+    announceExpectedDuration("up");
     const res = await core.up(cfgFrom(args), { planes, log: blog });
     emit(args, res, (r) => {
       out(pc.green(`\n✓ up: ${r.planes.join(" + ")} — ${r.health.fails} doctor failure(s).`));

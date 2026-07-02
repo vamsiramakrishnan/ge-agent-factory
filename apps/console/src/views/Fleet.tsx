@@ -279,7 +279,7 @@ export default function Fleet({ status, refresh }: FleetProps) {
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6">
         <div className="flex items-baseline justify-between mb-2">
-          <h1 className="text-2xl font-bold text-on-surface">Agents</h1>
+          <h1 className="text-2xl font-bold text-on-surface">Fleet</h1>
           <button
             onClick={fetchFleet}
             disabled={loading}
