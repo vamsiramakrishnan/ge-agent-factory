@@ -8,7 +8,7 @@
 
 **Tech Stack:** React 19, TypeScript, Tailwind CSS, Motion (Framer Motion), Lucide React
 
-**Spec:** `docs/superpowers/specs/2026-04-13-agent-deep-dive-design.md`
+**Spec:** `docs/design-specs/specs/2026-04-13-agent-deep-dive-design.md`
 
 ---
 
@@ -84,7 +84,7 @@ git commit -m "feat: add architecture types for agent deep dive"
 **Files:**
 - Create: `src/components/HubSpokeMap.tsx`
 
-**Context:** This component renders a radial diagram with the agent at center and connected systems as spokes. Each system node shows the vendor name, data description, and connection direction. The `category` field determines the node's color. Direction is shown via line style: dashed = read, solid = write, double = bidirectional. Read the spec section "Category Colors & Icons" in `docs/superpowers/specs/2026-04-13-agent-deep-dive-design.md` for the color mapping.
+**Context:** This component renders a radial diagram with the agent at center and connected systems as spokes. Each system node shows the vendor name, data description, and connection direction. The `category` field determines the node's color. Direction is shown via line style: dashed = read, solid = write, double = bidirectional. Read the spec section "Category Colors & Icons" in `docs/design-specs/specs/2026-04-13-agent-deep-dive-design.md` for the color mapping.
 
 - [ ] **Step 1: Create the component**
 
@@ -608,7 +608,7 @@ git commit -m "feat: rewrite UseCaseSlide as single-scroll layout with architect
 **Files:**
 - Modify: `src/components/slides/use-cases/procurement/CategoryStrategyGenerator.tsx`
 
-**Context:** Add `architecture` prop to one agent as a pilot to validate the visual. Read the spec's example data in the "Example Data" section of `docs/superpowers/specs/2026-04-13-agent-deep-dive-design.md` for the pattern to follow. This component currently lives at the path above and uses `../../../UseCaseSlide` imports.
+**Context:** Add `architecture` prop to one agent as a pilot to validate the visual. Read the spec's example data in the "Example Data" section of `docs/design-specs/specs/2026-04-13-agent-deep-dive-design.md` for the pattern to follow. This component currently lives at the path above and uses `../../../UseCaseSlide` imports.
 
 - [ ] **Step 1: Add architecture data to CategoryStrategyGenerator**
 
@@ -668,7 +668,7 @@ git commit -m "feat: add architecture data to CategoryStrategyGenerator as pilot
 - Modify: `src/components/slides/use-cases/procurement/ProcurementMaturityAssessor.tsx`
 - Modify: `src/components/slides/use-cases/procurement/StakeholderSatisfactionAnalyzer.tsx`
 
-**Context:** Add `architecture` prop to each agent. Read the spec at `docs/superpowers/specs/2026-04-13-procurement-agent-catalog.md` sections P1-02 through P1-07 for each agent's systems, AI techniques, and three-layer breakdown. Use this information to create accurate `connections` (systems the agent integrates with) and `pipeline` (data processing stages mapped to integration/ml/llm layers). Each agent must have 4-6 connections and 3-4 pipeline stages.
+**Context:** Add `architecture` prop to each agent. Read the spec at `docs/design-specs/specs/2026-04-13-procurement-agent-catalog.md` sections P1-02 through P1-07 for each agent's systems, AI techniques, and three-layer breakdown. Use this information to create accurate `connections` (systems the agent integrates with) and `pipeline` (data processing stages mapped to integration/ml/llm layers). Each agent must have 4-6 connections and 3-4 pipeline stages.
 
 For each agent file:
 1. Read the current file to understand existing props

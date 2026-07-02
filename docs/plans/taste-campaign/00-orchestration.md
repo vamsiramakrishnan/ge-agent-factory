@@ -94,7 +94,7 @@ landed (verify before starting).
 
 - **action-kinds reconciliation** (`packages/contracts/src/action-kinds.ts`)
   — behavior-changing UI/daemon vocabulary unification; has its own spec
-  (`docs/superpowers/specs/2026-06-14-console-presentation-unification.md`).
+  (`docs/design-specs/specs/2026-06-14-console-presentation-unification.md`).
 - **The presentation slide mass** (363 × ~1,400-line TSX) — product decision
   pending on template-vs-bespoke; do not refactor.
 - **TypeScript migration of `.mjs` packages** beyond WS7's declared scope.
