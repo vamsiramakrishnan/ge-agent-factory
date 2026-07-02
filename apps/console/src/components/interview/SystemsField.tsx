@@ -11,6 +11,7 @@ import {
   Wrench,
   X,
 } from "lucide-react";
+import { Button, CONTROL_CLASS, cx } from "@ge/ui";
 import { ge, type SystemOption, type SynthesizedSystem } from "../../services/geClient";
 
 /**
@@ -470,7 +471,7 @@ function ByoSystemModal({
               onChange={(event) => setDisplayName(event.target.value)}
               disabled={busy}
               placeholder="e.g. PartsLedger"
-              className="w-full rounded-md border border-outline-variant/60 bg-surface-container px-3 py-2 text-sm text-on-surface outline-none focus:border-primary/50 disabled:opacity-60"
+              className={cx(CONTROL_CLASS, "disabled:opacity-60")}
             />
           </div>
 
@@ -487,7 +488,7 @@ function ByoSystemModal({
               maxLength={8000}
               placeholder="e.g. parts, requisitions, and an approval flow"
               aria-describedby="byo-description-hint"
-              className="w-full resize-y rounded-md border border-outline-variant/60 bg-surface-container px-3 py-2 text-sm leading-6 text-on-surface outline-none focus:border-primary/50 disabled:opacity-60"
+              className={cx(CONTROL_CLASS, "resize-y leading-6 disabled:opacity-60")}
             />
             <p id="byo-description-hint" className="mt-1 text-[11px] text-secondary">
               {tooShort
@@ -537,13 +538,9 @@ function ByoSystemModal({
             ) : null}
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-md border border-outline-variant/50 px-3 py-1.5 text-xs font-medium text-secondary hover:bg-surface-container"
-            >
+            <Button variant="outline" size="sm" onClick={onClose}>
               Cancel
-            </button>
+            </Button>
             {summary ? (
               <button
                 type="button"
@@ -556,19 +553,10 @@ function ByoSystemModal({
                 Add to interview
               </button>
             ) : (
-              <button
-                type="button"
-                onClick={synthesize}
-                disabled={busy || tooShort}
-                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-container disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {busy ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" aria-hidden />
-                ) : (
-                  <Sparkles className="h-3.5 w-3.5" aria-hidden />
-                )}
+              <Button size="sm" onClick={synthesize} disabled={tooShort} loading={busy}>
+                {!busy && <Sparkles className="h-3.5 w-3.5" aria-hidden />}
                 {busy ? "Synthesizing…" : "Synthesize"}
-              </button>
+              </Button>
             )}
           </div>
         </div>

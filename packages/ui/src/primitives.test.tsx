@@ -12,6 +12,10 @@ import { Stat } from "./Stat";
 import { Field, Select, CONTROL_CLASS } from "./Field";
 import { Segmented } from "./Segmented";
 import { CommandChip } from "./CommandChip";
+import { PageHeader } from "./PageHeader";
+import { Section } from "./Section";
+import { StatusChip } from "./StatusChip";
+import { normalizeStatus, runStatusStyle } from "./status";
 import { cx } from "./cx";
 
 afterEach(cleanup);
@@ -116,6 +120,106 @@ describe("CommandChip", () => {
     const button = getByRole("button", { name: "Copy command" });
     await act(async () => { fireEvent.click(button); });
     expect(getByRole("button", { name: "Copy command" })).toBeDefined();
+  });
+});
+
+describe("PageHeader", () => {
+  test("renders eyebrow, title, subtitle, meta, and actions with the header rule", () => {
+    const { container, getByText, getByRole } = render(
+      <PageHeader
+        eyebrow="Spec to deploy"
+        title="Pipeline"
+        subtitle="The build & deploy flow."
+        meta={<span>3 specs</span>}
+        actions={<Button size="sm">Refresh</Button>}
+      />,
+    );
+    expect(getByText("Spec to deploy").className).toContain("uppercase");
+    const heading = getByRole("heading", { level: 1 });
+    expect(heading.textContent).toBe("Pipeline");
+    expect(heading.className).toContain("text-2xl");
+    expect(getByText("The build & deploy flow.")).toBeDefined();
+    expect(getByText("3 specs")).toBeDefined();
+    expect(getByRole("button", { name: "Refresh" })).toBeDefined();
+    const header = container.firstElementChild!;
+    expect(header.tagName).toBe("HEADER");
+    expect(header.className).toContain("border-b");
+    expect(header.className).toContain("pb-6");
+    expect(header.className).toContain("mb-6");
+  });
+
+  test("size lg scales the title; children render full-width below the row", () => {
+    const { getByRole, getByText } = render(
+      <PageHeader size="lg" title="Readiness">
+        <div>scope controls</div>
+      </PageHeader>,
+    );
+    expect(getByRole("heading", { level: 1 }).className).toContain("text-3xl");
+    expect(getByText("scope controls")).toBeDefined();
+  });
+});
+
+describe("Section", () => {
+  test("renders the card frame with title, description, and actions", () => {
+    const { container, getByText, getByRole } = render(
+      <Section
+        title="Repair Runs"
+        description="who can move it"
+        actions={<Button size="sm">Show blocked</Button>}
+      >
+        <div>body</div>
+      </Section>,
+    );
+    const card = container.firstElementChild!;
+    expect(card.tagName).toBe("SECTION");
+    expect(card.className).toContain("editorial-micro-card");
+    expect(card.className).toContain("p-5");
+    const title = getByText("Repair Runs");
+    expect(title.tagName).toBe("H2");
+    expect(title.className).toContain("font-semibold");
+    expect(getByText("who can move it")).toBeDefined();
+    expect(getByRole("button", { name: "Show blocked" })).toBeDefined();
+    expect(getByText("body")).toBeDefined();
+  });
+});
+
+describe("run status vocabulary", () => {
+  test("normalizeStatus folds the many raw verbs into five states", () => {
+    expect(normalizeStatus("queued")).toBe("pending");
+    expect(normalizeStatus("in_progress")).toBe("running");
+    expect(normalizeStatus("in-progress")).toBe("running");
+    expect(normalizeStatus("pending_approval")).toBe("blocked");
+    expect(normalizeStatus("completed")).toBe("done");
+    expect(normalizeStatus("skipped")).toBe("done");
+    // Terminal cancel/timeout states are failures, not "about to start".
+    expect(normalizeStatus("cancelled")).toBe("failed");
+    expect(normalizeStatus("canceled")).toBe("failed");
+    expect(normalizeStatus("timed out")).toBe("failed");
+    expect(normalizeStatus("TIMEOUT")).toBe("failed");
+    // Unknown / empty / nullish fall through to pending.
+    expect(normalizeStatus("definitely-not-a-status")).toBe("pending");
+    expect(normalizeStatus("")).toBe("pending");
+    expect(normalizeStatus(null)).toBe("pending");
+    expect(normalizeStatus(undefined)).toBe("pending");
+  });
+
+  test("runStatusStyle exposes one palette entry per normalized status", () => {
+    expect(runStatusStyle("done").dotClass).toContain("emerald");
+    expect(runStatusStyle("failed").dotClass).toContain("rose");
+    expect(runStatusStyle("blocked").dotClass).toContain("amber");
+    expect(runStatusStyle("running").dotClass).toContain("blue");
+    expect(runStatusStyle("pending").dotClass).toContain("slate");
+    expect(runStatusStyle("running").icon).toBe("◐");
+  });
+
+  test("StatusChip normalizes raw statuses and pulses only while running", () => {
+    const done = render(<StatusChip status="completed" />);
+    expect(done.getByText("Done")).toBeDefined();
+    expect(done.container.querySelector(".animate-pulse")).toBeNull();
+    cleanup();
+    const running = render(<StatusChip status="in_progress" />);
+    expect(running.getByText("Running")).toBeDefined();
+    expect(running.container.querySelector(".animate-pulse")).not.toBeNull();
   });
 });
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { MotionConfig, motion } from "motion/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/query";
 import { Sidebar } from "./components/shell/Sidebar";
@@ -146,7 +147,20 @@ export default function App() {
           <Breadcrumbs route={currentRoute.route} params={currentRoute.params} />
           <ErrorBoundary label={currentRoute.route} resetKey={location.hash}>
             <Suspense fallback={<ViewFallback />}>
-              {renderView()}
+              {/* Calm view-enter transition: a 150ms fade + 2px rise keyed by the
+                  route (and its params), enter-only — no exit choreography.
+                  MotionConfig reducedMotion="user" drops the transform for
+                  prefers-reduced-motion users. */}
+              <MotionConfig reducedMotion="user">
+                <motion.div
+                  key={`${currentRoute.route}:${currentRoute.params.id ?? currentRoute.params.usecaseId ?? ""}`}
+                  initial={{ opacity: 0, y: 2 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                >
+                  {renderView()}
+                </motion.div>
+              </MotionConfig>
             </Suspense>
           </ErrorBoundary>
         </main>

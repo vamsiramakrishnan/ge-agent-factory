@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Button, CommandChip, Segmented, Select } from "@ge/ui";
+import { Button, CommandChip, PageHeader, Segmented, Select } from "@ge/ui";
 import { streamDoctor, startJob, type StatusBoard, type DoctorReport as DoctorReportData, type DoctorEvent } from "../services/geClient";
 import { DoctorReport } from "../components/DoctorReport";
 import { RuntimeStatusCard } from "../components/RuntimeStatusBadge";
@@ -207,14 +207,14 @@ export default function Doctor({ status }: DoctorProps) {
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
-      <div className="mb-6">
-        <div className="flex items-baseline justify-between mb-4">
-          <h1 className="text-2xl font-bold text-on-surface">Readiness</h1>
+      <PageHeader
+        title="Readiness"
+        actions={
           <Button variant="ghost" size="sm" onClick={() => fetchReport(scope, command)} disabled={loading}>
             Re-run
           </Button>
-        </div>
-
+        }
+      >
         <Segmented
           aria-label="Readiness scope"
           options={scopeOptions}
@@ -237,7 +237,7 @@ export default function Doctor({ status }: DoctorProps) {
             ))}
           </Select>
         </div>
-      </div>
+      </PageHeader>
 
       {error && <ErrorBanner message={error} onRetry={() => fetchReport(scope, command)} />}
 

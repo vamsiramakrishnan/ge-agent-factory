@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Button } from "@ge/ui";
+import { Button, PageHeader, Section } from "@ge/ui";
 import { useGeQuery } from "../lib/query";
 import { ge, startJob, type StatusBoard, type Fleet as FleetData } from "../services/geClient";
 import { FleetTable } from "../components/FleetTable";
@@ -255,38 +255,40 @@ export default function Fleet({ status, refresh }: FleetProps) {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-6">
-        <div className="flex items-baseline justify-between mb-2">
-          <h1 className="text-2xl font-bold text-on-surface">Fleet</h1>
+      <PageHeader
+        title="Fleet"
+        subtitle={
+          <>
+            The persistent roster of every agent. To take a spec through the build &amp; deploy flow, use the <a href="#/pipeline" className="text-primary hover:underline">Pipeline</a>.
+          </>
+        }
+        meta={
+          <div className="flex flex-wrap items-center gap-4 text-sm">
+            <span className="text-secondary">
+              Total: <span className="font-semibold text-on-surface">{totalCount}</span>
+            </span>
+            {Object.entries(health?.byHealth || statusCounts).slice(0, 4).map(([status, count]) => (
+              <span key={status} className="text-secondary">
+                {status}: <span className="font-semibold text-on-surface">{count}</span>
+              </span>
+            ))}
+          </div>
+        }
+        actions={
           <Button variant="ghost" size="sm" onClick={fetchFleet} disabled={loading}>
             {loading ? "Loading..." : "Refresh"}
           </Button>
-        </div>
-        <p className="text-sm text-secondary mb-2">
-          The persistent roster of every agent. To take a spec through the build &amp; deploy flow, use the <a href="#/pipeline" className="text-primary hover:underline">Pipeline</a>.
-        </p>
-
-        <div className="flex items-center gap-4 text-sm">
-          <span className="text-secondary">
-            Total: <span className="font-semibold text-on-surface">{totalCount}</span>
-          </span>
-          {Object.entries(health?.byHealth || statusCounts).slice(0, 4).map(([status, count]) => (
-            <span key={status} className="text-secondary">
-              {status}: <span className="font-semibold text-on-surface">{count}</span>
-            </span>
-          ))}
-        </div>
-      </div>
+        }
+      />
 
       {error && <ErrorBanner label="Failed to load fleet:" message={error} onRetry={fetchFleet} />}
 
       {health && (
         <div className="mb-6 grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
-          <div className="editorial-micro-card rounded-lg p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-on-surface">Agents by stage</h2>
-              <span className="text-xs text-secondary">{health.blocked} blocked · {health.repairable} repairable</span>
-            </div>
+          <Section
+            title="Agents by stage"
+            actions={<span className="text-xs text-secondary">{health.blocked} blocked · {health.repairable} repairable</span>}
+          >
             <div className="grid grid-cols-2 gap-2 md:grid-cols-4 xl:grid-cols-7">
               {health.stages.map((stage) => (
                 <button
@@ -303,13 +305,12 @@ export default function Fleet({ status, refresh }: FleetProps) {
                 </button>
               ))}
             </div>
-          </div>
+          </Section>
 
-          <div className="editorial-micro-card rounded-lg p-4">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-on-surface">Repair Owners</h2>
-              <span className="text-xs text-secondary">who can move it</span>
-            </div>
+          <Section
+            title="Repair Owners"
+            actions={<span className="text-xs text-secondary">who can move it</span>}
+          >
             <div className="space-y-2">
               {(Object.entries(health.byOwner) as Array<[string, number]>).sort((a, b) => b[1] - a[1]).map(([owner, count]) => (
                 <div key={owner} className="flex items-center justify-between rounded-md bg-surface-container/50 px-3 py-2 text-sm">
@@ -318,18 +319,20 @@ export default function Fleet({ status, refresh }: FleetProps) {
                 </div>
               ))}
             </div>
-          </div>
+          </Section>
         </div>
       )}
 
       {health?.bottlenecks?.length ? (
-        <div className="mb-6 editorial-micro-card rounded-lg p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-on-surface">Top Bottlenecks</h2>
+        <Section
+          className="mb-6"
+          title="Top Bottlenecks"
+          actions={
             <Button variant="ghost" size="sm" onClick={() => setFilterStatus("blocked")}>
               Show blocked
             </Button>
-          </div>
+          }
+        >
           <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
             {health.bottlenecks.slice(0, 6).map((item) => (
               <button
@@ -352,7 +355,7 @@ export default function Fleet({ status, refresh }: FleetProps) {
               </button>
             ))}
           </div>
-        </div>
+        </Section>
       ) : null}
 
       <div className="editorial-micro-card rounded-lg p-4 mb-6">

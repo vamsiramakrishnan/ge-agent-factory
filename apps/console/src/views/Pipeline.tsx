@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, Boxes, Database, FileText, GitBranch, ListChecks, MessageSquareText, Play, RefreshCw, Search, User, Users } from "lucide-react";
-import { Button, CONTROL_CLASS, Field, Segmented, Select, Stat } from "@ge/ui";
+import { Button, CONTROL_CLASS, Field, PageHeader, Segmented, Select, Stat } from "@ge/ui";
 import { ge, startJob, type JourneyPlan, type JourneyStage, type RuntimeTaskSummary, type SpecCatalog, type SpecOption, type StatusBoard } from "../services/geClient";
 import { Lifecycle } from "../components/Lifecycle";
 import { ErrorBanner } from "../components/ErrorBanner";
@@ -359,35 +359,42 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-7">
-      <header className="mb-6 grid gap-5 border-b border-outline-variant/40 pb-6 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
-        <div className="max-w-4xl">
-          <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-secondary">Spec to deploy</div>
-          <h1 className="text-3xl font-bold text-on-surface">Pipeline</h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-secondary">
+      <PageHeader
+        size="lg"
+        eyebrow="Spec to deploy"
+        title="Pipeline"
+        subtitle={
+          <>
             The build &amp; deploy flow for a spec (or a batch): data, simulators, agent build, evals, repair, and deployment gates. For the roster of all existing agents, see the <a href="#/fleet" className="text-primary hover:underline">Fleet</a>.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center justify-start gap-2 xl:justify-end">
-          <Stat size="sm" label="Mode" value={status?.mode || journey?.mode || "local"} />
-          <Stat size="sm" label="Specs" value={specCatalog ? String(specCatalog.total) : "…"} />
-          <Stat size="sm" label="GCP Project" value={status?.project || "local"} />
-          {activeInterviewId && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="border border-primary/30 bg-primary/5"
-              onClick={() => { location.hash = "#/interview"; }}
-            >
-              <MessageSquareText className="h-4 w-4" />
-              Continue Interview
+          </>
+        }
+        meta={
+          <>
+            <Stat size="sm" label="Mode" value={status?.mode || journey?.mode || "local"} />
+            <Stat size="sm" label="Specs" value={specCatalog ? String(specCatalog.total) : "…"} />
+            <Stat size="sm" label="GCP Project" value={status?.project || "local"} />
+          </>
+        }
+        actions={
+          <>
+            {activeInterviewId && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="border border-primary/30 bg-primary/5"
+                onClick={() => { location.hash = "#/interview"; }}
+              >
+                <MessageSquareText className="h-4 w-4" />
+                Continue Interview
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={loadJourney} disabled={busy !== null}>
+              <RefreshCw className="h-4 w-4" />
+              Refresh
             </Button>
-          )}
-          <Button variant="outline" size="sm" onClick={loadJourney} disabled={busy !== null}>
-            <RefreshCw className="h-4 w-4" />
-            Refresh
-          </Button>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       <section className="mb-6 overflow-hidden rounded-lg border border-outline-variant/40 bg-surface shadow-ambient">
         <div className="flex items-center justify-center border-b border-outline-variant/30 px-6 py-4">

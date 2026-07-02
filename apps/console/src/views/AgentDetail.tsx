@@ -15,7 +15,7 @@ import {
   TriangleAlert,
   Wrench,
 } from "lucide-react";
-import { Button, EmptyState, Segmented, Stat } from "@ge/ui";
+import { Button, EmptyState, PageHeader, Segmented, Stat } from "@ge/ui";
 import {
   ge,
   startJob,
@@ -325,28 +325,27 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-7">
-      <header className="mb-6 border-b border-outline-variant/40 pb-6">
-        <button
-          type="button"
-          onClick={() => { location.hash = "#/fleet"; }}
-          className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-secondary transition-colors hover:text-on-surface"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Fleet
-        </button>
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
-          <div className="min-w-0">
-            <div className="mb-1 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wide text-secondary">
-              <span>{agent.department || "unknown department"}</span>
-              <span>·</span>
-              <code className="font-mono normal-case tracking-normal">{agent.id}</code>
-            </div>
-            <h1 className="truncate text-3xl font-bold text-on-surface">{agent.title}</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-secondary">
-              This detail view mirrors Fleet and Pipeline state: the same action plan, workspace gate, artifacts, and runtime handoff.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        onClick={() => { location.hash = "#/fleet"; }}
+        className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-secondary transition-colors hover:text-on-surface"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to Fleet
+      </button>
+      <PageHeader
+        size="lg"
+        eyebrow={
+          <span className="flex flex-wrap items-center gap-2">
+            <span>{agent.department || "unknown department"}</span>
+            <span>·</span>
+            <code className="font-mono normal-case tracking-normal">{agent.id}</code>
+          </span>
+        }
+        title={<span className="block truncate">{agent.title}</span>}
+        subtitle="This detail view mirrors Fleet and Pipeline state: the same action plan, workspace gate, artifacts, and runtime handoff."
+        actions={
+          <>
             <Button
               variant="outline"
               size="sm"
@@ -371,9 +370,9 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
               <Radio className="h-4 w-4" />
               Runs
             </Button>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
       {/* Triage band — current stage + status + the single most useful next action /
           blocker reason, so the operator knows what's wrong and what to do without

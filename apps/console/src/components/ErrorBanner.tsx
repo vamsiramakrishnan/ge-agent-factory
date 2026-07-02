@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { CommandChip } from "@ge/ui";
 
 // Pull a copyable fix command out of an error message. Several server errors
 // already embed the exact fix as a backtick-quoted shell command (e.g. "run
@@ -32,22 +32,13 @@ const TONE_CLASSES: Record<"rose" | "amber", { box: string; text: string; button
 };
 
 // A dead-end-proof error surface: names the problem (the raw message), then —
-// whenever the message carries a `backtick command` — offers a Copy button so
-// the fix is one click away instead of a plain wall of red/amber text. Falls
-// back to a Retry button (or nothing) when there's no embedded command.
+// whenever the message carries a `backtick command` — renders the fix as the
+// canonical <CommandChip> so it's one click from the clipboard instead of a
+// plain wall of red/amber text. Falls back to a Retry button (or nothing)
+// when there's no embedded command.
 export function ErrorBanner({ message, tone = "rose", label, onRetry, className = "" }: ErrorBannerProps) {
-  const [copied, setCopied] = useState(false);
   const command = extractCommand(message);
   const cls = TONE_CLASSES[tone];
-
-  const handleCopy = async () => {
-    if (!command) return;
-    try {
-      await navigator.clipboard.writeText(command);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 1500);
-    } catch { /* ignore */ }
-  };
 
   return (
     <div className={`mb-4 rounded-lg border px-4 py-3 text-sm ${cls.box} ${cls.text} ${className}`}>
@@ -57,14 +48,7 @@ export function ErrorBanner({ message, tone = "rose", label, onRetry, className 
           {message}
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          {command && (
-            <button
-              onClick={handleCopy}
-              className={`rounded-md border px-2.5 py-1 text-xs font-medium transition-colors ${cls.button}`}
-            >
-              {copied ? "Copied" : `Copy: ${command}`}
-            </button>
-          )}
+          {command && <CommandChip command={command} />}
           {onRetry && (
             <button
               onClick={onRetry}

@@ -1,6 +1,6 @@
 ---
 title: Quickstart
-description: From a fresh clone to a validated agent workspace on your machine.
+description: From a fresh clone to your first validated canary agent on your machine.
 sidebar:
   order: 2
 ---
@@ -8,47 +8,55 @@ sidebar:
 import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 import CommandCard from '../../../components/CommandCard.astro';
 
-Get from a fresh clone to a validated agent workspace. Nothing touches the
-cloud until you choose to ship — the everyday loop is entirely local.
+Get from a fresh clone to your first validated canary agent. Nothing touches
+the cloud until you choose to ship — the everyday loop is entirely local.
 
 <Steps>
 
-1. **Set up the toolchain.**
+1. **Set up the toolchain** (~5–10 min, one time).
 
    ```bash
    curl https://mise.run | sh   # once, if you don't have mise
    mise run setup               # JS deps + Python/uv toolchain + `ge` on PATH + daemon
-   mise run doctor-local        # verify Bun, uv, Python, agents-cli, cache, harness wiring
    ```
 
-2. **Build one agent locally.**
+2. **Initialize** (~30 s).
 
    ```bash
-   mise run mode-local
-   CANARY=1 mise run provision-local
+   ge init                      # discover config, write .ge.json
    ```
 
-   Local mode runs the whole line — generate → validate → preview — on your
-   machine against fixtures and simulators. See
+   Bare `ge` now prints a status board — mode, planes, and the next step.
+
+3. **Prove the pipeline with a canary** (~5 min).
+
+   ```bash
+   ge devex smoke               # doctor → one generated, validated canary workspace
+   ```
+
+   The whole line — generate → validate → preview — runs on your machine
+   against fixtures and simulators. See
    [the factory line](/ge-agent-factory/concepts/the-factory-line/) for what
    each stage produces.
 
-   Under the hood this is one operator command — rendered here straight from
-   the command registry, so it can't drift:
+4. **Build agents and watch them run.**
+
+   ```bash
+   ge mode local
+   ge agents build --canary
+   mise run console   # Overview · Pipeline · Interview · Fleet · Repair Queue · Runs · Readiness
+   ```
+
+   The factory emits a real workspace: ADK agent code, tools, fixture data,
+   smoke tests, eval config, and a promotion packet. Every run is recorded —
+   follow it live in **Runs**, or replay it event by event afterwards.
+
+   Under the hood the build is one operator command — rendered here straight
+   from the command registry, so it can't drift:
 
    <CommandCard id="agents.build.local" />
 
-3. **Inspect what was generated.**
-
-   The factory emits a real workspace: ADK agent code, tools, fixture data,
-   smoke tests, eval config, and a promotion packet. The promotion gate blocks
-   any ship that hasn't passed validation and the harness verdicts.
-
-   ```bash
-   mise run console   # Pipeline · Fleet · Activity · Doctor → http://localhost:18260
-   ```
-
-4. **Ship — when you're ready, and only then.**
+5. **Ship — when you're ready, and only then.**
 
    <Tabs>
      <TabItem label="Cloud Shell (guided)">
