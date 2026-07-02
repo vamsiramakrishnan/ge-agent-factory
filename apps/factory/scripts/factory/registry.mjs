@@ -1,4 +1,5 @@
 import { defineCommand } from "citty";
+import { docsUrlFor, resolveErrorCode } from "./core/error-codes.mjs";
 
 // citty command registry for the factory CLI (Week-4 / PR-B). Replaces the
 // hand-rolled parseArgs + 28-case switch. Two kinds of command:
@@ -66,11 +67,24 @@ function renderResult(name, result, opts = {}) {
 // thrown error the same way, matching fail()'s original contract (before
 // this refactor, essentially every reachable command failure went through
 // fail() one way or another).
+//
+// Stable error codes (core/error-codes.mjs): when the thrown error carries a
+// registered GE#### code (fail(msg, code)), the human line becomes
+// "✗ GE#### <message>" plus a docs-site deep link, and the JSON payload gains
+// a `code` field. An error WITHOUT a registered code renders byte-identically
+// to how it always did — no code, no link, same JSON key set.
 function renderError(name, error, opts = {}) {
   const message = error?.message ?? String(error);
+  const code = resolveErrorCode(error);
   const useHuman = isRealTTY(opts) && !opts.json;
   if (!useHuman) {
-    console.error(JSON.stringify({ ok: false, error: message }, null, 2));
+    const payload = code ? { ok: false, error: message, code } : { ok: false, error: message };
+    console.error(JSON.stringify(payload, null, 2));
+    return;
+  }
+  if (code) {
+    console.error(`✗ ${code} ${message}`);
+    console.error(`→ ${docsUrlFor(code)}`);
     return;
   }
   console.error(`✗ ${message}`);
