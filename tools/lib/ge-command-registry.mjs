@@ -11,6 +11,8 @@
  *   - "starts-local-workloads" — starts a process on the operator's machine
  *     (local factory harness, daemon, etc.), no cloud mutation.
  *   - "writes-repo" — writes/commits files into the local git repo.
+ *   - "read-only" — reads/reports state only; mutates nothing (cloud, repo,
+ *     or local processes).
  *   Keep `apps/console/src/services/geClient.ts`'s `GeCommand.risk` union in
  *   sync with any new value added here.
  * - `requirements` (object, all keys optional): preflight checks the console
@@ -44,6 +46,14 @@
  *   - `statusCommand` (string, optional) — CLI command to poll status.
  *   - `eventLog` (string, optional) — path to a JSONL event log.
  *   - `artifacts` (string[], optional) — generated file globs to surface.
+ * - `mcp` (object, optional): presence means this command is exposed as an MCP
+ *   tool by tools/mcp-server.mjs (which derives name/description/schema from
+ *   here — never hand-write them there).
+ *   - `tool` (string) — MCP tool name, `factory_*` convention.
+ *   - `description` (string) — full tool description shown to models.
+ *   - `params` (object) — flat param descriptors, keyed by param name:
+ *     { type: "string"|"boolean"|"number", enum?: string[], optional?: true,
+ *       description?: string }
  */
 export const GE_COMMANDS = {
   "up": {
@@ -99,6 +109,11 @@ export const GE_COMMANDS = {
       cloudAuth: true,
       configWritable: true,
     },
+    mcp: {
+      tool: "factory_mcp_deploy",
+      description: "Deploy the per-department custom MCP services to Cloud Run (fleet-level).",
+      params: {},
+    },
     argv: () => ["mcp", "deploy"],
   },
   "agents.build": {
@@ -120,6 +135,22 @@ export const GE_COMMANDS = {
       config: ["project", "geAppId", "gatewayUrl"],
       cloudAuth: true,
       toolPlane: true,
+    },
+    mcp: {
+      tool: "factory_provision",
+      description: "Mutating: build agents. local=true runs on-machine via the Antigravity harness (stops at the local build boundary; use factory_ship to hand off to the cloud afterwards); otherwise submits directly to the cloud gateway end-to-end. scope: 'canary' | 'all'; or dept/ids. Poll cloud submissions with factory_status.",
+      params: {
+        scope: { type: "string", enum: ["canary", "all"], optional: true },
+        dept: { type: "string", optional: true },
+        ids: { type: "string", optional: true },
+        concurrency: { type: "string", optional: true },
+        force: { type: "boolean", optional: true },
+        noProxy: { type: "boolean", optional: true },
+        local: { type: "boolean", optional: true },
+        vertex: { type: "boolean", optional: true },
+        target: { type: "string", optional: true },
+        limit: { type: "string", optional: true },
+      },
     },
     argv: (body = {}) => {
       const argv = ["agents", "build"];
@@ -209,6 +240,16 @@ export const GE_COMMANDS = {
       shipHandoff: true,
       bigQueryHard: true,
     },
+    mcp: {
+      tool: "factory_ship",
+      description: "Mutating: hand off agents already built LOCALLY (via factory_provision with local=true) to the cloud: uploads the prebuilt workspaces, then runs deploy→register→publish remotely. Use factory_status afterwards to poll the resulting cloud run(s). Not for agents built directly in the cloud — those go straight through factory_provision.",
+      params: {
+        ids: { type: "string", optional: true },
+        startStage: { type: "string", optional: true },
+        targetStage: { type: "string", optional: true },
+        noProxy: { type: "boolean", optional: true },
+      },
+    },
     argv: (body = {}) => {
       const argv = ["agents", "ship"];
       if (body.ids) argv.push("--ids", String(body.ids));
@@ -233,6 +274,18 @@ export const GE_COMMANDS = {
     requirements: {
       bins: ["git"],
       config: [],
+    },
+    mcp: {
+      tool: "factory_sync",
+      description: "Mutating: sync generated agent CODE (not deploy state) to/from git. local=true pushes on-machine harness workspaces (to agentsRepo/remote); otherwise pulls the cloud-built output from GCS into generated-agents/. Distinct from factory_ship, which hands off local builds into the cloud deploy pipeline rather than syncing source.",
+      params: {
+        force: { type: "boolean", optional: true },
+        push: { type: "boolean", optional: true },
+        commit: { type: "boolean", optional: true },
+        local: { type: "boolean", optional: true },
+        remote: { type: "string", optional: true },
+        create: { type: "boolean", optional: true },
+      },
     },
     argv: (body = {}) => {
       const argv = ["agents", "sync"];
@@ -264,6 +317,112 @@ export const GE_COMMANDS = {
       config: [],
     },
     argv: () => ["daemon", "start"],
+  },
+  // --- Read-only observe commands (no console job route: method/path null) ----
+  "usecases.list": {
+    id: "usecases.list",
+    method: null,
+    path: null,
+    cli: "factory list-usecases",
+    label: "List use cases",
+    summary: "List the agent use-case catalog, filterable by department or search term",
+    risk: "read-only",
+    expectedDuration: "under 10s",
+    requirements: { bins: [], config: [] },
+    mcp: {
+      tool: "factory_list_usecases",
+      description: "List the agent use-case catalog (filterable by department/search).",
+      params: {
+        department: { type: "string", optional: true },
+        search: { type: "string", optional: true },
+        limit: { type: "number", optional: true },
+      },
+    },
+    argv: () => ["list-usecases"],
+  },
+  "doctor": {
+    id: "doctor",
+    method: null,
+    path: null,
+    cli: "ge doctor",
+    label: "Factory doctor",
+    summary: "Preflight the factory/cloud plane health with suggested fixes",
+    risk: "read-only",
+    expectedDuration: "under 1m",
+    requirements: { bins: [], config: [] },
+    mcp: {
+      tool: "factory_doctor",
+      description: "Preflight the FACTORY/cloud plane: required GCP APIs, IAM bindings, IAP, memory, and core service health, with suggested fixes. Scope: the factory pipeline itself (build/deploy machinery), not the per-department MCP tool services. See also: factory_mcp_doctor for MCP-service-specific checks.",
+      params: {},
+    },
+    argv: () => ["doctor"],
+  },
+  "status": {
+    id: "status",
+    method: null,
+    path: null,
+    cli: "ge agents status",
+    label: "Poll run status",
+    summary: "Poll already-submitted cloud runs and report the stage tally per run",
+    risk: "read-only",
+    expectedDuration: "under 1m",
+    requirements: { bins: [], config: [] },
+    mcp: {
+      tool: "factory_status",
+      description: "Read-only: poll already-submitted CLOUD runs (from a prior factory_provision without local=true) and return the stage tally + per-run status. Does not track local harness builds — see factory_provision's local mode for those.",
+      params: {
+        noProxy: { type: "boolean", optional: true },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["agents", "status"];
+      if (body.noProxy) argv.push("--no-proxy");
+      return argv;
+    },
+  },
+  "logs": {
+    id: "logs",
+    method: null,
+    path: null,
+    cli: "ge agents logs",
+    label: "Fetch run logs",
+    summary: "Fetch a stage's result JSON for a run",
+    risk: "read-only",
+    expectedDuration: "under 10s",
+    requirements: { bins: [], config: [] },
+    mcp: {
+      tool: "factory_logs",
+      description: "Fetch a stage's result JSON for a run (errors, exit codes, build log URL).",
+      params: {
+        runId: { type: "string" },
+        stage: { type: "string", optional: true },
+        item: { type: "string", optional: true },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["agents", "logs"];
+      if (body.runId) argv.push(String(body.runId));
+      if (body.stage) argv.push("--stage", String(body.stage));
+      if (body.item) argv.push("--item", String(body.item));
+      return argv;
+    },
+  },
+  "mcp.doctor": {
+    id: "mcp.doctor",
+    method: null,
+    path: null,
+    cli: "ge mcp doctor",
+    label: "Tool-plane doctor",
+    summary: "Check per-department MCP service health and Agent Registry entries",
+    risk: "read-only",
+    expectedDuration: "under 1m",
+    requirements: { bins: [], config: [] },
+    mcp: {
+      tool: "factory_mcp_doctor",
+      description: "Check the TOOL plane only: per-department custom MCP service health (Cloud Run readiness) + Agent Registry entries. Narrower than factory_doctor, which covers the overall factory/cloud plane (APIs, IAM, IAP, memory) and does not inspect individual MCP services.",
+      params: {},
+    },
+    argv: () => ["mcp", "doctor"],
   },
 };
 
