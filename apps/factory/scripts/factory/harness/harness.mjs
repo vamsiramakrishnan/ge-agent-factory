@@ -66,7 +66,7 @@ export async function cmdHarnessReview(dir, flags, deps) {
   const manifest = await readJson(manifestPath(dir), null);
   const spec = await readJson(join(dir, "mock_systems", "usecase-spec.json"), null);
   if (!manifest && !spec) fail("No generated workspace context found. Run 'factory from-usecase' or 'factory tools' first.");
-  await mkdir(join(dir, "artifacts"), { recursive: true }).catch(() => {});
+  await mkdir(join(dir, "artifacts"), { recursive: true }).catch((error) => console.warn(`[harness] could not create directory ${join(dir, "artifacts")} — ${error?.message || String(error)}`));
 
   const provider = flags.agent || flags.provider || "antigravity-sdk";
   const context = await readWorkspaceReviewContext(dir);
@@ -246,7 +246,7 @@ async function refineResumeOptions(dir, workItem, deps) {
   if (envOff("GE_HARNESS_NO_RESUME")) return {};
   const id = refineSessionId(dir, workItem, { basename });
   const saveDir = join(HARNESS_DATA_ROOT, "harness-sessions", id);
-  await mkdir(saveDir, { recursive: true }).catch(() => {});
+  await mkdir(saveDir, { recursive: true }).catch((error) => console.warn(`[harness] could not create directory ${saveDir} — ${error?.message || String(error)}`));
   return { conversationId: id, saveDir };
 }
 
@@ -262,7 +262,7 @@ export async function cmdHarnessRefine(dir, flags, deps) {
   const manifest = await readJson(manifestPath(dir), null);
   const spec = await readJson(join(dir, "mock_systems", "usecase-spec.json"), null);
   if (!manifest && !spec) fail("No generated workspace context found. Run 'factory from-usecase' or 'factory tools' first.");
-  await mkdir(join(dir, "artifacts"), { recursive: true }).catch(() => {});
+  await mkdir(join(dir, "artifacts"), { recursive: true }).catch((error) => console.warn(`[harness] could not create directory ${join(dir, "artifacts")} — ${error?.message || String(error)}`));
 
   const provider = flags.agent || flags.provider || "antigravity-sdk";
   const workItem = buildHarnessWorkItem({
