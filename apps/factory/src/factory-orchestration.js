@@ -330,29 +330,17 @@ export function buildControlPlaneProvisionSteps({
       createIfMissing: true,
     },
     {
+      // Deliberately NOT a gcloud step (taste-campaign 09 §C8): a stale
+      // `gcloud run deploy` spec used to live here (2Gi/2CPU + inline env) and
+      // drifted against Terraform's worker config (installer/terraform/cloud_run.tf:
+      // 8 CPU / 32Gi, env, scaling, ingress, SA). Terraform is the sole owner of
+      // Cloud Run config per the deploy contract in docs/OPERATIONS.md ("Cloud Build
+      // builds images; Terraform owns Cloud Run config"), so this step only surfaces
+      // the pointer instead of deploying a conflicting spec. executeProvisionSteps
+      // reports it as skipped-with-description.
       id: "worker-service",
-      kind: "gcloud",
-      description: "Create or update the warm Cloud Run Service used by non-release factory stages.",
-      apply: [
-        "run", "deploy", workerService,
-        "--source", ".",
-        "--region", region,
-        "--project", project,
-        "--service-account", serviceAccountEmail,
-        "--memory", "2Gi",
-        "--cpu", "2",
-        "--timeout", "1800",
-        "--no-allow-unauthenticated",
-        "--min-instances", "0",
-        "--max-instances", "10",
-        "--set-env-vars", [
-          `GE_AGENT_FACTORY_PROJECT=${project}`,
-          `GE_AGENT_FACTORY_REGION=${region}`,
-          `GE_AGENT_FACTORY_BUCKET=${bucketName}`,
-          `GE_AGENT_FACTORY_QUEUE=${queue}`,
-          `GE_AGENT_FACTORY_TOPIC=${topic}`,
-        ].join(","),
-      ],
+      kind: "note",
+      description: `Cloud Run worker service ${workerService} is Terraform-owned (installer/terraform/cloud_run.tf) — deploy/update it with \`ge images build\` + \`ge infra apply\` (run by \`ge up\`), never \`gcloud run deploy\`. See docs/OPERATIONS.md "Deploy contract".`,
     },
     {
       id: "cloud-build-stage-template",
