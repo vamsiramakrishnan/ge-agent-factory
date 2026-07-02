@@ -14,7 +14,13 @@ const sourceRoot = resolve(repoRoot, "..", "presentation", "src", "components", 
 // The catalog is a build artifact (git-ignored), loaded lazily via src/use-cases.js.
 // It is no longer a committed 12 MB JS module.
 const outPath = join(repoRoot, "generated", "use-cases.generated.json");
-const registryOutPath = join(repoRoot, "src", "agent-spec-registry.generated.json");
+// The registry is TRACKED in git, so its bytes must be a pure function of the
+// slide/interview inputs — no wall-clock timestamps (see
+// tools/check-generated-drift.mjs, which regenerates it and byte-compares).
+// GE_AGENT_SPEC_REGISTRY_OUT redirects the write so that checker can
+// regenerate to a temp path without touching the tracked file.
+const registryOutPath = process.env.GE_AGENT_SPEC_REGISTRY_OUT
+  || join(repoRoot, "src", "agent-spec-registry.generated.json");
 
 function propString(source, name) {
   const match = source.match(new RegExp(`${name}=\\{?"([^"]+)"\\}?`));
@@ -296,7 +302,10 @@ await writeFile(
   `${JSON.stringify({
     kind: "ge.agent_spec.registry",
     version: 1,
-    generatedAt: new Date().toISOString(),
+    // Deliberately no generatedAt: a wall-clock timestamp made every ordinary
+    // catalog/test run rewrite this tracked file (taste-campaign 08 §A1), and
+    // nothing consumed the field. Regeneration over unchanged inputs must be a
+    // byte no-op.
     sources: {
       slides: relative(repoRoot, sourceRoot),
       interviews: "catalog/interview-specs",
