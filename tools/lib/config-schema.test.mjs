@@ -139,6 +139,27 @@ test("buildFactoryConfig avoids stale project-scoped file values after project o
   expect(cfg.mcpServices).toEqual({});
 });
 
+test("buildFactoryConfig tolerates the $schema key `ge init` writes into .ge.json", () => {
+  // init() (factory-core.mjs) writes `"$schema": "./.ge.schema.json"` so
+  // editors pick up the generated schema. Config resolution reads .ge.json
+  // by named keys only, so the extra key must change nothing and not leak.
+  const file = { project: "demo", region: "eu-west1" };
+  const withSchema = buildFactoryConfig({ file: { $schema: "./.ge.schema.json", ...file } });
+  expect(withSchema).toEqual(buildFactoryConfig({ file }));
+  expect("$schema" in withSchema).toBe(false);
+});
+
+test("effectiveConfigFile keeps $schema on project override (not project-scoped)", () => {
+  const { file, projectOverridden } = effectiveConfigFile(
+    { $schema: "./.ge.schema.json", project: "old-project", projectNumber: "111" },
+    { project: "new-project" },
+    {},
+  );
+  expect(projectOverridden).toBe(true);
+  expect(file.$schema).toBe("./.ge.schema.json");
+  expect(file.projectNumber).toBeUndefined();
+});
+
 test("explainFactoryConfig reports project override guard", () => {
   const report = explainFactoryConfig({
     flags: { project: "new-project" },

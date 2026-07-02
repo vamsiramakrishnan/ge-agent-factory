@@ -184,6 +184,9 @@ export async function init(cfg, { log = noop } = {}) {
   cfg.bucket = cfg.bucket || `${cfg.project}-ge-agent-factory`;
 
   const out = {
+    // Points editors at the tracked, generated schema (tools/gen-config-schema.mjs).
+    // Every other .ge.json writer merges (`...existing`), so the key survives.
+    $schema: "./.ge.schema.json",
     project: cfg.project, projectNumber: cfg.projectNumber, region: cfg.region,
     gatewayService: cfg.gatewayService, workerService: cfg.workerService,
     gatewayUrl: cfg.gatewayUrl, workerUrl: cfg.workerUrl, bucket: cfg.bucket,
