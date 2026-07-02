@@ -159,6 +159,10 @@ modernized in the same change series:
   console jobs into daemon tasks needs a supervised always-on daemon first;
   the transports now share the daemon's resume/afterSeq semantics, which is
   the prerequisite step.
-- **The five start/resume clone pairs** inside `tools/lib/daemon/*` (~500
-  LOC) should collapse into one kind→executor registry; the HTTP-level tests
-  added here are the safety net that refactor was missing.
+- ~~The five start/resume clone pairs inside `tools/lib/daemon/*`~~ —
+  **done**: the orchestration skeleton lives once in
+  `daemon/task-runner.mjs` (`runStreamedTask`), doctor's start/resume share
+  one executor, and the run-kind modules keep only argv derivation, env,
+  safety classifiers, and artifact inspection (−348/+112 LOC, event shapes
+  preserved byte-for-byte, verified live including the failed-task resume
+  path).
