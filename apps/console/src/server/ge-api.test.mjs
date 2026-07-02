@@ -1,7 +1,7 @@
 import { test, expect } from "bun:test";
-import { handleGeApi } from "./ge-api.mjs";
+import { handleGeApi, isKnownRoute } from "./ge-api.mjs";
 import { handleGeNodeRequest } from "./ge-api-router.mjs";
-import { GE_COMMAND_LIST } from "../shared/ge-commands.mjs";
+import { GE_COMMANDS, GE_COMMAND_LIST } from "../shared/ge-commands.mjs";
 
 const core = {
   loadConfig: () => ({ project: "p", region: "r", mode: "remote" }),
@@ -20,6 +20,10 @@ const core = {
   fleetStatus: async () => ({ total: 2, byDept: {}, byStatus: {}, agents: [{ id: "a1" }, { id: "a2" }] }),
   setMode: (m) => ({ mode: m }),
   ship: async () => ({ submitted: 1 }),
+  applyPlan: async () => ({ kind: "ge.apply.plan", drift: [] }),
+  tailLog: (_c, opts) => ({ found: true, runId: opts.runId, lines: [] }),
+  readArtifact: (_c, opts) => ({ found: true, name: opts.name, content: "" }),
+  resolveCatalogId: async () => null,
 };
 
 test("GET status", async () => {
@@ -359,6 +363,87 @@ test("readonly is parsed as a boolean — 'false' does NOT enable it", async () 
 test("unknown route → 404", async () => {
   const r = await handleGeApi({ method: "GET", path: "/api/ge/nope", query: {}, body: null }, {});
   expect(r.status).toBe(404);
+});
+
+// --- Route-table parity matrix -----------------------------------------------
+// 404 parity with the pre-ROUTES if-chain: "known" cases must not 404 (they
+// return a JSON response or a transport sentinel), "unknown" cases must 404.
+const ROUTE_MATRIX = [
+  // known — JSON or sentinel responses
+  { method: "GET", path: "/api/ge/status", known: true },
+  // the old dispatch matched parts[2] only — deeper paths still hit statusBoard
+  { method: "GET", path: "/api/ge/status/extra", known: true },
+  { method: "GET", path: "/api/ge/commands", known: true },
+  { method: "GET", path: "/api/ge/specs", known: true },
+  { method: "GET", path: "/api/ge/specs/review", known: true },
+  { method: "GET", path: "/api/ge/doctor", known: true },
+  { method: "GET", path: "/api/ge/doctor/stream", known: true },
+  { method: "GET", path: "/api/ge/fleet", known: true },
+  { method: "GET", path: "/api/ge/factory/runs", known: true },
+  { method: "GET", path: "/api/ge/apply/plan", known: true },
+  { method: "GET", path: "/api/ge/ledger/runs", known: true },
+  { method: "GET", path: "/api/ge/ledger/runs/local-1", known: true },
+  { method: "GET", path: "/api/ge/ledger/runs/local-1/events", known: true },
+  { method: "GET", path: "/api/ge/journey", known: true },
+  { method: "GET", path: "/api/ge/mission", known: true },
+  { method: "GET", path: "/api/ge/agents/a2", known: true },
+  { method: "GET", path: "/api/ge/workspaces/ws-1/doctor", known: true },
+  { method: "GET", path: "/api/ge/logs/run-1", known: true },
+  { method: "GET", path: "/api/ge/artifacts/run-1/item-1/name-1", known: true },
+  { method: "GET", path: "/api/ge/runs/run-1/logs", known: true },
+  { method: "GET", path: "/api/ge/runs/run-1/events", known: true },
+  { method: "GET", path: "/api/ge/jobs", known: true },
+  { method: "GET", path: "/api/ge/jobs/j1", known: true },
+  { method: "GET", path: "/api/ge/jobs/j1/logs", known: true },
+  { method: "GET", path: "/api/ge/autopilot", known: true },
+  { method: "GET", path: "/api/ge/autopilot/auto-1", known: true },
+  { method: "GET", path: "/api/ge/autopilot/auto-1/events", known: true },
+  { method: "POST", path: "/api/ge/mode", known: true },
+  { method: "POST", path: "/api/ge/specs/register", known: true },
+  { method: "POST", path: "/api/ge/workspaces/ws-1/repair", known: true },
+  { method: "POST", path: "/api/ge/autopilot", known: true },
+  { method: "POST", path: "/api/ge/autopilot/auto-1/resume", known: true },
+  { method: "POST", path: "/api/ge/up", known: true },
+  { method: "POST", path: "/api/ge/data/up", known: true },
+  { method: "POST", path: "/api/ge/mcp/deploy", known: true },
+  { method: "POST", path: "/api/ge/agents/build", known: true },
+  { method: "POST", path: "/api/ge/agents/ship", known: true },
+  { method: "POST", path: "/api/ge/agents/sync", known: true },
+  { method: "POST", path: "/api/ge/daemon/start", known: true },
+  // unknown — 404, exactly as the old if-chain + isKnownRoute pair behaved
+  { method: "GET", path: "/api/ge/nope", known: false },
+  { method: "GET", path: "/api/ge/mode", known: false },
+  { method: "POST", path: "/api/ge/status", known: false },
+  { method: "GET", path: "/api/ge/agents", known: false },
+  { method: "GET", path: "/api/ge/workspaces/ws-1", known: false },
+  { method: "GET", path: "/api/ge/jobs/j1/nope", known: false },
+  { method: "GET", path: "/api/ge/autopilot/auto-1/nope", known: false },
+  { method: "POST", path: "/api/ge/autopilot/auto-1", known: false },
+  { method: "GET", path: "/api/ge/artifacts/run-1/item-1", known: false },
+  { method: "GET", path: "/api/ge/runs/run-1", known: false },
+  { method: "POST", path: "/api/ge/agents/nope", known: false },
+  { method: "POST", path: "/api/ge/journey", known: false },
+];
+
+test("route matrix: known/unknown 404 parity with the pre-table dispatch", async () => {
+  for (const { method, path, known } of ROUTE_MATRIX) {
+    const body = method === "POST" ? {} : null;
+    const r = await handleGeApi({ method, path, query: {}, body }, core);
+    if (known) {
+      expect({ path: `${method} ${path}`, notFound: r.status === 404 }).toEqual({ path: `${method} ${path}`, notFound: false });
+    } else {
+      expect({ path: `${method} ${path}`, status: r.status }).toEqual({ path: `${method} ${path}`, status: 404 });
+      expect(r.json).toEqual({ error: "not found", path });
+    }
+  }
+});
+
+test("every registry command with a console route is matched by a ROUTES row", () => {
+  for (const command of Object.values(GE_COMMANDS)) {
+    if (!command.path) continue;
+    const parts = command.path.split("/").filter((p) => p);
+    expect({ id: command.id, known: isKnownRoute(command.method, parts) }).toEqual({ id: command.id, known: true });
+  }
 });
 
 // --- Opt-in Firebase auth gate (default OFF) ---------------------------------
