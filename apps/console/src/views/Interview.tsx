@@ -94,7 +94,7 @@ export default function Interview({ status }: { status?: StatusBoard | null }) {
             const message = extractRuntimeFailure(detail) || ev.line || "Interview run failed";
             setError(humanizeInterviewError(message, restartCommand));
           }
-        }).catch(() => {});
+        }).catch((err) => console.warn("[console] interview: task detail refresh failed:", err));
       }
     });
     return unsub;
