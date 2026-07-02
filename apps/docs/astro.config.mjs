@@ -1,5 +1,6 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import { SITE_DESCRIPTION, SITE_TITLE } from "./src/lib/site-meta.mjs";
 
 // The docs website. Content is NOT authored here — scripts/sync-content.mjs
 // renders the repo's canonical docs/ markdown into src/content/docs before
@@ -16,8 +17,8 @@ export default defineConfig({
   base: "/ge-agent-factory",
   integrations: [
     starlight({
-      title: "GE Agent Factory",
-      description: "Turn a business use case into a tested, deployable Gemini Enterprise agent.",
+      title: SITE_TITLE,
+      description: SITE_DESCRIPTION,
       favicon: "/favicon.svg",
       customCss: ["./src/styles/custom.css"],
       social: [
