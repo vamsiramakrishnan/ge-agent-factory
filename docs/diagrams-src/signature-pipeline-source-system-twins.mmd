@@ -1,0 +1,25 @@
+flowchart LR
+    CAP(["capture"])
+    CONTRACT["Enterprise Agent Contract"]
+    GEN["generate"]
+    TWIN[("source-system twins")]
+    PROVE{{"prove"}}
+    PASSPORT["passport & proof pack"]
+    HANDOFF(["hand off"])
+    AUTH{{"authority graph"}}
+
+    CAP --> CONTRACT
+    CONTRACT --> GEN
+    GEN --> TWIN
+    GEN --> PROVE
+    TWIN --> PROVE
+    PROVE --> PASSPORT
+    PASSPORT ==> HANDOFF
+    CONTRACT -.-> AUTH
+    AUTH -.-> GEN
+    AUTH -.-> HANDOFF
+
+    classDef system fill:#e8eef7,stroke:#5f6368,color:#202124
+    classDef dim fill:#f8f9fa,stroke:#dadce0,color:#9aa0a6
+    class TWIN system
+    class CAP,CONTRACT,GEN,PROVE,PASSPORT,HANDOFF,AUTH dim

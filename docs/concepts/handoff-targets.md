@@ -13,6 +13,10 @@ factory's output: **agents-cli** (the build/deploy CLI), **ADK Agent
 Engine** (the runtime), and **Gemini Enterprise** (the end-user surface).
 The factory compiles and proves; the targets build, run, and serve.
 
+<p align="center">
+  <img src="../assets/diagrams/signature-pipeline-handoff-targets.svg" alt="signature pipeline zoomed to hand off, lit; the passport crosses the build boundary via a thick edge into agents-cli, ADK, and Gemini Enterprise, with the rest of the pipeline shown dimmed for context" width="700">
+</p>
+
 ## Why the boundary exists
 
 The factory refuses to reimplement the layer below it — that is a design

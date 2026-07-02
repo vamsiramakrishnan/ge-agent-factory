@@ -19,6 +19,10 @@ simulator engine as a stateful, MCP-shaped backend — that the contract's tool
 intents can bind to and that proofs can run against, without touching the real
 system. See [Source-system twins](../concepts/source-system-twins.html).
 
+<p align="center">
+  <img src="../assets/diagrams/byo-synthesis.svg" alt="an OpenAPI document (or description or samples) is sketched into collections, keys, and fields; then contracted into tool bindings and workflows; then seeded with referentially-consistent rows; then registered into an overlay the simulator engine can resolve" width="320">
+</p>
+
 > Be clear about what this captures. An OpenAPI document describes an API's
 > surface, so OpenAPI capture produces a **source-system twin** — collections,
 > tools, seed data. It does not produce a behavior contract; the contract (the
@@ -54,8 +58,12 @@ runs against the mcp-service's Python; the interpreter is resolved as
 
 2. **Synthesize the twin from the OpenAPI document.**
 
+   Use your own OpenAPI document, or run the exact command below against the
+   checked-in two-schema example this guide's output is captured from
+   (`docs/cookbooks/examples/widget-orders-openapi.json`):
+
    ```bash
-   python synthesize_cli.py --mode openapi --openapi-file ./my-api.json --display-name MyApi
+   python synthesize_cli.py --mode openapi --openapi-file ../../../docs/cookbooks/examples/widget-orders-openapi.json --display-name MyApi
    ```
 
    Key flags (argparse): `--mode {nl,samples,openapi}` (default `nl`),
@@ -70,6 +78,29 @@ runs against the mcp-service's Python; the interpreter is resolved as
    `valid`, `validationErrors`, `repairs`, `registered`, `ok: true`. Confirm
    `"valid": true` and `"ok": true`, and that the collections and tools match
    the entities you expected from the API's schemas.
+
+   Real output from a two-schema OpenAPI document (`Order`, `Customer`
+   component schemas, `--no-register` so nothing mounts into the overlay):
+
+   ```json title="synthesize_cli.py --mode openapi --openapi-file ../../../docs/cookbooks/examples/widget-orders-openapi.json --display-name WidgetOrdersApi --no-register"
+   {
+     "collections": { "customers": 6, "orders": 6 },
+     "displayName": "WidgetOrdersApi",
+     "id": "byo_widgetordersapi",
+     "ok": true,
+     "registered": false,
+     "repairs": 0,
+     "source": "openapi",
+     "tools": ["search_orders", "get_order", "search_customers", "get_customer", "list_audit_events"],
+     "valid": true,
+     "validationErrors": []
+   }
+   ```
+
+   Two component schemas became two collections (`customers`, `orders`, each
+   seeded with 6 rows at the default `--count`); the sketcher also derived a
+   `list_audit_events` tool that isn't tied to either schema directly — audit
+   events are synthesized for every twin regardless of source schema count.
 
 4. **Decide: mount for this session, or promote into the corpus.**
 
@@ -90,7 +121,7 @@ runs against the mcp-service's Python; the interpreter is resolved as
    `valid`.
 
    ```bash
-   python synthesize_cli.py --mode openapi --openapi-file ./my-api.json --display-name MyApi --promote
+   python synthesize_cli.py --mode openapi --openapi-file ../../../docs/cookbooks/examples/widget-orders-openapi.json --display-name MyApi --promote
    ```
 
 5. **Generate seed data and validate the pack** (after promoting):
