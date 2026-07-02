@@ -14,6 +14,10 @@ operates in* — materialized in this repo as the use-case spec
 (`usecase-spec.json`), with a portable Markdown twin (the
 [OKF bundle](../reference/okf.html)).
 
+<p align="center">
+  <img src="../assets/diagrams/signature-pipeline-enterprise-agent-contract.svg" alt="signature pipeline zoomed to the Enterprise Agent Contract stage, lit; capture, generate, source-system twins, prove, passport, handoff, and authority graph shown dimmed for context" width="700">
+</p>
+
 ## Why it exists
 
 Without a contract, an enterprise agent is defined by its prompt — and a

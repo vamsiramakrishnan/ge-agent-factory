@@ -13,6 +13,10 @@ enterprise backend — Workday, SAP Ariba, ServiceNow, BlackLine, and dozens
 more — realistic enough that a generated agent behaves as if it were wired
 into the real system, without touching it.
 
+<p align="center">
+  <img src="../assets/diagrams/signature-pipeline-source-system-twins.svg" alt="signature pipeline zoomed to source-system twins, lit; generate produces twins which feed into prove, with the rest of the pipeline shown dimmed for context" width="700">
+</p>
+
 ## Why they exist
 
 An enterprise agent is only as believable as the systems it talks to — and

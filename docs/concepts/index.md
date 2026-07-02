@@ -19,8 +19,12 @@ result is handed off to agents-cli, ADK, and Gemini Enterprise. Each concept
 page covers one link in that chain.
 
 <p align="center">
-  <img src="../assets/diagrams/concept-pipeline.svg" alt="use case to contract to generate to validate and refine to simulate to deploy to publish" width="800">
+  <img src="../assets/diagrams/signature-pipeline.svg" alt="capture flows into the Enterprise Agent Contract; the contract generates code, tools, and source-system twins under authority-graph control; twins and generated code feed prove (evals, harness, promotion gate); prove produces a passport and proof pack; the passport hands off across the build boundary to agents-cli, ADK, and Gemini Enterprise" width="900">
 </p>
+
+Six concepts, one map. Each page below opens with the same diagram, zoomed to
+its own stage — the rest dimmed — so you always know where you are in the
+chain.
 
 ## The concepts
 

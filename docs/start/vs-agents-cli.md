@@ -16,6 +16,10 @@ one and use `agents-cli` directly.
 
 ## Layer by layer
 
+<p align="center">
+  <img src="../assets/diagrams/factory-vs-agents-cli-layers.svg" alt="GE Agent Factory turns enterprise intent into a contract, then simulation, evals, and proof; a thick handoff edge crosses into agents-cli / ADK, which scaffolds the agent project and deploys it to the Agent Runtime; a second thick edge crosses into Gemini Enterprise, which publishes the agent to end users" width="700">
+</p>
+
 | Layer | Owned by | Artifacts |
 |---|---|---|
 | Enterprise intent → contract | **GE Agent Factory** | use-case spec (`behaviorContract` + `generationSpec`), OKF bundle |

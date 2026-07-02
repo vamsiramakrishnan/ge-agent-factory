@@ -1,0 +1,24 @@
+flowchart TD
+    subgraph FACTORY["GE Agent Factory (this repo)"]
+        direction LR
+        INTENT(["enterprise intent"]) --> CONTRACT["contract\nbehaviorContract + generationSpec"]
+        CONTRACT --> PROOF{{"simulation, evals, proof"}}
+    end
+    subgraph CLI["agents-cli / ADK (generated and driven by the factory)"]
+        direction LR
+        SCAFFOLD["agent project scaffold\napp/agent.py · pyproject.toml"] --> DEPLOY(["deploy → Agent Runtime"])
+    end
+    subgraph GE_ENT["Gemini Enterprise"]
+        direction LR
+        PUBLISH(["published agent\nend users talk to"])
+    end
+
+    PROOF ==> SCAFFOLD
+    DEPLOY ==> PUBLISH
+
+    classDef contract fill:#e8f0fe,stroke:#1a73e8,color:#202124
+    classDef proof fill:#e6f4ea,stroke:#34a853,color:#202124
+    classDef handoff fill:#e6f4ea,stroke:#34a853,color:#202124
+    class CONTRACT contract
+    class PROOF proof
+    class PUBLISH handoff
