@@ -16,7 +16,7 @@ const ledgerBackfill = defineCommand({
 });
 const ledgerRunsCmd = defineCommand({
   meta: { name: "runs", description: "List runs recorded in the durable ledger (local + remote, one source of truth)" },
-  args: { ...common, limit: { type: "string" } },
+  args: { ...common, limit: { type: "string", description: "Max runs to list (default 25)" } },
   run: guarded(async ({ args }) => {
     const res = await core.ledgerRuns({ limit: Number(args.limit || 25) });
     emit(args, res, (runs) => {
@@ -29,7 +29,7 @@ const ledgerRunsCmd = defineCommand({
 });
 const ledgerFleetCmd = defineCommand({
   meta: { name: "fleet", description: "Latest work-item state per use case, from the ledger" },
-  args: { ...common, limit: { type: "string" } },
+  args: { ...common, limit: { type: "string", description: "Max rows to list (default 50)" } },
   run: guarded(async ({ args }) => {
     const res = await core.ledgerFleet();
     emit(args, res, (rows) => {

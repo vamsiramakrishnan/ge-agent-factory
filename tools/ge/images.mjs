@@ -5,7 +5,7 @@ import { guarded, common, cfgFrom, emit, out, pc, elog, core } from "./shared.mj
 
 const imagesBuild = defineCommand({
   meta: { name: "build", description: "Build images: no arg = gateway+worker; 'builder' = shared toolchain image" },
-  args: { ...common, target: { type: "positional", required: false } },
+  args: { ...common, target: { type: "positional", required: false, description: "builder = shared toolchain image (default: gateway+worker)" } },
   run: guarded(({ args }) => {
     const res = core.build(cfgFrom(args), { target: args.target, log: elog });
     emit(args, res, (r) => out(pc.green("✓ built: " + Object.values(r).join(", "))));
