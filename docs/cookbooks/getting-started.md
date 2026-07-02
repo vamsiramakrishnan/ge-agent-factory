@@ -13,6 +13,9 @@ Understand the difference between **local** and **remote** mode, and see how
 the fast DevEx gate and one-command smoke proof fit into the loop — all
 without touching a cloud project.
 
+Unfamiliar term? See the [Glossary](../GLOSSARY.html) — plain-language
+translations of the jargon (harness, OKF, canary, planes, missions, …).
+
 ## Prerequisites + install
 
 **→ For the full step-by-step (clone, prerequisites, `mise run setup`,
@@ -42,7 +45,8 @@ mise run console         # open the operator UI → http://localhost:18260
    mise run devex-smoke
    ```
 
-   This runs local readiness, sets local mode, builds one **canary** workspace
+   This runs local readiness, sets local mode, builds one
+   **[canary](../GLOSSARY.html#canary)** workspace
    (a single throwaway agent used to prove the pipeline works, as opposed to
    building the whole catalog) to the `validated` stage, and prints the
    workspace path, `workspace.json`, eval config, and next commands. It is the

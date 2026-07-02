@@ -1,6 +1,6 @@
 # GE Agent Factory
 
-GE Agent Factory exists because enterprise agents need more than prompts: they
+GE (Gemini Enterprise) Agent Factory exists because enterprise agents need more than prompts: they
 need a business contract, source-system grounding, generated tools, tests, evals,
 deployment automation, and runtime identity. This repo makes those pieces one
 traceable path from use case to production.
@@ -11,8 +11,9 @@ interview that produces one), and the factory generates a real ADK agent — cod
 tools, fixtures, tests, and evals — grounded by simulated source systems. The
 same generated workspace runs locally against fixtures and is then promoted to
 **your own** Google Cloud project (single-tenant; no shared/cross-project
-deploys): per-agent data stores, an MCP tool plane, Agent Runtime, Agent
-Registry, and a Gemini Enterprise publish. It is an agent **factory**, not a
+deploys): per-agent data stores, an MCP tool [plane](docs/GLOSSARY.md#planes)
+(one of the platform's three infrastructure layers — factory, data, tool),
+Agent Runtime, Agent Registry, and a Gemini Enterprise publish. It is an agent **factory**, not a
 prompt-only demo generator.
 
 [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/?cloudshell_git_repo=https://github.com/vamsiramakrishnan/ge-agent-factory&cloudshell_workspace=installer&cloudshell_tutorial=installer/TUTORIAL.md)
@@ -27,13 +28,15 @@ The full docs site (sidebar + search) is published with GitHub Pages:
 **→ https://vamsiramakrishnan.github.io/ge-agent-factory/**
 
 - **[Developer Guide](https://vamsiramakrishnan.github.io/ge-agent-factory/developers.html)** — purpose, repo map, development loops, quality gates, and docs rules.
-- **[Concepts](https://vamsiramakrishnan.github.io/ge-agent-factory/concepts/)** — the factory model: local vs remote mode, the stage graph, OKF specs, the data plane, the MCP tool plane.
+- **[Concepts](https://vamsiramakrishnan.github.io/ge-agent-factory/concepts/)** — the factory model: local vs remote mode, the stage graph, [OKF](docs/GLOSSARY.md#okf--knowledge-bundle) (Open Knowledge Format — the spec's portable Markdown form) specs, the data plane, the MCP tool plane.
 - **[Reference](https://vamsiramakrishnan.github.io/ge-agent-factory/reference/)** — the `ge` CLI, `mise` tasks, configuration, and the apps.
-- **[Cookbooks](https://vamsiramakrishnan.github.io/ge-agent-factory/cookbooks/)** — task-oriented guides: build a canary, run a mission, bring your own simulator, ship to the cloud.
+- **[Cookbooks](https://vamsiramakrishnan.github.io/ge-agent-factory/cookbooks/)** — task-oriented guides: build a [canary](docs/GLOSSARY.md#canary) (a single agent that proves the pipeline), run a [mission](docs/GLOSSARY.md#mission) (one orchestrated, resumable pipeline run), bring your own simulator, ship to the cloud.
 - **[Operations](https://vamsiramakrishnan.github.io/ge-agent-factory/OPERATIONS.html)** — deploy, operate, troubleshoot, and recover the factory.
 - **[MCP](https://vamsiramakrishnan.github.io/ge-agent-factory/MCP.html)** — factory MCP tools plus the generated-agent MCP tool plane.
 
 The site is sourced from [`docs/`](docs/) (start at [`docs/index.md`](docs/index.md)).
+
+Unfamiliar term? See the [Glossary](docs/GLOSSARY.md) — plain-language translations of the repo's jargon (harness, OKF, canary, planes, missions, …).
 
 ## Quickstart
 
@@ -102,7 +105,7 @@ MCP server.
 | [`apps/console`](apps/console) | The main operator UI — a React + Vite + Tailwind app whose Bun server exposes `/api/ge/*` (the same JSON the CLI emits). Views: Overview/Pipeline, Fleet (bulk build/ship/sync), Agent detail (stage pipeline + live logs + artifacts), Doctor, Activity. The **third surface** over `factory-core`. |
 | [`apps/presentation`](apps/presentation) | The transformation deck and source use-case catalog used to explain the system. |
 | [`apps/factory`](apps/factory) | The generator: the `factory` generation pipeline, the lower-level web workbench, the factory runner/worker, and the generic multi-tenant FastMCP server under [`mcp-service/`](apps/factory/mcp-service). |
-| [`tools/`](tools) | The `ge` operator CLI (`ge.mjs`), the MCP server (`mcp-server.mjs`), and the shared operator core + runtime daemon under `tools/lib/`. |
+| [`tools/`](tools) | The `ge` operator CLI (`ge.mjs`), the MCP server (`mcp-server.mjs`), and the shared operator core + runtime [daemon](docs/GLOSSARY.md#daemon) (the local background process that runs long factory tasks durably) under `tools/lib/`. |
 | [`installer/`](installer) | Terraform + the guided Cloud Shell installer (`TUTORIAL.md`) that stands the platform up in your project. |
 | [`docs/`](docs) | This documentation site (GitHub Pages) plus operator runbooks, ADRs, and design specs. |
 
