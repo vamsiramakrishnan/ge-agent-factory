@@ -6,40 +6,32 @@
 // tools/mcp-server.mjs exposes the same ops as typed MCP tools.
 
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync } from "node:fs";
+import { existsSync, writeFileSync, readdirSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { pool } from "./gcp.mjs";
 import { parseConcurrency } from "./concurrency.mjs";
 import { readJson, writeJson, updateJson } from "@ge/std/json-io";
 import { buildFactoryConfig, explainFactoryConfig } from "./config-schema.mjs";
 import { commandMeta, commandRequirements } from "./ge-command-registry.mjs";
-import { buildFactoryAutopilotMission } from "./factory-autopilot-mission.mjs";
 import { runDoctorSection } from "./factory-doctor.mjs";
 import { runCommand } from "./factory-exec.mjs";
 import { createDataPlane } from "./data-plane.mjs";
 import { createMcpPlane } from "./mcp-plane.mjs";
 import { createFactoryPlane, serviceUrl } from "./factory-plane.mjs";
-import { buildFleetHealth } from "./fleet-health.mjs";
-import { buildJourneyPlan } from "./journey-plan.mjs";
 import { STATE_PATHS, DEPARTMENTS } from "./state-paths.mjs";
 // Week-4: app-domain ops are imported via the two cycle-break boundary modules,
 // NOT directly from apps/factory — factory-core keeps zero app imports (enforced
 // by tools/check-no-app-imports.mjs).
-import { planReconcile } from "./reconcile.mjs";
-import { createGatewayClient, getJson, postJson } from "./gateway-client.mjs";
+import { createGatewayClient, postJson } from "./gateway-client.mjs";
 import { createDoctorPlane } from "./doctor.mjs";
 import { createProvisionOps } from "./provision.mjs";
-import { localWorkspaceIndexByUseCase } from "./local-workspaces.mjs";
 import { selectionDepartments, toolPlaneChecks, shipProxyCheck, gatewayProvisionCheck, bigQueryApiCheck, selectWorkspacesForRegen } from "./tool-plane-checks.mjs";
 import {
   runLedger,
   ledgerWrite,
-  ledgerReadsEnabled,
   ledgerRuns,
   ledgerRun,
   ledgerFleet,
-  ledgerPlan,
   ledgerBackfillFromDisk,
 } from "./factory-ledger.mjs";
 import { mergeLedgerAndFileRuns, listFactoryRuns } from "./factory-runs.mjs";
@@ -48,6 +40,9 @@ import { reviewSpec } from "./spec-review.mjs";
 import { registerSpecWith } from "./register-spec.mjs";
 import { createAgentIdentityOps } from "./agent-identity.mjs";
 import { createWorkspaceDoctorOps } from "./workspace-doctor.mjs";
+import { createFleetOps } from "./fleet-ops.mjs";
+import { createApplyOps } from "./apply-ops.mjs";
+import { createRemoteRunOps } from "./remote-run-ops.mjs";
 
 export {
   selectionDepartments,
@@ -66,8 +61,6 @@ export { reviewSpec } from "./spec-review.mjs";
 
 export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const CONFIG_PATH = join(REPO_ROOT, ".ge.json");
-const STATE_PATH = STATE_PATHS.envState;
-const SYNC_STATE_PATH = STATE_PATHS.syncState;
 const TF_DIR = join(REPO_ROOT, "installer/terraform");
 const MCP_SERVICE_DIR = join(REPO_ROOT, "apps/factory/mcp-service");
 const FACTORY_HARNESS_DIR = STATE_PATHS.factory.root;
@@ -216,257 +209,30 @@ export function deploy(cfg, { target = "all", log = noop } = {}) {
   return factoryPlane.deploy(cfg, { target, log });
 }
 
-export async function status(cfg, { noProxy = false } = {}) {
-  ensureGcloud();
-  const state = readJson(STATE_PATH, { completed: {} });
-  const runs = Object.entries(state.completed).map(([id, e]) => ({ id, ...e }));
-  if (!runs.length) throw new Error("No submitted runs in .ge-state.json. Run `ge provision` first.");
-  return withGateway(cfg, async (url, ctx = {}) => {
-    const tally = { done: 0, running: 0, queued: 0, failed: 0, unknown: 0 };
-    const stages = {};
-    const perRun = [];
-    await pool(runs, 10, async (r) => {
-      const res = await getJson(url, `/api/factory/runs/${r.runId}`, ctx.headers).catch(() => ({ ok: false }));
-      const s = res.json || {};
-      const st = (s.status || s.state || "unknown").toLowerCase();
-      const stage = s.currentStage || s.stage || "?";
-      stages[stage] = (stages[stage] || 0) + 1;
-      let bucket = "unknown";
-      if (["done", "succeeded", "published", "complete"].some((k) => st.includes(k))) bucket = "done";
-      else if (["fail", "error"].some((k) => st.includes(k))) bucket = "failed";
-      else if (["run", "active", "submit", "build", "deploy"].some((k) => st.includes(k))) bucket = "running";
-      else if (st.includes("queue") || st.includes("wait")) bucket = "queued";
-      tally[bucket]++;
-      perRun.push({ id: r.id, runId: r.runId, stage, status: st, bucket });
-    });
-    return { total: runs.length, tally, stages, perRun, terminal: tally.done + tally.failed === runs.length };
-  }, { noProxy });
-}
+// Remote run observation + artifact sync (status/logs/sync) now lives in
+// remote-run-ops.mjs; wired here the same way as the plane modules below, since
+// it needs live run/gcloud plus the composed withGateway client.
+export const { status, logs, sync } = createRemoteRunOps({ run, gcloud, ensureGcloud, withGateway });
 
-export function logs(cfg, { runId, stage = "validate", item } = {}) {
-  ensureGcloud();
-  if (!runId) throw new Error("runId required");
-  const state = readJson(STATE_PATH, { completed: {} });
-  const workspaceId = item || Object.values(state.completed).find((e) => e.runId === runId)?.workspaceId;
-  if (!workspaceId) throw new Error("Could not resolve workspaceId; pass item=ws-<id>.");
-  const uri = `gs://${cfg.bucket}/runs/${runId}/items/${workspaceId}/factory-${stage}-result.json`;
-  const r = gcloud(["storage", "cat", uri], { allowFail: true });
-  if (!r.ok) {
-    const ls = gcloud(["storage", "ls", "-r", `gs://${cfg.bucket}/runs/${runId}/`], { allowFail: true });
-    return { found: false, uri, available: ls.ok ? ls.out.split("\n") : [] };
-  }
-  let result; try { result = JSON.parse(r.out); } catch { return { found: true, uri, raw: r.out }; }
-  return { found: true, uri, result };
-}
-
-// Fleet roster: catalog × .ge-state.json (no network).
-export async function fleetStatus(cfg) {
-  const cat = await loadCatalog();
-  const state = readJson(STATE_PATH, { completed: {}, failed: {} });
-  const localWorkspaces = cfg.mode === "local" ? localWorkspaceIndexByUseCase() : new Map();
-  // Read cutover: when enabled, the ledger is the source of per-agent run state
-  // (replacing the .ge-state.json completed/failed lookups below). Falls back to
-  // the files when the flag is off or the ledger is unavailable/empty.
-  let ledgerFleet = null;
-  if (ledgerReadsEnabled()) {
-    const l = await runLedger();
-    const map = l ? l.fleetByUseCase() : null;
-    if (map && map.size) ledgerFleet = map;
-  }
-
-  // Local mode: best-effort runId discovery from the canonical factory journal.
-  let localRunIndex = {};
-  if (cfg.mode === "local") {
-    const indexPath = join(FACTORY_DATA_ROOT, "runs", "index.json");
-    const indexEntries = readJson(indexPath, []);
-    // Map agentId → latest runId (agentId↔catalogId alignment is required; no fuzzy match).
-    for (const entry of indexEntries) {
-      if (entry.agentId && entry.runId) localRunIndex[entry.agentId] = entry.runId;
-    }
-  }
-
-  const agents = cat.map((u) => {
-    const lg = ledgerFleet?.get(u.id) || null;
-    // Per-agent merge: the ledger is authoritative for agents it knows about; agents
-    // it hasn't recorded fall back to the legacy state file. This keeps defaulting
-    // reads on safe even before a backfill (no agent silently loses its state).
-    const c = lg ? (lg.status !== "failed" ? { runId: lg.runId, workspaceId: lg.workspaceId } : null) : state.completed[u.id];
-    const f = lg ? (lg.status === "failed" ? { error: lg.error || "failed" } : null) : state.failed[u.id];
-    const local = localWorkspaces.get(u.id) || null;
-    let runId = c?.runId || null;
-    // Best-effort: if still null in local mode, use harness journal index.
-    if (!runId && cfg.mode === "local" && localRunIndex[u.id]) {
-      runId = localRunIndex[u.id];
-    }
-    if (!runId && local?.runId) runId = local.runId;
-    const workspaceId = c?.workspaceId || local?.id || null;
-    return {
-      id: u.id, title: u.title, department: u.department,
-      runId,
-      workspaceId,
-      status: c || workspaceId ? "submitted" : f ? "failed" : "none",
-      error: f?.error || null,
-      localWorkspaceUpdatedAt: local?.updatedAt || null,
-    };
-  });
-  const byDept = {}; const byStatus = {};
-  for (const a of agents) { byDept[a.department] = (byDept[a.department] || 0) + 1; byStatus[a.status] = (byStatus[a.status] || 0) + 1; }
-  const base = { total: agents.length, byDept, byStatus, agents };
-  const health = buildFleetHealth(base, { repoRoot: REPO_ROOT });
-  return { ...base, health, agents: health.agents };
-}
-
-export async function missionPlan(cfg, { ids = [], targetStage = "preview", repair = true, attempts = 3, runPreview = false } = {}) {
-  const fleet = await fleetStatus(cfg);
-  return buildFactoryAutopilotMission({ cfg, fleet, ids, targetStage, repair, attempts, runPreview });
-}
-
-export async function journeyPlan(cfg, {
-  scenario = null,
-  usecaseId = null,
-  spec = null,
-  systems = [],
-  ids = [],
-  targetStage = "preview",
-  tasks = [],
-  graph = null,
-} = {}) {
-  const [status, fleet] = await Promise.all([
-    Promise.resolve(statusBoard(cfg)),
-    fleetStatus(cfg),
-  ]);
-  return buildJourneyPlan({
-    scenario,
-    spec,
-    usecaseId,
-    systems,
-    ids,
-    targetStage,
-    mode: cfg.mode || "local",
-    status,
-    fleet,
-    tasks,
-    graph,
-  });
-}
-
-// Read the NDJSON log for a run/stage. Local → .ge/factory/runs (harness writes stage "run");
-// remote → GCS object the worker tees to.
-export function tailLog(cfg, { runId, stage, item } = {}) {
-  if ((cfg.mode || "local") === "local") {
-    const s = stage || "run"; // harness journal uses stage "run" per agent invocation
-    const p = join(FACTORY_DATA_ROOT, "runs", runId, `${s}.ndjson`);
-    return { found: existsSync(p), source: p, ndjson: existsSync(p) ? readFileSync(p, "utf8") : "" };
-  }
-  const uri = `gs://${cfg.bucket}/runs/${runId}/items/${item || runId}/${stage}.ndjson`;
-  const r = gcloud(["storage", "cat", uri], { allowFail: true });
-  return { found: r.ok, source: uri, ndjson: r.ok ? r.out : "" };
-}
-
-export function readArtifact(cfg, { runId, item, name } = {}) {
-  if ((cfg.mode || "local") === "local") {
-    const workspaceId = item || runId;
-    const p = join(LOCAL_PROJECTS, workspaceId, name);
-    return { found: existsSync(p), source: p, content: existsSync(p) ? readFileSync(p, "utf8") : "" };
-  }
-  const uri = `gs://${cfg.bucket}/runs/${runId}/items/${item}/${name}`;
-  const r = gcloud(["storage", "cat", uri], { allowFail: true });
-  return { found: r.ok, source: uri, content: r.ok ? r.out : "" };
-}
-
-function parseIdList(ids) {
-  return String(Array.isArray(ids) ? ids.join(",") : ids || "")
-    .split(",")
-    .map((id) => id.trim())
-    .filter(Boolean);
-}
-
-export async function sync(cfg, { ids = "", force = false, commit = true, push = false, log = noop } = {}) {
-  ensureGcloud();
-  const state = readJson(STATE_PATH, { completed: {} });
-  const requested = parseIdList(ids);
-  const requestedSet = new Set(requested);
-  const entries = Object.entries(state.completed).filter(([id, entry]) => {
-    if (!requestedSet.size) return true;
-    return requestedSet.has(id) || requestedSet.has(entry?.workspaceId);
-  });
-  if (!entries.length) throw new Error("No completed runs to sync.");
-  const outDir = join(REPO_ROOT, "generated-agents");
-  mkdirSync(outDir, { recursive: true });
-  const synced = readJson(SYNC_STATE_PATH, { synced: {} });
-  let ok = 0, fail = 0;
-  await pool(entries, 4, async ([id, e]) => {
-    if (!force && synced.synced[id]?.runId === e.runId) return;
-    const uri = `gs://${cfg.bucket}/runs/${e.runId}/items/${e.workspaceId}/agent-result.tar.gz`;
-    const dest = join(outDir, id);
-    const tmp = join(REPO_ROOT, ".tmp", `${id}.tar.gz`);
-    mkdirSync(dirname(tmp), { recursive: true });
-    const dl = gcloud(["storage", "cp", uri, tmp], { allowFail: true });
-    if (!dl.ok) { fail++; log(`✗ ${id} (no archive yet)`); return; }
-    rmSync(dest, { recursive: true, force: true }); mkdirSync(dest, { recursive: true });
-    try { execFileSync("tar", ["-xzf", tmp, "-C", dest], { stdio: "ignore" }); } catch { fail++; return; }
-    rmSync(tmp, { force: true });
-    synced.synced[id] = { runId: e.runId, at: new Date().toISOString() };
-    writeJson(SYNC_STATE_PATH, synced);
-    ok++; log(`✓ ${id}`);
-  });
-  rmSync(join(REPO_ROOT, ".tmp"), { recursive: true, force: true });
-  let committed = false;
-  if (ok && commit) {
-    run("git", ["add", "generated-agents", ".generated-agents-sync-state.json"], { capture: false });
-    run("git", ["commit", "-m", `chore(agents): sync ${ok} generated workspace(s)`], { capture: false });
-    committed = true;
-    if (push) run("git", ["push"], { capture: false });
-  }
-  return { mode: "remote", ids: entries.map(([id]) => id), synced: ok, failed: fail, committed, pushed: !!(ok && commit && push) };
-}
+// Fleet/mission/journey planning + run-log/artifact reads (fleetStatus/
+// missionPlan/journeyPlan/tailLog/readArtifact) now live in fleet-ops.mjs;
+// wired here the same way as the plane modules below, since they need live
+// `gcloud` plus `statusBoard` (which closes over the composed factoryPlane).
+// `statusBoard` is a hoisted function declaration, so referencing it here is
+// safe — it only runs at call time, after the planes below are composed.
+export const { fleetStatus, missionPlan, journeyPlan, tailLog, readArtifact } = createFleetOps({ gcloud, statusBoard });
 
 const GEN_DIR = join(REPO_ROOT, "apps/factory");
 const FACTORY_DATA_ROOT = STATE_PATHS.factory.root;
-const LOCAL_PROJECTS = STATE_PATHS.factory.workspaces;
 
 // Ledger read/write (runLedger/ledgerWrite/ledgerReadsEnabled/ledgerRuns/ledgerRun/
 // ledgerFleet/ledgerPlan/ledgerBackfillFromDisk) now live in factory-ledger.mjs;
 // imported above and re-exported for the public API contract (see
 // factory-core.export-surface.json / factory-core.export-surface.test.mjs).
 
-// ── declarative reconcile (ADR 0001 phase 5) ──────────────────────────────────
-const APPLY_MANIFEST_PATH = join(REPO_ROOT, "ge.manifest.json");
-
-// Gather actual platform + fleet state and diff it against the desired manifest.
-export async function applyPlan(cfg, { manifest = null } = {}) {
-  const board = statusBoard(cfg);
-  const planes = {};
-  for (const p of board.planes || []) {
-    const n = (p.name || "").toLowerCase();
-    const key = n.includes("tool") || n.includes("mcp") ? "mcp" : n.includes("data") ? "data" : "infra";
-    planes[key] = !!p.up;
-  }
-  const source = manifest ? "inline" : existsSync(APPLY_MANIFEST_PATH) ? "ge.manifest.json" : "default";
-  const m = manifest || readJson(APPLY_MANIFEST_PATH, {});
-  const plan = await ledgerPlan({ targetStage: m?.fleet?.target || "previewed", mode: cfg.mode });
-  return { ...planReconcile(m, { planes, plan }), source };
-}
-
-// Execute the reconcile plan in dependency order (gateway → data → tool plane →
-// agents). Reuses the same tested core operations the CLI/console already call.
-export async function applyApply(cfg, { manifest = null, log = noop } = {}) {
-  const planResult = await applyPlan(cfg, { manifest });
-  for (const step of planResult.steps) {
-    log(`→ ${step.id}: ${step.command}`);
-    if (step.kind === "platform") {
-      if (step.plane === "infra") await up(cfg, { planes: ["infra"], log });
-      else if (step.plane === "data") await dataUp(cfg, { log });
-      else if (step.plane === "mcp") mcpDeploy(cfg, { log });
-    } else if (step.kind === "fleet") {
-      const ids = step.agents.join(",");
-      if (cfg.mode === "remote") await provisionOps.provision(cfg, { ids, log });
-      else await provisionOps.provisionLocal(cfg, { ids, log });
-    }
-    log(`✓ ${step.id}`);
-  }
-  return { applied: planResult.steps.length, plan: planResult };
-}
+// Declarative reconcile (ADR 0001 phase 5: applyPlan/applyApply) now lives in
+// apply-ops.mjs; wired further down (after the provisionOps composition it
+// depends on) — see the createApplyOps call below the provision exports.
 
 // Workspace doctor/repair (single-workspace inspect/repair) now live in
 // workspace-doctor.mjs; `run`/GEN_DIR are injected the same way factory-core
@@ -557,6 +323,13 @@ const provisionOps = createProvisionOps({
   genDir: GEN_DIR,
 });
 export const { provision, provisionLocal, setMode, devexSmoke, devexCheck, syncLocal, ship } = provisionOps;
+
+// Declarative reconcile (applyPlan/applyApply) now lives in apply-ops.mjs; wired
+// here — after the provisionOps composition it executes fleet steps through —
+// with the platform bring-up ops injected. `up`/`dataUp`/`mcpDeploy`/`statusBoard`
+// are hoisted function declarations, so referencing them here is safe; they only
+// run at call time, once every plane below is composed.
+export const { applyPlan, applyApply } = createApplyOps({ statusBoard, up, dataUp, mcpDeploy, provisionOps });
 
 export function build(cfg, { target, log = noop } = {}) {
   return factoryPlane.build(cfg, { target, log });
