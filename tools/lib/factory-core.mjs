@@ -6,7 +6,7 @@
 // tools/mcp-server.mjs exposes the same ops as typed MCP tools.
 
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync } from "node:fs";
+import { existsSync, writeFileSync, mkdirSync, rmSync, readdirSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { pool } from "./gcp.mjs";
@@ -14,14 +14,11 @@ import { parseConcurrency } from "./concurrency.mjs";
 import { readJson, writeJson, updateJson } from "@ge/std/json-io";
 import { buildFactoryConfig, explainFactoryConfig } from "./config-schema.mjs";
 import { commandMeta, commandRequirements } from "./ge-command-registry.mjs";
-import { buildFactoryAutopilotMission } from "./factory-autopilot-mission.mjs";
 import { runDoctorSection } from "./factory-doctor.mjs";
 import { runCommand } from "./factory-exec.mjs";
 import { createDataPlane } from "./data-plane.mjs";
 import { createMcpPlane } from "./mcp-plane.mjs";
 import { createFactoryPlane, serviceUrl } from "./factory-plane.mjs";
-import { buildFleetHealth } from "./fleet-health.mjs";
-import { buildJourneyPlan } from "./journey-plan.mjs";
 import { STATE_PATHS, DEPARTMENTS } from "./state-paths.mjs";
 // Week-4: app-domain ops are imported via the two cycle-break boundary modules,
 // NOT directly from apps/factory — factory-core keeps zero app imports (enforced
@@ -30,12 +27,10 @@ import { planReconcile } from "./reconcile.mjs";
 import { createGatewayClient, getJson, postJson } from "./gateway-client.mjs";
 import { createDoctorPlane } from "./doctor.mjs";
 import { createProvisionOps } from "./provision.mjs";
-import { localWorkspaceIndexByUseCase } from "./local-workspaces.mjs";
 import { selectionDepartments, toolPlaneChecks, shipProxyCheck, gatewayProvisionCheck, bigQueryApiCheck, selectWorkspacesForRegen } from "./tool-plane-checks.mjs";
 import {
   runLedger,
   ledgerWrite,
-  ledgerReadsEnabled,
   ledgerRuns,
   ledgerRun,
   ledgerFleet,
@@ -48,6 +43,7 @@ import { reviewSpec } from "./spec-review.mjs";
 import { registerSpecWith } from "./register-spec.mjs";
 import { createAgentIdentityOps } from "./agent-identity.mjs";
 import { createWorkspaceDoctorOps } from "./workspace-doctor.mjs";
+import { createFleetOps } from "./fleet-ops.mjs";
 
 export {
   selectionDepartments,
@@ -259,120 +255,13 @@ export function logs(cfg, { runId, stage = "validate", item } = {}) {
   return { found: true, uri, result };
 }
 
-// Fleet roster: catalog × .ge-state.json (no network).
-export async function fleetStatus(cfg) {
-  const cat = await loadCatalog();
-  const state = readJson(STATE_PATH, { completed: {}, failed: {} });
-  const localWorkspaces = cfg.mode === "local" ? localWorkspaceIndexByUseCase() : new Map();
-  // Read cutover: when enabled, the ledger is the source of per-agent run state
-  // (replacing the .ge-state.json completed/failed lookups below). Falls back to
-  // the files when the flag is off or the ledger is unavailable/empty.
-  let ledgerFleet = null;
-  if (ledgerReadsEnabled()) {
-    const l = await runLedger();
-    const map = l ? l.fleetByUseCase() : null;
-    if (map && map.size) ledgerFleet = map;
-  }
-
-  // Local mode: best-effort runId discovery from the canonical factory journal.
-  let localRunIndex = {};
-  if (cfg.mode === "local") {
-    const indexPath = join(FACTORY_DATA_ROOT, "runs", "index.json");
-    const indexEntries = readJson(indexPath, []);
-    // Map agentId → latest runId (agentId↔catalogId alignment is required; no fuzzy match).
-    for (const entry of indexEntries) {
-      if (entry.agentId && entry.runId) localRunIndex[entry.agentId] = entry.runId;
-    }
-  }
-
-  const agents = cat.map((u) => {
-    const lg = ledgerFleet?.get(u.id) || null;
-    // Per-agent merge: the ledger is authoritative for agents it knows about; agents
-    // it hasn't recorded fall back to the legacy state file. This keeps defaulting
-    // reads on safe even before a backfill (no agent silently loses its state).
-    const c = lg ? (lg.status !== "failed" ? { runId: lg.runId, workspaceId: lg.workspaceId } : null) : state.completed[u.id];
-    const f = lg ? (lg.status === "failed" ? { error: lg.error || "failed" } : null) : state.failed[u.id];
-    const local = localWorkspaces.get(u.id) || null;
-    let runId = c?.runId || null;
-    // Best-effort: if still null in local mode, use harness journal index.
-    if (!runId && cfg.mode === "local" && localRunIndex[u.id]) {
-      runId = localRunIndex[u.id];
-    }
-    if (!runId && local?.runId) runId = local.runId;
-    const workspaceId = c?.workspaceId || local?.id || null;
-    return {
-      id: u.id, title: u.title, department: u.department,
-      runId,
-      workspaceId,
-      status: c || workspaceId ? "submitted" : f ? "failed" : "none",
-      error: f?.error || null,
-      localWorkspaceUpdatedAt: local?.updatedAt || null,
-    };
-  });
-  const byDept = {}; const byStatus = {};
-  for (const a of agents) { byDept[a.department] = (byDept[a.department] || 0) + 1; byStatus[a.status] = (byStatus[a.status] || 0) + 1; }
-  const base = { total: agents.length, byDept, byStatus, agents };
-  const health = buildFleetHealth(base, { repoRoot: REPO_ROOT });
-  return { ...base, health, agents: health.agents };
-}
-
-export async function missionPlan(cfg, { ids = [], targetStage = "preview", repair = true, attempts = 3, runPreview = false } = {}) {
-  const fleet = await fleetStatus(cfg);
-  return buildFactoryAutopilotMission({ cfg, fleet, ids, targetStage, repair, attempts, runPreview });
-}
-
-export async function journeyPlan(cfg, {
-  scenario = null,
-  usecaseId = null,
-  spec = null,
-  systems = [],
-  ids = [],
-  targetStage = "preview",
-  tasks = [],
-  graph = null,
-} = {}) {
-  const [status, fleet] = await Promise.all([
-    Promise.resolve(statusBoard(cfg)),
-    fleetStatus(cfg),
-  ]);
-  return buildJourneyPlan({
-    scenario,
-    spec,
-    usecaseId,
-    systems,
-    ids,
-    targetStage,
-    mode: cfg.mode || "local",
-    status,
-    fleet,
-    tasks,
-    graph,
-  });
-}
-
-// Read the NDJSON log for a run/stage. Local → .ge/factory/runs (harness writes stage "run");
-// remote → GCS object the worker tees to.
-export function tailLog(cfg, { runId, stage, item } = {}) {
-  if ((cfg.mode || "local") === "local") {
-    const s = stage || "run"; // harness journal uses stage "run" per agent invocation
-    const p = join(FACTORY_DATA_ROOT, "runs", runId, `${s}.ndjson`);
-    return { found: existsSync(p), source: p, ndjson: existsSync(p) ? readFileSync(p, "utf8") : "" };
-  }
-  const uri = `gs://${cfg.bucket}/runs/${runId}/items/${item || runId}/${stage}.ndjson`;
-  const r = gcloud(["storage", "cat", uri], { allowFail: true });
-  return { found: r.ok, source: uri, ndjson: r.ok ? r.out : "" };
-}
-
-export function readArtifact(cfg, { runId, item, name } = {}) {
-  if ((cfg.mode || "local") === "local") {
-    const workspaceId = item || runId;
-    const p = join(LOCAL_PROJECTS, workspaceId, name);
-    return { found: existsSync(p), source: p, content: existsSync(p) ? readFileSync(p, "utf8") : "" };
-  }
-  const uri = `gs://${cfg.bucket}/runs/${runId}/items/${item}/${name}`;
-  const r = gcloud(["storage", "cat", uri], { allowFail: true });
-  return { found: r.ok, source: uri, content: r.ok ? r.out : "" };
-}
+// Fleet/mission/journey planning + run-log/artifact reads (fleetStatus/
+// missionPlan/journeyPlan/tailLog/readArtifact) now live in fleet-ops.mjs;
+// wired here the same way as the plane modules below, since they need live
+// `gcloud` plus `statusBoard` (which closes over the composed factoryPlane).
+// `statusBoard` is a hoisted function declaration, so referencing it here is
+// safe — it only runs at call time, after the planes below are composed.
+export const { fleetStatus, missionPlan, journeyPlan, tailLog, readArtifact } = createFleetOps({ gcloud, statusBoard });
 
 function parseIdList(ids) {
   return String(Array.isArray(ids) ? ids.join(",") : ids || "")
@@ -423,7 +312,6 @@ export async function sync(cfg, { ids = "", force = false, commit = true, push =
 
 const GEN_DIR = join(REPO_ROOT, "apps/factory");
 const FACTORY_DATA_ROOT = STATE_PATHS.factory.root;
-const LOCAL_PROJECTS = STATE_PATHS.factory.workspaces;
 
 // Ledger read/write (runLedger/ledgerWrite/ledgerReadsEnabled/ledgerRuns/ledgerRun/
 // ledgerFleet/ledgerPlan/ledgerBackfillFromDisk) now live in factory-ledger.mjs;
