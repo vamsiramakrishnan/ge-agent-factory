@@ -3,7 +3,7 @@
 import { defineCommand } from "citty";
 import { existsSync, rmSync } from "node:fs";
 import { LEGACY_STATE_PATHS, STATE_PATHS, ensureStateLayout, displayStatePath } from "../lib/state-paths.mjs";
-import { emit, out, pc, readPidFile, processAlive, processLooksLikeDaemon } from "./shared.mjs";
+import { guarded, emit, out, pc, readPidFile, processAlive, processLooksLikeDaemon } from "./shared.mjs";
 import { daemonPaths } from "../lib/runtime-daemon.mjs";
 
 const stateReset = defineCommand({
@@ -12,7 +12,7 @@ const stateReset = defineCommand({
     yes: { type: "boolean", description: "Confirm destructive local state reset" },
     json: { type: "boolean", description: "Machine-readable JSON result on stdout" },
   },
-  run({ args }) {
+  run: guarded(({ args }) => {
     if (!args.yes) throw new Error("state reset is destructive; rerun with `ge state reset --yes`");
     const paths = daemonPaths();
     const pid = readPidFile(paths.pidPath);
@@ -58,7 +58,7 @@ const stateReset = defineCommand({
       if (r.removed.length) out(pc.dim(`  removed ${r.removed.length} state path(s)`));
       out(pc.dim("  next: mise run setup && ge daemon start"));
     });
-  },
+  }),
 });
 
 const statePaths = defineCommand({
@@ -66,7 +66,7 @@ const statePaths = defineCommand({
   args: {
     json: { type: "boolean", description: "Machine-readable JSON result on stdout" },
   },
-  run({ args }) {
+  run: guarded(({ args }) => {
     const paths = {
       root: { path: displayStatePath(STATE_PATHS.root), means: "one local state root for this repository" },
       runtime: { path: displayStatePath(STATE_PATHS.runtime.root), means: "durable task runs, events, resume plans, daemon metadata" },
@@ -85,7 +85,7 @@ const statePaths = defineCommand({
       }
       out(pc.dim("\n  reset: ge state reset --yes"));
     });
-  },
+  }),
 });
 
 export const state = defineCommand({

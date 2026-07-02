@@ -3,7 +3,7 @@
 import { defineCommand } from "citty";
 import { buildMissionGraph } from "../lib/mission-plan.mjs";
 import {
-  common, cfgFrom, emit, out, pc,
+  guarded, common, cfgFrom, emit, out, pc,
   daemonPort, daemonStatusSnapshot, daemonRequest, parseIds,
   renderMissionGraph, renderResumePlan, statusText,
 } from "./shared.mjs";
@@ -25,7 +25,7 @@ const missionPlanCmd = defineCommand({
     model: { type: "string", description: "Model for the Antigravity mission review node" },
     location: { type: "string", description: "Location for the Antigravity mission review node" },
   },
-  run({ args }) {
+  run: guarded(({ args }) => {
     const cfg = cfgFrom(args);
     const graph = buildMissionGraph({
       mode: cfg.mode || "local",
@@ -50,7 +50,7 @@ const missionPlanCmd = defineCommand({
       harnessLocation: args.location || "global",
     });
     emit(args, graph, renderMissionGraph);
-  },
+  }),
 });
 
 const missionRunCmd = defineCommand({
@@ -71,7 +71,7 @@ const missionRunCmd = defineCommand({
     location: { type: "string", description: "Location for the Antigravity mission review node" },
     port: { type: "string", description: "Daemon port (default 17654)" },
   },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const port = daemonPort(args);
     const daemon = await daemonStatusSnapshot(port);
     if (!daemon.ok) throw new Error(`ge daemon is ${daemon.status || "stopped"}; run: ge daemon start`);
@@ -107,13 +107,13 @@ const missionRunCmd = defineCommand({
       out(pc.dim(`\n  status: ge mission status ${t.id}`));
       out(pc.dim(`  events: ge runtime events ${t.id} --follow`));
     });
-  },
+  }),
 });
 
 const missionStatusCmd = defineCommand({
   meta: { name: "status", description: "Show one mission graph, or list recent mission runs" },
   args: { id: { type: "positional", required: false }, json: { type: "boolean" }, port: { type: "string" }, limit: { type: "string" } },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const port = daemonPort(args);
     const daemon = await daemonStatusSnapshot(port);
     if (!daemon.ok) throw new Error(`ge daemon is ${daemon.status || "stopped"}; run: ge daemon start`);
@@ -138,13 +138,13 @@ const missionStatusCmd = defineCommand({
         out(`  ${statusText(task.status).padEnd(14)} ${String(task.id).padEnd(30)} ${counts.done || 0}/${counts.blocked || 0}/${counts.pending || 0}/${counts.total || 0}`);
       }
     });
-  },
+  }),
 });
 
 const missionResumeCmd = defineCommand({
   meta: { name: "resume", description: "Resume a mission run via its runtime resume plan" },
   args: { id: { type: "positional", required: true }, json: { type: "boolean" }, port: { type: "string" } },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const port = daemonPort(args);
     const daemon = await daemonStatusSnapshot(port);
     if (!daemon.ok) throw new Error(`ge daemon is ${daemon.status || "stopped"}; run: ge daemon start`);
@@ -155,7 +155,7 @@ const missionResumeCmd = defineCommand({
       renderResumePlan(t.summary?.resumePlan);
       out(pc.dim(`\n  events: ge runtime events ${t.id} --follow`));
     });
-  },
+  }),
 });
 
 export const mission = defineCommand({

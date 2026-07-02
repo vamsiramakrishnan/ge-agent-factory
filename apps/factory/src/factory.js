@@ -8,6 +8,7 @@ import { ARTIFACT_PATHS, DATA_PATHS, WORKSPACE_PATHS } from "./workspace-contrac
 import { runAdkPreviewForWorkspace } from "./adk-preview.js";
 import { slug as baseSlug } from "@ge/std/naming";
 import { boolFlag } from "@ge/std/cli-args";
+import { resolveGcpProject } from "@ge/std/gcp-config";
 
 const FACTORY_STAGES = [
   "planned",
@@ -61,7 +62,7 @@ function safeSqlName(value, fallback = "ge_mock", max = 63) {
 }
 
 function resolveCloudTopology(options = {}) {
-  const project = options.project || options["gcp-project"] || process.env.GOOGLE_CLOUD_PROJECT || "<GCP_PROJECT>";
+  const project = resolveGcpProject({ explicit: options.project || options["gcp-project"] }) || "<GCP_PROJECT>";
   const cloudLocation = options["cloud-location"] || process.env.GOOGLE_CLOUD_LOCATION || "global";
   const genaiLocation = options["genai-location"] || process.env.GOOGLE_GENAI_LOCATION || cloudLocation || "global";
   const geminiEnterpriseLocation = options["gemini-enterprise-location"] || process.env.GEMINI_ENTERPRISE_LOCATION || "global";

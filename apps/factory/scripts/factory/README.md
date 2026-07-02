@@ -201,6 +201,49 @@ on — this is the one directory in the tree that's a dependency *of* several
 others rather than an independent concern, so if you're chasing "why do two
 directories agree on a naming convention," this is usually why.
 
+## The golden/parity-oracle test pattern
+
+Four test files under `apps/factory/tests/` (`factory-tools-golden.test.js`,
+`factory-cloud-data-golden.test.js`, `plan-mock-data-golden.test.js`,
+`scaffold-simulator-pack-golden.test.js`) share a common helper module,
+`apps/factory/tests/golden-test-helpers.mjs` (`runGoldenOracle`,
+`walkAndSnapshot`, `stableSnapshotJson`, `compareOrUpdateGolden`). Each oracle
+runs a real CLI script (this directory's scripts, or `scripts/factory.mjs`)
+against a fixture in a throwaway OS tmpdir, snapshots the emitted output
+tree, and asserts it's byte-identical to a committed golden file under
+`apps/factory/tests/fixtures/*-golden/`. This is what made the `factory.mjs`
+decomposition (see `REFACTOR-HANDOFF.md` §9) tractable at all — the
+bottleneck for large mechanical extractions is always *verification*, not
+editing, and a byte-exact oracle turns "does this refactor change behavior?"
+into a single fast, deterministic diff instead of manual re-review.
+
+To add a new golden fixture for a new command/renderer:
+1. Write a test that calls `runGoldenOracle({ tmpPrefix, command/args (or
+   `setupFixture` + inline `execFileSync`), snapshot })` to produce a snapshot
+   of the generated workspace (or a subset of it — see the cloud-data oracle,
+   which snapshots only `mock_data/cloud/**`).
+2. If any emitted output is non-deterministic (timestamps), either mask it
+   with a regex (`walkAndSnapshot`'s `mask`/`maskWith` options, as
+   `plan-mock-data-golden.test.js` does for ISO-8601 `generatedAt` values) or
+   pin the clock via `GE_SOURCE_DATE` if the script under test honors it (as
+   `factory-tools-golden.test.js` and `factory-cloud-data-golden.test.js` do).
+3. Commit the first golden snapshot alongside the test (generate it once
+   under the update path below and review the diff — there's no golden yet
+   to compare against on the first run).
+4. Wire up regeneration for future intentional changes via
+   `compareOrUpdateGolden`, gated on an env var. Existing call sites don't
+   agree on the exact variable name (`GE_UPDATE_GOLDEN` is the
+   `compareOrUpdateGolden` default, but `scaffold-simulator-pack-golden.test.js`
+   uses `GE_SCAFFOLD_GOLDEN_WRITE` and checks it directly) — pick whichever is
+   clearest for the new fixture and document it in the test file's header
+   comment, e.g. `GE_UPDATE_GOLDEN=1 bun test <path-to-your-golden-test>`.
+
+Regenerating a golden is a change that must be reviewed like any other diff —
+if a golden test fails after your change, treat the fixture as correct by
+default (see "Golden/parity-oracle tests are byte-exact on purpose" in
+`AGENTS.md`) and only regenerate once you've confirmed the *new* output is
+actually right.
+
 ## `packs/`, `simulators/`, `data/` cross-reference note
 
 `packs/index.mjs` is imported by both `use-case/schema-derivation.mjs` and

@@ -10,7 +10,10 @@
 export const CONFIG_FIELDS = {
   project: {
     flag: "project",
-    env: ["GCP_PROJECT_ID", "GOOGLE_CLOUD_PROJECT"],
+    // GCP_PROJECT_ID stays first — it's ge's own explicit config var (documented
+    // + tested precedence). GCLOUD_PROJECT added last so environments that set
+    // only the alternate canonical GCP var still resolve (gcp-config.mjs parity).
+    env: ["GCP_PROJECT_ID", "GOOGLE_CLOUD_PROJECT", "GCLOUD_PROJECT"],
     file: "project",
     requiredFor: ["infra", "build", "agents", "data", "mcp"],
   },

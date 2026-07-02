@@ -1,3 +1,9 @@
+---
+title: Modularization audit
+layout: default
+nav_exclude: true
+---
+
 # Modularization Audit
 
 ## First Package Wave
@@ -9,6 +15,36 @@
 | `@ge/simulator-packs` | `apps/factory/simulator-systems` corpus facade | Gives simulator packs a package identity, manifest, and validator before the large corpus is physically moved. |
 | `generated-agent-runtime` | Repeated Python helpers in generated agents | Provides reusable callbacks, evidence capture, action events, fixture document helpers, and MCP backend selection for generated agents. |
 | `@ge/factory-install` | Installer/Terraform/build/runtime env contract | Makes deployment inputs, outputs, runtime targets, and command plans inspectable without running Terraform or shell scripts. |
+
+## First Wave integration status
+
+> Status as of **2026-07-02**, re-verified by grepping the tree for importers
+> of each package (by `@ge/*` specifier, by relative path into `src/`, and by
+> `package.json` dependency declarations). "Standalone-only" means the package
+> has **zero importers outside its own directory and tests** — the concern it
+> models is served in production by a separate, un-synced implementation,
+> listed in the last column.
+{: .status }
+
+The table above describes each package's *intended* standalone purpose. This
+one describes what is actually wired in today:
+
+| Package | Status | Real call sites today |
+| --- | --- | --- |
+| `@ge/runtime` | **Wired in** — declared `workspace:*` dependency, imported by specifier | `tools/lib/events.mjs` and `tools/lib/runtime-contract.mjs` (re-export `@ge/runtime/events` / `@ge/runtime/contract`), `apps/factory/src/harness-runner.js` (`splitLines`) |
+| `@ge/agent-workspace` | **Partially wired** — consumed, but only via a deep relative import from `apps/factory` itself; not a declared dependency, and nothing imports the `@ge/agent-workspace` specifier | `apps/factory/src/workspace-contract.js` imports `packages/agent-workspace/src/index.mjs` by relative path and re-exports it; the 20+ downstream consumers (promotion packet, workspace validation/doctor, `tools/lib/factory-local-ops.mjs`, …) all route through that wrapper |
+| `@ge/simulator-packs` | **Standalone-only** — zero external importers; the facade's manifest just points back at the live corpus | Packs are actually loaded/validated by `apps/factory/scripts/factory/simulators/registry.mjs` (`loadSimulatorRegistry`) over `apps/factory/simulator-systems/` (plus `simulator-sdk.mjs`, `generate-simulator-data.mjs`, `scaffold-simulator-pack.mjs`) |
+| `generated-agent-runtime` (Python) | **Standalone-only** — zero external importers; no generated agent depends on it (`generated-agents/*/pyproject.toml` lists only `google-adk`/`pydantic`/`pytest`) | The same helpers (callbacks, evidence capture, action events, MCP backend selection) are emitted as **inline copies** into every agent's `app/tools.py` / `app/agent.py` by `apps/factory/scripts/factory/runtime/tools-backend.mjs` and `apps/factory/scripts/factory/agents/render-agent-py.mjs` |
+| `@ge/factory-install` | **Standalone-only** — zero external importers; nothing in-repo invokes its `ge-factory-install` bin (by design it never executes Terraform/shell, but nothing reads its plan contract either) | Install/deploy logic actually lives in `installer/terraform/*`, `installer/build-and-deploy.sh`, `installer/scripts/*` (see `installer/factory-install.md`) |
+
+> **Open decision — wire in or retire.** For each standalone-only package the
+> options are: (a) make the live call site consume the package (and delete
+> the duplicate), or (b) retire the package until the extraction is
+> scheduled. That is a product/roadmap call, deliberately **not** made in this
+> document. Until it is made, treat the packages' own tests as contract
+> documentation, not as coverage of production behavior — the live
+> implementations in the last column can and do drift independently.
+{: .warning }
 
 ## Larger Candidates
 

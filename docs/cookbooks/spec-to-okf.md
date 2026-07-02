@@ -100,3 +100,7 @@ bun test apps/factory/scripts/spec-to-okf.test.mjs
 - **Missing `workflow/` or `queries/` concepts** — the source spec has no
   `behaviorContract.workflow.steps` / answerable queries. Re-author via the
   [interview](author-a-spec-via-interview.html) (which emits both).
+- **A spec field vanishes through the round-trip** — the converters only
+  render/parse fields they know about; a new spec field must be threaded
+  through both (and the rest of the duck-typed consumer set). See
+  [Adding a new spec field — the consumer checklist](../reference/spec-schema.html#adding-a-new-spec-field--the-consumer-checklist).

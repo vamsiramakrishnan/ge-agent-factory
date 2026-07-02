@@ -92,8 +92,9 @@ const runCtrl = createRunController(state, el, {
   onUpdate: refreshGuidance,
   onEnd() {
     refreshGuidance();
-    settleCompletedRun().catch(() => {
-      projectPanel.loadFiles().catch((e) => projectPanel.renderFileError(e));
+    settleCompletedRun().catch((e) => {
+      console.warn("settle after run failed", e);
+      projectPanel.loadFiles().catch((e2) => projectPanel.renderFileError(e2));
       agentOverview.render();
       dashboard.render();
     });
@@ -126,12 +127,12 @@ async function settleCompletedRun() {
       interviewAnswers: state.interviewAnswers,
       generatedText: brief,
     }).then(() => createVersionApi(projectId, { generatedText: brief }))
-      .catch(() => {});
+      .catch((e) => console.error('[app] saveBrief/createVersion failed:', e));
   }
 
   await advanceAgentStage();
   projectPanel.renderProjectFiles(state.projectFiles || []);
-  versionTl.render().catch(() => {});
+  versionTl.render().catch((e) => console.warn("version timeline render failed", e));
 }
 
 transcript.onMessage((msg) => {
@@ -143,7 +144,7 @@ transcript.onMessage((msg) => {
       if (sessionId) return saveChatMessage(projectId, sessionId, msg);
       return null;
     })
-    .catch(() => {});
+    .catch((e) => console.warn("chat message save failed", e));
 });
 
 /* ── Agent modal (created after runCtrl so load/openProject are defined) ── */
@@ -186,9 +187,9 @@ async function advanceAgentStage() {
   const projectId = state.selectedProject;
 
   const [bootstrap, agentsData, filesData] = await Promise.all([
-    fetchBootstrap().catch(() => null),
-    listAgents(projectId).catch(() => null),
-    fetchProjectFiles(projectId).catch(() => null),
+    fetchBootstrap().catch((e) => { console.warn("bootstrap fetch failed", e); return null; }),
+    listAgents(projectId).catch((e) => { console.warn("agent list fetch failed", e); return null; }),
+    fetchProjectFiles(projectId).catch((e) => { console.warn("project files fetch failed", e); return null; }),
   ]);
   if (bootstrap) {
     state.agents = Array.isArray(bootstrap.agents?.agents) ? bootstrap.agents.agents : state.agents;
@@ -285,7 +286,7 @@ function renderAgentSwitcher() {
       agentOverview.render();
       dashboard.render();
       el.agentSwitcherDropdown.hidden = true;
-      sessionMgr.loadChatSession(projectId, agent.id).catch(() => {});
+      sessionMgr.loadChatSession(projectId, agent.id).catch((e) => console.warn("chat session load failed", e));
     });
     el.agentSwitcherList.appendChild(item);
   }
@@ -355,7 +356,7 @@ function openProject(projectId = state.selectedProject, preferredAgentId = undef
   refreshGuidance();
   renderHome();
   projectPanel.loadFiles().catch((e) => projectPanel.renderFileError(e));
-  versionTl.render().catch(() => {});
+  versionTl.render().catch((e) => console.warn("version timeline render failed", e));
 
   const agents = state.projectAgents[projectId] || [];
 
@@ -377,7 +378,8 @@ function openProject(projectId = state.selectedProject, preferredAgentId = undef
     sessionMgr.loadChatSession(projectId, chosen.id).then(() => {
       nav.setScreen("workspace");
       projectPanel.renderProjectFiles(state.projectFiles);
-    }).catch(() => {
+    }).catch((e) => {
+      console.warn("chat session load failed", e);
       nav.setScreen("workspace");
       projectPanel.renderProjectFiles(state.projectFiles);
     });
@@ -395,7 +397,8 @@ function openProject(projectId = state.selectedProject, preferredAgentId = undef
     sessionMgr.loadChatSession(projectId, null).then(() => {
       nav.setScreen("workspace");
       projectPanel.renderProjectFiles(state.projectFiles);
-    }).catch(() => {
+    }).catch((e) => {
+      console.warn("chat session load failed", e);
       nav.setScreen("workspace");
       projectPanel.renderProjectFiles(state.projectFiles);
     });
@@ -416,7 +419,8 @@ function openProject(projectId = state.selectedProject, preferredAgentId = undef
       } else {
         nav.setScreen("builder");
       }
-    }).catch(() => {
+    }).catch((e) => {
+      console.warn("chat session load failed", e);
       nav.setScreen("builder");
     });
   }
@@ -480,7 +484,7 @@ async function load() {
     openProject(state.selectedProject);
   }
   runCtrl.setDaemon(true, "online");
-  setupCtrl.loadStatus().catch(() => {});
+  setupCtrl.loadStatus().catch((e) => console.warn("setup status load failed", e));
 }
 
 /* ── Setup controller ────────────────────────────────────── */
