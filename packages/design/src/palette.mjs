@@ -1,16 +1,16 @@
-// Single JS source of truth for the Google Cloud Console-derived brand
-// palette used across this repo's three hand-maintained copies:
-//   - packages/design/src/tokens.css   (Tailwind v4 @theme block; canonical
-//     source of the --color-* custom properties — DO NOT change values here
-//     without updating tokens.css first, this file must always trace back to it)
+// THE canonical source of the Google Cloud Console-derived brand palette.
+// Every other copy is generated or imports this file directly:
+//   - packages/design/src/tokens.css   (--color-* @theme block — GENERATED
+//     region, run `bun run docs:tokens` after editing values here)
+//   - docs/_sass/color_schemes/ge.scss (Jekyll Sass variables — GENERATED)
+//   - docs/_sass/custom/setup.scss     (just-the-docs swatch ramp — GENERATED)
 //   - tools/lib/docs-diagram-theme.mjs (Mermaid diagram theme, imports PALETTE)
-//   - docs/_sass/color_schemes/ge.scss (Jekyll docs site Sass variables)
-//   - docs/_sass/custom/setup.scss     (just-the-docs blue-*/green-* swatch overrides)
+// The name↔value pairing lives in packages/design/scripts/gen-tokens.mjs's
+// TOKEN_TABLE; tools/check-design-tokens.mjs byte-compares the generated
+// regions against this file and fails the gate on drift.
 //
 // Plain ESM, zero dependencies, so it can be imported from both Node tooling
-// (tools/lib/docs-diagram-theme.mjs) and, if ever needed, bundled by Vite.
-// tools/check-design-tokens.mjs cross-checks tokens.css and ge.scss against
-// this file and fails the gate if any hex value drifts.
+// and, if ever needed, bundled by Vite.
 
 export const PALETTE = {
   // --color-primary — main brand blue, links/buttons/active states.
@@ -84,8 +84,13 @@ export const PALETTE = {
   // $green-100 — mid-light green swatch.
   tertiaryContainerDark: "#46b579",
 
-  // $green-200 — matches --color-tertiary exactly (kept distinct for the ramp).
+  // --color-tertiary reused in the ramp (kept distinct for ramp semantics).
   tertiarySwatch: "#34a853",
+
+  // $green-200 — the ramp's callout green: deliberately darker than
+  // --color-tertiary (shipped this way since the first docs-theme commit;
+  // AA-stronger on white for the tip-callout accent).
+  tertiarySwatchDark: "#1e8e3e",
 
   // $green-300 — darkest green swatch.
   tertiaryDark: "#146c2e",
