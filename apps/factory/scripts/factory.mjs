@@ -47,6 +47,7 @@ import { runHarnessTask } from "../src/harness-runner.js";
 import { buildHarnessRefinePrompt, buildHarnessRunSummary, buildHarnessWorkItem, writeHarnessWorkItem } from "../src/harness-work-item.js";
 import { canonicalSystemId, safePyName, snakeCase, titleCase, validPythonIdentifierName } from "@ge/std/naming";
 import { CONTRACT_INTENT_KINDS, ensureContractQueryTables } from "./factory/core/contract-schema.mjs";
+import { FactoryCommandError, STEPS, cloudDataDir, deployPlanPath, fail, fixturesDir, loadPipeline, manifestPath, markStep, nextCommandFor, ok, readJson, requireStep, savePipeline, schemaPath, warnMkdirFailure, writeJson, writeText } from "./factory/core/pipeline.mjs";
 import { buildSourceIntegrationPlan } from "./factory/integration/source-integration.mjs";
 import { pyEscape, pyTripleEscape } from "./factory/tools/py-emit.mjs";
 import { canonicalIntentToolName, tableToolName } from "./factory/tools/tool-naming.mjs";
@@ -89,129 +90,7 @@ const GENERATED_AT = sourceTimestamp();
 const REPO_ROOT = APP_ROOT;
 const HARNESS_DATA_ROOT = GENERATOR_DATA_ROOT;
 
-const STEPS = ["init", "schema", "generate", "tools", "test", "harnessReview", "harnessRefine", "sourceIntegration", "serve", "deploy", "register", "publish"];
-
 const parseArgs = (argv) => parseCommandArgs(argv, "help");
-
-function pipelinePath(dir) { return join(dir, "mock_systems", "pipeline.json"); }
-function schemaPath(dir) { return join(dir, "mock_systems", "schema.json"); }
-function fixturesDir(dir) { return join(dir, "fixtures"); }
-function manifestPath(dir) { return join(dir, "fixtures", "manifest.json"); }
-function cloudDataDir(dir) { return join(dir, "mock_data", "cloud"); }
-function deployPlanPath(dir) { return join(dir, "artifacts", "deploy-plan.json"); }
-
-async function readJson(path, fallback) {
-  try { return JSON.parse(await readFile(path, "utf8")); }
-  catch { return fallback; }
-}
-
-// With { recursive: true } mkdir only rejects on real fs errors (EACCES, ENOSPC,
-// a file where a directory should be) — never on "already exists". Warn instead
-// of swallowing so those failures are diagnosable; the follow-up write still
-// fails loudly on its own.
-const warnMkdirFailure = (path) => (error) => {
-  console.warn(`[factory] could not create directory ${path} — ${error?.message || String(error)}`);
-};
-
-async function writeJson(path, data) {
-  await mkdir(dirname(path), { recursive: true }).catch(warnMkdirFailure(dirname(path)));
-  await writeFile(path, JSON.stringify(data, null, 2) + "\n", "utf8");
-}
-
-async function writeText(path, data) {
-  await mkdir(dirname(path), { recursive: true }).catch(warnMkdirFailure(dirname(path)));
-  await writeFile(path, data, "utf8");
-}
-
-async function loadPipeline(dir) {
-  return readJson(pipelinePath(dir), {
-    name: basename(dir),
-    domain: "general",
-    createdAt: null,
-    steps: {},
-    currentStep: null,
-  });
-}
-
-async function savePipeline(dir, pipeline) {
-  await writeJson(pipelinePath(dir), pipeline);
-}
-
-function markStep(pipeline, step, status, meta = {}) {
-  pipeline.steps[step] = { status, completedAt: new Date().toISOString(), ...meta };
-  pipeline.currentStep = step;
-}
-
-// Thrown by fail() (and requireStep()) instead of exiting the process. A thrown
-// error unwinds exactly like process.exit(1) did (immediately, past every call
-// site — no call-site edits needed since `fail(msg);` and `return fail(msg);`
-// behave identically once fail throws), EXCEPT that a JS exception, unlike
-// process.exit, DOES unwind through any enclosing try/catch. Every existing
-// try/catch in this file has been audited for that difference (see registry.mjs
-// dispatch boundary + the from-usecase catch-guard below); this is intentional,
-// not a gap.
-class FactoryCommandError extends Error {}
-
-// Returns the same shape ok() used to print, so a bare `ok(data);` statement
-// (now a no-op — see below) doesn't change behavior for internal callers that
-// only rely on the function's own `return summary;`, while `return ok(data);`
-// gives the registry's render boundary a value to print/render.
-function ok(data) { return { ok: true, ...data }; }
-// Throws instead of exiting so composed in-process command calls (from-usecase,
-// batch-audit, quality-gate) can catch/aggregate failures instead of killing the
-// whole process. The registry's dispatch boundary renders the JSON/human error
-// and sets process.exitCode = 1 (not process.exit) so this matches the old
-// exit-code contract without bypassing citty's own cleanup/promise chain.
-function fail(msg) { throw new FactoryCommandError(msg); }
-
-function requireStep(pipeline, step) {
-  if (!pipeline.steps[step] || pipeline.steps[step].status !== "done") {
-    fail(`Step "${step}" has not been completed yet. Run "factory ${step}" first.`);
-  }
-}
-
-// STEPS entries are camelCase pipeline-state keys; the CLI subcommand for a
-// few of them is kebab-case and/or spelled differently (harnessReview →
-// harness-review, sourceIntegration → source-integration-plan). Anything not
-// listed here has an identical CLI name (init, schema, generate, tools, test,
-// serve, deploy, register, publish).
-const STEP_CLI_COMMAND = {
-  harnessReview: "harness-review",
-  harnessRefine: "harness-refine",
-  sourceIntegration: "source-integration-plan",
-};
-
-// Cloud steps (deploy/register/publish) need operator-supplied values (GCP
-// project, Gemini Enterprise app id, ...) this function can't infer from the
-// workspace alone, so the suggested command carries a placeholder — same
-// convention already used by cmdRegister's own nextStep/nextCommand and by
-// cmdFromUseCase's nextSteps list.
-const STEP_CLI_PLACEHOLDER_ARGS = {
-  deploy: "--project <gcp-project> --region <region>",
-  register: "--as adk|mcp|a2a",
-  publish: "--app-id <GEMINI_ENTERPRISE_APP_ID>",
-};
-
-// Pure: "what's the next command a human should run" derived from the SAME
-// pipeline.steps state markStep/requireStep already track, walking the SAME
-// STEPS sequence and using the SAME "blocks progress" rule cmdStatus already
-// uses for its own nextStep (a step only blocks if it's missing/"pending" or
-// explicitly "failed" — any other status, e.g. tools' terminal "done", or
-// test's "created" when --run false skipped actually executing pytest, or
-// deploy's transitional "running", means the pipeline has moved past it).
-// Centralized here so every cmd* function below can attach a consistent
-// nextCommand field to its return value instead of each one reimplementing
-// (or omitting, or subtly diverging from cmdStatus's own notion of "next").
-function nextCommandFor(pipeline, dir) {
-  const nextStep = STEPS.find((step) => {
-    const status = pipeline.steps?.[step]?.status || "pending";
-    return status === "pending" || status === "failed";
-  }) || null;
-  if (!nextStep) return null;
-  const cliName = STEP_CLI_COMMAND[nextStep] || nextStep;
-  const placeholder = STEP_CLI_PLACEHOLDER_ARGS[nextStep];
-  return `factory ${cliName} --dir ${dir}${placeholder ? ` ${placeholder}` : ""}`;
-}
 
 // Run a child process via execa, preserving the historical contract callers
 // rely on: resolves to { code, stdout, stderr }; throws `${cmd} exited N: …`
