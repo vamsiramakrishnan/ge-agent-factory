@@ -91,8 +91,8 @@ export function run(bin, args, { capture = true, allowFail = false, cwd = REPO_R
 const gcloud = (args, opts) => run("gcloud", args, opts);
 
 export function ensureBin(bin, hint) {
-  try { execFileSync(bin, ["--version"], { stdio: "ignore" }); return; } catch {}
-  try { execFileSync(bin, ["-version"], { stdio: "ignore" }); return; } catch {}
+  try { execFileSync(bin, ["--version"], { stdio: "ignore" }); return; } catch { /* best-effort: probe; fall through to -version then the not-found error */ }
+  try { execFileSync(bin, ["-version"], { stdio: "ignore" }); return; } catch { /* best-effort: probe; fall through to the not-found error below */ }
   throw new Error(`${bin} not found on PATH.${hint ? " " + hint : ""}`);
 }
 const ensureGcloud = () => ensureBin("gcloud", "Install the Google Cloud CLI: https://cloud.google.com/sdk/docs/install");
