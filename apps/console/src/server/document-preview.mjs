@@ -106,7 +106,7 @@ async function previewPdf(buffer) {
       },
     ];
   } finally {
-    if (tmpDir) rm(tmpDir, { recursive: true, force: true }).catch(() => {});
+    if (tmpDir) rm(tmpDir, { recursive: true, force: true }).catch((error) => console.warn(`[document-preview] temp dir cleanup failed (${tmpDir}): ${error?.message || error}`));
   }
 }
 

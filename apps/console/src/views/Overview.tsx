@@ -43,7 +43,10 @@ export default function Overview({ status, refresh }: OverviewProps) {
     try {
       const [f, tasks] = await Promise.all([
         ge.fleet(),
-        ge.runtimeTasks(8, true).catch(() => ({ tasks: [] })),
+        ge.runtimeTasks(8, true).catch((err) => {
+          console.warn("[console] overview: runtime tasks unavailable:", err);
+          return { tasks: [] };
+        }),
       ]);
       setFleet(f);
       setRuntimeTasks(tasks.tasks || []);
