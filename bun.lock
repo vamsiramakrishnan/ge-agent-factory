@@ -7,6 +7,7 @@
       "dependencies": {
         "@clack/prompts": "^1.6.0",
         "@ge/agent-resolver": "workspace:*",
+        "@ge/agent-spec": "workspace:*",
         "@ge/run-ledger": "workspace:*",
         "@ge/runtime": "workspace:*",
         "@ge/std": "workspace:*",
@@ -133,6 +134,13 @@
     "packages/agent-resolver": {
       "name": "@ge/agent-resolver",
       "version": "0.1.0",
+    },
+    "packages/agent-spec": {
+      "name": "@ge/agent-spec",
+      "version": "0.1.0",
+      "dependencies": {
+        "zod": "^4.4.3",
+      },
     },
     "packages/agent-workspace": {
       "name": "@ge/agent-workspace",
@@ -425,6 +433,8 @@
     "@fontsource/space-grotesk": ["@fontsource/space-grotesk@5.2.10", "", {}, "sha512-XNXEbT74OIITPqw2H6HXwPDp85fy43uxfBwFR5PU+9sLnjuLj12KlhVM9nZVN6q6dlKjkuN8JisW/OBxwxgUew=="],
 
     "@ge/agent-resolver": ["@ge/agent-resolver@workspace:packages/agent-resolver"],
+
+    "@ge/agent-spec": ["@ge/agent-spec@workspace:packages/agent-spec"],
 
     "@ge/agent-workspace": ["@ge/agent-workspace@workspace:packages/agent-workspace"],
 

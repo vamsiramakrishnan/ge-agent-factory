@@ -61,6 +61,7 @@
   },
   "dependencies": {
     "@ge/agent-resolver": "workspace:*",
+    "@ge/agent-spec": "workspace:*",
     "@ge/run-ledger": "workspace:*",
     "@ge/runtime": "workspace:*",
     "@ge/std": "workspace:*",

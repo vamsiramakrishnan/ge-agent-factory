@@ -1,0 +1,101 @@
+{
+  "fixture/empty-entry.json": {
+    "reason": "Deliberate parity-oracle fixture: an empty catalog entry with no generationSpec at all (pins the missing_generation_spec gap path).",
+    "errors": [
+      "(root): no generationSpec/spec/agentSpec on the entry"
+    ]
+  },
+  "fixture/missing-generation-spec-fields.json": {
+    "reason": "Deliberate parity-oracle fixture: generationSpec is {} (pins every top-level missing_* gap).",
+    "errors": [
+      "version: invalid_value",
+      "rowPolicy: invalid_type",
+      "sourceSystems: invalid_type",
+      "entities: invalid_type",
+      "documents: invalid_type",
+      "anomalies: invalid_type",
+      "datastorePackaging: invalid_type",
+      "validation: invalid_type",
+      "behaviorContract: invalid_type"
+    ]
+  },
+  "fixture/per-item-gaps.json": {
+    "reason": "Deliberate parity-oracle fixture: per-item required fields omitted across sourceSystems/entities/documents/apis/anomalies/toolIntents (pins the parameterized gap families).",
+    "errors": [
+      "rowPolicy.defaultRowsPerEntity: invalid_type",
+      "sourceSystems.0.id: invalid_type",
+      "sourceSystems.0.name: invalid_type",
+      "sourceSystems.0.owns: invalid_type",
+      "sourceSystems.0.protocol: invalid_type",
+      "sourceSystems.0.localBacking: invalid_type",
+      "sourceSystems.0.toolNames: invalid_type",
+      "sourceSystems.0.evidence: invalid_type",
+      "entities.0.datastore: invalid_value",
+      "entities.0.rowCount: invalid_type",
+      "entities.0.primaryKey: invalid_type",
+      "entities.0.columns.0.type: invalid_type",
+      "entities.0.columns.1.type: invalid_type",
+      "entities.0.columns: too_small",
+      "entities.1.name: invalid_type",
+      "entities.1.datastore: invalid_value",
+      "entities.1.rowCount: invalid_type",
+      "entities.1.primaryKey: invalid_type",
+      "entities.1.columns: invalid_type",
+      "documents.0.id: invalid_type",
+      "documents.0.title: invalid_type",
+      "documents.0.requiredSections: invalid_type",
+      "documents.0.citationAnchors: invalid_type",
+      "documents.0.minimumWordCount: invalid_type",
+      "anomalies.0.description: invalid_type",
+      "anomalies.0.affectedEntities: invalid_type",
+      "anomalies.0.expectedEvidence: invalid_type",
+      "validation.assertions: too_small",
+      "apis.0.method: invalid_value",
+      "apis.0.path: invalid_type",
+      "apis.0.requestSchema: invalid_type",
+      "apis.0.responseSchema: invalid_type",
+      "behaviorContract.toolIntents.1.name: invalid_type",
+      "behaviorContract.toolIntents.1.description: invalid_type",
+      "behaviorContract.toolIntents.1.requiredInputs: invalid_type",
+      "behaviorContract.toolIntents.1.produces: invalid_type",
+      "behaviorContract.toolIntents.1.evidenceEmitted: invalid_type",
+      "behaviorContract.toolIntents.2.kind: invalid_value",
+      "behaviorContract.evidenceRequirements.0: invalid_type",
+      "behaviorContract.escalationRules.0: invalid_type",
+      "behaviorContract.escalationRules.1: invalid_type",
+      "behaviorContract.goldenEvals.0: invalid_type"
+    ]
+  },
+  "fixture/string-coercion-aliases.json": {
+    "reason": "Deliberate parity-oracle fixture: string values where arrays are expected plus raw-field alias chains (pins asArray coercion behavior; the validators accept shapes the schema does not).",
+    "errors": [
+      "rowPolicy: invalid_type",
+      "sourceSystems: invalid_type",
+      "entities: too_small",
+      "documents: too_small",
+      "anomalies: too_small",
+      "datastorePackaging: invalid_type",
+      "validation.smokePrompt: invalid_type",
+      "validation.assertions: invalid_type",
+      "behaviorContract: invalid_type"
+    ]
+  },
+  "fixture/weak-behavior-contract.json": {
+    "reason": "Deliberate parity-oracle fixture: structurally thin behaviorContract and typeless columns (pins the behavior_* thin/missing gaps; fails today's validateGenerationSpec too).",
+    "errors": [
+      "entities.0.columns.0.type: invalid_type",
+      "entities.0.columns.1.type: invalid_type",
+      "entities.0.columns.2.type: invalid_type",
+      "behaviorContract.primaryObjective: too_small",
+      "behaviorContract.inScope: invalid_type",
+      "behaviorContract.outOfScope: too_small",
+      "behaviorContract.toolIntents: too_small",
+      "behaviorContract.toolIntents: custom",
+      "behaviorContract.toolIntents: custom",
+      "behaviorContract.evidenceRequirements: too_small",
+      "behaviorContract.escalationRules: too_small",
+      "behaviorContract.refusalRules: too_small",
+      "behaviorContract.goldenEvals: too_small"
+    ]
+  }
+}

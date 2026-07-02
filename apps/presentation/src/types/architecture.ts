@@ -1,7 +1,14 @@
 /**
  * Shared types for the agent use case system.
  * Architecture types + common interfaces used across components.
+ *
+ * The spec-shape types of record (`UseCaseGenerationSpec`,
+ * `AgentBehaviorContract`, `UseCaseEntitySpec`) live in `@ge/agent-spec`
+ * (packages/agent-spec/src/schema.ts) and are re-exported below; the
+ * remaining interfaces here are presentation-side authoring conveniences.
  */
+
+export type { AgentBehaviorContract, UseCaseEntitySpec, UseCaseGenerationSpec } from "@ge/agent-spec";
 
 // ─── Common Types ──────────────────────────────────────
 
@@ -72,15 +79,6 @@ export interface UseCaseSchemaColumnSpec {
   max?: string | number;
   decimals?: number;       // for "float" type: faker decimal precision (e.g. 2 → 0.42)
   trueRate?: number;       // for "boolean" type: probability of true (0.0–1.0)
-}
-
-export interface UseCaseEntitySpec {
-  name: string;
-  sourceSystemId: string;
-  datastore: DatastoreClass;
-  rowCount: number;
-  primaryKey: string;
-  columns: UseCaseSchemaColumnSpec[];
 }
 
 export interface UseCaseRelationshipSpec {
@@ -193,40 +191,5 @@ export interface AgentGoldenEvalSpec {
   forbiddenBehaviors?: string[];               // e.g. "do not invent enrollment id"
 }
 
-export interface AgentBehaviorContract {
-  role: string;                                // what the agent identifies as
-  primaryObjective: string;                    // single-sentence success criterion
-  inScope: string[];                           // bullet list of supported workflows
-  outOfScope: string[];                        // bullet list of explicit refusals
-  toolIntents: AgentToolIntentSpec[];
-  evidenceRequirements: AgentEvidenceRequirementSpec[];
-  escalationRules: AgentEscalationRuleSpec[];
-  refusalRules: string[];                      // hard guardrails (PII, compliance, invention)
-  goldenEvals: AgentGoldenEvalSpec[];          // at least one end-to-end golden prompt
-}
-
-export interface UseCaseGenerationSpec {
-  version: 1;
-  rowPolicy: {
-    defaultRowsPerEntity: number;
-    minimumRowsPerEntity: number;
-    seed: number;
-    rationale: string;
-  };
-  sourceSystems: UseCaseSourceSystemSpec[];
-  entities: UseCaseEntitySpec[];
-  relationships: UseCaseRelationshipSpec[];
-  documents: UseCaseDocumentSpec[];
-  apis: UseCaseApiSpec[];
-  anomalies: UseCaseAnomalySpec[];
-  datastorePackaging: UseCaseDatastorePackagingSpec;
-  // Required at generation time: this is what makes the produced agent task-
-  // specific. Marked optional only so legacy slides type-check while they are
-  // migrated; the factory factory and validators treat its absence as an error.
-  behaviorContract?: AgentBehaviorContract;
-  validation: {
-    smokePrompt: string;
-    expectedAnswer: string[];
-    assertions: string[];
-  };
-}
+// `AgentBehaviorContract` and `UseCaseGenerationSpec` are re-exported from
+// `@ge/agent-spec` at the top of this file.

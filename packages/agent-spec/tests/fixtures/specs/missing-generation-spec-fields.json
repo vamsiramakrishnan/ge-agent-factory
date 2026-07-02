@@ -1,0 +1,6 @@
+{
+  "id": "missing-generation-spec-fields",
+  "title": "Missing Generation Spec Fields",
+  "department": "qa",
+  "generationSpec": {}
+}

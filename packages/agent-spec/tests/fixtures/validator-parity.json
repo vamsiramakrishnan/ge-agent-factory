@@ -1,0 +1,333 @@
+{
+  "fixture/catalog-grade.json": {
+    "id": "fixture/catalog-grade.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "fixture/empty-entry.json": {
+    "id": "fixture/empty-entry.json",
+    "validateAgentSpecQuality": {
+      "gaps": [
+        "missing_generation_spec",
+        "missing_subtitle",
+        "missing_persona",
+        "kpis_thin",
+        "status_quo_thin",
+        "agentification_thin",
+        "architecture_connections_thin",
+        "architecture_pipeline_thin"
+      ],
+      "maturity": "explicit_but_not_catalog_grade",
+      "ok": false
+    },
+    "validateCatalogParity": [
+      "missing_subtitle",
+      "missing_persona",
+      "kpis_thin",
+      "status_quo_thin",
+      "agentification_thin",
+      "architecture_connections_thin",
+      "architecture_pipeline_thin"
+    ],
+    "validateGenerationSpec": {
+      "gaps": [
+        "missing_generation_spec"
+      ],
+      "maturity": "missing_spec",
+      "ok": false
+    }
+  },
+  "fixture/missing-generation-spec-fields.json": {
+    "id": "fixture/missing-generation-spec-fields.json",
+    "validateAgentSpecQuality": {
+      "gaps": [
+        "missing_generation_spec_version",
+        "missing_row_policy",
+        "missing_source_systems",
+        "missing_schema_contracts",
+        "missing_documents",
+        "missing_mock_data_anomalies",
+        "missing_datastore_packaging",
+        "missing_validation_smoke_prompt",
+        "validation_assertions_thin",
+        "missing_behavior_contract",
+        "missing_subtitle",
+        "missing_persona",
+        "kpis_thin",
+        "status_quo_thin",
+        "agentification_thin",
+        "architecture_connections_thin",
+        "architecture_pipeline_thin"
+      ],
+      "maturity": "explicit_but_not_catalog_grade",
+      "ok": false
+    },
+    "validateCatalogParity": [
+      "missing_subtitle",
+      "missing_persona",
+      "kpis_thin",
+      "status_quo_thin",
+      "agentification_thin",
+      "architecture_connections_thin",
+      "architecture_pipeline_thin"
+    ],
+    "validateGenerationSpec": {
+      "gaps": [
+        "missing_generation_spec_version",
+        "missing_row_policy",
+        "missing_source_systems",
+        "missing_schema_contracts",
+        "missing_documents",
+        "missing_mock_data_anomalies",
+        "missing_datastore_packaging",
+        "missing_validation_smoke_prompt",
+        "validation_assertions_thin",
+        "missing_behavior_contract"
+      ],
+      "maturity": "explicit_but_weak_spec",
+      "ok": false
+    }
+  },
+  "fixture/per-item-gaps.json": {
+    "id": "fixture/per-item-gaps.json",
+    "validateAgentSpecQuality": {
+      "gaps": [
+        "row_policy_missing_defaultRowsPerEntity",
+        "row_policy_missing_rationale",
+        "validation_assertions_thin",
+        "source_system_missing_id",
+        "source_system_missing_name:unknown",
+        "source_system_missing_owns:unknown",
+        "source_system_missing_protocol:unknown",
+        "source_system_missing_local_backing:unknown",
+        "source_system_missing_tool_names:unknown",
+        "source_system_missing_evidence:unknown",
+        "entity_missing_pk:orphan",
+        "entity_columns_thin:orphan",
+        "entity_missing_datastore:orphan",
+        "entity_missing_row_count:orphan",
+        "entity_unknown_source_system:orphan",
+        "entity_missing_name",
+        "entity_missing_pk:unknown",
+        "entity_columns_thin:unknown",
+        "entity_missing_datastore:unknown",
+        "entity_missing_row_count:unknown",
+        "document_missing_id",
+        "document_missing_title:unknown",
+        "document_missing_required_sections:unknown",
+        "document_missing_citation_anchors:unknown",
+        "document_missing_minimum_word_count:unknown",
+        "api_missing_method:unknown",
+        "api_missing_path:unknown",
+        "api_missing_schema:unknown",
+        "anomaly_missing_description:an1",
+        "anomaly_missing_affected_entities:an1",
+        "anomaly_missing_expected_evidence:an1",
+        "tool_intent_missing_name",
+        "tool_intent_missing_description:unknown",
+        "tool_intent_missing_required_inputs:unknown",
+        "tool_intent_missing_produces:unknown",
+        "tool_intent_missing_evidence_emitted:unknown",
+        "tool_intent_missing_kind:bad_intent",
+        "tool_intent_unknown_source_system:bad_intent",
+        "kpi_missing_before_after:2",
+        "architecture_connections_thin",
+        "architecture_pipeline_thin"
+      ],
+      "maturity": "explicit_but_not_catalog_grade",
+      "ok": false
+    },
+    "validateCatalogParity": [
+      "kpi_missing_before_after:2",
+      "architecture_connections_thin",
+      "architecture_pipeline_thin"
+    ],
+    "validateGenerationSpec": {
+      "gaps": [
+        "row_policy_missing_defaultRowsPerEntity",
+        "row_policy_missing_rationale",
+        "validation_assertions_thin",
+        "source_system_missing_id",
+        "source_system_missing_name:unknown",
+        "source_system_missing_owns:unknown",
+        "source_system_missing_protocol:unknown",
+        "source_system_missing_local_backing:unknown",
+        "source_system_missing_tool_names:unknown",
+        "source_system_missing_evidence:unknown",
+        "entity_missing_pk:orphan",
+        "entity_columns_thin:orphan",
+        "entity_missing_datastore:orphan",
+        "entity_missing_row_count:orphan",
+        "entity_unknown_source_system:orphan",
+        "entity_missing_name",
+        "entity_missing_pk:unknown",
+        "entity_columns_thin:unknown",
+        "entity_missing_datastore:unknown",
+        "entity_missing_row_count:unknown",
+        "document_missing_id",
+        "document_missing_title:unknown",
+        "document_missing_required_sections:unknown",
+        "document_missing_citation_anchors:unknown",
+        "document_missing_minimum_word_count:unknown",
+        "api_missing_method:unknown",
+        "api_missing_path:unknown",
+        "api_missing_schema:unknown",
+        "anomaly_missing_description:an1",
+        "anomaly_missing_affected_entities:an1",
+        "anomaly_missing_expected_evidence:an1",
+        "tool_intent_missing_name",
+        "tool_intent_missing_description:unknown",
+        "tool_intent_missing_required_inputs:unknown",
+        "tool_intent_missing_produces:unknown",
+        "tool_intent_missing_evidence_emitted:unknown",
+        "tool_intent_missing_kind:bad_intent",
+        "tool_intent_unknown_source_system:bad_intent"
+      ],
+      "maturity": "explicit_but_weak_spec",
+      "ok": false
+    }
+  },
+  "fixture/string-coercion-aliases.json": {
+    "id": "fixture/string-coercion-aliases.json",
+    "validateAgentSpecQuality": {
+      "gaps": [
+        "missing_row_policy",
+        "missing_schema_contracts",
+        "missing_documents",
+        "missing_mock_data_anomalies",
+        "missing_datastore_packaging",
+        "missing_validation_smoke_prompt",
+        "validation_assertions_thin",
+        "missing_behavior_contract",
+        "source_system_missing_id",
+        "source_system_missing_name:unknown",
+        "source_system_missing_owns:unknown",
+        "source_system_missing_protocol:unknown",
+        "source_system_missing_local_backing:unknown",
+        "source_system_missing_tool_names:unknown",
+        "source_system_missing_evidence:unknown",
+        "agentification_thin"
+      ],
+      "maturity": "explicit_but_not_catalog_grade",
+      "ok": false
+    },
+    "validateCatalogParity": [
+      "agentification_thin"
+    ],
+    "validateGenerationSpec": {
+      "gaps": [
+        "missing_row_policy",
+        "missing_schema_contracts",
+        "missing_documents",
+        "missing_mock_data_anomalies",
+        "missing_datastore_packaging",
+        "missing_validation_smoke_prompt",
+        "validation_assertions_thin",
+        "missing_behavior_contract",
+        "source_system_missing_id",
+        "source_system_missing_name:unknown",
+        "source_system_missing_owns:unknown",
+        "source_system_missing_protocol:unknown",
+        "source_system_missing_local_backing:unknown",
+        "source_system_missing_tool_names:unknown",
+        "source_system_missing_evidence:unknown"
+      ],
+      "maturity": "explicit_but_weak_spec",
+      "ok": false
+    }
+  },
+  "fixture/weak-behavior-contract.json": {
+    "id": "fixture/weak-behavior-contract.json",
+    "validateAgentSpecQuality": {
+      "gaps": [
+        "behavior_missing_outOfScope",
+        "behavior_missing_evidenceRequirements",
+        "behavior_missing_goldenEvals",
+        "behavior_objective_too_short",
+        "behavior_missing_query_intent",
+        "behavior_missing_evidence_lookup",
+        "behavior_tool_intents_thin",
+        "behavior_in_scope_thin",
+        "behavior_out_of_scope_thin",
+        "behavior_missing_evidence_requirements",
+        "behavior_escalation_rules_thin",
+        "behavior_refusal_rules_thin",
+        "behavior_missing_golden_evals",
+        "missing_subtitle",
+        "missing_persona",
+        "kpis_thin",
+        "status_quo_thin",
+        "agentification_thin",
+        "architecture_connections_thin",
+        "architecture_pipeline_thin"
+      ],
+      "maturity": "explicit_but_not_catalog_grade",
+      "ok": false
+    },
+    "validateCatalogParity": [
+      "missing_subtitle",
+      "missing_persona",
+      "kpis_thin",
+      "status_quo_thin",
+      "agentification_thin",
+      "architecture_connections_thin",
+      "architecture_pipeline_thin"
+    ],
+    "validateGenerationSpec": {
+      "gaps": [
+        "behavior_missing_outOfScope",
+        "behavior_missing_evidenceRequirements",
+        "behavior_missing_goldenEvals",
+        "behavior_objective_too_short",
+        "behavior_missing_query_intent",
+        "behavior_missing_evidence_lookup",
+        "behavior_tool_intents_thin",
+        "behavior_in_scope_thin",
+        "behavior_out_of_scope_thin",
+        "behavior_missing_evidence_requirements",
+        "behavior_escalation_rules_thin",
+        "behavior_refusal_rules_thin",
+        "behavior_missing_golden_evals"
+      ],
+      "maturity": "explicit_but_weak_spec",
+      "ok": false
+    }
+  },
+  "interview-specs/help-hr-teams-resolve-benefits-enrollment-exceptions-before-payr.json": {
+    "id": "interview-specs/help-hr-teams-resolve-benefits-enrollment-exceptions-before-payr.json",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  },
+  "loaded-entry/help-hr-teams-resolve-benefits-enrollment-exceptions-before-payr": {
+    "id": "loaded-entry/help-hr-teams-resolve-benefits-enrollment-exceptions-before-payr",
+    "validateAgentSpecQuality": {
+      "gaps": [],
+      "maturity": "factory_grade_catalog_spec",
+      "ok": true
+    },
+    "validateCatalogParity": [],
+    "validateGenerationSpec": {
+      "gaps": [],
+      "maturity": "explicit_production_spec",
+      "ok": true
+    }
+  }
+}
