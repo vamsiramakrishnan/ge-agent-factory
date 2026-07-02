@@ -81,7 +81,11 @@ export async function daemonStatusSnapshot(port) {
     let meta = {};
     try {
       meta = existsSync(paths.metaPath) ? JSON.parse(readFileSync(paths.metaPath, "utf8")) : {};
-    } catch {}
+    } catch (error) {
+      // existsSync guards absence, so this only fires on an unreadable/corrupt
+      // meta file — status still degrades to defaults, but say why.
+      console.warn(`ge daemon: metadata file ${paths.metaPath} is unreadable — ${error?.message || String(error)}`);
+    }
     return {
       ok: false,
       status: alive ? "unreachable" : "stopped",
