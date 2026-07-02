@@ -6,7 +6,6 @@ import { verifyMissionArtifacts } from "./mission-artifacts.mjs";
 import { isDataMissionNodeKind, safeMissionNodeCommand, validateMissionNodeArtifacts } from "./mission-node-registry.mjs";
 import { summarizeMissionNode } from "./mission-node-summary.mjs";
 import { buildMissionGraph, nextRunnableMissionNode, patchMissionNode, resetMissionGraphForResume } from "./mission-plan.mjs";
-import { normalizeRuntimeTask } from "./runtime-contract.mjs";
 import { LEGACY_STATE_PATHS, REPO_ROOT, STATE_PATHS } from "./state-paths.mjs";
 import {
   appendEvent,
@@ -21,7 +20,6 @@ import {
   newTaskId,
   runMetaPath,
   runOutput,
-  taskStatusState,
   terminalStatusForCode,
   updateRun,
   updateRunOutput,
@@ -48,6 +46,14 @@ import {
   startHarnessRunTask,
   submitInteractionResponse,
 } from "./daemon/harness-run.mjs";
+import {
+  listRunSummaries,
+  normalizedTaskDetail,
+  normalizedTaskSummary,
+  resumePlanFor,
+  taskDetail,
+  taskSummary,
+} from "./daemon/resume-plan.mjs";
 
 const DAEMON_DIR = STATE_PATHS.runtime.root;
 const RUNS_DIR = STATE_PATHS.runtime.runs;
@@ -74,207 +80,10 @@ const json = (res, status, body) => {
   res.end(JSON.stringify(body, null, 2));
 };
 
-export { safeGeCommand, safeProcessCommand, toolAugmentedPath, safeHarnessRunInput };
+export { safeGeCommand, safeProcessCommand, toolAugmentedPath, safeHarnessRunInput, resumePlanFor };
 
 export function safeMissionRuntimeCommand(kind, input = {}) {
   return safeMissionNodeCommand(kind, input);
-}
-
-function commandList(id, safeToRun) {
-  return [
-    `ge runtime task ${id} --json`,
-    ...(safeToRun ? [`ge runtime resume ${id}`] : []),
-    `ge runtime events ${id} --follow`,
-  ];
-}
-
-export function resumePlanFor(run) {
-  if (!run) return null;
-  const output = run.output || {};
-  const items = output.items || [];
-  const blockers = items.flatMap((item) => item.blockers || []).concat(output.blockers || []);
-  const artifacts = output.artifactRefs || [];
-  const state = taskStatusState(run.status);
-  const base = {
-    state,
-    nextAction: "none",
-    safeToRun: false,
-    reason: "",
-    commands: commandList(run.id, false),
-    blockers,
-    artifacts,
-  };
-
-  if (["done", "skipped"].includes(run.status)) {
-    return { ...base, state: run.status, reason: `task is ${run.status}; no resume action is needed` };
-  }
-  if (["running", "queued"].includes(run.status)) {
-    return { ...base, state: "running", nextAction: "wait", reason: "task is already running; watch events" };
-  }
-
-  if (run.kind === "autopilot.run") {
-    if (["blocked", "paused", "failed"].includes(run.status) && output.run && items.length) {
-      const blocked = items.find((item) => item.status === "blocked");
-      const pending = items.find((item) => ["pending", "doctor_running", "repairing"].includes(item.status));
-      const nextAction = pending ? "resume_autopilot" : blocked ? "resume_autopilot" : "resume_autopilot";
-      return {
-        ...base,
-        state: run.status === "paused" ? "paused" : "blocked",
-        nextAction,
-        safeToRun: true,
-        commands: commandList(run.id, true),
-        reason: blocked
-          ? `${blocked.agentId}: ${blocked.blockers?.[0]?.message || blocked.blockers?.[0]?.id || "blocked"}`
-          : "start a child Autopilot run from original input",
-      };
-    }
-    return { ...base, state: "blocked", nextAction: "inspect_blocker", reason: run.error || "Autopilot task has no resumable item state" };
-  }
-
-  if (run.kind === "doctor") {
-    if (["blocked", "failed"].includes(run.status)) {
-      return {
-        ...base,
-        state: "blocked",
-        nextAction: "rerun_doctor",
-        safeToRun: false,
-        commands: commandList(run.id, false),
-        reason: run.report?.fails ? `doctor has ${run.report.fails} failing check(s); run the suggested setup or doctor command explicitly` : "doctor is blocked; inspect checks before rerun",
-        blockers: run.report?.sections?.flatMap((section) => (section.checks || []).filter((check) => check.status === "fail")) || blockers,
-      };
-    }
-    return base;
-  }
-
-  if (run.kind === "ge.command") {
-    if (run.status === "failed") {
-      const safe = safeGeCommand(run.input?.argv || []);
-      return {
-        ...base,
-        state: "blocked",
-        nextAction: safe ? "rerun_task" : "inspect_blocker",
-        safeToRun: safe,
-        commands: commandList(run.id, safe),
-        reason: safe ? "failed command is classified safe to rerun" : "failed command may mutate external state; inspect before rerun",
-      };
-    }
-    return base;
-  }
-
-  if (run.kind === "process.command") {
-    if (run.status === "failed") {
-      const safe = safeProcessCommand(run.input?.argv || []);
-      return {
-        ...base,
-        state: "blocked",
-        nextAction: safe ? "rerun_task" : "inspect_blocker",
-        safeToRun: safe,
-        commands: commandList(run.id, safe),
-        reason: safe ? "failed repo-local script is classified safe to rerun" : "failed process command is not classified safe to rerun",
-      };
-    }
-    return base;
-  }
-
-  if (run.kind === "harness.run") {
-    if (run.status === "failed") {
-      const safe = safeHarnessRunInput(run.input || {});
-      return {
-        ...base,
-        state: "blocked",
-        nextAction: safe ? "rerun_harness" : "inspect_blocker",
-        safeToRun: safe,
-        commands: commandList(run.id, safe),
-        reason: safe ? "harness run is classified safe to rerun" : "harness run input is not classified safe to rerun",
-      };
-    }
-    return base;
-  }
-
-  if (isDataMissionNodeKind(run.kind)) {
-    if (run.status === "failed") {
-      const safe = safeMissionNodeCommand(run.kind, run.input || {});
-      return {
-        ...base,
-        state: "blocked",
-        nextAction: safe ? "rerun_task" : "inspect_blocker",
-        safeToRun: safe,
-        commands: commandList(run.id, safe),
-        reason: safe ? `${run.kind} is classified safe to rerun` : `${run.kind} is not classified safe to rerun`,
-      };
-    }
-    return base;
-  }
-
-  if (run.kind === "mission.run") {
-    const graph = output.graph || {};
-    const blockedNode = (graph.nodes || []).find((node) => ["blocked", "failed"].includes(node.status));
-    if (["blocked", "paused", "failed"].includes(run.status)) {
-      return {
-        ...base,
-        state: run.status === "paused" ? "paused" : "blocked",
-        nextAction: "resume_mission",
-        safeToRun: true,
-        commands: [`ge mission resume ${run.id}`, `ge runtime events ${run.id} --follow`],
-        reason: blockedNode ? `${blockedNode.id}: ${blockedNode.resumePlan?.reason || "blocked"}` : "resume mission graph by scheduling a child mission run",
-        blockers: blockedNode?.resumePlan?.blockers || blockers,
-        artifacts: graph.nodes?.flatMap((node) => node.artifacts || []) || artifacts,
-      };
-    }
-    return base;
-  }
-
-  return { ...base, state: "blocked", nextAction: "inspect_blocker", reason: `no deterministic resume handler for task kind ${run.kind || "<unset>"}` };
-}
-
-function taskSummary(run) {
-  if (!run) return null;
-  const events = listEvents(run.id);
-  const lastEvent = events.at(-1) || null;
-  const output = run.output || {};
-  const counts = output.counts || (output.run ? {
-    total: output.run.total || 0,
-    passed: output.run.passed || 0,
-    repaired: output.run.repaired || 0,
-    blocked: output.run.blocked || 0,
-  } : output.graph?.counts || null);
-  const blockedItem = (output.items || []).find((item) => item.status === "blocked");
-  const runningItem = (output.items || []).find((item) => ["pending", "doctor_running", "repairing"].includes(item.status));
-  const resumePlan = resumePlanFor(run);
-  return {
-    id: run.id,
-    kind: run.kind,
-    status: run.status,
-    createdAt: run.createdAt,
-    updatedAt: run.updatedAt,
-    endedAt: run.endedAt || null,
-    input: run.input,
-    counts,
-    lastEvent,
-    resumePlan,
-    nextAction: resumePlan?.nextAction || blockedItem?.nextAction || runningItem?.nextAction || (["running", "queued"].includes(run.status) ? "wait" : "none"),
-    artifactRefs: output.artifactRefs || output.graph?.nodes?.flatMap((node) => node.artifacts || []) || [],
-    summary: output.reason || lastEvent?.line || run.error || "",
-  };
-}
-
-function taskDetail(run) {
-  if (!run) return null;
-  return { ...run, summary: taskSummary(run) };
-}
-
-function normalizedTaskSummary(run) {
-  const summary = taskSummary(run);
-  return summary ? normalizeRuntimeTask(summary) : null;
-}
-
-function normalizedTaskDetail(run) {
-  const detail = taskDetail(run);
-  return detail ? normalizeRuntimeTask(detail) : null;
-}
-
-function listRunSummaries(limit = 50) {
-  return listRuns(limit).map(normalizedTaskSummary).filter(Boolean);
 }
 
 function childStatusToNodeStatus(status) {
