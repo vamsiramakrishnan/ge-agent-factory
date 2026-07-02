@@ -6,10 +6,9 @@
 // tools/mcp-server.mjs exposes the same ops as typed MCP tools.
 
 import { execFileSync } from "node:child_process";
-import { existsSync, writeFileSync, mkdirSync, rmSync, readdirSync } from "node:fs";
+import { existsSync, writeFileSync, readdirSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { pool } from "./gcp.mjs";
 import { parseConcurrency } from "./concurrency.mjs";
 import { readJson, writeJson, updateJson } from "@ge/std/json-io";
 import { buildFactoryConfig, explainFactoryConfig } from "./config-schema.mjs";
@@ -23,7 +22,7 @@ import { STATE_PATHS, DEPARTMENTS } from "./state-paths.mjs";
 // Week-4: app-domain ops are imported via the two cycle-break boundary modules,
 // NOT directly from apps/factory — factory-core keeps zero app imports (enforced
 // by tools/check-no-app-imports.mjs).
-import { createGatewayClient, getJson, postJson } from "./gateway-client.mjs";
+import { createGatewayClient, postJson } from "./gateway-client.mjs";
 import { createDoctorPlane } from "./doctor.mjs";
 import { createProvisionOps } from "./provision.mjs";
 import { selectionDepartments, toolPlaneChecks, shipProxyCheck, gatewayProvisionCheck, bigQueryApiCheck, selectWorkspacesForRegen } from "./tool-plane-checks.mjs";
@@ -43,6 +42,7 @@ import { createAgentIdentityOps } from "./agent-identity.mjs";
 import { createWorkspaceDoctorOps } from "./workspace-doctor.mjs";
 import { createFleetOps } from "./fleet-ops.mjs";
 import { createApplyOps } from "./apply-ops.mjs";
+import { createRemoteRunOps } from "./remote-run-ops.mjs";
 
 export {
   selectionDepartments,
@@ -61,8 +61,6 @@ export { reviewSpec } from "./spec-review.mjs";
 
 export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const CONFIG_PATH = join(REPO_ROOT, ".ge.json");
-const STATE_PATH = STATE_PATHS.envState;
-const SYNC_STATE_PATH = STATE_PATHS.syncState;
 const TF_DIR = join(REPO_ROOT, "installer/terraform");
 const MCP_SERVICE_DIR = join(REPO_ROOT, "apps/factory/mcp-service");
 const FACTORY_HARNESS_DIR = STATE_PATHS.factory.root;
@@ -211,48 +209,10 @@ export function deploy(cfg, { target = "all", log = noop } = {}) {
   return factoryPlane.deploy(cfg, { target, log });
 }
 
-export async function status(cfg, { noProxy = false } = {}) {
-  ensureGcloud();
-  const state = readJson(STATE_PATH, { completed: {} });
-  const runs = Object.entries(state.completed).map(([id, e]) => ({ id, ...e }));
-  if (!runs.length) throw new Error("No submitted runs in .ge-state.json. Run `ge provision` first.");
-  return withGateway(cfg, async (url, ctx = {}) => {
-    const tally = { done: 0, running: 0, queued: 0, failed: 0, unknown: 0 };
-    const stages = {};
-    const perRun = [];
-    await pool(runs, 10, async (r) => {
-      const res = await getJson(url, `/api/factory/runs/${r.runId}`, ctx.headers).catch(() => ({ ok: false }));
-      const s = res.json || {};
-      const st = (s.status || s.state || "unknown").toLowerCase();
-      const stage = s.currentStage || s.stage || "?";
-      stages[stage] = (stages[stage] || 0) + 1;
-      let bucket = "unknown";
-      if (["done", "succeeded", "published", "complete"].some((k) => st.includes(k))) bucket = "done";
-      else if (["fail", "error"].some((k) => st.includes(k))) bucket = "failed";
-      else if (["run", "active", "submit", "build", "deploy"].some((k) => st.includes(k))) bucket = "running";
-      else if (st.includes("queue") || st.includes("wait")) bucket = "queued";
-      tally[bucket]++;
-      perRun.push({ id: r.id, runId: r.runId, stage, status: st, bucket });
-    });
-    return { total: runs.length, tally, stages, perRun, terminal: tally.done + tally.failed === runs.length };
-  }, { noProxy });
-}
-
-export function logs(cfg, { runId, stage = "validate", item } = {}) {
-  ensureGcloud();
-  if (!runId) throw new Error("runId required");
-  const state = readJson(STATE_PATH, { completed: {} });
-  const workspaceId = item || Object.values(state.completed).find((e) => e.runId === runId)?.workspaceId;
-  if (!workspaceId) throw new Error("Could not resolve workspaceId; pass item=ws-<id>.");
-  const uri = `gs://${cfg.bucket}/runs/${runId}/items/${workspaceId}/factory-${stage}-result.json`;
-  const r = gcloud(["storage", "cat", uri], { allowFail: true });
-  if (!r.ok) {
-    const ls = gcloud(["storage", "ls", "-r", `gs://${cfg.bucket}/runs/${runId}/`], { allowFail: true });
-    return { found: false, uri, available: ls.ok ? ls.out.split("\n") : [] };
-  }
-  let result; try { result = JSON.parse(r.out); } catch { return { found: true, uri, raw: r.out }; }
-  return { found: true, uri, result };
-}
+// Remote run observation + artifact sync (status/logs/sync) now lives in
+// remote-run-ops.mjs; wired here the same way as the plane modules below, since
+// it needs live run/gcloud plus the composed withGateway client.
+export const { status, logs, sync } = createRemoteRunOps({ run, gcloud, ensureGcloud, withGateway });
 
 // Fleet/mission/journey planning + run-log/artifact reads (fleetStatus/
 // missionPlan/journeyPlan/tailLog/readArtifact) now live in fleet-ops.mjs;
@@ -261,53 +221,6 @@ export function logs(cfg, { runId, stage = "validate", item } = {}) {
 // `statusBoard` is a hoisted function declaration, so referencing it here is
 // safe — it only runs at call time, after the planes below are composed.
 export const { fleetStatus, missionPlan, journeyPlan, tailLog, readArtifact } = createFleetOps({ gcloud, statusBoard });
-
-function parseIdList(ids) {
-  return String(Array.isArray(ids) ? ids.join(",") : ids || "")
-    .split(",")
-    .map((id) => id.trim())
-    .filter(Boolean);
-}
-
-export async function sync(cfg, { ids = "", force = false, commit = true, push = false, log = noop } = {}) {
-  ensureGcloud();
-  const state = readJson(STATE_PATH, { completed: {} });
-  const requested = parseIdList(ids);
-  const requestedSet = new Set(requested);
-  const entries = Object.entries(state.completed).filter(([id, entry]) => {
-    if (!requestedSet.size) return true;
-    return requestedSet.has(id) || requestedSet.has(entry?.workspaceId);
-  });
-  if (!entries.length) throw new Error("No completed runs to sync.");
-  const outDir = join(REPO_ROOT, "generated-agents");
-  mkdirSync(outDir, { recursive: true });
-  const synced = readJson(SYNC_STATE_PATH, { synced: {} });
-  let ok = 0, fail = 0;
-  await pool(entries, 4, async ([id, e]) => {
-    if (!force && synced.synced[id]?.runId === e.runId) return;
-    const uri = `gs://${cfg.bucket}/runs/${e.runId}/items/${e.workspaceId}/agent-result.tar.gz`;
-    const dest = join(outDir, id);
-    const tmp = join(REPO_ROOT, ".tmp", `${id}.tar.gz`);
-    mkdirSync(dirname(tmp), { recursive: true });
-    const dl = gcloud(["storage", "cp", uri, tmp], { allowFail: true });
-    if (!dl.ok) { fail++; log(`✗ ${id} (no archive yet)`); return; }
-    rmSync(dest, { recursive: true, force: true }); mkdirSync(dest, { recursive: true });
-    try { execFileSync("tar", ["-xzf", tmp, "-C", dest], { stdio: "ignore" }); } catch { fail++; return; }
-    rmSync(tmp, { force: true });
-    synced.synced[id] = { runId: e.runId, at: new Date().toISOString() };
-    writeJson(SYNC_STATE_PATH, synced);
-    ok++; log(`✓ ${id}`);
-  });
-  rmSync(join(REPO_ROOT, ".tmp"), { recursive: true, force: true });
-  let committed = false;
-  if (ok && commit) {
-    run("git", ["add", "generated-agents", ".generated-agents-sync-state.json"], { capture: false });
-    run("git", ["commit", "-m", `chore(agents): sync ${ok} generated workspace(s)`], { capture: false });
-    committed = true;
-    if (push) run("git", ["push"], { capture: false });
-  }
-  return { mode: "remote", ids: entries.map(([id]) => id), synced: ok, failed: fail, committed, pushed: !!(ok && commit && push) };
-}
 
 const GEN_DIR = join(REPO_ROOT, "apps/factory");
 const FACTORY_DATA_ROOT = STATE_PATHS.factory.root;
