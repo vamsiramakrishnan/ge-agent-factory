@@ -93,7 +93,7 @@ function Cell({ value }: { value: any }) {
     return <span className="text-secondary">{value.map((item) => (typeof item === "object" ? JSON.stringify(item) : String(item))).join(", ")}</span>;
   }
   if (typeof value === "object") {
-    return <span className="font-mono text-[10px] text-secondary">{JSON.stringify(value)}</span>;
+    return <span className="font-mono text-4xs text-secondary">{JSON.stringify(value)}</span>;
   }
   return <span className="whitespace-pre-wrap">{String(value)}</span>;
 }
@@ -107,10 +107,10 @@ function JsonValue({ value }: { value: any }) {
     <div className="space-y-2">
       {entries.map(([key, child]) => (
         <div key={key} className="grid gap-1 sm:grid-cols-[minmax(0,9rem)_minmax(0,1fr)]">
-          <div className="text-[11px] font-medium uppercase tracking-wide text-secondary">{humanizeKey(key)}</div>
+          <div className="text-3xs font-medium uppercase tracking-wide text-secondary">{humanizeKey(key)}</div>
           <div className="min-w-0">
             {child != null && typeof child === "object" ? (
-              <pre className="overflow-x-auto rounded bg-surface-container/40 px-2 py-1 text-[11px] leading-snug text-secondary whitespace-pre-wrap">
+              <pre className="overflow-x-auto rounded bg-surface-container/40 px-2 py-1 text-3xs leading-snug text-secondary whitespace-pre-wrap">
                 {JSON.stringify(child, null, 2)}
               </pre>
             ) : (

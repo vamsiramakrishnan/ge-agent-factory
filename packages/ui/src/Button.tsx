@@ -13,7 +13,7 @@ import { cx } from "./cx";
 export type ButtonVariant = "primary" | "outline" | "ghost";
 export type ButtonSize = "sm" | "md";
 
-const BASE = "inline-flex items-center justify-center gap-2 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
+const BASE = "inline-flex items-center justify-center gap-2 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed outline-none focus-visible:ring-2 focus-visible:ring-primary/35 focus-visible:ring-offset-1 focus-visible:ring-offset-surface";
 
 const VARIANT: Record<ButtonVariant, string> = {
   primary: "bg-primary text-white hover:bg-primary-container",

@@ -1,36 +1,104 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-headline: "Space Grotesk", sans-serif;
+  /* Two-face pairing: Space Grotesk is the characterful display face, used
+     sparingly for page/section titles and large numerals — not paragraph
+     text. IBM Plex Sans is the UI workhorse (chosen for its technical/
+     documentation heritage — this is a certification-document product).
+     Geist Mono carries every data value: ids, hashes, timestamps, log
+     lines, JSON, CLI output. */
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-headline: "Space Grotesk", "IBM Plex Sans", sans-serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
 
-  /* ─── Google Cloud Console Palette ──────────── */
+  /* Micro type scale — named steps for the console's dense data surfaces
+     (table cells, meta rows, badges) so a size is a token, not a bracketed
+     one-off. Use text-3xs/text-4xs instead of text-[11px]/text-[10px]. */
+  --text-3xs: 0.6875rem;
+  --text-3xs--line-height: 1rem;
+  --text-4xs: 0.625rem;
+  --text-4xs--line-height: 0.875rem;
+
+  /* Radius scale — tuned slightly more deliberate than Tailwind's default
+     (buttons/inputs get more presence, panels read as considered surfaces
+     rather than a generic 8px-everywhere default). */
+  --radius-sm: 0.3125rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+
+  /* ─── Chrome palette ─────────────────────────── */
   /* BEGIN GENERATED: palette — do not edit; run `bun run docs:tokens` */
-  --color-primary: #1a73e8;
-  --color-primary-container: #4285f4;
-  --color-background: #f8fafd;
+  --color-primary: #2953ff;
+  --color-primary-container: #5578ff;
+  --color-background: #f3f4f7;
   --color-surface: #ffffff;
-  --color-surface-container: #eef3f9;
-  --color-surface-container-low: #f5f8fc;
-  --color-surface-container-high: #e8eef7;
+  --color-surface-container: #eceef2;
+  --color-surface-container-low: #f6f7f9;
+  --color-surface-container-high: #e4e7ec;
   --color-surface-container-lowest: #ffffff;
   --color-surface-bright: #ffffff;
-  --color-surface-tint: #1a73e8;
-  --color-on-surface: #202124;
-  --color-secondary: #5f6368;
-  --color-secondary-container: #e8f0fe;
-  --color-tertiary: #34a853;
-  --color-tertiary-container: #e6f4ea;
-  --color-outline-variant: #dadce0;
+  --color-surface-tint: #2953ff;
+  --color-on-surface: #14171c;
+  --color-secondary: #565e6c;
+  --color-secondary-container: #e6ebff;
+  --color-tertiary: #16874a;
+  --color-tertiary-container: #e1f3e7;
+  --color-outline-variant: #dfe2e8;
   /* END GENERATED: palette */
+
+  /* --color-outline is deliberately NOT part of the generated brand-palette
+     region above: it isn't shared with the docs site, it's the console's own
+     second line-weight — a firmer edge for interactive-control borders
+     (buttons, inputs, selects), one step darker than --color-outline-variant's
+     hairline dividers. Previously referenced across ~30 components with no
+     token behind it at all (a silent no-op border-color); defined here so
+     `border-outline/NN` resolves to something intentional. */
+  --color-outline: #c7cbd4;
+
+  /* --color-on-surface-variant: same story as --color-outline above — ~30
+     components already write `text-on-surface-variant` (a real Material
+     Design 3 token name) expecting it to mean "muted text", but nothing
+     defined it. It's exactly --color-secondary's job, so alias it rather
+     than carry two names for one meaning going forward — new code should
+     prefer `text-secondary`. */
+  --color-on-surface-variant: #565e6c;
+
+  /* ─── Status ramp (hand-authored — not part of the generated palette
+     region above; this is the console's own semantic vocabulary, not a
+     cross-app brand color). Every operator-facing state maps to exactly one
+     of these seven hues, each with a vivid "-500" value for dots/fills/icons
+     and a darker "-ink" value for AA text-on-tint. `running` intentionally
+     reuses --color-primary — in this system, blue means "live": it is both
+     the interactive accent and the color of work in progress. `passed`
+     reuses --color-tertiary for the same reason: one green, one meaning.
+     `synthesized` is not a run status — it flags AI-assisted content (the
+     "bring your own system" flow) and is kept visually distinct from the
+     status ramp on purpose. ─── */
+  --color-status-queued: #6b7280;
+  --color-status-queued-ink: #454c59;
+  --color-status-running: var(--color-primary);
+  --color-status-running-ink: #1d3fc7;
+  --color-status-passed: var(--color-tertiary);
+  --color-status-passed-ink: #0d6d3a;
+  --color-status-failed: #dc3626;
+  --color-status-failed-ink: #9a1f14;
+  --color-status-blocked: #d9660a;
+  --color-status-blocked-ink: #8f4207;
+  --color-status-warning: #ca9a08;
+  --color-status-warning-ink: #7a5e05;
+  --color-status-repairing: #0f8f8a;
+  --color-status-repairing-ink: #0a5f5b;
+  --color-accent-synthesized: #7c4fe0;
+  --color-accent-synthesized-ink: #5a34a8;
 }
 
 @layer base {
   body {
     @apply bg-background text-on-surface font-sans antialiased;
     letter-spacing: 0;
+    font-variant-numeric: tabular-nums;
   }
 
   /* Sleek scrollbar */
@@ -47,9 +115,14 @@
   ::-webkit-scrollbar-thumb:hover {
     background: var(--color-secondary);
   }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
 }
 
-/* ─── Glassmorphism ───────────────────────────── */
+/* ─── Glassmorphism (apps/presentation only) ──── */
 .glass-panel {
   background: rgba(255, 255, 255, 0.55);
   backdrop-filter: blur(24px);
@@ -62,64 +135,53 @@
   -webkit-backdrop-filter: blur(12px);
 }
 
-/* ─── Google Cloud Accents ────────────────────── */
+/* ─── Brand Accents (apps/presentation only) ──── */
 .hero-gradient {
-  background: linear-gradient(135deg, #1a73e8 0%, #4285f4 58%, #34a853 100%);
+  background: linear-gradient(135deg, #2953ff 0%, #5578ff 58%, #16874a 100%);
 }
 
 .flow-gradient {
-  background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
+  background: linear-gradient(135deg, #2953ff 0%, #5578ff 100%);
 }
 
 .accent-glow {
-  background: linear-gradient(135deg, #5f6368 0%, #4285f4 100%);
+  background: linear-gradient(135deg, #565e6c 0%, #5578ff 100%);
 }
 
 /* ─── Ambient Shadows ─────────────────────────── */
 .shadow-ambient {
-  box-shadow: 0 4px 24px rgba(26, 115, 232, 0.08);
+  box-shadow: 0 4px 24px rgba(20, 23, 28, 0.06);
 }
 
 .shadow-ambient-lg {
-  box-shadow: 0 12px 48px rgba(26, 115, 232, 0.1);
+  box-shadow: 0 12px 48px rgba(20, 23, 28, 0.12);
 }
 
 .shadow-glow {
-  box-shadow: 0 0 20px rgba(26, 115, 232, 0.14);
+  box-shadow: 0 0 20px rgba(41, 83, 255, 0.16);
 }
 
 /* ─── Ghost Borders ───────────────────────────── */
 .ghost-border {
-  border: 1px solid rgba(184, 188, 200, 0.15);
+  border: 1px solid rgba(20, 23, 28, 0.12);
 }
 
 .ghost-border-focus {
-  border: 1px solid rgba(26, 115, 232, 0.22);
+  border: 1px solid rgba(41, 83, 255, 0.28);
 }
 
-/* ─── Editorial Card System ───────────────────── */
-.editorial-card {
+/* ─── Panel system ─────────────────────────────
+   Flat instrument-panel surfaces: one hairline border, one quiet shadow, no
+   gradient sheen. `.panel-interactive` shifts the border to the signal color
+   and lifts by a single pixel on hover/focus — a precision instrument reacts,
+   it doesn't glow. Class names kept stable (editorial-* → panel-*'s
+   predecessor) so every existing call site restyles for free. */
+.editorial-card,
+.editorial-micro-card {
   position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(60, 64, 67, 0.14);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(245, 248, 252, 0.96)),
-    var(--color-surface-container-lowest);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.95) inset,
-    0 14px 30px rgba(60, 64, 67, 0.1),
-    0 3px 8px rgba(60, 64, 67, 0.07);
-}
-
-.editorial-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(90deg, rgba(26, 115, 232, 0.1), transparent 30%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.42), transparent 42%);
-  opacity: 0.42;
+  border: 1px solid rgba(20, 23, 28, 0.1);
+  background: var(--color-surface);
+  box-shadow: 0 1px 2px rgba(20, 23, 28, 0.04);
 }
 
 .editorial-card > * {
@@ -128,47 +190,42 @@
 }
 
 .editorial-card-tint {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(232, 240, 254, 0.52)),
-    color-mix(in srgb, var(--color-primary) 5%, white);
+  background: color-mix(in srgb, var(--color-primary) 4%, white);
 }
 
 .editorial-card-muted {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(238, 243, 249, 0.96)),
-    var(--color-surface-container-low);
+  background: var(--color-surface-container-low);
 }
 
 .editorial-card-interactive {
-  transform: translateZ(0);
   transition:
-    transform 180ms ease,
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    background 180ms ease;
+    transform 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease;
 }
 
-.editorial-card-interactive:hover {
-  transform: translateY(-2px);
-  border-color: rgba(26, 115, 232, 0.28);
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(248, 250, 253, 0.96)),
-    var(--color-surface-container-lowest);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 1) inset,
-    0 22px 42px rgba(38, 42, 58, 0.12),
-    0 8px 18px rgba(26, 115, 232, 0.1);
+.editorial-card-interactive:hover,
+.editorial-card-interactive:focus-within {
+  transform: translateY(-1px);
+  border-color: rgba(41, 83, 255, 0.35);
+  box-shadow: 0 4px 16px rgba(20, 23, 28, 0.08);
 }
 
-.editorial-micro-card {
-  border: 1px solid rgba(60, 64, 67, 0.13);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(245, 248, 252, 0.98));
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.95) inset,
-    0 7px 18px rgba(38, 42, 58, 0.07);
+@media (prefers-reduced-motion: reduce) {
+  .editorial-card-interactive:hover,
+  .editorial-card-interactive:focus-within {
+    transform: none;
+  }
 }
 
-/* ─── Use Case Detail Contrast Guardrails ─────── */
+.editorial-active-card {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: white;
+  box-shadow: 0 4px 16px rgba(41, 83, 255, 0.22);
+}
+
+/* ─── Use Case Detail Contrast Guardrails (apps/presentation only) ─── */
 .use-case-detail {
   color: var(--color-on-surface);
 }
@@ -229,17 +286,6 @@
   text-decoration-thickness: 1.5px;
 }
 
-.editorial-active-card {
-  border-color: rgba(26, 115, 232, 0.42);
-  background:
-    linear-gradient(135deg, rgba(26, 115, 232, 0.98), rgba(66, 133, 244, 0.94)),
-    var(--color-primary);
-  color: white;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.22) inset,
-    0 18px 36px rgba(26, 115, 232, 0.24);
-}
-
 /* ─── Hide scrollbar for horizontal scroll ────── */
 .scrollbar-none::-webkit-scrollbar { display: none; }
 .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
@@ -272,12 +318,16 @@
 
 /* ─── Agent Node Pulse ────────────────────────── */
 @keyframes agent-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(26, 115, 232, 0.24); }
-  50% { box-shadow: 0 0 12px 4px rgba(26, 115, 232, 0.1); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(41, 83, 255, 0.24); }
+  50% { box-shadow: 0 0 12px 4px rgba(41, 83, 255, 0.12); }
 }
 
 .agent-glow {
   animation: agent-pulse 3s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-glow { animation: none; }
 }
 
 /* ─── Connector Pulse ─────────────────────────── */
@@ -293,6 +343,10 @@
   animation: flow-pulse 2s linear infinite;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .flow-line { animation: none; }
+}
+
 /* ─── Typography Refinements ──────────────────── */
 .tracking-display {
   letter-spacing: 0;
@@ -301,10 +355,40 @@
 .text-data {
   font-family: "Geist Mono", monospace;
   letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ─── Lifecycle stepper: staggered stage reveal ─── */
 @keyframes ge-stage-in {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: none; }
+}
+
+/* ─── Lifecycle stepper: connector segments leading into a running stage
+   carry a moving trace — the one place motion encodes something real
+   (where work is flowing right now), not decoration. ─── */
+@keyframes connector-flow-x {
+  to { background-position: -24px 0; }
+}
+@keyframes connector-flow-y {
+  to { background-position: 0 -24px; }
+}
+.connector-live-x {
+  background-image: repeating-linear-gradient(90deg, var(--color-status-running) 0 6px, transparent 6px 12px);
+  background-size: 24px 100%;
+  animation: connector-flow-x 800ms linear infinite;
+}
+.connector-live-y {
+  background-image: repeating-linear-gradient(180deg, var(--color-status-running) 0 6px, transparent 6px 12px);
+  background-size: 100% 24px;
+  animation: connector-flow-y 800ms linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .connector-live-x,
+  .connector-live-y {
+    animation: none;
+    background-image: none;
+    background-color: var(--color-status-running);
+    opacity: 0.5;
+  }
 }

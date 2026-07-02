@@ -60,16 +60,16 @@ export function InterviewContextPanel({
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="truncate text-sm font-semibold text-on-surface">{usecaseId || "No active interview"}</div>
-            <div className="mt-1 truncate font-mono text-[11px] text-secondary">{activeInterviewId || "Start an interview to create a task"}</div>
+            <div className="mt-1 truncate font-mono text-3xs text-secondary">{activeInterviewId || "Start an interview to create a task"}</div>
           </div>
           <StatusPill status={task?.status || (activeInterviewId ? "pending" : "missing")} />
         </div>
         <div className="mt-3 rounded bg-surface-container/60 px-2 py-2">
-          <div className="text-[11px] font-medium uppercase text-secondary">Generated spec</div>
-          <div className="mt-1 truncate font-mono text-[11px] text-secondary" title={specPath || "not planned"}>
+          <div className="text-3xs font-medium uppercase text-secondary">Generated spec</div>
+          <div className="mt-1 truncate font-mono text-3xs text-secondary" title={specPath || "not planned"}>
             {specPath || "not planned"}
           </div>
-          <div className={`mt-2 inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium ${present ? "bg-emerald-500/10 text-emerald-700" : "bg-amber-500/10 text-amber-700"}`}>
+          <div className={`mt-2 inline-flex rounded-full px-2 py-0.5 text-4xs font-medium ${present ? "bg-status-passed/10 text-status-passed-ink" : "bg-status-warning/10 text-status-warning-ink"}`}>
             {present ? "ready" : "waiting"}
           </div>
         </div>

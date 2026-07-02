@@ -10,7 +10,7 @@ export function StatusChip({ status, className = "" }: { status: string; classNa
   const style = runStatusStyle(s);
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${style.badgeClass} ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-4xs font-semibold uppercase tracking-wide ${style.badgeClass} ${className}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${style.dotClass} ${s === "running" ? "animate-pulse motion-reduce:animate-none" : ""}`} />
       {style.label}

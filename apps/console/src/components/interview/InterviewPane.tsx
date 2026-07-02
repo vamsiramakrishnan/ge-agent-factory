@@ -61,16 +61,16 @@ export function InterviewPane({
     <div className="flex h-full flex-col overflow-y-auto">
       <div className="border-b border-outline-variant/40 px-5 py-3">
         <div className="flex items-center justify-between gap-2">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-secondary">Conversation</div>
-          <span className="rounded-full border border-primary/20 bg-primary/5 px-2 py-0.5 text-[11px] font-medium text-primary">Antigravity</span>
+          <div className="text-4xs font-semibold uppercase tracking-wider text-secondary">Conversation</div>
+          <span className="rounded-full border border-primary/20 bg-primary/5 px-2 py-0.5 text-3xs font-medium text-primary">Antigravity</span>
         </div>
         <h2 className="mt-0.5 text-sm font-semibold text-on-surface">Interview</h2>
-        <div className="mt-0.5 truncate font-mono text-[11px] text-secondary" title={usecaseId}>{usecaseId}</div>
+        <div className="mt-0.5 truncate font-mono text-3xs text-secondary" title={usecaseId}>{usecaseId}</div>
       </div>
 
       <div className="space-y-6 px-5 py-4">
         <section>
-          <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-secondary">Input brief</h3>
+          <h3 className="mb-2 text-3xs font-semibold uppercase tracking-wider text-secondary">Input brief</h3>
           <div className="space-y-3">
             <Field label="Business outcome">
               <textarea
@@ -99,8 +99,8 @@ export function InterviewPane({
 
         <section>
           <div className="mb-2 flex items-center justify-between">
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-secondary">Grounding documents</h3>
-            {groundingChars > 0 && <span className="text-[11px] text-secondary">{groundingChars.toLocaleString()} chars</span>}
+            <h3 className="text-3xs font-semibold uppercase tracking-wider text-secondary">Grounding documents</h3>
+            {groundingChars > 0 && <span className="text-3xs text-secondary">{groundingChars.toLocaleString()} chars</span>}
           </div>
           <DocumentDropzone usecaseId={usecaseId} onUploaded={(doc) => onDocumentsChange(mergeUploaded(documents, doc))} />
           <div className="mt-3">
@@ -123,11 +123,11 @@ export function InterviewPane({
         {interactions.length > 0 && (
           <section className="space-y-3">
             <div className="flex items-center justify-between gap-2">
-              <h3 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-secondary">
+              <h3 className="flex items-center gap-2 text-3xs font-semibold uppercase tracking-wider text-secondary">
                 <MessageSquareText className="h-4 w-4" aria-hidden />
                 Questions for you
               </h3>
-              <span className="rounded-full bg-surface-container px-2 py-0.5 text-[10px] font-medium text-secondary">
+              <span className="rounded-full bg-surface-container px-2 py-0.5 text-4xs font-medium text-secondary">
                 {answeredCount}/{interactions.length} answered
               </span>
             </div>

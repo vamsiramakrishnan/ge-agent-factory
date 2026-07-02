@@ -204,11 +204,11 @@ describe("run status vocabulary", () => {
   });
 
   test("runStatusStyle exposes one palette entry per normalized status", () => {
-    expect(runStatusStyle("done").dotClass).toContain("emerald");
-    expect(runStatusStyle("failed").dotClass).toContain("rose");
-    expect(runStatusStyle("blocked").dotClass).toContain("amber");
-    expect(runStatusStyle("running").dotClass).toContain("blue");
-    expect(runStatusStyle("pending").dotClass).toContain("slate");
+    expect(runStatusStyle("done").dotClass).toContain("status-passed");
+    expect(runStatusStyle("failed").dotClass).toContain("status-failed");
+    expect(runStatusStyle("blocked").dotClass).toContain("status-blocked");
+    expect(runStatusStyle("running").dotClass).toContain("status-running");
+    expect(runStatusStyle("pending").dotClass).toContain("status-queued");
     expect(runStatusStyle("running").icon).toBe("◐");
   });
 

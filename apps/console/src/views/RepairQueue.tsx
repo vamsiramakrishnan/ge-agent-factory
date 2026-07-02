@@ -183,10 +183,10 @@ export default function RepairQueue({ status }: RepairQueueProps) {
           </details>
           <div className="flex items-center justify-between mb-3">
             <button onClick={selectVisible} className="text-xs text-primary hover:underline">Select visible</button>
-            <span className="text-xs text-on-surface-variant">{selected.size || agents.length} queued</span>
+            <span className="text-xs text-secondary">{selected.size || agents.length} queued</span>
           </div>
           {noActionableMission && (
-            <div className="mb-3 rounded-lg border border-amber-400/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-700">
+            <div className="mb-3 rounded-lg border border-status-warning/20 bg-status-warning/5 px-3 py-2 text-xs text-status-warning-ink">
               No selected agents need repair for this target. Missing workspaces need a build first; already-ready workspaces have nothing to fix.
             </div>
           )}
@@ -196,7 +196,7 @@ export default function RepairQueue({ status }: RepairQueueProps) {
                 <input type="checkbox" checked={selected.has(agent.id)} onChange={() => toggle(agent)} className="accent-primary" />
                 <div className="min-w-0 flex-1">
                   <div className="text-sm text-on-surface truncate">{agent.title}</div>
-                  <div className="text-xs text-on-surface-variant font-mono">{agent.workspaceId || agent.id}</div>
+                  <div className="text-xs text-secondary font-mono">{agent.workspaceId || agent.id}</div>
                 </div>
                 <StatusPill status={agent.status} />
               </label>
@@ -218,7 +218,7 @@ export default function RepairQueue({ status }: RepairQueueProps) {
           {mission && (
             <Section
               title="Run Plan"
-              actions={<span className="text-xs text-on-surface-variant">{mission.mode} · gate {mission.target.workspaceGate}</span>}
+              actions={<span className="text-xs text-secondary">{mission.mode} · gate {mission.target.workspaceGate}</span>}
             >
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                 <Stat size="md" label="Selected" value={mission.summary.selected} />
@@ -228,24 +228,24 @@ export default function RepairQueue({ status }: RepairQueueProps) {
               </div>
               <div className="mb-4 border border-outline-variant/30 rounded-lg p-3 bg-surface">
                 <div className="text-xs font-semibold uppercase tracking-wide text-secondary">Where work will run</div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2 text-xs text-on-surface-variant">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2 text-xs text-secondary">
                   <div><span className="text-on-surface">Build:</span> {mission.modeContract.factorySurface.replaceAll("_", " ")}</div>
                   <div><span className="text-on-surface">Artifacts:</span> {mission.modeContract.artifactSource.replaceAll("_", " ")}</div>
                   <div><span className="text-on-surface">Repair:</span> {mission.modeContract.autopilotCapability.replaceAll("_", " ")}</div>
                 </div>
-                <div className="mt-2 text-xs text-on-surface-variant">{mission.modeContract.constraints[0]}</div>
+                <div className="mt-2 text-xs text-secondary">{mission.modeContract.constraints[0]}</div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                 {mission.phases.map((phase) => (
                   <div key={phase.id} className="border border-outline-variant/30 rounded-lg p-3 bg-surface">
                     <div className="text-xs font-semibold uppercase tracking-wide text-secondary">{phase.owner}</div>
                     <div className="text-sm text-on-surface mt-1">{phase.id}</div>
-                    <div className="text-xs text-on-surface-variant mt-1">{phase.action.replaceAll("_", " ")}</div>
+                    <div className="text-xs text-secondary mt-1">{phase.action.replaceAll("_", " ")}</div>
                     {phase.command?.commandId && <div className="text-xs font-mono text-primary mt-2">{phase.command.commandId}</div>}
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-on-surface-variant mt-3">
+              <p className="text-xs text-secondary mt-3">
                 Builds create missing workspaces. Repair runs only inspect, fix, or observe work that already exists.
               </p>
             </Section>
@@ -253,7 +253,7 @@ export default function RepairQueue({ status }: RepairQueueProps) {
 
           <Section
             title="Repair Runs"
-            actions={<span className="text-xs text-on-surface-variant">{status?.mode || "local"} mode</span>}
+            actions={<span className="text-xs text-secondary">{status?.mode || "local"} mode</span>}
           >
             <div className="flex flex-wrap gap-2">
               {runs.map((run) => (
@@ -263,7 +263,7 @@ export default function RepairQueue({ status }: RepairQueueProps) {
                   className={`px-3 py-2 rounded-lg text-left border text-xs ${detail?.run.id === run.id ? "border-primary bg-primary/5" : "border-outline-variant/30 hover:bg-surface-container-low"}`}
                 >
                   <div className="font-mono text-on-surface">{run.id}</div>
-                  <div className="text-on-surface-variant">
+                  <div className="text-secondary">
                     {run.targetStage} · {run.status} · {run.total === 0 ? "no actionable items" : `${run.passed + run.repaired}/${run.total}`}
                   </div>
                 </button>
@@ -277,7 +277,7 @@ export default function RepairQueue({ status }: RepairQueueProps) {
               <div className="p-4 border-b border-outline-variant/30 flex items-center justify-between">
                 <div>
                   <h2 className="text-sm font-semibold text-on-surface">{detail.run.id}</h2>
-                  <p className="text-xs text-on-surface-variant">
+                  <p className="text-xs text-secondary">
                     {detail.run.targetStage} · {detail.run.status} · {detail.run.total === 0 ? "no actionable items" : `passed ${detail.run.passed} · repaired ${detail.run.repaired} · blocked ${detail.run.blocked}`}
                   </p>
                 </div>
@@ -302,7 +302,7 @@ export default function RepairQueue({ status }: RepairQueueProps) {
                 <tbody>
                   {detail.items.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="px-4 py-6 text-sm text-on-surface-variant">
+                      <td colSpan={4} className="px-4 py-6 text-sm text-secondary">
                         No repair items were created for this run. The selected agents had nothing to inspect, fix, or observe.
                       </td>
                     </tr>
@@ -310,9 +310,9 @@ export default function RepairQueue({ status }: RepairQueueProps) {
                   {detail.items.map((item) => (
                     <tr key={item.agentId} className="border-b border-outline-variant/20">
                       <td className="px-4 py-2 text-sm text-on-surface">{item.agentId}</td>
-                      <td className="px-4 py-2 text-xs font-mono text-on-surface-variant">{item.workspaceId}</td>
+                      <td className="px-4 py-2 text-xs font-mono text-secondary">{item.workspaceId}</td>
                       <td className="px-4 py-2"><StatusPill status={item.status} /></td>
-                      <td className="px-4 py-2 text-xs text-on-surface-variant">
+                      <td className="px-4 py-2 text-xs text-secondary">
                         {item.blockers?.[0] ? `${item.blockers[0].id}: ${item.blockers[0].message}` : "none"}
                       </td>
                     </tr>

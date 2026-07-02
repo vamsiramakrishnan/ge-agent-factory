@@ -367,20 +367,20 @@ export function SpecCanvas({
       <div className="border-b border-outline-variant/40 px-5 py-3">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-secondary">
+            <div className="flex items-center gap-1.5 text-4xs font-semibold uppercase tracking-wider text-secondary">
               <FileJson className="h-3.5 w-3.5 text-primary" aria-hidden />
               Artifact
             </div>
             <h2 className="mt-0.5 text-sm font-semibold text-on-surface">Agent Spec</h2>
-            <div className="mt-0.5 truncate font-mono text-[11px] text-secondary" title={specPath}>
+            <div className="mt-0.5 truncate font-mono text-3xs text-secondary" title={specPath}>
               {specPath}
-              {settled && <span className="ml-1.5 font-sans text-[10px] text-emerald-700">· on disk</span>}
+              {settled && <span className="ml-1.5 font-sans text-4xs text-status-passed-ink">· on disk</span>}
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <span
               aria-live="polite"
-              className={cx("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium", statusTone(statusLabel))}
+              className={cx("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-3xs font-medium", statusTone(statusLabel))}
             >
               {reviewing ? (
                 <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none" aria-hidden />
@@ -419,7 +419,7 @@ export function SpecCanvas({
       </div>
 
       {error && (
-        <div className="mx-5 mt-3 rounded-md border border-amber-400/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-700">
+        <div className="mx-5 mt-3 rounded-md border border-status-warning/20 bg-status-warning/10 px-3 py-2 text-xs text-status-warning-ink">
           {error}
         </div>
       )}
@@ -439,13 +439,13 @@ export function SpecCanvas({
       )}
 
       {registered && (
-        <div className="mx-5 mt-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
+        <div className="mx-5 mt-3 rounded-lg border border-status-passed/30 bg-status-passed/10 px-4 py-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-2.5">
-              <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" aria-hidden />
+              <CheckCircle2 className="h-5 w-5 shrink-0 text-status-passed" aria-hidden />
               <div className="min-w-0">
-                <div className="text-sm font-semibold text-emerald-800">Spec registered</div>
-                <div className="mt-0.5 text-xs text-emerald-700">
+                <div className="text-sm font-semibold text-status-passed-ink">Spec registered</div>
+                <div className="mt-0.5 text-xs text-status-passed-ink">
                   <span className="font-mono font-medium">{registered.id}</span> is in the catalog and selected in the Pipeline.
                 </div>
               </div>
@@ -480,7 +480,7 @@ export function SpecCanvas({
           <div className="space-y-4">
             {sections.map((section) => (
               <section key={section.key} className="rounded-lg border border-outline-variant/40 bg-surface p-4">
-                <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-secondary">{section.label}</h3>
+                <h3 className="mb-2 text-3xs font-semibold uppercase tracking-wider text-secondary">{section.label}</h3>
                 {editMode ? (
                   <SpecFieldEditor section={section} onChange={(value) => updateSection(section.key, value)} />
                 ) : (
@@ -494,13 +494,13 @@ export function SpecCanvas({
 
         {gaps.length > 0 && (
           <section className="mt-4 rounded-lg border border-outline-variant/40 bg-surface p-4">
-            <h3 className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-secondary">
+            <h3 className="mb-3 flex items-center gap-2 text-3xs font-semibold uppercase tracking-wider text-secondary">
               <ListChecks className="h-4 w-4" aria-hidden />
               Registration gates
             </h3>
             <ul className="space-y-2">
               {gaps.slice(0, 12).map((gap) => (
-                <li key={gap} className="rounded-md bg-amber-500/10 px-3 py-2 text-xs font-medium text-amber-700">{describeGap(gap).message}</li>
+                <li key={gap} className="rounded-md bg-status-warning/10 px-3 py-2 text-xs font-medium text-status-warning-ink">{describeGap(gap).message}</li>
               ))}
             </ul>
           </section>
@@ -508,9 +508,9 @@ export function SpecCanvas({
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-outline-variant/40 px-5 py-3">
-        <div className="text-[11px] text-secondary">
+        <div className="text-3xs text-secondary">
           {registered ? (
-            <span className="text-emerald-700">Registered {registered.id}. Available in the Pipeline spec selector.</span>
+            <span className="text-status-passed-ink">Registered {registered.id}. Available in the Pipeline spec selector.</span>
           ) : dirty ? (
             "Unsaved edits — save before registering."
           ) : savedPath ? (
@@ -646,7 +646,7 @@ function OkfPreview({
             <Package className="h-4 w-4 shrink-0 text-primary" />
             <div className="min-w-0">
               <h3 className="text-sm font-semibold text-on-surface">Knowledge Bundle (OKF)</h3>
-              <div className="truncate text-[11px] text-secondary">
+              <div className="truncate text-3xs text-secondary">
                 {bundle ? `${bundle.conceptCount} concept${bundle.conceptCount === 1 ? "" : "s"} · ${files.length} file${files.length === 1 ? "" : "s"}` : "Building…"}
               </div>
             </div>
@@ -668,7 +668,7 @@ function OkfPreview({
             </div>
           )}
           {error && (
-            <div className="rounded-md border border-amber-400/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-700">{error}</div>
+            <div className="rounded-md border border-status-warning/20 bg-status-warning/10 px-3 py-2 text-xs text-status-warning-ink">{error}</div>
           )}
           {!loading && !error && bundle && (
             <div className="space-y-4">
@@ -676,7 +676,7 @@ function OkfPreview({
                 <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-secondary">Concept files</h4>
                 <ul className="space-y-1">
                   {files.map((path) => (
-                    <li key={path} className="truncate rounded-md bg-surface-container/50 px-3 py-1.5 font-mono text-[11px] text-on-surface" title={path}>
+                    <li key={path} className="truncate rounded-md bg-surface-container/50 px-3 py-1.5 font-mono text-3xs text-on-surface" title={path}>
                       {path}
                     </li>
                   ))}
@@ -684,8 +684,8 @@ function OkfPreview({
               </div>
               {indexKey && (
                 <div>
-                  <h4 className="mb-2 font-mono text-[11px] text-secondary">{indexKey}</h4>
-                  <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md border border-outline-variant/40 bg-surface-container/30 p-3 text-[11px] leading-5 text-on-surface">
+                  <h4 className="mb-2 font-mono text-3xs text-secondary">{indexKey}</h4>
+                  <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md border border-outline-variant/40 bg-surface-container/30 p-3 text-3xs leading-5 text-on-surface">
                     {indexBody}
                   </pre>
                 </div>
@@ -789,8 +789,8 @@ function buildPresentationDeployUrl(presentationUrl: string, specUrl: string): s
 }
 
 function statusTone(label: string): string {
-  if (label === "Registered" || label === "Buildable") return "bg-emerald-500/10 text-emerald-700";
-  if (label === "Needs work" || label === "Draft") return "bg-amber-500/10 text-amber-700";
+  if (label === "Registered" || label === "Buildable") return "bg-status-passed/10 text-status-passed-ink";
+  if (label === "Needs work" || label === "Draft") return "bg-status-warning/10 text-status-warning-ink";
   if (label === "Materializing…") return "bg-primary/10 text-primary";
   return "bg-surface-container text-secondary";
 }

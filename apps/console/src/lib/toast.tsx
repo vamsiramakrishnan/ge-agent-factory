@@ -18,8 +18,8 @@ let toastSeq = 0;
 
 const TONE: Record<ToastTone, { icon: any; cls: string }> = {
   info: { icon: Info, cls: "border-outline-variant/40 bg-surface text-on-surface" },
-  success: { icon: CheckCircle2, cls: "border-emerald-400/30 bg-emerald-500/5 text-emerald-800" },
-  error: { icon: AlertTriangle, cls: "border-rose-400/30 bg-rose-500/5 text-rose-800" },
+  success: { icon: CheckCircle2, cls: "border-status-passed/30 bg-status-passed/5 text-status-passed-ink" },
+  error: { icon: AlertTriangle, cls: "border-status-failed/30 bg-status-failed/5 text-status-failed-ink" },
 };
 
 export function ToastProvider({ children }: { children?: any }) {
