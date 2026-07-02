@@ -1,22 +1,22 @@
 ---
-title: Provision the platform
-parent: Cookbooks
-nav_order: 7
-layout: default
+title: "Provision the platform"
+description: "Stand up the factory, data, and tool planes in your own Google Cloud project, and drive them to a green readiness verdict."
+editUrl: "https://github.com/vamsiramakrishnan/ge-agent-factory/edit/main/docs/operations/provision-the-platform.md"
+sidebar:
+  order: 1
 ---
+import { Badge, Steps } from '@astrojs/starlight/components';
 
-# Provision the platform
-
-**Scope:** cloud — creates and mutates resources in your Google Cloud project.
+<Badge text="Cloud" variant="caution" /> creates and mutates resources in your Google Cloud project.
 
 ## Goal
 
-Stand up the cloud planes the remote factory needs — the factory/runtime plane,
+Stand up the cloud <a href="/ge-agent-factory/reference/glossary/#planes" title="The three infrastructure layers the platform stands up in your cloud project — the factory plane (gateway, worker, Cloud Tasks queue, Cloud Build: the machinery that runs builds), the data plane (GCS, BigQuery, Bigtable, Firestore, AlloyDB, per-agent data + IAM), and the tool plane (the per-department MCP services, Agent Registry entries, and the Agent Gateway that agents call tools through).">planes</a> the remote factory needs — the factory/runtime plane,
 the data plane, and the tool (MCP) plane — and drive them to readiness with the
-doctor. Or use the guided self-service installer for a turnkey deploy.
+<a href="/ge-agent-factory/reference/glossary/#doctor" title="The health-check family: a set of read-only, actionable pass/fail checks over the toolchain and the three planes.">doctor</a>. Or use the guided self-service installer for a turnkey deploy.
 
 <p align="center">
-  <img src="../assets/diagrams/three-planes.svg" alt="The ge CLI or console talks to the factory plane (Cloud Run gateway, Cloud Tasks queue, worker); the worker reaches the data plane (GCS, AlloyDB, Firestore, BigQuery, Bigtable) and the tool plane (Agent Gateway, per-department MCP services, Agent Registry)" width="700">
+  <img src="/ge-agent-factory/assets/diagrams/three-planes.svg" alt="The ge CLI or console talks to the factory plane (Cloud Run gateway, Cloud Tasks queue, worker); the worker reaches the data plane (GCS, AlloyDB, Firestore, BigQuery, Bigtable) and the tool plane (Agent Gateway, per-department MCP services, Agent Registry)" width="700" />
 </p>
 
 ## Prerequisites
@@ -30,11 +30,13 @@ doctor. Or use the guided self-service installer for a turnkey deploy.
 
 - `terraform` (installed by `mise run deps`) and `jq`.
 - Local toolchain installed (`mise run setup`). See
-  [Getting started locally](getting-started.html) if you haven't run this yet.
+  [Set up locally](/ge-agent-factory/start/getting-started/) if you haven't run this yet.
 
 ## Steps
 
 ### Path A — CLI, plane by plane
+
+<Steps>
 
 1. **Discover config and stand up the factory plane.**
 
@@ -80,6 +82,8 @@ doctor. Or use the guided self-service installer for a turnkey deploy.
    `mise` task wrappers exist for each: `mise run up`, `mise run data`, `mise run mcp-deploy`,
    `mise run doctor`, `mise run data-doctor`, `mise run mcp-doctor`.
 
+</Steps>
+
 ### Path B — self-service installer (Cloud Shell)
 
 For a guided, turnkey install (see `installer/TUTORIAL.md`):
@@ -109,10 +113,12 @@ ge status          # planes show ✓ and a suggested next command
 
 Installer path: `./installer/verify.sh` returns all checks passing.
 
-> Re-running is safe: `ge up` and the installer steps are idempotent, so the
-> fix-and-retry loop is always `ge doctor` → fix the failing check → re-run the
-> same command.
-{: .tip }
+:::tip
+Re-running is safe: `ge up` and the installer steps are idempotent, so the
+fix-and-retry loop is always `ge doctor` → fix the failing check → re-run the
+same command.
+:::
+
 
 ## Troubleshoot
 

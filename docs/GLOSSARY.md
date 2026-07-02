@@ -23,6 +23,72 @@ list is deliberately focused, not exhaustive.
 
 ---
 
+### Enterprise Agent Contract
+
+**What it is:** The versioned, machine-readable statement of what an agent
+may do and what world it operates in — materialized today as the use-case
+spec (`usecase-spec.json`: `behaviorContract` + `generationSpec`) with a
+portable Markdown twin (the [OKF](#okf--knowledge-bundle) bundle). "Contract"
+in these docs always means this artifact, not a legal document.
+
+**Where you'll meet it:** `docs/concepts/enterprise-agent-contract.md`;
+`docs/reference/spec-schema.md` for the field tables; the console's Spec
+Review canvas.
+
+---
+
+### Source-system Twin
+
+**What it is:** The docs' name for a simulated enterprise backend — a
+[scenario/simulator pack](#scenario-packs-aka-simulator-packs) executed by
+the generic simulator engine — realistic enough (state machines, approval
+gates, idempotency) that agents are tested against it before any real
+integration exists.
+
+**Where you'll meet it:** `docs/concepts/source-system-twins.md`;
+`simulator-systems/<id>/` packs; the console's BYO system flow.
+
+---
+
+### Proof Pack
+
+**What it is:** The set of artifacts showing an agent honored its contract
+before release: the validation report, the
+[spec-to-code trace](#spec-to-code-trace), the harness review/refine
+verdicts, eval results, and the promotion packet the
+[Promotion Gate](#promotion-gate) writes. Not a single file today — the
+promotion packet is the closest single summary.
+
+**Where you'll meet it:** `docs/concepts/agent-passport-and-proof-pack.md`;
+`workspace.json`'s artifact list; the console's Agent detail artifacts.
+
+---
+
+### Agent Passport
+
+**What it is:** The identity side of the proof story: the artifacts that say
+what a deployed agent *is* — `agents-cli-manifest.yaml`, its Agent Registry
+entry, its per-agent runtime identity, and its `workspace.json` manifest.
+There is no single consolidated passport file yet; consolidating one is
+roadmap work.
+
+**Where you'll meet it:** `docs/concepts/agent-passport-and-proof-pack.md`;
+the `register_tools` stage; Agent detail in the console.
+
+---
+
+### Handoff
+
+**What it is:** The factory's release act: giving a locally proven workspace
+to the layer below — `agents-cli` → ADK Agent Engine → Gemini Enterprise —
+via `ge agents ship`, which runs only the post-boundary stages
+(`load_data → deploy_runtime → register_tools → publish_enterprise`).
+
+**Where you'll meet it:** `docs/concepts/handoff-targets.md`;
+`docs/cookbooks/handoff-adk-gemini-enterprise.md`; `ge agents ship`.
+
+---
+
 ### Harness
 
 **What it is:** The local, LLM-driven "does this generated agent actually
@@ -38,7 +104,7 @@ surface — the CLI loop, the daemon, and the pipeline stages named
 `harness_reviewed` and `harness_refined`.
 
 **Where you'll meet it:** The stage pipeline diagram in
-`docs/concepts/the-factory-line.md`; `apps/factory/docs/harness-data-model.md`;
+`docs/start/mental-model.md`; `apps/factory/docs/harness-data-model.md`;
 in the console, the Activity feed shows a line like "Antigravity review:
 &lt;provider&gt; · score &lt;n&gt;" for any run that went through this step.
 
@@ -70,7 +136,7 @@ You can also hand-author a bundle from scratch and feed it back into the
 factory (`scripts/okf-to-spec.mjs`) — a spec and an OKF bundle are two forms
 of the same object.
 
-**Where you'll meet it:** `docs/concepts/specs-and-okf.md` for the concept;
+**Where you'll meet it:** `docs/concepts/enterprise-agent-contract.md` for the concept;
 in the console, the spec editor's "Export OKF" button and the "OKF
 Knowledge Bundle" preview modal (`apps/console/src/components/interview/SpecCanvas.tsx`).
 
@@ -86,7 +152,7 @@ literally named `behaviorContract` in `usecase-spec.json`. The other half,
 `generationSpec`, describes the *world* the agent operates in (source
 systems, entities) — behavior vs. world are the "two halves of a spec."
 
-**Where you'll meet it:** `docs/concepts/specs-and-okf.md` ("The two halves
+**Where you'll meet it:** `docs/concepts/enterprise-agent-contract.md` ("The two halves
 of a spec"); `docs/reference/spec-schema.md` for the full field list; the
 console's spec editor renders this as the agent's role/scope/rules section.
 
@@ -122,7 +188,7 @@ dispatched to Cloud Build. In code this shows up as the constant
 
 **Where you'll meet it:** The "AUTHOR & BUILD / VALIDATE & REFINE / RELEASE"
 diagram and "The build boundary: local build vs remote release" section in
-`docs/concepts/the-factory-line.md`; the `buildBoundary` field on
+`docs/start/mental-model.md`; the `buildBoundary` field on
 [pipeline-run](#pipeline-run-formerly-mission) plans (`tools/lib/factory-autopilot-mission.mjs`).
 
 ---
@@ -139,7 +205,7 @@ The factory's docs mostly call the system-level version a "simulator pack"
 pack" — same underlying idea: a ready-made fixture/simulator binding you
 don't have to build from scratch.
 
-**Where you'll meet it:** `docs/concepts/simulators-and-byo.md` for
+**Where you'll meet it:** `docs/concepts/source-system-twins.md` for
 simulator packs; `apps/factory/scripts/factory/packs/index.mjs` and the
 `factory pack-coverage` CLI command for the use-case-level scenario packs.
 
@@ -156,7 +222,7 @@ higher-level orchestrator that *drives* `agents-cli` as one step among many
 won't usually call it directly, but you'll see its fingerprints in generated
 workspaces and its [evalset](#evalset) format.
 
-**Where you'll meet it:** `docs/concepts/agents-and-adk.md` ("the
+**Where you'll meet it:** `docs/concepts/handoff-targets.md` ("the
 ADK/`agents-cli` command surface"); `mise run doctor-local` checks whether it's
 installed; `apps/factory/src/agents-cli-scaffold.js` is where the factory
 locates and invokes it.
@@ -205,14 +271,14 @@ for cloud runs), never in a process — which is what makes runs observable
 and resumable after a crash.
 
 **Where you'll meet it:** "The durable control plane" in
-`docs/concepts/the-factory-line.md`; `ge ledger backfill`;
+`docs/start/mental-model.md`; `ge ledger backfill`;
 `tools/lib/ledger/run-ledger.mjs` (shim over `packages/run-ledger`).
 
 Note the ledger records **milestones** (`created`, `previewed`, `deployed` —
 past-tense states), which are deliberately *not* the same names as the cloud
 line's **stations** (`generate_workspace`, `preview`, `deploy_runtime` —
 verbs). The mapping between the two vocabularies is in "Stations vs.
-milestones" in `docs/concepts/the-factory-line.md`.
+milestones" in `docs/reference/architecture.md`.
 
 ---
 
@@ -240,7 +306,7 @@ local mode → build one validated [canary](#canary) workspace, then print its
 paths and next commands.
 
 **Where you'll meet it:** `mise run devex-check` / `mise run devex-smoke`;
-`docs/cookbooks/getting-started.md` steps 1–2.
+`docs/start/getting-started.md` steps 1–2.
 
 ---
 
@@ -365,8 +431,8 @@ its own authz layer. Operator traffic goes through the first; agent tool
 calls go through the second.
 
 **Where you'll meet it:** Factory-plane gateway: the plane table in
-`docs/developers.md` and `docs/concepts/the-factory-line.md`. Agent Gateway:
-`docs/concepts/security-and-the-agent-gateway.md` and
+`docs/developers.md` and `docs/start/mental-model.md`. Agent Gateway:
+`docs/concepts/authority-graph.md` and
 `installer/terraform/agent_gateway.tf`.
 
 ---
@@ -388,9 +454,10 @@ It's the very first box in the [pipeline](#pipeline-formerly-journey).
 expected behavior in `agents-cli`'s eval format — that scores whether the
 agent actually behaves as the spec's behavior contract says. It's generated
 into the [workspace](#workspace) alongside the code and run with
-`factory eval` (or the eval commands `workspace.json` lists).
+`agents-cli eval run --all` inside the workspace (or the eval commands
+`workspace.json` lists).
 
-**Where you'll meet it:** `docs/cookbooks/run-evals.md`; the eval config
+**Where you'll meet it:** `docs/cookbooks/prove-an-agent.md`; the eval config
 path `ge devex smoke` prints; [`agents-cli`](#agents-cli)'s eval surface.
 
 ---

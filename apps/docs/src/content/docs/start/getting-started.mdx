@@ -1,0 +1,126 @@
+---
+title: "Set up locally"
+description: "Local setup, the local/remote mode switch, and the fast checks that prove the repo works on your machine — no cloud project required."
+editUrl: "https://github.com/vamsiramakrishnan/ge-agent-factory/edit/main/docs/start/getting-started.md"
+sidebar:
+  order: 3
+---
+import { Badge, Steps } from '@astrojs/starlight/components';
+
+<Badge text="Local-only" variant="success" /> no cloud project or credentials required.
+
+## Goal
+
+Get a working local factory: understand the difference between **local** and
+**remote** mode, and see how the fast DevEx gate and one-command smoke proof
+fit into the loop — all without touching a cloud project.
+
+Unfamiliar term? See the [Glossary](/ge-agent-factory/reference/glossary/) — plain-language
+translations of the jargon (<a href="/ge-agent-factory/reference/glossary/#harness" title="The local, LLM-driven &quot;does this generated agent actually match the spec?&quot;">harness</a>, <a href="/ge-agent-factory/reference/glossary/#okf--knowledge-bundle" title="OKF (Open Knowledge Format) is a portable, human-readable version of an agent's spec — a folder of plain Markdown files (called &quot;concepts&quot;) instead of one big JSON blob.">OKF</a>, <a href="/ge-agent-factory/reference/glossary/#canary" title="A build of exactly one agent, used to prove the pipeline works end to end before committing to the whole catalog.">canary</a>, <a href="/ge-agent-factory/reference/glossary/#planes" title="The three infrastructure layers the platform stands up in your cloud project — the factory plane (gateway, worker, Cloud Tasks queue, Cloud Build: the machinery that runs builds), the data plane (GCS, BigQuery, Bigtable, Firestore, AlloyDB, per-agent data + IAM), and the tool plane (the per-department MCP services, Agent Registry entries, and the Agent Gateway that agents call tools through).">planes</a>, pipeline runs, …).
+
+## Prerequisites + install
+
+**→ For the full step-by-step (clone, prerequisites, `mise run setup`,
+`mise run doctor-local`, first command, optional cloud setup), see
+[`SETUP.md`](https://github.com/vamsiramakrishnan/ge-agent-factory/blob/main/SETUP.md) at the repo root.** The short version:
+
+```bash
+mise run setup          # install deps, sync catalog/skills, install the `ge` command, start the daemon
+mise run doctor-local    # check local tools: Bun, uv, Python, agents-cli, cache, harness wiring
+mise run console         # open the operator UI → http://localhost:18260
+```
+
+## Steps
+
+<Steps>
+
+1. **Run the fast DevEx gate.**
+
+   ```bash
+   mise run devex-check
+   ```
+
+   This is `ge devex check`: local <a href="/ge-agent-factory/reference/glossary/#doctor" title="The health-check family: a set of read-only, actionable pass/fail checks over the toolchain and the three planes.">doctor</a>, GitHub Pages link check, and generated
+   <a href="/ge-agent-factory/reference/glossary/#workspace" title="The on-disk folder for one generated agent (.ge/factory/workspaces/workspace-id/), with a workspace.json manifest describing what's in it.">workspace</a> manifest contract validation in one fast command.
+
+2. **Prove one local workspace end to end.**
+
+   ```bash
+   mise run devex-smoke
+   ```
+
+   This runs local readiness, sets local mode, builds one
+   **[canary](/ge-agent-factory/reference/glossary/#canary)** workspace
+   (a single throwaway agent used to prove the pipeline works, as opposed to
+   building the whole catalog) to the `validated` stage, and prints the
+   workspace path, `workspace.json`, eval config, and next commands. It is the
+   fastest proof that the repo is usable on this machine.
+
+3. **Understand which mode you're in.**
+
+   <p align="center">
+     <img src="/ge-agent-factory/assets/diagrams/factory-line.svg" alt="The factory line's three phases: Author and Build, then Validate and Refine (ending at preview, the build boundary), then Release — only the Release phase touches your GCP project" width="700" />
+   </p>
+
+   ```bash
+   ge mode
+   ```
+
+   - `ge mode` with no argument **reports** the active mode (defaults to
+     `local` when unset — remote, billable work is opt-in).
+   - `ge mode local` — this machine runs *generate → validate* up to the
+     **<a href="/ge-agent-factory/reference/glossary/#build-boundary" title="The cutoff point between &quot;building and previewing an agent on your own machine&quot; and &quot;actually deploying it to your Google Cloud project.&quot;">build boundary</a>** (the `previewed` stage — the last stage that runs with
+     no cloud credentials; everything after it touches your Google Cloud
+     project); deploy/register/publish are cloud-only steps.
+   - `ge mode remote` — this machine submits + observes; the cloud factory
+     builds, deploys, and publishes.
+
+   `mise.toml` also exposes `mise run mode-local` and `mise run mode-remote` as
+   thin wrappers.
+
+   :::note
+   The mode defaults to `local` when unset, so a fresh clone with no cloud
+   project never reaches Google Cloud by accident. Run `ge mode` anytime to
+   confirm which mode you're in.
+   :::
+
+
+4. **(Optional) Build one agent locally to the preview boundary.**
+
+   ```bash
+   mise run mode-local && CANARY=1 mise run provision-local
+   ```
+
+   `CANARY=1 mise run provision-local` is `ge agents build --local --canary` — it
+   builds a single agent on this machine up to the `previewed` build boundary.
+
+</Steps>
+
+## Verify
+
+```bash
+mise run doctor-local      # local toolchain section is all green
+mise run devex-check       # local doctor + docs links + workspace manifest contracts
+mise run devex-smoke       # validates one canary workspace and prints workspace.json
+ge mode                # prints: mode: local (or remote)
+ge state paths         # shows where state lands (.ge/...)
+```
+
+The console should load at http://localhost:18260 and show the Readiness view.
+
+## Next step
+
+- Run the whole path once: the [ten-minute tutorial](https://vamsiramakrishnan.github.io/ge-agent-factory/start/quickstart/).
+- Capture your own use case: [Capture from an interview](/ge-agent-factory/cookbooks/capture-from-interview/).
+- Compile a contract into an agent workspace: [Compile a contract](/ge-agent-factory/cookbooks/compile-a-contract/).
+
+## Troubleshoot
+
+See [`SETUP.md`](https://github.com/vamsiramakrishnan/ge-agent-factory/blob/main/SETUP.md#troubleshoot) for install-time issues (missing
+Bun, `~/.local/bin` not on PATH, `google.antigravity` not importable). Specific
+to this cookbook's loop:
+
+- **Mock/simulator data pauses** — `mise run data-runtime` warms the Snowfakery
+  runtime; it needs network/cache the first time.
+- **Status board / next step** — run `mise run next` or bare `ge` for a status-based
+  recommendation.

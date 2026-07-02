@@ -94,12 +94,12 @@ const SKIP_DIRS = new Set([
 // new page is a conscious IA decision, not a file that lands wherever.
 // `order`/`title`/`label` override what the source frontmatter provides.
 const PAGE_MAP = new Map([
-  ["index.md", { dest: "start/what-is-the-factory.md", title: "What is the factory", order: 1 }],
-  ["developers.md", { dest: "start/developer-guide.md", order: 3 }],
-  ["OPERATIONS.md", { dest: "operations.md" }],
-  ["MCP.md", { dest: "reference/mcp.md", title: "MCP server", order: 90 }],
+  ["index.md", { dest: "start/what-is-the-factory.md", title: "What is GE Agent Factory?", order: 1 }],
+  ["developers.md", { dest: "contributing/index.md", title: "Developer guide" }],
+  ["OPERATIONS.md", { dest: "operations/index.md", title: "Operations" }],
+  ["MCP.md", { dest: "reference/mcp.md", title: "MCP tools", order: 90 }],
   ["GLOSSARY.md", { dest: "reference/glossary.md", order: 95 }],
-  ["DESIGN.md", { dest: "contributing/docs-design.md", title: "Docs design system", order: 1 }],
+  ["DESIGN.md", { dest: "contributing/docs-design.md", title: "Docs design system", order: 20 }],
   ["modularization-audit.md", null], // internal audit notes, never published
 ]);
 
@@ -133,7 +133,10 @@ function walk(dir, acc = [], rel = "") {
 function destFor(srcRel) {
   if (PAGE_MAP.has(srcRel)) return PAGE_MAP.get(srcRel); // may be null (skip)
   const [head] = srcRel.split("/");
-  if (["concepts", "cookbooks", "reference"].includes(head)) return { dest: srcRel };
+  if (["concepts", "cookbooks", "reference", "start", "console", "operations", "contributing"].includes(head)) {
+    return { dest: srcRel };
+  }
+  if (SKIP_DIRS.has(head)) return null; // deliberately unpublished tree → link becomes a GitHub blob URL
   throw new Error(
     `docs/${srcRel} has no place in the site's information architecture yet — ` +
       `add it to PAGE_MAP in apps/docs/scripts/sync-content.mjs (or to SKIP_DIRS/PAGE_MAP as unpublished).`,
@@ -328,8 +331,17 @@ for (const srcRel of walk(SRC).sort()) {
 // clear those. Fully generated roots are wiped so deletions in docs/ propagate.
 // Single-file entries are wiped in both .md and .mdx form so a tree synced
 // before the .mdx migration doesn't leave duplicate-route leftovers.
-const WIPE_DIRS = ["concepts", "cookbooks", "reference", "contributing"];
-const WIPE_FILES = ["operations", "start/what-is-the-factory", "start/developer-guide"];
+// `start/` also holds the curated quickstart (tracked in git), so synced
+// start/ pages are wiped file-by-file instead of wiping the directory.
+const WIPE_DIRS = ["concepts", "cookbooks", "reference", "contributing", "console", "operations"];
+const WIPE_FILES = [
+  "operations",
+  "start/what-is-the-factory",
+  "start/developer-guide",
+  "start/getting-started",
+  "start/mental-model",
+  "start/vs-agents-cli",
+];
 if (!DRY) {
   for (const p of WIPE_DIRS) rmSync(join(DEST, p), { recursive: true, force: true });
   for (const p of WIPE_FILES) for (const ext of [".md", ".mdx"]) rmSync(join(DEST, p + ext), { force: true });

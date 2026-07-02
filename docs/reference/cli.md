@@ -7,7 +7,10 @@ layout: default
 
 # CLI reference
 
-The factory exposes three command surfaces:
+`ge` is the operator surface of the contract layer: every capture, compile,
+prove, and handoff operation is one of the commands below (see the
+[core mental model](../start/mental-model.html) for which command implements
+which verb). The factory exposes three command surfaces:
 
 - **`ge`** — the human/operator CLI (`bun tools/ge.mjs`). Lifecycle: set up the
   machine → stand up the platform → run agents.

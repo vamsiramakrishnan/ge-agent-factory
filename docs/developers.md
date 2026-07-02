@@ -129,7 +129,7 @@ manifest path, then gives the next commands to run.
 2. Run `mise run console`.
 3. Exercise the affected view in the browser.
 4. Update [Console & APIs](./reference/console-and-apis.html) or
-   [Console Tour](./reference/console-tour.html) if routes, views, or payloads changed.
+   [Console Tour](./console/) if routes, views, or payloads changed.
 
 ### Generator or generated-agent change
 
@@ -146,7 +146,7 @@ manifest path, then gives the next commands to run.
 2. Validate the pack with the simulator tooling.
 3. Build a canary that uses the system.
 4. Update [Simulator systems](./reference/simulator-systems.html) and the
-   [Bring your own simulator](./cookbooks/bring-your-own-simulator.html) cookbook
+   [Bring your own simulator](./cookbooks/generate-simulations.html) cookbook
    when the pack contract changes.
 
 ### Cloud platform change

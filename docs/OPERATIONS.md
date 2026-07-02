@@ -113,7 +113,7 @@ stage. Each agent registers against its department MCP URL (`?agent=<id>`) in th
 ## Modes: local vs remote
 
 `ge` has two first-class modes, set once with `ge mode local|remote` (persisted in
-`.ge.json`, default `remote`) and overridable per command with `--local`/`--remote`.
+`.ge.json`, default `local` — remote, billable work is opt-in) and overridable per command with `--local`/`--remote`.
 Bare `ge` shows the active mode and what the client machine does.
 
 There is a hard **build boundary**: everything up to validate/preview is pure
@@ -162,7 +162,7 @@ no duplicate generation or Antigravity cost.
 
 ```bash
 ge agents build --local --canary   # build + validate on this machine
-ge agents ship --canary            # cloud runs load_data → deploy → register → publish
+ge agents ship                     # cloud runs load_data → deploy → register → publish (default: all locally-built)
 ge agents ship --ids ws-a,ws-b     # specific local workspaces
 ge agents ship --start-stage deploy_runtime   # skip load_data if stores already loaded
 ```
@@ -260,76 +260,26 @@ Two tiers, both **external ingress, never `allUsers`**:
 need a custom hostname; most setups don't. For programmatic runs, keep platform IAP
 off the gateway/worker (IAM/OIDC, not IAP) — `doctor` warns if it's on and prints `--no-iap`.
 
-## Live rename cutover (ge-factory → ge-agent-factory)
+## Operating the console
 
-The hosted demo is hand-managed. Rename the live stack by standing up the
-new-named services **in parallel**, then cutting over — never rename in place.
+The console's views are documented in [Console](./console/); operationally:
 
-> `ge cutover` automates steps 1–3 (new SAs + IAM + queue/topic/AR
-> repo, then build/deploy/wire). Plan-by-default — `ge cutover` prints the exact
-> gcloud for your project; `ge cutover --apply` runs it; then `ge doctor` verifies
-> and prints fixes for anything left. Steps 5–6 (IAP/DNS cutover, deleting the old
-> stack + repo) stay manual.
-{: .tip }
+- Run locally with `mise run console` (dev, port 18260) or `bun --cwd
+  apps/console run start` (production server).
+- In production, deploy it **read-only** via `GE_CONSOLE_READONLY=1` — agent
+  actions (build/ship/sync) delegate to the cloud gateway instead of running
+  in-process.
+- Live logs come from the NDJSON event bus (`tools/lib/events.mjs`): remote
+  workers tee stage events to GCS, local runs write
+  `.ge/factory/factory-events.jsonl`, and daemon tasks write streams under
+  `.ge/runtime`; the API server fans them out as SSE.
+- A production container image for the console is still pending — current
+  dev-only mode doesn't ship to Cloud Run yet.
 
-1. **New identities/infra** (additive): create `ge-agent-factory-runner` /
-   `-builder` / `-runtime` SAs, the `ge-agent-factory-stages` queue, the
-   `ge-agent-factory-events` topic, and the `ge-agent-factory` AR repo. Grant the
-   new runner SA `run.invoker` on the (soon) new worker + Cloud Tasks enqueuer.
-2. **Build images** into the new repo: `ge build builder` then `ge build`.
-3. **Deploy new services** `ge deploy all` with `GE_AGENT_FACTORY_*` env pointing
-   at the new queue/bucket/worker URL.
-4. **Verify** `ge doctor` against the new stack (fresh `.ge.json`).
-5. **Cut over IAP/DNS** to the new gateway backend/NEG; keep old until verified.
-6. **Delete old** services, SAs, queue, topic, IAP LB, trigger, and the old
-   Cloud Source repo after a clean soak.
+## More
 
-Data is preserved: the bucket is already `<project>-ge-agent-factory` and
-Firestore is unchanged — point the new stack at them. Drain in-flight runs before
-cutover (the OIDC audience + queue change breaks them); run the 363 *after*, on
-the new stack.
-
-## Troubleshooting (failure modes we've actually hit)
-
-| Symptom | Cause | Fix |
-|---|---|---|
-| Container fails to start, `Cannot find module ./src/server/iap-jwt.js` | Dockerfile didn't copy a server module | ensure `Dockerfile` copies it; redeploy |
-| `Missing required environment variable: GE_AGENT_FACTORY_WORKER_URL` | Cloud Run env not bound by Terraform | `ge infra apply` (Terraform owns env now; Cloud Build is builds-only) |
-| 503 / `Memory limit exceeded` | gateway too small for in-process scaffolding | `ge deploy gateway` (8/32 default) |
-| `Invalid IAP credentials: JWT 'email' claim isn't a string` | platform IAP on the service | `gcloud run services update <svc> --no-iap` (use the proxy) |
-| stuck at `queued` | Cloud Tasks → worker failing | check worker IAP/`run.invoker`; `ge logs` |
-| `pytest: file or directory not found: tests/test_smoke.py` | scaffolder didn't emit the smoke test | fixed in `factory from-usecase` |
-| `Extra 'eval' is not defined` | missing `eval` extra in `pyproject.toml` | fixed in scaffolder |
-| eval `extra_forbidden … metadata` / `string indices` | evalset not ADK-schema-conformant | fixed; contract metadata lives in `evals/golden.json` |
-| `Legacy configuration detected in pyproject.toml` | no `agents-cli-manifest.yaml` | fixed; scaffolder emits the manifest |
-| `npm ci … requires package-lock.json` | worker image used `npm ci`, repo is bun | worker Dockerfile uses `npm install` |
-
-`ge logs <runId> --stage <stage>` pretty-prints the persisted stage result
-(stderr, exit code, Cloud Build log URL) — start there for any failed stage.
-
-## Console
-
-The **third surface** over `factory-core` (CLI · MCP · Console). A web ops console
-in `apps/console` for observing the factory and executing bulk operations — fleet
-builds, status monitoring, agent-level detail with live logs, doctor checks, and
-activity audit.
-
-Run locally with `bun --cwd apps/console run dev` (port 18260) or `bun --cwd
-apps/console run start` (production server). The backend serves `/api/ge/*`
-endpoints (`status`, `doctor`, `fleet`, `agents/:id`, `logs` SSE) over
-`factory-core`; the React frontend opens to the Overview status board (mode ·
-planes · fleet progress · next step), with Fleet (bulk build/ship/sync), Agent
-detail (stage pipeline + live LogStream + downloadable artifacts), Doctor, and
-Activity views.
-
-Live logs come from the NDJSON bus (`tools/lib/events.mjs`): remote workers tee
-stage events to GCS, local factory runs write `.ge/factory/factory-events.jsonl`
-plus per-run logs under `.ge/factory/runs/`, and daemon tasks write event streams
-under `.ge/runtime`. The API gateway fans out SSE streams to connected clients;
-console components consume them for real-time progress.
-
-In production, deploy the console read-only via `GE_CONSOLE_READONLY=1` — agent
-actions (build/ship/sync) delegate to the cloud gateway instead of running
-in-process. For builds, run `bun --cwd apps/console run build` then copy
-`dist/` + `src/server/` to the deploy container (Dockerfile pending; current
-dev-only mode doesn't ship to Cloud Run yet).
+- [Troubleshooting](./operations/troubleshooting.html) — failure modes we've hit, with fixes.
+- [Provision the platform](./operations/provision-the-platform.html) — standing the planes up.
+- [Deploy the Agent Gateway](./operations/agent-gateway.html) — the governed tool front door.
+- [Run and observe](./operations/run-and-observe.html) — runs, resume, and the durable record.
+- Archived: [live rename cutover runbook](./runbooks/rename-cutover.md).
