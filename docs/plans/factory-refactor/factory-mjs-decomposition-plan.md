@@ -1,5 +1,10 @@
 # `factory.mjs` decomposition plan
 
+> **Historical / superseded.** This is a pre-implementation plan; the actual decomposition
+> shipped with different module boundaries than proposed below (e.g. `factory/runtime/`, not
+> `factory/workspace/`, for CLI metadata; no standalone `factory/commands/tools.mjs`). For the
+> as-shipped module map and status, see [`REFACTOR-HANDOFF.md` §9](../../../REFACTOR-HANDOFF.md#9-cmdtools--factorymjs-decomposition-this-session).
+
 This note translates the refactor handoff into an executable, reviewable plan for shrinking
 `apps/factory/scripts/factory.mjs` without changing generator behavior. The goal is not to
 "split files because the file is large"; the goal is to isolate policies, pure derivation, and

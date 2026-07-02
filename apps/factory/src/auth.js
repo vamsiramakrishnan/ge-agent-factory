@@ -8,6 +8,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { spawn } from "node:child_process";
+import { resolveGcpProject } from "@ge/std/gcp-config";
 
 function runCmd(cmd, args, opts = {}) {
   return new Promise((resolve) => {
@@ -146,7 +147,7 @@ export async function writeEnvFile(dir, vars) {
 export async function getFullSetupStatus(dataDir) {
   const auth = await getAuthStatus();
   const env = await readEnvFile(dataDir);
-  const projectId = env.GOOGLE_CLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT || auth.project;
+  const projectId = env.GOOGLE_CLOUD_PROJECT || resolveGcpProject() || auth.project;
   return {
     auth,
     env: {

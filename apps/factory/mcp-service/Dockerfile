@@ -24,7 +24,7 @@ RUN pip install --no-cache-dir . && rm -rf /root/.cache
 COPY apps/factory/mcp-service/server.py \
      apps/factory/mcp-service/store_backend.py* \
      apps/factory/mcp-service/stores.py* \
-     apps/factory/mcp-service/synthesis.py* \
+     apps/factory/mcp-service/synthesis*.py \
      ./
 
 # 4) The pack corpus the engine serves, and where to find it. GE_SIMULATOR_SYSTEMS_DIR

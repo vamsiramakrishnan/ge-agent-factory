@@ -105,13 +105,21 @@ async function readJson(path, fallback) {
   catch { return fallback; }
 }
 
+// With { recursive: true } mkdir only rejects on real fs errors (EACCES, ENOSPC,
+// a file where a directory should be) — never on "already exists". Warn instead
+// of swallowing so those failures are diagnosable; the follow-up write still
+// fails loudly on its own.
+const warnMkdirFailure = (path) => (error) => {
+  console.warn(`[factory] could not create directory ${path} — ${error?.message || String(error)}`);
+};
+
 async function writeJson(path, data) {
-  await mkdir(dirname(path), { recursive: true }).catch(() => {});
+  await mkdir(dirname(path), { recursive: true }).catch(warnMkdirFailure(dirname(path)));
   await writeFile(path, JSON.stringify(data, null, 2) + "\n", "utf8");
 }
 
 async function writeText(path, data) {
-  await mkdir(dirname(path), { recursive: true }).catch(() => {});
+  await mkdir(dirname(path), { recursive: true }).catch(warnMkdirFailure(dirname(path)));
   await writeFile(path, data, "utf8");
 }
 
@@ -758,7 +766,7 @@ async function cmdTools(dir, flags) {
     manifest, tables, contractIntents, emittedContractIntents, pipeline,
   });
 
-  await mkdir(dirname(outPath), { recursive: true }).catch(() => {});
+  await mkdir(dirname(outPath), { recursive: true }).catch(warnMkdirFailure(dirname(outPath)));
   await writeFile(outPath, toolsSource, "utf8");
 
   const agentPath = join(dir, "app", "agent.py");
@@ -802,13 +810,13 @@ async function cmdTools(dir, flags) {
   let goldenPath = null;
   if (goldenEvals) {
     goldenPath = join(dir, "evals", "golden.json");
-    await mkdir(join(dir, "evals"), { recursive: true }).catch(() => {});
+    await mkdir(join(dir, "evals"), { recursive: true }).catch(warnMkdirFailure(join(dir, "evals")));
     await writeJson(goldenPath, goldenEvals);
   }
   let agentsCliEvalSetPath = null;
   if (agentsCliEvalSet) {
     agentsCliEvalSetPath = join(dir, "tests", "eval", "evalsets", "ge_behavior_contract.evalset.json");
-    await mkdir(join(dir, "tests", "eval", "evalsets"), { recursive: true }).catch(() => {});
+    await mkdir(join(dir, "tests", "eval", "evalsets"), { recursive: true }).catch(warnMkdirFailure(join(dir, "tests", "eval", "evalsets")));
     await writeJson(agentsCliEvalSetPath, agentsCliEvalSet);
     // eval_config.json so `agents-cli eval run` uses achievable criteria
     // instead of the default response_match (which needs a reference answer).
@@ -1050,7 +1058,7 @@ async function cmdTest(dir, flags) {
     );
   }
 
-  await mkdir(dirname(testPath), { recursive: true }).catch(() => {});
+  await mkdir(dirname(testPath), { recursive: true }).catch(warnMkdirFailure(dirname(testPath)));
   await writeFile(testPath, lines.join("\n"), "utf8");
 
   let testResult = { ran: false };
@@ -1084,7 +1092,7 @@ async function cmdEval(dir, flags) {
   const evalSet = renderAgentsCliEvalSet(behaviorContract, manifest);
   const evalSetPath = join(dir, "tests", "eval", "evalsets", "ge_behavior_contract.evalset.json");
   if (evalSet) {
-    await mkdir(join(dir, "tests", "eval", "evalsets"), { recursive: true }).catch(() => {});
+    await mkdir(join(dir, "tests", "eval", "evalsets"), { recursive: true }).catch(warnMkdirFailure(join(dir, "tests", "eval", "evalsets")));
     await writeJson(evalSetPath, evalSet);
     await writeJson(join(dir, "tests", "eval", "eval_config.json"), renderEvalConfig(behaviorContract));
     await writeJson(join(dir, "tests", "eval", "optimization_config.json"), renderOptimizationConfig(behaviorContract));
@@ -1189,7 +1197,7 @@ async function cmdQualityGate(dir, flags) {
   const manifest = await readJson(manifestPath(dir), null);
   if (!manifest) fail("No manifest. Run 'factory generate' first.");
   await ensureAgentsCliPyprojectMetadata(dir, manifest);
-  await mkdir(join(dir, "artifacts"), { recursive: true }).catch(() => {});
+  await mkdir(join(dir, "artifacts"), { recursive: true }).catch(warnMkdirFailure(join(dir, "artifacts")));
 
   const startedAt = new Date().toISOString();
   const results = [];

@@ -1,6 +1,7 @@
 import { basename, join } from "node:path";
 import { readJson, writeJson } from "@ge/std/json-io";
 import { canonicalSystemId, safePyName, snakeCase } from "@ge/std/naming";
+import { resolveGcpProject } from "@ge/std/gcp-config";
 import { findSimulatorForSystem, loadSimulatorRegistry } from "../simulators/registry.mjs";
 import { sourceTimestamp } from "../../../src/source-clock.js";
 
@@ -152,7 +153,7 @@ function markStep(pipeline, step, status, meta = {}) {
 export async function buildSourceIntegrationPlan(dir, flags = {}, opts = {}) {
   const pipeline = await loadPipeline(dir);
   const generatedAt = sourceTimestamp();
-  const project = flags.project || process.env.GOOGLE_CLOUD_PROJECT || "<gcp-project>";
+  const project = resolveGcpProject({ explicit: flags.project }) || "<gcp-project>";
   const location = flags.location || flags.region || process.env.GOOGLE_CLOUD_LOCATION || "global";
   const manifest = await readJson(join(dir, "fixtures", "manifest.json"), null);
   const dataPlan = opts.dataPlan || await readJson(join(dir, "mock_data", "plan", "data-plan.json"), null);

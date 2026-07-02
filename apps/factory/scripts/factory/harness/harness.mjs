@@ -16,6 +16,7 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { extractFirstJsonObject } from "@ge/std/json-repair";
+import { resolveGcpProject } from "@ge/std/gcp-config";
 
 // Non-fatal: validate parsed harness output against its zod source of truth.
 // Warns (keeps the output) so a contract drift surfaces without breaking a run.
@@ -66,7 +67,7 @@ export async function cmdHarnessReview(dir, flags, deps) {
   const manifest = await readJson(manifestPath(dir), null);
   const spec = await readJson(join(dir, "mock_systems", "usecase-spec.json"), null);
   if (!manifest && !spec) fail("No generated workspace context found. Run 'factory from-usecase' or 'factory tools' first.");
-  await mkdir(join(dir, "artifacts"), { recursive: true }).catch(() => {});
+  await mkdir(join(dir, "artifacts"), { recursive: true }).catch((error) => console.warn(`[harness] could not create directory ${join(dir, "artifacts")} — ${error?.message || String(error)}`));
 
   const provider = flags.agent || flags.provider || "antigravity-sdk";
   const context = await readWorkspaceReviewContext(dir);
@@ -114,7 +115,7 @@ export async function cmdHarnessReview(dir, flags, deps) {
     permissionProfile: flags["permission-profile"] || "review",
     model: flags.model || "default",
     vertex: wantsVertex(flags),
-    project: flags.project || flags["gcp-project"] || process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT || null,
+    project: resolveGcpProject({ explicit: flags.project || flags["gcp-project"] }),
     location: flags.location || flags.region || process.env.GOOGLE_CLOUD_LOCATION || process.env.GOOGLE_GENAI_LOCATION || null,
     responseSchemaFile: harnessResponseSchemaFile("harness-review"),
     ...reviewFanoutOptions(),
@@ -246,7 +247,7 @@ async function refineResumeOptions(dir, workItem, deps) {
   if (envOff("GE_HARNESS_NO_RESUME")) return {};
   const id = refineSessionId(dir, workItem, { basename });
   const saveDir = join(HARNESS_DATA_ROOT, "harness-sessions", id);
-  await mkdir(saveDir, { recursive: true }).catch(() => {});
+  await mkdir(saveDir, { recursive: true }).catch((error) => console.warn(`[harness] could not create directory ${saveDir} — ${error?.message || String(error)}`));
   return { conversationId: id, saveDir };
 }
 
@@ -262,7 +263,7 @@ export async function cmdHarnessRefine(dir, flags, deps) {
   const manifest = await readJson(manifestPath(dir), null);
   const spec = await readJson(join(dir, "mock_systems", "usecase-spec.json"), null);
   if (!manifest && !spec) fail("No generated workspace context found. Run 'factory from-usecase' or 'factory tools' first.");
-  await mkdir(join(dir, "artifacts"), { recursive: true }).catch(() => {});
+  await mkdir(join(dir, "artifacts"), { recursive: true }).catch((error) => console.warn(`[harness] could not create directory ${join(dir, "artifacts")} — ${error?.message || String(error)}`));
 
   const provider = flags.agent || flags.provider || "antigravity-sdk";
   const workItem = buildHarnessWorkItem({
@@ -272,7 +273,7 @@ export async function cmdHarnessRefine(dir, flags, deps) {
     stage: "harness_refine",
     adapter: provider,
     locality: flags.locality || process.env.GE_HARNESS_LOCALITY || (process.env.K_SERVICE ? "remote" : "local"),
-    project: flags.project || flags["gcp-project"] || process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT || null,
+    project: resolveGcpProject({ explicit: flags.project || flags["gcp-project"] }),
     location: flags.location || flags.region || process.env.GOOGLE_CLOUD_LOCATION || process.env.GOOGLE_GENAI_LOCATION || null,
     targetGate: flags["target-gate"] || "validate",
     permissionProfile: flags["permission-profile"] || "workspace_write",
@@ -298,7 +299,7 @@ export async function cmdHarnessRefine(dir, flags, deps) {
     permissionProfile: workItem.permissionProfile,
     model: workItem.model,
     vertex: wantsVertex(flags),
-    project: flags.project || flags["gcp-project"] || process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT || null,
+    project: resolveGcpProject({ explicit: flags.project || flags["gcp-project"] }),
     location: flags.location || flags.region || process.env.GOOGLE_CLOUD_LOCATION || process.env.GOOGLE_GENAI_LOCATION || null,
     responseSchemaFile: harnessResponseSchemaFile("harness-refine"),
     protectFiles: ["tools.py"],

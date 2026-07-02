@@ -2,7 +2,7 @@
 # Fast pre-commit gate: the source-hygiene fitness functions (forbidden tracked
 # artifacts, canonical state paths, code antipatterns). The full bun test suite
 # is intentionally NOT run here (too slow for every commit) — it runs in CI
-# (cloudbuild.ci.yaml) and via `make ci`.
+# (cloudbuild.ci.yaml) and via `mise run ci`.
 set -euo pipefail
 if command -v bun >/dev/null 2>&1; then
   bun run source:hygiene

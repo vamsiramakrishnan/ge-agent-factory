@@ -8,6 +8,7 @@ from copy import deepcopy
 import pytest
 
 import synthesis
+import synthesis_sketch
 from simulator_runtime import overlay
 from simulator_runtime.router import execute_simulator_tool
 from simulator_runtime.simulators import reset_handler_cache
@@ -115,6 +116,14 @@ def test_invalid_transition_is_enforced_on_synthesized_system():
     assert res["error"]["code"] in {"invalid_state_transition", "missing_approval"}
 
 
+def test_terminal_states_order_is_deterministic():
+    """Set-iteration order is randomized per process (PYTHONHASHSEED); _terminal_states
+    must return first-seen order so synthesized contracts are byte-identical across
+    otherwise-identical CLI invocations (and golden-testable at all)."""
+    transitions = {"open": ["pending_approval"], "pending_approval": ["approved", "rejected"], "approved": ["closed"]}
+    assert synthesis._terminal_states(transitions) == ["rejected", "closed", "approved"]
+
+
 def test_validate_contract_flags_unknown_ref():
     sketch = {
         "id": "byo_v", "displayName": "V",
@@ -140,9 +149,9 @@ def test_repair_loop_self_corrects(monkeypatch):
     good["collections"].append({"name": "customers", "primaryKey": "customer_id",
                                 "fields": {"customer_id": "string", "name": "string"}})
 
-    monkeypatch.setattr(synthesis, "_llm_sketch",
+    monkeypatch.setattr(synthesis_sketch, "_llm_sketch",
                         lambda description, *, system_id, display_name: {**deepcopy(bad), "id": system_id})
-    monkeypatch.setattr(synthesis, "_llm_repair",
+    monkeypatch.setattr(synthesis_sketch, "_llm_repair",
                         lambda description, prior, errors, *, system_id, display_name: {**deepcopy(good), "id": system_id})
 
     out = synthesis.synthesize_system({
@@ -187,9 +196,9 @@ def test_invalid_synthesis_is_not_registered(monkeypatch):
         "collections": [{"name": "orders", "primaryKey": "order_id",
                          "fields": {"order_id": "string", "customer_id": "ref:customers.customer_id"}}],
     }
-    monkeypatch.setattr(synthesis, "_llm_sketch",
+    monkeypatch.setattr(synthesis_sketch, "_llm_sketch",
                         lambda description, *, system_id, display_name: {**deepcopy(bad), "id": system_id})
-    monkeypatch.setattr(synthesis, "_llm_repair",
+    monkeypatch.setattr(synthesis_sketch, "_llm_repair",
                         lambda description, prior, errors, *, system_id, display_name: None)  # repair fails
     out = synthesis.synthesize_system({"mode": "nl", "id": "byo_broken", "use_llm": True, "description": "x"})
     assert not out["valid"] and not out["registered"]
