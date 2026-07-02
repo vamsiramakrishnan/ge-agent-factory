@@ -35,6 +35,13 @@ stale diagrams with `bun run docs:diagrams`). See
 conventions, including a silent-failure gotcha in the Mermaid renderer that's
 worth reading before adding a new diagram.
 
+The public docs website renders `docs/` through Astro/Starlight
+(`apps/docs`, see its README). It syncs content at build time, so editing an
+existing `docs/*.md` page needs nothing extra — but a **new top-level**
+`docs/*.md` page needs a `PAGE_MAP` entry in
+`apps/docs/scripts/sync-content.mjs`, and `bun run docs:site:build` proves
+the site (and its link rewriting) still builds.
+
 Then `bun run test:gated` (`node tools/check-test-results.mjs`) for the full
 suite — it wraps `bun test apps tools packages`, cross-references failures
 against the checked-in `tools/known-test-failures.json`, and exits non-zero

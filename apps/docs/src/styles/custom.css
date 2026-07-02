@@ -1,0 +1,122 @@
+/* Brand layer over Starlight, derived from the product's design tokens
+ * (packages/design/src/tokens.css — the Google Cloud Console palette) so the
+ * docs site, console, and presentation apps read as one system. Values here
+ * intentionally mirror docs/_sass/color_schemes/ge.scss (the legacy Jekyll
+ * theme) — if you change the palette, change it in tokens.css first.
+ *
+ * Type follows the same rule as the product: Space Grotesk for headings and
+ * chrome, the system reading face for body copy, Geist Mono for code. */
+@import "@fontsource/space-grotesk/500.css";
+@import "@fontsource/space-grotesk/600.css";
+@import "@fontsource/space-grotesk/700.css";
+@import "@fontsource/geist-mono/400.css";
+@import "@fontsource/geist-mono/500.css";
+@import "@fontsource/geist-mono/600.css";
+
+:root {
+  --ge-display-font: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --sl-font-mono: "Geist Mono", "SFMono-Regular", ui-monospace, menlo, consolas, monospace;
+}
+
+/* ── Dark palette (Google dark console) ─────────────────────────────────── */
+:root {
+  --sl-color-accent-low: #143c73;
+  --sl-color-accent: #1a73e8;
+  --sl-color-accent-high: #a8c7fa;
+  --sl-color-text-accent: #8ab4f8;
+  --sl-color-white: #f1f3f4;
+  --sl-color-gray-1: #e8eaed;
+  --sl-color-gray-2: #bdc1c6;
+  --sl-color-gray-3: #9aa0a6;
+  --sl-color-gray-4: #5f6368;
+  --sl-color-gray-5: #3c4043;
+  --sl-color-gray-6: #292a2d;
+  --sl-color-black: #202124;
+}
+
+/* ── Light palette (--color-* in tokens.css) ────────────────────────────── */
+:root[data-theme="light"] {
+  --sl-color-accent-low: #d3e3fd; /* --color-secondary-container family */
+  --sl-color-accent: #1a73e8; /* --color-primary */
+  --sl-color-accent-high: #174ea6;
+  --sl-color-text-accent: #1a73e8;
+  --sl-color-white: #202124; /* --color-on-surface */
+  --sl-color-gray-1: #2d2f31;
+  --sl-color-gray-2: #3c4043; /* body ink, AA on white */
+  --sl-color-gray-3: #5f6368; /* --color-secondary */
+  --sl-color-gray-4: #80868b;
+  --sl-color-gray-5: #dadce0; /* --color-outline-variant */
+  --sl-color-gray-6: #eef3f9; /* --color-surface-container */
+  --sl-color-gray-7: #f8fafd; /* --color-background */
+  --sl-color-black: #ffffff; /* --color-surface */
+}
+
+/* ── Type ───────────────────────────────────────────────────────────────── */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.site-title {
+  font-family: var(--ge-display-font);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.site-title {
+  font-weight: 700;
+}
+
+/* Sidebar group labels and top-level links carry the display face too, like
+ * the product's nav chrome. */
+nav.sidebar .top-level > li > details > summary .group-label > span {
+  font-family: var(--ge-display-font);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* ── Tables — this site leans heavily on wide reference tables ──────────── */
+.sl-markdown-content table {
+  display: table;
+  width: 100%;
+}
+
+.sl-markdown-content thead th {
+  background-color: var(--sl-color-gray-6);
+  font-family: var(--ge-display-font);
+  font-weight: 600;
+  text-align: left;
+}
+
+/* ── Hero (landing page) ────────────────────────────────────────────────── */
+.hero .tagline {
+  color: var(--sl-color-gray-2);
+  max-width: 42rem;
+  margin-inline: auto;
+}
+
+.hero h1 {
+  letter-spacing: -0.02em;
+}
+
+/* ── Cards get the product's quiet elevation on hover ───────────────────── */
+.card {
+  border-radius: 0.75rem;
+  transition: box-shadow 120ms ease, border-color 120ms ease;
+}
+
+.card:hover {
+  border-color: color-mix(in srgb, var(--sl-color-accent) 35%, var(--sl-color-gray-5));
+  box-shadow: 0 4px 24px rgba(26, 115, 232, 0.08);
+}
+
+/* Diagram SVGs are authored on white (tools/lib/docs-diagram-theme.mjs) —
+ * give them a card treatment so they hold up in dark mode instead of
+ * floating as a glaring rectangle. */
+.sl-markdown-content img[src$=".svg"] {
+  background: #ffffff;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}

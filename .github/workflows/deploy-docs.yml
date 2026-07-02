@@ -1,0 +1,48 @@
+# Builds the docs website (apps/docs — Astro/Starlight, content synced from
+# docs/) and deploys it to GitHub Pages. For this to take over from the legacy
+# Jekyll build, the repo's Pages settings must have Source = "GitHub Actions".
+name: Deploy docs website
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "apps/docs/**"
+      - ".github/workflows/deploy-docs.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Build site (syncs content from docs/ first)
+        run: bun run docs:site:build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/docs/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

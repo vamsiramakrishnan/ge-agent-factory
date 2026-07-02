@@ -1,0 +1,78 @@
+---
+title: Quickstart
+description: From a fresh clone to a validated agent workspace on your machine.
+sidebar:
+  order: 2
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Get from a fresh clone to a validated agent workspace. Nothing touches the
+cloud until you choose to ship — the everyday loop is entirely local.
+
+<Steps>
+
+1. **Set up the toolchain.**
+
+   ```bash
+   curl https://mise.run | sh   # once, if you don't have mise
+   mise run setup               # JS deps + Python/uv toolchain + `ge` on PATH + daemon
+   mise run doctor-local        # verify Bun, uv, Python, agents-cli, cache, harness wiring
+   ```
+
+2. **Build one agent locally.**
+
+   ```bash
+   mise run mode-local
+   CANARY=1 mise run provision-local
+   ```
+
+   Local mode runs the whole line — generate → validate → preview — on your
+   machine against fixtures and simulators. See
+   [the factory line](/ge-agent-factory/concepts/the-factory-line/) for what
+   each stage produces.
+
+3. **Inspect what was generated.**
+
+   The factory emits a real workspace: ADK agent code, tools, fixture data,
+   smoke tests, eval config, and a promotion packet. The promotion gate blocks
+   any ship that hasn't passed validation and the harness verdicts.
+
+   ```bash
+   mise run console   # Pipeline · Fleet · Activity · Doctor → http://localhost:18260
+   ```
+
+4. **Ship — when you're ready, and only then.**
+
+   <Tabs>
+     <TabItem label="Cloud Shell (guided)">
+       Use the [Open in Cloud Shell tutorial](https://shell.cloud.google.com/?cloudshell_git_repo=https://github.com/vamsiramakrishnan/ge-agent-factory&cloudshell_workspace=installer&cloudshell_tutorial=installer/TUTORIAL.md)
+       to clone the repo and run the installer step by step.
+     </TabItem>
+     <TabItem label="From a checkout">
+       With `gcloud` authed against your project:
+
+       ```bash
+       export GEMINI_ENTERPRISE_APP_ID=projects/<num>/locations/global/collections/default_collection/engines/<app>
+       CANARY=1 mise run bootstrap   # stand up the planes, prove one agent end to end
+       ```
+
+       Then follow [provision the platform](/ge-agent-factory/cookbooks/provision-the-platform/)
+       and [Operations](/ge-agent-factory/operations/).
+     </TabItem>
+   </Tabs>
+
+</Steps>
+
+:::tip[Every surface is scriptable]
+Every `ge` command accepts `--json`, and the same commands are HTTP routes
+(the console) and MCP tools (model/harness callers) — one registry, three
+surfaces. See the [CLI reference](/ge-agent-factory/reference/cli/).
+:::
+
+## Where next
+
+- Mental model before more commands: [Concepts](/ge-agent-factory/concepts/)
+- Step-by-step tasks: [Cookbooks](/ge-agent-factory/cookbooks/)
+- Exact commands, schemas, APIs: [Reference](/ge-agent-factory/reference/)
+- Run `mise run help` for every task, or `mise run next` for a status-based recommendation.

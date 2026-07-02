@@ -3,34 +3,77 @@ title: GE Agent Factory
 description: Turn a business use case into a tested, deployable Gemini Enterprise agent.
 template: splash
 hero:
-  tagline: One traceable path from use case → generated ADK agent + tools + tests + evals → deployed on Gemini Enterprise.
+  tagline: >-
+    One traceable path from business use case → generated ADK agent, tools,
+    tests, and evals → deployed on Gemini Enterprise. A factory, not a
+    prompt-only demo generator.
   actions:
     - text: Quickstart
       link: /ge-agent-factory/start/quickstart/
       icon: right-arrow
-    - text: View on GitHub
+    - text: What is the factory?
+      link: /ge-agent-factory/start/what-is-the-factory/
+      variant: minimal
+    - text: GitHub
       link: https://github.com/vamsiramakrishnan/ge-agent-factory
       icon: external
       variant: minimal
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-<CardGrid stagger>
-  <Card title="Operators" icon="rocket">
-    Stand up the platform and run the factory in your GCP project.
-    → [ge command reference](/ge-agent-factory/reference/cli/)
+<p align="center">
+  <img src="/ge-agent-factory/assets/diagrams/system-map.svg" alt="A use case enters the factory's three planes (factory, data, tool) and the result reaches Gemini Enterprise as a deployed agent" width="900" loading="eager" />
+</p>
+
+## The factory path
+
+Every agent takes the same inspectable line — each stage writes artifacts you
+can open, diff, and gate on.
+
+<CardGrid>
+  <Card title="1 · Interview or choose a use case" icon="comment">
+    Start from business intent, not an implementation guess. The interview
+    writes the spec for you. [Author a spec →](/ge-agent-factory/cookbooks/author-a-spec-via-interview/)
   </Card>
-  <Card title="Agent authors" icon="pencil">
-    Turn a use-case spec into a generated, validated agent workspace.
-    → [Quickstart](/ge-agent-factory/start/quickstart/)
+  <Card title="2 · Materialize the spec" icon="document">
+    The spec is the contract: systems, entities, tools, workflow, tests, and
+    runtime expectations. [Specs and OKF →](/ge-agent-factory/concepts/specs-and-okf/)
   </Card>
-  <Card title="Contributors" icon="setting">
-    Architecture, the modularization run, and the contracts everything shares.
-    → [GitHub](https://github.com/vamsiramakrishnan/ge-agent-factory)
+  <Card title="3 · Generate the workspace" icon="setting">
+    Real ADK code, tools, fixtures, simulator bindings, smoke tests, eval
+    config, and a grounding bundle. [Generate an agent →](/ge-agent-factory/cookbooks/generate-an-agent/)
+  </Card>
+  <Card title="4 · Validate locally" icon="approve-check">
+    Generation → validation → preview runs entirely on your machine, no cloud
+    credentials required. [The factory line →](/ge-agent-factory/concepts/the-factory-line/)
+  </Card>
+  <Card title="5 · Ship remotely" icon="rocket">
+    Deploy Agent Runtime, register MCP tools, publish to Gemini Enterprise,
+    and verify live access — in **your** GCP project. [Operations →](/ge-agent-factory/operations/)
   </Card>
   <Card title="One registry, three surfaces" icon="puzzle">
-    Every `ge` command is a CLI command, an HTTP route, and an MCP tool — the
-    same operator registry, so they can never disagree.
+    Every `ge` command is a CLI command, an HTTP route, and an MCP tool — one
+    operator registry, so they can never disagree. [Console & APIs →](/ge-agent-factory/reference/console-and-apis/)
   </Card>
+</CardGrid>
+
+## Try it in one terminal
+
+```bash
+mise run setup          # deps, toolchain, the `ge` CLI, daemon
+mise run devex-smoke    # doctor → local mode → one validated canary workspace
+mise run console        # operator UI: Pipeline · Fleet · Activity · Doctor
+```
+
+Nothing above touches the cloud — the build boundary keeps generation,
+validation, and preview local until you choose to ship.
+
+## Find your path
+
+<CardGrid>
+  <LinkCard title="Operators" description="Stand up the platform and run the factory in your GCP project." href="/ge-agent-factory/cookbooks/provision-the-platform/" />
+  <LinkCard title="Agent authors" description="Turn a use-case spec into a generated, validated agent workspace." href="/ge-agent-factory/start/quickstart/" />
+  <LinkCard title="Developers" description="The repo shape, the daily loop, and the contracts everything shares." href="/ge-agent-factory/start/developer-guide/" />
+  <LinkCard title="Platform reviewers" description="Architecture, security posture, and the agent gateway." href="/ge-agent-factory/concepts/security-and-the-agent-gateway/" />
 </CardGrid>
