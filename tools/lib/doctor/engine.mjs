@@ -15,10 +15,10 @@ import { join } from "node:path";
 import { homedir } from "node:os";
 import { readJson } from "@ge/std/json-io";
 import { resolveGcpProject } from "@ge/std/gcp-config";
-import { buildDoctorReport, createCheckCollector, runDoctorSection } from "./factory-doctor.mjs";
-import { STATE_PATHS, REPO_ROOT, displayStatePath } from "./state-paths.mjs";
-import { workspaceStoreItems, LOCAL_PROJECTS, LOCAL_PROJECT_STORE } from "./local-workspaces.mjs";
-import { selectionDepartments, toolPlaneChecks, shipProxyCheck, gatewayProvisionCheck, bigQueryApiCheck } from "./planes/tool-plane-checks.mjs";
+import { buildDoctorReport, createCheckCollector, runDoctorSection } from "./report.mjs";
+import { STATE_PATHS, REPO_ROOT, displayStatePath } from "../state-paths.mjs";
+import { workspaceStoreItems, LOCAL_PROJECTS, LOCAL_PROJECT_STORE } from "../local-workspaces.mjs";
+import { selectionDepartments, toolPlaneChecks, shipProxyCheck, gatewayProvisionCheck, bigQueryApiCheck } from "../planes/tool-plane-checks.mjs";
 
 const noop = () => {};
 const UV_CACHE = STATE_PATHS.cache.uv;

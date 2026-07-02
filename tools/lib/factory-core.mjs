@@ -13,7 +13,7 @@ import { parseConcurrency } from "./concurrency.mjs";
 import { readJson, writeJson, updateJson } from "@ge/std/json-io";
 import { buildFactoryConfig, explainFactoryConfig } from "./config-schema.mjs";
 import { commandMeta, commandRequirements } from "./ge-command-registry.mjs";
-import { runDoctorSection } from "./factory-doctor.mjs";
+import { runDoctorSection } from "./doctor/report.mjs";
 import { runCommand } from "./factory-exec.mjs";
 import { createDataPlane } from "./planes/data-plane.mjs";
 import { createMcpPlane } from "./planes/mcp-plane.mjs";
@@ -23,7 +23,7 @@ import { STATE_PATHS, DEPARTMENTS } from "./state-paths.mjs";
 // NOT directly from apps/factory — factory-core keeps zero app imports (enforced
 // by tools/check-no-app-imports.mjs).
 import { createGatewayClient, postJson } from "./gateway-client.mjs";
-import { createDoctorPlane } from "./doctor.mjs";
+import { createDoctorPlane } from "./doctor/engine.mjs";
 import { createProvisionOps } from "./provision.mjs";
 import { selectionDepartments, toolPlaneChecks, shipProxyCheck, gatewayProvisionCheck, bigQueryApiCheck, selectWorkspacesForRegen } from "./planes/tool-plane-checks.mjs";
 import {
@@ -39,7 +39,7 @@ import { loadCatalog, resolveCatalogId, listUsecases, listSpecs } from "./factor
 import { reviewSpec } from "./spec-review.mjs";
 import { registerSpecWith } from "./register-spec.mjs";
 import { createAgentIdentityOps } from "./agent-identity.mjs";
-import { createWorkspaceDoctorOps } from "./workspace-doctor.mjs";
+import { createWorkspaceDoctorOps } from "./doctor/workspace.mjs";
 import { createFleetOps } from "./fleet-ops.mjs";
 import { createApplyOps } from "./apply-ops.mjs";
 import { createRemoteRunOps } from "./remote-run-ops.mjs";
@@ -52,7 +52,7 @@ export {
   bigQueryApiCheck,
   selectWorkspacesForRegen,
 } from "./planes/tool-plane-checks.mjs";
-export { HARNESS_VENV_DIR, harnessVenvPython } from "./doctor.mjs";
+export { HARNESS_VENV_DIR, harnessVenvPython } from "./doctor/engine.mjs";
 export { runLedger, ledgerRuns, ledgerRun, ledgerFleet, ledgerPlan, ledgerBackfillFromDisk } from "./ledger/factory-ledger.mjs";
 export { mergeLedgerAndFileRuns, listFactoryRuns } from "./factory-runs.mjs";
 export { loadCatalog, resolveCatalogId, listUsecases, listSpecs } from "./factory-catalog-search.mjs";

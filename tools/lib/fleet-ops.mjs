@@ -18,7 +18,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readJson } from "@ge/std/json-io";
 import { buildFactoryAutopilotMission } from "./factory-autopilot-mission.mjs";
-import { buildFleetHealth } from "./fleet-health.mjs";
+import { buildFleetHealth } from "./doctor/fleet-health.mjs";
 import { buildJourneyPlan } from "./journey-plan.mjs";
 import { loadCatalog } from "./factory-catalog-search.mjs";
 import { runLedger, ledgerReadsEnabled } from "./ledger/factory-ledger.mjs";

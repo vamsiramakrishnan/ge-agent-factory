@@ -1,7 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { createCheckCollector } from "../factory-doctor.mjs";
+import { createCheckCollector } from "../doctor/report.mjs";
 import { STATE_PATHS } from "../state-paths.mjs";
 import { assertRemoteAuthorized } from "../remote-guard.mjs";
 

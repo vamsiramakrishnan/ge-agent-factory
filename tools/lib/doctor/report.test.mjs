@@ -4,7 +4,7 @@ import {
   classifyDoctorCheck,
   createCheckCollector,
   runDoctorSection,
-} from "./factory-doctor.mjs";
+} from "./report.mjs";
 
 test("check collector builds reports with fail count", () => {
   const collector = createCheckCollector();

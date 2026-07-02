@@ -1,6 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { STATE_PATHS, allExistingPaths } from "./state-paths.mjs";
+import { STATE_PATHS, allExistingPaths } from "../state-paths.mjs";
 
 const STAGES = ["spec", "data", "simulator", "build", "eval", "preview", "deploy"];
 const TERMINAL = new Set(["done", "skipped"]);

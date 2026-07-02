@@ -23,7 +23,7 @@ export const JourneyPlanActionKindSchema = z.enum([
 ]);
 export type JourneyPlanActionKind = z.infer<typeof JourneyPlanActionKindSchema>;
 
-// (b) Minted by tools/lib/fleet-health.mjs actionPlanFor() — now plural build_agents (unified).
+// (b) Minted by tools/lib/doctor/fleet-health.mjs actionPlanFor() — now plural build_agents (unified).
 export const FleetActionKindSchema = z.enum([
   "ship_agents",
   "none",
