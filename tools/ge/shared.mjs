@@ -13,6 +13,7 @@ import { daemonPaths, getDaemonStatus } from "../lib/runtime-daemon.mjs";
 // rule (tools/check-no-app-imports.mjs) does not apply; importing the leaf
 // here is the sanctioned alternative to hand-mirroring the code table.
 import { docsUrlFor, resolveErrorCode } from "../../apps/factory/scripts/factory/core/error-codes.mjs";
+import { GE_COMMANDS } from "../lib/ge-command-registry.mjs";
 
 export { core, pc };
 
@@ -50,6 +51,25 @@ export function emit(args, result, human) {
 
 export const ICON = { pass: pc.green("✓"), warn: pc.yellow("▲"), fail: pc.red("✗") };
 
+// ── Duration feedback ───────────────────────────────────────────────────────
+// Long operations should say up front how long they usually take, and say at
+// the end how long they actually took — both to stderr, so stdout (the JSON
+// contract) is untouched.
+export function formatDuration(ms) {
+  const seconds = Math.round(ms / 1000);
+  if (seconds < 90) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  return `${minutes}m ${seconds % 60}s`;
+}
+
+// Set-expectations line before a long command starts, sourced from the same
+// registry (tools/lib/ge-command-registry.mjs) the console and MCP server read,
+// so the estimate can't drift per surface. Silent for unknown/"varies" entries.
+export function announceExpectedDuration(commandId) {
+  const expected = GE_COMMANDS[commandId]?.expectedDuration;
+  if (expected && expected !== "varies") elog(`usually takes ${expected}`);
+}
+
 // ── Error boundary ──────────────────────────────────────────────────────
 // citty's own runMain() catches whatever escapes a command's run() and logs
 // the raw Error object (full stack trace, via `console.error(error, "\n")`)
@@ -67,11 +87,25 @@ export const ICON = { pass: pc.green("✓"), warn: pc.yellow("▲"), fail: pc.re
 // line. An error WITHOUT a registered code renders byte-identically to before
 // (no code, no link) — see resolveErrorCode(), which also rejects Node system
 // codes like "ENOENT" so only real registry entries change the output.
+// Elapsed-time note for anything that ran long enough to feel long. Skipped
+// for --json callers (their stdout contract stays byte-identical; the note
+// goes to stderr regardless, but subprocess callers shouldn't pay the noise).
+const ELAPSED_NOTE_THRESHOLD_MS = 5000;
+function noteElapsed(ctx, startedAt, verb) {
+  const ms = Date.now() - startedAt;
+  if (ms < ELAPSED_NOTE_THRESHOLD_MS || ctx?.args?.json) return;
+  process.stderr.write(pc.dim(`  ${verb} ${formatDuration(ms)}`) + "\n");
+}
+
 export function guarded(run) {
   return async (ctx) => {
+    const startedAt = Date.now();
     try {
-      return await run(ctx);
+      const result = await run(ctx);
+      noteElapsed(ctx, startedAt, "done in");
+      return result;
     } catch (e) {
+      noteElapsed(ctx, startedAt, "failed after");
       const code = resolveErrorCode(e);
       if (code) {
         process.stderr.write(pc.red(`✗ ${code} ${e?.message || e}`) + "\n");
@@ -79,6 +113,9 @@ export function guarded(run) {
       } else {
         process.stderr.write(pc.red(`✗ ${e?.message || e}`) + "\n");
       }
+      // Errors can carry a machine-attached recovery hint (err.hint) — render it
+      // as the same "next:" affordance every successful command already prints.
+      if (e?.hint) process.stderr.write(pc.dim(`  next: ${e.hint}`) + "\n");
       process.exitCode = 1;
     }
   };
@@ -159,6 +196,32 @@ export async function daemonRequest(port, path, { method = "GET", body, timeoutM
     throw new Error(`daemon request failed: ${detail}`);
   }
   return payload;
+}
+
+// Follow one daemon task's live SSE event stream, printing each event as a
+// human line (or NDJSON with json=true). Returns when the stream ends. Shared
+// by `ge runtime events --follow` and the `--follow` flags on mission/journey/
+// autopilot run, so "start it" and "watch it" can be one command.
+export async function followTaskEvents(port, id, { json = false } = {}) {
+  const response = await fetch(`http://127.0.0.1:${port}/api/tasks/${encodeURIComponent(id)}/events`);
+  if (!response.ok || !response.body) throw new Error(`daemon task events failed: ${response.status}`);
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    let idx;
+    while ((idx = buffer.indexOf("\n\n")) >= 0) {
+      const frame = buffer.slice(0, idx);
+      buffer = buffer.slice(idx + 2);
+      const line = frame.split(/\r?\n/).find((part) => part.startsWith("data: "));
+      if (!line) continue;
+      const event = JSON.parse(line.slice(6));
+      out(json ? JSON.stringify(event) : `${pc.dim(event.ts || "")} ${event.level === "error" ? pc.red(event.type) : pc.cyan(event.type)} ${event.line || ""}`);
+    }
+  }
 }
 
 export function statusText(status) {
@@ -305,7 +368,10 @@ export function renderChecks(checks, pad = 22) {
   }
 }
 
-// Effective mode: --remote/--local override the persisted cfg.mode.
-export const modeOf = (args, cfg) => (args.remote ? "remote" : args.local ? "local" : cfg.mode || "remote");
+// Effective mode: --remote/--local override the persisted cfg.mode. The
+// fallback mirrors the config contract's fail-safe default (config-schema.mjs:
+// a fresh checkout must NOT touch GCP), so a missing mode can never silently
+// target the cloud.
+export const modeOf = (args, cfg) => (args.remote ? "remote" : args.local ? "local" : cfg.mode || "local");
 // Local "build boundary": the last pre-cloud harness stage. Local builds stop here.
 export const LOCAL_BUILD_BOUNDARY = "previewed";

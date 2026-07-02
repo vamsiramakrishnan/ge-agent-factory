@@ -5,7 +5,7 @@ import { buildMissionGraph } from "../lib/mission/mission-plan.mjs";
 import {
   guarded, common, cfgFrom, emit, out, pc,
   daemonPort, daemonStatusSnapshot, daemonRequest, parseIds,
-  renderMissionGraph, renderResumePlan, statusText,
+  renderMissionGraph, renderResumePlan, statusText, followTaskEvents,
 } from "./shared.mjs";
 
 const missionPlanCmd = defineCommand({
@@ -69,6 +69,7 @@ const missionRunCmd = defineCommand({
     "harness-agent": { type: "string", description: "Harness agent for mission review node (default antigravity-sdk)" },
     model: { type: "string", description: "Model for the Antigravity mission review node" },
     location: { type: "string", description: "Location for the Antigravity mission review node" },
+    follow: { type: "boolean", description: "Stay attached and stream the run's live events" },
     port: { type: "string", description: "Daemon port (default 17654)" },
   },
   run: guarded(async ({ args }) => {
@@ -104,9 +105,13 @@ const missionRunCmd = defineCommand({
     });
     emit(args, task, (t) => {
       renderMissionGraph(t.output?.graph || {});
-      out(pc.dim(`\n  status: ge mission status ${t.id}`));
-      out(pc.dim(`  events: ge runtime events ${t.id} --follow`));
+      if (!args.follow) {
+        out(pc.dim(`\n  status: ge mission status ${t.id}`));
+        out(pc.dim(`  events: ge runtime events ${t.id} --follow`));
+        out(pc.dim(`  (or start with --follow to stream events inline)`));
+      }
     });
+    if (args.follow && !args.json) await followTaskEvents(port, task.id);
   }),
 });
 

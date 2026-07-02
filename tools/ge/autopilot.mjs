@@ -4,7 +4,7 @@ import { defineCommand } from "citty";
 import {
   guarded, common, emit, out, pc,
   daemonPort, daemonStatusSnapshot, daemonRequest, parseIds,
-  renderAutopilotSummary, statusText,
+  renderAutopilotSummary, statusText, followTaskEvents,
 } from "./shared.mjs";
 
 const autopilotRun = defineCommand({
@@ -16,6 +16,7 @@ const autopilotRun = defineCommand({
     "no-repair": { type: "boolean", description: "Observe blockers without running repair" },
     attempts: { type: "string", description: "Repair attempts per item (default 3)" },
     "run-preview": { type: "boolean", description: "Run preview after repair when supported" },
+    follow: { type: "boolean", description: "Stay attached and stream the run's live events" },
     port: { type: "string", description: "Daemon port (default 17654)" },
   },
   run: guarded(async ({ args }) => {
@@ -43,9 +44,13 @@ const autopilotRun = defineCommand({
     });
     emit(args, task, (t) => {
       renderAutopilotSummary(t);
-      out(pc.dim(`\n  watch: ge autopilot status ${t.id}`));
-      out(pc.dim(`  events: ge autopilot events ${t.id}`));
+      if (!args.follow) {
+        out(pc.dim(`\n  watch: ge autopilot status ${t.id}`));
+        out(pc.dim(`  events: ge autopilot events ${t.id}`));
+        out(pc.dim(`  (or start with --follow to stream events inline)`));
+      }
     });
+    if (args.follow && !args.json) await followTaskEvents(port, task.id);
   }),
 });
 

@@ -53,13 +53,26 @@ const root = defineCommand({
     const res = core.statusBoard(cfgFrom(args));
     emit(args, res, (r) => {
       out(pc.bold("\nGE Agent Factory"));
+      // First run (no project configured): orient before reporting. Three
+      // steps, each with an honest effort estimate — the status board's plane
+      // detail only makes sense once there is a project to report on.
+      if (!r.project) {
+        out(pc.dim("  Turn an enterprise use case into a generated, tested, deployable agent."));
+        out(pc.bold("\n  First run — three steps, all local, no cloud credentials:"));
+        out(`  1. ${pc.cyan("mise run setup")}      ${pc.dim("toolchain + daemon (one time, ~5-10m)")}`);
+        out(`  2. ${pc.cyan("ge init")}             ${pc.dim("discover config, write .ge.json (~30s)")}`);
+        out(`  3. ${pc.cyan("ge devex smoke")}      ${pc.dim("prove the pipeline: doctor → canary agent build")}`);
+        out(pc.dim("\n  then: ge journey status   (the full pipeline, stage by stage)"));
+        out(pc.dim("  docs: docs/cookbooks/getting-started.md · ge --help for all commands"));
+        return;
+      }
       out(`  mode      ${pc.cyan(r.mode)}  ${pc.dim(r.clientDoes)}`);
-      out(`  project   ${r.project ? pc.cyan(r.project) : pc.yellow("<unset — run ge init>")}`);
+      out(`  project   ${pc.cyan(r.project)}`);
       out(`  app       ${r.app ? pc.dim(r.app) : pc.yellow("<unset>")}`);
       out("");
       for (const p of r.planes) out(`  ${p.up ? pc.green("✓") : pc.yellow("○")} ${p.name.padEnd(12)} ${pc.dim(p.detail)}`);
       out(`\n  next: ${pc.bold(pc.cyan(r.next))}`);
-      out(pc.dim("  (ge --help for all commands · ge mode to switch local/remote)"));
+      out(pc.dim("  (ge --help for all commands · ge mode to switch local/remote · ge journey status for the pipeline)"));
     });
   },
   subCommands: {

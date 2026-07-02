@@ -1,12 +1,13 @@
 // tools/ge/mcp.mjs — `ge mcp deploy|doctor` (tool plane). Moved verbatim out
 // of tools/ge.mjs.
 import { defineCommand } from "citty";
-import { guarded, common, cfgFrom, emit, out, pc, blog, core, renderChecks } from "./shared.mjs";
+import { guarded, common, cfgFrom, emit, out, pc, blog, core, renderChecks, announceExpectedDuration } from "./shared.mjs";
 
 const mcpDeployCmd = defineCommand({
   meta: { name: "deploy", description: "Deploy the per-department custom MCP services to Cloud Run (fleet-level)" },
   args: { ...common },
   run: guarded(({ args }) => {
+    announceExpectedDuration("mcp.deploy");
     const res = core.mcpDeploy(cfgFrom(args), { log: blog });
     emit(args, res, (r) => { out(pc.green("\n✓ MCP services deployed:")); for (const [dept, url] of Object.entries(r.services)) out(`  ${dept.padEnd(12)} ${pc.green(url)}`); });
   }),

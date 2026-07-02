@@ -325,7 +325,14 @@ export default function Journey({ status, refresh }: JourneyProps) {
     }
     if (plan.kind === "start_interview") {
       location.hash = "#/interview";
+      return;
     }
+    // No console executor is registered for this action kind — say so instead
+    // of leaving a button that silently does nothing (ErrorBanner turns the
+    // backtick-quoted command into a one-click copy).
+    setError(command
+      ? `The console can't run this action yet — run it from a terminal: \`${command}\``
+      : `No console executor is registered for action kind: ${plan.kind}`);
   };
 
   const next = journey?.next;
@@ -359,7 +366,7 @@ export default function Journey({ status, refresh }: JourneyProps) {
         </div>
         <div className="flex flex-wrap items-center justify-start gap-2 xl:justify-end">
           <MetricPill label="Mode" value={status?.mode || journey?.mode || "local"} />
-          <MetricPill label="Specs" value={String(specCatalog?.total ?? 363)} />
+          <MetricPill label="Specs" value={specCatalog ? String(specCatalog.total) : "…"} />
           <MetricPill label="GCP Project" value={status?.project || "local"} />
           {activeInterviewId && (
             <button
@@ -404,7 +411,7 @@ export default function Journey({ status, refresh }: JourneyProps) {
                 active={sourceMode === "existing"}
                 Icon={FileText}
                 title="Deploy from registered specs"
-                detail={`${specCatalog?.total ?? 363} factory-grade specs are available for single-agent or fleet runs.`}
+                detail={`${specCatalog ? `${specCatalog.total} factory-grade specs are` : "The registered spec catalog is"} available for single-agent or fleet runs.`}
                 onClick={() => setSourceMode("existing")}
               />
               <JourneyOption

@@ -18,7 +18,7 @@ import { daemonPaths, getDaemonStatus, startDaemonServer } from "../lib/runtime-
 import {
   guarded, emit, out, pc, core,
   readPidFile, processAlive, processLooksLikeDaemon, daemonStatusSnapshot,
-  renderResumePlan, daemonPort, daemonRequest, statusText,
+  renderResumePlan, daemonPort, daemonRequest, statusText, followTaskEvents,
 } from "./shared.mjs";
 
 const GE_CLI_PATH = fileURLToPath(new URL("../ge.mjs", import.meta.url));
@@ -171,25 +171,7 @@ const daemonEvents = defineCommand({
   run: guarded(async ({ args }) => {
     const port = Number(args.port || process.env.GE_DAEMON_PORT || daemonPaths().defaultPort);
     if (args.follow) {
-      const response = await fetch(`http://127.0.0.1:${port}/api/tasks/${encodeURIComponent(args.id)}/events`);
-      if (!response.ok || !response.body) throw new Error(`daemon task events failed: ${response.status}`);
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
-      for (;;) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        let idx;
-        while ((idx = buffer.indexOf("\n\n")) >= 0) {
-          const frame = buffer.slice(0, idx);
-          buffer = buffer.slice(idx + 2);
-          const line = frame.split(/\r?\n/).find((part) => part.startsWith("data: "));
-          if (!line) continue;
-          const event = JSON.parse(line.slice(6));
-          out(args.json ? JSON.stringify(event) : `${pc.dim(event.ts || "")} ${event.level === "error" ? pc.red(event.type) : pc.cyan(event.type)} ${event.line || ""}`);
-        }
-      }
+      await followTaskEvents(port, args.id, { json: args.json });
       return;
     }
     const response = await fetch(`http://127.0.0.1:${port}/api/tasks/${encodeURIComponent(args.id)}/events?format=json`, {
