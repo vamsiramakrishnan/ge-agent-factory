@@ -46,6 +46,7 @@ import { mergeLedgerAndFileRuns, listFactoryRuns } from "./factory-runs.mjs";
 import { loadCatalog, resolveCatalogId, listUsecases, listSpecs } from "./factory-catalog-search.mjs";
 import { reviewSpec } from "./spec-review.mjs";
 import { registerSpecWith } from "./register-spec.mjs";
+import { createAgentIdentityOps } from "./agent-identity.mjs";
 
 export {
   selectionDepartments,
@@ -161,58 +162,14 @@ export function tfOutputs() {
   try { const j = JSON.parse(r.out); const o = {}; for (const [k, v] of Object.entries(j)) o[k] = v.value; return o; } catch { return {}; }
 }
 
-function agentIdentityPrincipalSet(orgId, projectNumber) {
-  return orgId && projectNumber
-    ? `principalSet://agents.global.org-${orgId}.system.id.goog/attribute.platformContainer/aiplatform/projects/${projectNumber}`
-    : "";
-}
-
-function inferAgentIdentityOrgId(cfg) {
-  if (cfg.agentIdentityOrgId || !cfg.project) return cfg.agentIdentityOrgId || "";
-  const r = gcloud(["projects", "get-ancestors", cfg.project, "--format=json"], { allowFail: true });
-  if (!r.ok) return "";
-  try {
-    const ancestors = JSON.parse(r.out);
-    return ancestors.find((a) => a.type === "organization")?.id || "";
-  } catch {
-    return "";
-  }
-}
-
-function describeProjectNumber(cfg) {
-  const r = gcloud(["projects", "describe", cfg.project, "--format=value(projectNumber)"], { allowFail: true });
-  return r.ok ? r.out : "";
-}
-
-function ensureAgentIdentityConfig(cfg, { log = noop } = {}) {
-  if (!cfg.agentIdentityOrgId) {
-    const orgId = inferAgentIdentityOrgId(cfg);
-    if (orgId) {
-      cfg.agentIdentityOrgId = orgId;
-      log(`detected Agent Identity org id ${orgId}`);
-    }
-  }
-  if (!cfg.agentIdentityPrincipalSet && cfg.agentIdentityOrgId && cfg.projectNumber) {
-    cfg.agentIdentityPrincipalSet = agentIdentityPrincipalSet(cfg.agentIdentityOrgId, cfg.projectNumber);
-  }
-  if (!cfg.agentIdentityOrgId) {
-    log("Agent Identity org id not detected; set GE_AGENT_IDENTITY_ORG_ID or pass --agentIdentityOrgId before applying infra.");
-  }
-  return cfg;
-}
-
-function persistAgentIdentityConfig(cfg) {
-  if (!cfg.project || !cfg.agentIdentityOrgId) return;
-  const existing = readJson(CONFIG_PATH, {});
-  if (existing.project && existing.project !== cfg.project) return;
-  writeJson(CONFIG_PATH, {
-    ...existing,
-    project: existing.project || cfg.project,
-    projectNumber: existing.projectNumber || cfg.projectNumber || "",
-    agentIdentityOrgId: cfg.agentIdentityOrgId,
-    agentIdentityPrincipalSet: cfg.agentIdentityPrincipalSet || existing.agentIdentityPrincipalSet || "",
-  });
-}
+// Agent Identity org id / principalSet inference + persistence now live in
+// agent-identity.mjs; wired here the same way as the plane modules below, since
+// they need live gcloud/readJson/writeJson access.
+const {
+  ensureAgentIdentityConfig,
+  persistAgentIdentityConfig,
+  describeProjectNumber,
+} = createAgentIdentityOps({ gcloud, readJson, writeJson, configPath: CONFIG_PATH, noop });
 
 const gitShortSha = () => { const r = run("git", ["rev-parse", "--short", "HEAD"], { allowFail: true }); return r.ok ? r.out : "manual"; };
 export function resolveRepo(cfg) {
