@@ -212,7 +212,10 @@ the Jekyll site it renders as plain bold text; the website's sync
 (`apps/docs/scripts/lib/enrich.mjs`) upgrades it to a Starlight badge —
 green for `local-only`, orange for `cloud`, neutral otherwise. The same sync
 wraps a cookbook's `## Steps` ordered list in Starlight's `<Steps>` component,
-so keep Steps sections as a single numbered list where possible.
+so keep Steps sections as a single numbered list where possible, and turns a
+section index's link-plus-description tables (like the cookbooks' recipe
+table) into a card grid — tables whose first content column is prose are
+left as tables.
 
 ## In-page table of contents
 

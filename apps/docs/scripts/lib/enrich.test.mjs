@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { convertCallouts, convertScopeStrip, wrapSteps } from "./enrich.mjs";
+import { convertCallouts, convertIndexTables, convertScopeStrip, wrapSteps } from "./enrich.mjs";
 
 const CALLOUTS = {
   note: ":::note",
@@ -75,6 +75,62 @@ describe("convertScopeStrip", () => {
     const { text, used } = convertScopeStrip(input);
     expect(used).toBe(false);
     expect(text).toBe(input);
+  });
+});
+
+describe("convertIndexTables", () => {
+  test("converts a numbered link table to a CardGrid of LinkCards", () => {
+    const input = [
+      "| # | Recipe | What you get |",
+      "|---|--------|--------------|",
+      "| 1 | [Getting started](/site/cookbooks/getting-started/) | Install the toolchain |",
+      "| 2 | [Run evals](/site/cookbooks/run-evals/) | Run the eval set |",
+      "",
+    ].join("\n");
+    const { text, used } = convertIndexTables(input);
+    expect(used).toBe(true);
+    expect(text).toContain("<CardGrid>");
+    expect(text).toContain(
+      '<LinkCard title="Getting started" href="/site/cookbooks/getting-started/" description="Install the toolchain" />',
+    );
+    expect(text).toContain("</CardGrid>");
+    expect(text).not.toContain("| 1 |");
+  });
+
+  test("converts a plain link-first table (no number column)", () => {
+    const input = [
+      "| Page | What it covers |",
+      "|---|---|",
+      "| [CLI](/site/reference/cli/) | The ge CLI |",
+      "",
+    ].join("\n");
+    const { text, used } = convertIndexTables(input);
+    expect(used).toBe(true);
+    expect(text).toContain('<LinkCard title="CLI" href="/site/reference/cli/" description="The ge CLI" />');
+  });
+
+  test("leaves a table whose first column is prose alone", () => {
+    const input = [
+      "| Situation | Path |",
+      "|---|---|",
+      "| Fresh clone | [Getting started](/site/cookbooks/getting-started/) |",
+      "",
+    ].join("\n");
+    const { text, used } = convertIndexTables(input);
+    expect(used).toBe(false);
+    expect(text).toBe(input);
+  });
+
+  test("leaves a table with a non-link row alone", () => {
+    const input = [
+      "| Page | Covers |",
+      "|---|---|",
+      "| [CLI](/site/reference/cli/) | The ge CLI |",
+      "| plain text | not a link |",
+      "",
+    ].join("\n");
+    const { used } = convertIndexTables(input);
+    expect(used).toBe(false);
   });
 });
 

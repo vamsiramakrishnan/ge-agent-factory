@@ -52,6 +52,53 @@ export function convertScopeStrip(text) {
   return { text: out, used };
 }
 
+// On section-index pages, a markdown table whose rows are `link |
+// description` (optionally led by a row-number column) is really a list of
+// destinations — convert it to a <CardGrid> of <LinkCard>s. Tables whose
+// first content column is prose (fast-lookup tables, path tables) are left
+// alone. Links must already be rewritten to site routes when this runs.
+const LINK_CELL = /^\[([^\]]+)\]\(([^)\s]+)\)$/;
+
+export function convertIndexTables(text) {
+  const lines = text.split("\n");
+  const out = [];
+  let used = false;
+  for (let i = 0; i < lines.length; i++) {
+    if (!(lines[i].startsWith("|") && /^\|[\s:|-]+\|$/.test(lines[i + 1] ?? ""))) {
+      out.push(lines[i]);
+      continue;
+    }
+    let end = i + 2;
+    while (end < lines.length && lines[end].startsWith("|")) end++;
+    const rows = lines.slice(i + 2, end).map((line) =>
+      line.replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim()),
+    );
+    const withoutRowNumbers = rows.every((cells) => /^\d+$/.test(cells[0] ?? ""))
+      ? rows.map((cells) => cells.slice(1))
+      : rows;
+    const qualifies =
+      withoutRowNumbers.length > 0 &&
+      withoutRowNumbers.every((cells) => cells.length >= 2 && LINK_CELL.test(cells[0]));
+    if (!qualifies) {
+      out.push(...lines.slice(i, end));
+      i = end - 1;
+      continue;
+    }
+    out.push("<CardGrid>");
+    for (const cells of withoutRowNumbers) {
+      const [, title, href] = cells[0].match(LINK_CELL);
+      const description = cells[cells.length - 1];
+      out.push(
+        `  <LinkCard title=${JSON.stringify(title)} href=${JSON.stringify(href)} description=${JSON.stringify(description)} />`,
+      );
+    }
+    out.push("</CardGrid>");
+    used = true;
+    i = end - 1;
+  }
+  return { text: out.join("\n"), used };
+}
+
 // Wrap the ordered list of a `## Steps` section in Starlight's <Steps>
 // component. Only the maximal run of top-level ordered-list content is
 // wrapped (leading prose/images stay outside; a `###` sub-heading or other

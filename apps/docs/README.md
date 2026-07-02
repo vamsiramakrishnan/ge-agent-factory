@@ -38,9 +38,11 @@ excluded: `runbooks/`, `adr/`, `plans/`, …) and, per page:
    `scripts/lib/glossary.mjs`)
 8. upgrades plain-markdown conventions to Starlight components
    (`scripts/lib/enrich.mjs`): a cookbook's `**Scope:** <label> — …` strip
-   becomes a `<Badge>` (green `local-only`, orange `cloud`), and a
-   `## Steps` ordered list is wrapped in `<Steps>`; the needed import line
-   is injected automatically, so `docs/` authors never write JSX
+   becomes a `<Badge>` (green `local-only`, orange `cloud`), a `## Steps`
+   ordered list is wrapped in `<Steps>`, and a section index's
+   link-plus-description tables become a `<CardGrid>` of `<LinkCard>`s; the
+   needed import line is injected automatically, so `docs/` authors never
+   write JSX
 
 Because pages are MDX, generated and curated content can use the components
 in `src/components/` — e.g. `CommandCard.astro`, which renders a command's

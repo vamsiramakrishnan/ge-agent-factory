@@ -35,9 +35,10 @@ in CI too.
 
 If you touched `docs/`, also run `bun run docs:gate` (link/image/blockquote
 correctness, diagram drift, design-token drift, plus the generated-region
-checks: the `ge` CLI reference, the stage-graph diagram, and the spec-schema
-field tables are rendered from source — regenerate with `bun run docs:cli`,
-`bun run docs:stage-diagram`, `bun run docs:spec-ref`, and diagrams with
+checks: the `ge` CLI reference, the stage-graph diagram, the spec-schema
+field tables, and the console-API registry table are rendered from source —
+regenerate with `bun run docs:cli`, `bun run docs:stage-diagram`,
+`bun run docs:spec-ref`, `bun run docs:console-api`, and diagrams with
 `bun run docs:diagrams`). See
 [`docs/DESIGN.md`](docs/DESIGN.md) for the diagram/callout authoring
 conventions, including a silent-failure gotcha in the Mermaid renderer that's
