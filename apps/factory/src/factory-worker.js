@@ -36,6 +36,19 @@ const serviceUrlCache = new Map();
 // terraform queue max_attempts is the only other backstop.
 const TRANSIENT_FAILURE_RE = /\b(429|500|502|503|504|ECONNRESET|ETIMEDOUT|ECONNREFUSED|EAI_AGAIN|ENOTFOUND|socket hang up|timed?\s*out|timeout|deadline exceeded|rate.?limit|quota|temporarily unavailable|service unavailable|connection reset|try again|retry)\b/i;
 
+// Structured stage logging (taste-campaign 09 §C9). One JSON object per line,
+// Cloud Logging jsonPayload convention: `severity` + `message` + queryable fields
+// ({runId, itemId, stage, attempt, ...}). Cloud Run captures stdout/stderr and
+// Cloud Logging indexes the JSON automatically, so every stage's logs become
+// filterable by runId with zero infra; Error Reporting picks up severity=ERROR
+// entries for free. The human-readable text stays inside `message`. ERROR/WARNING
+// go to stderr (local readability parity with the old console.error lines).
+export function logStage(severity, { message, ...fields } = {}) {
+  const line = JSON.stringify({ severity, message, ...fields });
+  if (severity === "ERROR" || severity === "WARNING" || severity === "CRITICAL") console.error(line);
+  else console.log(line);
+}
+
 // Pull the most useful diagnostic text out of a failed command result. Prefers the
 // tail of stderr (where errors land), falls back to stdout, then to a synthesized
 // "<cmd> exited <code>". Bounded so a runaway log can't blow up the ledger/error.
@@ -803,7 +816,7 @@ export async function runFactoryWorker(payload, { dryRun = false } = {}) {
     // ack rather than loop. retryable:false drives the non-retry HTTP ack.
     const message = `workspace archive restore failed: ${restore.error}`;
     const failed = { status: "failed", stage: payload.stage, owner: "cloud_run_service", outputs: [], nextStage: null, error: message, retryable: false };
-    console.error(`[factory-worker] STAGE FAILED stage=${payload.stage} run=${payload.runId} item=${payload.itemId} retryable=false: ${message}`);
+    logStage("ERROR", { runId: payload.runId, itemId: payload.itemId, stage: payload.stage, attempt: payload.attempt, retryable: false, message: `stage failed: ${message}` });
     await recordStageEvent(payload, { type: STAGE_ERROR_TYPE, status: "failed", owner: failed.owner, error: message, data: stageErrorFrameData({ message, attempt: payload.attempt }) });
     await sink.close();
     return failed;
@@ -889,7 +902,7 @@ export async function runFactoryWorker(payload, { dryRun = false } = {}) {
       const failed = { status: "failed", stage: payload.stage, owner: plan.owner, outputs, nextStage: null, error: message, retryable };
       await logTap.stop();
       // Single structured line so the failure is NEVER an empty ERROR log again.
-      console.error(`[factory-worker] STAGE FAILED stage=${payload.stage} run=${payload.runId} item=${payload.itemId} retryable=${retryable}: ${message}`);
+      logStage("ERROR", { runId: payload.runId, itemId: payload.itemId, stage: payload.stage, attempt: payload.attempt, retryable, message: `stage failed: ${message}` });
       sink.log(makeEvent({ ...meta, type: STAGE_ERROR_TYPE, level: "error", data: { owner: plan.owner, error: message, ...errorData } }));
       // stage_error frame carries message + stack + cmd + attempt; mapped to the
       // existing "failed" status so the reducer/StatusChip + Firestore summary render it.
