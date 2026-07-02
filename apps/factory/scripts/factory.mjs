@@ -39,6 +39,7 @@ import { renderAgentsCliEvalSet, renderEvalConfig, renderGoldenEvals, renderOpti
 import { ensureAgentsCliPyprojectMetadata } from "./factory/runtime/agents-cli-metadata.mjs";
 import { bigQueryNumericType, bigQuerySafeName, bigQueryType } from "./factory/data/bigquery-types.mjs";
 import { buildCloudDataArtifacts } from "./factory/data/build-cloud-data-artifacts.mjs";
+import { renderYamlValue, snowfakeryFakeForColumn } from "./factory/data/snowfakery-recipe-render.mjs";
 import { deriveColumnsForEntity, matchEntityColumnSchema } from "./factory/use-case/entity-column-schemas.mjs";
 import { deriveSchemaFromGenerationSpec } from "./factory/use-case/schema-from-generation-spec.mjs";
 import { deriveSchemaFromUseCase } from "./factory/use-case/schema-derivation.mjs";
@@ -47,6 +48,9 @@ import { runHarnessTask } from "../src/harness-runner.js";
 import { buildHarnessRefinePrompt, buildHarnessRunSummary, buildHarnessWorkItem, writeHarnessWorkItem } from "../src/harness-work-item.js";
 import { canonicalSystemId, safePyName, snakeCase, titleCase, validPythonIdentifierName } from "@ge/std/naming";
 import { CONTRACT_INTENT_KINDS, ensureContractQueryTables } from "./factory/core/contract-schema.mjs";
+import { FactoryCommandError, STEPS, cloudDataDir, deployPlanPath, fail, fixturesDir, loadPipeline, manifestPath, markStep, nextCommandFor, ok, readJson, requireStep, savePipeline, schemaPath, warnMkdirFailure, writeJson, writeText } from "./factory/core/pipeline.mjs";
+import { generateDocument, generateDomainDocuments, generateParagraph, pickEntityRefs } from "./factory/fixtures/document-gen.mjs";
+import { generateValue } from "./factory/fixtures/value-gen.mjs";
 import { buildSourceIntegrationPlan } from "./factory/integration/source-integration.mjs";
 import { pyEscape, pyTripleEscape } from "./factory/tools/py-emit.mjs";
 import { canonicalIntentToolName, tableToolName } from "./factory/tools/tool-naming.mjs";
@@ -89,129 +93,7 @@ const GENERATED_AT = sourceTimestamp();
 const REPO_ROOT = APP_ROOT;
 const HARNESS_DATA_ROOT = GENERATOR_DATA_ROOT;
 
-const STEPS = ["init", "schema", "generate", "tools", "test", "harnessReview", "harnessRefine", "sourceIntegration", "serve", "deploy", "register", "publish"];
-
 const parseArgs = (argv) => parseCommandArgs(argv, "help");
-
-function pipelinePath(dir) { return join(dir, "mock_systems", "pipeline.json"); }
-function schemaPath(dir) { return join(dir, "mock_systems", "schema.json"); }
-function fixturesDir(dir) { return join(dir, "fixtures"); }
-function manifestPath(dir) { return join(dir, "fixtures", "manifest.json"); }
-function cloudDataDir(dir) { return join(dir, "mock_data", "cloud"); }
-function deployPlanPath(dir) { return join(dir, "artifacts", "deploy-plan.json"); }
-
-async function readJson(path, fallback) {
-  try { return JSON.parse(await readFile(path, "utf8")); }
-  catch { return fallback; }
-}
-
-// With { recursive: true } mkdir only rejects on real fs errors (EACCES, ENOSPC,
-// a file where a directory should be) — never on "already exists". Warn instead
-// of swallowing so those failures are diagnosable; the follow-up write still
-// fails loudly on its own.
-const warnMkdirFailure = (path) => (error) => {
-  console.warn(`[factory] could not create directory ${path} — ${error?.message || String(error)}`);
-};
-
-async function writeJson(path, data) {
-  await mkdir(dirname(path), { recursive: true }).catch(warnMkdirFailure(dirname(path)));
-  await writeFile(path, JSON.stringify(data, null, 2) + "\n", "utf8");
-}
-
-async function writeText(path, data) {
-  await mkdir(dirname(path), { recursive: true }).catch(warnMkdirFailure(dirname(path)));
-  await writeFile(path, data, "utf8");
-}
-
-async function loadPipeline(dir) {
-  return readJson(pipelinePath(dir), {
-    name: basename(dir),
-    domain: "general",
-    createdAt: null,
-    steps: {},
-    currentStep: null,
-  });
-}
-
-async function savePipeline(dir, pipeline) {
-  await writeJson(pipelinePath(dir), pipeline);
-}
-
-function markStep(pipeline, step, status, meta = {}) {
-  pipeline.steps[step] = { status, completedAt: new Date().toISOString(), ...meta };
-  pipeline.currentStep = step;
-}
-
-// Thrown by fail() (and requireStep()) instead of exiting the process. A thrown
-// error unwinds exactly like process.exit(1) did (immediately, past every call
-// site — no call-site edits needed since `fail(msg);` and `return fail(msg);`
-// behave identically once fail throws), EXCEPT that a JS exception, unlike
-// process.exit, DOES unwind through any enclosing try/catch. Every existing
-// try/catch in this file has been audited for that difference (see registry.mjs
-// dispatch boundary + the from-usecase catch-guard below); this is intentional,
-// not a gap.
-class FactoryCommandError extends Error {}
-
-// Returns the same shape ok() used to print, so a bare `ok(data);` statement
-// (now a no-op — see below) doesn't change behavior for internal callers that
-// only rely on the function's own `return summary;`, while `return ok(data);`
-// gives the registry's render boundary a value to print/render.
-function ok(data) { return { ok: true, ...data }; }
-// Throws instead of exiting so composed in-process command calls (from-usecase,
-// batch-audit, quality-gate) can catch/aggregate failures instead of killing the
-// whole process. The registry's dispatch boundary renders the JSON/human error
-// and sets process.exitCode = 1 (not process.exit) so this matches the old
-// exit-code contract without bypassing citty's own cleanup/promise chain.
-function fail(msg) { throw new FactoryCommandError(msg); }
-
-function requireStep(pipeline, step) {
-  if (!pipeline.steps[step] || pipeline.steps[step].status !== "done") {
-    fail(`Step "${step}" has not been completed yet. Run "factory ${step}" first.`);
-  }
-}
-
-// STEPS entries are camelCase pipeline-state keys; the CLI subcommand for a
-// few of them is kebab-case and/or spelled differently (harnessReview →
-// harness-review, sourceIntegration → source-integration-plan). Anything not
-// listed here has an identical CLI name (init, schema, generate, tools, test,
-// serve, deploy, register, publish).
-const STEP_CLI_COMMAND = {
-  harnessReview: "harness-review",
-  harnessRefine: "harness-refine",
-  sourceIntegration: "source-integration-plan",
-};
-
-// Cloud steps (deploy/register/publish) need operator-supplied values (GCP
-// project, Gemini Enterprise app id, ...) this function can't infer from the
-// workspace alone, so the suggested command carries a placeholder — same
-// convention already used by cmdRegister's own nextStep/nextCommand and by
-// cmdFromUseCase's nextSteps list.
-const STEP_CLI_PLACEHOLDER_ARGS = {
-  deploy: "--project <gcp-project> --region <region>",
-  register: "--as adk|mcp|a2a",
-  publish: "--app-id <GEMINI_ENTERPRISE_APP_ID>",
-};
-
-// Pure: "what's the next command a human should run" derived from the SAME
-// pipeline.steps state markStep/requireStep already track, walking the SAME
-// STEPS sequence and using the SAME "blocks progress" rule cmdStatus already
-// uses for its own nextStep (a step only blocks if it's missing/"pending" or
-// explicitly "failed" — any other status, e.g. tools' terminal "done", or
-// test's "created" when --run false skipped actually executing pytest, or
-// deploy's transitional "running", means the pipeline has moved past it).
-// Centralized here so every cmd* function below can attach a consistent
-// nextCommand field to its return value instead of each one reimplementing
-// (or omitting, or subtly diverging from cmdStatus's own notion of "next").
-function nextCommandFor(pipeline, dir) {
-  const nextStep = STEPS.find((step) => {
-    const status = pipeline.steps?.[step]?.status || "pending";
-    return status === "pending" || status === "failed";
-  }) || null;
-  if (!nextStep) return null;
-  const cliName = STEP_CLI_COMMAND[nextStep] || nextStep;
-  const placeholder = STEP_CLI_PLACEHOLDER_ARGS[nextStep];
-  return `factory ${cliName} --dir ${dir}${placeholder ? ` ${placeholder}` : ""}`;
-}
 
 // Run a child process via execa, preserving the historical contract callers
 // rely on: resolves to { code, stdout, stderr }; throws `${cmd} exited N: …`
@@ -1433,45 +1315,6 @@ async function cmdSourceIntegrationPlan(dir, flags) {
   });
 }
 
-function snowfakeryFakeForColumn(col) {
-  const name = String(col.name || "").toLowerCase();
-  const type = String(col.type || "string").toLowerCase();
-  if (type === "ref") return { reference: col.ref ? bigQuerySafeName(col.ref.split(".")[0]) : "Unknown" };
-  if (type === "number") return { random_number: { min: col.min ?? 0, max: col.max ?? 1000 } };
-  if (type === "float") return { random_number: { min: col.min ?? 0, max: col.max ?? 1000 } };
-  if (type === "boolean") return "${{random_choice(true, false)}}";
-  if (type === "date") return { date_between: { start_date: col.min || "2024-01-01", end_date: col.max || "2026-12-31" } };
-  if (type === "enum") return `\${{random_choice(${(col.values || ["A", "B", "C"]).map((v) => JSON.stringify(v)).join(", ")} )}}`;
-  if (type.startsWith("person.") || name.includes("name")) return { fake: "Name" };
-  if (type.startsWith("internet.email") || name.includes("email")) return { fake: "Email" };
-  if (name.includes("company") || name.includes("vendor") || name.includes("supplier") || type.startsWith("company.")) return { fake: "Company" };
-  if (name.includes("city")) return { fake: "City" };
-  if (name.includes("state")) return { fake: "State" };
-  if (name.includes("address")) return { fake: "StreetAddress" };
-  if (name.includes("phone")) return { fake: "PhoneNumber" };
-  if (name.includes("description") || name.includes("notes") || name.includes("body") || type.includes("paragraph")) return { fake: "Paragraph" };
-  if (name.includes("title") || type.includes("sentence")) return { fake: "Sentence" };
-  if (type === "seq") return `\${{unique_id}}`;
-  return { fake: "Word" };
-}
-
-function renderYamlValue(value, indent = 0) {
-  const pad = " ".repeat(indent);
-  if (typeof value === "string") return `${pad}${JSON.stringify(value)}`;
-  if (typeof value === "number" || typeof value === "boolean") return `${pad}${value}`;
-  if (!value || typeof value !== "object") return `${pad}null`;
-  const lines = [];
-  for (const [key, child] of Object.entries(value)) {
-    if (child && typeof child === "object" && !Array.isArray(child)) {
-      lines.push(`${pad}${key}:`);
-      lines.push(renderYamlValue(child, indent + 2));
-    } else {
-      lines.push(`${pad}${key}: ${JSON.stringify(child)}`);
-    }
-  }
-  return lines.join("\n");
-}
-
 async function cmdSnowfakeryRecipe(dir, flags) {
   const pipeline = await loadPipeline(dir);
   requireStep(pipeline, "schema");
@@ -2135,205 +1978,6 @@ async function cmdListUseCases(flags) {
   }
 }
 
-// ── Value generation (reuses faker) ──────────────────────────
-
-// ── Document generation ──────────────────────────────────────
-
-const DOC_TEMPLATES = {
-  policy: { titlePrefix: "Policy", sections: ["Purpose", "Scope", "Policy Statement", "Procedures", "Compliance", "Exceptions", "Review Cycle"] },
-  report: { titlePrefix: "Report", sections: ["Executive Summary", "Key Findings", "Analysis", "Recommendations", "Appendix"] },
-  contract: { titlePrefix: "Agreement", sections: ["Parties", "Scope of Services", "Terms", "SLA Requirements", "Payment Terms", "Termination", "Signatures"] },
-  sop: { titlePrefix: "SOP", sections: ["Objective", "Prerequisites", "Step-by-Step Procedure", "Validation Checks", "Escalation Path", "Revision History"] },
-  knowledge_base: { titlePrefix: "KB Article", sections: ["Question", "Answer", "Related Topics", "Last Updated"] },
-  audit: { titlePrefix: "Audit Report", sections: ["Audit Scope", "Methodology", "Findings", "Risk Assessment", "Remediation Plan", "Follow-up Schedule"] },
-  memo: { titlePrefix: "Memo", sections: ["To", "From", "Date", "Subject", "Background", "Action Required"] },
-};
-
-const DOMAIN_DOC_SETS = {
-  hr: [
-    { id: "hr-policy-leave", type: "policy", title: "Leave & Absence Policy", topic: "leave management, accrual, carry-over limits, approval workflow" },
-    { id: "hr-policy-compensation", type: "policy", title: "Compensation & Pay Equity Policy", topic: "pay bands, equity reviews, adjustment criteria, market benchmarking" },
-    { id: "hr-sop-onboarding", type: "sop", title: "New Hire Onboarding Procedure", topic: "system provisioning, orientation schedule, buddy assignment, compliance training" },
-    { id: "hr-report-attrition", type: "report", title: "Quarterly Attrition Analysis", topic: "turnover by department, voluntary vs involuntary, exit interview themes, risk indicators" },
-    { id: "hr-kb-benefits", type: "knowledge_base", title: "Benefits Enrollment FAQ", topic: "enrollment windows, plan comparison, dependent coverage, HSA contributions" },
-  ],
-  finance: [
-    { id: "fin-policy-expense", type: "policy", title: "Travel & Expense Policy", topic: "approval thresholds, receipt requirements, per diem rates, corporate card usage" },
-    { id: "fin-policy-procurement", type: "policy", title: "Procurement Authorization Policy", topic: "purchase thresholds, vendor approval, sole source justification, contract review" },
-    { id: "fin-sop-close", type: "sop", title: "Month-End Close Procedure", topic: "accrual entries, reconciliation checklist, sign-off workflow, variance thresholds" },
-    { id: "fin-report-variance", type: "report", title: "Budget Variance Report", topic: "actual vs budget by cost center, root cause analysis, forecast adjustments" },
-    { id: "fin-audit-controls", type: "audit", title: "Internal Controls Audit", topic: "SOX compliance, segregation of duties, access reviews, remediation status" },
-  ],
-  it: [
-    { id: "it-policy-security", type: "policy", title: "Information Security Policy", topic: "access management, data classification, incident response, encryption standards" },
-    { id: "it-policy-change", type: "policy", title: "Change Management Policy", topic: "change advisory board, risk assessment, rollback procedures, emergency changes" },
-    { id: "it-sop-incident", type: "sop", title: "Incident Response Procedure", topic: "severity classification, escalation matrix, communication templates, post-mortem" },
-    { id: "it-report-sla", type: "report", title: "SLA Performance Report", topic: "uptime metrics, response times, resolution rates, trend analysis" },
-    { id: "it-kb-access", type: "knowledge_base", title: "System Access Request FAQ", topic: "role-based access, provisioning timeline, approval chain, deprovisioning" },
-  ],
-  procurement: [
-    { id: "proc-policy-sourcing", type: "policy", title: "Strategic Sourcing Policy", topic: "competitive bidding, supplier diversity, evaluation criteria, contract templates" },
-    { id: "proc-sop-rfp", type: "sop", title: "RFP Process Procedure", topic: "requirement gathering, supplier shortlisting, evaluation scoring, negotiation" },
-    { id: "proc-contract-master", type: "contract", title: "Master Services Agreement Template", topic: "service levels, liability, data protection, pricing structure, renewal terms" },
-    { id: "proc-report-spend", type: "report", title: "Spend Analysis Report", topic: "category breakdown, supplier concentration, savings opportunities, compliance rate" },
-    { id: "proc-audit-vendor", type: "audit", title: "Vendor Risk Assessment", topic: "financial health, compliance status, performance scores, contingency plans" },
-  ],
-  marketing: [
-    { id: "mkt-policy-brand", type: "policy", title: "Brand Guidelines & Usage Policy", topic: "logo usage, color palette, typography, tone of voice, approval process" },
-    { id: "mkt-sop-campaign", type: "sop", title: "Campaign Launch Procedure", topic: "briefing, creative approval, channel setup, tracking, post-campaign analysis" },
-    { id: "mkt-report-performance", type: "report", title: "Campaign Performance Report", topic: "reach, engagement, conversion, ROI, channel attribution, A/B test results" },
-    { id: "mkt-memo-budget", type: "memo", title: "Q3 Marketing Budget Reallocation", topic: "performance data, channel shift rationale, projected impact, approval request" },
-    { id: "mkt-kb-tools", type: "knowledge_base", title: "Marketing Tech Stack FAQ", topic: "platform access, integration points, data flows, support contacts" },
-  ],
-};
-
-function generateDocument(docDef, domain, generatedTables) {
-  const type = docDef.type || "policy";
-  const template = DOC_TEMPLATES[type] || DOC_TEMPLATES.policy;
-  const title = docDef.title || `${template.titlePrefix}: ${docDef.id}`;
-  const topic = docDef.topic || docDef.description || domain || "general operations";
-  const requiredSections = Array.isArray(docDef.requiredSections) && docDef.requiredSections.length
-    ? docDef.requiredSections
-    : template.sections;
-  const citationAnchors = Array.isArray(docDef.citationAnchors) ? docDef.citationAnchors : [];
-  const minimumWordCount = Number(docDef.minimumWordCount || 0);
-
-  const entityRefs = pickEntityRefs(generatedTables, 3);
-  const dateStr = faker.date.between({ from: "2025-01-01", to: "2026-06-01" }).toISOString().slice(0, 10);
-
-  const lines = [
-    `# ${title}`,
-    "",
-    `**Document ID:** ${docDef.id}`,
-    `**Effective Date:** ${dateStr}`,
-    `**Domain:** ${domain}`,
-    `**Source System:** ${docDef.sourceSystem || docDef.sourceSystemId || "Synthetic source system"}`,
-    `**Classification:** Internal`,
-    "",
-  ];
-
-  for (const [sectionIndex, section] of requiredSections.entries()) {
-    lines.push(`## ${section}`, "");
-    const paraCount = section === "Executive Summary" || section === "Purpose" ? 2 : faker.number.int({ min: 1, max: 3 });
-    for (let i = 0; i < paraCount; i++) {
-      lines.push(generateParagraph(topic, entityRefs) + "\n");
-    }
-    if (citationAnchors[sectionIndex]) {
-      lines.push(`Citation anchor: [${citationAnchors[sectionIndex]}]`, "");
-    }
-  }
-
-  if (entityRefs.length > 0) {
-    lines.push("## Referenced Records", "");
-    for (const ref of entityRefs) {
-      lines.push(`- \`${ref.id}\`: ${ref.context}`);
-    }
-    lines.push("");
-  }
-
-  while (minimumWordCount > 0 && lines.join("\n").split(/\s+/).filter(Boolean).length < minimumWordCount) {
-    lines.push(generateParagraph(topic, entityRefs) + "\n");
-  }
-
-  lines.push("---", `*Generated for ${domain} domain demonstration. All data is synthetic.*`);
-
-  return { title, content: lines.join("\n") };
-}
-
-function generateDomainDocuments(domain, generatedTables) {
-  const docSet = DOMAIN_DOC_SETS[domain] || DOMAIN_DOC_SETS.hr;
-  return docSet.map((def) => {
-    const doc = generateDocument(def, domain, generatedTables);
-    return { id: def.id, title: doc.title, type: def.type, content: doc.content };
-  });
-}
-
-function generateParagraph(topic, entityRefs) {
-  const subjects = [
-    "This section establishes the operational framework",
-    "The organization requires all stakeholders to adhere to",
-    "Based on current analysis and industry benchmarks",
-    "To ensure compliance with regulatory requirements",
-    "The following procedures have been implemented to address",
-    "Risk assessment indicates that the current approach to",
-    "Performance metrics demonstrate that improvements in",
-    "Cross-functional alignment is critical for effective",
-  ];
-  const connectors = [
-    "Furthermore, ongoing monitoring ensures",
-    "In addition, quarterly reviews validate",
-    "The responsible parties must document",
-    "Exceptions require written approval from",
-    "Historical data from the past 12 months shows",
-    "Automated checks verify compliance with",
-  ];
-
-  const subject = faker.helpers.arrayElement(subjects);
-  const connector = faker.helpers.arrayElement(connectors);
-  const topicWords = parseList(topic);
-  const focus = faker.helpers.arrayElement(topicWords.length > 0 ? topicWords : ["operations"]);
-
-  let para = `${subject} ${focus} within the defined scope. ${connector} ${focus} standards are met.`;
-
-  if (entityRefs.length > 0 && faker.datatype.boolean({ probability: 0.4 })) {
-    const ref = faker.helpers.arrayElement(entityRefs);
-    para += ` See record \`${ref.id}\` for supporting evidence.`;
-  }
-
-  return para;
-}
-
-function pickEntityRefs(generatedTables, count) {
-  const refs = [];
-  for (const [tableName, rows] of Object.entries(generatedTables)) {
-    if (!Array.isArray(rows) || rows.length === 0) continue;
-    const sample = faker.helpers.arrayElements(rows, { min: 1, max: Math.min(count, rows.length) });
-    for (const row of sample) {
-      const idField = Object.keys(row).find((k) => k === "id" || k.endsWith("_id")) || Object.keys(row)[0];
-      refs.push({ id: String(row[idField] || ""), context: `${tableName} record (${row.name || row.title || row[idField] || ""})` });
-    }
-    if (refs.length >= count) break;
-  }
-  return refs.slice(0, count);
-}
-
-function generateValue(col, rowIndex, generatedTables) {
-  const type = col.type || "string";
-  if (type === "seq") {
-    const p = col.pattern || `${(col.name || "ID").slice(0, 3).toUpperCase()}-{n:4}`;
-    return p.replace(/\{n(?::(\d+))?\}/g, (_, pad) => String(rowIndex + 1).padStart(Number(pad) || 4, "0"));
-  }
-  if (type === "number") return faker.number.int({ min: col.min ?? 0, max: col.max ?? 1000 });
-  if (type === "float") return Number(faker.number.float({ min: col.min ?? 0, max: col.max ?? 1000, fractionDigits: col.decimals ?? 2 }));
-  if (type === "date") return faker.date.between({ from: col.min || "2020-01-01", to: col.max || "2026-01-01" }).toISOString().slice(0, 10);
-  if (type === "enum") {
-    const vals = Array.isArray(col.values) ? col.values : ["A", "B", "C"];
-    if (col.weights) return faker.helpers.weightedArrayElement(vals.map((v, i) => ({ value: v, weight: col.weights[i] || 1 })));
-    return faker.helpers.arrayElement(vals);
-  }
-  if (type === "boolean") return faker.datatype.boolean({ probability: col.trueRate ?? 0.5 });
-  if (type === "ref") {
-    const [entity, field] = (col.ref || "").split(".");
-    const ref = generatedTables[entity];
-    if (ref?.length) return faker.helpers.arrayElement(ref)[field || "id"] ?? null;
-    return `${entity}-${faker.number.int({ min: 1, max: 100 })}`;
-  }
-  const parts = type.split(".");
-  if (parts.length === 2) {
-    try {
-      const fn = faker[parts[0]]?.[parts[1]];
-      if (typeof fn === "function") {
-        const opts = {};
-        if (col.min !== undefined) opts.min = col.min;
-        if (col.max !== undefined) opts.max = col.max;
-        if (col.len !== undefined) opts.length = col.len;
-        return Object.keys(opts).length ? fn(opts) : fn();
-      }
-    } catch { /* fall through */ }
-  }
-  return faker.lorem.word();
-}
-
 // ── Help ─────────────────────────────────────────────────────
 
 function printHelp() {
@@ -2495,6 +2139,23 @@ export const __test = {
   shouldPromptForInit,
   resolveInitPromptPlan,
   INIT_DOMAIN_CHOICES,
+  // Temporary extension (WS3): expose the faker data-gen, snowfakery-recipe,
+  // and pipeline-state clusters so seed-pinned unit tests can pin their
+  // behavior BEFORE they are extracted into domain modules. The tests flip to
+  // importing the modules directly after the move; these re-exports stay as a
+  // compatibility shim.
+  generateDocument,
+  generateDomainDocuments,
+  generateParagraph,
+  pickEntityRefs,
+  generateValue,
+  snowfakeryFakeForColumn,
+  renderYamlValue,
+  loadPipeline,
+  savePipeline,
+  markStep,
+  requireStep,
+  nextCommandFor,
 };
 
 // Run the CLI only when this file is the process entry point. When imported by a
