@@ -12,8 +12,8 @@ import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { readJson } from "@ge/std/json-io";
 import { openRunLedger } from "./run-ledger.mjs";
-import { planWorkItem } from "./pipeline-state-machine.mjs";
-import { STATE_PATHS } from "./state-paths.mjs";
+import { planWorkItem } from "../pipeline-state-machine.mjs";
+import { STATE_PATHS } from "../state-paths.mjs";
 
 const FACTORY_HARNESS_DIR = STATE_PATHS.factory.root;
 const STATE_PATH = STATE_PATHS.envState;

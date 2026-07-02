@@ -21,7 +21,7 @@ import { buildFactoryAutopilotMission } from "./factory-autopilot-mission.mjs";
 import { buildFleetHealth } from "./fleet-health.mjs";
 import { buildJourneyPlan } from "./journey-plan.mjs";
 import { loadCatalog } from "./factory-catalog-search.mjs";
-import { runLedger, ledgerReadsEnabled } from "./factory-ledger.mjs";
+import { runLedger, ledgerReadsEnabled } from "./ledger/factory-ledger.mjs";
 import { localWorkspaceIndexByUseCase } from "./local-workspaces.mjs";
 import { STATE_PATHS } from "./state-paths.mjs";
 

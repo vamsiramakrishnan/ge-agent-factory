@@ -7,7 +7,7 @@
 // runtime-unverified until driven against a hosted project.
 
 import * as core from "../../../../../tools/lib/factory-core.mjs";
-import { createFirestoreLedgerReader } from "../../../../../tools/lib/run-ledger-firestore.mjs";
+import { createFirestoreLedgerReader } from "../../../../../tools/lib/ledger/run-ledger-firestore.mjs";
 import { makeSseWriter } from "./sse.mjs";
 
 let firestoreLedgerReaderPromise = null;
