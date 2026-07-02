@@ -1,0 +1,77 @@
+{
+  "id": "per-item-gaps",
+  "title": "Per Item Gaps",
+  "department": "qa",
+  "subtitle": "exercises every per-item gap branch",
+  "persona": "QA engineer",
+  "kpis": [
+    { "label": "a", "before": "1", "after": "2" },
+    { "label": "b" }
+  ],
+  "statusQuo": ["a", "b"],
+  "agentification": ["a", "b"],
+  "architecture": {
+    "connections": [{ "system": "A", "description": "only one connection" }],
+    "pipeline": ["one", "two"]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": { "defaultRowsPerEntity": "not-a-number", "minimumRowsPerEntity": 5, "rationale": "  " },
+    "sourceSystems": [
+      {},
+      {
+        "id": "sys_a",
+        "name": "Sys A",
+        "owns": ["t"],
+        "protocol": "REST",
+        "localBacking": ["alloydb"],
+        "toolNames": ["q"],
+        "evidence": ["sql_result"]
+      }
+    ],
+    "entities": [
+      { "name": "orphan", "sourceSystemId": "ghost", "columns": [{ "name": "a" }, { "name": "b" }] },
+      {}
+    ],
+    "documents": [
+      {},
+      { "id": "doc1", "title": "Doc", "requiredSections": ["s"], "citationAnchors": ["c"], "minimumWordCount": 100 }
+    ],
+    "apis": [
+      {},
+      { "id": "api1", "method": "GET", "path": "/x", "requestSchema": { "a": "string" }, "responseSchema": { "b": "string" } }
+    ],
+    "anomalies": [{ "id": "an1" }],
+    "datastorePackaging": { "alloydb": { "database": "db", "schemas": ["s"] } },
+    "validation": { "smokePrompt": "go", "assertions": ["one"] },
+    "behaviorContract": {
+      "role": "r",
+      "primaryObjective": "This objective is deliberately longer than sixty characters to pass the length check.",
+      "inScope": ["a", "b"],
+      "outOfScope": ["a", "b"],
+      "toolIntents": [
+        {
+          "name": "q1",
+          "kind": "query",
+          "description": "d",
+          "requiredInputs": ["i"],
+          "produces": ["o"],
+          "evidenceEmitted": ["sql_result"]
+        },
+        { "kind": "evidence_lookup" },
+        {
+          "name": "bad_intent",
+          "sourceSystemId": "ghost",
+          "description": "d",
+          "requiredInputs": ["i"],
+          "produces": ["o"],
+          "evidenceEmitted": ["document_reference"]
+        }
+      ],
+      "evidenceRequirements": ["e"],
+      "escalationRules": ["a", "b"],
+      "refusalRules": ["a", "b"],
+      "goldenEvals": ["g"]
+    }
+  }
+}

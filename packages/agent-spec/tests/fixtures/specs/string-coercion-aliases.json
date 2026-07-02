@@ -1,0 +1,26 @@
+{
+  "id": "string-coercion-aliases",
+  "title": "String Coercion Aliases",
+  "department": "qa",
+  "subtitle": "exercises asArray string coercion and the raw-field alias chains",
+  "ownerPersona": "Ops Lead",
+  "kpis": [
+    { "label": "a", "before": "1", "after": "2" },
+    { "label": "b", "before": "1", "after": "2" }
+  ],
+  "asIs": ["one", "two"],
+  "toBe": "single future state as string",
+  "connections": [
+    { "system": "A", "description": "top-level connections alias" },
+    { "system": "B", "description": "second connection" }
+  ],
+  "pipeline": ["s1", "s2", "s3"],
+  "spec": {
+    "version": 1,
+    "sourceSystems": "SAP",
+    "entities": [],
+    "documents": [],
+    "anomalies": [],
+    "validation": {}
+  }
+}

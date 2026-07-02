@@ -132,6 +132,10 @@
       "name": "@ge/agent-resolver",
       "version": "0.1.0",
     },
+    "packages/agent-spec": {
+      "name": "@ge/agent-spec",
+      "version": "0.1.0",
+    },
     "packages/agent-workspace": {
       "name": "@ge/agent-workspace",
       "version": "0.1.0",
@@ -419,6 +423,8 @@
     "@firebase/webchannel-wrapper": ["@firebase/webchannel-wrapper@1.0.6", "", {}, "sha512-Vr/Mqu79dMwGRAyGbJ4uN4+BtXB3/mRTdzetD1daWNeG8QaWuzhhbG77GltO5c0yYmYls8i250iX73624GJd7Q=="],
 
     "@ge/agent-resolver": ["@ge/agent-resolver@workspace:packages/agent-resolver"],
+
+    "@ge/agent-spec": ["@ge/agent-spec@workspace:packages/agent-spec"],
 
     "@ge/agent-workspace": ["@ge/agent-workspace@workspace:packages/agent-workspace"],
 
