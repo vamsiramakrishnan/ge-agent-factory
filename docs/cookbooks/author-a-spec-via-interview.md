@@ -7,6 +7,8 @@ layout: default
 
 # Author a spec via the interview
 
+**Scope:** local-only — runs in the console against the local daemon and harness.
+
 ## Goal
 
 Use the console's artifact-driven interview to produce an agent spec — upload a

@@ -24,6 +24,10 @@ The same bundle is also emitted into a generated agent at `app/knowledge/` (see
 [Agent generation](agent-generation.html)) and served live by the console at
 `GET /api/interviews/:id/okf` (see [Console & APIs](console-and-apis.html)).
 
+<p align="center">
+  <img src="../assets/diagrams/okf-spine.svg" alt="The OKF spine: the interview produces a spec in OKF form authorable by humans or agents, which drives generation of real ADK code, validation, tests derived from the contract, and runtime grounding where the agent cites the same systems and entities" width="750">
+</p>
+
 ---
 
 ## What a bundle looks like

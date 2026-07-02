@@ -1,0 +1,10 @@
+flowchart LR
+    G["spec\nbehaviorContract.goldenEvals"] --> M["deriveTestMechanisms()\nsame helper that emits\nOKF tests/&lt;id&gt;.md"]
+    M --> F["keep only real generated tools\nlist_systems, query_&lt;table&gt;,\ncontract action tools"]
+    F --> E["ge_behavior_contract.evalset.json\none eval_case per golden eval,\nexpected tool trajectory"]
+    E --> R(["agents-cli eval run --all\n--config tests/eval/eval_config.json"])
+
+    classDef contract fill:#e8f0fe,stroke:#1a73e8,color:#202124
+    classDef run fill:#e6f4ea,stroke:#34a853,color:#202124
+    class G contract
+    class R run

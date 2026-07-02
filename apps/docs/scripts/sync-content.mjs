@@ -17,10 +17,13 @@
 //   7. emit .mdx: escape MDX-hostile prose tokens ({, <placeholder>), drop
 //      HTML comments, self-close void tags (lib/mdx-transform.mjs) — authors
 //      keep writing plain CommonMark in docs/, MDX stays a build detail
-//   8. auto-link the first prose occurrence of each docs/GLOSSARY.md term to
+//   8. upgrade plain-markdown conventions to Starlight components
+//      (lib/enrich.mjs): the cookbooks' `**Scope:** …` strip → <Badge>, a
+//      `## Steps` ordered list → <Steps>, injecting the import line needed
+//   9. auto-link the first prose occurrence of each docs/GLOSSARY.md term to
 //      the glossary page, with the entry's first sentence as a hover title
 //      (lib/glossary.mjs)
-//   9. validate: every emitted page must parse as MDX (the compiler Astro
+//  10. validate: every emitted page must parse as MDX (the compiler Astro
 //      itself will use); any error fails the sync with docs/<file>:<line>
 //      context, so a future hostile token never reaches `astro build`
 //
@@ -36,6 +39,12 @@ import {
 } from "node:fs";
 import { dirname, join, posix, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  convertCallouts,
+  convertIndexTables,
+  convertScopeStrip,
+  wrapSteps,
+} from "./lib/enrich.mjs";
 import { linkGlossaryTerms, parseGlossary } from "./lib/glossary.mjs";
 import {
   convertAutolinks,
@@ -154,19 +163,6 @@ function parseFrontmatter(text) {
   return { fm, body: text.slice(m[0].length) };
 }
 
-function convertCallouts(text) {
-  return text.replace(/((?:^>.*\n)+)\{:\s*\.([a-z_-]+)[^}]*\}\s*$/gm, (all, quote, cls) => {
-    const open = CALLOUTS[cls];
-    if (!open) return all;
-    const body = quote
-      .split("\n")
-      .map((line) => line.replace(/^>\s?/, ""))
-      .join("\n")
-      .replace(/\n+$/, "");
-    return `${open}\n${body}\n:::\n`;
-  });
-}
-
 function stripTocAndIals(text) {
   return text
     .replace(/^#{1,3}\s+Table of contents\s*\n(\{:[^}]*\}\s*\n)?/gim, "")
@@ -264,11 +260,28 @@ function transform(srcRel, mapped) {
   const { sheltered, blocks } = shelterFences(prose);
   const { sheltered: proseOnly, spans } = shelterInlineCode(sheltered);
   let text = proseOnly;
-  text = convertCallouts(text);
+  text = convertCallouts(text, CALLOUTS);
   text = stripTocAndIals(text);
   text = stripHtmlComments(text);
   text = convertAutolinks(text);
   text = rewriteLinks(text, srcRel);
+  // Plain-markdown conventions → Starlight components (lib/enrich.mjs): the
+  // cookbooks' `**Scope:** …` strip becomes a Badge, a `## Steps` ordered
+  // list becomes <Steps>, and a section index's link tables become a
+  // <CardGrid> of <LinkCard>s. All added *here* so docs/ authors never write
+  // JSX; the import line for whatever was used is injected below.
+  const scope = convertScopeStrip(text);
+  text = scope.text;
+  const steps = wrapSteps(text);
+  text = steps.text;
+  const cards = isSectionIndex ? convertIndexTables(text) : { text, used: false };
+  text = cards.text;
+  const components = [
+    scope.used && "Badge",
+    steps.used && "Steps",
+    cards.used && "CardGrid",
+    cards.used && "LinkCard",
+  ].filter(Boolean);
   // MDX safety: the page is emitted as .mdx, but docs/ is plain CommonMark —
   // escape what MDX would read as JSX ({expr}, <placeholder>) and self-close
   // void tags. Code is sheltered; only prose is touched.
@@ -280,7 +293,10 @@ function transform(srcRel, mapped) {
   text = restoreInlineCode(text, spans);
   prose = restoreFences(text, blocks);
 
-  return out.join("\n") + prose;
+  const importBlock = components.length
+    ? `import { ${components.join(", ")} } from '@astrojs/starlight/components';\n\n`
+    : "";
+  return out.join("\n") + importBlock + prose;
 }
 
 // Best-effort mapping of an emitted-.mdx line back to its docs/ source line:

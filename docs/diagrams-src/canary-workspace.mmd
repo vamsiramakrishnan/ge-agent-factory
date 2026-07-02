@@ -1,0 +1,10 @@
+flowchart LR
+    S["spec\nthe use-case contract"] --> B["ge agents build --canary\nlocal mode stops at the\n'previewed' build boundary"]
+    B --> W[".ge/factory/workspaces/&lt;id&gt;/"]
+    W --> A["app/agent.py\nreal ADK agent +\nthe 3 callbacks"]
+    W --> T["app/tools.py\ndual backend:\nfixtures | mcp"]
+    W --> K["app/knowledge/\nOKF grounding bundle"]
+    W --> V["tests/eval/ + fixtures/\nevalset, eval config,\noffline data"]
+
+    classDef contract fill:#e8f0fe,stroke:#1a73e8,color:#202124
+    class S contract

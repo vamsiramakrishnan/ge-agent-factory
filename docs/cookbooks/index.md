@@ -35,6 +35,10 @@ what has to exist first, which commands do we run, and how do we know it worked?
 
 ## Recommended paths
 
+<p align="center">
+  <img src="../assets/diagrams/cookbook-paths.svg" alt="Four entry situations — fresh clone, business use case, new source system, first cloud release — each mapped to its recipe sequence; the two cloud recipes (provision, gateway) are highlighted" width="750">
+</p>
+
 | Situation | Path |
 |---|---|
 | Fresh clone, no cloud | [Getting started locally](getting-started.html) → [Generate an agent](generate-an-agent.html) → [Run evals](run-evals.html) |
@@ -46,8 +50,10 @@ what has to exist first, which commands do we run, and how do we know it worked?
 
 Every cookbook should keep the same shape so developers can skim under pressure:
 
-1. **Goal** says the outcome in one sentence.
-2. **Prerequisites** says what must already be true.
-3. **Steps** contains commands in execution order.
-4. **Verify** proves the system state changed correctly.
-5. **Troubleshoot** lists real failure modes, not generic advice.
+1. **Scope** (the line under the title) says up front whether the recipe is
+   local-only or touches your Google Cloud project.
+2. **Goal** says the outcome in one sentence.
+3. **Prerequisites** says what must already be true.
+4. **Steps** contains commands in execution order.
+5. **Verify** proves the system state changed correctly.
+6. **Troubleshoot** lists real failure modes, not generic advice.

@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 872.2570000000001 379.20000000000005" width="872.2570000000001" height="379.20000000000005" style="--bg:#ffffff;--fg:#202124;--line:#5f6368;--accent:#1a73e8;--muted:#80868b;--surface:#eef3f9;--border:#dadce0;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<polyline class="edge" data-from="A" data-to="GS" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="360.11400000000003,66.9 420.3405,66.9" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="GS" data-to="GA" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="546.0235,66.9 566.50375,66.9 566.50375,107.80000000000001 586.9839999999999,107.80000000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="GA" data-to="RE" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="683.768,107.80000000000001 731.768,107.8" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="B" data-to="AI" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="196.06400000000002,148.70000000000002 249.251,148.70000000000002" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="AI" data-to="SO" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="384.567,148.70000000000002 420.3405,148.70000000000002" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="SO" data-to="GA" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="531.9445000000001,148.7 566.50375,148.7 566.50375,107.80000000000001 586.9839999999999,107.80000000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="C" data-to="BYO" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="301.20450000000005,230.5 353.6505000000001,230.5" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="BYO" data-to="RF" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="484.5205000000001,230.50000000000003 507.9647500000001,230.50000000000003 507.9647500000001,271.40000000000003 531.4090000000001,271.40000000000003" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="D" data-to="PP" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="139.00700000000006,312.3 190.34150000000005,312.3" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="PP" data-to="DG" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="310.09650000000005,312.3 353.6505000000001,312.3" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="DG" data-to="RF" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="482.29750000000007,312.3 507.9647500000001,312.3 507.9647500000001,271.40000000000003 531.4090000000001,271.40000000000003" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<g class="node" data-id="A" data-label="fresh clone,
+no cloud" data-shape="stadium">
+  <rect x="249.251" y="40" width="110.863" height="53.800000000000004" rx="26.900000000000002" ry="26.900000000000002" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="304.6825" y="66.9" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="304.6825" dy="-3.9000000000000012">fresh clone,</tspan><tspan x="304.6825" dy="16.900000000000002">no cloud</tspan></text>
+</g>
+<g class="node" data-id="GS" data-label="Getting started
+locally" data-shape="rectangle">
+  <rect x="420.3405" y="40" width="125.68300000000002" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="483.182" y="66.9" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="483.182" dy="-3.9000000000000012">Getting started</tspan><tspan x="483.182" dy="16.900000000000002">locally</tspan></text>
+</g>
+<g class="node" data-id="GA" data-label="Generate
+an agent" data-shape="rectangle">
+  <rect x="586.9839999999999" y="80.9" width="96.78399999999999" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="635.376" y="107.80000000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="635.376" dy="-3.9000000000000012">Generate</tspan><tspan x="635.376" dy="16.900000000000002">an agent</tspan></text>
+</g>
+<g class="node" data-id="RE" data-label="Run evals" data-shape="rectangle">
+  <rect x="731.768" y="89.35" width="100.489" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="782.0125" y="107.8" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Run evals</text>
+</g>
+<g class="node" data-id="B" data-label="business use case,
+no spec yet" data-shape="stadium">
+  <rect x="40" y="121.80000000000001" width="156.06400000000002" height="53.800000000000004" rx="26.900000000000002" ry="26.900000000000002" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="118.03200000000001" y="148.70000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="118.03200000000001" dy="-3.9000000000000012">business use case,</tspan><tspan x="118.03200000000001" dy="16.900000000000002">no spec yet</tspan></text>
+</g>
+<g class="node" data-id="AI" data-label="Author a spec
+via the interview" data-shape="rectangle">
+  <rect x="249.251" y="121.80000000000001" width="135.31599999999997" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="316.909" y="148.70000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="316.909" dy="-3.9000000000000012">Author a spec</tspan><tspan x="316.909" dy="16.900000000000002">via the interview</tspan></text>
+</g>
+<g class="node" data-id="SO" data-label="Spec ⇄ OKF" data-shape="rectangle">
+  <rect x="420.3405" y="130.25" width="111.60399999999998" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="476.14250000000004" y="148.7" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Spec ⇄ OKF</text>
+</g>
+<g class="node" data-id="C" data-label="new source
+system" data-shape="stadium">
+  <rect x="190.34150000000005" y="203.60000000000002" width="110.863" height="53.800000000000004" rx="26.900000000000002" ry="26.900000000000002" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="245.77300000000005" y="230.50000000000003" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="245.77300000000005" dy="-3.9000000000000012">new source</tspan><tspan x="245.77300000000005" dy="16.900000000000002">system</tspan></text>
+</g>
+<g class="node" data-id="BYO" data-label="Bring your own
+simulator" data-shape="rectangle">
+  <rect x="353.6505000000001" y="203.60000000000002" width="130.87" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="419.0855000000001" y="230.50000000000003" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="419.0855000000001" dy="-3.9000000000000012">Bring your own</tspan><tspan x="419.0855000000001" dy="16.900000000000002">simulator</tspan></text>
+</g>
+<g class="node" data-id="RF" data-label="Run the
+factory" data-shape="rectangle">
+  <rect x="531.4090000000001" y="244.50000000000006" width="85.66900000000001" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="574.2435000000002" y="271.40000000000003" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="574.2435000000002" dy="-3.9000000000000012">Run the</tspan><tspan x="574.2435000000002" dy="16.900000000000002">factory</tspan></text>
+</g>
+<g class="node" data-id="D" data-label="first cloud
+release" data-shape="stadium">
+  <rect x="40.00000000000006" y="285.40000000000003" width="99.007" height="53.800000000000004" rx="26.900000000000002" ry="26.900000000000002" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="89.50350000000006" y="312.3" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="89.50350000000006" dy="-3.9000000000000012">first cloud</tspan><tspan x="89.50350000000006" dy="16.900000000000002">release</tspan></text>
+</g>
+<g class="node" data-id="PP" data-label="Provision the
+platform" data-shape="rectangle">
+  <rect x="190.34150000000005" y="285.40000000000003" width="119.75500000000001" height="53.800000000000004" rx="0" ry="0" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <text x="250.21900000000005" y="312.3" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="250.21900000000005" dy="-3.9000000000000012">Provision the</tspan><tspan x="250.21900000000005" dy="16.900000000000002">platform</tspan></text>
+</g>
+<g class="node" data-id="DG" data-label="Deploy the
+Agent Gateway" data-shape="rectangle">
+  <rect x="353.6505000000001" y="285.40000000000003" width="128.647" height="53.800000000000004" rx="0" ry="0" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <text x="417.97400000000005" y="312.3" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="417.97400000000005" dy="-3.9000000000000012">Deploy the</tspan><tspan x="417.97400000000005" dy="16.900000000000002">Agent Gateway</tspan></text>
+</g>
+</svg>

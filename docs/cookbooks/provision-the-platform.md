@@ -7,11 +7,17 @@ layout: default
 
 # Provision the platform
 
+**Scope:** cloud — creates and mutates resources in your Google Cloud project.
+
 ## Goal
 
 Stand up the cloud planes the remote factory needs — the factory/runtime plane,
 the data plane, and the tool (MCP) plane — and drive them to readiness with the
 doctor. Or use the guided self-service installer for a turnkey deploy.
+
+<p align="center">
+  <img src="../assets/diagrams/three-planes.svg" alt="The ge CLI or console talks to the factory plane (Cloud Run gateway, Cloud Tasks queue, worker); the worker reaches the data plane (GCS, AlloyDB, Firestore, BigQuery, Bigtable) and the tool plane (Agent Gateway, per-department MCP services, Agent Registry)" width="700">
+</p>
 
 ## Prerequisites
 
@@ -103,6 +109,11 @@ ge status          # planes show ✓ and a suggested next command
 
 Installer path: `./installer/verify.sh` returns all checks passing.
 
+> Re-running is safe: `ge up` and the installer steps are idempotent, so the
+> fix-and-retry loop is always `ge doctor` → fix the failing check → re-run the
+> same command.
+{: .tip }
+
 ## Troubleshoot
 
 - **`Set GEMINI_ENTERPRISE_APP_ID first`** — export it (or have a `.ge.json`)
@@ -112,4 +123,3 @@ Installer path: `./installer/verify.sh` returns all checks passing.
   database; use a fresh project (Firestore can't be deleted in-place).
 - **Adopt a hand-managed project into Terraform** — `ge cutover` (plan;
   `APPLY=1 mise run cutover` to apply).
-- **Re-run is safe** — `ge up` / installer steps are designed to be idempotent.
