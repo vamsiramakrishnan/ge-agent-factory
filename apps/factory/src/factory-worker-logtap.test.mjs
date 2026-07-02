@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, readFile, writeFile, chmod } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
+  logStage,
   makeLedgerLogTap,
   resolveBuilderServiceAccount,
   extractCommandError,
@@ -317,4 +318,31 @@ test("runFactoryWorker: transient stage failure is marked retryable", async () =
   const result = await runFactoryWorker(payload, { dryRun: false });
   expect(result.status).toBe("failed");
   expect(result.retryable).toBe(true);
+});
+
+// ── C9: structured stage logs (Cloud Logging jsonPayload convention) ──
+test("logStage: emits one-line JSON with severity, message, and queryable fields", () => {
+  const logged = [];
+  const errored = [];
+  const origLog = console.log;
+  const origError = console.error;
+  console.log = (line) => logged.push(line);
+  console.error = (line) => errored.push(line);
+  try {
+    logStage("INFO", { runId: "run-1", itemId: "item-1", stage: "load_data", attempt: 2, message: "stage started" });
+    logStage("ERROR", { runId: "run-1", itemId: "item-1", stage: "load_data", attempt: 2, retryable: false, message: "stage failed: boom" });
+  } finally {
+    console.log = origLog;
+    console.error = origError;
+  }
+  expect(logged).toHaveLength(1);
+  expect(errored).toHaveLength(1);
+  // One line each — no embedded newlines that would split the jsonPayload.
+  expect(logged[0]).not.toContain("\n");
+  const info = JSON.parse(logged[0]);
+  expect(info).toEqual({ severity: "INFO", message: "stage started", runId: "run-1", itemId: "item-1", stage: "load_data", attempt: 2 });
+  const err = JSON.parse(errored[0]);
+  expect(err.severity).toBe("ERROR");
+  expect(err.retryable).toBe(false);
+  expect(err.message).toBe("stage failed: boom");
 });
