@@ -275,6 +275,13 @@ async function enqueueCloudTask(controlPlaneProject, region, queue, workerUrl, s
   const taskPayload = {
     task: {
       name: taskName,
+      // Timeout triangle (taste-campaign 09 §C1): match the worker's Cloud Run
+      // timeout (installer/terraform/cloud_run.tf: timeout = "1800s"; also the
+      // Cloud Tasks maximum) so a stage running past the 600s Cloud Tasks default
+      // is never redelivered concurrently while attempt 1 still executes. Keep in
+      // lockstep with TASK_DISPATCH_DEADLINE in apps/factory/src/factory-worker.js —
+      // factory-worker-timeouts.test.mjs asserts this file carries the same value.
+      dispatchDeadline: "1800s",
       httpRequest: {
         httpMethod: "POST",
         url: workerUrl,
