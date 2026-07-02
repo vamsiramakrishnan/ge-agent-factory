@@ -1,0 +1,152 @@
+{
+  "id": "asc_606_contract_analyzer",
+  "generatedAt": "2026-06-11T08:59:53.337Z",
+  "domain": "finance",
+  "seed": 42,
+  "systems": [
+    {
+      "id": "sap_s_4hana_sd",
+      "name": "SAP S/4HANA SD",
+      "owns": [
+        "sales_orders",
+        "contracts",
+        "billing_documents"
+      ],
+      "protocol": "RFC/BAPI",
+      "localBacking": [
+        "alloydb"
+      ],
+      "toolNames": [
+        "query_sap_s_4hana_sd_sales_orders",
+        "query_sap_s_4hana_sd_contracts",
+        "query_sap_s_4hana_sd_billing_documents"
+      ],
+      "evidence": [
+        "source_system_record",
+        "generated_audit_trail"
+      ]
+    }
+  ],
+  "useCaseSpec": null,
+  "tables": [
+    {
+      "name": "sales_orders",
+      "path": "tables/sales_orders.csv",
+      "jsonPath": "tables/sales_orders.json",
+      "sourceSystem": "SAP S/4HANA SD",
+      "sourceSystemId": "sap_s_4hana_sd",
+      "sourceDescription": "sales_orders, contracts, billing_documents",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "source_record_id",
+          "type": "string"
+        },
+        {
+          "name": "vendor",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "number"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "created_at",
+          "type": "string"
+        },
+        {
+          "name": "due_date",
+          "type": "string"
+        }
+      ],
+      "rowCount": 3
+    },
+    {
+      "name": "contracts",
+      "path": "tables/contracts.csv",
+      "jsonPath": "tables/contracts.json",
+      "sourceSystem": "SAP S/4HANA SD",
+      "sourceSystemId": "sap_s_4hana_sd",
+      "sourceDescription": "sales_orders, contracts, billing_documents",
+      "primaryKey": "id",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "counterparty",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "type": "number"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "start_date",
+          "type": "string"
+        },
+        {
+          "name": "end_date",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "auto_renew",
+          "type": "boolean"
+        }
+      ],
+      "rowCount": 3
+    }
+  ],
+  "documents": [
+    {
+      "id": "asc-606-contract-analyzer-controls-playbook",
+      "path": "documents/asc-606-contract-analyzer-controls-playbook.md",
+      "title": "ASC 606 Contract Analyzer Controls Playbook",
+      "type": "policy",
+      "sourceSystem": "BigQuery",
+      "sourceSystemId": "bigquery",
+      "linkedEntities": [
+        "sales_orders",
+        "contracts",
+        "billing_documents"
+      ],
+      "requiredSections": [
+        "Workflow scope",
+        "Materiality thresholds",
+        "Escalation triggers",
+        "Audit evidence requirements",
+        "Quarter-end variations"
+      ],
+      "citationAnchors": [
+        "scope",
+        "materiality",
+        "escalation",
+        "audit-evidence"
+      ],
+      "minimumWordCount": 500,
+      "wordCount": 530
+    }
+  ],
+  "totalRows": 6
+}
