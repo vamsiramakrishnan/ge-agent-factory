@@ -31,6 +31,9 @@ import { images } from "./ge/images.mjs";
 import { data } from "./ge/data.mjs";
 import { mcp } from "./ge/mcp.mjs";
 import { agents } from "./ge/agents.mjs";
+import { pipeline } from "./ge/pipeline.mjs";
+import { fleet } from "./ge/fleet.mjs";
+import { runs } from "./ge/runs.mjs";
 import { autopilot } from "./ge/autopilot.mjs";
 import { mission } from "./ge/mission.mjs";
 import { journey } from "./ge/journey.mjs";
@@ -43,7 +46,7 @@ import { shouldPromptForInitProject, GE_INIT_NO_PROJECT_MESSAGE } from "./ge/ini
 // ── root: bare `ge` → status board + next step ────────────────────────────────
 // citty invokes the root `run` even when a subcommand matches, so only render the
 // board when the first positional is NOT one of our subcommands.
-const SUBCOMMANDS = new Set(["up", "doctor", "init", "cutover", "mode", "devex", "config", "infra", "images", "data", "mcp", "agents", "autopilot", "mission", "journey", "daemon", "runtime", "state", "ledger", "apply"]);
+const SUBCOMMANDS = new Set(["up", "doctor", "init", "cutover", "mode", "devex", "config", "infra", "images", "data", "mcp", "agents", "pipeline", "fleet", "runs", "autopilot", "mission", "journey", "daemon", "runtime", "state", "ledger", "apply"]);
 const root = defineCommand({
   meta: { name: "ge", description: "GE Agent Factory — set up · stand up · run agents. Bare `ge` shows status + next step." },
   args: { ...common },
@@ -53,20 +56,37 @@ const root = defineCommand({
     const res = core.statusBoard(cfgFrom(args));
     emit(args, res, (r) => {
       out(pc.bold("\nGE Agent Factory"));
+      // First run (no project configured): orient before reporting. Three
+      // steps, each with an honest effort estimate — the status board's plane
+      // detail only makes sense once there is a project to report on.
+      if (!r.project) {
+        out(pc.dim("  Turn an enterprise use case into a generated, tested, deployable agent."));
+        out(pc.bold("\n  First run — three steps, all local, no cloud credentials:"));
+        out(`  1. ${pc.cyan("mise run setup")}      ${pc.dim("toolchain + daemon (one time, ~5-10m)")}`);
+        out(`  2. ${pc.cyan("ge init")}             ${pc.dim("discover config, write .ge.json (~30s)")}`);
+        out(`  3. ${pc.cyan("ge devex smoke")}      ${pc.dim("prove the pipeline: doctor → canary agent build")}`);
+        out(pc.dim("\n  then: ge pipeline status   (the full pipeline, stage by stage)"));
+        out(pc.dim("  docs: docs/cookbooks/getting-started.md · ge --help for all commands"));
+        return;
+      }
       out(`  mode      ${pc.cyan(r.mode)}  ${pc.dim(r.clientDoes)}`);
-      out(`  project   ${r.project ? pc.cyan(r.project) : pc.yellow("<unset — run ge init>")}`);
+      out(`  project   ${pc.cyan(r.project)}`);
       out(`  app       ${r.app ? pc.dim(r.app) : pc.yellow("<unset>")}`);
       out("");
       for (const p of r.planes) out(`  ${p.up ? pc.green("✓") : pc.yellow("○")} ${p.name.padEnd(12)} ${pc.dim(p.detail)}`);
       out(`\n  next: ${pc.bold(pc.cyan(r.next))}`);
-      out(pc.dim("  (ge --help for all commands · ge mode to switch local/remote)"));
+      out(pc.dim("  (ge --help for all commands · ge mode to switch local/remote · ge pipeline status for the pipeline)"));
     });
   },
   subCommands: {
     // lifecycle
     up, doctor, init, cutover, mode, devex, config,
+    // the consolidated orchestration surface
+    pipeline, fleet, runs,
     // noun groups
-    infra, images, data, mcp, agents, autopilot, mission, journey, daemon, runtime, state, ledger,
+    infra, images, data, mcp, agents, daemon, state, ledger,
+    // deprecated aliases (journey/mission → pipeline · autopilot → fleet repair · runtime → runs)
+    autopilot, mission, journey, runtime,
     // declarative reconcile
     apply,
   },

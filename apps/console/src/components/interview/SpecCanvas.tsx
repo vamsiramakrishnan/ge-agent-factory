@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CheckCircle2, ExternalLink, FileJson, ListChecks, Loader2, Package, Pencil, RefreshCw, Save, X } from "lucide-react";
+import { ArrowRight, CheckCircle2, ExternalLink, FileJson, ListChecks, Loader2, Package, Pencil, RefreshCw, Save, X } from "lucide-react";
+import { Button, ButtonLink, EmptyState, Stat, cx } from "@ge/ui";
 import {
   ge,
   type GeEvent,
@@ -40,12 +41,15 @@ export function SpecCanvas({
   task,
   events,
   standalone = false,
+  onRegistered,
 }: {
   usecaseId: string;
   task: RuntimeTaskSummary | null;
   events: GeEvent[];
   /** Deep-link/spec-review usage: load the authoritative spec on mount (no live run). */
   standalone?: boolean;
+  /** Optional hand-back so the hosting view can reflect registration (e.g. progress strip). */
+  onRegistered?: (result: SpecRegisterResult) => void;
 }) {
   // ── live stream parse ──────────────────────────────────────────────────────
   const parserRef = useRef(createArtifactParser());
@@ -284,6 +288,7 @@ export function SpecCanvas({
     try {
       const result = await ge.registerSpec({ input, allowDraft: false, syncCatalog: false });
       setRegistered(result);
+      onRegistered?.(result);
       window.localStorage.setItem("ge.pipeline.selectedSpecId", result.id);
     } catch (err: any) {
       setError(err.detail || err.message || "Spec registration failed");
@@ -336,55 +341,80 @@ export function SpecCanvas({
     }
   };
 
-  const statusLabel = !activeSpec
-    ? streamState.status === "streaming"
-      ? "Streaming…"
-      : "Waiting for the agent"
-    : reviewing
-      ? "Refreshing"
-      : review?.found
-        ? buildable
-          ? "Buildable"
-          : "Needs work"
-        : "Draft";
+  // The canvas' liveness arc: materializing (stream in flight, nothing settled on
+  // disk yet) → settled (authoritative review loaded) → registered (the payoff).
+  const materializing = streamState.status === "streaming" && !review?.found;
+  const settled = Boolean(review?.found || savedPath);
+  const statusLabel = registered
+    ? "Registered"
+    : !activeSpec
+      ? materializing
+        ? "Materializing…"
+        : "Waiting for the agent"
+      : reviewing
+        ? "Refreshing"
+        : materializing
+          ? "Materializing…"
+          : review?.found
+            ? buildable
+              ? "Buildable"
+              : "Needs work"
+            : "Draft";
+  const specPath = savedPath || review?.path || `.ge/interviews/${usecaseId}/agent-spec.json`;
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between gap-3 border-b border-outline-variant/40 px-5 py-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <FileJson className="h-4 w-4 shrink-0 text-primary" />
+      <div className="border-b border-outline-variant/40 px-5 py-3">
+        <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="text-sm font-semibold text-on-surface">Agent Spec</h2>
-            <div className="truncate font-mono text-[11px] text-secondary" title={savedPath || review?.path || `.ge/interviews/${usecaseId}/agent-spec.json`}>
-              {savedPath || review?.path || `.ge/interviews/${usecaseId}/agent-spec.json`}
+            <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-secondary">
+              <FileJson className="h-3.5 w-3.5 text-primary" aria-hidden />
+              Artifact
+            </div>
+            <h2 className="mt-0.5 text-sm font-semibold text-on-surface">Agent Spec</h2>
+            <div className="mt-0.5 truncate font-mono text-[11px] text-secondary" title={specPath}>
+              {specPath}
+              {settled && <span className="ml-1.5 font-sans text-[10px] text-emerald-700">· on disk</span>}
             </div>
           </div>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-medium ${statusTone(statusLabel)}`}>
-            {(streamState.status === "streaming" || reviewing) && <Loader2 className="h-3 w-3 animate-spin" />}
-            {statusLabel}
-          </span>
-          <button
-            type="button"
-            onClick={reload}
-            disabled={reviewing}
-            className="rounded-md border border-outline-variant/50 p-1.5 text-secondary hover:bg-surface-container disabled:opacity-50"
-            title="Reload authoritative spec"
-          >
-            <RefreshCw className="h-3.5 w-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setEditMode((value) => !value)}
-            disabled={!activeSpec}
-            className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium disabled:opacity-50 ${
-              editMode ? "border-primary/40 bg-primary/10 text-primary" : "border-outline-variant/50 text-secondary hover:bg-surface-container"
-            }`}
-          >
-            <Pencil className="h-3.5 w-3.5" />
-            {editMode ? "Editing" : "Edit"}
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            <span
+              aria-live="polite"
+              className={cx("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium", statusTone(statusLabel))}
+            >
+              {reviewing ? (
+                <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none" aria-hidden />
+              ) : materializing ? (
+                <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-current animate-pulse motion-reduce:animate-none" />
+              ) : null}
+              {statusLabel}
+            </span>
+            <button
+              type="button"
+              onClick={reload}
+              disabled={reviewing}
+              className="rounded-md border border-outline/30 p-1.5 text-secondary transition-colors hover:bg-surface-container disabled:cursor-not-allowed disabled:opacity-50"
+              title="Reload authoritative spec"
+              aria-label="Reload authoritative spec"
+            >
+              <RefreshCw className="h-3.5 w-3.5" aria-hidden />
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditMode((value) => !value)}
+              disabled={!activeSpec}
+              aria-pressed={editMode}
+              className={cx(
+                "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+                editMode
+                  ? "border-primary/40 bg-primary/10 text-primary"
+                  : "border-outline/30 text-secondary hover:bg-surface-container",
+              )}
+            >
+              <Pencil className="h-3.5 w-3.5" aria-hidden />
+              {editMode ? "Editing" : "Edit"}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -398,20 +428,32 @@ export function SpecCanvas({
         <div className="mx-5 mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md border border-primary/25 bg-primary/5 px-3 py-2">
           <div className="text-xs text-primary">The agent updated the spec while you had edits.</div>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={acceptRevision}
-              className="rounded-md bg-primary px-2.5 py-1 text-[11px] font-medium text-white hover:bg-primary-container"
-            >
+            <Button size="sm" onClick={acceptRevision}>
               Accept agent's
-            </button>
-            <button
-              type="button"
-              onClick={keepMine}
-              className="rounded-md border border-outline-variant/50 px-2.5 py-1 text-[11px] font-medium text-secondary hover:bg-surface-container"
-            >
+            </Button>
+            <Button variant="outline" size="sm" onClick={keepMine}>
               Keep mine
-            </button>
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {registered && (
+        <div className="mx-5 mt-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" aria-hidden />
+              <div className="min-w-0">
+                <div className="text-sm font-semibold text-emerald-800">Spec registered</div>
+                <div className="mt-0.5 text-xs text-emerald-700">
+                  <span className="font-mono font-medium">{registered.id}</span> is in the catalog and selected in the Pipeline.
+                </div>
+              </div>
+            </div>
+            <ButtonLink href="#/pipeline" size="sm" className="shrink-0">
+              Build {registered.id}
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+            </ButtonLink>
           </div>
         </div>
       )}
@@ -420,17 +462,25 @@ export function SpecCanvas({
 
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
         {sections.length === 0 ? (
-          <div className="flex h-full min-h-48 flex-col items-center justify-center rounded-lg border border-dashed border-outline-variant/60 bg-surface-container/30 px-6 text-center">
-            <FileJson className="h-7 w-7 text-secondary/60" />
-            <p className="mt-3 max-w-sm text-sm text-secondary">
-              The agent spec will materialize here as the interview runs — streamed live, then loaded from disk once written.
-            </p>
-          </div>
+          materializing ? (
+            <div className="space-y-4" aria-hidden>
+              <SectionSkeleton lines={2} />
+              <SectionSkeleton lines={3} />
+              <SectionSkeleton lines={2} />
+            </div>
+          ) : (
+            <EmptyState
+              icon={FileJson}
+              title="The agent spec materializes here"
+              detail="Streamed live as the interview runs, then loaded from disk once the agent writes it."
+              className="h-full min-h-48 rounded-lg border border-dashed border-outline-variant/60 bg-surface-container/30 px-6"
+            />
+          )
         ) : (
           <div className="space-y-4">
             {sections.map((section) => (
               <section key={section.key} className="rounded-lg border border-outline-variant/40 bg-surface p-4">
-                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-secondary">{section.label}</h3>
+                <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-secondary">{section.label}</h3>
                 {editMode ? (
                   <SpecFieldEditor section={section} onChange={(value) => updateSection(section.key, value)} />
                 ) : (
@@ -438,15 +488,16 @@ export function SpecCanvas({
                 )}
               </section>
             ))}
+            {materializing && <SectionSkeleton lines={2} />}
           </div>
         )}
 
         {gaps.length > 0 && (
           <section className="mt-4 rounded-lg border border-outline-variant/40 bg-surface p-4">
-            <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-secondary">
-              <ListChecks className="h-4 w-4" />
+            <h3 className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-secondary">
+              <ListChecks className="h-4 w-4" aria-hidden />
               Registration gates
-            </div>
+            </h3>
             <ul className="space-y-2">
               {gaps.slice(0, 12).map((gap) => (
                 <li key={gap} className="rounded-md bg-amber-500/10 px-3 py-2 text-xs font-medium text-amber-700">{describeGap(gap).message}</li>
@@ -470,72 +521,67 @@ export function SpecCanvas({
             "Edit fields inline, then save and register the spec."
           )}
         </div>
-        <div className="flex items-center gap-2">
-          {registered && (
-            <a
-              href="#/journey"
-              className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-500/15"
-            >
-              Build {registered.id}
-            </a>
-          )}
+        <div className="flex flex-wrap items-center gap-2">
           {deployHref && (
-            <a
+            <ButtonLink
               href={deployHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-md border border-primary/30 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/10"
+              variant="ghost"
+              size="sm"
               title="Open this spec in the presentation deploy panel"
             >
-              <ExternalLink className="h-3.5 w-3.5" />
+              <ExternalLink className="h-3.5 w-3.5" aria-hidden />
               Deploy in presentation
-            </a>
+            </ButtonLink>
           )}
-          <button
-            type="button"
+          <Button
+            variant="outline"
+            size="sm"
             onClick={previewOkf}
-            disabled={!okfAvailable || okfLoading}
-            className="inline-flex items-center gap-1.5 rounded-md border border-outline-variant/50 px-3 py-1.5 text-xs font-medium text-secondary hover:bg-surface-container disabled:opacity-50"
+            disabled={!okfAvailable}
+            loading={okfLoading}
             title={
               okfAvailable
                 ? "Preview and download this spec as a Knowledge Bundle (OKF) — a folder of plain Markdown files the agent reads at runtime"
                 : "Save or register the spec first to export the Knowledge Bundle (OKF)"
             }
           >
-            {okfLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Package className="h-3.5 w-3.5" />}
+            {!okfLoading && <Package className="h-3.5 w-3.5" aria-hidden />}
             Export Knowledge Bundle
-          </button>
+          </Button>
           {dirty && (
-            <button
-              type="button"
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => {
                 if (baseSpec) setEditedSpec(baseSpec);
               }}
-              className="inline-flex items-center gap-1.5 rounded-md border border-outline-variant/50 px-3 py-1.5 text-xs font-medium text-secondary hover:bg-surface-container"
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-3.5 w-3.5" aria-hidden />
               Discard
-            </button>
+            </Button>
           )}
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={save}
-            disabled={!dirty || saving}
-            className="inline-flex items-center gap-1.5 rounded-md border border-primary/30 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/10 disabled:opacity-50"
+            disabled={!dirty}
+            loading={saving}
           >
-            <Save className="h-3.5 w-3.5" />
+            {!saving && <Save className="h-3.5 w-3.5" aria-hidden />}
             {saving ? "Saving" : "Save edits"}
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            size="sm"
             onClick={register}
             disabled={!canRegister}
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-container disabled:opacity-50"
+            loading={registering}
             title={registerablePath || "Spec is not ready to register yet"}
           >
-            <CheckCircle2 className="h-3.5 w-3.5" />
+            {!registering && <CheckCircle2 className="h-3.5 w-3.5" aria-hidden />}
             {registering ? "Registering" : "Register spec"}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -649,22 +695,13 @@ function OkfPreview({
         </div>
 
         <div className="flex items-center justify-end gap-2 border-t border-outline-variant/40 px-5 py-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md border border-outline-variant/50 px-3 py-1.5 text-xs font-medium text-secondary hover:bg-surface-container"
-          >
+          <Button variant="outline" size="sm" onClick={onClose}>
             Close
-          </button>
-          <button
-            type="button"
-            onClick={onDownload}
-            disabled={!bundle || loading}
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary-container disabled:opacity-50"
-          >
-            <Package className="h-3.5 w-3.5" />
+          </Button>
+          <Button size="sm" onClick={onDownload} disabled={!bundle || loading}>
+            <Package className="h-3.5 w-3.5" aria-hidden />
             Download .zip
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -699,11 +736,31 @@ function ReadinessStrip({
   return (
     <div className="grid grid-cols-4 gap-2 border-b border-outline-variant/30 px-5 py-3">
       {cells.map((cell) => (
-        <div key={cell.label} className="rounded-md bg-surface-container/50 px-3 py-2 text-center">
-          <div className="text-[10px] font-semibold uppercase tracking-wide text-secondary">{cell.label}</div>
-          <div className="mt-0.5 text-lg font-semibold text-on-surface">{cell.value}</div>
-        </div>
+        <Stat key={cell.label} label={cell.label} value={cell.value} size="md" className="text-center" />
       ))}
+    </div>
+  );
+}
+
+/**
+ * Placeholder card for a spec section still materializing from the stream: a calm
+ * pulse (Tailwind animate-pulse, disabled under prefers-reduced-motion) over the
+ * same card frame the real sections use, so arriving sections replace skeletons
+ * without layout shift.
+ */
+function SectionSkeleton({ lines = 2 }: { lines?: number }) {
+  const widths = ["w-full", "w-4/5", "w-3/5"];
+  return (
+    <div aria-hidden className="rounded-lg border border-outline-variant/40 bg-surface p-4">
+      <div className="h-2.5 w-24 rounded-full bg-surface-container animate-pulse motion-reduce:animate-none" />
+      <div className="mt-3.5 space-y-2.5">
+        {Array.from({ length: lines }, (_, index) => (
+          <div
+            key={index}
+            className={cx("h-3 rounded-full bg-surface-container/80 animate-pulse motion-reduce:animate-none", widths[index % widths.length])}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -732,7 +789,8 @@ function buildPresentationDeployUrl(presentationUrl: string, specUrl: string): s
 }
 
 function statusTone(label: string): string {
-  if (label === "Buildable") return "bg-emerald-500/10 text-emerald-700";
+  if (label === "Registered" || label === "Buildable") return "bg-emerald-500/10 text-emerald-700";
   if (label === "Needs work" || label === "Draft") return "bg-amber-500/10 text-amber-700";
+  if (label === "Materializing…") return "bg-primary/10 text-primary";
   return "bg-surface-container text-secondary";
 }

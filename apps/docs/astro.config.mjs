@@ -34,7 +34,7 @@ export default defineConfig({
         styleOverrides: { borderRadius: "0.5rem" },
       },
       sidebar: [
-        { label: "Start here", autogenerate: { directory: "start" } },
+        { label: "Start", autogenerate: { directory: "start" } },
         { label: "Concepts", autogenerate: { directory: "concepts" } },
         { label: "Cookbooks", autogenerate: { directory: "cookbooks" } },
         { label: "Reference", autogenerate: { directory: "reference" } },

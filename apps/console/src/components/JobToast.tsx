@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { StatusPill, statusStyle } from "@ge/ui";
 import { streamJob, type Check, type GeCommand, type GeEvent } from "../services/geClient";
 
 interface Job {
@@ -110,26 +111,17 @@ export function JobToast({ onDone }: { onDone?: () => void }) {
   const toggle = (jobId: string) => setExpanded((prev) => ({ ...prev, [jobId]: !prev[jobId] }));
 
   if (!jobs.length) return null;
-  const dot = { running: "bg-blue-500 animate-pulse", done: "bg-emerald-500", failed: "bg-rose-500", blocked: "bg-amber-500" } as const;
-  const tone = {
-    running: "border-blue-500/20 bg-blue-500/5 text-blue-700",
-    done: "border-emerald-500/20 bg-emerald-500/5 text-emerald-700",
-    failed: "border-rose-500/20 bg-rose-500/5 text-rose-700",
-    blocked: "border-amber-500/20 bg-amber-500/5 text-amber-700",
-  } as const;
 
   return (
     <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-3 w-[30rem] max-w-[calc(100vw-2rem)]">
       {jobs.map((j) => (
         <div key={j.jobId} className="bg-surface rounded-lg shadow-ambient-lg border border-outline-variant/40 overflow-hidden">
           <div className="flex items-start gap-2 px-3 py-2.5 border-b border-outline-variant/30">
-            <span className={`h-2 w-2 rounded-full ${dot[j.status]}`} />
+            <span className={`h-2 w-2 rounded-full ${statusStyle(j.status).dot} ${j.status === "running" ? "animate-pulse motion-reduce:animate-none" : ""}`} />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-on-surface truncate">{j.label}</span>
-                <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${tone[j.status]}`}>
-                  {j.status}
-                </span>
+                <StatusPill status={j.status} className="shrink-0" />
               </div>
               <div className="mt-1 flex items-center gap-2 text-[11px] text-secondary">
                 <span>{formatElapsed(now - j.startedAt)}</span>

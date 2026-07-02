@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Button, EmptyState } from "@ge/ui";
 import { StatusPill } from "./StatusPill";
 import { Inbox, X } from "lucide-react";
 import type { FleetAgent } from "../services/geClient";
@@ -141,24 +142,22 @@ export function FleetTable({
   if (agents.length === 0) {
     if (hasFilters) {
       return (
-        <div className="bg-surface rounded-lg border border-outline-variant/30 p-12 text-center">
-          <X className="mx-auto mb-3 h-8 w-8 text-secondary/40" />
-          <p className="text-sm text-secondary mb-3">No agents match the current filters</p>
-          {onClearFilters && (
-            <button
-              onClick={onClearFilters}
-              className="px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
-            >
-              Clear filters
-            </button>
-          )}
+        <div className="bg-surface rounded-lg border border-outline-variant/30 px-12 py-4 text-center">
+          <EmptyState
+            icon={X}
+            title="No agents match the current filters"
+            action={onClearFilters && (
+              <Button variant="outline" size="sm" onClick={onClearFilters}>
+                Clear filters
+              </Button>
+            )}
+          />
         </div>
       );
     }
     return (
-      <div className="bg-surface rounded-lg border border-outline-variant/30 p-12 text-center">
-        <Inbox className="mx-auto mb-3 h-8 w-8 text-secondary/40" />
-        <p className="text-sm text-secondary">No agents in the fleet yet</p>
+      <div className="bg-surface rounded-lg border border-outline-variant/30 px-12 py-4 text-center">
+        <EmptyState icon={Inbox} title="No agents in the fleet yet" />
       </div>
     );
   }

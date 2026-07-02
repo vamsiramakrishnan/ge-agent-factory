@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { User } from "firebase/auth";
+import { CircleHelp, ExternalLink } from "lucide-react";
+import { Button } from "@ge/ui";
 import { ModeToggle } from "../ModeToggle";
 import { RuntimeStatusBadge } from "../RuntimeStatusBadge";
 import { NowPulse } from "../NowPulse";
@@ -25,6 +27,80 @@ function AuthChip() {
       >
         Sign out
       </button>
+    </div>
+  );
+}
+
+// Quiet help affordance for terminal-native operators: keyboard shortcuts and
+// the two docs entry points (glossary for jargon, cookbooks for walkthroughs).
+// Plain useState popover — closes on outside click or Esc.
+function HelpMenu() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) setOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <Button
+        variant="ghost"
+        size="sm"
+        aria-label="Help"
+        aria-expanded={open}
+        aria-haspopup="true"
+        title="Help"
+        onClick={() => setOpen((prev) => !prev)}
+      >
+        <CircleHelp className="w-4 h-4" />
+      </Button>
+      {open && (
+        <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-lg border border-outline-variant/40 bg-surface p-3 shadow-ambient">
+          <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-secondary">Keyboard</div>
+          <div className="space-y-1.5 text-xs text-on-surface">
+            <div className="flex items-center justify-between gap-3">
+              <span className="rounded border border-outline-variant/40 bg-surface-container-low px-1.5 py-0.5 font-mono text-[11px]">⌘K</span>
+              <span className="text-secondary">command palette</span>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <span className="rounded border border-outline-variant/40 bg-surface-container-low px-1.5 py-0.5 font-mono text-[11px]">Esc</span>
+              <span className="text-secondary">close panels</span>
+            </div>
+          </div>
+          <div className="mb-1 mt-3 text-[10px] font-semibold uppercase tracking-wide text-secondary">Docs</div>
+          <div className="space-y-0.5">
+            <a
+              href="https://github.com/vamsiramakrishnan/ge-agent-factory/blob/main/docs/GLOSSARY.md"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 rounded px-1 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
+            >
+              Glossary <ExternalLink className="h-3 w-3" aria-hidden />
+            </a>
+            <a
+              href="https://github.com/vamsiramakrishnan/ge-agent-factory/tree/main/docs/cookbooks"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1.5 rounded px-1 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
+            >
+              Cookbooks <ExternalLink className="h-3 w-3" aria-hidden />
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -67,6 +143,8 @@ export function TopBar({ status, mode, onModeChange, onOpenPalette }: TopBarProp
         >
           ⌘K
         </button>
+
+        <HelpMenu />
 
         <AuthChip />
       </div>

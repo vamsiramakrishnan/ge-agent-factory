@@ -59,8 +59,12 @@ async function fetchDaemonTask(id) {
   return await response.json();
 }
 
-async function fetchDaemonTaskEvents(id) {
-  const response = await fetch(`${daemonBaseUrl()}/api/tasks/${encodeURIComponent(id)}/events?format=json`, {
+async function fetchDaemonTaskEvents(id, afterSeq = 0) {
+  // Daemon protocol v3 filters afterSeq server-side, so a poll only transfers
+  // the new tail. The client-side filter below stays as a belt-and-braces
+  // guard for older daemons that ignore the param.
+  const params = afterSeq > 0 ? `&afterSeq=${encodeURIComponent(afterSeq)}` : "";
+  const response = await fetch(`${daemonBaseUrl()}/api/tasks/${encodeURIComponent(id)}/events?format=json${params}`, {
     signal: AbortSignal.timeout(3000),
   });
   if (!response.ok) throw new Error(`daemon task events failed: ${response.status}`);
@@ -184,8 +188,8 @@ export async function getAutopilotEvents(id, opts = {}) {
   const run = await getAutopilotRun(id);
   if (run?.options?.daemonTask) {
     try {
-      const events = await fetchDaemonTaskEvents(id);
       const after = Number(opts.afterSeq) || 0;
+      const events = await fetchDaemonTaskEvents(id, after);
       return events.filter((event) => event.seq > after);
     } catch { /* best-effort: daemon unreachable; fall back to the locally mirrored events below (warning here would fire on every poll) */ }
   }

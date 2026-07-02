@@ -20,8 +20,8 @@ import { listEvents, listRuns, taskStatusState } from "./run-store.mjs";
 function commandList(id, safeToRun) {
   return [
     `ge runtime task ${id} --json`,
-    ...(safeToRun ? [`ge runtime resume ${id}`] : []),
-    `ge runtime events ${id} --follow`,
+    ...(safeToRun ? [`ge runs resume ${id}`] : []),
+    `ge runs events ${id} --follow`,
   ];
 }
 
@@ -152,7 +152,7 @@ export function resumePlanFor(run) {
         state: run.status === "paused" ? "paused" : "blocked",
         nextAction: "resume_mission",
         safeToRun: true,
-        commands: [`ge mission resume ${run.id}`, `ge runtime events ${run.id} --follow`],
+        commands: [`ge pipeline resume ${run.id}`, `ge runs events ${run.id} --follow`],
         reason: blockedNode ? `${blockedNode.id}: ${blockedNode.resumePlan?.reason || "blocked"}` : "resume mission graph by scheduling a child mission run",
         blockers: blockedNode?.resumePlan?.blockers || blockers,
         artifacts: graph.nodes?.flatMap((node) => node.artifacts || []) || artifacts,

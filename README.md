@@ -14,7 +14,9 @@ same generated workspace runs locally against fixtures and is then promoted to
 deploys): per-agent data stores, an MCP tool [plane](docs/GLOSSARY.md#planes)
 (one of the platform's three infrastructure layers — factory, data, tool),
 Agent Runtime, Agent Registry, and a Gemini Enterprise publish. It is an agent **factory**, not a
-prompt-only demo generator.
+prompt-only demo generator. After a one-time `mise run setup` (~5-10 min), your
+first canary agent is about five minutes away — then you build, watch it run
+live, and ship it to the cloud.
 
 [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/?cloudshell_git_repo=https://github.com/vamsiramakrishnan/ge-agent-factory&cloudshell_workspace=installer&cloudshell_tutorial=installer/TUTORIAL.md)
 
@@ -30,27 +32,31 @@ The full docs site (sidebar + search) is published with GitHub Pages:
 - **[Developer Guide](https://vamsiramakrishnan.github.io/ge-agent-factory/developers.html)** — purpose, repo map, development loops, quality gates, and docs rules.
 - **[Concepts](https://vamsiramakrishnan.github.io/ge-agent-factory/concepts/)** — the factory model: local vs remote mode, the stage graph, [OKF](docs/GLOSSARY.md#okf--knowledge-bundle) (Open Knowledge Format — the spec's portable Markdown form) specs, the data plane, the MCP tool plane.
 - **[Reference](https://vamsiramakrishnan.github.io/ge-agent-factory/reference/)** — the `ge` CLI, `mise` tasks, configuration, and the apps.
-- **[Cookbooks](https://vamsiramakrishnan.github.io/ge-agent-factory/cookbooks/)** — task-oriented guides: build a [canary](docs/GLOSSARY.md#canary) (a single agent that proves the pipeline), run a [mission](docs/GLOSSARY.md#mission) (one orchestrated, resumable pipeline run), bring your own simulator, ship to the cloud.
+- **[Cookbooks](https://vamsiramakrishnan.github.io/ge-agent-factory/cookbooks/)** — task-oriented guides: build a [canary](docs/GLOSSARY.md#canary) (a single agent that proves the pipeline), run the [pipeline](docs/GLOSSARY.md#pipeline-formerly-journey) end to end (one orchestrated, resumable run), bring your own simulator, ship to the cloud.
 - **[Operations](https://vamsiramakrishnan.github.io/ge-agent-factory/OPERATIONS.html)** — deploy, operate, troubleshoot, and recover the factory.
 - **[MCP](https://vamsiramakrishnan.github.io/ge-agent-factory/MCP.html)** — factory MCP tools plus the generated-agent MCP tool plane.
 
 The site is sourced from [`docs/`](docs/) (start at [`docs/index.md`](docs/index.md)).
 
-Unfamiliar term? See the [Glossary](docs/GLOSSARY.md) — plain-language translations of the repo's jargon (harness, OKF, canary, planes, missions, …).
+Unfamiliar term? See the [Glossary](docs/GLOSSARY.md) — plain-language translations of the repo's jargon (harness, OKF, canary, planes, pipeline runs, …).
 
 ## Quickstart
 
 **→ See [`SETUP.md`](SETUP.md) for the full step-by-step: clone, prerequisites,
 `mise run setup`, `mise run doctor-local`, first command, optional cloud setup.**
 
-Local development — no cloud credentials required:
+Three steps, all local — no cloud credentials required:
 
 ```bash
 curl https://mise.run | sh   # one-time, if you don't have mise yet — see SETUP.md
-mise run setup          # install deps, sync catalog/skills, install the `ge` command, start the daemon
-mise run doctor-local   # check local tools: Bun, uv, Python, agents-cli, cache, harness wiring
-mise run console        # open the operator UI (Pipeline · Fleet · Activity · Doctor) → http://localhost:18260
+mise run setup          # 1. toolchain + daemon (one time, ~5-10m)
+ge init                 # 2. discover config, write .ge.json (~30s)
+ge devex smoke          # 3. first canary agent: doctor → validated workspace (~5 min)
 ```
+
+Then: build agents, watch them run live, ship to the cloud. `mise run console`
+opens the operator UI (Overview · Pipeline · Interview · Fleet · Repair Queue ·
+Runs · Readiness) → http://localhost:18260.
 
 Run `mise run help` for all targets, or `mise run next` for a status-based recommendation.
 
@@ -102,7 +108,7 @@ MCP server.
 
 | Path | What it is |
 |------|------------|
-| [`apps/console`](apps/console) | The main operator UI — a React + Vite + Tailwind app whose Bun server exposes `/api/ge/*` (the same JSON the CLI emits). Views: Overview/Pipeline, Fleet (bulk build/ship/sync), Agent detail (stage pipeline + live logs + artifacts), Doctor, Activity. The **third surface** over `factory-core`. |
+| [`apps/console`](apps/console) | The main operator UI — a React + Vite + Tailwind app whose Bun server exposes `/api/ge/*` (the same JSON the CLI emits). Views: Overview · Pipeline · Interview · Fleet · Repair Queue · Runs · Readiness, plus Agent detail (stage pipeline + live logs + artifacts). The **third surface** over `factory-core`. |
 | [`apps/presentation`](apps/presentation) | The transformation deck and source use-case catalog used to explain the system. |
 | [`apps/factory`](apps/factory) | The generator: the `factory` generation pipeline, the lower-level web workbench, the factory runner/worker, and the generic multi-tenant FastMCP server under [`mcp-service/`](apps/factory/mcp-service). |
 | [`tools/`](tools) | The `ge` operator CLI (`ge.mjs`), the MCP server (`mcp-server.mjs`), and the shared operator core + runtime [daemon](docs/GLOSSARY.md#daemon) (the local background process that runs long factory tasks durably) under `tools/lib/`. |
@@ -136,6 +142,9 @@ ge agents build --canary
 ge agents ship --canary
 ge agents status --watch
 ge agents sync --push
+ge pipeline run --scenario <id>   # orchestrate the end-to-end pipeline (plan|status|resume|graph)
+ge fleet status        # fleet convergence; ge fleet repair --ids <a,b> fixes blockers in bulk
+ge runs list           # every daemon-backed run; ge runs events <id> --follow streams one live
 ```
 
 Run via `bun tools/ge.mjs <cmd>`, or install it on your PATH with `mise run setup` (then just `ge`).

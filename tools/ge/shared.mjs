@@ -3,16 +3,20 @@
 // behavior change). See tools/ge.mjs for the composition root that wires
 // these command groups into the citty command tree.
 import pc from "picocolors";
+import { defineCommand } from "citty";
 import { parseList } from "@ge/std/list";
 import { existsSync, readFileSync } from "node:fs";
 import * as core from "../lib/factory-core.mjs";
-import { daemonPaths, getDaemonStatus } from "../lib/runtime-daemon.mjs";
+import { daemonPaths, getDaemonStatus, displayTaskKind } from "../lib/runtime-daemon.mjs";
+
+export { displayTaskKind };
 // Stable-error-code registry — a dependency-free data leaf that lives beside
 // FactoryCommandError (whose fail(msg, code) mints the codes). This is a
 // CLI-boundary file, not tools/lib/*, so the tools/lib → apps/factory layering
 // rule (tools/check-no-app-imports.mjs) does not apply; importing the leaf
 // here is the sanctioned alternative to hand-mirroring the code table.
 import { docsUrlFor, resolveErrorCode } from "../../apps/factory/scripts/factory/core/error-codes.mjs";
+import { GE_COMMANDS } from "../lib/ge-command-registry.mjs";
 
 export { core, pc };
 
@@ -50,6 +54,41 @@ export function emit(args, result, human) {
 
 export const ICON = { pass: pc.green("✓"), warn: pc.yellow("▲"), fail: pc.red("✗") };
 
+// ── Deprecated aliases ──────────────────────────────────────────────────────
+// The orchestration surface collapsed (journey/mission → pipeline,
+// autopilot → fleet repair, runtime observability → runs). Old verbs keep
+// working forever as aliases: identical args and behavior, plus one dim
+// stderr pointer at the canonical spelling — no breakage, no mystery.
+export function deprecatedAlias({ name, hint, command, run }) {
+  return defineCommand({
+    meta: { name, description: `(deprecated → ${hint}) ${command.meta.description}` },
+    args: command.args,
+    run: async (ctx) => {
+      process.stderr.write(pc.dim(`▲ deprecated spelling — canonical: ${hint}`) + "\n");
+      return (run || command.run)(ctx);
+    },
+  });
+}
+
+// ── Duration feedback ───────────────────────────────────────────────────────
+// Long operations should say up front how long they usually take, and say at
+// the end how long they actually took — both to stderr, so stdout (the JSON
+// contract) is untouched.
+export function formatDuration(ms) {
+  const seconds = Math.round(ms / 1000);
+  if (seconds < 90) return `${seconds}s`;
+  const minutes = Math.floor(seconds / 60);
+  return `${minutes}m ${seconds % 60}s`;
+}
+
+// Set-expectations line before a long command starts, sourced from the same
+// registry (tools/lib/ge-command-registry.mjs) the console and MCP server read,
+// so the estimate can't drift per surface. Silent for unknown/"varies" entries.
+export function announceExpectedDuration(commandId) {
+  const expected = GE_COMMANDS[commandId]?.expectedDuration;
+  if (expected && expected !== "varies") elog(`usually takes ${expected}`);
+}
+
 // ── Error boundary ──────────────────────────────────────────────────────
 // citty's own runMain() catches whatever escapes a command's run() and logs
 // the raw Error object (full stack trace, via `console.error(error, "\n")`)
@@ -67,11 +106,25 @@ export const ICON = { pass: pc.green("✓"), warn: pc.yellow("▲"), fail: pc.re
 // line. An error WITHOUT a registered code renders byte-identically to before
 // (no code, no link) — see resolveErrorCode(), which also rejects Node system
 // codes like "ENOENT" so only real registry entries change the output.
+// Elapsed-time note for anything that ran long enough to feel long. Skipped
+// for --json callers (their stdout contract stays byte-identical; the note
+// goes to stderr regardless, but subprocess callers shouldn't pay the noise).
+const ELAPSED_NOTE_THRESHOLD_MS = 5000;
+function noteElapsed(ctx, startedAt, verb) {
+  const ms = Date.now() - startedAt;
+  if (ms < ELAPSED_NOTE_THRESHOLD_MS || ctx?.args?.json) return;
+  process.stderr.write(pc.dim(`  ${verb} ${formatDuration(ms)}`) + "\n");
+}
+
 export function guarded(run) {
   return async (ctx) => {
+    const startedAt = Date.now();
     try {
-      return await run(ctx);
+      const result = await run(ctx);
+      noteElapsed(ctx, startedAt, "done in");
+      return result;
     } catch (e) {
+      noteElapsed(ctx, startedAt, "failed after");
       const code = resolveErrorCode(e);
       if (code) {
         process.stderr.write(pc.red(`✗ ${code} ${e?.message || e}`) + "\n");
@@ -79,6 +132,9 @@ export function guarded(run) {
       } else {
         process.stderr.write(pc.red(`✗ ${e?.message || e}`) + "\n");
       }
+      // Errors can carry a machine-attached recovery hint (err.hint) — render it
+      // as the same "next:" affordance every successful command already prints.
+      if (e?.hint) process.stderr.write(pc.dim(`  next: ${e.hint}`) + "\n");
       process.exitCode = 1;
     }
   };
@@ -161,6 +217,61 @@ export async function daemonRequest(port, path, { method = "GET", body, timeoutM
   return payload;
 }
 
+// Follow one daemon task's live SSE event stream, printing each event as a
+// human line (or NDJSON with json=true). Returns when the stream ends. Shared
+// by `ge runs events --follow` and the `--follow` flags on pipeline/fleet-repair/
+// autopilot run, so "start it" and "watch it" can be one command.
+export async function followTaskEvents(port, id, { json = false } = {}) {
+  // The daemon's SSE frames carry `id:` (the event seq) and support
+  // Last-Event-ID resume (protocol v3) — so a dropped connection reconnects
+  // and continues from the last event seen instead of losing the tail or
+  // replaying from zero. A clean server close (run reached a terminal state)
+  // ends the follow; only mid-stream network errors trigger reconnects.
+  let lastEventId = 0;
+  let retries = 0;
+  for (;;) {
+    let response;
+    try {
+      response = await fetch(`http://127.0.0.1:${port}/api/tasks/${encodeURIComponent(id)}/events`, {
+        headers: lastEventId ? { "Last-Event-ID": String(lastEventId) } : undefined,
+      });
+    } catch (error) {
+      if (++retries > 5) throw new Error(`daemon task events failed after ${retries} attempts: ${error.message}`);
+      elog(`stream dropped — reconnecting from event ${lastEventId} (${retries}/5)`);
+      await new Promise((resolve) => setTimeout(resolve, 500 * retries));
+      continue;
+    }
+    if (!response.ok || !response.body) throw new Error(`daemon task events failed: ${response.status}`);
+    retries = 0;
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    try {
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) return; // server closed cleanly: the run is terminal
+        buffer += decoder.decode(value, { stream: true });
+        let idx;
+        while ((idx = buffer.indexOf("\n\n")) >= 0) {
+          const frame = buffer.slice(0, idx);
+          buffer = buffer.slice(idx + 2);
+          const lines = frame.split(/\r?\n/);
+          const idLine = lines.find((part) => part.startsWith("id: "));
+          if (idLine) lastEventId = Number(idLine.slice(4)) || lastEventId;
+          const line = lines.find((part) => part.startsWith("data: "));
+          if (!line) continue;
+          const event = JSON.parse(line.slice(6));
+          out(json ? JSON.stringify(event) : `${pc.dim(event.ts || "")} ${event.level === "error" ? pc.red(event.type) : pc.cyan(event.type)} ${event.line || ""}`);
+        }
+      }
+    } catch (error) {
+      if (++retries > 5) throw new Error(`daemon task events failed after ${retries} attempts: ${error.message}`);
+      elog(`stream dropped — reconnecting from event ${lastEventId} (${retries}/5)`);
+      await new Promise((resolve) => setTimeout(resolve, 500 * retries));
+    }
+  }
+}
+
 export function statusText(status) {
   if (status === "done" || status === "passed" || status === "repaired") return pc.green(status);
   if (status === "running" || status === "queued" || status === "doctor_running" || status === "repairing") return pc.cyan(status);
@@ -172,11 +283,11 @@ export function parseIds(ids) {
   return parseList(String(ids || ""));
 }
 
-export function renderAutopilotSummary(task) {
+export function renderRepairSummary(task) {
   const run = task.output?.run || {};
   const summary = task.summary || {};
   const counts = task.output?.counts || summary.counts || run;
-  out(pc.bold(`\nAutopilot ${task.id}`));
+  out(pc.bold(`\nRepair run ${task.id}`));
   out(`  status    ${statusText(run.status || task.status)}`);
   out(`  target    ${pc.cyan(run.targetStage || task.input?.targetStage || summary.input?.targetStage || "preview")}`);
   out(`  mode      ${pc.dim(run.options?.mode || "<unknown>")}`);
@@ -258,7 +369,7 @@ export function renderMissionBrief(graph) {
 }
 
 export function renderMissionGraph(graph) {
-  out(pc.bold(`\nMission ${graph.id}`));
+  out(pc.bold(`\nPipeline run ${graph.id}`));
   out(`  status    ${statusText(graph.status)}`);
   out(`  target    ${pc.cyan(graph.input?.targetStage || "preview")}`);
   out(`  nodes     ${graph.counts?.done || 0} done · ${graph.counts?.blocked || 0} blocked · ${graph.counts?.pending || 0} pending · ${graph.counts?.total || 0} total`);
@@ -275,7 +386,7 @@ export function renderMissionGraph(graph) {
 }
 
 export function renderJourneyPlan(journey) {
-  out(pc.bold(`\nJourney ${journey.id}`));
+  out(pc.bold(`\nPipeline ${journey.id}`));
   out(`  status    ${statusText(journey.status)}`);
   out(`  target    ${pc.cyan(journey.targetStage || "preview")}`);
   if (journey.input?.scenario) out(`  scenario  ${pc.cyan(journey.input.scenario)}`);
@@ -305,7 +416,10 @@ export function renderChecks(checks, pad = 22) {
   }
 }
 
-// Effective mode: --remote/--local override the persisted cfg.mode.
-export const modeOf = (args, cfg) => (args.remote ? "remote" : args.local ? "local" : cfg.mode || "remote");
+// Effective mode: --remote/--local override the persisted cfg.mode. The
+// fallback mirrors the config contract's fail-safe default (config-schema.mjs:
+// a fresh checkout must NOT touch GCP), so a missing mode can never silently
+// target the cloud.
+export const modeOf = (args, cfg) => (args.remote ? "remote" : args.local ? "local" : cfg.mode || "local");
 // Local "build boundary": the last pre-cloud harness stage. Local builds stop here.
 export const LOCAL_BUILD_BOUNDARY = "previewed";

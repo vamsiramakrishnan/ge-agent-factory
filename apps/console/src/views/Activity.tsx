@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Button, EmptyState, PageHeader, Segmented } from "@ge/ui";
 import { useActivity } from "../hooks/useActivity";
 import { useUrlParam } from "../lib/useUrlState";
 import { StatusPill } from "../components/StatusPill";
 import { ErrorBanner } from "../components/ErrorBanner";
 import { StatusChip, normalizeStatus, type RunStatus } from "../lib/runStatus";
 import { useRunFollow } from "../state/runFollow";
+import { useGeQuery } from "../lib/query";
 import {
   ge,
   streamJob,
@@ -90,15 +92,25 @@ function matchesStatusFilter(status: RunStatus, filter: string): boolean {
 
 export default function Activity() {
   const { agents, loading, error, refresh } = useActivity(8000);
-  const [jobs, setJobs] = useState<GeJob[]>([]);
-  const [factoryRuns, setFactoryRuns] = useState<FactoryRunSummary[]>([]);
-  const [runtimeTasks, setRuntimeTasks] = useState<RuntimeTaskSummary[]>([]);
-  const [jobsError, setJobsError] = useState<string | null>(null);
+  // The three run sources come from the shared query layer — one cadence,
+  // shared cache, global job-done invalidation (lib/query.ts).
+  const jobsQuery = useGeQuery(["jobs", 25], () => ge.jobs(25), { intervalMs: 5000 });
+  const factoryQuery = useGeQuery(["factoryRuns", 10], () => ge.factoryRuns(10), { intervalMs: 5000 });
+  const runtimeQuery = useGeQuery(["runtimeTasks", 25], () => ge.runtimeTasks(25, true), { intervalMs: 5000 });
+  const jobs: GeJob[] = jobsQuery.data?.jobs ?? [];
+  const factoryRuns: FactoryRunSummary[] = factoryQuery.data?.runs ?? [];
+  const runtimeTasks: RuntimeTaskSummary[] = runtimeQuery.data?.tasks ?? [];
+  const listsError = (jobsQuery.error || factoryQuery.error || runtimeQuery.error) as Error | null;
+  const listsErrorMessage = listsError ? listsError.message || "Failed to load jobs" : null;
+  const loadingLists = jobsQuery.isLoading || factoryQuery.isLoading || runtimeQuery.isLoading;
+  const refreshJobs = async () => {
+    await Promise.all([jobsQuery.refetch(), factoryQuery.refetch(), runtimeQuery.refetch()]);
+  };
+  const [actionError, setActionError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [jobLines, setJobLines] = useState<string[]>([]);
   const [runtimeLines, setRuntimeLines] = useState<string[]>([]);
   const [resumingTask, setResumingTask] = useState<string | null>(null);
-  const [loadingLists, setLoadingLists] = useState(true);
   const { followRun } = useRunFollow();
 
   // Filters live in the hash query so a filtered timeline is shareable + reload-safe
@@ -106,28 +118,6 @@ export default function Activity() {
   const [search, setSearch] = useUrlParam("q", "");
   const [kindFilter, setKindFilter] = useUrlParam("kind", "all");
   const [statusFilter, setStatusFilter] = useUrlParam("status", "all");
-
-  const refreshJobs = async () => {
-    try {
-      const r = await ge.jobs(25);
-      setJobs(r.jobs);
-      const factory = await ge.factoryRuns(10);
-      setFactoryRuns(factory.runs || []);
-      const runtime = await ge.runtimeTasks(25, true);
-      setRuntimeTasks(runtime.tasks || []);
-      setJobsError(null);
-      setLoadingLists(false);
-    } catch (err: any) {
-      setJobsError(err.message || "Failed to load jobs");
-      setLoadingLists(false);
-    }
-  };
-
-  useEffect(() => {
-    refreshJobs();
-    const interval = window.setInterval(refreshJobs, 5000);
-    return () => window.clearInterval(interval);
-  }, []);
 
   // Deep-link target: a "Watch run" handoff arrives as #/activity?task=<id>. The
   // drawer is the primary watch path now, so open it via followRun ONCE per task —
@@ -156,7 +146,7 @@ export default function Activity() {
       await ge.runtimeResume(id);
       await refreshJobs();
     } catch (err: any) {
-      setJobsError(err.message || "Failed to resume runtime task");
+      setActionError(err.message || "Failed to resume runtime task");
     } finally {
       setResumingTask(null);
     }
@@ -284,24 +274,18 @@ export default function Activity() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
-      <div className="mb-6">
-        <div className="flex items-baseline justify-between mb-2">
-          <h1 className="text-2xl font-bold text-on-surface">Runs</h1>
-          <button
-            onClick={handleRefresh}
-            disabled={loading && agents.length === 0}
-            className="px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/10 transition-colors rounded-lg disabled:opacity-50"
-          >
+      <PageHeader
+        title="Runs"
+        subtitle="One timeline for every run — missions, factory builds, and console jobs, newest first."
+        actions={
+          <Button variant="ghost" size="sm" onClick={handleRefresh} disabled={loading && agents.length === 0}>
             Refresh
-          </button>
-        </div>
-        <p className="text-sm text-secondary">
-          One timeline for every run — missions, factory builds, and console jobs, newest first.
-        </p>
-      </div>
+          </Button>
+        }
+      />
 
       {error && <ErrorBanner tone="amber" message={error} onRetry={refresh} />}
-      {jobsError && <ErrorBanner tone="amber" message={jobsError} onRetry={refreshJobs} />}
+      {(listsErrorMessage || actionError) && <ErrorBanner tone="amber" message={listsErrorMessage || actionError || ""} onRetry={refreshJobs} />}
 
       <section className="mb-8">
         <div className="mb-3 flex flex-col gap-3">
@@ -319,28 +303,18 @@ export default function Activity() {
                 className="h-10 w-full rounded-lg border border-outline-variant/50 bg-surface px-3 text-sm text-on-surface outline-none transition-colors placeholder:text-secondary focus:border-primary/60"
               />
             </label>
-            <div className="inline-flex rounded-lg border border-outline-variant/50 bg-surface p-1">
-              {KIND_FILTERS.map(([value, label]) => (
-                <button
-                  key={value}
-                  onClick={() => setKindFilter(value)}
-                  className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${kindFilter === value ? "bg-primary text-on-primary" : "text-secondary hover:bg-surface-container"}`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-            <div className="inline-flex rounded-lg border border-outline-variant/50 bg-surface p-1">
-              {STATUS_FILTERS.map(([value, label]) => (
-                <button
-                  key={value}
-                  onClick={() => setStatusFilter(value)}
-                  className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${statusFilter === value ? "bg-primary text-on-primary" : "text-secondary hover:bg-surface-container"}`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+            <Segmented
+              aria-label="Filter by kind"
+              options={KIND_FILTERS.map(([value, label]) => ({ value, label }))}
+              value={kindFilter}
+              onChange={setKindFilter}
+            />
+            <Segmented
+              aria-label="Filter by status"
+              options={STATUS_FILTERS.map(([value, label]) => ({ value, label }))}
+              value={statusFilter}
+              onChange={setStatusFilter}
+            />
           </div>
         </div>
 
@@ -361,22 +335,31 @@ export default function Activity() {
             ))}
           </div>
         ) : unifiedRows.length === 0 ? (
-          <div className="editorial-micro-card rounded-lg p-5 text-sm text-secondary">
-            No runs recorded yet.{" "}
-            <a href="#/journey" className="font-medium text-primary hover:underline">Open the Pipeline</a>{" "}
-            to build an agent or start a mission — it'll show up here.
+          <div className="editorial-micro-card rounded-lg">
+            <EmptyState
+              title="No runs recorded yet."
+              detail={
+                <>
+                  <a href="#/pipeline" className="font-medium text-primary hover:underline">Open the Pipeline</a>{" "}
+                  to build an agent or start a mission — it'll show up here.
+                </>
+              }
+            />
           </div>
         ) : filteredRows.length === 0 ? (
-          <div className="editorial-micro-card rounded-lg p-5 text-sm text-secondary">
-            No runs match the current filters.{" "}
-            {hasFilters && (
-              <button
-                onClick={() => { setSearch(""); setKindFilter("all"); setStatusFilter("all"); }}
-                className="font-medium text-primary hover:underline"
-              >
-                Clear filters
-              </button>
-            )}
+          <div className="editorial-micro-card rounded-lg">
+            <EmptyState
+              title="No runs match the current filters."
+              action={hasFilters ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => { setSearch(""); setKindFilter("all"); setStatusFilter("all"); }}
+                >
+                  Clear filters
+                </Button>
+              ) : undefined}
+            />
           </div>
         ) : (
           <div className="space-y-2">
@@ -407,13 +390,17 @@ export default function Activity() {
           <div className="mt-4 text-sm text-secondary text-center">Loading activity...</div>
         </div>
       ) : agents.length === 0 ? (
-        <div className="editorial-micro-card rounded-lg p-12 text-center">
-          <div className="text-secondary mb-2">No active runs yet</div>
-          <div className="text-sm text-secondary">
-            <a href="#/journey" className="font-medium text-primary hover:underline">Start a run from the Pipeline</a>{" "}
-            or build an agent from the{" "}
-            <a href="#/fleet" className="font-medium text-primary hover:underline">Fleet</a> to get started.
-          </div>
+        <div className="editorial-micro-card rounded-lg">
+          <EmptyState
+            title="No active runs yet"
+            detail={
+              <>
+                <a href="#/pipeline" className="font-medium text-primary hover:underline">Start a run from the Pipeline</a>{" "}
+                or build an agent from the{" "}
+                <a href="#/fleet" className="font-medium text-primary hover:underline">Fleet</a> to get started.
+              </>
+            }
+          />
         </div>
       ) : (
         <div className="space-y-2">
@@ -496,13 +483,9 @@ function TimelineRowCard({
         <div className="hidden max-w-sm truncate text-xs text-secondary sm:block">
           {row.summary}
         </div>
-        <button
-          onClick={onFollow}
-          className="shrink-0 rounded-md border border-outline-variant/50 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/10"
-          title="Follow this run live"
-        >
+        <Button variant="ghost" size="sm" className="shrink-0" onClick={onFollow} title="Follow this run live">
           Follow
-        </button>
+        </Button>
         <button
           onClick={onToggle}
           className="shrink-0 rounded-md border border-outline-variant/50 px-3 py-1.5 text-xs font-medium text-secondary hover:bg-surface-container"
@@ -510,13 +493,9 @@ function TimelineRowCard({
           {expanded ? `Hide ${detailLabel}` : detailLabel}
         </button>
         {canResume && (
-          <button
-            onClick={() => onResume(row.id)}
-            disabled={resuming}
-            className="shrink-0 rounded-md border border-outline-variant/50 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/10 disabled:opacity-50"
-          >
+          <Button variant="ghost" size="sm" className="shrink-0" onClick={() => onResume(row.id)} loading={resuming}>
             {resuming ? "Resuming" : "Resume"}
-          </button>
+          </Button>
         )}
       </div>
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { Button, CommandChip, PageHeader, Segmented, Select } from "@ge/ui";
 import { streamDoctor, startJob, type StatusBoard, type DoctorReport as DoctorReportData, type DoctorEvent } from "../services/geClient";
 import { DoctorReport } from "../components/DoctorReport";
 import { RuntimeStatusCard } from "../components/RuntimeStatusBadge";
@@ -167,10 +168,6 @@ export default function Doctor({ status }: DoctorProps) {
     if (recommended) void runFix(recommended, followRun);
   };
 
-  const handleCopyRecommended = async () => {
-    if (recommended) { try { await navigator.clipboard.writeText(recommended); } catch { /* ignore */ } }
-  };
-
   const handleFixAll = async () => {
     setFixingAll(true);
     try {
@@ -210,51 +207,37 @@ export default function Doctor({ status }: DoctorProps) {
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
-      <div className="mb-6">
-        <div className="flex items-baseline justify-between mb-4">
-          <h1 className="text-2xl font-bold text-on-surface">Readiness</h1>
-          <button
-            onClick={() => fetchReport(scope, command)}
-            disabled={loading}
-            className="px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/10 transition-colors rounded-lg disabled:opacity-50"
-          >
+      <PageHeader
+        title="Readiness"
+        actions={
+          <Button variant="ghost" size="sm" onClick={() => fetchReport(scope, command)} disabled={loading}>
             Re-run
-          </button>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {scopeOptions.map((option) => (
-            <button
-              key={option.value}
-              onClick={() => setScopeParam(option.value)}
-              aria-pressed={scope === option.value}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                scope === option.value
-                  ? "bg-primary text-white"
-                  : "bg-surface-container-low text-secondary hover:bg-surface-container"
-              }`}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
+          </Button>
+        }
+      >
+        <Segmented
+          aria-label="Readiness scope"
+          options={scopeOptions}
+          value={scope}
+          onChange={(value) => setScopeParam(value)}
+        />
         <p className="mt-2 text-xs text-secondary">Verifies {SCOPE_CAPTIONS[scope]}.</p>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <span className="text-xs font-medium text-secondary">Readiness target</span>
-          <select
+          <Select
             value={command}
             onChange={(event) => setCommandParam(event.target.value)}
-            className="rounded-lg border border-outline-variant/50 bg-surface px-3 py-2 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="max-w-xs"
           >
             {commandOptions.map((option) => (
               <option key={option.value || "none"} value={option.value}>
                 {option.label}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
-      </div>
+      </PageHeader>
 
       {error && <ErrorBanner message={error} onRetry={() => fetchReport(scope, command)} />}
 
@@ -271,22 +254,12 @@ export default function Doctor({ status }: DoctorProps) {
           </div>
           {!loading && (counts.fail > 0 || counts.warn > 0) && recommended && (
             <div className="flex flex-wrap items-center gap-2">
-              {resolveFix(recommended) ? (
-                <button
-                  onClick={handleRunRecommended}
-                  className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-container"
-                >
+              {resolveFix(recommended) && (
+                <Button variant="primary" size="sm" onClick={handleRunRecommended}>
                   Run <code className="font-mono">{resolveFix(recommended)!.label}</code>
-                </button>
-              ) : (
-                <span className="rounded-lg bg-surface-container-low px-3 py-2 text-xs font-mono text-on-surface">{recommended}</span>
+                </Button>
               )}
-              <button
-                onClick={handleCopyRecommended}
-                className="rounded-lg px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
-              >
-                Copy
-              </button>
+              <CommandChip command={recommended} />
               {runnableRepairs.length >= 2 && (
                 <button
                   onClick={handleFixAll}

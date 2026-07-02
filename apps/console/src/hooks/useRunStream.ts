@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   streamLedgerRun,
   streamLogs,
+  type LedgerEvent,
   type StreamStatus,
 } from "../services/geClient";
 import { type RunStatus } from "../lib/runStatus";
@@ -29,6 +30,10 @@ export interface RunStreamState {
   reconnecting: boolean;
   complete: boolean;
   hasEvents: boolean;
+  // The full ordered event list, retained so a finished run can be REPLAYED:
+  // the reducer is pure, so any position in the run is a fold over a prefix
+  // of this array (see useRunScrubber).
+  events: LedgerEvent[];
 }
 
 // Subscribe to a run's live ledger stream and reduce it into an ordered stage
@@ -45,6 +50,7 @@ export function useRunStream(runId: string | null): RunStreamState {
   const accRef = useRef(createRunAccumulator());
   const tailRef = useRef<string[]>([]);
   const hasEventsRef = useRef(false);
+  const eventsRef = useRef<LedgerEvent[]>([]);
 
   // Re-render at ~1s so running stage elapsed clocks tick without new events.
   const [, setTick] = useState(0);
@@ -54,6 +60,7 @@ export function useRunStream(runId: string | null): RunStreamState {
     accRef.current = createRunAccumulator();
     tailRef.current = [];
     hasEventsRef.current = false;
+    eventsRef.current = [];
     setState(emptyState(runId));
 
     if (!runId) return;
@@ -73,6 +80,7 @@ export function useRunStream(runId: string | null): RunStreamState {
         reconnecting: false, // ledger stream is terminal-close, not reconnect-churn
         complete: acc.signals.complete,
         hasEvents: hasEventsRef.current,
+        events: eventsRef.current,
       });
     };
 
@@ -104,6 +112,9 @@ export function useRunStream(runId: string | null): RunStreamState {
 
     const unsubLedger = streamLedgerRun(runId, (ev) => {
       hasEventsRef.current = true;
+      // Retain the raw ordered stream for replay (new array so React memo
+      // consumers see the change).
+      eventsRef.current = [...eventsRef.current, ev];
       const acc = accRef.current;
       if (ev.stage && !acc.firstSeen.includes(ev.stage)) acc.firstSeen.push(ev.stage);
       // Live command-output frames (remote): text rides in data.lines. Feed the tail
@@ -164,5 +175,6 @@ function emptyState(runId: string | null): RunStreamState {
     reconnecting: false,
     complete: false,
     hasEvents: false,
+    events: [],
   };
 }

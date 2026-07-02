@@ -19,19 +19,15 @@ import { join, resolve } from "node:path";
 import { readJson, writeJson } from "@ge/std/json-io";
 import { resolveGcpProject } from "@ge/std/gcp-config";
 import * as core from "../factory-core.mjs";
-import { execStream } from "../exec-stream.mjs";
 import { verifyMissionArtifacts } from "../mission/mission-artifacts.mjs";
 import { REPO_ROOT } from "../state-paths.mjs";
+import { runStreamedTask } from "./task-runner.mjs";
 import {
   appendEvent,
-  appendResumeAttempt,
   createRun,
   interactionDir,
   newTaskId,
   runMetaPath,
-  runOutput,
-  terminalStatusForCode,
-  updateRun,
 } from "./run-store.mjs";
 
 const HARNESS_CLI = join(REPO_ROOT, "apps", "factory", "src", "cli.js");
@@ -175,102 +171,50 @@ export function inspectHarnessArtifacts(run, result = null) {
   return { artifactRefs: artifactCheck.artifacts, artifactCheck };
 }
 
+// Shared execution shape; the skeleton (events, exit mapping, resume
+// attempts, output merge) lives in task-runner.mjs. Harness-specific bits:
+// the interaction-form dir in env, trimmed stdout/stderr + artifact
+// inspection as run output, and artifact inspection even on spawn failure.
+function harnessExecution(run, startLine) {
+  mkdirSync(interactionDir(run.id), { recursive: true });
+  return {
+    stage: "harness.run",
+    startLine,
+    cmd: process.execPath,
+    args: harnessRunArgv(run.input || {}),
+    env: { ...process.env, CLOUDSDK_CORE_DISABLE_PROMPTS: "1", GE_HARNESS_INTERACTION_DIR: interactionDir(run.id) },
+    output: (result) => ({
+      stdout: result.stdout.slice(-8000),
+      stderr: result.stderr.slice(-8000),
+      ...inspectHarnessArtifacts(run, result),
+    }),
+    failureOutput: () => inspectHarnessArtifacts(run),
+  };
+}
+
 export function startHarnessRunTask(input = {}) {
   const resolvedInput = resolveHarnessRunInput(input);
   if (!safeHarnessRunInput(resolvedInput)) throw new Error("harness run input is not classified safe to run");
   if (resolvedInput.vertex !== false && (!resolvedInput.project || !resolvedInput.location) && !process.env.GEMINI_API_KEY && !process.env.GOOGLE_API_KEY) {
     throw new Error("Antigravity Vertex execution requires project and location. Run `ge init`, set GOOGLE_CLOUD_PROJECT, or provide an API key for Express Mode.");
   }
-  const args = harnessRunArgv(resolvedInput);
   const run = createRun({
     id: newTaskId("harness"),
     kind: "harness.run",
     input: resolvedInput,
   });
-  mkdirSync(interactionDir(run.id), { recursive: true });
-  appendEvent(run.id, { type: "stage_started", stage: "harness.run", line: `$ node apps/factory/src/cli.js agent run --workspace-dir ${resolvedInput.workspaceDir || resolvedInput.workspace || "."} --agent ${resolvedInput.agent || resolvedInput.provider || "antigravity-sdk"} --stage ${resolvedInput.stage || "review"}` });
-
-  execStream(process.execPath, args, {
-    cwd: REPO_ROOT,
-    env: { ...process.env, CLOUDSDK_CORE_DISABLE_PROMPTS: "1", GE_HARNESS_INTERACTION_DIR: interactionDir(run.id) },
-    meta: { runId: run.id, stage: "harness.run" },
-    onEvent: (event) => appendEvent(run.id, event),
-  }).then((result) => {
-    const status = terminalStatusForCode(result.code);
-    appendEvent(run.id, {
-      type: status === "done" ? "stage_done" : "stage_failed",
-      stage: "harness.run",
-      level: status === "done" ? "info" : "error",
-      line: `exit ${result.code}`,
-      data: { code: result.code, signal: result.signal || null },
-    });
-    updateRun(run.id, {
-      status,
-      code: result.code,
-      endedAt: new Date().toISOString(),
-      output: {
-        stdout: result.stdout.slice(-8000),
-        stderr: result.stderr.slice(-8000),
-        ...inspectHarnessArtifacts(run, result),
-      },
-    });
-  }).catch((error) => {
-    const line = error?.message || String(error);
-    appendEvent(run.id, { type: "stage_failed", stage: "harness.run", level: "error", line });
-    updateRun(run.id, {
-      status: "failed",
-      code: 1,
-      endedAt: new Date().toISOString(),
-      error: line,
-      output: inspectHarnessArtifacts(run),
-    });
+  return runStreamedTask({
+    run,
+    ...harnessExecution(run, `$ node apps/factory/src/cli.js agent run --workspace-dir ${resolvedInput.workspaceDir || resolvedInput.workspace || "."} --agent ${resolvedInput.agent || resolvedInput.provider || "antigravity-sdk"} --stage ${resolvedInput.stage || "review"}`),
   });
-
-  return run;
 }
 
 export function resumeHarnessRunTask(run) {
   if (!safeHarnessRunInput(run.input || {})) throw new Error("stored harness run input is not classified safe to run");
-  const args = harnessRunArgv(run.input || {});
-  mkdirSync(interactionDir(run.id), { recursive: true });
-  updateRun(run.id, { status: "running", endedAt: null, error: null });
-  appendEvent(run.id, { type: "stage_started", stage: "harness.run", line: `$ node apps/factory/src/cli.js agent run --agent ${run.input?.agent || run.input?.provider || "antigravity-sdk"} --stage ${run.input?.stage || "review"} (resume)` });
-  execStream(process.execPath, args, {
-    cwd: REPO_ROOT,
-    env: { ...process.env, CLOUDSDK_CORE_DISABLE_PROMPTS: "1", GE_HARNESS_INTERACTION_DIR: interactionDir(run.id) },
-    meta: { runId: run.id, stage: "harness.run" },
-    onEvent: (event) => appendEvent(run.id, event),
-  }).then((result) => {
-    const status = terminalStatusForCode(result.code);
-    appendEvent(run.id, {
-      type: status === "done" ? "resume_done" : "resume_failed",
-      stage: "harness.run",
-      level: status === "done" ? "info" : "error",
-      line: `exit ${result.code}`,
-      data: { code: result.code, signal: result.signal || null },
-    });
-    appendResumeAttempt(run.id, { status, action: "rerun_harness", code: result.code });
-    updateRun(run.id, {
-      status,
-      code: result.code,
-      endedAt: new Date().toISOString(),
-      output: {
-        ...runOutput(run.id),
-        stdout: result.stdout.slice(-8000),
-        stderr: result.stderr.slice(-8000),
-        ...inspectHarnessArtifacts(run, result),
-      },
-    });
-  }).catch((error) => {
-    const line = error?.message || String(error);
-    appendEvent(run.id, { type: "resume_failed", stage: "harness.run", level: "error", line });
-    appendResumeAttempt(run.id, { status: "failed", action: "rerun_harness", error: line });
-    updateRun(run.id, {
-      status: "failed",
-      code: 1,
-      endedAt: new Date().toISOString(),
-      error: line,
-      output: { ...runOutput(run.id), ...inspectHarnessArtifacts(run) },
-    });
+  runStreamedTask({
+    run,
+    resume: true,
+    resumeAction: "rerun_harness",
+    ...harnessExecution(run, `$ node apps/factory/src/cli.js agent run --agent ${run.input?.agent || run.input?.provider || "antigravity-sdk"} --stage ${run.input?.stage || "review"}`),
   });
 }

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { Button, ButtonLink, CommandChip, cx } from "@ge/ui";
 import {
   ge,
   streamRuntimeEvents,
@@ -7,6 +8,7 @@ import {
   type RuntimeInteractionForm as RuntimeInteractionFormSchema,
   type RuntimeStatus,
   type RuntimeTaskSummary,
+  type SpecRegisterResult,
   type StatusBoard,
 } from "../services/geClient";
 import { InterviewPane } from "../components/interview/InterviewPane";
@@ -46,7 +48,7 @@ export default function Interview({ status }: { status?: StatusBoard | null }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [runtimeStatus, setRuntimeStatus] = useState<RuntimeStatus | null>(null);
-  const [copiedCommand, setCopiedCommand] = useState(false);
+  const [registeredSpec, setRegisteredSpec] = useState<SpecRegisterResult | null>(null);
   const [leftWidth, setLeftWidth] = useState(DEFAULT_LEFT);
 
   const usecaseId = useMemo(() => slugify(outcome), [outcome]);
@@ -199,25 +201,52 @@ export default function Interview({ status }: { status?: StatusBoard | null }) {
     };
   }, []);
 
+  // Progress narrative: derived only from signals we already have (task presence,
+  // agent-emitted interaction forms, the agent-spec artifact landing, task terminal
+  // status, and the SpecCanvas register hand-back) — no invented precision.
+  const answeredCount = interactions.filter((item) => item.answered).length;
+  const specPresent = (task?.artifactRefs || []).some(
+    (artifact) => artifact.name === "agent-spec" && artifact.status === "present",
+  );
+  const taskSettled = task?.status === "succeeded" || task?.status === "done";
+  const steps: ProgressStep[] = [
+    { key: "brief", label: "Brief", state: task ? "done" : "active" },
+    {
+      key: "interview",
+      label: "Interview",
+      state: !task ? "pending" : specPresent || taskSettled ? "done" : "active",
+      detail: interactions.length > 0 ? `${answeredCount}/${interactions.length} answered` : undefined,
+    },
+    {
+      key: "spec",
+      label: "Spec",
+      state: specPresent || taskSettled ? (registeredSpec ? "done" : "active") : "pending",
+    },
+    { key: "register", label: "Registered", state: registeredSpec ? "done" : "pending" },
+  ];
+
   return (
     <div className="flex h-full flex-col">
-      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-outline-variant/40 px-6 py-4">
-        <div>
-          <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-secondary">Pipeline / Stage 1</div>
-          <h1 className="text-xl font-bold text-on-surface">Interview to Spec</h1>
-          <p className="mt-1 max-w-2xl text-sm text-secondary">
-            The agent drives the interview on the left; the spec materializes, structured and editable, on the right.
-          </p>
+      <div className="border-b border-outline-variant/40 px-6 py-4">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-secondary">Pipeline · Stage 1</div>
+            <h1 className="text-xl font-bold text-on-surface">Interview to Spec</h1>
+            <p className="mt-1 max-w-2xl text-sm text-secondary">
+              The agent drives the interview on the left; the spec materializes, structured and editable, on the right.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <ButtonLink href="#/pipeline" variant="outline" size="sm">
+              <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
+              Back to Pipeline
+            </ButtonLink>
+            <ButtonLink href="#/activity" variant="outline" size="sm">
+              Open Runs
+            </ButtonLink>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <a href="#/journey" className="inline-flex items-center gap-2 rounded-md border border-outline-variant/50 px-3 py-1.5 text-xs font-medium text-secondary hover:bg-surface-container">
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Back to Pipeline
-          </a>
-          <a href="#/activity" className="rounded-md border border-outline-variant/50 px-3 py-1.5 text-xs font-medium text-secondary hover:bg-surface-container">
-            Open Runs
-          </a>
-        </div>
+        <InterviewProgress steps={steps} />
       </div>
 
       {error && <ErrorBanner tone="amber" message={error} className="mx-6 mt-3" />}
@@ -232,20 +261,11 @@ export default function Interview({ status }: { status?: StatusBoard | null }) {
               </p>
               {runtimeStatus?.error && <div className="mt-1 text-xs text-amber-700/80">{runtimeStatus.error}</div>}
             </div>
-            <div className="flex shrink-0 items-center gap-2">
-              <button
-                onClick={async () => {
-                  await navigator.clipboard?.writeText(restartCommand);
-                  setCopiedCommand(true);
-                  window.setTimeout(() => setCopiedCommand(false), 1500);
-                }}
-                className="rounded-md border border-amber-500/30 bg-white/40 px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-white/70"
-              >
-                {copiedCommand ? "Copied" : restartCommand}
-              </button>
-              <button onClick={refreshRuntime} className="rounded-md border border-amber-500/30 bg-white/40 px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-white/70">
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              <CommandChip command={restartCommand} />
+              <Button variant="outline" size="sm" onClick={refreshRuntime}>
                 Recheck
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -286,11 +306,59 @@ export default function Interview({ status }: { status?: StatusBoard | null }) {
           <div className="h-12 w-1 rounded-full bg-outline-variant/60 transition-colors group-hover:bg-primary/50" />
         </div>
 
-        <div className="mt-4 min-h-[60vh] flex-1 overflow-hidden rounded-lg border border-outline-variant/40 bg-surface lg:mt-0 lg:min-h-0">
-          <SpecCanvas usecaseId={usecaseId} task={task} events={events} />
+        <div className="mt-4 min-h-[60vh] flex-1 overflow-hidden rounded-lg border border-outline-variant/40 bg-surface shadow-ambient lg:mt-0 lg:min-h-0">
+          <SpecCanvas usecaseId={usecaseId} task={task} events={events} onRegistered={setRegisteredSpec} />
         </div>
       </div>
     </div>
+  );
+}
+
+type ProgressStepState = "done" | "active" | "pending";
+interface ProgressStep { key: string; label: string; state: ProgressStepState; detail?: string }
+
+/**
+ * Slim step strip narrating the interview's arc: Brief → Interview → Spec →
+ * Registered. States derive from real run signals only; the optional detail chip
+ * ("2/3 answered") counts the agent's interaction forms.
+ */
+function InterviewProgress({ steps }: { steps: ProgressStep[] }) {
+  return (
+    <ol aria-label="Interview progress" className="mt-3 flex flex-wrap items-center gap-y-1.5">
+      {steps.map((step, index) => (
+        <li key={step.key} aria-current={step.state === "active" ? "step" : undefined} className="flex items-center">
+          {index > 0 && <span aria-hidden className="mx-2.5 h-px w-6 bg-outline-variant/60 sm:w-8" />}
+          <span className="flex items-center gap-1.5">
+            {step.state === "done" ? (
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" aria-hidden />
+            ) : (
+              <span
+                aria-hidden
+                className={cx(
+                  "h-2 w-2 rounded-full",
+                  step.state === "active"
+                    ? "bg-primary animate-pulse motion-reduce:animate-none"
+                    : "bg-outline-variant",
+                )}
+              />
+            )}
+            <span
+              className={cx(
+                "text-xs font-medium",
+                step.state === "done" ? "text-on-surface" : step.state === "active" ? "text-primary" : "text-secondary/80",
+              )}
+            >
+              {step.label}
+            </span>
+            {step.detail && (
+              <span className="rounded-full bg-surface-container px-1.5 py-0.5 text-[10px] font-medium text-secondary">
+                {step.detail}
+              </span>
+            )}
+          </span>
+        </li>
+      ))}
+    </ol>
   );
 }
 

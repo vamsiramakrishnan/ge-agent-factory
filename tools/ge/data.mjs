@@ -1,12 +1,13 @@
 // tools/ge/data.mjs — `ge data up|doctor` (shared data plane). Moved
 // verbatim out of tools/ge.mjs.
 import { defineCommand } from "citty";
-import { guarded, common, cfgFrom, emit, out, pc, blog, core, renderChecks } from "./shared.mjs";
+import { guarded, common, cfgFrom, emit, out, pc, blog, core, renderChecks, announceExpectedDuration } from "./shared.mjs";
 
 const dataUp = defineCommand({
   meta: { name: "up", description: "Provision the shared data stores (terraform apply) → merge coords into .ge.json" },
   args: { ...common },
   run: guarded(async ({ args }) => {
+    announceExpectedDuration("data.up");
     const res = await core.dataUp(cfgFrom(args), { log: blog });
     emit(args, res, (r) => {
       out(pc.green("\n✓ data plane applied. Coordinates written to .ge.json:"));

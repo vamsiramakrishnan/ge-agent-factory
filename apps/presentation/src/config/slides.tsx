@@ -459,6 +459,25 @@ export interface SlideConfig {
   department?: "hr" | "procurement" | "finance" | "marketing" | "it";
 }
 
+// Act V divider — counts derive from the registry itself at render time (SLIDES
+// is fully built by then), so adding a department/domain/agent can never leave
+// this headline stale again.
+function MapDividerSlide() {
+  const agents = SLIDES.filter((s) => s.level === 4).length;
+  const domains = SLIDES.filter((s) => s.level === 3).length;
+  const departments = SLIDES.filter((s) => s.level === 2).map((s) => s.title);
+  return (
+    <SectionDividerSlide
+      sectionNumber="IV"
+      title={`${agents} Agents. ${domains} Domains.`}
+      subtitle={`The complete periodic table of enterprise agentic capabilities — ${departments.join(", ")}. Click any element to explore.`}
+      quote="You can't automate what you don't understand. Start with the people, map the processes, then build the agents."
+      icon={Map}
+      accentColor="#10b981"
+    />
+  );
+}
+
 export const SLIDES: SlideConfig[] = [
 
   // ═══════════════════════════════════════════════════════
@@ -499,10 +518,11 @@ export const SLIDES: SlideConfig[] = [
 
   // ═══════════════════════════════════════════════════════
   // ACT V — THE MAP
-  // 82 agents across 10 domains — the full landscape
+  // The full landscape — every department, domain, and agent.
+  // Counts on the divider are computed from this registry (MapDividerSlide).
   // ═══════════════════════════════════════════════════════
 
-  { id: "act-5", title: "The Map", content: <SectionDividerSlide sectionNumber="IV" title="228 Agents. 28 Domains." subtitle="The complete periodic table of enterprise agentic capabilities — HR, Procurement, and Finance. Click any element to explore." quote="You can't automate what you don't understand. Start with the people, map the processes, then build the agents." icon={Map} accentColor="#10b981" />, level: 0 },
+  { id: "act-5", title: "The Map", content: <MapDividerSlide />, level: 0 },
 
   // L1: Capability Map
   { id: "domain-map", title: "Enterprise Capability Map", content: <PeriodicTableSlide />, level: 1 },

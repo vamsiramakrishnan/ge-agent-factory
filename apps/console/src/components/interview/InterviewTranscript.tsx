@@ -47,16 +47,35 @@ export function InterviewTranscript({ events }: { events: GeEvent[] }) {
 
   const progress = useMemo(() => lifecycleEvents(events), [events]);
   const trimmed = prose.trim();
+  // A terminal lifecycle event settles the transcript; until then the run is live
+  // and the prose gets a quiet typing caret.
+  const settled = useMemo(
+    () => events.some((event) => event.type === "task_done" || event.type === "task_failed"),
+    [events],
+  );
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-secondary">
-        <Radio className="h-4 w-4" />
+      <h3 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-secondary">
+        <Radio className="h-4 w-4" aria-hidden />
         Agent
-      </div>
-      <div className="max-h-80 overflow-y-auto rounded-md border border-outline-variant/30 bg-surface-container/25 px-4 py-3">
+      </h3>
+      <div
+        role="log"
+        aria-live="polite"
+        aria-label="Agent narration"
+        className="max-h-80 overflow-y-auto rounded-md border border-outline-variant/30 bg-surface-container/25 px-4 py-3"
+      >
         {trimmed ? (
-          <p className="text-sm leading-6 text-on-surface whitespace-pre-wrap">{trimmed}</p>
+          <p className="text-sm leading-6 text-on-surface whitespace-pre-wrap">
+            {trimmed}
+            {!settled && (
+              <span
+                aria-hidden
+                className="ml-1 inline-block h-3.5 w-[7px] translate-y-0.5 rounded-[1px] bg-primary/70 animate-pulse motion-reduce:animate-none"
+              />
+            )}
+          </p>
         ) : (
           <p className="py-6 text-center text-sm text-secondary">The agent's narration will stream here.</p>
         )}

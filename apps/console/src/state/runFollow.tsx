@@ -24,10 +24,50 @@ export interface RunFollowState {
 
 const RunFollowContext = createContext<RunFollowState | null>(null);
 
+// The followed run survives a tab close/reload the same way in-flight jobs do
+// (JobToast's ge:active-jobs): persist the follow target and re-attach on boot.
+// Cleared when the operator closes the drawer or the run completes, so a stale
+// finished run doesn't reopen on every load.
+const STORAGE_KEY = "ge.runFollow.active";
+
+function readPersistedFollow(): { runId: string; meta: RunFollowMeta | null } | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed.runId !== "string" || !parsed.runId) return null;
+    return { runId: parsed.runId, meta: parsed.meta ?? null };
+  } catch {
+    // Unavailable/corrupt storage just means no restore — never block boot.
+    return null;
+  }
+}
+
+function persistFollow(runId: string, meta: RunFollowMeta | null) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ runId, meta }));
+  } catch {
+    // Storage full/unavailable: live-follow still works for this session.
+  }
+}
+
+function clearPersistedFollow() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // Nothing to clean up if storage is unavailable.
+  }
+}
+
 export function RunFollowProvider({ children }: { children: ReactNode }) {
-  const [runId, setRunId] = useState<string | null>(null);
-  const [meta, setMeta] = useState<RunFollowMeta | null>(null);
-  const [open, setOpen] = useState(false);
+  // Restore the followed run from the previous session (if any) so closing the
+  // tab mid-run doesn't lose the live view — the drawer re-attaches and the
+  // ledger stream replays events. If the run finished meanwhile, the terminal
+  // frame auto-collapses the drawer and clears the persisted target.
+  const [initial] = useState(readPersistedFollow);
+  const [runId, setRunId] = useState<string | null>(initial?.runId ?? null);
+  const [meta, setMeta] = useState<RunFollowMeta | null>(initial?.meta ?? null);
+  const [open, setOpen] = useState(!!initial);
   const [pinned, setPinned] = useState(false);
 
   const followRun = useCallback((id: string, m?: RunFollowMeta) => {
@@ -36,17 +76,20 @@ export function RunFollowProvider({ children }: { children: ReactNode }) {
     setMeta(m || null);
     setPinned(false);
     setOpen(true);
+    persistFollow(id, m || null);
   }, []);
 
   const unfollow = useCallback(() => {
     setOpen(false);
     setPinned(false);
+    clearPersistedFollow();
   }, []);
 
   const pin = useCallback(() => setPinned(true), []);
   const unpin = useCallback(() => setPinned(false), []);
 
   const onComplete = useCallback(() => {
+    clearPersistedFollow();
     setPinned((isPinned) => {
       if (!isPinned) setOpen(false);
       return isPinned;
