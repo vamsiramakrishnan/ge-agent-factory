@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { parseList } from "@ge/std/list";
 import { buildMissionNode } from "./mission-node-registry.mjs";
-import { STATE_PATHS, relativeToRepo } from "./state-paths.mjs";
+import { STATE_PATHS, relativeToRepo } from "../state-paths.mjs";
 
 const DEMO_ROOT = "apps/factory";
 

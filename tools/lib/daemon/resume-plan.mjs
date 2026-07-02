@@ -11,7 +11,7 @@
 // orchestrator (which still owns resumeTask's cross-kind resume dispatch,
 // since that also needs to call each kind's start/resume function, not just
 // classify it).
-import { isDataMissionNodeKind, safeMissionNodeCommand } from "../mission-node-registry.mjs";
+import { isDataMissionNodeKind, safeMissionNodeCommand } from "../mission/mission-node-registry.mjs";
 import { normalizeRuntimeTask } from "../runtime-contract.mjs";
 import { safeGeCommand, safeProcessCommand } from "./command-run.mjs";
 import { safeHarnessRunInput } from "./harness-run.mjs";

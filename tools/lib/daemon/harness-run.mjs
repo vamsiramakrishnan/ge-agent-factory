@@ -20,7 +20,7 @@ import { readJson, writeJson } from "@ge/std/json-io";
 import { resolveGcpProject } from "@ge/std/gcp-config";
 import * as core from "../factory-core.mjs";
 import { execStream } from "../exec-stream.mjs";
-import { verifyMissionArtifacts } from "../mission-artifacts.mjs";
+import { verifyMissionArtifacts } from "../mission/mission-artifacts.mjs";
 import { REPO_ROOT } from "../state-paths.mjs";
 import {
   appendEvent,

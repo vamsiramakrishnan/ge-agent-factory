@@ -1,7 +1,7 @@
 // tools/ge/mission.mjs — `ge mission plan|run|status|resume`. Moved verbatim
 // out of tools/ge.mjs.
 import { defineCommand } from "citty";
-import { buildMissionGraph } from "../lib/mission-plan.mjs";
+import { buildMissionGraph } from "../lib/mission/mission-plan.mjs";
 import {
   guarded, common, cfgFrom, emit, out, pc,
   daemonPort, daemonStatusSnapshot, daemonRequest, parseIds,
