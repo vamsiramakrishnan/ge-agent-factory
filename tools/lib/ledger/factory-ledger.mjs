@@ -5,8 +5,8 @@
 //
 // Durable run ledger (ADR 0001). Best-effort + cached: opens a local SQLite ledger
 // when a driver is available (bun:sqlite / better-sqlite3), else returns null and
-// callers fall back to the legacy files. Set GE_LEDGER=0 to disable. The cloud
-// control plane points this at AlloyDB via pgAdapter (future phase).
+// callers fall back to the legacy files. Set GE_LEDGER=0 to disable. The hosted
+// control plane reads the Firestore mirror (@ge/run-ledger/firestore) instead.
 
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";

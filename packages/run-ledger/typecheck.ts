@@ -11,7 +11,6 @@ import {
   factoryEventToLedgerOp,
   createRunLedger,
   sqliteAdapter,
-  pgAdapter,
   openRunLedger,
   normalizeStatus,
   RUN_STATUSES,
@@ -163,8 +162,6 @@ ledger.close();
 async function openAdapters(): Promise<void> {
   const sqlite: LedgerAdapter = await sqliteAdapter(":memory:");
   createRunLedger(sqlite);
-  const pg: LedgerAdapter = await pgAdapter("postgres://localhost/ge");
-  createRunLedger(pg);
   // Best-effort open: null when no sqlite driver is available.
   const maybeLedger: RunLedger | null = await openRunLedger(":memory:");
   if (maybeLedger) maybeLedger.listRuns({ limit: 1 });

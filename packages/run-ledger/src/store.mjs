@@ -3,10 +3,11 @@
 // The event-sourced record of long-running pipeline runs: runs → work items →
 // stage events, with idempotent transitions and projections. This module carries
 // NO framework coupling (no React, no DOM, no EventSource) and no hard cloud
-// dependency: storage is behind a tiny `LedgerStore` adapter so the SAME logic
-// runs on SQLite locally + in tests, and Postgres / AlloyDB in the cloud control
-// plane. Opening is best-effort: if no driver is available the caller gets null
-// and can fall back to legacy file stores — wiring this in never breaks an install.
+// dependency: storage is behind a tiny `LedgerStore` adapter (SQLite via
+// bun:sqlite or better-sqlite3; the hosted control plane reads the Firestore
+// mirror in ./firestore.mjs instead). Opening is best-effort: if no driver is
+// available the caller gets null and can fall back to legacy file stores —
+// wiring this in never breaks an install.
 
 // Canonical pipeline stages, ordered. Mirrors FACTORY_STAGES in the generator
 // (kept here to avoid importing the harness just for a constant). If the harness
@@ -436,24 +437,6 @@ export async function sqliteAdapter(path = ":memory:") {
     all: (sql, params = []) => db.prepare(sql).all(...params),
     get: (sql, params = []) => db.prepare(sql).get(...params) ?? null,
     close: () => db.close(),
-  };
-}
-
-// ── Postgres / AlloyDB adapter (cloud control plane) ──────────────────────────
-// Lazy-imports `pg` (not a sandbox dependency). Translates `?` placeholders to
-// Postgres `$n`. Used in the remote control plane; the ledger logic is identical.
-export async function pgAdapter(dsn) {
-  const pg = await import("pg").then((m) => m.default || m);
-  const pool = new pg.Pool({ connectionString: dsn });
-  const toPg = (sql) => { let i = 0; return sql.replace(/\?/g, () => `$${++i}`); };
-  // pg is async; we expose a synchronous-looking surface via a small queue is not
-  // possible, so the ledger's pg use is async-wrapped by callers. For parity the
-  // adapter returns promises; createRunLedger callers in the cloud await them.
-  return {
-    run: (sql, params = []) => pool.query(toPg(sql), params),
-    all: async (sql, params = []) => (await pool.query(toPg(sql), params)).rows,
-    get: async (sql, params = []) => (await pool.query(toPg(sql), params)).rows[0] ?? null,
-    close: () => pool.end(),
   };
 }
 

@@ -18,14 +18,14 @@ export type SqlValue = string | number | null;
 export type LedgerRow = Record<string, unknown>;
 
 // The storage adapter behind the ledger: `{ run, all, get, close }` over SQL.
-// The SQLite adapters (bun:sqlite / better-sqlite3) are synchronous; the
-// Postgres adapter returns Promises for `all`/`get` (see the note in store.mjs:
-// cloud callers await them), hence the MaybePromise returns.
+// The contract is synchronous: createRunLedger reads `all`/`get` results
+// inline (never awaits them), which is why the SQLite adapters
+// (bun:sqlite / better-sqlite3) are the only implementations.
 export interface LedgerAdapter {
   /** Execute a statement. The return value is driver-specific and never inspected by the ledger. */
   run(sql: string, params?: readonly SqlValue[]): unknown;
-  all(sql: string, params?: readonly SqlValue[]): LedgerRow[] | Promise<LedgerRow[]>;
-  get(sql: string, params?: readonly SqlValue[]): LedgerRow | null | Promise<LedgerRow | null>;
+  all(sql: string, params?: readonly SqlValue[]): LedgerRow[];
+  get(sql: string, params?: readonly SqlValue[]): LedgerRow | null;
   /** Optional on the contract: createRunLedger's close() calls adapter.close?.(). */
   close?(): unknown;
 }
@@ -299,7 +299,5 @@ export declare function createRunLedger(adapter: LedgerAdapter): RunLedger;
 // ── adapter constructors ──────────────────────────────────────────────────────
 /** bun:sqlite natively, better-sqlite3 under node. */
 export declare function sqliteAdapter(path?: string): Promise<LedgerAdapter>;
-/** Postgres/AlloyDB via lazily-imported `pg`; `?` placeholders translated to `$n`. */
-export declare function pgAdapter(dsn: string): Promise<LedgerAdapter>;
 /** Best-effort open: SQLite ledger, or null when no driver is available (callers fall back to legacy files). */
 export declare function openRunLedger(path?: string): Promise<RunLedger | null>;

@@ -8,6 +8,5 @@ export {
   factoryEventToLedgerOp,
   createRunLedger,
   sqliteAdapter,
-  pgAdapter,
   openRunLedger,
 } from "@ge/run-ledger";
