@@ -1,7 +1,6 @@
 {
   "kind": "ge.agent_spec.registry",
   "version": 1,
-  "generatedAt": "2026-06-20T00:06:11.339Z",
   "sources": {
     "slides": "../presentation/src/components/slides/use-cases",
     "interviews": "catalog/interview-specs"
