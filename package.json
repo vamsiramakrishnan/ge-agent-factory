@@ -32,6 +32,8 @@
     "docs:diagrams": "node tools/gen-docs-diagrams.mjs",
     "docs:diagrams:check": "node tools/gen-docs-diagrams.mjs --check",
     "docs:build": "cd docs && BUNDLE_PATH=vendor/bundle bundle exec jekyll build --config _config.yml,_config.local.yml",
+    "docs:tokens": "node packages/design/scripts/gen-tokens.mjs",
+    "docs:tokens:check": "node packages/design/scripts/gen-tokens.mjs --check",
     "docs:gate": "node tools/docs-check.mjs && node tools/gen-docs-diagrams.mjs --check && node tools/check-design-tokens.mjs",
     "docs:site:dev": "bun run --filter ./apps/docs dev",
     "docs:site:build": "bun run --filter ./apps/docs build",
