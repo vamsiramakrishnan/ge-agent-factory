@@ -4,14 +4,14 @@ import { ge, type AutopilotDetail, type AutopilotRun, type Fleet, type FleetAgen
 import { StatusPill } from "../components/StatusPill";
 import { ErrorBanner } from "../components/ErrorBanner";
 
-interface AutopilotProps {
+interface RepairQueueProps {
   status: StatusBoard | null;
   refresh: () => Promise<void>;
 }
 
 const TARGETS = ["preview", "promote", "deploy:plan", "publish:plan"];
 
-export default function Autopilot({ status }: AutopilotProps) {
+export default function RepairQueue({ status }: RepairQueueProps) {
   const [fleet, setFleet] = useState<Fleet | null>(null);
   const [runs, setRuns] = useState<AutopilotRun[]>([]);
   const [detail, setDetail] = useState<AutopilotDetail | null>(null);

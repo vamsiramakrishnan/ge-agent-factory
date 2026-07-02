@@ -46,7 +46,7 @@ describe("fleet health projection", () => {
     expect(a1.owner).toBe("autopilot");
     expect(a1.blocker.id).toBe("preview-missing");
     expect(a1.actionPlan.kind).toBe("resume_autopilot");
-    expect(a1.actionPlan.commands[0]).toBe("ge runtime resume auto-1");
+    expect(a1.actionPlan.commands[0]).toBe("ge runs resume auto-1");
     expect(health.bottlenecks[0].count).toBe(1);
     expect(health.bottlenecks[0].actionPlan.kind).toBe("resume_autopilot");
     expect(health.byStage.preview).toBe(1);

@@ -22,12 +22,15 @@ export interface RouteDef {
   palette: boolean; // offer as a "Go to …" entry in the command palette
 }
 
+// Route ids now match their labels' vocabulary (pipeline/repair — the same
+// nouns the CLI uses); legacy #/journey and #/autopilot hashes redirect in
+// App.parseHash so old bookmarks keep working.
 export const ROUTES: RouteDef[] = [
   { id: "overview", hash: "#/overview", label: "Overview", Icon: LayoutDashboard, nav: true, palette: true },
-  { id: "journey", hash: "#/journey", label: "Pipeline", Icon: RouteIcon, nav: true, palette: true },
+  { id: "pipeline", hash: "#/pipeline", label: "Pipeline", Icon: RouteIcon, nav: true, palette: true },
   { id: "interview", hash: "#/interview", label: "Interview", Icon: MessageSquareText, nav: true, palette: true },
   { id: "fleet", hash: "#/fleet", label: "Fleet", Icon: Boxes, nav: true, palette: true },
-  { id: "autopilot", hash: "#/autopilot", label: "Repair Queue", Icon: Wrench, nav: true, palette: true },
+  { id: "repair", hash: "#/repair", label: "Repair Queue", Icon: Wrench, nav: true, palette: true },
   { id: "activity", hash: "#/activity", label: "Runs", Icon: ListChecks, nav: true, palette: true },
   { id: "doctor", hash: "#/doctor", label: "Readiness", Icon: Stethoscope, nav: true, palette: true },
 ];
@@ -39,7 +42,7 @@ export const PALETTE_ROUTES = ROUTES.filter((r) => r.palette);
 // so the sidebar still highlights the right section (and breadcrumbs show the trail).
 export const ROUTE_PARENT: Record<string, string> = {
   agent: "fleet",
-  "spec-review": "journey",
+  "spec-review": "pipeline",
 };
 
 // Human label for a route id (detail routes without a ROUTES entry get a sensible default).

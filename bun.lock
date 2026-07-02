@@ -8,6 +8,7 @@
         "@clack/prompts": "^1.6.0",
         "@ge/agent-resolver": "workspace:*",
         "@ge/agent-spec": "workspace:*",
+        "@ge/contracts": "workspace:*",
         "@ge/run-ledger": "workspace:*",
         "@ge/runtime": "workspace:*",
         "@ge/std": "workspace:*",

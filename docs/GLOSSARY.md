@@ -117,7 +117,7 @@ dispatched to Cloud Build. In code this shows up as the constant
 **Where you'll meet it:** The "AUTHOR & BUILD / VALIDATE & REFINE / RELEASE"
 diagram and "The build boundary: local build vs remote release" section in
 `docs/concepts/the-factory-line.md`; the `buildBoundary` field on
-[mission](#mission) plans (`tools/lib/factory-autopilot-mission.mjs`).
+[pipeline-run](#pipeline-run-formerly-mission) plans (`tools/lib/factory-autopilot-mission.mjs`).
 
 ---
 
@@ -178,7 +178,7 @@ three-planes diagram in `docs/developers.md`; `tools/lib/planes/` in code.
 
 **What it is:** The local background process (`ge daemon start`, HTTP on
 port `17654` / `GE_DAEMON_PORT`) that runs long factory work —
-[missions](#mission), [Autopilot](#autopilot), generic jobs — as durable
+[pipeline runs](#pipeline-run-formerly-mission), [repair runs](#repair-run-formerly-autopilot), generic jobs — as durable
 runtime *tasks*, so a run survives your terminal closing and can be
 resumed. `mise run setup` starts it for you; the console and CLI both talk
 to it.
@@ -278,63 +278,72 @@ where they land.
 
 ---
 
-### Mission
+### Pipeline run (formerly "mission")
 
-**What it is:** One orchestrated, resumable run of the factory pipeline for
-a use case, executed as a DAG of [daemon](#daemon) child tasks — data
-readiness, simulator checks, optionally the factory build itself, the
+**What it is:** One orchestrated, resumable run of the pipeline for a use
+case, executed as a DAG of [daemon](#daemon) child tasks — data readiness,
+simulator checks, optionally the factory build itself, the
 [Antigravity](#antigravity) review node, and convergence to a target stage.
-Plan it without running (`ge mission plan`), run it (`ge mission run`),
-resume it after a failure (`ge mission resume`).
+Preview the DAG without running (`ge pipeline graph`), run it
+(`ge pipeline run`), resume it after a failure (`ge pipeline resume`).
+The old `ge mission …` spellings still work as deprecated aliases, and the
+persisted daemon task kind stays `mission.run` (wire identifiers never
+rename; `pipeline.run` is accepted and normalized at the boundary).
 
-**Where you'll meet it:** `ge mission plan|run|status|resume`; scenario
-state under `.ge/missions/<scenario>`;
+**Where you'll meet it:** `ge pipeline run|status|resume|graph|runs`;
+scenario state under `.ge/missions/<scenario>`;
 `skills/planning-missions/references/mission-contract.md` for the contract.
 
 ---
 
-### Journey
+### Pipeline (formerly "journey")
 
 **What it is:** The user-facing, end-to-end path from business intent to a
 deployed agent — interview → spec → data → simulator → build → eval →
-preview → deploy — rendered as a plan you can read (`ge journey plan`) and
-watch (`ge journey status`). `ge journey run` doesn't have its own engine:
-it starts the durable [mission](#mission) graph under the hood. Journey is
-the human-readable view; mission is the executable graph.
+preview → deploy — rendered as a plan you can read (`ge pipeline plan`) and
+watch (`ge pipeline status`). The stage view and the executable DAG behind
+it (see [Pipeline run](#pipeline-run-formerly-mission)) are one noun now:
+`ge pipeline status` shows where you are, `ge pipeline run` executes. The
+old `ge journey …` spellings remain as deprecated aliases.
 
-**Where you'll meet it:** `ge journey plan --usecase <id>`;
-`tools/lib/journey-plan.mjs` in code.
+**Where you'll meet it:** `ge pipeline plan --usecase <id>`;
+`tools/lib/journey-plan.mjs` in code (the module keeps its historical name).
 
 ---
 
-### Autopilot
+### Repair run (formerly "autopilot")
 
 **What it is:** The [daemon](#daemon)-native convergence loop for *many*
 workspaces at once: given a set of ids (or the current queue), it observes
 each workspace's blockers, runs repair up to `--attempts` times, and keeps
 going until every item reaches the target stage (default `preview`). Think
 "keep the [fleet](#fleet) converged" rather than "run one pipeline."
+The old `ge autopilot …` spellings remain as deprecated aliases, and the
+persisted daemon task kind stays `autopilot.run` (`repair.run` is accepted
+and normalized at the boundary).
 
-**Where you'll meet it:** `ge autopilot run|status|events`; the Autopilot
-queue in the console; `tools/ge/autopilot.mjs` in code.
+**Where you'll meet it:** `ge fleet repair|repairs`; the Repair Queue in the
+console; `tools/ge/fleet.mjs` in code.
 
 ---
 
-### Mission vs. journey vs. autopilot vs. factory run
+### The consolidated orchestration vocabulary
 
-**What it is:** Four orchestration words that are easy to conflate. They are
-different layers, not synonyms (and their names are persisted in task kinds
-and ledger tables, so none of them is getting renamed):
+**What it is:** Four historical nouns (mission, journey, autopilot, factory
+run) collapsed into two, plus a build. The old spellings all still work as
+deprecated aliases, and *persisted identifiers* (daemon task kinds, ledger
+tables) keep their historical names — only the operator surface renamed:
 
-| Name | What it orchestrates | Where it lives |
+| Today | What it orchestrates | Formerly |
 |---|---|---|
-| **Factory run** | One agent workspace through the stage pipeline (generate → validate → … → publish) | `ge agents build` / per-stage `factory` commands; recorded in the run [ledger](#ledger) |
-| **[Mission](#mission)** | A DAG of daemon tasks around one scenario: data, simulators, optional factory build, harness review, convergence | `ge mission plan\|run\|status\|resume`; `.ge/missions/<scenario>` |
-| **[Journey](#journey)** | The human-readable end-to-end plan (interview → … → deploy); `run` delegates to the mission graph | `ge journey plan\|status\|run` |
-| **[Autopilot](#autopilot)** | Convergence across many workspaces: observe blockers → repair → retry to a target stage | `ge autopilot run\|status\|events` (daemon-native) |
+| **A build** (`ge agents build`) | One agent workspace through the stage pipeline (generate → validate → … → publish); recorded in the run [ledger](#ledger) | "factory run" |
+| **[Pipeline](#pipeline-formerly-journey)** (`ge pipeline plan\|run\|status\|resume\|graph`) | The end-to-end path AND its executable DAG — one noun for the view and the engine | "journey" (the view) + "mission" (the DAG) |
+| **[Repair run](#repair-run-formerly-autopilot)** (`ge fleet repair\|repairs`) | Convergence across many workspaces: observe blockers → repair → retry to a target stage | "autopilot" |
+| **Runs** (`ge runs list\|show\|events\|resume`) | Observability over every daemon-backed run of any kind | `ge runtime tasks\|task\|events\|resume` |
 
-**Where you'll meet it:** The `ge` CLI reference's autopilot/mission/journey
-sections (`docs/reference/cli.md`); the daemon's task list (`ge daemon tasks`).
+**Where you'll meet it:** The `ge` CLI reference (`docs/reference/cli.md`);
+the console's Pipeline / Fleet / Repair Queue / Runs views; the daemon's task
+list (`ge runs list`).
 
 ---
 
@@ -360,7 +369,7 @@ calls go through the second.
 
 **What it is:** The guided, conversational flow where a business user (or
 agent) describes a use case and the factory turns it into a formal spec.
-It's the very first box in the [journey](#journey).
+It's the very first box in the [pipeline](#pipeline-formerly-journey).
 
 **Where you'll meet it:** `apps/console/src/views/Interview.tsx`; the
 "Author a spec via the interview" cookbook.

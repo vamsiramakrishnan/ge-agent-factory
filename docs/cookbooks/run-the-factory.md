@@ -57,19 +57,19 @@ run that has blocked.
    For the runtime/daemon view of work items:
 
    ```bash
-   ge runtime status
-   ge runtime tasks
-   ge runtime events <id> --follow   # stream SSE events for one task
+   ge daemon status
+   ge runs list
+   ge runs events <id> --follow      # stream SSE events for one run
    ```
 
 5. **Resume a blocked run.**
 
    ```bash
-   ge runtime resume <id>
+   ge runs resume <id>
    ```
 
    This POSTs `/api/tasks/<id>/resume` with a deterministic resume plan.
-   (`ge mission resume <id>` does the same for mission tasks.)
+   (`ge pipeline resume <id>` does the same for pipeline runs.)
 
 6. **Inspect the durable run ledger** (remote runs, history):
 
@@ -85,7 +85,7 @@ run that has blocked.
   terminal state.
 - Local runs leave a workspace under `.ge/factory/workspaces/<id>/` (see
   `ge state paths`).
-- A resumed run advances past the blocked stage in `ge runtime status`.
+- A resumed run advances past the blocked stage in `ge runs list`.
 
 ## Troubleshoot
 
@@ -95,4 +95,4 @@ run that has blocked.
   `ge doctor` (or scoped: `ge doctor --command agents.build`).
 - **Run stuck at data readiness** — warm the data runtime: `mise run data-runtime`.
 - **Resume does nothing** — confirm the task id and that it's actually blocked
-  (`ge runtime task <id>`).
+  (`ge runs show <id>`).

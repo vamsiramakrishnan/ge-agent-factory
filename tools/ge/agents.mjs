@@ -3,7 +3,8 @@
 // pipeline state machine surfaced as a recovery verb).
 import { defineCommand } from "citty";
 import { groupResumeActions } from "../lib/agents-resume.mjs";
-import { guarded, common, cfgFrom, emit, out, pc, elog, core, modeOf, LOCAL_BUILD_BOUNDARY } from "./shared.mjs";
+import { guarded, common, cfgFrom, emit, out, pc, elog, core, modeOf, LOCAL_BUILD_BOUNDARY, deprecatedAlias } from "./shared.mjs";
+import { fleetStatusCmd } from "./fleet.mjs";
 
 // One render + poll loop shared by `ge agents status --watch` and
 // `ge agents build --watch`, so kicking off a remote build and watching it
@@ -76,40 +77,9 @@ const agentsStatus = defineCommand({
   }),
 });
 
-const agentsFleet = defineCommand({
-  meta: { name: "fleet", description: "Show fleet pipeline health, bottlenecks, and repair owners" },
-  args: { ...common, limit: { type: "string", description: "Max bottlenecks to list (default 8)" } },
-  run: guarded(async ({ args }) => {
-    const res = await core.fleetStatus(cfgFrom(args));
-    emit(args, res, (r) => {
-      const health = r.health || {};
-      out(pc.bold(`\nFleet Health — ${r.total} agents`));
-      out(`  ${pc.red("blocked")} ${health.blocked || 0}   ${pc.yellow("repairable")} ${health.repairable || 0}`);
-      if (health.byStage) {
-        out(pc.dim("\n  by stage"));
-        for (const stage of health.stages || Object.keys(health.byStage)) {
-          out(`  ${String(stage).padEnd(12)} ${health.byStage[stage] || 0}`);
-        }
-      }
-      if (health.byOwner) {
-        out(pc.dim("\n  by owner"));
-        for (const [owner, count] of Object.entries(health.byOwner).sort((a, b) => b[1] - a[1])) {
-          out(`  ${String(owner).padEnd(12)} ${count}`);
-        }
-      }
-      const bottlenecks = (health.bottlenecks || []).slice(0, Number(args.limit || 8));
-      if (bottlenecks.length) {
-        out(pc.dim("\n  top bottlenecks"));
-        for (const item of bottlenecks) {
-          out(`  ${pc.yellow(String(item.count).padStart(3))} ${String(item.stage).padEnd(10)} ${pc.cyan(item.blockerId)} ${pc.dim(item.message)}`);
-          if (item.actionPlan?.commands?.[0]) out(pc.dim(`      action: ${item.actionPlan.label} · ${item.actionPlan.commands[0]}`));
-          if (item.agentIds?.length) out(pc.dim(`      ${item.agentIds.join(", ")}`));
-        }
-      }
-      out(pc.dim("\n  next: ge runtime start autopilot --ids <comma-ids> --stage preview"));
-    });
-  }),
-});
+// Fleet health moved to its canonical home, `ge fleet status` (tools/ge/
+// fleet.mjs); this spelling stays as a working alias.
+const agentsFleet = deprecatedAlias({ name: "fleet", hint: "ge fleet status", command: fleetStatusCmd });
 
 const agentsLogs = defineCommand({
   meta: { name: "logs", description: "Pretty-print a stage's result + errors" },

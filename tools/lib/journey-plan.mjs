@@ -30,7 +30,7 @@ const STAGE_OWNERS = {
   simulator: "runtime",
   build: "factory",
   eval: "antigravity",
-  preview: "autopilot",
+  preview: "repair",
   deploy: "factory",
 };
 
@@ -112,11 +112,11 @@ function baseStages({ scenario, ids, systems, targetStage, mode, usecaseId }) {
     actionPlan: {
       interview: action("start_interview", "Start interview", ["Open #/interview"], true),
       spec: action("review_spec", "Review generated spec", [`Open ${specReviewRoute}`], true, { route: specReviewRoute, artifactPath: specPath }),
-      data: action("run_mission", "Generate data", [`ge mission run${scenarioArg}${systemsArg}${targetArg}`.trim()], true),
-      simulator: action("run_mission", "Seed simulators", [`ge mission run${scenarioArg}${systemsArg}${targetArg}`.trim()], true),
+      data: action("run_mission", "Generate data", [`ge pipeline run${scenarioArg}${systemsArg}${targetArg}`.trim()], true),
+      simulator: action("run_mission", "Seed simulators", [`ge pipeline run${scenarioArg}${systemsArg}${targetArg}`.trim()], true),
       build: action("build_agents", "Build agents", [`ge agents build${idArg}${mode === "remote" ? "" : " --local"}`.trim()], true),
       eval: action("generate_evals", "Generate evals", [`node apps/factory/scripts/spec-workbench.mjs golden-evals prompt --spec ${specPath}`], true),
-      preview: action("run_preview", "Run preview", [`ge mission run${scenarioArg}${systemsArg} --run-preview`.trim()], true),
+      preview: action("run_preview", "Run preview", [`ge pipeline run${scenarioArg}${systemsArg} --run-preview`.trim()], true),
       deploy: action("ship_agents", "Ship agents", [`ge agents ship${idArg}`.trim()], false),
     }[stage],
   }));
@@ -135,7 +135,7 @@ function applyMissionGraph(stages, graph = null) {
     stage.artifacts.push(...(node.artifacts || []));
     if (BLOCKED.has(node.status) && !stage.blocker) {
       stage.blocker = blockerFromNode(node);
-      stage.actionPlan = action("resume_mission", "Resume mission", node.resumePlan?.commands || [`ge mission resume ${graph.id}`], true, { taskId: graph.id, nodeId: node.id });
+      stage.actionPlan = action("resume_mission", "Resume pipeline run", node.resumePlan?.commands || [`ge pipeline resume ${graph.id}`], true, { taskId: graph.id, nodeId: node.id });
     }
   }
 }
@@ -149,9 +149,9 @@ function applyRuntimeTasks(stages, tasks = []) {
     interview.artifacts = harness.artifactRefs || harness.output?.artifactRefs || [];
     if (BLOCKED.has(harness.status)) {
       interview.blocker = { id: "harness-blocked", message: harness.resumePlan?.reason || harness.summary || "Antigravity interview is blocked" };
-      interview.actionPlan = action("resume_harness", "Resume interview", harness.resumePlan?.commands || [`ge runtime resume ${harness.id}`], !!harness.resumePlan?.safeToRun, { taskId: harness.id });
+      interview.actionPlan = action("resume_harness", "Resume interview", harness.resumePlan?.commands || [`ge runs resume ${harness.id}`], !!harness.resumePlan?.safeToRun, { taskId: harness.id });
     } else if (ACTIVE.has(harness.status)) {
-      interview.actionPlan = action("watch_runtime", "Watch interview", [`ge runtime events ${harness.id} --follow`], false, { taskId: harness.id });
+      interview.actionPlan = action("watch_runtime", "Watch interview", [`ge runs events ${harness.id} --follow`], false, { taskId: harness.id });
     }
   }
   const mission = latestTask(tasks, (task) => task.kind === "mission.run");
@@ -162,7 +162,7 @@ function applyRuntimeTasks(stages, tasks = []) {
       const stage = stages.find((entry) => entry.nodeIds.includes(blocked.id));
       if (stage) {
         stage.taskId = mission.id;
-        stage.actionPlan = action("resume_mission", "Resume mission", mission.summary?.resumePlan?.commands || [`ge mission resume ${mission.id}`], true, { taskId: mission.id, nodeId: blocked.id });
+        stage.actionPlan = action("resume_mission", "Resume pipeline run", mission.summary?.resumePlan?.commands || [`ge pipeline resume ${mission.id}`], true, { taskId: mission.id, nodeId: blocked.id });
       }
     }
   }

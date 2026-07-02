@@ -94,7 +94,7 @@ function actionPlanFor(agent = {}) {
       owner: agent.owner || "runtime",
       safeToRun: true,
       taskId: agent.runtimeTaskId,
-      commands: [`ge runtime resume ${agent.runtimeTaskId}`],
+      commands: [`ge runs resume ${agent.runtimeTaskId}`],
     };
   }
   if (agent.source === "autopilot" && agent.runtimeTaskId) {
@@ -104,7 +104,7 @@ function actionPlanFor(agent = {}) {
       owner: "autopilot",
       safeToRun: true,
       taskId: agent.runtimeTaskId,
-      commands: [`ge runtime resume ${agent.runtimeTaskId}`],
+      commands: [`ge runs resume ${agent.runtimeTaskId}`],
     };
   }
   if (agent.healthStatus === "missing" || agent.owner === "factory") {
@@ -132,7 +132,7 @@ function actionPlanFor(agent = {}) {
     owner: agent.owner || "autopilot",
     safeToRun: true,
     agentIds: [agent.id],
-    commands: [`ge runtime start autopilot --ids ${agent.id} --stage preview`],
+    commands: [`ge fleet repair --ids ${agent.id} --target-stage preview`],
   };
 }
 

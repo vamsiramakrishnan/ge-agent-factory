@@ -13,8 +13,10 @@
  *   - "writes-repo" — writes/commits files into the local git repo.
  *   - "read-only" — reads/reports state only; mutates nothing (cloud, repo,
  *     or local processes).
- *   Keep `apps/console/src/services/geClient.ts`'s `GeCommand.risk` union in
- *   sync with any new value added here.
+ *   The console types `GeCommand.risk` from `@ge/contracts`' RiskLevelSchema;
+ *   parity between this table and that schema is enforced by
+ *   tools/contracts-registry-parity.test.mjs (new value here → extend the
+ *   contracts enum, or that test fails in CI).
  * - `requirements` (object, all keys optional): preflight checks the console
  *   runs before allowing the command to be invoked.
  *   - `bins` (string[]) — CLI binaries that must be on PATH.
@@ -193,19 +195,21 @@ export const GE_COMMANDS = {
       return argv.includes("--local") ? argv : [...argv, "--local"];
     },
   },
+  // Registry id stays "mission.run" (a persisted identifier, like the daemon's
+  // wire task kind) — the operator-facing spelling is `ge pipeline run`.
   "mission.run": {
     id: "mission.run",
     method: null,
     path: null,
-    cli: "ge mission run",
-    label: "Run mission pipeline",
-    summary: "Run spec, data, simulator, build, eval, and preview gates as a resumable mission graph",
+    cli: "ge pipeline run",
+    label: "Run the pipeline",
+    summary: "Run spec, data, simulator, build, eval, and preview gates as a resumable pipeline run",
     risk: "starts-local-workloads",
     expectedDuration: "varies",
     observability: {
       mode: "runtime-events",
       events: true,
-      statusCommand: "ge mission status <mission-id>",
+      statusCommand: "ge pipeline status <run-id>",
     },
     requirements: {
       bins: ["node", "uv"],
@@ -213,7 +217,7 @@ export const GE_COMMANDS = {
       localToolchain: true,
       dataGenerationRuntime: true,
     },
-    argv: () => ["mission", "run"],
+    argv: () => ["pipeline", "run"],
   },
   "agents.ship": {
     id: "agents.ship",

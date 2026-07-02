@@ -51,6 +51,8 @@ export const DaemonNextActionSchema = z.enum([
 export type DaemonNextAction = z.infer<typeof DaemonNextActionSchema>;
 
 // (d) CLI command ids from tools/lib/ge-command-registry.mjs (a separate namespace).
+//     Completeness is enforced structurally — tools/contracts-registry-parity.test.mjs
+//     fails when a GE_COMMANDS entry is added without extending this enum.
 export const GeCommandIdSchema = z.enum([
   "up",
   "data.up",
@@ -60,15 +62,25 @@ export const GeCommandIdSchema = z.enum([
   "mission.run",
   "agents.ship",
   "agents.sync",
+  "daemon.start",
+  "usecases.list",
+  "doctor",
+  "status",
+  "logs",
+  "mcp.doctor",
 ]);
 export type GeCommandId = z.infer<typeof GeCommandIdSchema>;
 
 // (e) Risk levels encoded by GE_COMMANDS entries (used for confirm-gating).
+//     Same parity test keeps this a superset of the registry's risks;
+//     apps/console/src/services/geClient.ts types GeCommand.risk from here
+//     instead of hand-mirroring the union.
 export const RiskLevelSchema = z.enum([
   "mutates-cloud",
   "starts-workloads",
   "starts-local-workloads",
   "writes-repo",
+  "read-only",
 ]);
 export type RiskLevel = z.infer<typeof RiskLevelSchema>;
 
