@@ -1,7 +1,7 @@
 import { createServer } from "node:http";
 import { writeFileSync, appendFileSync, rmSync } from "node:fs";
 import { readJson, writeJson } from "@ge/std/json-io";
-import { isDataMissionNodeKind, safeMissionNodeCommand } from "./mission-node-registry.mjs";
+import { isDataMissionNodeKind, safeMissionNodeCommand } from "./mission/mission-node-registry.mjs";
 import { LEGACY_STATE_PATHS, STATE_PATHS } from "./state-paths.mjs";
 import {
   appendEvent,

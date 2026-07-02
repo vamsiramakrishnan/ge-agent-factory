@@ -8,7 +8,7 @@
 // as provision.mjs/doctor.mjs already import from local-workspaces.mjs
 // directly, no injection needed).
 
-import { resolveLocalWorkspaceId, localWorkspaceExists } from "./local-workspaces.mjs";
+import { resolveLocalWorkspaceId, localWorkspaceExists } from "../local-workspaces.mjs";
 
 function parseJsonObjects(text) {
   const objects = [];

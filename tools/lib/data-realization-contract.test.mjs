@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
-import { dataMissionNodes } from "./mission-nodes.mjs";
-import { buildMissionNode } from "./mission-node-registry.mjs";
+import { dataMissionNodes } from "./mission/mission-nodes.mjs";
+import { buildMissionNode } from "./mission/mission-node-registry.mjs";
 import {
   buildDataRealizationPlan,
   dataRealizationArtifacts,

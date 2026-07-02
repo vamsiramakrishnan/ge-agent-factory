@@ -28,7 +28,7 @@ import {
   summarizeLocalRunWorkspaces,
   workspaceStoreItems,
 } from "./local-workspaces.mjs";
-import { selectWorkspacesForRegen } from "./tool-plane-checks.mjs";
+import { selectWorkspacesForRegen } from "./planes/tool-plane-checks.mjs";
 
 const noop = () => {};
 

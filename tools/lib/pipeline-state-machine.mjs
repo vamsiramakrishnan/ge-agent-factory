@@ -6,7 +6,7 @@
 // machine; the local harness, the remote worker, and the planners all agree on
 // the same ordering and the same next action. Pure and exhaustively testable.
 
-import { LEDGER_STAGES } from "./run-ledger.mjs";
+import { LEDGER_STAGES } from "./ledger/run-ledger.mjs";
 
 export const STAGES = LEDGER_STAGES;
 

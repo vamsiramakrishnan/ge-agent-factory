@@ -6,7 +6,7 @@
 // Moved verbatim out of tools/lib/runtime-daemon.mjs.
 import { execStream } from "../exec-stream.mjs";
 import { REPO_ROOT } from "../state-paths.mjs";
-import { missionNodeCommand } from "../mission-node-registry.mjs";
+import { missionNodeCommand } from "../mission/mission-node-registry.mjs";
 import { runtimeEnv } from "./command-run.mjs";
 import {
   appendEvent,

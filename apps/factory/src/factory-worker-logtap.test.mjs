@@ -10,7 +10,7 @@ import {
   runFactoryWorker,
   parseWorkerPayload,
 } from "./factory-worker.js";
-import { createFirestoreLedgerReader } from "../../../tools/lib/run-ledger-firestore.mjs";
+import { createFirestoreLedgerReader } from "../../../tools/lib/ledger/run-ledger-firestore.mjs";
 
 // ── Security hardening Stage B: builds submit AS the builder SA + explicit logs ──
 test("resolveBuilderServiceAccount: default reconstructs the conventional builder SA path", () => {

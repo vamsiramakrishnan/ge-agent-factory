@@ -1,4 +1,4 @@
-import { buildMissionGraph } from "./mission-plan.mjs";
+import { buildMissionGraph } from "./mission/mission-plan.mjs";
 import { parseList } from "@ge/std/list";
 
 export const JOURNEY_STAGES = [

@@ -126,7 +126,7 @@ test("createMcpPlane requires repoRoot", () => {
 });
 
 test("mcp-service cloudbuild.yaml is well-formed and uses repo-root context", () => {
-  const yamlPath = join(HERE, "..", "..", "apps", "factory", "mcp-service", "cloudbuild.yaml");
+  const yamlPath = join(HERE, "..", "..", "..", "apps", "factory", "mcp-service", "cloudbuild.yaml");
   const yaml = readFileSync(yamlPath, "utf8");
   // sanity-check the structural keys + the load-bearing build args without a YAML dep.
   expect(yaml).toContain("steps:");
