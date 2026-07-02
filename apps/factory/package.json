@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@faker-js/faker": "^10.4.0",
+    "@ge/agent-workspace": "workspace:*",
     "@ge/okf": "workspace:*",
     "@ge/run-ledger": "workspace:*",
     "@ge/runtime": "workspace:*",

@@ -112,13 +112,13 @@ async function fetchJsonWithRetry(url, path, init) {
 export async function postJson(url, path, body, headers = {}) {
   const res = await fetchJsonWithRetry(url, path, { method: "POST", headers: { "Content-Type": "application/json", ...headers }, body: JSON.stringify(body), signal: AbortSignal.timeout(60000) });
   const text = await res.text();
-  let json; try { json = JSON.parse(text); } catch {}
+  let json; try { json = JSON.parse(text); } catch { /* best-effort: non-JSON body; caller falls back to .text */ }
   return { status: res.status, ok: res.ok, json, text };
 }
 export async function getJson(url, path, headers = {}) {
   const res = await fetchJsonWithRetry(url, path, { headers, signal: AbortSignal.timeout(30000) });
   const text = await res.text();
-  let json; try { json = JSON.parse(text); } catch {}
+  let json; try { json = JSON.parse(text); } catch { /* best-effort: non-JSON body; caller falls back to .text */ }
   return { status: res.status, ok: res.ok, json, text };
 }
 
@@ -159,7 +159,7 @@ export function createGatewayClient({ run } = {}) {
     const child = spawn("gcloud", ["run", "services", "proxy", cfg.gatewayService, "--project", cfg.project, "--region", cfg.region, "--port", String(port)], { stdio: ["ignore", "ignore", "pipe"] });
     let stderr = "";
     child.stderr?.on("data", (d) => { stderr += d; });
-    const cleanup = () => { try { child.kill("SIGTERM"); } catch {} };
+    const cleanup = () => { try { child.kill("SIGTERM"); } catch { /* best-effort: proxy child may already be dead */ } };
     process.on("exit", cleanup);
     try {
       await waitForPort(port);

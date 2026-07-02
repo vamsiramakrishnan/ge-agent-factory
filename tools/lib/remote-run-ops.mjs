@@ -51,7 +51,7 @@ export function createRemoteRunOps({ run, gcloud, ensureGcloud, withGateway }) {
       const stages = {};
       const perRun = [];
       await pool(runs, 10, async (r) => {
-        const res = await getJson(url, `/api/factory/runs/${r.runId}`, ctx.headers).catch(() => ({ ok: false }));
+        const res = await getJson(url, `/api/factory/runs/${r.runId}`, ctx.headers).catch(() => ({ ok: false })); // best-effort: per-run fetch failure surfaces in the "unknown" bucket of the tally
         const s = res.json || {};
         const st = (s.status || s.state || "unknown").toLowerCase();
         const stage = s.currentStage || s.stage || "?";
