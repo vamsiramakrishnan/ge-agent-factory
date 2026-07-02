@@ -15,12 +15,9 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { faker } from "@faker-js/faker";
-import { __test } from "./factory.mjs";
-
-const {
-  generateDocument, generateDomainDocuments, generateParagraph, pickEntityRefs,
-  generateValue, snowfakeryFakeForColumn, renderYamlValue,
-} = __test;
+import { generateDocument, generateDomainDocuments, generateParagraph, pickEntityRefs } from "./factory/fixtures/document-gen.mjs";
+import { generateValue } from "./factory/fixtures/value-gen.mjs";
+import { renderYamlValue, snowfakeryFakeForColumn } from "./factory/data/snowfakery-recipe-render.mjs";
 
 const FIXTURE_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "tests", "fixtures", "data-gen-unit");
 const manifest = JSON.parse(readFileSync(join(FIXTURE_DIR, "manifest.json"), "utf8"));

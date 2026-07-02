@@ -7,9 +7,7 @@ import { describe, expect, test } from "bun:test";
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
-import { __test } from "./factory.mjs";
-
-const { loadPipeline, savePipeline, markStep, requireStep, nextCommandFor } = __test;
+import { loadPipeline, markStep, nextCommandFor, requireStep, savePipeline } from "./factory/core/pipeline.mjs";
 
 describe("loadPipeline / savePipeline / markStep", () => {
   test("fresh workspace loads the default pipeline shape", async () => {
