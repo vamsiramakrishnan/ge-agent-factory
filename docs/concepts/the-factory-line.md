@@ -35,6 +35,38 @@ The stage graph is defined declaratively in
 | `publish_enterprise` | Gemini Enterprise registration | Cloud Build |
 | `verify_live` | a live-verification report | Cloud Run worker |
 
+### Stations vs. milestones — two stage vocabularies, one line
+
+You will meet **two different stage name sets** and they are both correct —
+they name different things. The table above lists **stations** (verbs — the
+work a stage *does*), from `FACTORY_STAGE_GRAPH` in
+`apps/factory/src/factory-orchestration.js`. Everything that reports
+*progress* — `ge agents status`, `ge ledger plan`, the run ledger, the
+pipeline state machine — uses **milestones** (past-tense states an item has
+*reached*), from `LEDGER_STAGES` in `packages/run-ledger/src/store.mjs`.
+Reading `generate_workspace` here and then seeing `created` in
+`ge agents status` is the same item, described from the other side:
+
+| Station (does the work) | Milestone recorded (what status reports) |
+|---|---|
+| `plan` | `planned` |
+| `generate_workspace`, `generate_data` | `created` |
+| `package_data` | `data_packaged` |
+| `harness_refine` | `harness_reviewed`, then `harness_refined` |
+| `validate` | `validated` |
+| `preview` | `previewed` — the **build boundary** in both vocabularies |
+| `plan_deploy` | `deploy_planned` |
+| `load_data` | (no dedicated milestone — release-movement prep) |
+| `deploy_runtime`, `poll_runtime` | `deploying`, then `deployed` |
+| `register_tools` | `registered` |
+| `publish_enterprise` | `publish_planned`, then `published` |
+| `verify_live` | (no dedicated milestone — verification report artifact) |
+
+Milestones are listed in the ledger's canonical order (its reducer only ever
+advances an item forward through that list); station order above is the cloud
+line's execution order — the two orderings differ slightly in the middle
+movement, which is expected, not drift.
+
 Conceptually the line is three movements, with the **build boundary** sitting
 between the first two and the third — everything above it is pure computation;
 everything in **Release** touches your Google Cloud project. Stages shaded

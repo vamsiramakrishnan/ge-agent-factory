@@ -89,11 +89,19 @@ kept as the rationale record for the changes shipped alongside this document.
    doesn't exist (`landing`), so the jump-to-story key and the "Story"
    breadcrumb were silent no-ops. Fixed.
 
+### Docs (follow-up in the same change series)
+
+- **Dual stage vocabularies reconciled.** The cloud line's *stations*
+  (`FACTORY_STAGE_GRAPH` verbs) and the ledger's *milestones*
+  (`LEDGER_STAGES` past-tense states) were never mapped anywhere; a reader of
+  `the-factory-line.md` who then ran `ge agents status` saw a different name
+  set with no explanation. "Stations vs. milestones" in
+  `docs/concepts/the-factory-line.md` now carries the mapping table (and the
+  glossary's Ledger entry points at it). Renaming either vocabulary — or
+  generating the table from source — remains a taste-campaign item.
+
 ## Known gaps, deliberately not fixed here
 
-- **Dual stage vocabularies** (ledger stages vs `FACTORY_STAGE_GRAPH` names)
-  remain unreconciled in docs — a docs/domain change, tracked in the taste
-  campaign (see `docs/plans/taste-campaign/08-next-horizon.md`).
 - **Run replay** (`ge run replay` / console scrubber) is the flagship item in
   `08-next-horizon.md` B9 and stays there.
 - **Interview wizard continuity** relies on the "Continue Interview" pill +
