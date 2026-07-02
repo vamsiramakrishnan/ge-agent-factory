@@ -1,0 +1,116 @@
+---
+title: "Run and observe"
+description: "Run builds local or remote, watch them live, resume blocked runs, and inspect the durable run record."
+editUrl: "https://github.com/vamsiramakrishnan/ge-agent-factory/edit/main/docs/operations/run-and-observe.md"
+sidebar:
+  order: 2
+---
+import { Badge, Steps } from '@astrojs/starlight/components';
+
+<Badge text="Local or remote" variant="note" /> remote mode builds, deploys, and publishes in your
+Google Cloud project.
+
+## Goal
+
+Run an agent build through the pipeline — local on your machine or remote in the
+cloud factory — watch it live in the console (Run Drawer / Activity), and resume a
+run that has blocked.
+
+<p align="center">
+  <img src="/ge-agent-factory/assets/diagrams/factory-line.svg" alt="The factory line: Author and Build stages, then Validate and Refine ending at preview (the local build boundary), then the Release stages that touch your GCP project — the part only a remote run performs" width="700" />
+</p>
+
+## Prerequisites
+
+- Local toolchain installed (`mise run setup`); the <a href="/ge-agent-factory/reference/glossary/#daemon" title="The local background process (ge daemon start, HTTP on port 17654 / GE_DAEMON_PORT) that runs long factory work — pipeline runs, repair runs, generic jobs — as durable runtime tasks, so a run survives your terminal closing and can be resumed.">daemon</a> running
+  (`ge daemon status`).
+- Console running for the live views: `mise run console` → http://localhost:18260.
+- For remote runs, the cloud <a href="/ge-agent-factory/reference/glossary/#planes" title="The three infrastructure layers the platform stands up in your cloud project — the factory plane (gateway, worker, Cloud Tasks queue, Cloud Build: the machinery that runs builds), the data plane (GCS, BigQuery, Bigtable, Firestore, AlloyDB, per-agent data + IAM), and the tool plane (the per-department MCP services, Agent Registry entries, and the Agent Gateway that agents call tools through).">planes</a> provisioned. See
+  [Provision the platform](/ge-agent-factory/operations/provision-the-platform/).
+
+## Steps
+
+<Steps>
+
+1. **Pick a mode.**
+
+   ```bash
+   ge mode local     # build on this machine, up to the 'previewed' build boundary
+   # or
+   ge mode remote    # submit to the cloud factory (builds, deploys, publishes)
+   ```
+
+   :::note
+   Everything up to `preview` runs with no cloud credentials; every stage
+   after it mutates your Google Cloud project. If you only want to validate
+   generation, stay local.
+   :::
+
+
+2. **Kick off a build.**
+
+   ```bash
+   ge agents build --canary       # one agent, active mode
+   ge agents build --all          # whole catalog
+   ge agents build --local --canary    # force local
+   ge agents build --remote --all      # force remote
+   ```
+
+   (`mise run` equivalents: `CANARY=1 mise run provision`, `CANARY=1 mise run provision-local`.)
+
+3. **Watch it live in the console.** Open the console; the Run Drawer follows any
+   run (including remote runs via the run <a href="/ge-agent-factory/reference/glossary/#ledger" title="The durable, event-sourced record of every run — one entry per run, item, and stage — that ge agents status, the Fleet view, and the console's Activity feed all read.">ledger</a> SSE stream), and the Activity
+   timeline shows stage-by-stage progress and blockers.
+
+4. **Watch it from the CLI.**
+
+   ```bash
+   ge agents status --watch       # loops every 15s until runs are terminal
+   ge agents fleet                # fleet-wide run/work-item view
+   ge agents logs <runId>         # logs for a specific run
+   ```
+
+   For the runtime/daemon view of work items:
+
+   ```bash
+   ge daemon status
+   ge runs list
+   ge runs events <id> --follow      # stream SSE events for one run
+   ```
+
+5. **Resume a blocked run.**
+
+   ```bash
+   ge runs resume <id>
+   ```
+
+   This POSTs `/api/tasks/<id>/resume` with a deterministic resume plan.
+   (`ge pipeline resume <id>` does the same for pipeline runs.)
+
+6. **Inspect the durable run ledger** (remote runs, history):
+
+   ```bash
+   ge ledger runs
+   ge ledger fleet
+   ge ledger plan
+   ```
+
+</Steps>
+
+## Verify
+
+- `ge agents status` (or the console Activity tab) shows the run reaching a
+  terminal state.
+- Local runs leave a <a href="/ge-agent-factory/reference/glossary/#workspace" title="The on-disk folder for one generated agent (.ge/factory/workspaces/workspace-id/), with a workspace.json manifest describing what's in it.">workspace</a> under `.ge/factory/workspaces/<id>/` (see
+  `ge state paths`).
+- A resumed run advances past the blocked stage in `ge runs list`.
+
+## Troubleshoot
+
+- **Build won't start** — daemon down. `ge daemon start` (or `mise run setup` starts
+  it).
+- **Remote build rejected / unhealthy** — run cloud readiness checks:
+  `ge doctor` (or scoped: `ge doctor --command agents.build`).
+- **Run stuck at data readiness** — warm the data runtime: `mise run data-runtime`.
+- **Resume does nothing** — confirm the task id and that it's actually blocked
+  (`ge runs show <id>`).

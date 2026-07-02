@@ -1,6 +1,6 @@
 ---
 title: Add a ge command
-parent: Cookbooks
+parent: Contributing
 nav_order: 10
 layout: default
 ---

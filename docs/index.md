@@ -2,124 +2,91 @@
 title: Home
 layout: home
 nav_order: 1
+description: GE Agent Factory compiles enterprise workflows into governed agent contracts, simulations, eval suites, and proof packs — the layer above agents-cli, ADK, and Gemini Enterprise.
 ---
 
-# GE Agent Factory
+# What is GE Agent Factory?
 
-**Purpose:** GE Agent Factory exists because enterprise agents should not jump
-from a slide, a prompt, or a one-off notebook straight into production. A useful
-agent needs a business contract, source-system grounding, generated tools,
-repeatable tests, evals, deployment automation, and runtime identity. This
-factory makes those pieces one traceable path.
+GE Agent Factory compiles enterprise workflows into governed agent
+**contracts**, source-system **simulations**, **eval** suites, tool plans, and
+**proof** packs. It does not replace agents-cli, ADK, or Gemini Enterprise; it
+produces the upstream contract and proof artifacts they need.
 
-In one sentence: **it turns an enterprise use case into a generated, tested,
-deployable Gemini Enterprise agent.** You start from a use case or an interview;
-the factory writes the spec, generates real ADK code, builds fixtures and
-simulators, runs smoke tests and evals, and promotes the same checked workspace
-into your own Google Cloud project.
+It occupies exactly one layer:
 
-It is an agent **factory**, not a prompt-only demo generator.
+> capture enterprise intent → compile an Enterprise Agent Contract → generate
+> simulations, evals, tools, and proof → hand off to agents-cli / ADK /
+> Gemini Enterprise.
 
-<p align="center">
-  <img src="assets/diagrams/system-map.svg" alt="A use case enters the factory's three planes (factory, data, tool) and the result reaches Gemini Enterprise as a deployed agent" width="900">
-</p>
-
-[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/?cloudshell_git_repo=https://github.com/vamsiramakrishnan/ge-agent-factory&cloudshell_workspace=installer&cloudshell_tutorial=installer/TUTORIAL.md)
-
-![Architecture](architecture.svg)
-
-## Why this system needs to exist
-
-Most enterprise agent programs break at the handoff between intent and
-operation: the business use case lives in one place, data access in another,
-tool contracts in another, evals in another, and deployment rules somewhere
-else. That split makes agents hard to trust, hard to reproduce, and hard to
-ship safely.
-
-GE Agent Factory exists to make the handoff explicit:
-
-| Problem | Factory answer |
-|---|---|
-| Use cases are ambiguous | Normalize the business request into a versioned spec and [OKF](./GLOSSARY.html#okf--knowledge-bundle) (Open Knowledge Format — the spec's portable Markdown form) bundle |
-| Agents are demos, not systems | Generate ADK code, tools, fixtures, evals, and deployment artifacts |
-| Data access is hand-wired | Use simulator packs locally and governed MCP/data [planes](./GLOSSARY.html#planes) (the platform's infrastructure layers) in cloud |
-| Quality is manual | Gate every workspace with tests, evals, and [harness](./GLOSSARY.html#harness) (LLM spec-fidelity check) review/refine |
-| Releases are not repeatable | Run a stage graph with a durable [ledger](./GLOSSARY.html#ledger) (the event record every status view reads) and resumable cloud control plane |
-| Enterprise data needs boundaries | Deploy into your own single-tenant Google Cloud project |
-
-## The factory path
+Everything below the handoff line — scaffolding the ADK project, deploying to
+Agent Engine, publishing into Gemini Enterprise — is done *by* those tools.
+The factory's job is to make sure that what reaches them is a contract you
+can read, a simulation you can test against, and proof you can show an
+auditor.
 
 <p align="center">
-  <img src="assets/diagrams/concept-pipeline.svg" alt="use case to spec (OKF, the contract) to generate to validate and refine to simulate to deploy to publish" width="800">
+  <img src="assets/diagrams/concept-pipeline.svg" alt="use case to contract to generate to validate and refine to simulate to deploy to publish" width="800">
 </p>
 
-1. **Interview or choose a use case.** Start from business intent, not an
-   implementation guess.
-2. **Materialize the spec.** The spec is the contract: systems, entities, tools,
-   workflow, test mechanisms, and runtime expectations.
-3. **Generate the workspace.** The factory emits ADK code, tools, fixture data,
-   simulator bindings, smoke tests, eval config, and an OKF grounding bundle.
-4. **Validate locally.** Local mode runs generation, validation, and preview up
-   to the build boundary without cloud deployment.
-5. **Ship remotely.** Remote mode loads per-agent data, deploys Agent Runtime,
-   registers MCP tools, publishes to Gemini Enterprise, and verifies live access.
+## The problem it solves
 
-## Quickstart
+Enterprise agent programs rarely fail at the model. They fail at the seams:
+the business intent lives in a slide deck, the data access rules live in an
+IAM console, the tool definitions live in a notebook, and the evidence that
+any of it works lives nowhere. Each seam is a place where an agent silently
+drifts from what the business asked for.
 
-Local development — no cloud credentials required:
+The factory closes those seams with one artifact chain:
 
-```bash
-mise run setup          # install deps, sync catalog/skills, install the `ge` command, start the daemon
-mise run doctor-local   # check local tools: Bun, uv, Python, agents-cli, cache, harness wiring
-mise run devex-check    # fast gate: local doctor, docs links, workspace manifest contracts
-mise run devex-smoke    # prove the path: doctor → local mode → one validated canary workspace
-mise run console        # open the operator UI (Overview · Pipeline · Fleet · Repair Queue · Runs · Readiness) → http://localhost:18260
-```
-
-Build one agent locally, up to the preview/build boundary:
-
-```bash
-mise run mode-local
-CANARY=1 mise run provision-local
-```
-
-Deploy to your own GCP project:
-
-- Click **Open in Cloud Shell** above to clone the repo and run the installer
-  ([`installer/TUTORIAL.md`](https://github.com/vamsiramakrishnan/ge-agent-factory/blob/main/installer/TUTORIAL.md)).
-- Or, from a checkout with `gcloud` authed:
-
-  ```bash
-  export GEMINI_ENTERPRISE_APP_ID=projects/<num>/locations/global/collections/default_collection/engines/<app>
-  CANARY=1 mise run bootstrap   # stand up the planes and prove one agent end to end
-  ```
-
-Run `mise run help` for every target, or `mise run next` for a status-based recommendation.
-
-## Documentation map
-
-| Need | Start here |
+| Without the factory | With the factory |
 |---|---|
-| Understand the purpose, repo shape, and developer loop | **[Developer Guide](./developers.html)** |
-| Learn the mental model before running commands | **[Concepts](./concepts/)** |
-| Look up exact commands, schemas, APIs, and architecture | **[Reference](./reference/)** |
-| Complete a task step by step | **[Cookbooks](./cookbooks/)** |
-| Deploy, operate, troubleshoot, and recover the factory | **[Operations](./OPERATIONS.html)** |
-| Expose the factory or generated agents through MCP | **[MCP](./MCP.html)** |
-| Add or edit a docs page or diagram | **[Docs design system](./DESIGN.html)** |
+| Intent is a slide or a prompt | Intent is captured into a versioned **contract** — role, scope, tools, evidence rules, escalation and refusal rules |
+| Agents are demoed against production or nothing | Agents are exercised against **source-system twins** — simulated backends with realistic data |
+| "It works" is a vibe | **Evals are the proof**: generated eval suites, a spec-to-code trace, and a promotion gate that blocks unproven agents |
+| Tool access is hand-wired | Tools are generated from the contract and governed at runtime |
+| Deployment is a bespoke script | **Handoff** is a defined step: the output is a real agents-cli / ADK project, shipped to Agent Engine and published to Gemini Enterprise in your own Google Cloud project |
 
-Unfamiliar term? See the [Glossary](./GLOSSARY.html) — plain-language
-translations of the jargon (harness, OKF, canary, planes, missions, …).
+## What the factory is not
 
-## Read this first if you are new
+- **Not an agent framework.** The generated agent is standard Google ADK
+  Python; the factory writes it, it doesn't run it.
+- **Not a deploy tool.** Deployment is `agents-cli`'s job; the factory
+  prepares the project and drives the handoff.
+- **Not a chat product.** The output is code, data, evals, and proof — the
+  conversational surface belongs to Gemini Enterprise.
 
-- If you are a **developer**, read the [Developer Guide](./developers.html), run
-  `mise run setup`, then open `mise run console`.
-- If you are an **operator**, read [Operations](./OPERATIONS.html), set
-  `GEMINI_ENTERPRISE_APP_ID`, then run `CANARY=1 mise run bootstrap`.
-- If you are a **platform reviewer**, read [Architecture](./reference/architecture.html),
-  [Security and the Agent Gateway](./concepts/security-and-the-agent-gateway.html),
-  and [MCP](./MCP.html).
-- If you are an **agent author**, read [Specs and OKF](./concepts/specs-and-okf.html),
-  [Author a spec via the interview](./cookbooks/author-a-spec-via-interview.html),
-  and [Generate an agent](./cookbooks/generate-an-agent.html).
+If you're deciding where this fits next to what you already run, read
+[GE Agent Factory vs agents-cli](./start/vs-agents-cli.html).
+
+## See it work
+
+All local, no cloud credentials — about ten minutes end to end:
+
+```bash
+curl https://mise.run | sh   # once, if you don't have mise
+mise run setup               # toolchain + the ge CLI (~5-10 min, one time)
+ge init                      # discover config, write .ge.json (~30 s)
+ge devex smoke               # compile one contract into a validated agent workspace (~5 min)
+```
+
+The result on disk is the whole layer in miniature: a contract
+(`usecase-spec.json` with its `behaviorContract`), generated ADK code and
+tools, fixture data, smoke tests, an eval suite, and the validation artifacts
+the promotion gate reads. Continue with the
+[ten-minute tutorial](https://vamsiramakrishnan.github.io/ge-agent-factory/start/quickstart/)
+or the fuller [local setup guide](./start/getting-started.html).
+
+## Where to go
+
+| You want to | Start at |
+|---|---|
+| Understand the layer and its artifacts | [Core mental model](./start/mental-model.html), then [Core Concepts](./concepts/) |
+| Compare against agents-cli / ADK / Gemini Enterprise | [GE Agent Factory vs agents-cli](./start/vs-agents-cli.html) |
+| Do a task end to end | [Guides](./cookbooks/) |
+| Drive it from a browser instead of a terminal | [Console](./console/) |
+| Stand up, operate, and troubleshoot the platform | [Operations](./OPERATIONS.html) |
+| Look up a command, schema, or API | [Reference](./reference/) |
+| Work on the factory itself | [Contributor docs](./developers.html) |
+
+Unfamiliar term? The [Glossary](./GLOSSARY.html) translates every internal
+noun (harness, OKF, canary, planes, pipeline) into plain language.

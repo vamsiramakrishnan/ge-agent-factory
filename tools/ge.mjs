@@ -66,7 +66,7 @@ const root = defineCommand({
         out(`  2. ${pc.cyan("ge init")}             ${pc.dim("discover config, write .ge.json (~30s)")}`);
         out(`  3. ${pc.cyan("ge devex smoke")}      ${pc.dim("prove the pipeline: doctor → canary agent build")}`);
         out(pc.dim("\n  then: ge pipeline status   (the full pipeline, stage by stage)"));
-        out(pc.dim("  docs: docs/cookbooks/getting-started.md · ge --help for all commands"));
+        out(pc.dim("  docs: docs/start/getting-started.md · ge --help for all commands"));
         return;
       }
       out(`  mode      ${pc.cyan(r.mode)}  ${pc.dim(r.clientDoes)}`);

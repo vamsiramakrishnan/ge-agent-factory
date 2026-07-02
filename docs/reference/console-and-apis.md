@@ -62,7 +62,7 @@ one preflight gating, risk labeling, and job streaming for free:
   <img src="../assets/diagrams/ge-command-flow.svg" alt="One registry entry backs both the ge CLI and a console route; a matched route runs preflight from the entry's requirements — a failure persists a blocked job, a pass submits the argv to the daemon (with a local spawn fallback), and events stream to the browser over SSE labeled with the entry's risk" width="520">
 </p>
 
-See [Add a ge command](../cookbooks/add-a-ge-command.html) for the full walkthrough.
+See [Add a ge command](../contributing/add-a-ge-command.html) for the full walkthrough.
 
 ### Registry-backed mutating routes
 
@@ -177,5 +177,5 @@ The `ge` export wraps every endpoint. Representative mappings:
 These use `EventSource`; when auth is enabled the Firebase token is appended to the
 URL (EventSource cannot set headers). The Run Drawer subscribes via the
 `useRunStream` hook, which calls `streamLedgerRun` and de-dups on the event `seq`
-— see the [Run Drawer + Now pulse flow](console-tour.html#run-drawer--now-pulse)
+— see the [Run Drawer + Now pulse flow](../console/pipeline-and-runs.html)
 for the sequence.

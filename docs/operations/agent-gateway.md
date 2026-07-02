@@ -1,8 +1,9 @@
 ---
 title: Deploy the Agent Gateway
-parent: Cookbooks
-nav_order: 8
+parent: Operations
+nav_order: 3
 layout: default
+description: Provision the managed Agent Gateway, apply the authz layer in DRY_RUN, and flip to ENFORCED deliberately.
 ---
 
 # Deploy the Agent Gateway
