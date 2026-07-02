@@ -189,12 +189,41 @@ line in between**:
 
 A callout may also live *inside* a list item — indent the blockquote and the
 class line to the item's continuation depth (see the step-level gotchas in
-`docs/cookbooks/run-evals.md`). The website's sync converts indented callouts
+`docs/cookbooks/prove-an-agent.md`). The website's sync converts indented callouts
 to asides too, keeping them attached to their step.
 
 The callout box auto-renders its own label (`NOTE`, `WARNING`, etc., styled in
 the site's display font). Don't also hand-write a redundant lead-in like
 `**Note:**` inside the blockquote text — remove it; the box already says it.
+
+## Page templates (guides and concepts)
+
+Every **guide** (`docs/cookbooks/`) follows one fixed section order — a page
+missing a section is incomplete:
+
+```
+**Scope:** <label> — <one clause>.
+## When to use this
+## Input artifact
+## Steps            (numbered list; the sync wraps it in <Steps>)
+## Expected output
+## Console view
+## Generated files
+## Common failures
+## Repair
+## Next step
+```
+
+Every **concept page** (`docs/concepts/`) contains, in prose or sections:
+a one-sentence definition, why it exists, an example, where it appears in
+the CLI, where it appears in the console, the generated artifacts, and
+related concepts.
+
+Language discipline: lead with the primary nouns (contract, authority,
+source system, simulation, eval, proof, handoff, passport, risk, coverage);
+the demoted nouns (daemon, ledger, planes, fleet, pipeline, mission,
+journey, harness) are explained on first use and never lead a Start Here or
+Core Concepts section.
 
 ## Cookbook scope strips
 

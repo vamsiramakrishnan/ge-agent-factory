@@ -1,19 +1,19 @@
 ---
-title: Getting started locally
-parent: Cookbooks
-nav_order: 1
+title: Set up locally
+nav_order: 3
 layout: default
+description: Local setup, the local/remote mode switch, and the fast checks that prove the repo works on your machine — no cloud project required.
 ---
 
-# Getting started locally
+# Set up locally
 
 **Scope:** local-only — no cloud project or credentials required.
 
 ## Goal
 
-Understand the difference between **local** and **remote** mode, and see how
-the fast DevEx gate and one-command smoke proof fit into the loop — all
-without touching a cloud project.
+Get a working local factory: understand the difference between **local** and
+**remote** mode, and see how the fast DevEx gate and one-command smoke proof
+fit into the loop — all without touching a cloud project.
 
 Unfamiliar term? See the [Glossary](../GLOSSARY.html) — plain-language
 translations of the jargon (harness, OKF, canary, planes, pipeline runs, …).
@@ -65,7 +65,7 @@ mise run console         # open the operator UI → http://localhost:18260
    ```
 
    - `ge mode` with no argument **reports** the active mode (defaults to
-     `remote` when unset).
+     `local` when unset — remote, billable work is opt-in).
    - `ge mode local` — this machine runs *generate → validate* up to the
      **build boundary** (the `previewed` stage — the last stage that runs with
      no cloud credentials; everything after it touches your Google Cloud
@@ -76,9 +76,9 @@ mise run console         # open the operator UI → http://localhost:18260
    `mise.toml` also exposes `mise run mode-local` and `mise run mode-remote` as
    thin wrappers.
 
-   > The mode defaults to `remote` when unset. If you're exploring on a fresh
-   > clone with no cloud project, run `ge mode local` first so nothing tries to
-   > reach Google Cloud.
+   > The mode defaults to `local` when unset, so a fresh clone with no cloud
+   > project never reaches Google Cloud by accident. Run `ge mode` anytime to
+   > confirm which mode you're in.
    {: .note }
 
 4. **(Optional) Build one agent locally to the preview boundary.**
@@ -101,6 +101,12 @@ ge state paths         # shows where state lands (.ge/...)
 ```
 
 The console should load at http://localhost:18260 and show the Readiness view.
+
+## Next step
+
+- Run the whole path once: the [ten-minute tutorial](https://vamsiramakrishnan.github.io/ge-agent-factory/start/quickstart/).
+- Capture your own use case: [Capture from an interview](../cookbooks/capture-from-interview.html).
+- Compile a contract into an agent workspace: [Compile a contract](../cookbooks/compile-a-contract.html).
 
 ## Troubleshoot
 

@@ -1,0 +1,43 @@
+---
+title: "Fleet & repair"
+description: "The Fleet roster, the Repair Queue, and the Agent detail view — operating many agents, and unblocking the ones that failed proof."
+editUrl: "https://github.com/vamsiramakrishnan/ge-agent-factory/edit/main/docs/console/fleet-and-repair.md"
+sidebar:
+  order: 3
+---
+Three surfaces for the many-agent day: **<a href="/ge-agent-factory/reference/glossary/#fleet" title="The whole set of generated agents/workspaces, treated as one unit — the opposite end of the scale from a canary.">Fleet</a>** (the roster), **Repair
+Queue** (convergence), and **Agent detail** (one agent, deeply).
+
+## Fleet — the roster
+
+Every generated agent, filterable by department, status, and stage — filters
+live in the URL hash, so a filtered view is shareable and reload-safe.
+Select agents to run **bulk** build / ship / sync / repair / regenerate
+actions. CLI equivalent: `ge fleet status`, plus `ge agents build --all` /
+`ge agents ship` (all locally-built <a href="/ge-agent-factory/reference/glossary/#workspace" title="The on-disk folder for one generated agent (.ge/factory/workspaces/workspace-id/), with a workspace.json manifest describing what's in it.">workspaces</a>, or `--ids <a,b>`) for the
+bulk actions.
+
+## Repair Queue — converge to a target
+
+A targeted queue for driving agents to a goal stage (`preview`, `promote`,
+`deploy:plan`, `publish:plan`) with optional auto-repair: pick a
+department/status scope and a target, run it, and the queue tracks the
+resulting repair runs as they observe blockers, fix what they can, and
+retry. This is the console face of
+[repairing a failed proof](/ge-agent-factory/cookbooks/repair-failed-proof/); the CLI
+equivalent is `ge fleet repair --ids <a,b>`.
+
+## Agent detail — one agent end to end
+
+The deep view for a single agent: its stage lifecycle, workspace <a href="/ge-agent-factory/reference/glossary/#doctor" title="The health-check family: a set of read-only, actionable pass/fail checks over the toolchain and the three planes.">doctor</a> and
+repair reports, artifacts (the
+[proof pack](/ge-agent-factory/concepts/agent-passport-and-proof-pack/) contents), and
+per-stage actions (build, ship, sync, regenerate, repair). A **triage band**
+highlights what needs attention so you can act without scanning the whole
+pipeline.
+
+## See also
+
+- [Repair a failed proof](/ge-agent-factory/cookbooks/repair-failed-proof/) — the guide.
+- [Hand off to ADK / Gemini Enterprise](/ge-agent-factory/cookbooks/handoff-adk-gemini-enterprise/) — shipping from the Fleet view's bulk actions.
+- [Readiness](/ge-agent-factory/console/readiness/) — the verdict to check before bulk operations.

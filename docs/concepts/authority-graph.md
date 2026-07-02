@@ -1,113 +1,116 @@
 ---
-title: Security and the Agent Gateway
-parent: Concepts
-nav_order: 5
+title: The Authority Graph
+parent: Core Concepts
+nav_order: 2
 layout: default
+description: How the contract's scope, tools, evidence, and escalation rules become enforced authority — in generated code, in platform identity, and at the governed front door.
 ---
 
-# Security and the Agent Gateway
+# The Authority Graph
 
-When the factory crosses the [build boundary](./the-factory-line.html) into your
-Google Cloud project, the governing idea is **least privilege everywhere**: every
-service runs as its own bounded identity, every service-to-service call is
-authenticated, and the agent-to-tool plane can be put behind a **managed,
-policy-enforced front door**. This is single-tenant — it all runs in *your*
-project.
+**Definition:** the authority graph is the chain of *who may do what, enforced
+by whom* that connects an agent's contract to its runtime — from declared
+scope, through generated guardrails, through least-privilege cloud identity,
+to the policy-enforced Agent Gateway.
 
-## Per-service, least-privilege identities
+## Why it exists
 
-The factory does **not** run on the default compute service account (which carries
-near-Editor power: `bigquery.admin`, `artifactregistry.admin`, …). Terraform
-defines dedicated service accounts
-([`installer/terraform/service_accounts.tf`](https://github.com/vamsiramakrishnan/ge-agent-factory)),
-each scoped to a role:
+An agent's authority cannot live in a prompt, because a prompt is a
+suggestion. In the factory, authority is declared once — in the
+[Enterprise Agent Contract](./enterprise-agent-contract.html) — and then
+*compiled into enforcement* at every layer the agent passes through. No
+single layer is trusted to hold the line alone; each hop checks what the
+previous one asserted.
 
-| Identity | Runs | Carries (bounded) |
-|---|---|---|
-| **runner** (`ge-agent-factory-runner@`) | the worker Cloud Run service + per-stage Cloud Build | datastore.user, cloudtasks.enqueuer, run.developer/invoker, cloudbuild.builds.editor, artifactregistry.writer, aiplatform.user, bigquery.{dataEditor,jobUser}, secretmanager.secretAccessor, … |
-| **runtime** (`ge-agent-factory-runtime@`) | the browser-facing console + gateway services | a smaller set: datastore.user, cloudtasks.enqueuer, run.invoker, discoveryengine.editor, aiplatform.user, logging.logWriter |
-| **builder** | container image builds | the build executor role only |
+## The graph, layer by layer
 
-`installer/fix-service-accounts.sh` is the idempotent remediation that grants those
-SAs their roles **and reassigns each Cloud Run service off the default compute
-SA** — runtime→{console, gateway}, runner→worker. Storage access is **bucket-scoped**
-(`objectAdmin` on the factory + data buckets), not project-wide.
+| Layer | Authority artifact | Enforced by | Fails how |
+|---|---|---|---|
+| **1 · Contract** | `inScope[]` / `outOfScope[]`, `toolIntents[]`, `evidenceRequirements[]`, `escalationRules[]`, `refusalRules[]` | Review — a controller can read and sign off on it | A bad contract is visible *before* anything is built |
+| **2 · Generated code** | Tools exist only for declared intents, named `<verb>_<system>_<object>`; write-guard and evidence-capture callbacks | ADK callbacks on every turn, regardless of what the model says | A write without required inputs, idempotency key, or enough evidence returns an error/escalation instead of executing |
+| **3 · Platform identity** | Dedicated service accounts per service; OIDC on every service-to-service call; per-agent runtime identity | Google Cloud IAM in your own project | A service without the bounded role simply cannot call |
+| **4 · Governed front door** | Agent Registry entries + Agent Gateway authz policy | The managed Agent Gateway (mTLS, policy-enforced egress) | Outbound calls to unregistered tools/hosts are blocked (once enforcement is on) |
 
-## OIDC service-to-service
+Read down the table and you have the whole story: the business writes layer
+1, the factory compiles layers 1→2, Terraform and the installer stand up
+layer 3, and layer 4 governs the fleet as a whole.
 
-There are no shared secrets between planes; calls carry **OIDC identity tokens**:
+## Layer 2 in one picture: governance is wired in, not bolted on
 
-- **Cloud Tasks → worker.** Each stage task is created with
-  `--oidc-service-account-email <runner>` and an audience equal to the worker URL,
-  and the worker is deployed `--no-allow-unauthenticated`. So only a task minted
-  for the runner identity can drive a stage.
-- **runtime mints AS runner.** The browser-facing runtime SA is granted
-  `serviceAccountTokenCreator` on the runner SA so it can enqueue tasks that target
-  the runner identity — without itself holding the runner's broader roles.
-- **Ingress.** The worker's ingress is configurable (default open so Cloud Tasks can
-  reach it; tightening to internal must not break task delivery). The gateway allows
-  external, **authenticated-only** ingress; the legacy load-balancer path can
-  restrict ingress to the LB. Finishing the ingress + runner-SA hardening is tracked
-  work, not yet fully closed.
+Two generated ADK callbacks run on every turn:
 
-## The MCP plane on Cloud Run
+- **Write-guard** (`before_tool_callback`): before any write-like tool runs,
+  it checks required inputs, idempotency keys, and — for high-risk actions —
+  that evidence was gathered from at least N distinct source systems. If
+  not, the call never executes; the model cannot skip the gate.
+- **Evidence capture** (`after_tool_callback`): after each tool returns, it
+  records the source system, evidence kind, and audit-trail line into
+  session state — the record the write-guard's multi-system check (and any
+  later citation) reads.
 
-The generated agents' cloud tools are served by the **MCP tool plane** (see
-[Simulators and BYO](./simulators-and-byo.html) and the
-[MCP design notes](https://github.com/vamsiramakrishnan/ge-agent-factory)): a
-generic multi-tenant FastMCP service deployed **once per department** on Cloud Run,
-plus Google-managed 1P MCP endpoints for direct store access. The identity model
-here is the subtle part — *resolving* a toolset and *invoking* it are separate
-grants:
+<p align="center">
+  <img src="../assets/diagrams/write-guard-flow.svg" alt="before_tool_callback checks inputs, idempotency key, and evidence count before letting a write tool run; after_tool_callback records evidence to session state" width="420">
+</p>
+
+The generated code anatomy — including these callbacks in situ — is in
+[Generated artifacts](../reference/agent-generation.html).
+
+## Layer 3: identity, not secrets
+
+When work crosses the build boundary into your Google Cloud project, every
+arrow is an authenticated identity with a bounded role — the factory never
+runs on the default compute service account:
+
+- A **runner** identity executes builds and stages; a smaller **runtime**
+  identity serves the browser-facing surfaces. Each carries only its own
+  role set (`installer/terraform/service_accounts.tf`).
+- Service-to-service calls carry **OIDC identity tokens** — stage tasks are
+  minted for the runner identity and the worker accepts nothing else.
+- Deployed agents run under a **per-agent Agent Runtime identity**
+  (Preview): IAM is granted to the principalSet, not a shared service
+  account, and tokens are mTLS-bound and usable only in-runtime.
+
+## Layer 4: the governed front door
+
+Deployed agents call their tools through the MCP tool plane, and that plane
+can be put behind the **managed Agent Gateway** — one mTLS-fronted,
+policy-enforced endpoint governing tool egress for the whole fleet.
+*Resolving* a toolset (from the Agent Registry) and *invoking* it are
+separate grants:
 
 <p align="center">
   <img src="../assets/diagrams/tool-authz-chain.svg" alt="agent identity resolves a toolset from the Agent Registry, invokes the per-department FastMCP service, which reads or writes the per-agent store" width="420">
 </p>
 
-Generated agents run under the **Agent Runtime per-agent identity** (Preview):
-IAM is granted to the **principalSet**, not a SA email, and ADC returns an
-agent-identity token at runtime (tokens are mTLS/CAA-bound, in-runtime only). If
-the Preview is off, the attached runtime SA carries the same roles — **identical
-code path**.
-
-## The managed Agent Gateway
-
-On top of that plane sits the **managed Agent Gateway**: a single managed
-**mTLS-fronted, policy-enforced endpoint** that governs an agent's access to the
-MCP servers. It is provisioned by the official
-`terraform-google-agent-gateway` module (`installer/terraform/agent_gateway.tf`,
-v0.5.0) plus `installer/provision-agent-gateway.sh`, and documented in
-[`installer/AGENT-GATEWAY.md`](https://github.com/vamsiramakrishnan/ge-agent-factory).
-
-Two hard-won facts shape its configuration:
-
-- **It is regional, not `global`.** The first attempt failed with `Error 501:
-  unimplemented` — the cause was the `location`, not preview enrollment. Mapping:
-  Gemini Enterprise `global`/`us` → gateway `us-central1`; `eu` → `europe-west1`.
-- **Access path is `AGENT_TO_ANYWHERE` (egress), not `CLIENT_TO_AGENT`.** The
-  factory's case is governing an agent's *egress* to MCP servers registered in the
-  Agent Registry. Egress **blocks all outbound to unregistered hosts**, so the MCP
-  servers/tools must be registered first (`var.agent_gateway_registries`).
-
-The **authz layer** every gateway requires is applied separately (from
-`installer/agent-gateway-authz/`) and is currently **live in `DRY_RUN`
-(audit-only)**: an authz-extension + a CUSTOM authz-policy targeting the gateway,
-with `roles/iap.egressor` granted to the agent identity. DRY_RUN logs the decision
-it *would* make without blocking, so you can review before enforcing. Flipping
-`iamEnforcementMode: "DRY_RUN" → "ENFORCED"` (after populating registries and
-reviewing the logs) is a deliberate, reversible later step — rollback is re-importing
-the DRY_RUN config. An optional read-only condition can restrict egress to
-read-only MCP tools (`request.auth.type=='MCP' && mcp.tool.isReadOnly`).
-
-## The mental model
+The gateway's authz layer ships in **DRY_RUN (audit-only)** first: it logs
+the allow/deny decision it *would* make, so you review real traffic before
+flipping to ENFORCED. Enforcement, registry population, and rollback are an
+operator procedure, not a concept — see
+[Deploy the Agent Gateway](../operations/agent-gateway.html).
 
 <p align="center">
   <img src="../assets/diagrams/security-mental-model.svg" alt="Three authenticated paths: operator to gateway, Cloud Tasks to worker, and generated agent through the governed Agent Gateway to the MCP plane and per-agent store" width="700">
 </p>
 
-Every arrow is an authenticated identity with a bounded role; the gateway is the
-one place an agent's tool access can be governed by policy across the whole fleet.
+## Where it appears
 
-See the [Reference](../reference/) for the terraform variables and the IAM role
-matrix, and the [Cookbooks](../cookbooks/) for provisioning and enforcing the
-gateway.
+- **CLI:** authority is inspectable, not invisible — `ge doctor` verifies
+  the identity wiring; every mutating `ge` command carries a declared risk
+  level (`read-only` → `mutates-cloud`) surfaced in `--json` output and the
+  console.
+- **Console:** the contract's scope and rules render in **Spec Review**; the
+  **Readiness** view rolls identity/plane checks into a verdict.
+- **Generated artifacts:** `app/agent.py` (callback wiring), `app/tools.py`
+  (tool bindings), `mcp-tools.json` (tool plane bindings), the Agent
+  Registry entry after handoff.
+
+## Related concepts
+
+- [Enterprise Agent Contract](./enterprise-agent-contract.html) — where
+  authority is declared.
+- [Source-system Twins](./source-system-twins.html) — the envelope format
+  that makes evidence counting work.
+- [Agent Passport & Proof Pack](./agent-passport-and-proof-pack.html) — the
+  identity and proof artifacts a shipped agent carries.
+- [Handoff Targets](./handoff-targets.html) — the runtime this authority
+  follows the agent into.

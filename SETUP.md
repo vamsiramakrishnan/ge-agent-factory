@@ -2,7 +2,7 @@
 
 The canonical, step-by-step path from a fresh clone to a working local
 factory. This is the one place setup steps are written out in full — other
-docs (`README.md`, `docs/cookbooks/getting-started.md`, `tools/README.md`)
+docs (`README.md`, `docs/start/getting-started.md`, `tools/README.md`)
 link back here instead of repeating the steps.
 
 ## 1. Clone
@@ -178,4 +178,4 @@ plane into **your own** GCP project (single-tenant, ~15 min):
 - `ge` CLI command reference: [`tools/README.md`](tools/README.md)
 - Operator runbook: [`docs/OPERATIONS.md`](docs/OPERATIONS.md)
 - Getting-started cookbook (local vs remote mode deep dive):
-  [`docs/cookbooks/getting-started.md`](docs/cookbooks/getting-started.md)
+  [`docs/start/getting-started.md`](docs/start/getting-started.md)

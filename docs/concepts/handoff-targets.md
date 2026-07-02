@@ -1,104 +1,97 @@
 ---
-title: Agents and ADK
-parent: Concepts
-nav_order: 3
+title: Handoff Targets
+parent: Core Concepts
+nav_order: 6
 layout: default
+description: agents-cli, ADK Agent Engine, and Gemini Enterprise — the layer below the factory, and exactly what crosses the handoff line.
 ---
 
-# Agents and ADK
+# Handoff Targets
 
-A generated agent is **not a mock and not a prompt blob**. It is a real
-[Agent Development Kit (ADK)](https://google.github.io/adk-docs/) Python project:
-an `Agent`/`App`, real `FunctionTool`s, ADK callbacks, a `pyproject.toml`,
-fixtures, smoke tests, and an evalset. You can `cd` into a generated workspace and
-run it. The `generated-agents/` directory holds hundreds of these, each built from
-its spec.
+**Definition:** a handoff target is the downstream system that receives the
+factory's output: **agents-cli** (the build/deploy CLI), **ADK Agent
+Engine** (the runtime), and **Gemini Enterprise** (the end-user surface).
+The factory compiles and proves; the targets build, run, and serve.
 
-## What a generated agent IS
+## Why the boundary exists
 
-Look at `generated-agents/<name>/app/agent.py`. The shape is always the same:
+The factory refuses to reimplement the layer below it — that is a design
+decision, not a limitation. Because the generated workspace is a *standard*
+ADK project driven by *standard* `agents-cli` commands, there is no factory
+runtime library in production, no lock-in shim between your agent and
+Google's stack, and nothing to migrate off if you stop using the factory
+tomorrow. The factory's entire value is upstream: the contract, the twins,
+the evals, and the proof.
 
-```python
-from google.adk.agents import Agent
-from google.adk.apps import App
-from .tools import source_adapters
+## What each target receives
 
-root_agent = Agent(
-    name="...",
-    model="gemini-3.5-flash",
-    instruction=_INSTRUCTION,            # built from the behaviorContract
-    before_agent_callback=initialize_workflow_state,
-    before_tool_callback=enforce_tool_contract,    # write-guard
-    after_tool_callback=capture_tool_evidence,     # evidence
-    tools=source_adapters,
-)
-app = App(root_agent=root_agent, name="app")
+| Target | What crosses the line | Where it's declared |
+|---|---|---|
+| **agents-cli** | a complete ADK Python project: `app/agent.py`, `app/tools.py`, `pyproject.toml`, tests, evalsets — plus `agents-cli-manifest.yaml` naming the deploy | the workspace itself |
+| **ADK Agent Engine** (Agent Runtime) | the deployed agent, under its per-agent runtime identity | `deployment_target: agent_runtime` in the manifest; `deploy_runtime` stage |
+| **Agent Registry** | the agent's registration and resolvable toolsets (modes `adk`, `mcp`, `a2a`) | `register_tools` stage |
+| **Gemini Enterprise** | the published agent your business users talk to | `publish_enterprise` stage |
+
+## Example — a generated workspace is an agents-cli project
+
+The proof that the boundary is honest is that you can ignore the factory and
+drive a workspace with the target's own tools:
+
+```bash
+cd .ge/factory/workspaces/<id>
+agents-cli eval run --all          # the factory-generated evalset, in agents-cli's format
+# agents-cli deploy                # the same command the factory's release stages run
 ```
 
-The `instruction` is **derived from the spec**, not improvised: it restates the
-primary objective, the in/out-of-scope lists, the tool playbook (by canonical
-name), the evidence the agent must cite, escalation/refusal triggers, and hard
-guardrails. Tools are real Python functions wrapped as `FunctionTool`s, named by a
-strict convention `<verb>_<source_system_id>_<business_object>` (e.g.
-`query_blackline_reconciliations`, `action_sap_s_4hana_fi_close`) so the agent
-cannot invent aliases and so every tool traces to a system + entity in the spec.
+The agent code is plain ADK — an `Agent`/`App` with real `FunctionTool`s and
+callbacks, tools named `<verb>_<source_system_id>_<business_object>` so every
+tool traces to a contract intent. The full anatomy is in
+[Generated artifacts](../reference/agent-generation.html).
 
-## Governance is wired in, not bolted on
+## The handoff itself
 
-The factory's central safety idea: **governance lives in ADK callbacks**, so it
-runs on every turn regardless of what the model says. Two callbacks do the work:
+`ge agents ship` is the handoff command: it takes workspaces that were built
+and proven locally and runs only the post-boundary stages in your Google
+Cloud project —
 
-- **Write-guard** (`before_tool_callback` → `enforce_tool_contract`). Before any
-  write-like ("action") tool runs, it checks: are the required inputs present? is
-  an idempotency key supplied when expected? and — for high-risk actions — has the
-  agent gathered evidence from **at least N distinct source systems**? If not, it
-  *returns an error/escalation instead of letting the call through*. The model
-  never gets to skip the gate.
-- **Evidence capture** (`after_tool_callback` → `capture_tool_evidence`). After
-  each tool returns, it records the source system, the evidence kind, and any
-  audit-trail line into session state — without changing the tool result. This is
-  what later turns (and the write-guard's multi-system check) read from.
+```
+load_data → deploy_runtime → poll_runtime → register_tools → publish_enterprise → verify_live
+```
 
-<p align="center">
-  <img src="../assets/diagrams/write-guard-flow.svg" alt="before_tool_callback checks inputs, idempotency key, and evidence count before letting a write tool run; after_tool_callback records evidence to session state" width="420">
-</p>
+— loading per-agent data stores, deploying to Agent Engine (via
+`agents-cli deploy` under the hood), registering tools, publishing to
+Gemini Enterprise, and verifying live access. The cloud consumes the
+prebuilt workspace; it never regenerates. In remote mode, `ge agents build`
+runs the same stages end to end in the cloud instead.
 
-Action tools themselves are deterministic: they mint **stable, reproducible ids**
-(sha1 of the inputs) and emit an `audit_trail`, so audit records are consistent
-across runs and the agent can echo them verbatim.
+One switch makes the same code work on both sides of the line: the generated
+tools read `GE_DATA_BACKEND` and present identical tool names and result
+envelopes whether backed by local fixtures or the cloud MCP tool plane — so
+the agent that was proven is the agent that ships.
 
-## Single-agent vs multi-agent topology
+## What stays out of the factory's scope
 
-The factory does **not** always emit a single `LlmAgent`. The topology is
-**derived from the spec's `behaviorContract.workflow`** (see
-[Specs and OKF](./specs-and-okf.html)). When the workflow has enough tool-bearing
-stages and enough distinct tools, the build derives a **multi-agent** structure
-(Sequential / Parallel ADK composition) instead of one flat prompt; otherwise it
-stays a single agent. The decision lives in the workflow-derivation module, and
-the Antigravity harness then **validates the generated topology against the spec
-and self-corrects** during the `harness_refine` stage. The agent's structure is a
-consequence of the contract, not a fixed template.
+- **Runtime orchestration** — Agent Engine's job.
+- **The conversational UX** — Gemini Enterprise's job.
+- **ADK itself** — the factory generates against it, tracks it, and pins
+  `agents-cli` versions; it does not fork or wrap it.
 
-## The dual tool backend
+## Where it appears
 
-The same generated code runs two ways, switched at runtime by the
-**`GE_DATA_BACKEND`** environment variable in `app/tools.py`:
+- **CLI:** `ge agents ship` (all locally-built workspaces, or `--ids <a,b>`); `ge agents status --watch` for
+  the release milestones (`deployed`, `registered`, `published`); `ge mode
+  remote` + `ge agents build` for cloud-side end-to-end runs.
+- **Console:** release stages in the Agent detail view and **Runs**; fleet
+  rollout state in **Fleet**.
+- **Generated artifacts:** `agents-cli-manifest.yaml`, deployment metadata
+  from `deploy_runtime`, the Agent Registry entry, the Gemini Enterprise
+  registration, and a live-verification report from `verify_live`.
 
-<p align="center">
-  <img src="../assets/diagrams/dual-backend.svg" alt="app/tools.py switches between local fixture files and the MCP tool plane based on GE_DATA_BACKEND" width="650">
-</p>
+## Related concepts
 
-The two backends present the **same tool names and the same result envelopes**, so
-the agent's instructions, tests, and evals are identical across them. Locally you
-get fast, hermetic fixtures; in the cloud the very same calls go through the MCP
-tool plane to per-agent stores that behave like the real source systems (see
-[Simulators and BYO](./simulators-and-byo.html)). If an MCP toolset is not yet
-registered, resolution falls back to fixtures rather than crashing startup.
-
-The reference implementation of the generator (and the `factory` CLI that drives
-generation, refine, registration, and status) lives in
-[`apps/factory/scripts/factory.mjs`](https://github.com/vamsiramakrishnan/ge-agent-factory).
-
-See the [Reference](../reference/) for the generated workspace layout and the
-ADK/`agents-cli` command surface, and the [Cookbooks](../cookbooks/) for running
-and evaluating a generated agent.
+- [Agent Passport & Proof Pack](./agent-passport-and-proof-pack.html) — what
+  identifies and justifies the agent after this handoff.
+- [The Authority Graph](./authority-graph.html) — the identity model the
+  deployed agent runs under.
+- [GE Agent Factory vs agents-cli](../start/vs-agents-cli.html) — the layer
+  comparison in full.
