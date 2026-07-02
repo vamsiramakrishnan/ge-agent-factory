@@ -1,14 +1,13 @@
 ---
-title: Deploy the Agent Gateway
-parent: Operations
-nav_order: 3
-layout: default
-description: Provision the managed Agent Gateway, apply the authz layer in DRY_RUN, and flip to ENFORCED deliberately.
+title: "Deploy the Agent Gateway"
+description: "Provision the managed Agent Gateway, apply the authz layer in DRY_RUN, and flip to ENFORCED deliberately."
+editUrl: "https://github.com/vamsiramakrishnan/ge-agent-factory/edit/main/docs/operations/agent-gateway.md"
+sidebar:
+  order: 3
 ---
+import { Badge, Steps } from '@astrojs/starlight/components';
 
-# Deploy the Agent Gateway
-
-**Scope:** cloud — mutates your Google Cloud project; lands in audit-only
+<Badge text="Cloud" variant="caution" /> mutates your Google Cloud project; lands in audit-only
 (DRY_RUN) mode.
 
 ## Goal
@@ -18,13 +17,13 @@ apply the authz layer (extension + policy) and grant the agent runtime identity
 egress — landing in audit (DRY_RUN) mode.
 
 <p align="center">
-  <img src="../assets/diagrams/tool-authz-chain.svg" alt="The authorization chain the gateway governs: an agent with a per-agent SPIFFE identity resolves its toolset from the Agent Registry, invokes the registered per-department MCP server on Cloud Run, which reads and writes the per-agent store" width="650">
+  <img src="/ge-agent-factory/assets/diagrams/tool-authz-chain.svg" alt="The authorization chain the gateway governs: an agent with a per-agent SPIFFE identity resolves its toolset from the Agent Registry, invokes the registered per-department MCP server on Cloud Run, which reads and writes the per-agent store" width="650" />
 </p>
 
 ## Prerequisites
 
-- The factory/tool plane already provisioned — see
-  [Provision the platform](provision-the-platform.html). The gateway fronts
+- The factory/tool <a href="/ge-agent-factory/reference/glossary/#planes" title="The three infrastructure layers the platform stands up in your cloud project — the factory plane (gateway, worker, Cloud Tasks queue, Cloud Build: the machinery that runs builds), the data plane (GCS, BigQuery, Bigtable, Firestore, AlloyDB, per-agent data + IAM), and the tool plane (the per-department MCP services, Agent Registry entries, and the Agent Gateway that agents call tools through).">plane</a> already provisioned — see
+  [Provision the platform](/ge-agent-factory/operations/provision-the-platform/). The gateway fronts
   the MCP servers that step deploys; it has nothing to front otherwise.
 - `gcloud` authenticated; `terraform` installed.
 - A project id (`PROJECT_ID` env or a gcloud default project).
@@ -32,12 +31,16 @@ egress — landing in audit (DRY_RUN) mode.
   Registry** first (the directory of MCP servers/tools that the gateway and
   generated agents resolve by name — egress blocks unregistered hosts).
 
-> The Agent Gateway is **REGIONAL** — use a region (e.g. `us-central1`), never
-> `global` (`global` returns HTTP 501). Gemini Enterprise `global`/`us` →
-> gateway `us-central1`; `eu` → `europe-west1`.
-{: .important }
+:::danger
+The Agent Gateway is **REGIONAL** — use a region (e.g. `us-central1`), never
+`global` (`global` returns HTTP 501). Gemini Enterprise `global`/`us` →
+gateway `us-central1`; `eu` → `europe-west1`.
+:::
+
 
 ## Steps
+
+<Steps>
 
 1. **Plan, then provision the gateway** (idempotent — skips if it already exists):
 
@@ -73,6 +76,8 @@ egress — landing in audit (DRY_RUN) mode.
    The layer lands in **DRY_RUN (audit-only)**:
    `…-iap-authz-ext` (DRY_RUN) + `…-iap-authz-policy` (CUSTOM, targets the
    gateway) + `roles/iap.egressor` on the runner.
+
+</Steps>
 
 ## Verify
 

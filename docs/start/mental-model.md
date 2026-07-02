@@ -1,152 +1,117 @@
 ---
-title: The factory line
-parent: Concepts
-nav_order: 1
+title: Core mental model
+nav_order: 4
 layout: default
+description: The five verbs of the contract layer — capture, compile, generate, prove, hand off — and how they map onto the commands and stages that exist today.
 ---
 
-# The factory line
+# Core mental model
 
-The factory is an **assembly line**. A business use case enters one end; a
-generated, tested, deployed, and published agent comes out the other. Each
-station does one job, writes one set of artifacts, and hands the workspace to the
-next station. Nothing is magic and nothing is hidden — every stage leaves a
-trail you can inspect.
+One sentence to keep: **the factory turns enterprise intent into a contract,
+turns the contract into artifacts, proves the artifacts, and hands them off.**
+Everything in this repo — every command, console view, and generated file —
+serves one of those five verbs.
 
-## The stages
+## The five verbs
 
-The stage graph is defined declaratively in
-[`apps/factory/src/factory-orchestration.js`](https://github.com/vamsiramakrishnan/ge-agent-factory)
-(`FACTORY_STAGE_GRAPH`). The line, in order:
-
-| Stage | What it produces | Owner |
+| Verb | What it means | Where it happens today |
 |---|---|---|
-| `plan` | the factory plan | control plane |
-| `generate_workspace` | the ADK workspace (`app/agent.py`, `app/tools.py`, `pyproject.toml`, manifest) | Cloud Run worker |
-| `generate_data` | fixtures + a Snowfakery recipe | Cloud Run worker |
-| `package_data` | the data package index, cloud data manifest, `mcp-tools.json` | Cloud Run worker |
-| `harness_refine` | Antigravity review + refine reports | Cloud Run worker |
-| `validate` | the validation report (pytest + lint) | Cloud Build |
-| `preview` | a preview/smoke report | Cloud Build |
-| `plan_deploy` | the deploy plan + cloud topology | control plane |
-| `load_data` | per-agent stores loaded; load report | Cloud Run worker |
-| `deploy_runtime` → `poll_runtime` | the deployed Agent Runtime + deployment metadata | Cloud Build / Cloud Tasks |
-| `register_tools` | Agent Registry registration | Cloud Run worker |
-| `publish_enterprise` | Gemini Enterprise registration | Cloud Build |
-| `verify_live` | a live-verification report | Cloud Run worker |
+| **Capture** | Turn business intent (an interview, a document, an API surface) into structured input | Console **Interview** view; document upload; simulator synthesis from OpenAPI |
+| **Compile** | Materialize an **Enterprise Agent Contract**: the machine-readable statement of role, scope, tools, evidence rules, escalation and refusal rules, plus the world the agent operates in | The use-case spec (`generationSpec` + `behaviorContract`) and its portable OKF twin |
+| **Generate** | Emit everything the contract implies: ADK agent code, tools, fixture data, source-system simulations, smoke tests, eval suites | `ge agents build` (one workspace per contract) |
+| **Prove** | Show — not claim — that the generated agent honors the contract | Evals, the spec-to-code trace, harness review/refine verdicts, the promotion gate |
+| **Hand off** | Give the proven agent to the layer below: agents-cli → ADK Agent Engine → Gemini Enterprise, in your own Google Cloud project | `ge agents ship` |
 
-### Stations vs. milestones — two stage vocabularies, one line
+> `capture`, `prove`, and `handoff` are the *concepts*. The commands that
+> implement them today are the ones named in the table — there is no
+> `ge capture` or `ge prove` command yet. The [Roadmap section of the
+> README](https://github.com/vamsiramakrishnan/ge-agent-factory#roadmap-the-golden-path)
+> tracks the plan to surface the verbs directly.
+{: .note }
 
-You will meet **two different stage name sets** and they are both correct —
-they name different things. The table above lists **stations** (verbs — the
-work a stage *does*), from `FACTORY_STAGE_GRAPH` in
-`apps/factory/src/factory-orchestration.js`. Everything that reports
-*progress* — `ge agents status`, `ge ledger plan`, the run ledger, the
-pipeline state machine — uses **milestones** (past-tense states an item has
-*reached*), from `LEDGER_STAGES` in `packages/run-ledger/src/store.mjs`.
-Reading `generate_workspace` here and then seeing `created` in
-`ge agents status` is the same item, described from the other side:
+## The contract is the center of gravity
 
-| Station (does the work) | Milestone recorded (what status reports) |
-|---|---|
-| `plan` | `planned` |
-| `generate_workspace`, `generate_data` | `created` |
-| `package_data` | `data_packaged` |
-| `harness_refine` | `harness_reviewed`, then `harness_refined` |
-| `validate` | `validated` |
-| `preview` | `previewed` — the **build boundary** in both vocabularies |
-| `plan_deploy` | `deploy_planned` |
-| `load_data` | (no dedicated milestone — release-movement prep) |
-| `deploy_runtime`, `poll_runtime` | `deploying`, then `deployed` |
-| `register_tools` | `registered` |
-| `publish_enterprise` | `publish_planned`, then `published` |
-| `verify_live` | (no dedicated milestone — verification report artifact) |
+Every artifact is derived from the contract, and every check points back at
+it:
 
-Milestones are listed in the ledger's canonical order (its reducer only ever
-advances an item forward through that list); station order above is the cloud
-line's execution order — the two orderings differ slightly in the middle
-movement, which is expected, not drift.
+- The **tools** an agent gets exist because the contract's `toolIntents`
+  declared them.
+- The **simulations** it is tested against exist because the contract's
+  source systems declared them.
+- The **evals** that judge it are generated from the contract's
+  `goldenEvals` and answerable queries.
+- The **proof** that gates release is a comparison between the contract and
+  what was actually generated.
 
-Conceptually the line is three movements, with the **build boundary** sitting
-between the first two and the third — everything above it is pure computation;
-everything in **Release** touches your Google Cloud project. Stages shaded
-green run in Cloud Build rather than on the worker directly.
+This is what makes the output trustworthy: there is no hand-wired step where
+an engineer's interpretation silently replaces the business's stated intent.
+Read [the Enterprise Agent Contract](../concepts/enterprise-agent-contract.html)
+for the artifact itself.
+
+## The build boundary: everything before handoff is pure computation
+
+The line has a hard cut in the middle — the **build boundary**:
 
 <p align="center">
   <img src="../assets/diagrams/factory-line.svg" alt="The factory line: Author and Build, Validate and Refine, Release, with the build boundary between them" width="700">
 </p>
 
-## The build boundary: local build vs remote release
+- **Before the boundary** (compile → generate → prove): everything runs on
+  your machine against simulated source systems. No cloud credentials, no
+  side effects. This is the everyday loop, and it is deliberately boring to
+  repeat.
+- **After the boundary** (hand off): stages touch your Google Cloud project —
+  per-agent data is loaded, the Agent Runtime is deployed, tools are
+  registered, and the agent is published to Gemini Enterprise.
 
-The **build boundary** is the conceptual line between *making* an agent and
-*releasing* it to the cloud.
+The two sides are selected by **mode** (`ge mode local` / `ge mode remote`,
+persisted in `.ge.json`), and `ge agents ship` is the bridge: it takes a
+workspace that was built and proven locally and runs only the post-boundary
+stages in the cloud. The same workspace crosses the boundary unchanged —
+simulated backends simply give way to governed cloud services.
 
-- **Local mode** (`mise run mode-local`, `CANARY=1 mise run provision-local`) runs the
-  build-and-validate movement **on your machine**, up to and including `preview`.
-  No cloud credentials are needed — the agent is generated, its data is
-  synthesized, it is refined by the Antigravity harness, and it is gated by
-  pytest and `agents-cli eval` against fixtures. This is the everyday loop.
-- **Release stages** touch *your* Google Cloud project and therefore run
-  differently. In
-  [`factory-worker.js`](https://github.com/vamsiramakrishnan/ge-agent-factory) a
-  small set is marked `RELEASE_STAGES` (`validate`, `preview`, `deploy_runtime`,
-  `poll_runtime`, `publish_enterprise`) and is dispatched to **Cloud Build** via
-  `cloudbuild.factory-stage.yaml` for build logs, provenance, and long-running
-  toolchain isolation. Operators do not run deploy or publish by hand; the worker
-  dispatches them.
+## What a run looks like
 
-The same workspace flows across the boundary unchanged — local fixtures simply
-give way to the cloud data and tool planes (see
-[Agents and ADK](./agents-and-adk.html) for the `GE_DATA_BACKEND` switch).
+A build is a sequence of stages, each of which writes inspectable artifacts
+before handing the workspace to the next. In progress reporting you'll see
+the stages as past-tense milestones:
 
-## The durable control plane
+```
+planned → created → validated → harness_reviewed → harness_refined
+        → data_packaged → previewed   ← the build boundary
+        → deploy_planned → deploying → deployed
+        → registered → publish_planned → published
+```
 
-Early on, a build was a long-lived process on a laptop — if it died, the run
-died. The factory now runs on a **durable control plane** (ADR 0001) so a run
-survives restarts, can be followed live, and resumes itself stage by stage.
+Three things are worth knowing up front, and each has a plain-language
+glossary entry: runs are recorded durably (the *ledger*), long-running work
+is supervised by a local background process (the *daemon*), and the LLM
+review-and-fix step between generation and validation is the *harness*. You
+can operate the factory for a long time knowing only that much about them.
 
-<p align="center">
-  <img src="../assets/diagrams/durable-control-plane.svg" alt="The durable control plane: CLI to gateway to Cloud Tasks to worker to the Firestore/AlloyDB ledger, looping until the run completes" width="700">
-</p>
+The full machinery — stage graph source of truth, the stations-vs-milestones
+vocabulary, the durable control plane — is in
+[Architecture](../reference/architecture.html).
 
-The console subscribes to the ledger live (`onSnapshot`); GCS holds artifacts
-and logs, and Pub/Sub fans the same events out to other subscribers.
+## Two surfaces: beginner and operator
 
-The key ideas:
+The same engine has a shallow end and a deep end — you can be productive in
+the shallow end for weeks:
 
-- **One stage at a time, self-advancing.** A worker runs *one* stage, records the
-  result, and **enqueues the next stage as a new Cloud Task** (only if it is at or
-  before the run's `targetStage`). Long cloud operations (a Cloud Build, an Agent
-  Runtime deploy) are not blocked on — the worker submits the operation, records a
-  `waiting`/`submitted` event, and schedules a poll task (`+30s`, `+120s`) that
-  re-enters the same stage to check status. This is why a run is durable: its state
-  lives in the queue and the ledger, never in a process.
-- **Every event is recorded twice.** Each stage writes to the Firestore **run
-  ledger** (`factoryRuns/{runId}/items/{itemId}/stages/{stage}` plus a run-level
-  `events` stream) *and* publishes to Pub/Sub. The console subscribes to the
-  ledger with `onSnapshot` for live status, and Phase 3 mirrors streamed stdout as
-  throttled `stage_log` frames so the Run Drawer shows live command output even for
-  remote runs.
-- **Artifacts are immutable.** Each stage tars the workspace and uploads it (plus a
-  result JSON and NDJSON logs) to a GCS bucket; the next stage restores that
-  archive. The workspace is the unit that flows down the line.
-- **Identity is least-privilege.** Cloud Tasks delivers to the worker with an OIDC
-  token minted for the runner service account; the worker carries a bounded set of
-  roles. See [Security and the Agent Gateway](./security-and-the-agent-gateway.html).
+| | Beginner surface | Operator surface |
+|---|---|---|
+| **Entry point** | `mise run <task>` (`setup`, `console`, `next`, `devex-smoke`) — guided, status-driven | the full `ge` command tree, plus the lower-level `factory` generator CLI |
+| **Feedback** | the console: live runs, readiness verdicts, runnable fixes | `--json` on every command, streamed events (`ge runs events --follow`), the durable run record |
+| **Scale** | one canary agent at a time | the whole catalog: bulk build, bulk repair, fleet convergence |
+| **Typical day** | capture in the Interview, compile a canary, watch it in Runs | script the pipeline in CI, drive repairs, ship in batches, wire MCP callers |
 
-The retry metadata on each stage (`RETRY_POLICIES`) describes how a stage *may*
-safely be retried by an operator — it is **metadata, not an automatic retry
-engine**. Nothing re-executes a stage from those values today.
+Three facts make the deep end safe to grow into: bare `ge` always prints the
+next step; every mutating command declares a risk level; and one registry
+backs all three surfaces — CLI, [console](../console/), and
+[MCP tools](../MCP.html) — so they cannot disagree.
 
-## Where to drive it from
+## Next
 
-- **`mise run` tasks** are the human entry points: `mise run console` opens the operator
-  UI; `mise run mode-local` + `CANARY=1 mise run provision-local` builds one agent locally
-  to the boundary; `CANARY=1 mise run bootstrap` stands up the planes and proves one
-  agent end to end. Run `mise run help` for the grouped menu or `mise run next` for a
-  status-based recommendation.
-- The **console** is the day-to-day UI (Overview · Pipeline · Fleet · Repair Queue · Runs · Readiness) with
-  a live Run Drawer over the same ledger.
-
-See the [Reference](../reference/) for the full `mise` and `ge` command surface,
-and the [Cookbooks](../cookbooks/) for "build a canary" and "ship to the cloud".
+- [Ten-minute tutorial](https://vamsiramakrishnan.github.io/ge-agent-factory/start/quickstart/) — run the whole path once.
+- [The Enterprise Agent Contract](../concepts/enterprise-agent-contract.html) — the artifact everything derives from.
+- [Evals as proof](../concepts/evals-as-proof.html) — how "it works" becomes evidence.

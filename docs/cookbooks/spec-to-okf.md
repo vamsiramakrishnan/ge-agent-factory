@@ -1,29 +1,35 @@
 ---
-title: Spec ⇄ OKF
-parent: Cookbooks
+title: Contract ⇄ OKF
+parent: Guides
 nav_order: 5
 layout: default
+description: Convert a contract to its portable Markdown form — an OKF Knowledge Bundle — and round-trip it back.
 ---
 
-# Spec ⇄ OKF
+# Contract ⇄ OKF
 
 **Scope:** local-only — file in, file out; no daemon or cloud needed.
 
-## Goal
+## When to use this
 
-Convert a generated agent spec into a portable **OKF (Open Knowledge Format) v0.1**
-Knowledge Bundle, inspect what's inside, and round-trip it back into a spec.
+The OKF (Open Knowledge Format) v0.1 Knowledge Bundle is the contract's
+**portable Markdown form**: the same use-case spec, rendered as a directory of
+typed Markdown concepts that humans can review in a pull request, exchange
+with other teams, or hand to tools that read Markdown rather than the spec's
+JSON. Use this guide to convert a contract into an OKF bundle, inspect what's
+inside, and round-trip it back into a spec.
 
 <p align="center">
   <img src="../assets/diagrams/okf-spine.svg" alt="The OKF spine: an interview produces a spec in OKF form, which drives generation of real ADK code, validation, tests derived from the contract, and runtime grounding where the agent cites the same systems and entities" width="750">
 </p>
 
-## Prerequisites
+## Input artifact
 
-- Local toolchain installed (`mise run setup`).
-- Either a use-case id present in the catalog
-  (`generated/use-cases.generated.json` — produced by `mise run catalog`) or a spec
-  JSON file on disk.
+Either a use-case id present in the catalog
+(`generated/use-cases.generated.json` — produced by `mise run catalog`) or a
+contract JSON file on disk (for example the interview's saved
+`.ge/interviews/<usecaseId>/agent-spec.json`). Local toolchain installed
+(`mise run setup`).
 
 > The OKF scripts live under **`apps/factory/scripts/`**, not the top-level
 > `scripts/`.
@@ -31,7 +37,7 @@ Knowledge Bundle, inspect what's inside, and round-trip it back into a spec.
 
 ## Steps
 
-1. **Convert a spec to an OKF bundle — by use-case id:**
+1. **Convert a contract to an OKF bundle — by use-case id:**
 
    ```bash
    node apps/factory/scripts/spec-to-okf.mjs --id <useCaseId>
@@ -48,8 +54,8 @@ Knowledge Bundle, inspect what's inside, and round-trip it back into a spec.
    `apps/factory/artifacts/okf/<id>/`), `--help`. The command prints
    `{ bundle, conceptCount, files }`.
 
-2. **Inspect the bundle.** Each OKF concept is a markdown file with frontmatter
-   `type`. The mapping (from the spec) is:
+2. **Inspect the bundle.** Each OKF concept is a Markdown file with
+   frontmatter `type`. The mapping (from the contract) is:
 
    | Source | OKF concept |
    |--------|-------------|
@@ -65,8 +71,9 @@ Knowledge Bundle, inspect what's inside, and round-trip it back into a spec.
    | `spec.kpis[]` | `kpis.md` |
    | `behaviorContract.goldenEvals[]` | `evals.md` |
 
-   (`documents/` appears only when the spec has source documents; `workflow/`,
-   `queries/`, and `tests/` appear only when those sections are non-empty.)
+   (`documents/` appears only when the contract has source documents;
+   `workflow/`, `queries/`, and `tests/` appear only when those sections are
+   non-empty.)
 
 3. **Round-trip back to a spec:**
 
@@ -78,12 +85,19 @@ Knowledge Bundle, inspect what's inside, and round-trip it back into a spec.
    partial spec (`behaviorContract` + `generationSpec.{sourceSystems,entities,
    documents,behaviorContract}`) to stdout.
 
+   > There is a known open bug in the round trip: certain tool/system ids are
+   > mangled on the way back (tracked as failing tests in
+   > [`tools/known-test-failures.json`](../../tools/known-test-failures.json)).
+   > Treat the round-tripped spec as a reconstruction to review, not a
+   > byte-faithful inverse.
+   {: .warning }
+
 4. **Author OKF directly (the skill).** The `authoring-okf-specs` skill (at
    `skills/authoring-okf-specs/SKILL.md`, composes `interviewing-specs`)
-   documents the same commands and conventions for authoring or exchanging a BRD
-   as an OKF bundle, and grounding an agent from one.
+   documents the same commands and conventions for authoring or exchanging a
+   BRD as an OKF bundle, and grounding an agent from one.
 
-## Verify
+## Expected output
 
 ```bash
 # bundle produced with concepts:
@@ -97,16 +111,43 @@ node apps/factory/scripts/okf-to-spec.mjs --bundle apps/factory/artifacts/okf/<u
 bun test apps/factory/scripts/spec-to-okf.test.mjs
 ```
 
-## Troubleshoot
+## Console view
+
+The same bundle is served in-process by `GET /api/interviews/:id/okf` for a
+saved interview contract, and the contract itself is reviewed in **Spec
+Review**. See the [contract editor](../console/contract-editor.html) and the
+[console tour](../console/index.html).
+
+## Generated files
+
+`apps/factory/artifacts/okf/<id>/` (or `--out <dir>`): `index.md`, `log.md`,
+`playbook.md`, `kpis.md`, `evals.md`, plus `systems/`, `tables/`, `tools/`,
+and — when the contract carries them — `workflow/`, `queries/`, `tests/`,
+`documents/`. Format details: [OKF reference](../reference/okf.html).
+
+## Common failures
 
 - **`Provide --id <useCaseId> or --spec <path.json>`** — you passed neither;
   they're mutually exclusive and one is required.
-- **`--id` can't find the spec** — run `mise run catalog` to (re)generate
-  `generated/use-cases.generated.json`, or use `--spec <path.json>` directly.
-- **Missing `workflow/` or `queries/` concepts** — the source spec has no
-  `behaviorContract.workflow.steps` / answerable queries. Re-author via the
-  [interview](author-a-spec-via-interview.html) (which emits both).
-- **A spec field vanishes through the round-trip** — the converters only
-  render/parse fields they know about; a new spec field must be threaded
-  through both (and the rest of the duck-typed consumer set). See
+- **`--id` can't find the contract** — the catalog
+  (`generated/use-cases.generated.json`) is stale or missing.
+- **Missing `workflow/` or `queries/` concepts** — the source contract has no
+  `behaviorContract.workflow.steps` / answerable queries.
+- **A spec field vanishes through the round trip** — the converters only
+  render/parse fields they know about.
+
+## Repair
+
+- Stale catalog: run `mise run catalog` to (re)generate it, or bypass it with
+  `--spec <path.json>`.
+- Missing workflow/queries: re-capture via the
+  [interview](capture-from-interview.html), which emits both.
+- Vanishing field: a new spec field must be threaded through both converters
+  (and the rest of the duck-typed consumer set) — see
   [Adding a new spec field — the consumer checklist](../reference/spec-schema.html#adding-a-new-spec-field--the-consumer-checklist).
+
+## Next step
+
+[Compile a contract](compile-a-contract.html) to turn the contract into a
+runnable agent — the compiler emits this same OKF bundle into the generated
+workspace.

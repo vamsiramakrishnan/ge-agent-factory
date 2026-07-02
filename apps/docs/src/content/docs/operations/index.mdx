@@ -1,11 +1,10 @@
 ---
-title: Operations
-nav_order: 6
-layout: default
+title: "Operations"
+editUrl: "https://github.com/vamsiramakrishnan/ge-agent-factory/edit/main/docs/OPERATIONS.md"
+sidebar:
+  label: Overview
+  order: 0
 ---
-
-# GE Agent Factory — Operations
-
 The canonical runbook for deploying the factory and shipping agents. Everything
 is driven by `bun tools/ge.mjs` (`ge`). Config resolves: flags > env >
 `.ge.json` > terraform outputs > gcloud discovery.
@@ -14,21 +13,15 @@ Use this page when the question is operational: how to stand up the platform,
 what each cloud component owns, which stage failed, how local and remote mode
 split responsibility, and how to recover without inventing a one-off path.
 
-## Table of contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
-
 ---
 
 ## Components
 
 | Component | Cloud Run service | Role |
 |---|---|---|
-| Gateway | `ge-agent-factory-gateway` | Scaffolds each agent workspace in-process; enqueues the pipeline. Browser/UI entry (IAP-protected). |
+| Gateway | `ge-agent-factory-gateway` | Scaffolds each agent <a href="/ge-agent-factory/reference/glossary/#workspace" title="The on-disk folder for one generated agent (.ge/factory/workspaces/workspace-id/), with a workspace.json manifest describing what's in it.">workspace</a> in-process; enqueues the pipeline. Browser/UI entry (IAP-protected). |
 | Worker | `ge-agent-factory-worker` | Runs non-release stages; dispatches release stages to Cloud Build. Invoked by Cloud Tasks (OIDC). |
-| Builder image | `…/ge-agent-factory/ge-agent-factory-builder` | Shared toolchain (uv, gcloud, agents-cli) + warm uv cache, so per-agent builds skip installs. |
+| Builder image | `…/ge-agent-factory/ge-agent-factory-builder` | Shared toolchain (uv, gcloud, <a href="/ge-agent-factory/reference/glossary/#agents-cli" title="A lower-level command-line tool (from the google-agents-cli Python package) that actually scaffolds and builds real Google ADK (Agent Development Kit) Python projects — the pyproject.toml, the agent code skeleton, and the eval harness format.">agents-cli</a>) + warm uv cache, so per-agent builds skip installs. |
 
 Supporting: Cloud Tasks queue `ge-agent-factory-stages`, Pub/Sub topic
 `ge-agent-factory-events`, bucket `<project>-ge-agent-factory`, Firestore
@@ -38,7 +31,7 @@ Supporting: Cloud Tasks queue `ge-agent-factory-stages`, Pub/Sub topic
 ## Stage graph (per agent)
 
 <p align="center">
-  <img src="assets/diagrams/factory-line.svg" alt="plan, generate_workspace, generate_data, package_data, harness_refine, validate, preview, plan_deploy, load_data, deploy_runtime, poll_runtime, register_tools, publish_enterprise, verify_live" width="700">
+  <img src="/ge-agent-factory/assets/diagrams/factory-line.svg" alt="plan, generate_workspace, generate_data, package_data, harness_refine, validate, preview, plan_deploy, load_data, deploy_runtime, poll_runtime, register_tools, publish_enterprise, verify_live" width="700" />
 </p>
 
 Release stages (`validate`, `preview`, `deploy_runtime`, `poll_runtime`,
@@ -46,10 +39,10 @@ Release stages (`validate`, `preview`, `deploy_runtime`, `poll_runtime`,
 the rest run on the worker. `validate` runs the pytest smoke test and (default
 on) `agents-cli eval` with an achievable, reference-free `eval_config.json`.
 
-`harness_refine` runs **Antigravity review+refine** (with the best ADK skills) on
+`harness_refine` runs **<a href="/ge-agent-factory/reference/glossary/#antigravity" title="Google's agent SDK (the google-antigravity Python package) that powers the harness review/refine step — the factory drives it headlessly to judge and repair spec-to-code fidelity.">Antigravity</a> review+refine** (with the best ADK skills) on
 the generated workspace — the same pass local builds run — so cloud and local
 produce identically-refined code, then re-gated by `validate`. It runs with
-`--soft`, so a Vertex outage or harness error degrades to the deterministic code
+`--soft`, so a Vertex outage or <a href="/ge-agent-factory/reference/glossary/#harness" title="The local, LLM-driven &quot;does this generated agent actually match the spec?&quot;">harness</a> error degrades to the deterministic code
 instead of failing the run; it is never a hard dependency. On by default for all
 363; opt out per run with `ge agents build --no-refine` (or `REFINE=0`).
 `ge agents ship` resumes at `load_data` (already refined locally) and skips it.
@@ -82,7 +75,7 @@ bun tools/ge.mjs agents sync --ids account-reconciliation-agent --local
 bun tools/ge.mjs agents sync --ids account-reconciliation-agent --local --remote <git-url> --push
 ```
 
-Run bare `ge` anytime for a status board (mode · planes ✓/○ · next command). Old
+Run bare `ge` anytime for a status board (mode · <a href="/ge-agent-factory/reference/glossary/#planes" title="The three infrastructure layers the platform stands up in your cloud project — the factory plane (gateway, worker, Cloud Tasks queue, Cloud Build: the machinery that runs builds), the data plane (GCS, BigQuery, Bigtable, Firestore, AlloyDB, per-agent data + IAM), and the tool plane (the per-department MCP services, Agent Registry entries, and the Agent Gateway that agents call tools through).">planes</a> ✓/○ · next command). Old
 verbs (`provision`/`deploy`/`build`/`status`/`logs`/`sync`) still work as aliases.
 All commands accept `--json` for scripting/CI; `agents build`/`status` accept
 `--no-proxy` if you're already inside an authenticated network.
@@ -90,7 +83,7 @@ All commands accept `--json` for scripting/CI; `agents build`/`status` accept
 ## Data + tool planes
 
 Agents operate on real Google Cloud stores via two layers provisioned alongside
-the factory. Run these once per project, before/with the fleet provision:
+the factory. Run these once per project, before/with the <a href="/ge-agent-factory/reference/glossary/#fleet" title="The whole set of generated agents/workspaces, treated as one unit — the opposite end of the scale from a canary.">fleet</a> provision:
 
 ```bash
 # Data plane — shared stores + per-agent IAM (GCS, BigQuery, AlloyDB, Bigtable, Firestore).
@@ -116,7 +109,7 @@ stage. Each agent registers against its department MCP URL (`?agent=<id>`) in th
 `.ge.json`, default `local` — remote, billable work is opt-in) and overridable per command with `--local`/`--remote`.
 Bare `ge` shows the active mode and what the client machine does.
 
-There is a hard **build boundary**: everything up to validate/preview is pure
+There is a hard **<a href="/ge-agent-factory/reference/glossary/#build-boundary" title="The cutoff point between &quot;building and previewing an agent on your own machine&quot; and &quot;actually deploying it to your Google Cloud project.&quot;">build boundary</a>**: everything up to validate/preview is pure
 computation (runs anywhere); everything after touches GCP. Local mode does the
 former on your machine and stops at the boundary.
 
@@ -188,9 +181,9 @@ The canonical local state root is `.ge/`:
 
 | Path | Purpose |
 |---|---|
-| `.ge/runtime/` | daemon task records, events, interaction responses, resume plans |
+| `.ge/runtime/` | <a href="/ge-agent-factory/reference/glossary/#daemon" title="The local background process (ge daemon start, HTTP on port 17654 / GE_DAEMON_PORT) that runs long factory work — pipeline runs, repair runs, generic jobs — as durable runtime tasks, so a run survives your terminal closing and can be resumed.">daemon</a> task records, events, interaction responses, resume plans |
 | `.ge/missions/` | mission graph workspaces, mock data, Snowfakery output, simulator overlays |
-| `.ge/interviews/` | generated interview specs before/after registry review |
+| `.ge/interviews/` | generated <a href="/ge-agent-factory/reference/glossary/#interview" title="The guided, conversational flow where a business user (or agent) describes a use case and the factory turns it into a formal spec.">interview</a> specs before/after registry review |
 | `.ge/factory/workspaces/` | local generated agent workspaces |
 | `.ge/factory/runs/` | local factory run metadata and logs |
 | `.ge/skills/` | synced harness skill manifest |
@@ -232,7 +225,7 @@ impersonation, so programmatic IAP access uses the proxy, not minted tokens.
 Two tiers, both **external ingress, never `allUsers`**:
 
 <p align="center">
-  <img src="assets/diagrams/access-posture-tiers.svg" alt="Gateway and worker use IAM/OIDC authenticated-only ingress with no IAP, while console and presentation use direct Cloud Run IAP restricted to iap_members" width="700">
+  <img src="/ge-agent-factory/assets/diagrams/access-posture-tiers.svg" alt="Gateway and worker use IAM/OIDC authenticated-only ingress with no IAP, while console and presentation use direct Cloud Run IAP restricted to iap_members" width="700" />
 </p>
 
 - **gateway + worker** — `INGRESS_TRAFFIC_ALL` but **authenticated-only** via IAM/OIDC,
@@ -262,7 +255,7 @@ off the gateway/worker (IAM/OIDC, not IAP) — `doctor` warns if it's on and pri
 
 ## Operating the console
 
-The console's views are documented in [Console](./console/); operationally:
+The console's views are documented in [Console](/ge-agent-factory/console/); operationally:
 
 - Run locally with `mise run console` (dev, port 18260) or `bun --cwd
   apps/console run start` (production server).
@@ -278,8 +271,8 @@ The console's views are documented in [Console](./console/); operationally:
 
 ## More
 
-- [Troubleshooting](./operations/troubleshooting.html) — failure modes we've hit, with fixes.
-- [Provision the platform](./operations/provision-the-platform.html) — standing the planes up.
-- [Deploy the Agent Gateway](./operations/agent-gateway.html) — the governed tool front door.
-- [Run and observe](./operations/run-and-observe.html) — runs, resume, and the durable record.
-- Archived: [live rename cutover runbook](./runbooks/rename-cutover.md).
+- [Troubleshooting](/ge-agent-factory/operations/troubleshooting/) — failure modes we've hit, with fixes.
+- [Provision the platform](/ge-agent-factory/operations/provision-the-platform/) — standing the planes up.
+- [Deploy the Agent Gateway](/ge-agent-factory/operations/agent-gateway/) — the governed tool front door.
+- [Run and observe](/ge-agent-factory/operations/run-and-observe/) — runs, resume, and the durable record.
+- Archived: [live rename cutover runbook](https://github.com/vamsiramakrishnan/ge-agent-factory/blob/main/docs/runbooks/rename-cutover.md).

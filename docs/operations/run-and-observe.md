@@ -1,11 +1,12 @@
 ---
-title: Run the factory
-parent: Cookbooks
-nav_order: 6
+title: Run and observe
+parent: Operations
+nav_order: 2
 layout: default
+description: Run builds local or remote, watch them live, resume blocked runs, and inspect the durable run record.
 ---
 
-# Run the factory
+# Run and observe
 
 **Scope:** local or remote — remote mode builds, deploys, and publishes in your
 Google Cloud project.
