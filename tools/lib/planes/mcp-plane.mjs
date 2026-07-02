@@ -1,4 +1,4 @@
-import { createCheckCollector } from "../factory-doctor.mjs";
+import { createCheckCollector } from "../doctor/report.mjs";
 
 const noop = () => {};
 

@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { createCheckCollector } from "../factory-doctor.mjs";
+import { createCheckCollector } from "../doctor/report.mjs";
 import { assertRemoteAuthorized } from "../remote-guard.mjs";
 
 const noop = () => {};
