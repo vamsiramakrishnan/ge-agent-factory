@@ -1,4 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
+import { Button } from "@ge/ui";
+import { useGeQuery } from "../lib/query";
 import { ge, startJob, type StatusBoard, type Fleet as FleetData } from "../services/geClient";
 import { FleetTable } from "../components/FleetTable";
 import { ErrorBanner } from "../components/ErrorBanner";
@@ -11,9 +13,13 @@ interface FleetProps {
 }
 
 export default function Fleet({ status, refresh }: FleetProps) {
-  const [fleet, setFleet] = useState<FleetData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Shared query layer: same ["fleet"] key as Overview, so navigating between
+  // the two dedupes into one request and both stay in sync for free.
+  const fleetQuery = useGeQuery<FleetData>(["fleet"], () => ge.fleet(), { intervalMs: 5300 });
+  const fleet = fleetQuery.data ?? null;
+  const loading = fleetQuery.isLoading;
+  const error = fleetQuery.error ? (fleetQuery.error as Error).message || "Failed to fetch fleet" : null;
+  const fetchFleet = async () => { await fleetQuery.refetch(); };
 
   // Filters live in the hash query so a filtered fleet is shareable + reload-safe.
   const [searchText, setSearchText] = useUrlParam("q", "");
@@ -26,34 +32,6 @@ export default function Fleet({ status, refresh }: FleetProps) {
   const notify = useToast();
   const [syncRemote, setSyncRemote] = useState(() => window.localStorage.getItem("ge.sync.remote") || "");
   const [syncPush, setSyncPush] = useState(() => window.localStorage.getItem("ge.sync.push") !== "false");
-
-  const fetchFleet = async () => {
-    try {
-      const f = await ge.fleet();
-      setFleet(f);
-      setError(null);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch fleet");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchFleet();
-  }, []);
-
-  // Don't go stale: re-fetch on a calm off-:00 interval and whenever a followed
-  // job completes (JobToast broadcasts ge:job:done). Cancelled on unmount.
-  useEffect(() => {
-    const interval = window.setInterval(() => { void fetchFleet(); }, 5300);
-    const onJobDone = () => { void fetchFleet(); };
-    window.addEventListener("ge:job:done", onJobDone);
-    return () => {
-      window.clearInterval(interval);
-      window.removeEventListener("ge:job:done", onJobDone);
-    };
-  }, []);
 
   const departments = useMemo(() => {
     if (!fleet) return [];
@@ -280,13 +258,9 @@ export default function Fleet({ status, refresh }: FleetProps) {
       <div className="mb-6">
         <div className="flex items-baseline justify-between mb-2">
           <h1 className="text-2xl font-bold text-on-surface">Fleet</h1>
-          <button
-            onClick={fetchFleet}
-            disabled={loading}
-            className="px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/10 transition-colors rounded-lg disabled:opacity-50"
-          >
+          <Button variant="ghost" size="sm" onClick={fetchFleet} disabled={loading}>
             {loading ? "Loading..." : "Refresh"}
-          </button>
+          </Button>
         </div>
         <p className="text-sm text-secondary mb-2">
           The persistent roster of every agent. To take a spec through the build &amp; deploy flow, use the <a href="#/pipeline" className="text-primary hover:underline">Pipeline</a>.
@@ -352,12 +326,9 @@ export default function Fleet({ status, refresh }: FleetProps) {
         <div className="mb-6 editorial-micro-card rounded-lg p-4">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-on-surface">Top Bottlenecks</h2>
-            <button
-              onClick={() => setFilterStatus("blocked")}
-              className="text-xs font-medium text-primary hover:bg-primary/10 rounded-md px-2 py-1"
-            >
+            <Button variant="ghost" size="sm" onClick={() => setFilterStatus("blocked")}>
               Show blocked
-            </button>
+            </Button>
           </div>
           <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
             {health.bottlenecks.slice(0, 6).map((item) => (
@@ -447,95 +418,83 @@ export default function Fleet({ status, refresh }: FleetProps) {
               {selected.size} selected
             </span>
             <div className="flex flex-wrap gap-2">
-            <button
+            <Button
+              variant="primary"
+              size="md"
+              loading={busyAction === "repair"}
+              disabled={busyAction !== null}
               onClick={handleFixBlockers}
-              disabled={busyAction !== null}
-              className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-container transition-colors rounded-lg disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
             >
-              {busyAction === "repair" && (
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-              )}
               {busyAction === "repair" ? "Repairing..." : "Fix Blockers"}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              loading={busyAction === "build"}
+              disabled={busyAction !== null}
               onClick={handleBuild}
-              disabled={busyAction !== null}
-              className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-container transition-colors rounded-lg disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
             >
-              {busyAction === "build" && (
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-              )}
               {busyAction === "build" ? "Building..." : "Build"}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="md"
+              loading={busyAction === "regenerate"}
+              disabled={busyAction !== null}
               onClick={handleRegenerate}
-              disabled={busyAction !== null}
               title="Wipe the workspace and rebuild from scratch (overwrites artifacts)"
-              className="px-4 py-2 text-sm font-medium text-on-surface border border-outline/30 hover:bg-surface-container transition-colors rounded-lg disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
             >
-              {busyAction === "regenerate" && (
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-              )}
               {busyAction === "regenerate" ? "Regenerating..." : "Regenerate"}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              loading={busyAction === "ship"}
+              disabled={busyAction !== null}
               onClick={handleShip}
-              disabled={busyAction !== null}
-              className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-container transition-colors rounded-lg disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
             >
-              {busyAction === "ship" && (
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-              )}
               {busyAction === "ship" ? "Shipping..." : "Ship"}
-            </button>
-            <button
-              onClick={handleSync}
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              loading={busyAction === "sync"}
               disabled={busyAction !== null}
-              className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-container transition-colors rounded-lg disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
+              onClick={handleSync}
             >
-              {busyAction === "sync" && (
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
-              )}
               {busyAction === "sync" ? "Syncing..." : "Sync code"}
-            </button>
+            </Button>
             </div>
           </div>
-          <div className="mt-3 grid gap-3 border-t border-primary/15 pt-3 md:grid-cols-[minmax(240px,1fr)_auto] md:items-end">
-            <label className="grid gap-1 text-xs font-medium text-secondary">
-              Destination git repo
-              <input
-                type="text"
-                value={syncRemote}
-                onChange={(event) => setSyncRemote(event.target.value)}
-                placeholder="blank writes generated-agents/ in this repo; paste a git remote to sync elsewhere"
-                className="w-full rounded-md border border-outline-variant/40 bg-surface px-3 py-2 text-sm font-normal text-on-surface focus:border-primary/50 focus:outline-none"
-              />
-            </label>
-            <label className="inline-flex items-center gap-2 rounded-md border border-outline-variant/40 bg-surface px-3 py-2 text-sm font-medium text-on-surface">
-              <input
-                type="checkbox"
-                checked={syncPush}
-                onChange={(event) => setSyncPush(event.target.checked)}
-                className="h-4 w-4 accent-primary"
-              />
-              Push after commit
-            </label>
-          </div>
+          {/* Progressive disclosure: sync destination/push are advanced options
+              most bulk actions never need — folded until asked for, with the
+              current effect summarized on the closed state. */}
+          <details className="mt-3 border-t border-primary/15 pt-3">
+            <summary className="cursor-pointer select-none text-xs font-medium text-secondary hover:text-on-surface">
+              Sync options — {syncRemote.trim() ? `push to ${syncRemote.trim()}` : "write to generated-agents/ in this repo"}{syncPush ? ", push after commit" : ", commit only"}
+            </summary>
+            <div className="mt-3 grid gap-3 md:grid-cols-[minmax(240px,1fr)_auto] md:items-end">
+              <label className="grid gap-1 text-xs font-medium text-secondary">
+                Destination git repo
+                <input
+                  type="text"
+                  value={syncRemote}
+                  onChange={(event) => setSyncRemote(event.target.value)}
+                  placeholder="blank writes generated-agents/ in this repo; paste a git remote to sync elsewhere"
+                  className="w-full rounded-md border border-outline-variant/40 bg-surface px-3 py-2 text-sm font-normal text-on-surface focus:border-primary/50 focus:outline-none"
+                />
+              </label>
+              <label className="inline-flex items-center gap-2 rounded-md border border-outline-variant/40 bg-surface px-3 py-2 text-sm font-medium text-on-surface">
+                <input
+                  type="checkbox"
+                  checked={syncPush}
+                  onChange={(event) => setSyncPush(event.target.checked)}
+                  className="h-4 w-4 accent-primary"
+                />
+                Push after commit
+              </label>
+            </div>
+          </details>
         </div>
       )}
 

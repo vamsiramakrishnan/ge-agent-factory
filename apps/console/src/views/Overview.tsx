@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { Button, ButtonLink, EmptyState } from "@ge/ui";
+import { useGeQuery } from "../lib/query";
 import { ge, startJob, type StatusBoard, type Fleet, type RuntimeTaskSummary, type ReconcilePlan } from "../services/geClient";
 import { PlaneCard } from "../components/PlaneCard";
 import { ErrorBanner } from "../components/ErrorBanner";
@@ -31,11 +33,31 @@ function isBlocked(status: string) {
 }
 
 export default function Overview({ status, refresh }: OverviewProps) {
-  const [fleet, setFleet] = useState<Fleet | null>(null);
-  const [reconcile, setReconcile] = useState<ReconcilePlan | null>(null);
-  const [runtimeTasks, setRuntimeTasks] = useState<RuntimeTaskSummary[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Data via the shared query layer (lib/query.ts): polling cadence, job-done
+  // invalidation, dedupe, and focus refetch all come from the conventions
+  // there instead of a per-view useEffect/setInterval stack.
+  const fleetQuery = useGeQuery<Fleet>(["fleet"], () => ge.fleet(), { intervalMs: 9700 });
+  const tasksQuery = useGeQuery(
+    ["runtimeTasks", 8],
+    () =>
+      ge.runtimeTasks(8, true).catch((err) => {
+        console.warn("[console] overview: runtime tasks unavailable:", err);
+        return { tasks: [] as RuntimeTaskSummary[] };
+      }),
+    { intervalMs: 9700 },
+  );
+  // Reconcile drift is best-effort decoration — a failure renders as absence.
+  const reconcileQuery = useGeQuery<ReconcilePlan | null>(["applyPlan"], () => ge.applyPlan().catch(() => null), { intervalMs: 60_000 });
+
+  const fleet = fleetQuery.data ?? null;
+  const runtimeTasks = tasksQuery.data?.tasks ?? [];
+  const reconcile = reconcileQuery.data ?? null;
+  const loading = fleetQuery.isLoading;
+  const error = fleetQuery.error ? (fleetQuery.error as Error).message || "Failed to fetch overview" : null;
+  const refetchOverview = async () => {
+    await Promise.all([fleetQuery.refetch(), tasksQuery.refetch()]);
+  };
+
   const [busyPlanes, setBusyPlanes] = useState<Set<string>>(new Set());
   const [busyPreview, setBusyPreview] = useState(false);
   const [getStartedDismissed, setGetStartedDismissed] = useState(() => {
@@ -57,40 +79,12 @@ export default function Overview({ status, refresh }: OverviewProps) {
     }
   };
 
-  const fetchOverview = async () => {
-    try {
-      const [f, tasks] = await Promise.all([
-        ge.fleet(),
-        ge.runtimeTasks(8, true).catch((err) => {
-          console.warn("[console] overview: runtime tasks unavailable:", err);
-          return { tasks: [] };
-        }),
-      ]);
-      setFleet(f);
-      setRuntimeTasks(tasks.tasks || []);
-      ge.applyPlan().then(setReconcile).catch(() => { /* reconcile is best-effort */ });
-      setError(null);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch overview");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // The status board comes in via props from the App shell; keep it as fresh
+  // as the queries (the query layer only owns this view's own data).
   useEffect(() => {
-    fetchOverview();
-    // Calm, off-:00 self-refresh; also re-pull immediately when a followed job
-    // completes so plane/run state never lingers stale after an action.
-    const interval = window.setInterval(() => {
-      void fetchOverview();
-      void refresh();
-    }, 9700);
-    const onJobDone = () => {
-      void fetchOverview();
-      void refresh();
-    };
+    const interval = window.setInterval(() => { void refresh(); }, 9700);
+    const onJobDone = () => { void refresh(); };
     window.addEventListener("ge:job:done", onJobDone);
-
     return () => {
       window.clearInterval(interval);
       window.removeEventListener("ge:job:done", onJobDone);
@@ -133,7 +127,7 @@ export default function Overview({ status, refresh }: OverviewProps) {
         runPreview: true,
       });
       showToast(`Preview run started: ${task.id}`);
-      await fetchOverview();
+      await refetchOverview();
       location.hash = `#/activity?task=${encodeURIComponent(task.id)}`;
     } catch (err: any) {
       showToast(`Failed to start preview: ${err.message}`, 7000);
@@ -147,7 +141,7 @@ export default function Overview({ status, refresh }: OverviewProps) {
     try {
       await ge.runtimeResume(task.id);
       showToast(`Resume requested for ${task.id}`);
-      await fetchOverview();
+      await refetchOverview();
       location.hash = `#/activity?task=${encodeURIComponent(task.id)}`;
     } catch (err: any) {
       showToast(`Failed to resume run: ${err.message}`, 7000);
@@ -279,7 +273,7 @@ export default function Overview({ status, refresh }: OverviewProps) {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      {error && <ErrorBanner message={error} onRetry={fetchOverview} />}
+      {error && <ErrorBanner message={error} onRetry={refetchOverview} />}
 
 
       <div className="mb-6">
@@ -323,12 +317,9 @@ export default function Overview({ status, refresh }: OverviewProps) {
                 : "This machine runs build → preview (the build boundary). Ship hands off to the cloud."}
             </p>
           </div>
-          <button
-            onClick={() => { location.hash = "#/pipeline"; }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/10 transition-colors rounded-lg"
-          >
+          <Button variant="ghost" size="sm" onClick={() => { location.hash = "#/pipeline"; }}>
             Open Pipeline <ArrowRight className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
         <div className="flex items-stretch gap-1 overflow-x-auto">
           {phases.map((phase, index) => (
@@ -376,15 +367,15 @@ export default function Overview({ status, refresh }: OverviewProps) {
           </div>
           <div className="flex flex-wrap gap-2">
             {blockedMission ? (
-              <button onClick={() => handleResumeMission(blockedMission)} disabled={busyPreview} className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-container disabled:opacity-50 transition-colors rounded-lg">Resume Run</button>
+              <Button variant="primary" size="md" onClick={() => handleResumeMission(blockedMission)} disabled={busyPreview}>Resume Run</Button>
             ) : activeMission ? (
-              <button onClick={() => { location.hash = "#/activity"; }} className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-container transition-colors rounded-lg">Open Runs</button>
+              <Button variant="primary" size="md" onClick={() => { location.hash = "#/activity"; }}>Open Runs</Button>
             ) : allPlanesReady ? (
-              <button onClick={handleStartMission} disabled={busyPreview} className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-container disabled:opacity-50 transition-colors rounded-lg">Start Preview</button>
+              <Button variant="primary" size="md" onClick={handleStartMission} disabled={busyPreview}>Start Preview</Button>
             ) : (
-              <button onClick={handleNextStep} className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-container transition-colors rounded-lg">{status?.next || "Run Readiness"}</button>
+              <Button variant="primary" size="md" onClick={handleNextStep}>{status?.next || "Run Readiness"}</Button>
             )}
-            <button onClick={() => { location.hash = "#/doctor"; }} className="px-4 py-2 text-sm font-medium text-on-surface border border-outline/30 hover:bg-surface-container transition-colors rounded-lg">Readiness</button>
+            <Button variant="outline" size="md" onClick={() => { location.hash = "#/doctor"; }}>Readiness</Button>
           </div>
         </div>
         {latestMission && (
@@ -549,16 +540,11 @@ export default function Overview({ status, refresh }: OverviewProps) {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <User className="w-8 h-8 text-secondary/40 mb-2" />
-            <p className="text-sm text-secondary">No agents have been deployed or submitted yet.</p>
-            <a
-              href="#/fleet"
-              className="mt-3 text-xs text-primary hover:underline"
-            >
-              View all agents
-            </a>
-          </div>
+          <EmptyState
+            icon={User}
+            title="No agents have been deployed or submitted yet."
+            action={<ButtonLink variant="ghost" size="sm" href="#/fleet">View all agents</ButtonLink>}
+          />
         )}
       </div>
     </div>

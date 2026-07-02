@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "./lib/query";
 import { Sidebar } from "./components/shell/Sidebar";
 import { TopBar } from "./components/shell/TopBar";
 import { CommandPalette } from "./components/shell/CommandPalette";
@@ -121,6 +123,7 @@ export default function App() {
 
   return (
     <AuthGate>
+    <QueryClientProvider client={queryClient}>
     <ToastProvider>
     <RunFollowProvider>
     <div className="h-screen flex flex-col bg-background">
@@ -155,6 +158,7 @@ export default function App() {
     </div>
     </RunFollowProvider>
     </ToastProvider>
+    </QueryClientProvider>
     </AuthGate>
   );
 }
