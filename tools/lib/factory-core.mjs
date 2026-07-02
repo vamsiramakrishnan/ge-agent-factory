@@ -6,7 +6,6 @@
 // tools/mcp-server.mjs exposes the same ops as typed MCP tools.
 
 import { execFileSync } from "node:child_process";
-import { parseList } from "@ge/std/list";
 import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -23,11 +22,10 @@ import { createMcpPlane } from "./mcp-plane.mjs";
 import { createFactoryPlane, serviceUrl } from "./factory-plane.mjs";
 import { buildFleetHealth } from "./fleet-health.mjs";
 import { buildJourneyPlan } from "./journey-plan.mjs";
-import { LEGACY_STATE_PATHS, STATE_PATHS, displayStatePath, DEPARTMENTS } from "./state-paths.mjs";
+import { STATE_PATHS, DEPARTMENTS } from "./state-paths.mjs";
 // Week-4: app-domain ops are imported via the two cycle-break boundary modules,
 // NOT directly from apps/factory — factory-core keeps zero app imports (enforced
 // by tools/check-no-app-imports.mjs).
-import { loadInterviewSpecEntries, slug, validateGenerationSpec } from "./factory-catalog.mjs";
 import { planReconcile } from "./reconcile.mjs";
 import { createGatewayClient, getJson, postJson } from "./gateway-client.mjs";
 import { createDoctorPlane } from "./doctor.mjs";
@@ -45,6 +43,9 @@ import {
   ledgerBackfillFromDisk,
 } from "./factory-ledger.mjs";
 import { mergeLedgerAndFileRuns, listFactoryRuns } from "./factory-runs.mjs";
+import { loadCatalog, resolveCatalogId, listUsecases, listSpecs } from "./factory-catalog-search.mjs";
+import { reviewSpec } from "./spec-review.mjs";
+import { registerSpecWith } from "./register-spec.mjs";
 
 export {
   selectionDepartments,
@@ -57,14 +58,14 @@ export {
 export { HARNESS_VENV_DIR, harnessVenvPython } from "./doctor.mjs";
 export { runLedger, ledgerRuns, ledgerRun, ledgerFleet, ledgerPlan, ledgerBackfillFromDisk } from "./factory-ledger.mjs";
 export { mergeLedgerAndFileRuns, listFactoryRuns } from "./factory-runs.mjs";
+export { loadCatalog, resolveCatalogId, listUsecases, listSpecs } from "./factory-catalog-search.mjs";
+export { reviewSpec } from "./spec-review.mjs";
 
 
 export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const CONFIG_PATH = join(REPO_ROOT, ".ge.json");
 const STATE_PATH = STATE_PATHS.envState;
 const SYNC_STATE_PATH = STATE_PATHS.syncState;
-const CATALOG_PATH = join(REPO_ROOT, "apps/factory/generated/use-cases.generated.json");
-const AGENT_SPEC_REGISTRY_PATH = join(REPO_ROOT, "apps/factory/src/agent-spec-registry.generated.json");
 const TF_DIR = join(REPO_ROOT, "installer/terraform");
 const MCP_SERVICE_DIR = join(REPO_ROOT, "apps/factory/mcp-service");
 const FACTORY_HARNESS_DIR = STATE_PATHS.factory.root;
@@ -224,383 +225,17 @@ export function resolveRepo(cfg) {
 // `run` is injected the same way factory-core wires it into the plane modules.
 const { withGateway } = createGatewayClient({ run });
 
-// ── catalog ───────────────────────────────────────────────────────────────────
-export async function loadCatalog() {
-  if (!existsSync(CATALOG_PATH)) {
-    throw new Error(`catalog not found: ${CATALOG_PATH} (generated artifact — run \`npm run use-cases:sync\`)`);
-  }
-  // Read the JSON artifact fresh each call so a regenerated catalog is picked up
-  // without restarting a long-running daemon.
-  const generated = JSON.parse(readFileSync(CATALOG_PATH, "utf8"));
-  let interviewEntries = [];
-  try {
-    interviewEntries = await loadInterviewSpecEntries({ repoRoot: GEN_DIR });
-  } catch {
-    interviewEntries = [];
-  }
-  const byId = new Map(generated.map((entry) => [entry.id, entry]));
-  for (const entry of interviewEntries) byId.set(entry.id, entry);
-  return [...byId.values()];
-}
+// Catalog/use-case/agent-spec search (loadCatalog/resolveCatalogId/listUsecases/
+// listSpecs) now lives in factory-catalog-search.mjs; the spec-review workflow
+// (reviewSpec) in spec-review.mjs — imported above and re-exported for the public
+// API contract (see factory-core.export-surface.json /
+// factory-core.export-surface.test.mjs).
 
-/**
- * Resolve ANY agent id form (catalog slug, uc-NNNN, A-NNNN, numeric) to the catalog id.
- * Uses @ge/agent-resolver to normalize ids and match against catalog entries.
- * Returns the catalog id on match, or null if no match.
- */
-export async function resolveCatalogId(anyId) {
-  if (!anyId) return null;
-  try {
-    const { candidateKeys, normalizeAgentId } = await import("@ge/agent-resolver");
-    const catalog = await loadCatalog();
-    const keys = candidateKeys(anyId);
-    const normalized = normalizeAgentId(anyId);
-
-    // Try exact match on id/slug first
-    for (const key of keys) {
-      const entry = catalog.find((c) => c.id === key);
-      if (entry) return entry.id;
-    }
-
-    // Try matching subtitle prefix if we have an A-<num> form
-    if (normalized.agentId) {
-      const agentIdPrefix = `${normalized.agentId} `;
-      const entry = catalog.find((c) => c.subtitle?.startsWith(agentIdPrefix));
-      if (entry) return entry.id;
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-}
-export async function listUsecases({ department, search, limit } = {}) {
-  let cases = await loadCatalog();
-  if (department) cases = cases.filter((u) => u.department === department);
-  if (search) { const q = search.toLowerCase(); cases = cases.filter((u) => `${u.id} ${u.title}`.toLowerCase().includes(q)); }
-  const byDept = {};
-  for (const u of cases) byDept[u.department] = (byDept[u.department] || 0) + 1;
-  return { total: cases.length, byDepartment: byDept, useCases: cases.slice(0, limit || cases.length).map((u) => ({ id: u.id, title: u.title, department: u.department })) };
-}
-
-function specSearchText(spec) {
-  return [
-    spec.id,
-    spec.title,
-    spec.department,
-    spec.domainId,
-    spec.persona,
-    spec.subtitle,
-    spec.description,
-    spec.familyId,
-    spec.variantId,
-    spec.variantLabel,
-    ...(spec.systems || []),
-  ].filter(Boolean).join(" ").toLowerCase();
-}
-
-function matchesSpecSearch(spec, search) {
-  const terms = String(search || "").trim().toLowerCase().split(/\s+/).filter(Boolean);
-  if (!terms.length) return true;
-  const text = specSearchText(spec);
-  return terms.every((term) => text.includes(term));
-}
-
-function splitCsvLike(value) {
-  if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean);
-  return parseList(String(value || ""));
-}
-
-function summarizeSpec(usecase, registryEntry) {
-  const registry = registryEntry?.registry || {};
-  const variant = registry.variant || {};
-  return {
-    id: usecase.id,
-    title: usecase.title,
-    department: usecase.department || registryEntry?.department || null,
-    domainId: usecase.domainId || registryEntry?.domainId || null,
-    persona: usecase.persona || null,
-    subtitle: usecase.subtitle || null,
-    systems: usecase.systems || registryEntry?.systems || [],
-    source: registry.sourceKind || "slide",
-    sourcePath: usecase.sourcePath || registry.sourcePath || null,
-    familyId: variant.familyId || registry.familyId || usecase.id,
-    variantId: variant.variantId || usecase.id,
-    variantLabel: variant.label || "Canonical",
-    buildable: registryEntry?.buildable !== false,
-    hasBehaviorContract: registryEntry?.hasBehaviorContract === true,
-    description: (usecase.statusQuo?.[0] || usecase.agentification?.[0] || usecase.subtitle || "").trim(),
-  };
-}
-
-export async function listSpecs({ department, search, limit = 100, ids = [] } = {}) {
-  const catalog = await loadCatalog();
-  const registry = readJson(AGENT_SPEC_REGISTRY_PATH, { entries: [], summary: {} });
-  const registryById = new Map((registry.entries || []).map((entry) => [entry.id, entry]));
-  const idSet = new Set(splitCsvLike(ids));
-  const q = String(search || "").trim().toLowerCase();
-  const interviewEntries = await loadInterviewSpecEntries({ repoRoot: GEN_DIR });
-  const byId = new Map();
-  for (const usecase of catalog) byId.set(usecase.id, summarizeSpec(usecase, registryById.get(usecase.id)));
-  for (const entry of interviewEntries) byId.set(entry.id, summarizeSpec(entry, entry));
-  let specs = [...byId.values()];
-  if (department) specs = specs.filter((spec) => spec.department === department);
-  if (idSet.size) specs = specs.filter((spec) => idSet.has(spec.id));
-  if (q) specs = specs.filter((spec) => matchesSpecSearch(spec, q));
-  specs.sort((a, b) => `${a.department || ""}/${a.title}`.localeCompare(`${b.department || ""}/${b.title}`));
-  const byDepartment = {};
-  for (const spec of specs) byDepartment[spec.department || "unknown"] = (byDepartment[spec.department || "unknown"] || 0) + 1;
-  const capped = Math.max(1, Math.min(Number(limit) || 100, 1000));
-  return {
-    kind: "ge.agent_spec.catalog",
-    version: 1,
-    total: specs.length,
-    returned: Math.min(specs.length, capped),
-    byDepartment,
-    departments: DEPARTMENTS,
-    summary: registry.summary || {},
-    specs: specs.slice(0, capped),
-  };
-}
-
-function isInsideDir(filePath, rootDir) {
-  const root = resolve(rootDir);
-  const file = resolve(filePath);
-  return file === root || file.startsWith(`${root}/`);
-}
-
-function safeSpecReviewPath({ usecaseId, path } = {}) {
-  const rawPath = path
-    ? String(path)
-    : join(displayStatePath(STATE_PATHS.interviews.root), slug(usecaseId || "new-agent", 64) || "new-agent", "agent-spec.json");
-  const fullPath = resolve(REPO_ROOT, rawPath);
-  const allowedRoots = [
-    STATE_PATHS.interviews.root,
-    LEGACY_STATE_PATHS.interviews.root,
-    join(GEN_DIR, "catalog", "interview-specs"),
-  ];
-  if (!allowedRoots.some((root) => isInsideDir(fullPath, root))) {
-    throw new Error("spec review path must be under .ge/interviews or apps/factory/catalog/interview-specs");
-  }
-  return fullPath;
-}
-
-function summarizeReviewedSpec(spec, usecaseId = null) {
-  const generation = spec.generationSpec || spec;
-  const quality = validateGenerationSpec(generation);
-  return {
-    summary: {
-      id: spec.id || usecaseId,
-      title: spec.title || spec.id || usecaseId || "Generated agent spec",
-      department: spec.department || null,
-      persona: spec.persona || generation.behaviorContract?.role || null,
-      systems: spec.systems || (generation.sourceSystems || []).map((system) => system.id || system.name).filter(Boolean),
-      sourceSystems: Array.isArray(generation.sourceSystems) ? generation.sourceSystems.length : 0,
-      entities: Array.isArray(generation.entities) ? generation.entities.length : 0,
-      documents: Array.isArray(generation.documents) ? generation.documents.length : 0,
-      anomalies: Array.isArray(generation.anomalies) ? generation.anomalies.length : 0,
-      goldenEvals: Array.isArray(generation.behaviorContract?.goldenEvals) ? generation.behaviorContract.goldenEvals.length : 0,
-      buildable: quality.ok,
-      maturity: quality.maturity,
-    },
-    gaps: quality.gaps || [],
-  };
-}
-
-function generatedInterviewSpecs() {
-  const roots = [STATE_PATHS.interviews.root, LEGACY_STATE_PATHS.interviews.root].filter((root, index, all) => all.indexOf(root) === index);
-  return roots.flatMap((root) => {
-    if (!existsSync(root)) return [];
-    return readdirSync(root, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => {
-      const specPath = join(root, entry.name, "agent-spec.json");
-      if (!existsSync(specPath)) return null;
-      try {
-        const content = readFileSync(specPath, "utf8");
-        const spec = JSON.parse(content);
-        return {
-          id: spec.id || entry.name,
-          title: spec.title || spec.id || entry.name,
-          department: spec.department || null,
-          source: "generated_artifact",
-          path: specPath,
-          relativePath: specPath.slice(REPO_ROOT.length + 1),
-          content,
-          spec,
-        };
-      } catch {
-        return null;
-      }
-    })
-    .filter(Boolean);
-  });
-}
-
-function candidateScore(entry, words) {
-  const text = `${entry.id || ""} ${entry.title || ""} ${entry.subtitle || ""}`.toLowerCase();
-  return words.reduce((score, word) => score + (text.includes(word) ? 1 : 0), 0);
-}
-
-async function specReviewCandidates(usecaseId) {
-  const q = String(usecaseId || "").replace(/-/g, " ").trim().toLowerCase();
-  if (!q) return [];
-  const words = q.split(/\s+/).filter((word) => word.length > 2);
-  if (!words.length) return [];
-  const catalog = await loadCatalog();
-  const generated = generatedInterviewSpecs().map((entry) => ({
-    id: entry.id,
-    title: entry.title,
-    department: entry.department,
-    source: entry.source,
-    score: candidateScore(entry, words),
-  }));
-  const canonical = catalog
-    .map((entry) => ({
-      id: entry.id,
-      title: entry.title,
-      department: entry.department || null,
-      source: "canonical_catalog_spec",
-      score: candidateScore(entry, words),
-    }));
-  return [...generated, ...canonical]
-    .filter((entry) => entry.score > 0)
-    .sort((a, b) => b.score - a.score || a.id.localeCompare(b.id))
-    .slice(0, 8)
-    .map(({ score: _score, ...entry }) => entry);
-}
-
-export async function reviewSpec({ usecaseId, path } = {}) {
-  const fullPath = safeSpecReviewPath({ usecaseId, path });
-  const relativePath = fullPath.startsWith(`${REPO_ROOT}/`) ? fullPath.slice(REPO_ROOT.length + 1) : fullPath;
-  const normalizedUsecaseId = usecaseId ? slug(usecaseId, 64) : (relativePath.match(/\.ge(?:-harness)?\/interviews\/([^/]+)\/agent-spec\.json$/)?.[1] || null);
-  if (existsSync(fullPath)) {
-    const content = readFileSync(fullPath, "utf8");
-    let spec;
-    try {
-      spec = JSON.parse(content);
-    } catch (error) {
-      return {
-        kind: "ge.spec.review",
-        source: "generated_artifact",
-        found: true,
-        parseError: error.message,
-        usecaseId: normalizedUsecaseId,
-        path: relativePath,
-        spec: null,
-        content,
-        summary: null,
-        gaps: ["invalid_json"],
-      };
-    }
-    const reviewed = summarizeReviewedSpec(spec, normalizedUsecaseId);
-    return {
-      kind: "ge.spec.review",
-      source: "generated_artifact",
-      found: true,
-      usecaseId: normalizedUsecaseId || reviewed.summary.id,
-      path: relativePath,
-      spec,
-      content,
-      ...reviewed,
-    };
-  }
-
-  if (!path && normalizedUsecaseId) {
-    const interviewEntries = await loadInterviewSpecEntries({ repoRoot: GEN_DIR });
-    const registered = interviewEntries.find((entry) => entry.id === normalizedUsecaseId || entry.registry?.familyId === normalizedUsecaseId);
-    if (registered) {
-      const reviewed = summarizeReviewedSpec(registered, normalizedUsecaseId);
-      const registeredPath = registered.sourcePath?.startsWith(`${REPO_ROOT}/`) ? registered.sourcePath.slice(REPO_ROOT.length + 1) : registered.sourcePath || `apps/factory/catalog/interview-specs/${registered.id}.json`;
-      return {
-        kind: "ge.spec.review",
-        source: "registered_interview_spec",
-        found: true,
-        usecaseId: registered.id,
-        path: registeredPath,
-        spec: registered,
-        content: `${JSON.stringify(registered, null, 2)}\n`,
-        ...reviewed,
-      };
-    }
-
-    const catalog = await loadCatalog();
-    const catalogEntry = catalog.find((entry) => entry.id === normalizedUsecaseId);
-    if (catalogEntry) {
-      const reviewed = summarizeReviewedSpec(catalogEntry, normalizedUsecaseId);
-      return {
-        kind: "ge.spec.review",
-        source: "canonical_catalog_spec",
-        found: true,
-        usecaseId: catalogEntry.id,
-        path: `apps/factory/generated/use-cases.generated.json#${catalogEntry.id}`,
-        spec: catalogEntry,
-        content: `${JSON.stringify(catalogEntry, null, 2)}\n`,
-        ...reviewed,
-      };
-    }
-
-    const words = String(normalizedUsecaseId || "").replace(/-/g, " ").trim().toLowerCase().split(/\s+/).filter((word) => word.length > 2);
-    const generatedMatches = generatedInterviewSpecs()
-      .map((entry) => ({ ...entry, score: candidateScore(entry, words) }))
-      .filter((entry) => entry.score > 0)
-      .sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
-    if (generatedMatches.length && generatedMatches[0].score >= Math.min(words.length, 2) && generatedMatches.filter((entry) => entry.score === generatedMatches[0].score).length === 1) {
-      const match = generatedMatches[0];
-      const reviewed = summarizeReviewedSpec(match.spec, match.id);
-      return {
-        kind: "ge.spec.review",
-        source: "generated_artifact",
-        resolvedFrom: normalizedUsecaseId,
-        found: true,
-        usecaseId: match.id,
-        path: match.relativePath,
-        spec: match.spec,
-        content: match.content,
-        ...reviewed,
-      };
-    }
-  }
-
-  return {
-    kind: "ge.spec.review",
-    source: "unresolved",
-    found: false,
-    usecaseId: normalizedUsecaseId,
-    path: relativePath,
-    spec: null,
-    content: "",
-    summary: null,
-    gaps: ["spec_id_not_found"],
-    candidates: await specReviewCandidates(normalizedUsecaseId),
-  };
-}
-
-export async function registerSpec({ input, allowDraft = false, syncCatalog = true } = {}) {
-  if (!input) throw new Error("missing spec input path");
-  const inputPath = resolve(REPO_ROOT, input);
-  if (!existsSync(inputPath)) throw new Error(`spec not found: ${inputPath}`);
-  const args = ["scripts/register-agent-spec.mjs", "--input", inputPath];
-  if (allowDraft) args.push("--allow-draft", "true");
-  const registered = run("node", args, { cwd: GEN_DIR, allowFail: true });
-  if (!registered.ok) throw new Error((registered.err || registered.out || "spec registration failed").trim());
-  let result = {};
-  try { result = JSON.parse(registered.out); } catch {}
-  let sync = null;
-  if (syncCatalog) {
-    sync = run("node", ["scripts/sync-use-cases-from-slides.mjs"], { cwd: GEN_DIR, allowFail: true });
-    if (!sync.ok) throw new Error((sync.err || sync.out || "spec registered but catalog sync failed").trim());
-  }
-  return {
-    ok: true,
-    ...result,
-    input: inputPath,
-    catalog: {
-      synced: Boolean(syncCatalog),
-      stdout: sync?.out || "",
-      note: syncCatalog ? "generated catalog synced" : "generated catalog sync skipped; interview registry is available immediately",
-    },
-  };
+// registerSpec's implementation lives in register-spec.mjs; `run`/REPO_ROOT/GEN_DIR
+// are injected the same way factory-core wires them into the plane modules (GEN_DIR
+// is declared further down, but this reference is deferred until call time).
+export function registerSpec(opts) {
+  return registerSpecWith({ run, repoRoot: REPO_ROOT, genDir: GEN_DIR }, opts);
 }
 
 // ── operations ────────────────────────────────────────────────────────────────
