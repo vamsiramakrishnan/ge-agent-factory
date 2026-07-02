@@ -230,6 +230,11 @@ async function handleRuntimeFetchRequest(req, responder) {
     const taskId = eventMatch[1];
     const params = new URLSearchParams();
     if (url.searchParams.get("afterSeq")) params.set("afterSeq", url.searchParams.get("afterSeq"));
+    // A browser EventSource reconnect sends Last-Event-ID; hand it to the
+    // daemon as afterSeq so the resume happens at the source instead of
+    // replaying the whole stream through the proxy.
+    const lastEventId = typeof req.headers?.get === "function" ? req.headers.get("last-event-id") : req.headers?.["last-event-id"];
+    if (lastEventId && !params.get("afterSeq")) params.set("afterSeq", lastEventId);
     if (url.searchParams.get("format") === "json") params.set("format", "json");
     const daemonUrl = `http://127.0.0.1:${port}/api/tasks/${encodeURIComponent(taskId)}/events${params.toString() ? `?${params.toString()}` : ""}`;
     if (params.get("format") === "json") {
@@ -313,8 +318,16 @@ async function proxyRuntimeSse(url, writeSSE, isClosed, end) {
       buffer = frames.pop() || "";
       for (const frame of frames) {
         if (isClosed()) break;
-        for (const line of frame.split(/\n/)) {
-          if (line.startsWith("data:")) writeSSE(line.slice(5).trimStart());
+        // Preserve the daemon's id: framing (event seq) so the browser's
+        // native Last-Event-ID reconnect can resume at the right point.
+        const lines = frame.split(/\n/);
+        const idLine = lines.find((line) => line.startsWith("id:"));
+        const id = idLine ? idLine.slice(3).trim() : null;
+        for (const line of lines) {
+          if (!line.startsWith("data:")) continue;
+          const data = line.slice(5).trimStart();
+          if (id != null && typeof writeSSE.frame === "function") writeSSE.frame({ data, id });
+          else writeSSE(data);
         }
       }
     }

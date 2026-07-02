@@ -51,6 +51,7 @@ const ledgerPlanCmd = defineCommand({
         const tag = r.action === "none" ? pc.green("none") : r.action === "retry" ? pc.red(r.action) : pc.cyan(r.action);
         out(`${tag.padEnd(22)} ${pc.dim(String(r.useCaseId).padEnd(28))} ${r.currentStage} → ${r.nextStage || "—"}  ${pc.dim(r.reason)}`);
       }
+      if (rows.some((r) => r.action !== "none")) out(pc.dim("\n  next: ge agents resume   (fold this plan into executable commands; --run to execute)"));
     });
   }),
 });

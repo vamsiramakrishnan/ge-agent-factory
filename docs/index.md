@@ -73,7 +73,7 @@ mise run setup          # install deps, sync catalog/skills, install the `ge` co
 mise run doctor-local   # check local tools: Bun, uv, Python, agents-cli, cache, harness wiring
 mise run devex-check    # fast gate: local doctor, docs links, workspace manifest contracts
 mise run devex-smoke    # prove the path: doctor → local mode → one validated canary workspace
-mise run console        # open the operator UI (Pipeline · Fleet · Activity · Doctor) → http://localhost:18260
+mise run console        # open the operator UI (Overview · Pipeline · Fleet · Repair Queue · Runs · Readiness) → http://localhost:18260
 ```
 
 Build one agent locally, up to the preview/build boundary:

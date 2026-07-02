@@ -1,15 +1,15 @@
 ---
 title: GE Agent Factory
-description: Turn a business use case into a tested, deployable Gemini Enterprise agent.
+description: Turn an enterprise use case into a generated, tested, deployable Gemini Enterprise agent.
 template: splash
 hero:
   tagline: >-
-    One traceable path from business use case → generated ADK agent, tools,
-    tests, and evals → deployed on Gemini Enterprise. A factory, not a
-    prompt-only demo generator.
+    One traceable path from enterprise use case → generated ADK agent, tools,
+    tests, and evals → deployed on Gemini Enterprise, in your own Google Cloud
+    project. A factory, not a prompt-only demo generator.
   actions:
-    - text: Quickstart
-      link: /ge-agent-factory/start/quickstart/
+    - text: Get started
+      link: /ge-agent-factory/cookbooks/getting-started/
       icon: right-arrow
     - text: What is the factory?
       link: /ge-agent-factory/start/what-is-the-factory/
@@ -26,54 +26,87 @@ import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
   <img src="/ge-agent-factory/assets/diagrams/system-map.svg" alt="A use case enters the factory's three planes (factory, data, tool) and the result reaches Gemini Enterprise as a deployed agent" width="900" loading="eager" />
 </p>
 
-## The factory path
+## Your first agent, three commands
 
-Every agent takes the same inspectable line — each stage writes artifacts you
-can open, diff, and gate on.
+Everything below runs on your machine — no cloud credentials required.
+
+<div class="ge-journey">
+  <CardGrid>
+    <Card title="1 · Set up the toolchain" icon="setting">
+      <span class="ge-eta">~5–10 min · one time</span>
+
+      ```bash
+      mise run setup
+      ```
+
+      Provisions Bun, Python/uv, and Terraform, installs the `ge` CLI onto
+      your PATH, and starts the daemon.
+    </Card>
+    <Card title="2 · Initialize" icon="document">
+      <span class="ge-eta">~30 s</span>
+
+      ```bash
+      ge init
+      ```
+
+      Discovers your configuration and writes `.ge.json`. Bare `ge` now shows
+      a status board with the next step.
+    </Card>
+    <Card title="3 · First canary agent" icon="rocket">
+      <span class="ge-eta">~5 min</span>
+
+      ```bash
+      ge devex smoke
+      ```
+
+      Doctor → one generated, validated canary workspace: local proof that
+      the whole pipeline works.
+    </Card>
+  </CardGrid>
+</div>
+
+From there the loop is **build → watch → ship**: build agents, watch every
+run live in the console (recorded and replayable, event by event), then ship
+to the cloud when you choose. `mise run console` opens the operator UI —
+Overview · Pipeline · Interview · Fleet · Repair Queue · Runs · Readiness.
+
+## Pick your path
 
 <CardGrid>
-  <Card title="1 · Interview or choose a use case" icon="comment">
-    Start from business intent, not an implementation guess. The interview
-    writes the spec for you. [Author a spec →](/ge-agent-factory/cookbooks/author-a-spec-via-interview/)
-  </Card>
-  <Card title="2 · Materialize the spec" icon="document">
-    The spec is the contract: systems, entities, tools, workflow, tests, and
-    runtime expectations. [Specs and OKF →](/ge-agent-factory/concepts/specs-and-okf/)
-  </Card>
-  <Card title="3 · Generate the workspace" icon="setting">
-    Real ADK code, tools, fixtures, simulator bindings, smoke tests, eval
-    config, and a grounding bundle. [Generate an agent →](/ge-agent-factory/cookbooks/generate-an-agent/)
-  </Card>
-  <Card title="4 · Validate locally" icon="approve-check">
-    Generation → validation → preview runs entirely on your machine, no cloud
-    credentials required. [The factory line →](/ge-agent-factory/concepts/the-factory-line/)
-  </Card>
-  <Card title="5 · Ship remotely" icon="rocket">
-    Deploy Agent Runtime, register MCP tools, publish to Gemini Enterprise,
-    and verify live access — in **your** GCP project. [Operations →](/ge-agent-factory/operations/)
-  </Card>
-  <Card title="One registry, three surfaces" icon="puzzle">
-    Every `ge` command is a CLI command, an HTTP route, and an MCP tool — one
-    operator registry, so they can never disagree. [Console & APIs →](/ge-agent-factory/reference/console-and-apis/)
-  </Card>
+  <LinkCard
+    title="Get started"
+    description="Local mode, the fast DevEx gate, and the everyday loop — no cloud project needed."
+    href="/ge-agent-factory/cookbooks/getting-started/"
+  />
+  <LinkCard
+    title="Generate an agent"
+    description="From a use-case spec to a validated workspace: ADK code, tools, fixtures, tests, evals."
+    href="/ge-agent-factory/cookbooks/generate-an-agent/"
+  />
+  <LinkCard
+    title="The factory line"
+    description="What each stage produces, and the build boundary between local work and the cloud."
+    href="/ge-agent-factory/concepts/the-factory-line/"
+  />
+  <LinkCard
+    title="Console tour"
+    description="Overview · Pipeline · Interview · Fleet · Repair Queue · Runs · Readiness — what each view is for."
+    href="/ge-agent-factory/reference/console-tour/"
+  />
+  <LinkCard
+    title="Glossary"
+    description="Plain-language translations of the jargon: pipeline, fleet, runs, readiness, canary, planes, OKF."
+    href="/ge-agent-factory/reference/glossary/"
+  />
+  <LinkCard
+    title="CLI reference"
+    description="Every ge command — the same registry that powers the console and the MCP server."
+    href="/ge-agent-factory/reference/cli/"
+  />
 </CardGrid>
 
-## Try it in one terminal
-
-```bash
-mise run setup          # deps, toolchain, the `ge` CLI, daemon
-mise run devex-smoke    # doctor → local mode → one validated canary workspace
-mise run console        # operator UI: Pipeline · Fleet · Activity · Doctor
-```
-
-Nothing above touches the cloud — the build boundary keeps generation,
-validation, and preview local until you choose to ship.
-
-## Find your path
-
-<CardGrid>
-  <LinkCard title="Operators" description="Stand up the platform and run the factory in your GCP project." href="/ge-agent-factory/cookbooks/provision-the-platform/" />
-  <LinkCard title="Agent authors" description="Turn a use-case spec into a generated, validated agent workspace." href="/ge-agent-factory/start/quickstart/" />
-  <LinkCard title="Developers" description="The repo shape, the daily loop, and the contracts everything shares." href="/ge-agent-factory/start/developer-guide/" />
-  <LinkCard title="Platform reviewers" description="Architecture, security posture, and the agent gateway." href="/ge-agent-factory/concepts/security-and-the-agent-gateway/" />
-</CardGrid>
+:::note[One registry, three surfaces]
+Every `ge` command is a CLI command, an HTTP route (the console), and an MCP
+tool — one operator registry, dispatched through one job runner, so the three
+surfaces can never disagree. See [Console & APIs](/ge-agent-factory/reference/console-and-apis/).
+:::

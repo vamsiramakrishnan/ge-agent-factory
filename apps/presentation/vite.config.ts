@@ -91,6 +91,11 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': path.resolve(import.meta.dirname, '.'),
       },
+      // Workspace packages (@ge/ui) are consumed as TSX source and carry a
+      // test-harness react in packages/ui/node_modules — dedupe pins every
+      // react import to this app's single copy, or hooks crash with
+      // "Cannot read properties of null (reading 'useState')".
+      dedupe: ['react', 'react-dom'],
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.

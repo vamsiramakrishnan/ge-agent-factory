@@ -8,18 +8,9 @@
 import { mkdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { execStream } from "../exec-stream.mjs";
 import { REPO_ROOT, STATE_PATHS } from "../state-paths.mjs";
-import {
-  appendEvent,
-  appendResumeAttempt,
-  commandOutput,
-  createRun,
-  newTaskId,
-  runOutput,
-  terminalStatusForCode,
-  updateRun,
-} from "./run-store.mjs";
+import { runStreamedTask } from "./task-runner.mjs";
+import { createRun, newTaskId } from "./run-store.mjs";
 
 const GE_CLI = join(REPO_ROOT, "tools", "ge.mjs");
 const DEFAULT_UV_CACHE_DIR = STATE_PATHS.cache.uv;
@@ -87,135 +78,54 @@ export function runtimeEnv(extra = {}) {
   };
 }
 
-export function startGeCommandTask({ argv = [], command = null } = {}) {
-  const safeArgv = Array.isArray(argv) ? argv.map(String).filter(Boolean) : [];
-  if (!safeArgv.length) throw new Error("argv is required");
-  const run = createRun({
-    id: newTaskId("job"),
-    kind: "ge.command",
-    input: { argv: safeArgv, command },
-  });
-  appendEvent(run.id, { type: "stage_started", stage: "job", line: `$ ge ${safeArgv.join(" ")}` });
-
-  execStream(process.execPath, [GE_CLI, ...safeArgv], {
-    cwd: REPO_ROOT,
+// Shared execution shape for both command kinds; only argv validation, spawn
+// target, env, and event stage differ. The orchestration skeleton (events,
+// exit mapping, resume attempts, output merge) lives in task-runner.mjs.
+function geCommandExecution(argv) {
+  return {
+    stage: "job",
+    startLine: `$ ge ${argv.join(" ")}`,
+    cmd: process.execPath,
+    args: [GE_CLI, ...argv],
     env: { ...process.env, CLOUDSDK_CORE_DISABLE_PROMPTS: "1" },
-    meta: { runId: run.id, stage: "job" },
-    onEvent: (event) => appendEvent(run.id, event),
-  }).then((result) => {
-    const status = terminalStatusForCode(result.code);
-    const line = `exit ${result.code}`;
-    appendEvent(run.id, {
-      type: status === "done" ? "stage_done" : "stage_failed",
-      stage: "job",
-      level: status === "done" ? "info" : "error",
-      line,
-      data: { code: result.code, signal: result.signal || null },
-    });
-    updateRun(run.id, { status, code: result.code, endedAt: new Date().toISOString(), output: commandOutput(result, { preserveMachineStdout: true }) });
-  }).catch((error) => {
-    const line = error?.message || String(error);
-    appendEvent(run.id, { type: "stage_failed", stage: "job", level: "error", line });
-    updateRun(run.id, { status: "failed", code: 1, endedAt: new Date().toISOString(), error: line });
-  });
+  };
+}
 
-  return run;
+function processCommandExecution(argv) {
+  return {
+    stage: "process",
+    startLine: `$ ${argv.join(" ")}`,
+    cmd: argv[0] === "node" ? process.execPath : argv[0],
+    args: argv.slice(1),
+    env: runtimeEnv(),
+  };
+}
+
+function requireArgv(argv, message) {
+  const safeArgv = Array.isArray(argv) ? argv.map(String).filter(Boolean) : [];
+  if (!safeArgv.length) throw new Error(message);
+  return safeArgv;
+}
+
+export function startGeCommandTask({ argv = [], command = null } = {}) {
+  const safeArgv = requireArgv(argv, "argv is required");
+  const run = createRun({ id: newTaskId("job"), kind: "ge.command", input: { argv: safeArgv, command } });
+  return runStreamedTask({ run, ...geCommandExecution(safeArgv) });
 }
 
 export function startProcessCommandTask({ argv = [], command = null } = {}) {
-  const safeArgv = Array.isArray(argv) ? argv.map(String).filter(Boolean) : [];
-  if (!safeArgv.length) throw new Error("argv is required");
+  const safeArgv = requireArgv(argv, "argv is required");
   if (!safeProcessCommand(safeArgv)) throw new Error("process command is not classified safe to run");
-  const cmd = safeArgv[0] === "node" ? process.execPath : safeArgv[0];
-  const args = safeArgv.slice(1);
-  const run = createRun({
-    id: newTaskId("proc"),
-    kind: "process.command",
-    input: { argv: safeArgv, command },
-  });
-  appendEvent(run.id, { type: "stage_started", stage: "process", line: `$ ${safeArgv.join(" ")}` });
-
-  execStream(cmd, args, {
-    cwd: REPO_ROOT,
-    env: runtimeEnv(),
-    meta: { runId: run.id, stage: "process" },
-    onEvent: (event) => appendEvent(run.id, event),
-  }).then((result) => {
-    const status = terminalStatusForCode(result.code);
-    const line = `exit ${result.code}`;
-    appendEvent(run.id, {
-      type: status === "done" ? "stage_done" : "stage_failed",
-      stage: "process",
-      level: status === "done" ? "info" : "error",
-      line,
-      data: { code: result.code, signal: result.signal || null },
-    });
-    updateRun(run.id, { status, code: result.code, endedAt: new Date().toISOString(), output: commandOutput(result, { preserveMachineStdout: true }) });
-  }).catch((error) => {
-    const line = error?.message || String(error);
-    appendEvent(run.id, { type: "stage_failed", stage: "process", level: "error", line });
-    updateRun(run.id, { status: "failed", code: 1, endedAt: new Date().toISOString(), error: line });
-  });
-
-  return run;
+  const run = createRun({ id: newTaskId("proc"), kind: "process.command", input: { argv: safeArgv, command } });
+  return runStreamedTask({ run, ...processCommandExecution(safeArgv) });
 }
 
 export function resumeGeCommandTask(run) {
-  const argv = Array.isArray(run.input?.argv) ? run.input.argv.map(String).filter(Boolean) : [];
-  if (!argv.length) throw new Error("stored argv is empty");
-  updateRun(run.id, { status: "running", endedAt: null, error: null });
-  appendEvent(run.id, { type: "stage_started", stage: "job", line: `$ ge ${argv.join(" ")} (resume)` });
-  execStream(process.execPath, [GE_CLI, ...argv], {
-    cwd: REPO_ROOT,
-    env: { ...process.env, CLOUDSDK_CORE_DISABLE_PROMPTS: "1" },
-    meta: { runId: run.id, stage: "job" },
-    onEvent: (event) => appendEvent(run.id, event),
-  }).then((result) => {
-    const status = terminalStatusForCode(result.code);
-    appendEvent(run.id, {
-      type: status === "done" ? "resume_done" : "resume_failed",
-      stage: "job",
-      level: status === "done" ? "info" : "error",
-      line: `exit ${result.code}`,
-      data: { code: result.code, signal: result.signal || null },
-    });
-    appendResumeAttempt(run.id, { status, action: "rerun_command", code: result.code });
-    updateRun(run.id, { status, code: result.code, endedAt: new Date().toISOString(), output: { ...runOutput(run.id), ...commandOutput(result, { preserveMachineStdout: true }) } });
-  }).catch((error) => {
-    const line = error?.message || String(error);
-    appendEvent(run.id, { type: "resume_failed", stage: "job", level: "error", line });
-    appendResumeAttempt(run.id, { status: "failed", action: "rerun_command", error: line });
-    updateRun(run.id, { status: "failed", code: 1, endedAt: new Date().toISOString(), error: line });
-  });
+  const argv = requireArgv(run.input?.argv, "stored argv is empty");
+  runStreamedTask({ run, resume: true, resumeAction: "rerun_command", ...geCommandExecution(argv) });
 }
 
 export function resumeProcessCommandTask(run) {
-  const argv = Array.isArray(run.input?.argv) ? run.input.argv.map(String).filter(Boolean) : [];
-  if (!argv.length) throw new Error("stored argv is empty");
-  const cmd = argv[0] === "node" ? process.execPath : argv[0];
-  const args = argv.slice(1);
-  updateRun(run.id, { status: "running", endedAt: null, error: null });
-  appendEvent(run.id, { type: "stage_started", stage: "process", line: `$ ${argv.join(" ")} (resume)` });
-  execStream(cmd, args, {
-    cwd: REPO_ROOT,
-    env: runtimeEnv(),
-    meta: { runId: run.id, stage: "process" },
-    onEvent: (event) => appendEvent(run.id, event),
-  }).then((result) => {
-    const status = terminalStatusForCode(result.code);
-    appendEvent(run.id, {
-      type: status === "done" ? "resume_done" : "resume_failed",
-      stage: "process",
-      level: status === "done" ? "info" : "error",
-      line: `exit ${result.code}`,
-      data: { code: result.code, signal: result.signal || null },
-    });
-    appendResumeAttempt(run.id, { status, action: "rerun_process", code: result.code });
-    updateRun(run.id, { status, code: result.code, endedAt: new Date().toISOString(), output: { ...runOutput(run.id), ...commandOutput(result, { preserveMachineStdout: true }) } });
-  }).catch((error) => {
-    const line = error?.message || String(error);
-    appendEvent(run.id, { type: "resume_failed", stage: "process", level: "error", line });
-    appendResumeAttempt(run.id, { status: "failed", action: "rerun_process", error: line });
-    updateRun(run.id, { status: "failed", code: 1, endedAt: new Date().toISOString(), error: line });
-  });
+  const argv = requireArgv(run.input?.argv, "stored argv is empty");
+  runStreamedTask({ run, resume: true, resumeAction: "rerun_process", ...processCommandExecution(argv) });
 }

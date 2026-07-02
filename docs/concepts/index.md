@@ -17,7 +17,7 @@ and remote mode are separate, why simulators exist, and why deployment is modele
 as a staged control plane instead of a single script.
 
 Unfamiliar term? See the [Glossary](../GLOSSARY.html) — plain-language
-translations of the jargon (harness, OKF, canary, planes, missions, …).
+translations of the jargon (harness, OKF, canary, planes, pipeline runs, …).
 
 ## The big idea
 

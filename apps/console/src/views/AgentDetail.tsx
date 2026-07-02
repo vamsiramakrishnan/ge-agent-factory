@@ -12,10 +12,10 @@ import {
   Radio,
   RefreshCw,
   Rocket,
-  SlidersHorizontal,
   TriangleAlert,
   Wrench,
 } from "lucide-react";
+import { Button, EmptyState, PageHeader, Segmented, Stat } from "@ge/ui";
 import {
   ge,
   startJob,
@@ -191,7 +191,7 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
         return;
       }
 
-      if (plan.kind === "run_mission" || plan.kind === "run_preview" || command.startsWith("ge mission run")) {
+      if (plan.kind === "run_mission" || plan.kind === "run_preview" || command.startsWith("ge pipeline run") || command.startsWith("ge mission run")) {
         await ge.missionRun({
           scenario: agent.id,
           ids: [agent.id],
@@ -325,59 +325,54 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-7">
-      <header className="mb-6 border-b border-outline-variant/40 pb-6">
-        <button
-          type="button"
-          onClick={() => { location.hash = "#/fleet"; }}
-          className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-secondary transition-colors hover:text-on-surface"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Fleet
-        </button>
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end">
-          <div className="min-w-0">
-            <div className="mb-1 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-wide text-secondary">
-              <span>{agent.department || "unknown department"}</span>
-              <span>·</span>
-              <code className="font-mono normal-case tracking-normal">{agent.id}</code>
-            </div>
-            <h1 className="truncate text-3xl font-bold text-on-surface">{agent.title}</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-secondary">
-              This detail view mirrors Fleet and Pipeline state: the same action plan, workspace gate, artifacts, and runtime handoff.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
+      <button
+        type="button"
+        onClick={() => { location.hash = "#/fleet"; }}
+        className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-secondary transition-colors hover:text-on-surface"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to Fleet
+      </button>
+      <PageHeader
+        size="lg"
+        eyebrow={
+          <span className="flex flex-wrap items-center gap-2">
+            <span>{agent.department || "unknown department"}</span>
+            <span>·</span>
+            <code className="font-mono normal-case tracking-normal">{agent.id}</code>
+          </span>
+        }
+        title={<span className="block truncate">{agent.title}</span>}
+        subtitle="This detail view mirrors Fleet and Pipeline state: the same action plan, workspace gate, artifacts, and runtime handoff."
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => load({ awaitSecondary: true, silent: true })}
               disabled={loading || actionBusy || syncing}
-              className="inline-flex items-center gap-2 rounded-md border border-outline/30 px-3 py-2 text-sm font-medium text-on-surface transition-colors hover:bg-surface-container disabled:opacity-50"
             >
               <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
               Sync
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => {
                 window.localStorage.setItem("ge.pipeline.selectedSpecId", agent.id);
-                location.hash = "#/journey";
+                location.hash = "#/pipeline";
               }}
-              className="inline-flex items-center gap-2 rounded-md border border-outline/30 px-3 py-2 text-sm font-medium text-on-surface transition-colors hover:bg-surface-container"
             >
               <GitBranch className="h-4 w-4" />
               Pipeline
-            </button>
-            <button
-              type="button"
-              onClick={() => { location.hash = "#/activity"; }}
-              className="inline-flex items-center gap-2 rounded-md border border-outline/30 px-3 py-2 text-sm font-medium text-on-surface transition-colors hover:bg-surface-container"
-            >
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => { location.hash = "#/activity"; }}>
               <Radio className="h-4 w-4" />
               Runs
-            </button>
-          </div>
-        </div>
-      </header>
+            </Button>
+          </>
+        }
+      />
 
       {/* Triage band — current stage + status + the single most useful next action /
           blocker reason, so the operator knows what's wrong and what to do without
@@ -402,25 +397,32 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
           {triageReason}
         </span>
         {primaryPlan && (
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="md"
+            className="shrink-0"
             onClick={() => runPlan(primaryPlan)}
             disabled={actionBusy || primaryPlan.safeToRun === false}
-            className="inline-flex shrink-0 items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-primary-container disabled:bg-surface-container disabled:text-secondary disabled:opacity-70"
+            loading={actionBusy}
           >
-            {actionBusy ? <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" /> : actionIcon(primaryPlan)}
+            {!actionBusy && actionIcon(primaryPlan)}
             {triageActionLabel || "Run next action"}
-          </button>
+          </Button>
         )}
       </div>
 
       {error && <ErrorBanner tone="amber" message={error} onRetry={() => load()} />}
 
       <section className="mb-6 grid gap-3 md:grid-cols-4">
-        <Metric label="Health" value={health} status={health} />
-        <Metric label="Stage" value={currentStage} />
-        <Metric label="Workspace" value={workspaceId || "not built"} mono />
-        <Metric label="Owner" value={agent.owner || nextStage?.owner || "none"} />
+        <Stat size="md" label="Health" value={<StatusChip status={health} />} />
+        <Stat size="md" label="Stage" value={currentStage} />
+        <Stat
+          size="md"
+          label="Workspace"
+          title={workspaceId || "not built"}
+          value={<span className="block truncate font-mono">{workspaceId || "not built"}</span>}
+        />
+        <Stat size="md" label="Owner" value={agent.owner || nextStage?.owner || "none"} />
       </section>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
@@ -439,7 +441,17 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
                     {syncing && <span className="ml-2 text-primary">syncing...</span>}
                   </div>
                 </div>
-                <StageFilterBar value={stageFilter} counts={stageStats} onChange={setStageFilter} />
+                <Segmented<StageFilter>
+                  aria-label="Filter stages"
+                  options={[
+                    { value: "all", label: "All", count: stageStats.all },
+                    { value: "attention", label: "Attention", count: stageStats.attention },
+                    { value: "active", label: "Active", count: stageStats.active },
+                    { value: "done", label: "Complete", count: stageStats.done },
+                  ]}
+                  value={stageFilter}
+                  onChange={setStageFilter}
+                />
               </div>
             </div>
             <div className="px-5 py-4">
@@ -458,10 +470,10 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
                 />
               )}
               {!journeyLoading && displayedStages.length === 0 && (
-                <div className="py-2 text-sm text-secondary">No journey stages were returned for this agent.</div>
+                <EmptyState title="No journey stages were returned for this agent." />
               )}
               {displayedStages.length > 0 && filteredStages.length === 0 && (
-                <div className="py-2 text-sm text-secondary">No stages match this filter.</div>
+                <EmptyState title="No stages match this filter." />
               )}
             </div>
           </section>
@@ -549,15 +561,17 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
                 <div className="truncate" title={primaryCommand}>{primaryCommand}</div>
               </div>
             )}
-            <button
-              type="button"
+            <Button
+              variant="primary"
+              size="md"
+              className="mt-4 w-full"
               onClick={() => runPlan(primaryPlan)}
-              disabled={!primaryPlan || actionBusy || primaryPlan.safeToRun === false}
-              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-container disabled:bg-surface-container disabled:text-secondary disabled:opacity-70"
+              disabled={!primaryPlan || primaryPlan.safeToRun === false}
+              loading={actionBusy}
             >
-              {actionBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : actionIcon(primaryPlan)}
+              {!actionBusy && actionIcon(primaryPlan)}
               {primaryPlan?.label || "No runnable action"}
-            </button>
+            </Button>
           </section>
 
           <section className="rounded-lg border border-outline-variant/40 bg-surface p-5">
@@ -639,61 +653,6 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
   );
 }
 
-function Metric({ label, value, status, mono = false }: { label: string; value: string; status?: string; mono?: boolean }) {
-  return (
-    <div className="rounded-lg border border-outline-variant/40 bg-surface px-4 py-3">
-      <div className="text-[11px] font-semibold uppercase tracking-wide text-secondary">{label}</div>
-      <div className={`mt-2 min-w-0 truncate text-sm font-semibold text-on-surface ${mono ? "font-mono" : ""}`}>
-        {status ? <StatusChip status={status} /> : value}
-      </div>
-    </div>
-  );
-}
-
-function StageFilterBar({
-  value,
-  counts,
-  onChange,
-}: {
-  value: StageFilter;
-  counts: Record<StageFilter, number>;
-  onChange: (value: StageFilter) => void;
-}) {
-  const options: Array<{ id: StageFilter; label: string }> = [
-    { id: "all", label: "All" },
-    { id: "attention", label: "Attention" },
-    { id: "active", label: "Active" },
-    { id: "done", label: "Complete" },
-  ];
-  return (
-    <div className="flex flex-wrap items-center gap-1 rounded-md border border-outline-variant/40 bg-surface-container-low p-1">
-      <div className="hidden items-center gap-1 px-2 text-[11px] font-medium uppercase tracking-wide text-secondary sm:flex">
-        <SlidersHorizontal className="h-3.5 w-3.5" />
-        Filter
-      </div>
-      {options.map((option) => {
-        const active = value === option.id;
-        return (
-          <button
-            key={option.id}
-            type="button"
-            onClick={() => onChange(option.id)}
-            className={`inline-flex items-center gap-1.5 rounded px-2.5 py-1.5 text-xs font-medium transition-colors ${
-              active ? "bg-primary text-white" : "text-secondary hover:bg-surface hover:text-on-surface"
-            }`}
-          >
-            {option.label}
-            <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${active ? "bg-white/20 text-white" : "bg-surface text-secondary"}`}>
-              {counts[option.id] ?? 0}
-            </span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-
 function ArtifactLine({ name, value }: { key?: string; name: string; value: string }) {
   return (
     <div className="rounded-md border border-outline-variant/30 bg-surface-container-low px-3 py-2">
@@ -770,7 +729,7 @@ function fallbackStages(agent: FleetAgent, actionPlan: FleetActionPlan | null): 
     { id: "simulator", label: "Simulator", owner: "runtime" },
     { id: "build", label: "Agent Build", owner: "factory" },
     { id: "eval", label: "Eval", owner: "antigravity" },
-    { id: "preview", label: "Preview", owner: "autopilot" },
+    { id: "preview", label: "Preview", owner: "repair" },
     { id: "deploy", label: "Deploy", owner: "factory" },
   ];
   const stageId = agent.stage || "spec";

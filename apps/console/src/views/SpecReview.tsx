@@ -34,7 +34,7 @@ export default function SpecReview({ usecaseId }: { usecaseId?: string }) {
     <div className="flex h-full flex-col">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-outline-variant/40 px-6 py-4">
         <div>
-          <a href="#/journey" className="inline-flex items-center gap-2 text-xs font-semibold text-secondary hover:text-on-surface">
+          <a href="#/pipeline" className="inline-flex items-center gap-2 text-xs font-semibold text-secondary hover:text-on-surface">
             <ArrowLeft className="h-4 w-4" />
             Pipeline
           </a>

@@ -1,20 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, Play, RotateCw, Wrench } from "lucide-react";
+import { Button, EmptyState, PageHeader, Section, Select, Stat } from "@ge/ui";
+import { useGeQuery } from "../lib/query";
 import { ge, type AutopilotDetail, type AutopilotRun, type Fleet, type FleetAgent, type MissionPlan, type StatusBoard } from "../services/geClient";
 import { StatusPill } from "../components/StatusPill";
 import { ErrorBanner } from "../components/ErrorBanner";
 
-interface AutopilotProps {
+interface RepairQueueProps {
   status: StatusBoard | null;
   refresh: () => Promise<void>;
 }
 
 const TARGETS = ["preview", "promote", "deploy:plan", "publish:plan"];
 
-export default function Autopilot({ status }: AutopilotProps) {
-  const [fleet, setFleet] = useState<Fleet | null>(null);
-  const [runs, setRuns] = useState<AutopilotRun[]>([]);
-  const [detail, setDetail] = useState<AutopilotDetail | null>(null);
+export default function RepairQueue({ status }: RepairQueueProps) {
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
   const [mission, setMission] = useState<MissionPlan | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [department, setDepartment] = useState("all");
@@ -24,33 +24,31 @@ export default function Autopilot({ status }: AutopilotProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Shared query layer: fleet dedupes with Overview/Fleet; the run detail
+  // fast-polls (2s) ONLY while the followed run is live — same semantics as
+  // the old conditional setInterval, expressed as query options.
+  const fleetQuery = useGeQuery<Fleet>(["fleet"], () => ge.fleet(), { intervalMs: 8000 });
+  const runsQuery = useGeQuery(["repairs", 20], () => ge.autopilots(20), { intervalMs: 8000 });
+  const fleet = fleetQuery.data ?? null;
+  const runs = runsQuery.data?.runs ?? [];
+  const detailId = selectedRunId ?? runs[0]?.id ?? null;
+  const detailQuery = useGeQuery<AutopilotDetail | null>(
+    ["repair-detail", detailId],
+    () => (detailId ? ge.autopilot(detailId) : Promise.resolve(null)),
+    {
+      enabled: !!detailId,
+      // Fast-poll only while the followed run is live; terminal runs settle
+      // to no polling (the global job-done invalidation still refreshes them).
+      intervalMs: (data) => (data && ["running", "paused"].includes(data.run.status) ? 2000 : false),
+    },
+  );
+  const detail = detailQuery.data ?? null;
+  const queryError = (fleetQuery.error || runsQuery.error) as Error | null;
+  const loadError = error ?? (queryError ? queryError.message || String(queryError) : null);
   const load = async () => {
-    try {
-      const [fleetData, runData] = await Promise.all([ge.fleet(), ge.autopilots(20)]);
-      setFleet(fleetData);
-      setRuns(runData.runs);
-      if (!detail && runData.runs[0]) {
-        setDetail(await ge.autopilot(runData.runs[0].id));
-      }
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    }
+    setError(null);
+    await Promise.all([fleetQuery.refetch(), runsQuery.refetch(), detailQuery.refetch()]);
   };
-
-  useEffect(() => { void load(); }, []);
-
-  useEffect(() => {
-    if (!detail || !["running", "paused"].includes(detail.run.status)) return;
-    const timer = setInterval(async () => {
-      try {
-        setDetail(await ge.autopilot(detail.run.id));
-        const runData = await ge.autopilots(20);
-        setRuns(runData.runs);
-      } catch {}
-    }, 2000);
-    return () => clearInterval(timer);
-  }, [detail?.run.id, detail?.run.status]);
 
   const agents = useMemo(() => {
     let list = fleet?.agents || [];
@@ -106,7 +104,7 @@ export default function Autopilot({ status }: AutopilotProps) {
       const started = await ge.startAutopilot({ ids: queueIds, targetStage, repair, attempts: 3, runPreview: false });
       if (started.reason) setError(started.reason);
       else setError(null);
-      if (started.runId) setDetail(await ge.autopilot(started.runId));
+      if (started.runId) setSelectedRunId(started.runId);
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -119,7 +117,7 @@ export default function Autopilot({ status }: AutopilotProps) {
     setBusy(true);
     try {
       await ge.resumeAutopilot(run.id);
-      setDetail(await ge.autopilot(run.id));
+      setSelectedRunId(run.id);
       await load();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -141,46 +139,48 @@ export default function Autopilot({ status }: AutopilotProps) {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex items-start justify-between gap-4 mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
             <Wrench className="w-5 h-5 text-primary" />
-            <h1 className="text-2xl font-bold text-on-surface">Repair Queue</h1>
-          </div>
-          <p className="text-sm text-on-surface-variant">
-            Pick agents, check the next gate, and resume only the work that needs attention.
-          </p>
-        </div>
-        <button
-          onClick={load}
-          disabled={busy}
-          className="px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/10 rounded-lg disabled:opacity-50 inline-flex items-center gap-2"
-        >
-          <RotateCw className="w-4 h-4" />
-          Refresh
-        </button>
-      </div>
+            Repair Queue
+          </span>
+        }
+        subtitle="Pick agents, check the next gate, and resume only the work that needs attention."
+        actions={
+          <Button variant="ghost" size="sm" onClick={load} disabled={busy}>
+            <RotateCw className="w-4 h-4" />
+            Refresh
+          </Button>
+        }
+      />
 
-      {error && <ErrorBanner tone="amber" message={error} onRetry={load} />}
+      {loadError && <ErrorBanner tone="amber" message={loadError} onRetry={load} />}
 
       <div className="grid grid-cols-1 xl:grid-cols-[420px_1fr] gap-6">
-        <section className="editorial-micro-card rounded-lg p-4">
-          <h2 className="text-sm font-semibold text-on-surface mb-4">Choose work to fix</h2>
+        <Section title="Choose work to fix">
           <div className="grid grid-cols-2 gap-3 mb-4">
-            <select value={department} onChange={(e) => setDepartment(e.target.value)} className="px-3 py-2 text-sm bg-surface border border-outline-variant/30 rounded-lg">
+            <Select value={department} onChange={(e) => setDepartment(e.target.value)}>
               {departments.map((item) => <option key={item} value={item}>{item === "all" ? "All departments" : item}</option>)}
-            </select>
-            <select value={agentStatus} onChange={(e) => setAgentStatus(e.target.value)} className="px-3 py-2 text-sm bg-surface border border-outline-variant/30 rounded-lg">
+            </Select>
+            <Select value={agentStatus} onChange={(e) => setAgentStatus(e.target.value)}>
               {statuses.map((item) => <option key={item} value={item}>{item === "all" ? "All statuses" : item}</option>)}
-            </select>
-            <select value={targetStage} onChange={(e) => setTargetStage(e.target.value)} className="px-3 py-2 text-sm bg-surface border border-outline-variant/30 rounded-lg">
-              {TARGETS.map((item) => <option key={item} value={item}>{item}</option>)}
-            </select>
-            <label className="px-3 py-2 text-sm bg-surface border border-outline-variant/30 rounded-lg inline-flex items-center gap-2">
-              <input type="checkbox" checked={repair} onChange={(e) => setRepair(e.target.checked)} className="accent-primary" />
-              Auto-fix
-            </label>
+            </Select>
           </div>
+          <details className="mb-4">
+            <summary className="cursor-pointer text-xs font-medium text-secondary">
+              Configure repair (target: {targetStage}{repair ? ", repair on" : ", observe only"})
+            </summary>
+            <div className="mt-2 grid grid-cols-2 gap-3">
+              <Select value={targetStage} onChange={(e) => setTargetStage(e.target.value)}>
+                {TARGETS.map((item) => <option key={item} value={item}>{item}</option>)}
+              </Select>
+              <label className="px-3 py-2 text-sm bg-surface border border-outline-variant/30 rounded-lg inline-flex items-center gap-2">
+                <input type="checkbox" checked={repair} onChange={(e) => setRepair(e.target.checked)} className="accent-primary" />
+                Auto-fix
+              </label>
+            </div>
+          </details>
           <div className="flex items-center justify-between mb-3">
             <button onClick={selectVisible} className="text-xs text-primary hover:underline">Select visible</button>
             <span className="text-xs text-on-surface-variant">{selected.size || agents.length} queued</span>
@@ -202,28 +202,29 @@ export default function Autopilot({ status }: AutopilotProps) {
               </label>
             ))}
           </div>
-          <button
+          <Button
+            variant="primary"
+            className="mt-4 w-full"
             onClick={start}
             disabled={busy || agents.length === 0 || noActionableMission}
-            className="mt-4 w-full px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg disabled:opacity-50 inline-flex items-center justify-center gap-2"
+            loading={busy}
           >
-            {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+            {!busy && <Play className="w-4 h-4" />}
             Start Repair Run
-          </button>
-        </section>
+          </Button>
+        </Section>
 
         <section className="space-y-4">
           {mission && (
-            <div className="editorial-micro-card rounded-lg p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-semibold text-on-surface">Run Plan</h2>
-                <span className="text-xs text-on-surface-variant">{mission.mode} · gate {mission.target.workspaceGate}</span>
-              </div>
+            <Section
+              title="Run Plan"
+              actions={<span className="text-xs text-on-surface-variant">{mission.mode} · gate {mission.target.workspaceGate}</span>}
+            >
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                <Metric label="Selected" value={mission.summary.selected} />
-                <Metric label="Needs build" value={mission.summary.factory} />
-                <Metric label="Can fix" value={mission.summary.autopilot} />
-                <Metric label={mission.mode === "remote" ? "Observe" : "Missing"} value={mission.mode === "remote" ? mission.summary.remoteObserve : mission.summary.missingWorkspaces} />
+                <Stat size="md" label="Selected" value={mission.summary.selected} />
+                <Stat size="md" label="Needs build" value={mission.summary.factory} />
+                <Stat size="md" label="Can fix" value={mission.summary.autopilot} />
+                <Stat size="md" label={mission.mode === "remote" ? "Observe" : "Missing"} value={mission.mode === "remote" ? mission.summary.remoteObserve : mission.summary.missingWorkspaces} />
               </div>
               <div className="mb-4 border border-outline-variant/30 rounded-lg p-3 bg-surface">
                 <div className="text-xs font-semibold uppercase tracking-wide text-secondary">Where work will run</div>
@@ -247,19 +248,18 @@ export default function Autopilot({ status }: AutopilotProps) {
               <p className="text-xs text-on-surface-variant mt-3">
                 Builds create missing workspaces. Repair runs only inspect, fix, or observe work that already exists.
               </p>
-            </div>
+            </Section>
           )}
 
-          <div className="editorial-micro-card rounded-lg p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-on-surface">Repair Runs</h2>
-              <span className="text-xs text-on-surface-variant">{status?.mode || "local"} mode</span>
-            </div>
+          <Section
+            title="Repair Runs"
+            actions={<span className="text-xs text-on-surface-variant">{status?.mode || "local"} mode</span>}
+          >
             <div className="flex flex-wrap gap-2">
               {runs.map((run) => (
                 <button
                   key={run.id}
-                  onClick={async () => setDetail(await ge.autopilot(run.id))}
+                  onClick={() => setSelectedRunId(run.id)}
                   className={`px-3 py-2 rounded-lg text-left border text-xs ${detail?.run.id === run.id ? "border-primary bg-primary/5" : "border-outline-variant/30 hover:bg-surface-container-low"}`}
                 >
                   <div className="font-mono text-on-surface">{run.id}</div>
@@ -268,9 +268,9 @@ export default function Autopilot({ status }: AutopilotProps) {
                   </div>
                 </button>
               ))}
-              {!runs.length && <span className="text-sm text-on-surface-variant">No repair runs yet.</span>}
+              {!runs.length && <EmptyState title="No repair runs yet." className="w-full py-4" />}
             </div>
-          </div>
+          </Section>
 
           {detail && (
             <div className="editorial-micro-card rounded-lg overflow-hidden">
@@ -323,15 +323,6 @@ export default function Autopilot({ status }: AutopilotProps) {
           )}
         </section>
       </div>
-    </div>
-  );
-}
-
-function Metric({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="border border-outline-variant/30 rounded-lg p-3 bg-surface">
-      <div className="text-xs text-on-surface-variant">{label}</div>
-      <div className="text-xl font-semibold text-on-surface">{value}</div>
     </div>
   );
 }

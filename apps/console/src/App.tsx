@@ -1,4 +1,7 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { MotionConfig, motion } from "motion/react";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "./lib/query";
 import { Sidebar } from "./components/shell/Sidebar";
 import { TopBar } from "./components/shell/TopBar";
 import { CommandPalette } from "./components/shell/CommandPalette";
@@ -16,9 +19,9 @@ const Fleet = lazy(() => import("./views/Fleet"));
 const Doctor = lazy(() => import("./views/Doctor"));
 const Activity = lazy(() => import("./views/Activity"));
 const AgentDetail = lazy(() => import("./views/AgentDetail"));
-const Autopilot = lazy(() => import("./views/Autopilot"));
+const RepairQueue = lazy(() => import("./views/RepairQueue"));
 const Interview = lazy(() => import("./views/Interview"));
-const Journey = lazy(() => import("./views/Journey"));
+const Pipeline = lazy(() => import("./views/Pipeline"));
 const SpecReview = lazy(() => import("./views/SpecReview"));
 
 function ViewFallback() {
@@ -29,17 +32,21 @@ function ViewFallback() {
   );
 }
 
-type Route = "overview" | "journey" | "interview" | "spec-review" | "fleet" | "autopilot" | "doctor" | "activity" | "agent";
+type Route = "overview" | "pipeline" | "interview" | "spec-review" | "fleet" | "repair" | "doctor" | "activity" | "agent";
 
 interface ParsedRoute {
   route: Route;
   params: Record<string, string>;
 }
 
+// Pre-consolidation hashes keep working: old bookmarks and deep links land on
+// the canonical route (journey → pipeline, autopilot → repair).
+const LEGACY_ROUTES: Record<string, Route> = { journey: "pipeline", autopilot: "repair" };
+
 function parseHash(hash: string): ParsedRoute {
   // Strip "#/" and any "?query" — filters live in the query (see useUrlState) and
   // must not affect route matching.
-  const path = hash.slice(2).split("?")[0] || "journey";
+  const path = hash.slice(2).split("?")[0] || "pipeline";
   if (path.startsWith("agent/")) {
     const id = path.slice(6);
     return { route: "agent", params: { id } };
@@ -48,7 +55,7 @@ function parseHash(hash: string): ParsedRoute {
     const usecaseId = decodeURIComponent(path.slice("spec-review/".length));
     return { route: "spec-review", params: { usecaseId } };
   }
-  return { route: path as Route, params: {} };
+  return { route: LEGACY_ROUTES[path] ?? (path as Route), params: {} };
 }
 
 export default function App() {
@@ -103,11 +110,11 @@ export default function App() {
 
     switch (route) {
       case "overview": return <Overview {...viewProps} />;
-      case "journey": return <Journey {...viewProps} />;
+      case "pipeline": return <Pipeline {...viewProps} />;
       case "interview": return <Interview status={status} />;
       case "spec-review": return <SpecReview usecaseId={params.usecaseId} />;
       case "fleet": return <Fleet {...viewProps} />;
-      case "autopilot": return <Autopilot {...viewProps} />;
+      case "repair": return <RepairQueue {...viewProps} />;
       case "doctor": return <Doctor {...viewProps} />;
       case "activity": return <Activity />;
       case "agent": return <AgentDetail id={params.id} {...viewProps} />;
@@ -117,6 +124,7 @@ export default function App() {
 
   return (
     <AuthGate>
+    <QueryClientProvider client={queryClient}>
     <ToastProvider>
     <RunFollowProvider>
     <div className="h-screen flex flex-col bg-background">
@@ -139,7 +147,20 @@ export default function App() {
           <Breadcrumbs route={currentRoute.route} params={currentRoute.params} />
           <ErrorBoundary label={currentRoute.route} resetKey={location.hash}>
             <Suspense fallback={<ViewFallback />}>
-              {renderView()}
+              {/* Calm view-enter transition: a 150ms fade + 2px rise keyed by the
+                  route (and its params), enter-only — no exit choreography.
+                  MotionConfig reducedMotion="user" drops the transform for
+                  prefers-reduced-motion users. */}
+              <MotionConfig reducedMotion="user">
+                <motion.div
+                  key={`${currentRoute.route}:${currentRoute.params.id ?? currentRoute.params.usecaseId ?? ""}`}
+                  initial={{ opacity: 0, y: 2 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                >
+                  {renderView()}
+                </motion.div>
+              </MotionConfig>
             </Suspense>
           </ErrorBoundary>
         </main>
@@ -151,6 +172,7 @@ export default function App() {
     </div>
     </RunFollowProvider>
     </ToastProvider>
+    </QueryClientProvider>
     </AuthGate>
   );
 }

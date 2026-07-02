@@ -182,6 +182,6 @@ describe("journey plan", () => {
     expect(interview.taskId).toBe("harness-runtime-99");
     expect(interview.artifacts).toContain("interview-transcript.json");
     expect(interview.actionPlan.kind).toBe("watch_runtime");
-    expect(interview.actionPlan.commands[0]).toBe("ge runtime events harness-runtime-99 --follow");
+    expect(interview.actionPlan.commands[0]).toBe("ge runs events harness-runtime-99 --follow");
   });
 });

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { CONTROL_CLASS, Select, cx } from "@ge/ui";
 import type { SpecSection } from "./artifacts/specArtifact";
 
 /**
@@ -39,14 +40,10 @@ function ScalarEditor({ value, onChange }: { value: any; onChange: (value: any) 
   };
   if (typeof value === "boolean") {
     return (
-      <select
-        value={String(value)}
-        onChange={(event) => onChange(event.target.value === "true")}
-        className="w-full rounded-md border border-outline-variant/60 bg-surface-container px-3 py-2 text-sm text-on-surface outline-none focus:border-primary/50"
-      >
+      <Select value={String(value)} onChange={(event) => onChange(event.target.value === "true")}>
         <option value="true">true</option>
         <option value="false">false</option>
-      </select>
+      </Select>
     );
   }
   return multiline ? (
@@ -54,13 +51,13 @@ function ScalarEditor({ value, onChange }: { value: any; onChange: (value: any) 
       value={asString}
       rows={4}
       onChange={(event) => commit(event.target.value)}
-      className="w-full resize-y rounded-md border border-outline-variant/60 bg-surface-container px-3 py-2 text-sm leading-6 text-on-surface outline-none focus:border-primary/50"
+      className={cx(CONTROL_CLASS, "resize-y leading-6")}
     />
   ) : (
     <input
       value={asString}
       onChange={(event) => commit(event.target.value)}
-      className="w-full rounded-md border border-outline-variant/60 bg-surface-container px-3 py-2 text-sm text-on-surface outline-none focus:border-primary/50"
+      className={CONTROL_CLASS}
     />
   );
 }

@@ -7,19 +7,10 @@ import {
   appendEvent,
   appendResumeAttempt,
   commandOutput,
-  createRun,
   ensureStore,
-  interactionDir,
-  listEvents,
   listRuns,
   listSequencedEvents,
-  newTaskId,
   runMetaPath,
-  runOutput,
-  terminalStatusForCode,
-  updateRun,
-  updateRunOutput,
-  waitForTaskTerminal,
 } from "./daemon/run-store.mjs";
 import { resumeDoctorTask, startDoctorTask } from "./daemon/doctor-run.mjs";
 import {
@@ -47,6 +38,7 @@ import {
   normalizedTaskDetail,
   resumePlanFor,
 } from "./daemon/resume-plan.mjs";
+import { createDaemonApp } from "./daemon/http-app.mjs";
 import {
   attachMissionResumeChild,
   rehomeMissionGraph,
@@ -60,11 +52,15 @@ const PID_PATH = STATE_PATHS.runtime.pid;
 const META_PATH = STATE_PATHS.runtime.meta;
 const LOG_PATH = STATE_PATHS.runtime.log;
 const DEFAULT_PORT = 17654;
-const DAEMON_PROTOCOL_VERSION = 2;
+// v3: canonical task kinds (pipeline.run/repair.run), zod-validated task
+// creation, and resumable SSE (id:/retry:/heartbeat + Last-Event-ID/afterSeq).
+const DAEMON_PROTOCOL_VERSION = 3;
 const SUPPORTED_TASK_KINDS = [
   "ge.command",
   "process.command",
   "harness.run",
+  "pipeline.run",
+  "repair.run",
   "mission.run",
   "autopilot.run",
   "doctor",
@@ -73,6 +69,30 @@ const SUPPORTED_TASK_KINDS = [
   "simulator.seed",
   "simulator.validate",
 ];
+
+// ── Task-kind vocabulary boundary ───────────────────────────────────────────
+// The operator vocabulary collapsed to two nouns: a *pipeline run* (the
+// orchestration graph a spec moves through — formerly "mission"/"journey")
+// and a *repair run* (blocker convergence — formerly "autopilot"). Wire kinds
+// are persisted in run.json files and mirrored stores, so they stay stable
+// forever; the rename lives here at the boundary. Canonical kinds are
+// accepted on POST (normalized to the wire kind before anything is stored)
+// and wire kinds render back as canonical in human surfaces.
+export const TASK_KIND_ALIASES = {
+  "pipeline.run": "mission.run",
+  "repair.run": "autopilot.run",
+};
+const CANONICAL_TASK_KINDS = Object.fromEntries(
+  Object.entries(TASK_KIND_ALIASES).map(([canonical, wire]) => [wire, canonical]),
+);
+// canonical/legacy → the stable persisted kind.
+export function wireTaskKind(kind) {
+  return TASK_KIND_ALIASES[kind] || kind;
+}
+// persisted kind → the canonical operator-facing name.
+export function displayTaskKind(kind) {
+  return CANONICAL_TASK_KINDS[kind] || kind;
+}
 
 const json = (res, status, body) => {
   res.writeHead(status, { "content-type": "application/json" });
@@ -119,46 +139,42 @@ async function resumeTask(id) {
   return { status: 202, body: normalizedTaskDetail(readJson(runMetaPath(id), run)) };
 }
 
-function readRequestJson(req) {
-  return new Promise((resolve, reject) => {
-    let body = "";
-    req.on("data", (chunk) => {
-      body += String(chunk);
-      if (body.length > 1024 * 1024) {
-        reject(new Error("request body too large"));
-        req.destroy();
-      }
-    });
-    req.on("end", () => {
-      if (!body.trim()) { resolve({}); return; }
-      try { resolve(JSON.parse(body)); } catch (e) { reject(e); }
-    });
-    req.on("error", reject);
+// Bridge one node:http request onto the Hono app (`app.fetch`) with response
+// STREAMING — the factory server's strangler bridge buffers whole bodies
+// (fine for JSON), but the daemon serves SSE, so frames must flush as they're
+// written. Same Request-construction pattern as apps/factory/src/server.js.
+async function serveNodeRequest(app, req, res) {
+  const headers = new Headers();
+  for (let i = 0; i < req.rawHeaders.length; i += 2) headers.append(req.rawHeaders[i], req.rawHeaders[i + 1]);
+  const isBodyless = req.method === "GET" || req.method === "HEAD";
+  const request = new Request(`http://${req.headers.host || "127.0.0.1"}${req.url}`, {
+    method: req.method,
+    headers,
+    body: isBodyless ? undefined : req,
+    duplex: isBodyless ? undefined : "half",
   });
-}
-
-function streamRunEvents(req, res, id) {
-  res.writeHead(200, {
-    "content-type": "text/event-stream",
-    "cache-control": "no-cache",
-    "connection": "keep-alive",
+  const response = await app.fetch(request);
+  res.writeHead(response.status, Object.fromEntries(response.headers));
+  if (!response.body) {
+    res.end();
+    return;
+  }
+  const reader = response.body.getReader();
+  res.on("close", () => {
+    // Client went away: cancel the web stream so streamSSE's abort fires and
+    // its poll loop stops. cancel() rejecting just means it already finished.
+    reader.cancel().catch(() => {}); // best-effort: cancel() rejecting means the stream already finished
   });
-  let sent = 0;
-  const write = (event) => res.write(`data: ${JSON.stringify(event)}\n\n`);
-  const tick = () => {
-    if (res.writableEnded) return;
-    const events = listEvents(id);
-    for (let i = sent; i < events.length; i += 1) write(events[i]);
-    sent = events.length;
-    const run = readJson(runMetaPath(id), null);
-    if (run && !["running", "queued"].includes(run.status)) {
-      res.end();
-      return;
+  try {
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      res.write(value);
     }
-    setTimeout(tick, 300);
-  };
-  req.on("close", () => {});
-  tick();
+  } catch {
+    // The client disconnected mid-stream — nothing left to deliver to.
+  }
+  res.end();
 }
 
 function daemonStatus(port) {
@@ -171,6 +187,8 @@ function daemonStatus(port) {
       missionRun: true,
       runtimeResume: true,
       eventStream: true,
+      resumableEventStream: true,
+      validatedTaskInput: true,
       artifactChecks: true,
       interactionForms: true,
     },
@@ -187,74 +205,32 @@ export function startDaemonServer({ host = "127.0.0.1", port = DEFAULT_PORT, for
   const backgroundChild = process.env.GE_DAEMON_BACKGROUND === "1";
   writeJson(META_PATH, { pid: process.pid, port, host, startedAt: new Date().toISOString() });
   writeFileSync(PID_PATH, String(process.pid), "utf8");
+  // The route table lives in daemon/http-app.mjs (Hono + zod-validated task
+  // creation + resumable SSE); this process wires it to node:http and owns
+  // lifecycle concerns only (pidfile, signals, logging).
+  const app = createDaemonApp({
+    port,
+    daemonStatus,
+    listRuns,
+    listRunSummaries,
+    normalizedTaskDetail,
+    readRun: (id) => readJson(runMetaPath(id), null),
+    listSequencedEvents,
+    wireTaskKind,
+    startGeCommandTask,
+    startProcessCommandTask,
+    startHarnessRunTask,
+    startMissionTask,
+    startAutopilotTask,
+    startDoctorTask,
+    submitInteractionResponse,
+    resumeTask,
+  });
   const server = createServer((req, res) => {
-    const url = new URL(req.url || "/", `http://${host}:${port}`);
-    if (req.method === "GET" && url.pathname === "/health") return json(res, 200, daemonStatus(port));
-    if (req.method === "GET" && url.pathname === "/api/runtime/status") return json(res, 200, daemonStatus(port));
-    if (req.method === "GET" && url.pathname === "/api/tasks") {
-      const full = url.searchParams.get("full") === "true";
-      const limit = url.searchParams.get("limit") || 50;
-      return json(res, 200, { tasks: full ? listRuns(limit).map(normalizedTaskDetail) : listRunSummaries(limit) });
-    }
-    if (req.method === "POST" && url.pathname === "/api/tasks") {
-      readRequestJson(req).then((body) => {
-        if (body.kind === "ge.command") return json(res, 202, startGeCommandTask({ argv: body.argv, command: body.command || null }));
-        if (body.kind === "process.command") {
-          try {
-            return json(res, 202, startProcessCommandTask({ argv: body.argv, command: body.command || null }));
-          } catch (error) {
-            return json(res, 400, { error: error.message || String(error) });
-          }
-        }
-        if (body.kind === "harness.run") {
-          try {
-            return json(res, 202, startHarnessRunTask(body.input || body));
-          } catch (error) {
-            return json(res, 400, { error: error.message || String(error) });
-          }
-        }
-        if (body.kind === "mission.run") {
-          startMissionTask(body).then((run) => json(res, 202, run)).catch((error) => json(res, 500, { error: error.message || String(error) }));
-          return;
-        }
-        if (body.kind === "autopilot.run") {
-          startAutopilotTask(body).then((run) => json(res, 202, run)).catch((error) => json(res, 500, { error: error.message || String(error) }));
-          return;
-        }
-        return json(res, 400, { error: `unsupported task kind: ${body.kind || "<unset>"}` });
-      }).catch((error) => json(res, 400, { error: error.message || String(error) }));
-      return;
-    }
-    const interactionMatch = url.pathname.match(/^\/api\/tasks\/([^/]+)\/interactions\/([^/]+)$/);
-    if (req.method === "POST" && interactionMatch) {
-      readRequestJson(req)
-        .then((body) => {
-          const result = submitInteractionResponse(decodeURIComponent(interactionMatch[1]), decodeURIComponent(interactionMatch[2]), body);
-          return json(res, result.status, result.body);
-        })
-        .catch((error) => json(res, 400, { error: error.message || String(error) }));
-      return;
-    }
-    if (req.method === "POST" && url.pathname === "/api/doctor") {
-      const run = startDoctorTask({ scope: url.searchParams.get("scope") || "all", command: url.searchParams.get("command") || "" });
-      return json(res, 202, run);
-    }
-    const streamMatch = url.pathname.match(/^\/api\/tasks\/([^/]+)\/events$/);
-    if (req.method === "GET" && streamMatch) {
-      if (url.searchParams.get("format") === "json") return json(res, 200, { events: listSequencedEvents(streamMatch[1]) });
-      return streamRunEvents(req, res, streamMatch[1]);
-    }
-    const resumeMatch = url.pathname.match(/^\/api\/tasks\/([^/]+)\/resume$/);
-    if (req.method === "POST" && resumeMatch) {
-      resumeTask(resumeMatch[1]).then((result) => json(res, result.status, result.body)).catch((error) => json(res, 500, { error: error.message || String(error) }));
-      return;
-    }
-    const runMatch = url.pathname.match(/^\/api\/tasks\/([^/]+)$/);
-    if (req.method === "GET" && runMatch) {
-      const run = readJson(runMetaPath(runMatch[1]), null);
-      return json(res, run ? 200 : 404, run ? normalizedTaskDetail(run) : { error: "unknown task" });
-    }
-    return json(res, 404, { error: "not found" });
+    serveNodeRequest(app, req, res).catch((error) => {
+      if (!res.headersSent) json(res, 500, { error: error.message || String(error) });
+      else res.end();
+    });
   });
   server.on("error", (error) => {
     const line = `${new Date().toISOString()} daemon listen error: ${error.message || String(error)}\n`;

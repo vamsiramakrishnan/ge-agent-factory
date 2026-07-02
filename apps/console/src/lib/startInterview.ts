@@ -33,7 +33,7 @@ export function interviewArtifacts(usecaseId: string): MissionArtifactRef[] {
         title: "Spec",
         role: "spec",
         action: "Run Mission",
-        command: `ge mission run --spec ${root}/agent-spec.json`,
+        command: `ge pipeline run --spec ${root}/agent-spec.json`,
       },
     },
     {
@@ -96,7 +96,7 @@ export function buildInterviewPrompt({
     "5c. For EACH golden eval, add `mechanisms`: the toolIntent names that MUST be called to satisfy that test (the write/query tools its query needs) — these become the eval's expected tool trajectory. Keep mechanisms consistent with the eval's expectedToolCalls.",
     "5d. Ground answerableQueries, evidence, and eval mechanisms in any uploaded BRD documents: cite the originating document (its generationSpec.documents[].id) on the relevant query/eval (mustCiteDocuments) rather than inventing requirements.",
     `6. Write artifacts under ${artifactDir}: agent-spec.json, interview-notes.md, golden-evals.json, simulator-needs.json, mock-data-needs.json.`,
-    "7. End with the exact next ge mission command that should run this spec.",
+    "7. End with the exact next ge pipeline command that should run this spec.",
     `8. As you finalize the spec, ALSO stream it inline wrapped in <artifact identifier="agent-spec" type="application/json" title="Agent Spec">…</artifact> in addition to writing agent-spec.json.`,
   ];
 

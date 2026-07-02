@@ -111,6 +111,27 @@ nav.sidebar .top-level > li > details > summary .group-label > span {
   box-shadow: 0 4px 24px rgba(26, 115, 232, 0.08);
 }
 
+/* ── Landing page: the three-step first-run journey ─────────────────────── */
+/* Effort-estimate pill on each journey card — quiet chrome, not a badge wall. */
+.ge-eta {
+  display: inline-block;
+  font-family: var(--sl-font-mono);
+  font-size: var(--sl-text-xs);
+  line-height: 1.6;
+  color: var(--sl-color-gray-3);
+  background: var(--sl-color-gray-6);
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 999px;
+  padding: 0 0.6rem;
+}
+
+/* The journey reads as one line of three steps on wide screens. */
+@media (min-width: 72rem) {
+  .ge-journey .card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 /* Diagram SVGs are authored on white (tools/lib/docs-diagram-theme.mjs) —
  * give them a card treatment so they hold up in dark mode instead of
  * floating as a glaring rectangle. */

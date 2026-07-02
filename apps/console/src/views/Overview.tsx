@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { Button, ButtonLink, CommandChip, EmptyState, PageHeader, Section, Stat } from "@ge/ui";
+import { useGeQuery } from "../lib/query";
 import { ge, startJob, type StatusBoard, type Fleet, type RuntimeTaskSummary, type ReconcilePlan } from "../services/geClient";
 import { PlaneCard } from "../components/PlaneCard";
 import { ErrorBanner } from "../components/ErrorBanner";
@@ -6,6 +8,7 @@ import { useToast } from "../lib/toast";
 import { StatusChip } from "../lib/runStatus";
 import { User, GitBranch, Boxes, ArrowRight, Check } from "lucide-react";
 import { CloudShellCta } from "../components/CloudShellCta";
+import { GetStartedCard } from "../components/GetStartedCard";
 
 interface OverviewProps {
   status: StatusBoard | null;
@@ -30,49 +33,58 @@ function isBlocked(status: string) {
 }
 
 export default function Overview({ status, refresh }: OverviewProps) {
-  const [fleet, setFleet] = useState<Fleet | null>(null);
-  const [reconcile, setReconcile] = useState<ReconcilePlan | null>(null);
-  const [runtimeTasks, setRuntimeTasks] = useState<RuntimeTaskSummary[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Data via the shared query layer (lib/query.ts): polling cadence, job-done
+  // invalidation, dedupe, and focus refetch all come from the conventions
+  // there instead of a per-view useEffect/setInterval stack.
+  const fleetQuery = useGeQuery<Fleet>(["fleet"], () => ge.fleet(), { intervalMs: 9700 });
+  const tasksQuery = useGeQuery(
+    ["runtimeTasks", 8],
+    () =>
+      ge.runtimeTasks(8, true).catch((err) => {
+        console.warn("[console] overview: runtime tasks unavailable:", err);
+        return { tasks: [] as RuntimeTaskSummary[] };
+      }),
+    { intervalMs: 9700 },
+  );
+  // Reconcile drift is best-effort decoration — a failure renders as absence.
+  const reconcileQuery = useGeQuery<ReconcilePlan | null>(["applyPlan"], () => ge.applyPlan().catch(() => null), { intervalMs: 60_000 });
+
+  const fleet = fleetQuery.data ?? null;
+  const runtimeTasks = tasksQuery.data?.tasks ?? [];
+  const reconcile = reconcileQuery.data ?? null;
+  const loading = fleetQuery.isLoading;
+  const error = fleetQuery.error ? (fleetQuery.error as Error).message || "Failed to fetch overview" : null;
+  const refetchOverview = async () => {
+    await Promise.all([fleetQuery.refetch(), tasksQuery.refetch()]);
+  };
+
   const [busyPlanes, setBusyPlanes] = useState<Set<string>>(new Set());
   const [busyPreview, setBusyPreview] = useState(false);
+  const [getStartedDismissed, setGetStartedDismissed] = useState(() => {
+    try {
+      return window.localStorage.getItem("ge.getStarted.dismissed") === "1";
+    } catch {
+      // No storage → show the card; it's only ever additive.
+      return false;
+    }
+  });
   const notify = useToast();
 
-  const fetchOverview = async () => {
+  const dismissGetStarted = () => {
+    setGetStartedDismissed(true);
     try {
-      const [f, tasks] = await Promise.all([
-        ge.fleet(),
-        ge.runtimeTasks(8, true).catch((err) => {
-          console.warn("[console] overview: runtime tasks unavailable:", err);
-          return { tasks: [] };
-        }),
-      ]);
-      setFleet(f);
-      setRuntimeTasks(tasks.tasks || []);
-      ge.applyPlan().then(setReconcile).catch(() => { /* reconcile is best-effort */ });
-      setError(null);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch overview");
-    } finally {
-      setLoading(false);
+      window.localStorage.setItem("ge.getStarted.dismissed", "1");
+    } catch {
+      // Best-effort: without storage the dismissal lasts for this session only.
     }
   };
 
+  // The status board comes in via props from the App shell; keep it as fresh
+  // as the queries (the query layer only owns this view's own data).
   useEffect(() => {
-    fetchOverview();
-    // Calm, off-:00 self-refresh; also re-pull immediately when a followed job
-    // completes so plane/run state never lingers stale after an action.
-    const interval = window.setInterval(() => {
-      void fetchOverview();
-      void refresh();
-    }, 9700);
-    const onJobDone = () => {
-      void fetchOverview();
-      void refresh();
-    };
+    const interval = window.setInterval(() => { void refresh(); }, 9700);
+    const onJobDone = () => { void refresh(); };
     window.addEventListener("ge:job:done", onJobDone);
-
     return () => {
       window.clearInterval(interval);
       window.removeEventListener("ge:job:done", onJobDone);
@@ -115,7 +127,7 @@ export default function Overview({ status, refresh }: OverviewProps) {
         runPreview: true,
       });
       showToast(`Preview run started: ${task.id}`);
-      await fetchOverview();
+      await refetchOverview();
       location.hash = `#/activity?task=${encodeURIComponent(task.id)}`;
     } catch (err: any) {
       showToast(`Failed to start preview: ${err.message}`, 7000);
@@ -129,7 +141,7 @@ export default function Overview({ status, refresh }: OverviewProps) {
     try {
       await ge.runtimeResume(task.id);
       showToast(`Resume requested for ${task.id}`);
-      await fetchOverview();
+      await refetchOverview();
       location.hash = `#/activity?task=${encodeURIComponent(task.id)}`;
     } catch (err: any) {
       showToast(`Failed to resume run: ${err.message}`, 7000);
@@ -138,41 +150,54 @@ export default function Overview({ status, refresh }: OverviewProps) {
     }
   };
 
+  // Route the status board's `next` command. Matched on the exact command
+  // prefixes statusBoard() emits (ge init / ge up [--plane] / ge agents build)
+  // rather than loose substrings, so "up" inside another word can't misfire and
+  // an unrecognized command lands on the Pipeline — the place work starts —
+  // with the command surfaced, not silently on the Fleet roster.
   const handleNextStep = async () => {
-    if (!status?.next) return;
-    const next = status.next.toLowerCase();
+    const next = (status?.next || "").trim();
+    if (!next) return;
 
-    if (next.includes("up")) {
-      const planes: string[] = [];
-      if (next.includes("--infra")) planes.push("infra");
-      if (next.includes("--data")) planes.push("data");
-      if (next.includes("--mcp")) planes.push("mcp");
-      if (planes.length === 0) planes.push("infra", "data", "mcp");
-
+    if (next.startsWith("ge init")) {
+      showToast("This machine has no GCP project configured — run `ge init` in a terminal, then refresh.", 7000);
+      location.hash = "#/doctor";
+      return;
+    }
+    if (next.startsWith("ge data up") || next.startsWith("ge up --data")) {
       try {
-        if (next.includes("data up") || (planes.length === 1 && planes[0] === "data")) {
-          await startJob("ge data up", ge.dataUp());
-        } else if (next.includes("mcp deploy") || (planes.length === 1 && planes[0] === "mcp")) {
-          await startJob("ge mcp deploy", ge.mcpDeploy());
-        } else {
-          await startJob(status.next, ge.up(planes.length > 0 ? planes : undefined));
-        }
-        showToast("Started. Open Runs for the full timeline.");
+        await startJob("ge data up", ge.dataUp());
+        showToast("Data plane started. Open Runs for the full timeline.");
       } catch (err: any) {
         showToast(`Failed: ${err.message}`, 6000);
       }
-    } else if (next.includes("build")) {
-      location.hash = "#/fleet";
-    } else if (next.includes("mcp deploy")) {
+      return;
+    }
+    if (next.startsWith("ge mcp deploy") || next.startsWith("ge up --mcp")) {
       try {
         await startJob("ge mcp deploy", ge.mcpDeploy());
         showToast("Tool services started. Open Runs for the full timeline.");
       } catch (err: any) {
         showToast(`Failed: ${err.message}`, 6000);
       }
-    } else {
-      location.hash = "#/fleet";
+      return;
     }
+    if (next.startsWith("ge up")) {
+      const planes = ["infra", "data", "mcp"].filter((plane) => next.includes(`--${plane}`));
+      try {
+        await startJob(next, ge.up(planes.length > 0 ? planes : undefined));
+        showToast("Started. Open Runs for the full timeline.");
+      } catch (err: any) {
+        showToast(`Failed: ${err.message}`, 6000);
+      }
+      return;
+    }
+    if (next.startsWith("ge agents build")) {
+      location.hash = "#/pipeline";
+      return;
+    }
+    showToast(`Next: \`${next}\` — opening the Pipeline.`);
+    location.hash = "#/pipeline";
   };
 
   const planeKey = (name: string) => {
@@ -248,44 +273,50 @@ export default function Overview({ status, refresh }: OverviewProps) {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      {error && <ErrorBanner message={error} onRetry={fetchOverview} />}
+      {error && <ErrorBanner message={error} onRetry={refetchOverview} />}
 
 
-      <div className="mb-6">
-        <div className="flex flex-wrap items-baseline gap-3 mb-1">
-          <span className="text-sm font-semibold text-on-surface capitalize">
-            {mode} mode
-          </span>
-          <span className="text-sm text-secondary">
-            {status?.project ?? "No GCP project"}
-          </span>
-          <span className="text-xs text-secondary/60">{status?.app ?? ""}</span>
-        </div>
-        <h1 className="text-2xl font-bold text-on-surface">Overview</h1>
-        <p className="text-sm text-secondary mt-1">Where your agents are in the pipeline, and what to do next.</p>
-      </div>
+      <PageHeader
+        title="Overview"
+        subtitle="Where your agents are in the pipeline, and what to do next."
+        meta={
+          <>
+            <Stat size="sm" label="Mode" value={mode} />
+            <Stat size="sm" label="GCP Project" value={status?.project ?? "No GCP project"} />
+            {status?.app ? <Stat size="sm" label="App" value={status.app} /> : null}
+          </>
+        }
+      />
 
       {/* Self-service install — bring the whole factory up in your own project. */}
       <CloudShellCta />
 
+      {/* Guided first journey with honest effort estimates. Steps check off
+          from live state, so this is also the resume point if the user leaves
+          halfway. Auto-retires on the first deployed agent; dismissable. */}
+      {totalDeployed === 0 && !getStartedDismissed && (
+        <GetStartedCard
+          hasAgents={total > 0 && totalNone < total}
+          hasRuns={runtimeTasks.length > 0}
+          hasDeployed={totalDeployed > 0}
+          mode={mode}
+          onDismiss={dismissGetStarted}
+        />
+      )}
+
       {/* Pipeline rail — the build→ship→deploy→run flow, mode-aware. */}
-      <div className="editorial-micro-card rounded-lg p-5 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-sm font-semibold text-on-surface">Pipeline</h2>
-            <p className="text-xs text-secondary mt-0.5">
-              {mode === "remote"
-                ? "This machine submits; the cloud builds, deploys, and publishes."
-                : "This machine runs build → preview (the build boundary). Ship hands off to the cloud."}
-            </p>
-          </div>
-          <button
-            onClick={() => { location.hash = "#/journey"; }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/10 transition-colors rounded-lg"
-          >
+      <Section
+        className="mb-6"
+        title="Pipeline"
+        description={mode === "remote"
+          ? "This machine submits; the cloud builds, deploys, and publishes."
+          : "This machine runs build → preview (the build boundary). Ship hands off to the cloud."}
+        actions={
+          <Button variant="ghost" size="sm" onClick={() => { location.hash = "#/pipeline"; }}>
             Open Pipeline <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
+          </Button>
+        }
+      >
         <div className="flex items-stretch gap-1 overflow-x-auto">
           {phases.map((phase, index) => (
             <div key={phase.key} className="flex items-stretch gap-1 min-w-0">
@@ -316,7 +347,7 @@ export default function Overview({ status, refresh }: OverviewProps) {
             </div>
           ))}
         </div>
-      </div>
+      </Section>
 
       {/* Next step. */}
       <div className="editorial-micro-card rounded-lg p-5 mb-6">
@@ -332,15 +363,15 @@ export default function Overview({ status, refresh }: OverviewProps) {
           </div>
           <div className="flex flex-wrap gap-2">
             {blockedMission ? (
-              <button onClick={() => handleResumeMission(blockedMission)} disabled={busyPreview} className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-container disabled:opacity-50 transition-colors rounded-lg">Resume Run</button>
+              <Button variant="primary" size="md" onClick={() => handleResumeMission(blockedMission)} disabled={busyPreview}>Resume Run</Button>
             ) : activeMission ? (
-              <button onClick={() => { location.hash = "#/activity"; }} className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-container transition-colors rounded-lg">Open Runs</button>
+              <Button variant="primary" size="md" onClick={() => { location.hash = "#/activity"; }}>Open Runs</Button>
             ) : allPlanesReady ? (
-              <button onClick={handleStartMission} disabled={busyPreview} className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-container disabled:opacity-50 transition-colors rounded-lg">Start Preview</button>
+              <Button variant="primary" size="md" onClick={handleStartMission} disabled={busyPreview}>Start Preview</Button>
             ) : (
-              <button onClick={handleNextStep} className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-container transition-colors rounded-lg">{status?.next || "Run Readiness"}</button>
+              <Button variant="primary" size="md" onClick={handleNextStep}>{status?.next || "Run Readiness"}</Button>
             )}
-            <button onClick={() => { location.hash = "#/doctor"; }} className="px-4 py-2 text-sm font-medium text-on-surface border border-outline/30 hover:bg-surface-container transition-colors rounded-lg">Readiness</button>
+            <Button variant="outline" size="md" onClick={() => { location.hash = "#/doctor"; }}>Readiness</Button>
           </div>
         </div>
         {latestMission && (
@@ -354,7 +385,7 @@ export default function Overview({ status, refresh }: OverviewProps) {
 
       {/* Pipeline vs Fleet — two distinct surfaces, made explicit. */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <button onClick={() => { location.hash = "#/journey"; }} className="editorial-micro-card rounded-lg p-5 text-left hover:bg-surface-container-low transition-colors">
+        <button onClick={() => { location.hash = "#/pipeline"; }} className="editorial-micro-card rounded-lg p-5 text-left hover:bg-surface-container-low transition-colors">
           <div className="flex items-center gap-2 mb-2">
             <GitBranch className="w-4 h-4 text-primary" />
             <h2 className="text-sm font-semibold text-on-surface">Pipeline</h2>
@@ -378,16 +409,14 @@ export default function Overview({ status, refresh }: OverviewProps) {
       </div>
 
       {/* Remote readiness — the platform must be deployed from local before remote runs. */}
-      <div className="editorial-micro-card rounded-lg p-5 mb-8">
-        <div className="flex items-center justify-between mb-1">
-          <h2 className="text-sm font-semibold text-on-surface">Platform planes</h2>
-          <span className="text-xs text-secondary">{readyPlanes}/{planes.length || 3} ready</span>
-        </div>
-        <p className="text-xs text-secondary mb-4">
-          {mode === "remote"
-            ? "Remote builds need the platform deployed from this machine first — the factory gateway, the tool plane (per-department MCP), and data stores. A remote build is blocked until the selected agents' tool plane is deployed."
-            : "Optional for local preview. Required before you ship or switch to remote: stand these up from this machine."}
-        </p>
+      <Section
+        className="mb-8"
+        title="Platform planes"
+        description={mode === "remote"
+          ? "Remote builds need the platform deployed from this machine first — the factory gateway, the tool plane (per-department MCP), and data stores. A remote build is blocked until the selected agents' tool plane is deployed."
+          : "Optional for local preview. Required before you ship or switch to remote: stand these up from this machine."}
+        actions={<span className="text-xs text-secondary">{readyPlanes}/{planes.length || 3} ready</span>}
+      >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {planes.map((p) => {
             const key = planeKey(p.name);
@@ -405,11 +434,12 @@ export default function Overview({ status, refresh }: OverviewProps) {
           })}
         </div>
         {mode === "remote" && !toolPlaneReady && (
-          <div className="mt-4 rounded border border-amber-400/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-700">
-            Tool plane not deployed — remote agents will have no tools. Fix from local: <code className="font-mono">ge mcp deploy</code>
+          <div className="mt-4 flex flex-wrap items-center gap-2 rounded border border-amber-400/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-700">
+            <span>Tool plane not deployed — remote agents will have no tools. Fix from local:</span>
+            <CommandChip command="ge mcp deploy" />
           </div>
         )}
-      </div>
+      </Section>
 
       {/* Reconcile drift — desired manifest vs actual (ge apply). */}
       {reconcile && (
@@ -424,16 +454,18 @@ export default function Overview({ status, refresh }: OverviewProps) {
             </p>
           ) : (
             <>
-              <p className="text-xs text-secondary mb-3">
-                {reconcile.steps.length} step{reconcile.steps.length === 1 ? "" : "s"} to reach desired state. Run <code className="font-mono">ge apply --yes</code> to execute in order.
-              </p>
+              <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-secondary">
+                <span>{reconcile.steps.length} step{reconcile.steps.length === 1 ? "" : "s"} to reach desired state. Run</span>
+                <CommandChip command="ge apply --yes" />
+                <span>to execute in order.</span>
+              </div>
               <div className="space-y-1.5">
                 {reconcile.steps.map((step) => (
                   <div key={step.id} className="flex items-start gap-2 rounded border border-outline-variant/30 bg-surface px-3 py-2">
                     <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide bg-on-surface/[0.05] text-secondary">{step.kind}</span>
                     <div className="min-w-0">
-                      <code className="text-xs font-mono text-primary break-all">{step.command}</code>
-                      <div className="text-[11px] text-secondary">{step.reason}</div>
+                      <CommandChip command={step.command} />
+                      <div className="mt-1 text-[11px] text-secondary">{step.reason}</div>
                     </div>
                   </div>
                 ))}
@@ -489,8 +521,7 @@ export default function Overview({ status, refresh }: OverviewProps) {
         </div>
       ) : null}
 
-      <div className="editorial-micro-card rounded-lg p-5">
-        <h2 className="text-sm font-semibold text-on-surface mb-3">Recently Touched Agents</h2>
+      <Section title="Recently Touched Agents">
         {recentAgents.length > 0 ? (
           <div className="space-y-2">
             {recentAgents.map((agent) => (
@@ -505,18 +536,13 @@ export default function Overview({ status, refresh }: OverviewProps) {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <User className="w-8 h-8 text-secondary/40 mb-2" />
-            <p className="text-sm text-secondary">No agents have been deployed or submitted yet.</p>
-            <a
-              href="#/fleet"
-              className="mt-3 text-xs text-primary hover:underline"
-            >
-              View all agents
-            </a>
-          </div>
+          <EmptyState
+            icon={User}
+            title="No agents have been deployed or submitted yet."
+            action={<ButtonLink variant="ghost" size="sm" href="#/fleet">View all agents</ButtonLink>}
+          />
         )}
-      </div>
+      </Section>
     </div>
   );
 }
