@@ -24,6 +24,16 @@ import { GE_CLI } from "./paths.mjs";
 const jobs = new Map(); // id -> { id, argv, status, events[], code, listeners:Set }
 let jobSeq = 0;
 
+// Job records/events are a best-effort mirror of the live stream; a failing
+// store must not break the stream, but the operator should learn (once per
+// job, not once per event) that the persisted history is incomplete.
+const warnedJobPersist = new Set();
+function warnJobPersistFailure(id, what, error) {
+  if (warnedJobPersist.has(id)) return;
+  warnedJobPersist.add(id);
+  console.warn(`[transport] job ${id}: ${what} failed — persisted job history may be incomplete: ${error?.message || error}`);
+}
+
 function terminalJobEvent(ev) {
   return ["stage_done", "stage_failed", "stage_blocked"].includes(ev?.type) && (!ev.stage || ev.stage === "job" || ev.stage === "preflight");
 }
@@ -58,7 +68,7 @@ async function streamDaemonTask(id, writeSSE, isClosed, onEnd = () => {}, { mirr
     if (ended) return;
     ended = true;
     if (mirrorJobEvents) {
-      finishJobRecord(id, { status, code: ev?.data?.code ?? null, lastLine: ev?.line || null }).catch(() => {});
+      finishJobRecord(id, { status, code: ev?.data?.code ?? null, lastLine: ev?.line || null }).catch((e) => warnJobPersistFailure(id, "finishJobRecord", e));
     }
     onEnd();
   };
@@ -75,7 +85,7 @@ async function streamDaemonTask(id, writeSSE, isClosed, onEnd = () => {}, { mirr
       if (!line || isClosed()) continue;
       let ev;
       try { ev = JSON.parse(line.slice(6)); } catch { ev = null; }
-      if (mirrorJobEvents && ev) appendJobEvent(id, ev).catch(() => {});
+      if (mirrorJobEvents && ev) appendJobEvent(id, ev).catch((e) => warnJobPersistFailure(id, "appendJobEvent", e));
       writeSSE(line.slice(6));
       if (terminalJobEvent(ev)) finish(terminalJobStatusFromEvent(ev), ev);
     }
@@ -144,8 +154,8 @@ export async function startGeJob(argv, command = null, { cfg = null, preflight =
   const push = (ev) => {
     job.events.push(ev);
     if (job.events.length > 5000) job.events.shift();
-    appendJobEvent(id, ev).catch(() => {});
-    for (const l of job.listeners) { try { l(ev); } catch {} }
+    appendJobEvent(id, ev).catch((e) => warnJobPersistFailure(id, "appendJobEvent", e));
+    for (const l of job.listeners) { try { l(ev); } catch { /* best-effort: one throwing listener must not break fan-out to the rest */ } }
   };
   push({ type: "stage_started", stage: "job", line: `$ ge ${argv.join(" ")}`, ts: new Date().toISOString() });
   if (daemonSubmitError) {
@@ -165,13 +175,13 @@ export async function startGeJob(argv, command = null, { cfg = null, preflight =
       job.code = r.code;
       const line = `exit ${r.code}`;
       push({ type: r.code === 0 ? "stage_done" : "stage_failed", stage: "job", level: r.code === 0 ? "info" : "error", line });
-      finishJobRecord(id, { status: job.status, code: r.code, lastLine: line }).catch(() => {});
+      finishJobRecord(id, { status: job.status, code: r.code, lastLine: line }).catch((e) => warnJobPersistFailure(id, "finishJobRecord", e));
     })
     .catch((e) => {
       const line = String(e?.message || e);
       job.status = "failed";
       push({ type: "stage_failed", stage: "job", level: "error", line });
-      finishJobRecord(id, { status: "failed", code: 1, lastLine: line }).catch(() => {});
+      finishJobRecord(id, { status: "failed", code: 1, lastLine: line }).catch((e) => warnJobPersistFailure(id, "finishJobRecord", e));
     });
   return id;
 }
@@ -200,7 +210,9 @@ export async function streamJob(id, writeSSE, isClosed, onEnd = () => {}) {
       try {
         await streamDaemonTask(id, writeSSE, isClosed, onEnd, { mirrorJobEvents: true });
         return;
-      } catch {}
+      } catch (error) {
+        console.warn(`[transport] job ${id}: daemon stream failed, replaying stored events instead — ${error?.message || error}`);
+      }
     }
     for (const { seq, event } of await listJobEvents(id)) emit(JSON.stringify(event), { seq });
     onEnd();

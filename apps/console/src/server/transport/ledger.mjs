@@ -114,7 +114,7 @@ async function streamFirestoreLedger({ runId, afterSeq = 0 } = {}, emitEvent, is
     ended = true;
     if (eventTimer) clearInterval(eventTimer);
     if (statusTimer) clearInterval(statusTimer);
-    try { unsubscribe?.(); } catch {}
+    try { unsubscribe?.(); } catch { /* best-effort: unsubscribing an already-torn-down listener */ }
     onEnd();
   };
   const emitEvents = (events) => {
