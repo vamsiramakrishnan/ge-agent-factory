@@ -83,7 +83,8 @@ function replayDoctorReport(report, emit) {
 }
 
 export function streamDoctor(args = {}, writeSSE, isClosed, onEnd = () => {}) {
-  proxyDoctorFromDaemon(args, writeSSE, isClosed, onEnd).catch(() => {
+  proxyDoctorFromDaemon(args, writeSSE, isClosed, onEnd).catch((error) => {
+    console.warn(`[transport] doctor: daemon proxy failed, falling back to subprocess — ${error?.message || error}`);
     streamDoctorSubprocess(args, writeSSE, isClosed, onEnd);
   });
 }

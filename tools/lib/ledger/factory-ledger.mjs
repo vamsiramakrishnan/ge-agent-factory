@@ -22,7 +22,12 @@ const LEDGER_PATH = join(FACTORY_HARNESS_DIR, "ledger.sqlite");
 let _ledgerPromise = null;
 export async function runLedger() {
   if (process.env.GE_LEDGER === "0") return null;
-  if (!_ledgerPromise) _ledgerPromise = openRunLedger(LEDGER_PATH).catch(() => null);
+  if (!_ledgerPromise) {
+    _ledgerPromise = openRunLedger(LEDGER_PATH).catch((error) => {
+      console.warn(`[ledger] run ledger unavailable, writes disabled: ${error?.message || error}`);
+      return null;
+    });
+  }
   return _ledgerPromise;
 }
 // Never let a ledger write break a build/ship: best-effort, swallow errors.

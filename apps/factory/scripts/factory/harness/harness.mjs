@@ -44,7 +44,7 @@ async function readWorkspaceReviewContext(dir) {
   for (const rel of files) {
     const path = join(dir, rel);
     if (!existsSync(path)) continue;
-    const text = await readFile(path, "utf8").catch(() => "");
+    const text = await readFile(path, "utf8").catch(() => ""); // best-effort: excerpt bundle only; file may vanish between existsSync and the read
     parts.push([
       `## ${rel}`,
       "```",

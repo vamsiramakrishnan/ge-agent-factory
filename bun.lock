@@ -89,6 +89,7 @@
       },
       "dependencies": {
         "@faker-js/faker": "^10.4.0",
+        "@ge/agent-workspace": "workspace:*",
         "@ge/okf": "workspace:*",
         "@ge/run-ledger": "workspace:*",
         "@ge/runtime": "workspace:*",
@@ -160,13 +161,6 @@
         "lucide-react": "^0.546.0",
       },
     },
-    "packages/factory-install": {
-      "name": "@ge/factory-install",
-      "version": "0.1.0",
-      "bin": {
-        "ge-factory-install": "./src/cli.mjs",
-      },
-    },
     "packages/okf": {
       "name": "@ge/okf",
       "version": "0.1.0",
@@ -178,14 +172,6 @@
     "packages/runtime": {
       "name": "@ge/runtime",
       "version": "0.1.0",
-    },
-    "packages/simulator-packs": {
-      "name": "@ge/simulator-packs",
-      "version": "0.1.0",
-      "bin": {
-        "ge-simulator-packs-validate": "./scripts/validate.mjs",
-        "ge-simulator-packs-manifest": "./scripts/print-manifest.mjs",
-      },
     },
     "packages/std": {
       "name": "@ge/std",
@@ -446,15 +432,11 @@
 
     "@ge/factory": ["@ge/factory@workspace:apps/factory"],
 
-    "@ge/factory-install": ["@ge/factory-install@workspace:packages/factory-install"],
-
     "@ge/okf": ["@ge/okf@workspace:packages/okf"],
 
     "@ge/run-ledger": ["@ge/run-ledger@workspace:packages/run-ledger"],
 
     "@ge/runtime": ["@ge/runtime@workspace:packages/runtime"],
-
-    "@ge/simulator-packs": ["@ge/simulator-packs@workspace:packages/simulator-packs"],
 
     "@ge/std": ["@ge/std@workspace:packages/std"],
 

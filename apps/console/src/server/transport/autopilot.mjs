@@ -29,6 +29,15 @@ import {
 import { daemonBaseUrl } from "./daemon.mjs";
 
 const autopilotActive = new Set();
+
+// Autopilot events are a best-effort mirror; warn once per run (not per event)
+// when the store rejects so incomplete history is diagnosable, not silent.
+const warnedAutopilotPersist = new Set();
+function warnAutopilotPersistFailure(id, error) {
+  if (warnedAutopilotPersist.has(id)) return;
+  warnedAutopilotPersist.add(id);
+  console.warn(`[transport] autopilot ${id}: event persist failed — stored history may be incomplete: ${error?.message || error}`);
+}
 let autopilotSeq = 0;
 
 async function submitAutopilotToDaemon(body) {
@@ -143,7 +152,7 @@ export async function startAutopilotRun({ ids = [], targetStage = "preview", rep
     console.warn(`[transport] autopilot ${id}: daemon submit failed, running locally — ${reason}`);
     await appendAutopilotEvent(id, { type: "log", level: "warn", line: `Daemon unavailable; running autopilot locally instead — ${reason}`, data: { fellBackToLocal: true }, ts: new Date().toISOString() });
   }
-  processAutopilotRun(id, { cfg, repair, attempts, runPreview }).catch(() => {});
+  processAutopilotRun(id, { cfg, repair, attempts, runPreview }).catch((error) => console.warn(`[transport] autopilot ${id}: run crashed outside its own error handling — ${error?.message || error}`));
   return { skipped: false, runId: id, mission };
 }
 
@@ -157,7 +166,7 @@ export async function resumeAutopilotRun(id, { query = {} } = {}) {
     repair: run.options?.repair !== false,
     attempts: run.options?.attempts || 3,
     runPreview: run.options?.runPreview === true,
-  }).catch(() => {});
+  }).catch((error) => console.warn(`[transport] autopilot ${id}: run crashed outside its own error handling — ${error?.message || error}`));
   return await getAutopilotRun(id);
 }
 
@@ -178,7 +187,7 @@ export async function getAutopilotEvents(id, opts = {}) {
       const events = await fetchDaemonTaskEvents(id);
       const after = Number(opts.afterSeq) || 0;
       return events.filter((event) => event.seq > after);
-    } catch {}
+    } catch { /* best-effort: daemon unreachable; fall back to the locally mirrored events below (warning here would fire on every poll) */ }
   }
   return await listAutopilotEvents(id, opts);
 }
@@ -186,7 +195,7 @@ export async function getAutopilotEvents(id, opts = {}) {
 async function processAutopilotRun(id, { cfg, repair = true, attempts = 3, runPreview = false } = {}) {
   if (autopilotActive.has(id)) return;
   autopilotActive.add(id);
-  const push = (ev) => appendAutopilotEvent(id, { ...ev, ts: new Date().toISOString() }).catch(() => {});
+  const push = (ev) => appendAutopilotEvent(id, { ...ev, ts: new Date().toISOString() }).catch((e) => warnAutopilotPersistFailure(id, e));
   try {
     const run = await getAutopilotRun(id);
     const items = await listAutopilotItems(id);

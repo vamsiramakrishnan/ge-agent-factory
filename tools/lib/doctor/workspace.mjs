@@ -33,7 +33,7 @@ function parseJsonObjects(text) {
     else if (ch === "}") {
       depth -= 1;
       if (depth === 0) {
-        try { objects.push(JSON.parse(text.slice(start, i + 1))); } catch {}
+        try { objects.push(JSON.parse(text.slice(start, i + 1))); } catch { /* best-effort: brace scan over mixed output; non-JSON spans are expected */ }
         start = -1;
       }
     }

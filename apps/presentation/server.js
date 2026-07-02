@@ -90,7 +90,7 @@ const server = serve({
 
       try {
         if (req.method === "POST" && pathname === "/api/factory/preflight") {
-          const body = await req.json().catch(() => ({}));
+          const body = await req.json().catch(() => ({})); // best-effort: malformed body degrades to {} and fails handler validation
           const result = await preflightTarget(body);
           return sendJson(200, result);
         }
@@ -103,7 +103,7 @@ const server = serve({
         }
 
         if (req.method === "POST" && pathname === "/api/factory/usecase") {
-          const body = await req.json().catch(() => ({}));
+          const body = await req.json().catch(() => ({})); // best-effort: malformed body degrades to {} and fails handler validation
           const result = await submitFactoryRun(body);
           return sendJson(200, result);
         }
