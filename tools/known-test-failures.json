@@ -1,31 +1,77 @@
 {
-  "_comment": "Checked-in baseline for `node tools/check-test-results.mjs` (bun run test:gated). Flat array of exact full test names (format: 'describe > test', or bare 'test' when there is no describe block) that are allowed to fail without gating a commit — see AGENTS.md's 'judge by the set of failing test names' policy. Each entry has a note below explaining what it's blocked on. Do not add entries here to silence a new regression; only pre-existing, environment-caused failures belong here. If an entry starts passing, tools/check-test-results.mjs reports it under 'known-failing now passing' so a human can trim it deliberately.",
+  "_comment": "Checked-in baseline for `node tools/check-test-results.mjs` (bun run test:gated). `failures` is an array of entry objects, one per exact full test name (format: 'describe > test', or bare 'test' when there is no describe block) that is allowed to fail without gating a commit — see AGENTS.md's 'judge by the set of failing test names' policy. Each entry carries: `name` (the exact test name), `kind` ('env' = blocked on something this environment lacks; 'bug' = a real product defect parked here so it doesn't block unrelated work — the checker warns when a bug entry ages past 30 days, because bugs are open work, not accepted behavior), `addedAt` (ISO date the entry entered this list), and `notes` (what it's blocked on). Do not add entries here to silence a new regression; only pre-existing failures belong here. If an entry starts passing, tools/check-test-results.mjs reports it under 'known-failing now passing' so a human can trim it deliberately.",
   "failures": [
-    "runtime resume plan > harness run input resolves Vertex project and global location from config",
-    "harness runner config > resolves Vertex project from repo-root .ge.json (via c12)",
-    "multi-agent emitter > multi-step spec → SequentialAgent + sub-agents + _pick, tools.py unchanged",
-    "multi-agent emitter > single-step spec → single Agent + tools=source_adapters, no multi-agent constructs",
-    "multi-agent emitter > BUG1: every sub-agent instruction carries objective + outOfScope + refusal governance",
-    "multi-agent emitter > BUG2: before_agent_callback is on every sub-agent",
-    "multi-agent emitter > BUG3: sub-agents have distinct output_key values",
-    "round-trip recovers tool names, systems, and workflow step order",
-    "capability spine: queries/, tests/, documents/ concepts emitted + round-trip",
-    "skill registry maps harness capabilities to repository skills",
-    "synthesizeSystem returns a live system for an NL description (offline)",
-    "POST /api/systems/synthesize returns a system via the router (offline)"
-  ],
-  "notes": {
-    "runtime resume plan > harness run input resolves Vertex project and global location from config": "Requires a resolvable Vertex project/location (gcloud config or repo-root .ge.json) that this environment doesn't have configured. Same root cause as the harness-runner.test.mjs entry below — 'antigravity-sdk harness unavailable in this environment' per AGENTS.md.",
-    "harness runner config > resolves Vertex project from repo-root .ge.json (via c12)": "Same as above: expects __test.resolveVertexDefaults() to resolve a truthy Vertex project from ambient gcloud/.ge.json config, which this environment doesn't have.",
-    "multi-agent emitter > multi-step spec → SequentialAgent + sub-agents + _pick, tools.py unchanged": "generateAgent() shells out to `factory.mjs from-usecase`, which fails with \"Cannot find module '/home/user/ge-agent-factory/src/use-cases.js'\" — a generated use-case catalog file that isn't materialized in this checkout/environment. Not a code bug in the emitter itself.",
-    "multi-agent emitter > single-step spec → single Agent + tools=source_adapters, no multi-agent constructs": "Same generateAgent()/from-usecase catalog-module failure as the multi-step case above.",
-    "multi-agent emitter > BUG1: every sub-agent instruction carries objective + outOfScope + refusal governance": "Same generateAgent()/from-usecase catalog-module failure as the multi-step case above.",
-    "multi-agent emitter > BUG2: before_agent_callback is on every sub-agent": "Same generateAgent()/from-usecase catalog-module failure as the multi-step case above.",
-    "multi-agent emitter > BUG3: sub-agents have distinct output_key values": "Same generateAgent()/from-usecase catalog-module failure as the multi-step case above.",
-    "round-trip recovers tool names, systems, and workflow step order": "Genuine assertion mismatch, not an environment issue: expects the recovered step id 'balance__document__pull' (double underscore) but gets 'balance_document_pull' (single underscore) — an OKF round-trip normalization discrepancy in spec-to-okf.mjs. Tracked as a real bug to fix separately; kept in the known list so it doesn't block unrelated work.",
-    "capability spine: queries/, tests/, documents/ concepts emitted + round-trip": "Same spec-to-okf.mjs round-trip normalization discrepancy as above (same file, same underlying id-mangling behavior).",
-    "skill registry maps harness capabilities to repository skills": "loadSkillRegistry() picks up extra skills installed under /root/.agents/skills (e.g. google-agents-cli-publish, google-agents-cli-observability) that aren't present in a clean checkout — an environment/machine-local skills directory leaking into the registry, not a code defect.",
-    "synthesizeSystem returns a live system for an NL description (offline)": "Calls the real synthesis CLI, which imports the Python `simulator_runtime` module — not installed in this environment (matches AGENTS.md's 'missing Python simulator_runtime module' known failure).",
-    "POST /api/systems/synthesize returns a system via the router (offline)": "Same missing Python `simulator_runtime` module dependency as the synthesizeSystem entry above; the route call fails upstream in the same synthesis CLI."
-  }
+    {
+      "name": "runtime resume plan > harness run input resolves Vertex project and global location from config",
+      "kind": "env",
+      "addedAt": "2026-07-01",
+      "notes": "Requires a resolvable Vertex project/location (gcloud config or repo-root .ge.json) that this environment doesn't have configured. Same root cause as the harness-runner.test.mjs entry below — 'antigravity-sdk harness unavailable in this environment' per AGENTS.md."
+    },
+    {
+      "name": "harness runner config > resolves Vertex project from repo-root .ge.json (via c12)",
+      "kind": "env",
+      "addedAt": "2026-07-01",
+      "notes": "Same as above: expects __test.resolveVertexDefaults() to resolve a truthy Vertex project from ambient gcloud/.ge.json config, which this environment doesn't have."
+    },
+    {
+      "name": "multi-agent emitter > multi-step spec → SequentialAgent + sub-agents + _pick, tools.py unchanged",
+      "kind": "env",
+      "addedAt": "2026-07-01",
+      "notes": "generateAgent() shells out to `factory.mjs from-usecase`, which fails with \"Cannot find module '/home/user/ge-agent-factory/src/use-cases.js'\" — a generated use-case catalog file that isn't materialized in this checkout/environment. Not a code bug in the emitter itself."
+    },
+    {
+      "name": "multi-agent emitter > single-step spec → single Agent + tools=source_adapters, no multi-agent constructs",
+      "kind": "env",
+      "addedAt": "2026-07-01",
+      "notes": "Same generateAgent()/from-usecase catalog-module failure as the multi-step case above."
+    },
+    {
+      "name": "multi-agent emitter > BUG1: every sub-agent instruction carries objective + outOfScope + refusal governance",
+      "kind": "env",
+      "addedAt": "2026-07-01",
+      "notes": "Same generateAgent()/from-usecase catalog-module failure as the multi-step case above."
+    },
+    {
+      "name": "multi-agent emitter > BUG2: before_agent_callback is on every sub-agent",
+      "kind": "env",
+      "addedAt": "2026-07-01",
+      "notes": "Same generateAgent()/from-usecase catalog-module failure as the multi-step case above."
+    },
+    {
+      "name": "multi-agent emitter > BUG3: sub-agents have distinct output_key values",
+      "kind": "env",
+      "addedAt": "2026-07-01",
+      "notes": "Same generateAgent()/from-usecase catalog-module failure as the multi-step case above."
+    },
+    {
+      "name": "round-trip recovers tool names, systems, and workflow step order",
+      "kind": "bug",
+      "addedAt": "2026-07-01",
+      "notes": "Genuine assertion mismatch, not an environment issue: expects the recovered step id 'balance__document__pull' (double underscore) but gets 'balance_document_pull' (single underscore) — an OKF round-trip normalization discrepancy in spec-to-okf.mjs. Tracked as a real bug to fix separately; kept in the known list so it doesn't block unrelated work."
+    },
+    {
+      "name": "capability spine: queries/, tests/, documents/ concepts emitted + round-trip",
+      "kind": "bug",
+      "addedAt": "2026-07-01",
+      "notes": "Same spec-to-okf.mjs round-trip normalization discrepancy as above (same file, same underlying id-mangling behavior)."
+    },
+    {
+      "name": "skill registry maps harness capabilities to repository skills",
+      "kind": "env",
+      "addedAt": "2026-07-01",
+      "notes": "loadSkillRegistry() picks up extra skills installed under /root/.agents/skills (e.g. google-agents-cli-publish, google-agents-cli-observability) that aren't present in a clean checkout — an environment/machine-local skills directory leaking into the registry, not a code defect."
+    },
+    {
+      "name": "synthesizeSystem returns a live system for an NL description (offline)",
+      "kind": "env",
+      "addedAt": "2026-07-01",
+      "notes": "Calls the real synthesis CLI, which imports the Python `simulator_runtime` module — not installed in this environment (matches AGENTS.md's 'missing Python simulator_runtime module' known failure)."
+    },
+    {
+      "name": "POST /api/systems/synthesize returns a system via the router (offline)",
+      "kind": "env",
+      "addedAt": "2026-07-01",
+      "notes": "Same missing Python `simulator_runtime` module dependency as the synthesizeSystem entry above; the route call fails upstream in the same synthesis CLI."
+    }
+  ]
 }
