@@ -1,23 +1,16 @@
 #!/usr/bin/env node
-// Fail loudly if the three hand-maintained copies of the brand palette
-// (packages/design/src/tokens.css, docs/_sass/color_schemes/ge.scss, and
-// packages/design/src/palette.mjs) ever disagree. tokens.css is the
-// canonical source; palette.mjs is meant to trace every value in it (and in
-// ge.scss) exactly. See packages/design/src/palette.mjs for the full
-// rationale.
+// Gate entry point for design-token drift — kept under this name so the
+// AGENTS.md gate line, docs:gate, and CI wiring stay untouched. Delegates to
+// the palette generator's check (packages/design/scripts/gen-tokens.mjs),
+// which byte-compares the marker-delimited generated regions of tokens.css,
+// ge.scss, and setup.scss against packages/design/src/palette.mjs — the
+// canonical source — via the generator's explicit name→token table. This
+// replaced the old value-set regex check, which could not catch a wrong
+// name→value pairing.
 //   node tools/check-design-tokens.mjs
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
-import { checkDesignTokens, formatDesignTokensReport, readFileUtf8 } from "./lib/design-tokens.mjs";
-import { PALETTE } from "../packages/design/src/palette.mjs";
+import { checkTokens, formatCheckReport } from "../packages/design/scripts/gen-tokens.mjs";
 
-const HERE = dirname(fileURLToPath(import.meta.url));
-const ROOT = join(HERE, "..");
-
-const tokensCssText = readFileUtf8(join(ROOT, "packages/design/src/tokens.css"));
-const sassText = readFileUtf8(join(ROOT, "docs/_sass/color_schemes/ge.scss"));
-
-const result = checkDesignTokens({ tokensCssText, sassText, palette: PALETTE });
+const result = checkTokens();
 const writer = result.ok ? process.stdout : process.stderr;
-writer.write(formatDesignTokensReport(result) + "\n");
+writer.write(formatCheckReport(result) + "\n");
 process.exit(result.ok ? 0 : 1);

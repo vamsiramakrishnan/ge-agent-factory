@@ -188,7 +188,7 @@ export async function cmdMcp(dir, flags, deps) {
   }
 
   const project = await getGcloudProject(flags, { runCommand });
-  if (!project) fail("--project required (or set GOOGLE_CLOUD_PROJECT / gcloud config)");
+  if (!project) fail("--project required (or set GOOGLE_CLOUD_PROJECT / gcloud config)", "GE0008");
 
   if (action === "list" || action === "ls") {
     console.error(`Listing managed MCP servers for project ${project}...`);
@@ -263,7 +263,7 @@ export async function cmdDeploy(dir, flags, deps) {
   await assertPromotable(dir, flags);
   const project = await getGcloudProject(flags, { runCommand });
   const region = await getGcloudRegion(flags);
-  if (!project) fail("--project required (or set GOOGLE_CLOUD_PROJECT)");
+  if (!project) fail("--project required (or set GOOGLE_CLOUD_PROJECT)", "GE0008");
   const target = flags.target || "agent_runtime";
 
   console.error(`Enhancing scaffold for ${target} deployment...`);
@@ -301,7 +301,7 @@ export async function cmdDeploy(dir, flags, deps) {
     } catch (e) {
       markStep(pipeline, "deploy", "failed", { error: e.message });
       await savePipeline(dir, pipeline);
-      fail(`Cloud Run deploy failed: ${e.message}`);
+      fail(`Cloud Run deploy failed: ${e.message}`, "GE0009");
     }
   }
 
@@ -369,7 +369,7 @@ export async function cmdDeploy(dir, flags, deps) {
     }
     markStep(pipeline, "deploy", "failed", { error: e.message });
     await savePipeline(dir, pipeline);
-    fail(`Deploy failed: ${e.message}`);
+    fail(`Deploy failed: ${e.message}`, "GE0009");
   }
 }
 
@@ -378,7 +378,7 @@ export async function cmdDeployStatus(dir, flags, deps) {
   const pipeline = await loadPipeline(dir);
   const project = await getGcloudProject(flags, { runCommand });
   const region = await getGcloudRegion(flags);
-  if (!project) fail("--project required (or set GOOGLE_CLOUD_PROJECT)");
+  if (!project) fail("--project required (or set GOOGLE_CLOUD_PROJECT)", "GE0008");
   console.error(`Checking Agent Runtime deploy status in ${project} / ${region}...`);
   try {
     const statusResult = await runCommand("agents-cli", ["deploy", "--status", "--project", project, "--region", region, "--no-confirm-project"], { cwd: dir, stream: true, timeout: 180000 });
@@ -402,7 +402,7 @@ export async function cmdDeployStatus(dir, flags, deps) {
   } catch (e) {
     markStep(pipeline, "deploy", "failed", { error: e.message, project, region, target: "agent_runtime" });
     await savePipeline(dir, pipeline);
-    fail(`Deploy status failed: ${e.message}`);
+    fail(`Deploy status failed: ${e.message}`, "GE0009");
   }
 }
 
@@ -492,7 +492,7 @@ async function buildToolSpec(dir, manifest, { fail, writeText }) {
     content = JSON.stringify(spec, null, 2) + "\n";
   }
   if (Buffer.byteLength(content, "utf8") > maxBytes) {
-    fail(`Generated toolspec.json exceeds 10 KB Agent Registry limit after compaction (${Buffer.byteLength(content, "utf8")} bytes). Reduce exposed tools or split the MCP server by source system.`);
+    fail(`Generated toolspec.json exceeds 10 KB Agent Registry limit after compaction (${Buffer.byteLength(content, "utf8")} bytes). Reduce exposed tools or split the MCP server by source system.`, "GE0010");
   }
   await writeText(specPath, content);
   return specPath;
@@ -524,7 +524,7 @@ function normalizeAgentRegistryProtocol(protocolInput) {
 function assertSupportedAgentRegistryLocation(location, { fail }) {
   const value = String(location || "").toLowerCase();
   if (value === "us" || value === "eu") {
-    fail("Manual Agent Registry MCP registration is not supported in the us or eu multi-region locations. Use a supported region or global.");
+    fail("Manual Agent Registry MCP registration is not supported in the us or eu multi-region locations. Use a supported region or global.", "GE0010");
   }
 }
 
@@ -548,7 +548,7 @@ export async function cmdRegister(dir, flags, deps) {
     // (the worker passes it); fall back to a per-agent deploy serviceUrl if present.
     const agentId = flags["agent-id"] || snakeCase(pipeline.name || "mock-agent").replace(/_/g, "-");
     let serviceUrl = flags["service-url"] || deployStep.serviceUrl;
-    if (!serviceUrl) fail("No --service-url (department MCP) and no deploy serviceUrl. Run `ge mcp deploy` and pass --service-url.");
+    if (!serviceUrl) fail("No --service-url (department MCP) and no deploy serviceUrl. Run `ge mcp deploy` and pass --service-url.", "GE0010");
     const u = new URL(serviceUrl.endsWith("/mcp") ? serviceUrl : `${serviceUrl.replace(/\/$/, "")}/mcp`);
     u.searchParams.set("agent", agentId);
     serviceUrl = u.toString();
@@ -647,13 +647,13 @@ export async function cmdRegister(dir, flags, deps) {
         nextCommand: nextCommandFor(pipeline, dir),
       });
     } catch (e) {
-      fail(`Agent Registry registration failed: ${e.message}`);
+      fail(`Agent Registry registration failed: ${e.message}`, "GE0010");
     }
   }
 
   if (mode === "a2a") {
     const serviceUrl = deployStep.serviceUrl;
-    if (!serviceUrl) fail("No serviceUrl from deploy. Deploy with --target cloud_run first.");
+    if (!serviceUrl) fail("No serviceUrl from deploy. Deploy with --target cloud_run first.", "GE0010");
 
     const a2aUrl = serviceUrl.endsWith("/") ? `${serviceUrl}.well-known/agent.json` : `${serviceUrl}/.well-known/agent.json`;
 
@@ -722,14 +722,14 @@ export async function cmdRegister(dir, flags, deps) {
         nextCommand: nextCommandFor(pipeline, dir),
       });
     } catch (e) {
-      fail(`A2A registration failed: ${e.message}`);
+      fail(`A2A registration failed: ${e.message}`, "GE0010");
     }
   }
 
   // mode === "adk" — Agent Runtime, ready for Gemini Enterprise publish
   const meta = await readJson(join(dir, "deployment_metadata.json"), null);
   const runtimeId = parseAgentRuntimeId(meta, deployStep.runtimeId);
-  if (!runtimeId) fail("No runtime ID. Deploy with --target agent_runtime first, or use --as mcp/a2a for Cloud Run services.");
+  if (!runtimeId) fail("No runtime ID. Deploy with --target agent_runtime first, or use --as mcp/a2a for Cloud Run services.", "GE0010");
 
   markStep(pipeline, "register", "done", { mode: "adk", runtimeId });
   await savePipeline(dir, pipeline);
@@ -753,7 +753,7 @@ export async function cmdPublish(dir, flags, deps) {
   const location = flags.location || flags.region || process.env.GEMINI_ENTERPRISE_LOCATION || "global";
   const projectNumber = flags["project-number"] || await getGcloudProjectNumber(project, { runCommand });
   const rawAppId = flags["app-id"] || process.env.GEMINI_ENTERPRISE_APP_ID || process.env.ID;
-  if (!rawAppId) fail("--app-id required (or set GEMINI_ENTERPRISE_APP_ID)");
+  if (!rawAppId) fail("--app-id required (or set GEMINI_ENTERPRISE_APP_ID)", "GE0011");
   const resolvedApp = await resolveGeminiEnterpriseAppId(rawAppId, { project, projectNumber, location }, { runCommand });
   const appId = resolvedApp.appId;
 
@@ -761,7 +761,7 @@ export async function cmdPublish(dir, flags, deps) {
   const regType = meta?.is_a2a ? "a2a" : "adk";
   const runtimeId = parseAgentRuntimeId(meta, pipeline.steps.deploy?.runtimeId);
   if (regType === "adk" && !runtimeId) {
-    fail("No valid Agent Runtime ID found. Run factory deploy-status until deployment writes deployment_metadata.json before publishing.");
+    fail("No valid Agent Runtime ID found. Run factory deploy-status until deployment writes deployment_metadata.json before publishing.", "GE0011");
   }
   const displayName = flags["display-name"] || pipeline.name || "Mock Demo Agent";
   const description = flags.description || `Generated mock agent for ${pipeline.domain} domain`;
@@ -799,7 +799,7 @@ export async function cmdPublish(dir, flags, deps) {
   } catch (e) {
     markStep(pipeline, "publish", "failed", { error: e.message });
     await savePipeline(dir, pipeline);
-    fail(`Publish failed: ${e.message}`);
+    fail(`Publish failed: ${e.message}`, "GE0011");
   }
 }
 

@@ -223,24 +223,3 @@ export function classifyReadinessSection(section) {
     .map((check) => ({ check: check.name, category: check.category, command: check.action, status: check.status }));
   return { ...section, checks, repairPlan };
 }
-
-// Build citty arg definitions from the schema (string flags + descriptions).
-export function buildCliArgsForConfig(fields = CONFIG_FIELDS) {
-  const args = {};
-  for (const [name, def] of Object.entries(fields)) {
-    args[def.flag] = {
-      type: "string",
-      description: `${name}${def.default !== undefined && def.default !== "" ? ` (default ${def.default})` : ""}${def.env?.length ? ` [env: ${def.env.join(", ")}]` : ""}`,
-    };
-  }
-  return args;
-}
-
-// Build a flat MCP/JSON-schema-ish properties map from the schema.
-export function toMcpSchema(fields = CONFIG_FIELDS) {
-  const properties = {};
-  for (const [name, def] of Object.entries(fields)) {
-    properties[name] = { type: "string", description: `${name} (flag --${def.flag})` };
-  }
-  return { type: "object", properties };
-}

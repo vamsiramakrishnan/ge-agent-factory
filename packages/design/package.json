@@ -5,6 +5,10 @@
   "type": "module",
   "description": "Shared GE design system: style tokens + Tailwind v4 base CSS for console and presentation.",
   "types": "./src/index.ts",
+  "scripts": {
+    "tokens": "node scripts/gen-tokens.mjs",
+    "tokens:check": "node scripts/gen-tokens.mjs --check"
+  },
   "exports": {
     ".": "./src/index.ts",
     "./tokens.css": "./src/tokens.css"

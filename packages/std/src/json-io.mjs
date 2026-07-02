@@ -92,7 +92,7 @@ function withPathChain(path, fn) {
   const tail = prev.then(() => gate);
   pathChains.set(path, tail);
   return prev
-    .catch(() => {})
+    .catch(() => {}) // best-effort: the prior queued op's failure was already delivered to its own caller; the chain must continue
     .then(fn)
     .finally(() => {
       release();

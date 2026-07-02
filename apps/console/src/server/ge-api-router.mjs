@@ -434,7 +434,7 @@ export async function handleGeFetchRequest(req, { headers = {} } = {}) {
           const writeSSE = (line) => {
             try {
               controller.enqueue(encoder.encode(`data: ${line}\n\n`));
-            } catch {}
+            } catch { /* best-effort: enqueue throws once the client disconnects; isClosed() ends the stream */ }
           };
           // Reconnect-safe framing: emit id:/retry: alongside data: so the browser
           // can resume via Last-Event-ID and cap its reconnect backoff.
@@ -445,7 +445,7 @@ export async function handleGeFetchRequest(req, { headers = {} } = {}) {
               if (id != null) f += `id: ${id}\n`;
               f += `data: ${data}\n\n`;
               controller.enqueue(encoder.encode(f));
-            } catch {}
+            } catch { /* best-effort: enqueue throws once the client disconnects; isClosed() ends the stream */ }
           };
           const isClosed = () => {
             try {
@@ -457,7 +457,7 @@ export async function handleGeFetchRequest(req, { headers = {} } = {}) {
           const end = () => {
             try {
               controller.close();
-            } catch {}
+            } catch { /* best-effort: double-close after client disconnect is expected */ }
           };
           start(writeSSE, isClosed, end);
         },

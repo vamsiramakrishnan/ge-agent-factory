@@ -3,13 +3,17 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "sync": "node scripts/sync-content.mjs",
+    "sync:check": "node scripts/sync-content.mjs --dry-run",
+    "dev": "node scripts/sync-content.mjs && astro dev",
+    "build": "node scripts/sync-content.mjs && astro build",
     "preview": "astro preview"
   },
   "dependencies": {
-    "astro": "^5",
     "@astrojs/starlight": "^0.34",
+    "@fontsource/geist-mono": "^5",
+    "@fontsource/space-grotesk": "^5",
+    "astro": "^5",
     "sharp": "^0.33"
   }
 }

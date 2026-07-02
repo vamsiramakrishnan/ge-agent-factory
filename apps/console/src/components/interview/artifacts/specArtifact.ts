@@ -7,6 +7,7 @@
  * This module turns the streamed parser events into a structured, render-friendly
  * spec state, and turns a parsed spec into the section list the canvas renders.
  */
+import type { GenerationSpecEnvelope } from "@ge/agent-spec";
 import type { ArtifactEvent } from "./parser";
 
 /** The identifier the interview prompt instructs the agent to use. */
@@ -15,47 +16,23 @@ export const AGENT_SPEC_ARTIFACT_ID = "agent-spec";
 export type SpecArtifactStatus = "idle" | "streaming" | "complete" | "error";
 
 /**
- * Optional self-describing workflow the interview agent may emit on
- * `behaviorContract.workflow` when the use case is multi-stage. Mirrors the
- * SPEC-SHAPE workflow the generator authors into catalog specs
- * (apps/factory/scripts/factory/agent-workflow.mjs): ordered steps,
- * each naming the toolIntents it uses. `tools` entries are toolIntent NAMES.
+ * The workflow (`behaviorContract.workflow`) and Query Capability
+ * (`behaviorContract.answerableQueries`) shapes the interview agent may emit
+ * come straight from the spec contract package — the import IS the shared
+ * shape, no hand-kept mirror of the generator.
  */
-export interface SpecWorkflowStep {
-  id?: string;
-  label: string;
-  description?: string;
-  tools: string[];
-}
-export interface SpecWorkflow {
-  mode: "sequential" | "parallel";
-  steps: SpecWorkflowStep[];
-}
-
-/**
- * A Query Capability — a question/request the agent can answer, with the
- * toolIntent names that serve it and (optionally) the workflow stage it runs
- * in. Emitted on `behaviorContract.answerableQueries`; consumed by the OKF
- * converter to author `queries/<id>.md` (type "Query Capability").
- */
-export interface AnswerableQuery {
-  id?: string;
-  /** The question/request, e.g. "What is an employee's net pay?". */
-  request: string;
-  /** toolIntent NAMES this capability uses. */
-  tools: string[];
-  /** Evidence the capability is expected to surface. */
-  evidence?: string[];
-  /** Optional workflow step id this capability runs in. */
-  stage?: string;
-}
+export type { AnswerableQuery, SpecWorkflow, SpecWorkflowStep } from "@ge/agent-spec";
 
 export interface SpecArtifactState {
   status: SpecArtifactStatus;
   /** Raw streamed text (possibly partial JSON). */
   raw: string;
-  /** Best-effort parsed spec (null while unparseable). */
-  spec: Record<string, any> | null;
+  /**
+   * Best-effort parsed spec (null while unparseable). A finished stream is a
+   * (partial) catalog-entry envelope — `{ id, title, department,
+   * generationSpec }` — but mid-stream repairs can surface any JSON object.
+   */
+  spec: Partial<GenerationSpecEnvelope> | Record<string, unknown> | null;
   title: string;
   error: string | null;
 }

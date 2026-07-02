@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": ".ge.json — ge operator config",
+  "description": "Generated from CONFIG_FIELDS in tools/lib/config-schema.mjs by tools/gen-config-schema.mjs — do not edit; run `bun run config:schema`. Precedence (highest first): CLI flag → environment → .ge.json → default.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema (written by `ge init` as ./.ge.schema.json)."
+    },
+    "project": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --project. Env: GCP_PROJECT_ID, GOOGLE_CLOUD_PROJECT, GCLOUD_PROJECT. Required for: infra, build, agents, data, mcp."
+    },
+    "projectNumber": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --projectNumber. Env: GOOGLE_CLOUD_PROJECT_NUMBER."
+    },
+    "agentIdentityOrgId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --agentIdentityOrgId. Env: GE_AGENT_IDENTITY_ORG_ID."
+    },
+    "region": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --region. Env: GCP_REGION. Default: \"us-central1\".",
+      "default": "us-central1"
+    },
+    "gatewayUrl": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --gatewayUrl. Env: API_GATEWAY_URL."
+    },
+    "bucket": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --bucket. Env: GE_AGENT_FACTORY_BUCKET."
+    },
+    "geAppId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --geApp. Env: GEMINI_ENTERPRISE_APP_ID. Required for: agents."
+    },
+    "geLocation": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --geLocation. Env: GEMINI_ENTERPRISE_LOCATION. Default: \"global\".",
+      "default": "global"
+    },
+    "mode": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --mode. Env: GE_MODE. Default: \"local\".",
+      "default": "local"
+    },
+    "gatewayTransport": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --gatewayTransport. Env: GE_GATEWAY_TRANSPORT. Default: \"proxy\".",
+      "default": "proxy"
+    },
+    "agentsRepo": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Flag: --agentsRepo. Env: GE_AGENTS_REPO. Default: \"\".",
+      "default": ""
+    }
+  }
+}

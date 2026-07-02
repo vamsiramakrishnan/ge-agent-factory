@@ -12,6 +12,17 @@ import { makeEvent } from "../../../tools/lib/events.mjs";
 import { nextEventSeq, STAGE_ERROR_TYPE, stageErrorFrameData } from "@ge/run-ledger/frames";
 
 const RELEASE_STAGES = new Set(["validate", "preview", "deploy_runtime", "poll_runtime", "publish_enterprise"]);
+
+// Timeout triangle (taste-campaign 09 §C1): every HTTP task carries an explicit
+// dispatchDeadline equal to the worker's Cloud Run request timeout
+// (installer/terraform/cloud_run.tf: timeout = "1800s"). Cloud Tasks defaults to
+// 600s, so without this any stage running longer than 10 minutes got a DUPLICATE
+// concurrent redelivery while attempt 1 was still executing. 1800s is also the
+// Cloud Tasks maximum. The invariant
+//   dispatchDeadline === Cloud Run timeout >= longest stage expectation
+// is asserted by factory-worker-timeouts.test.mjs, which reads the Terraform
+// sources as text — drift on either side fails that test.
+export const TASK_DISPATCH_DEADLINE = "1800s";
 const CLOUD_BUILD_TERMINAL_SUCCESS = new Set(["SUCCESS"]);
 const CLOUD_BUILD_TERMINAL_FAILURE = new Set(["FAILURE", "INTERNAL_ERROR", "TIMEOUT", "CANCELLED", "EXPIRED"]);
 const serviceUrlCache = new Map();
@@ -24,6 +35,19 @@ const serviceUrlCache = new Map();
 // because an indefinite loop on a poisoned stage is the worse failure mode and the
 // terraform queue max_attempts is the only other backstop.
 const TRANSIENT_FAILURE_RE = /\b(429|500|502|503|504|ECONNRESET|ETIMEDOUT|ECONNREFUSED|EAI_AGAIN|ENOTFOUND|socket hang up|timed?\s*out|timeout|deadline exceeded|rate.?limit|quota|temporarily unavailable|service unavailable|connection reset|try again|retry)\b/i;
+
+// Structured stage logging (taste-campaign 09 §C9). One JSON object per line,
+// Cloud Logging jsonPayload convention: `severity` + `message` + queryable fields
+// ({runId, itemId, stage, attempt, ...}). Cloud Run captures stdout/stderr and
+// Cloud Logging indexes the JSON automatically, so every stage's logs become
+// filterable by runId with zero infra; Error Reporting picks up severity=ERROR
+// entries for free. The human-readable text stays inside `message`. ERROR/WARNING
+// go to stderr (local readability parity with the old console.error lines).
+export function logStage(severity, { message, ...fields } = {}) {
+  const line = JSON.stringify({ severity, message, ...fields });
+  if (severity === "ERROR" || severity === "WARNING" || severity === "CRITICAL") console.error(line);
+  else console.log(line);
+}
 
 // Pull the most useful diagnostic text out of a failed command result. Prefers the
 // tail of stderr (where errors land), falls back to stdout, then to a synthesized
@@ -476,6 +500,10 @@ export async function buildCloudTaskCommand(payload, { taskId = null, scheduleTi
 export async function enqueueFactoryStage(payload, options = {}) {
   if (!payload.cloud?.projectId) return { skipped: true, reason: "missing projectId" };
   const [cmd, args] = await buildCloudTaskCommand(payload, options);
+  // NOTE: the gcloud fallback transport cannot set dispatchDeadline —
+  // `gcloud tasks create-http-task` has no flag for it — so tasks created this way
+  // keep the 600s Cloud Tasks default. The REST path below (the default transport,
+  // used by the worker's own stage-to-stage enqueues) sets TASK_DISPATCH_DEADLINE.
   if (options.transport === "gcloud") {
     const result = await runCommand(cmd, args, { stream: false });
     const duplicate = /ALREADY_EXISTS|already exists/i.test(`${result.stderr}\n${result.stdout}`);
@@ -501,6 +529,9 @@ export async function enqueueFactoryStage(payload, options = {}) {
   const task = {
     task: {
       name: `${parent}/tasks/${taskId}`,
+      // Match the worker's Cloud Run timeout so a long stage is never redelivered
+      // concurrently while attempt 1 still executes (see TASK_DISPATCH_DEADLINE).
+      dispatchDeadline: TASK_DISPATCH_DEADLINE,
       httpRequest: {
         httpMethod: "POST",
         url,
@@ -785,7 +816,7 @@ export async function runFactoryWorker(payload, { dryRun = false } = {}) {
     // ack rather than loop. retryable:false drives the non-retry HTTP ack.
     const message = `workspace archive restore failed: ${restore.error}`;
     const failed = { status: "failed", stage: payload.stage, owner: "cloud_run_service", outputs: [], nextStage: null, error: message, retryable: false };
-    console.error(`[factory-worker] STAGE FAILED stage=${payload.stage} run=${payload.runId} item=${payload.itemId} retryable=false: ${message}`);
+    logStage("ERROR", { runId: payload.runId, itemId: payload.itemId, stage: payload.stage, attempt: payload.attempt, retryable: false, message: `stage failed: ${message}` });
     await recordStageEvent(payload, { type: STAGE_ERROR_TYPE, status: "failed", owner: failed.owner, error: message, data: stageErrorFrameData({ message, attempt: payload.attempt }) });
     await sink.close();
     return failed;
@@ -871,7 +902,7 @@ export async function runFactoryWorker(payload, { dryRun = false } = {}) {
       const failed = { status: "failed", stage: payload.stage, owner: plan.owner, outputs, nextStage: null, error: message, retryable };
       await logTap.stop();
       // Single structured line so the failure is NEVER an empty ERROR log again.
-      console.error(`[factory-worker] STAGE FAILED stage=${payload.stage} run=${payload.runId} item=${payload.itemId} retryable=${retryable}: ${message}`);
+      logStage("ERROR", { runId: payload.runId, itemId: payload.itemId, stage: payload.stage, attempt: payload.attempt, retryable, message: `stage failed: ${message}` });
       sink.log(makeEvent({ ...meta, type: STAGE_ERROR_TYPE, level: "error", data: { owner: plan.owner, error: message, ...errorData } }));
       // stage_error frame carries message + stack + cmd + attempt; mapped to the
       // existing "failed" status so the reducer/StatusChip + Firestore summary render it.

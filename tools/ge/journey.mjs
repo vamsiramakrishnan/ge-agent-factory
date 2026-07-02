@@ -82,8 +82,8 @@ const journeyRunCmd = defineCommand({
   meta: { name: "run", description: "Start the journey by running the durable mission graph" },
   args: {
     ...journeyArgs,
-    attempts: { type: "string" },
-    "run-preview": { type: "boolean" },
+    attempts: { type: "string", description: "Repair attempts per item (default 3)" },
+    "run-preview": { type: "boolean", description: "Run preview after repair when supported" },
     "with-factory": { type: "boolean", description: "Actually schedule the factory build node" },
     "no-antigravity": { type: "boolean", description: "Do not include the Antigravity review node" },
     model: { type: "string", description: "Model for the Antigravity review node" },

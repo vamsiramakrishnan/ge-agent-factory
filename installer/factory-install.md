@@ -1,6 +1,6 @@
 # Factory Install Package
 
-`@ge/factory-install` is a plan-only package for installer automation.
+This document describes the plan-only install contract for installer automation. (It was once packaged as `@ge/factory-install`; the package was removed 2026-07-02 having never been integrated — recoverable from git history via `git log -- packages/factory-install`.)
 
 It captures:
 

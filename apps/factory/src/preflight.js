@@ -35,7 +35,7 @@ async function findOnPath(bin) {
 async function listGeminiExtensionIssues(home = process.env.HOME) {
   if (!home) return [];
   const root = join(home, ".gemini", "extensions");
-  const entries = await readdir(root, { withFileTypes: true }).catch(() => []);
+  const entries = await readdir(root, { withFileTypes: true }).catch(() => []); // best-effort: no ~/.gemini/extensions dir means no extension issues to report
   const issues = [];
   for (const entry of entries) {
     if (!entry.isDirectory()) continue;

@@ -7,6 +7,18 @@
 //   - still failing   -> accepted baseline, informational only
 //   - now passing     -> known list is stale, informational only (flagged, not auto-trimmed)
 //
+// Flake retry: before judging, the test FILES containing newly-failing names are
+// re-run exactly once (a single bounded retry, loudly logged). A name that
+// recovers on the retry is reported as a flake and not counted as a regression;
+// a real regression fails twice and still gates. This kills the "re-run the
+// whole suite 2-3x because one subprocess-heavy golden test timed out under
+// load" tax without hiding genuine breakage.
+//
+// Known-failure hygiene: entries in known-test-failures.json carry
+// kind ("env" | "bug") and addedAt metadata. "bug" entries older than 30 days
+// produce a loud warning — bugs are parked there so they don't block unrelated
+// work, not accepted behavior, so they must not quietly become permanent.
+//
 // This is the print/exit boundary; parsing/comparison logic lives in
 // tools/lib/test-results.mjs (see AGENTS.md's "return/throw, don't print/exit"
 // convention for library code).
@@ -17,7 +29,14 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
-import { bucketTestResults, failingTestNamesFromJUnit, formatTestResultsReport } from "./lib/test-results.mjs";
+import {
+  bucketTestResults,
+  failingTestcasesFromJUnit,
+  failingTestNamesFromJUnit,
+  formatTestResultsReport,
+  normalizeKnownFailureEntries,
+  staleBugEntries,
+} from "./lib/test-results.mjs";
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const KNOWN_FAILURES_PATH = join(REPO_ROOT, "tools", "known-test-failures.json");
@@ -28,14 +47,18 @@ const KNOWN_FAILURES_PATH = join(REPO_ROOT, "tools", "known-test-failures.json")
 // same way they would with `bun run test`.
 const DEFAULT_ARGS = ["apps", "tools", "packages"];
 
-function main() {
-  const forwardedArgs = process.argv.slice(2);
-  const testArgs = forwardedArgs.length > 0 ? forwardedArgs : DEFAULT_ARGS;
+// How long a kind:"bug" entry may sit in known-test-failures.json before the
+// checker starts warning about it on every run.
+const BUG_ENTRY_MAX_AGE_DAYS = 30;
 
+/**
+ * Run `bun test` with the JUnit reporter and return the report XML. bun's own
+ * console output (pass/fail counts, stack traces) is streamed through so a
+ * human/agent reading this command still sees the familiar per-test detail.
+ */
+function runBunTest(testArgs) {
   const tmpDir = mkdtempSync(join(tmpdir(), "ge-test-results-"));
   const junitPath = join(tmpDir, "results.xml");
-
-  let xml;
   try {
     const result = spawnSync(
       "bun",
@@ -43,9 +66,6 @@ function main() {
       { cwd: REPO_ROOT, stdio: ["ignore", "pipe", "pipe"], encoding: "utf8" },
     );
 
-    // bun test prints its own console summary (pass/fail counts, stack traces)
-    // to stdout/stderr; surface it so a human/agent reading this command's
-    // output still sees the familiar per-test detail, not just the buckets.
     if (result.stdout) process.stdout.write(result.stdout);
     if (result.stderr) process.stderr.write(result.stderr);
 
@@ -53,6 +73,7 @@ function main() {
       throw new Error(`failed to spawn bun test: ${result.error.message}`);
     }
 
+    let xml;
     try {
       xml = readFileSync(junitPath, "utf8");
     } catch (err) {
@@ -60,23 +81,97 @@ function main() {
         `bun test did not produce a JUnit report at ${junitPath} (exit code ${result.status}): ${err.message}`,
       );
     }
-
-    const consoleSummary = extractConsoleFailCount(`${result.stdout ?? ""}\n${result.stderr ?? ""}`);
-    reportSuiteCollectionMismatch(xml, consoleSummary);
+    return { xml, consoleText: `${result.stdout ?? ""}\n${result.stderr ?? ""}` };
   } finally {
     rmSync(tmpDir, { recursive: true, force: true });
   }
+}
+
+/**
+ * Re-run ONLY the test files containing newly-failing names, once, and return
+ * the newly-failing names that passed on the retry ("recovered", i.e. flakes).
+ * Anything not recovered — including names that cannot be attributed to a file
+ * (e.g. a file that crashed before test collection) — stays a regression; no
+ * retry can vouch for it.
+ */
+function retryNewlyFailing({ firstXml, newlyFailing }) {
+  const newlySet = new Set(newlyFailing);
+  const nameToFile = new Map(
+    failingTestcasesFromJUnit(firstXml)
+      .filter((tc) => newlySet.has(tc.name))
+      .map((tc) => [tc.name, tc.file]),
+  );
+  const retriableFiles = [...new Set([...nameToFile.values()].filter(Boolean))].sort();
+
+  if (retriableFiles.length === 0) {
+    return { recovered: [], retriedFiles: [] };
+  }
+
+  console.log(
+    `\n⟳ flake retry: re-running ${retriableFiles.length} test file(s) containing newly-failing tests ` +
+      `(single retry — a real regression fails twice):`,
+  );
+  for (const file of retriableFiles) console.log(`  - ${file}`);
+
+  const { xml: retryXml } = runBunTest(retriableFiles);
+  const retryFailing = new Set(failingTestNamesFromJUnit(retryXml));
+
+  const recovered = newlyFailing.filter((name) => nameToFile.get(name) && !retryFailing.has(name));
+  return { recovered, retriedFiles: retriableFiles };
+}
+
+function main() {
+  const forwardedArgs = process.argv.slice(2);
+  const testArgs = forwardedArgs.length > 0 ? forwardedArgs : DEFAULT_ARGS;
+
+  const { xml, consoleText } = runBunTest(testArgs);
+  reportSuiteCollectionMismatch(xml, extractConsoleFailCount(consoleText));
 
   const actualFailing = failingTestNamesFromJUnit(xml);
-  const known = JSON.parse(readFileSync(KNOWN_FAILURES_PATH, "utf8"));
-  const knownFailing = known.failures ?? [];
+  const knownEntries = normalizeKnownFailureEntries(JSON.parse(readFileSync(KNOWN_FAILURES_PATH, "utf8")));
+  const knownFailing = knownEntries.map((entry) => entry.name);
 
-  const buckets = bucketTestResults(actualFailing, knownFailing);
+  let buckets = bucketTestResults(actualFailing, knownFailing);
+
+  if (buckets.newlyFailing.length > 0) {
+    const { recovered, retriedFiles } = retryNewlyFailing({
+      firstXml: xml,
+      newlyFailing: buckets.newlyFailing,
+    });
+    if (retriedFiles.length > 0) {
+      if (recovered.length > 0) {
+        console.log(`\n⟳ ${recovered.length} test(s) recovered on retry (flaky, not counted as regressions):`);
+        for (const name of recovered) console.log(`  - ${name}`);
+      } else {
+        console.log("\n⟳ no tests recovered on retry — the failures are real.");
+      }
+      const recoveredSet = new Set(recovered);
+      buckets = bucketTestResults(
+        actualFailing.filter((name) => !recoveredSet.has(name)),
+        knownFailing,
+      );
+    }
+  }
+
+  reportStaleBugEntries(knownEntries);
 
   console.log("");
   console.log(formatTestResultsReport(buckets));
 
   process.exit(buckets.ok ? 0 : 1);
+}
+
+function reportStaleBugEntries(knownEntries) {
+  const stale = staleBugEntries(knownEntries, { maxAgeDays: BUG_ENTRY_MAX_AGE_DAYS });
+  if (stale.length === 0) return;
+  console.warn(
+    `\n⚠ ${stale.length} known-failure entr${stale.length === 1 ? "y" : "ies"} of kind "bug" ` +
+      `older than ${BUG_ENTRY_MAX_AGE_DAYS} days in tools/known-test-failures.json — these are parked product ` +
+      `defects, not accepted behavior; fix them or re-justify their notes:`,
+  );
+  for (const entry of stale) {
+    console.warn(`  - ${entry.name} (added ${entry.addedAt}, ${entry.ageDays} days ago)`);
+  }
 }
 
 // bun's JUnit reporter omits a test file's <testsuite> entirely if the file

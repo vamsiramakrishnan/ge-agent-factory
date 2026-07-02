@@ -7,6 +7,12 @@ import { parseList } from "@ge/std/list";
 import { existsSync, readFileSync } from "node:fs";
 import * as core from "../lib/factory-core.mjs";
 import { daemonPaths, getDaemonStatus } from "../lib/runtime-daemon.mjs";
+// Stable-error-code registry — a dependency-free data leaf that lives beside
+// FactoryCommandError (whose fail(msg, code) mints the codes). This is a
+// CLI-boundary file, not tools/lib/*, so the tools/lib → apps/factory layering
+// rule (tools/check-no-app-imports.mjs) does not apply; importing the leaf
+// here is the sanctioned alternative to hand-mirroring the code table.
+import { docsUrlFor, resolveErrorCode } from "../../apps/factory/scripts/factory/core/error-codes.mjs";
 
 export { core, pc };
 
@@ -56,12 +62,23 @@ export const ICON = { pass: pc.green("✓"), warn: pc.yellow("▲"), fail: pc.re
 // apps/factory/scripts/factory/registry.mjs: prints "✗ <message>" and sets
 // process.exitCode (NOT process.exit()), so stdout/stderr already written
 // this run fully flush before the process exits.
+// When the error carries a registered GE#### code (factory's fail(msg, code)),
+// the line becomes "✗ GE#### <message>" plus a docs-site deep link on the next
+// line. An error WITHOUT a registered code renders byte-identically to before
+// (no code, no link) — see resolveErrorCode(), which also rejects Node system
+// codes like "ENOENT" so only real registry entries change the output.
 export function guarded(run) {
   return async (ctx) => {
     try {
       return await run(ctx);
     } catch (e) {
-      process.stderr.write(pc.red(`✗ ${e?.message || e}`) + "\n");
+      const code = resolveErrorCode(e);
+      if (code) {
+        process.stderr.write(pc.red(`✗ ${code} ${e?.message || e}`) + "\n");
+        process.stderr.write(pc.dim(`→ ${docsUrlFor(code)}`) + "\n");
+      } else {
+        process.stderr.write(pc.red(`✗ ${e?.message || e}`) + "\n");
+      }
       process.exitCode = 1;
     }
   };
@@ -136,7 +153,7 @@ export async function daemonRequest(port, path, { method = "GET", body, timeoutM
     signal: AbortSignal.timeout(timeoutMs),
   });
   let payload = null;
-  try { payload = await response.json(); } catch {}
+  try { payload = await response.json(); } catch { /* best-effort: non-JSON body falls through to the status-text error below */ }
   if (!response.ok) {
     const detail = payload?.error || `${response.status} ${response.statusText}`.trim();
     throw new Error(`daemon request failed: ${detail}`);

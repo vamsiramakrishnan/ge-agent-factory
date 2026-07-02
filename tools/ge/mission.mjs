@@ -1,7 +1,7 @@
 // tools/ge/mission.mjs — `ge mission plan|run|status|resume`. Moved verbatim
 // out of tools/ge.mjs.
 import { defineCommand } from "citty";
-import { buildMissionGraph } from "../lib/mission-plan.mjs";
+import { buildMissionGraph } from "../lib/mission/mission-plan.mjs";
 import {
   guarded, common, cfgFrom, emit, out, pc,
   daemonPort, daemonStatusSnapshot, daemonRequest, parseIds,
@@ -17,8 +17,8 @@ const missionPlanCmd = defineCommand({
     workspace: { type: "string", description: "Scenario workspace path (default .ge/missions/<scenario>)" },
     systems: { type: "string", description: "Comma-separated simulator system ids to validate" },
     "target-stage": { type: "string", description: "Target convergence stage (default preview)" },
-    attempts: { type: "string" },
-    "run-preview": { type: "boolean" },
+    attempts: { type: "string", description: "Repair attempts per item (default 3)" },
+    "run-preview": { type: "boolean", description: "Run preview after repair when supported" },
     "with-factory": { type: "boolean", description: "Include factory build as an auto-run node" },
     "no-antigravity": { type: "boolean", description: "Do not include the Antigravity spec/data review node" },
     "harness-agent": { type: "string", description: "Harness agent for mission review node (default antigravity-sdk)" },
@@ -62,8 +62,8 @@ const missionRunCmd = defineCommand({
     workspace: { type: "string", description: "Scenario workspace path (default .ge/missions/<scenario>)" },
     systems: { type: "string", description: "Comma-separated simulator system ids to validate" },
     "target-stage": { type: "string", description: "Target convergence stage (default preview)" },
-    attempts: { type: "string" },
-    "run-preview": { type: "boolean" },
+    attempts: { type: "string", description: "Repair attempts per item (default 3)" },
+    "run-preview": { type: "boolean", description: "Run preview after repair when supported" },
     "with-factory": { type: "boolean", description: "Actually schedule the factory build node" },
     "no-antigravity": { type: "boolean", description: "Do not include the Antigravity spec/data review node" },
     "harness-agent": { type: "string", description: "Harness agent for mission review node (default antigravity-sdk)" },
@@ -112,7 +112,7 @@ const missionRunCmd = defineCommand({
 
 const missionStatusCmd = defineCommand({
   meta: { name: "status", description: "Show one mission graph, or list recent mission runs" },
-  args: { id: { type: "positional", required: false }, json: { type: "boolean" }, port: { type: "string" }, limit: { type: "string" } },
+  args: { id: { type: "positional", required: false, description: "Mission task id (omit to list recent runs)" }, json: { type: "boolean", description: "Machine-readable JSON result on stdout" }, port: { type: "string", description: "Daemon port (default 17654)" }, limit: { type: "string", description: "Recent mission run count when no id is provided" } },
   run: guarded(async ({ args }) => {
     const port = daemonPort(args);
     const daemon = await daemonStatusSnapshot(port);
@@ -143,7 +143,7 @@ const missionStatusCmd = defineCommand({
 
 const missionResumeCmd = defineCommand({
   meta: { name: "resume", description: "Resume a mission run via its runtime resume plan" },
-  args: { id: { type: "positional", required: true }, json: { type: "boolean" }, port: { type: "string" } },
+  args: { id: { type: "positional", required: true, description: "Mission task id" }, json: { type: "boolean", description: "Machine-readable JSON result on stdout" }, port: { type: "string", description: "Daemon port (default 17654)" } },
   run: guarded(async ({ args }) => {
     const port = daemonPort(args);
     const daemon = await daemonStatusSnapshot(port);

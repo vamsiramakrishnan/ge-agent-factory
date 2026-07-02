@@ -11,10 +11,10 @@
 // onto the parent). Moved verbatim out of tools/lib/runtime-daemon.mjs.
 import { readJson } from "@ge/std/json-io";
 import * as core from "../factory-core.mjs";
-import { verifyMissionArtifacts } from "../mission-artifacts.mjs";
-import { isDataMissionNodeKind, validateMissionNodeArtifacts } from "../mission-node-registry.mjs";
-import { summarizeMissionNode } from "../mission-node-summary.mjs";
-import { buildMissionGraph, nextRunnableMissionNode, patchMissionNode, resetMissionGraphForResume } from "../mission-plan.mjs";
+import { verifyMissionArtifacts } from "../mission/mission-artifacts.mjs";
+import { isDataMissionNodeKind, validateMissionNodeArtifacts } from "../mission/mission-node-registry.mjs";
+import { summarizeMissionNode } from "../mission/mission-node-summary.mjs";
+import { buildMissionGraph, nextRunnableMissionNode, patchMissionNode, resetMissionGraphForResume } from "../mission/mission-plan.mjs";
 import { REPO_ROOT } from "../state-paths.mjs";
 import {
   appendEvent,

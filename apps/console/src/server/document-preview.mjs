@@ -162,7 +162,7 @@ async function previewXlsx(zip) {
   const workbook = await readWorkbook(zip);
   const sections = [];
   for (const sheet of workbook) {
-    const xml = await readZipText(zip, sheet.path).catch(() => "");
+    const xml = await readZipText(zip, sheet.path).catch(() => ""); // best-effort: unreadable sheet degrades to the "No readable cell values" placeholder
     const lines = extractWorksheetRows(xml, sharedStrings);
     sections.push({ title: sheet.name, lines: lines.length ? lines : ["No readable cell values found."] });
   }
@@ -170,14 +170,14 @@ async function previewXlsx(zip) {
 }
 
 async function readSharedStrings(zip) {
-  const xml = await readZipText(zip, "xl/sharedStrings.xml").catch(() => "");
+  const xml = await readZipText(zip, "xl/sharedStrings.xml").catch(() => ""); // best-effort: sharedStrings is an optional zip member
   if (!xml) return [];
   return Array.from(xml.matchAll(/<si\b[\s\S]*?<\/si>/g)).map((m) => extractTextRuns(m[0]).join(""));
 }
 
 async function readWorkbook(zip) {
-  const workbookXml = await readZipText(zip, "xl/workbook.xml").catch(() => "");
-  const relsXml = await readZipText(zip, "xl/_rels/workbook.xml.rels").catch(() => "");
+  const workbookXml = await readZipText(zip, "xl/workbook.xml").catch(() => ""); // best-effort: preview degrades to "No readable sheets found"
+  const relsXml = await readZipText(zip, "xl/_rels/workbook.xml.rels").catch(() => ""); // best-effort: missing rels only loses sheet-name mapping
   const rels = new Map();
   for (const rel of relsXml.matchAll(/<Relationship\b([^>]*)\/?>/g)) {
     const attrs = parseAttrs(rel[1]);
