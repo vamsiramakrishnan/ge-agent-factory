@@ -176,7 +176,7 @@ export async function cmdHarnessReview(dir, flags, deps) {
       // ok:true into that nested position and change byte-identical JSON output.
       return summary;
     }
-    fail(`${provider} harness review ${reason}`);
+    fail(`${provider} harness review ${reason}`, "GE0012");
   }
   const pipeline = await loadPipeline(dir);
   markStep(pipeline, "harnessReview", "done", {
@@ -343,7 +343,7 @@ export async function cmdHarnessRefine(dir, flags, deps) {
       // See NOTE in cmdHarnessReview above: bare return, not return ok(...).
       return summary;
     }
-    fail(`${provider} harness refine ${reason}`);
+    fail(`${provider} harness refine ${reason}`, "GE0012");
   }
 
   let refine = null;

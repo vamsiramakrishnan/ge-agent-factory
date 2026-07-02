@@ -66,7 +66,17 @@ export function markStep(pipeline, step, status, meta = {}) {
 // try/catch in factory.mjs has been audited for that difference (see
 // registry.mjs dispatch boundary + factory.mjs's from-usecase catch-guard);
 // this is intentional, not a gap.
-export class FactoryCommandError extends Error {}
+//
+// `code` (optional) is a stable GE#### error code from ./error-codes.mjs —
+// attached only at fail() sites whose failure mode is distinct and
+// user-meaningful. Errors without a code render exactly as before at both
+// boundaries (registry.mjs dispatch and tools/ge shared.mjs guarded()).
+export class FactoryCommandError extends Error {
+  constructor(message, { code = null } = {}) {
+    super(message);
+    this.code = code;
+  }
+}
 
 // Returns the same shape ok() used to print, so a bare `ok(data);` statement
 // (now a no-op — see below) doesn't change behavior for internal callers that
@@ -78,11 +88,13 @@ export function ok(data) { return { ok: true, ...data }; }
 // whole process. The registry's dispatch boundary renders the JSON/human error
 // and sets process.exitCode = 1 (not process.exit) so this matches the old
 // exit-code contract without bypassing citty's own cleanup/promise chain.
-export function fail(msg) { throw new FactoryCommandError(msg); }
+// `code` is optional and backward compatible: every existing 1-arg call is
+// unchanged (code stays null → uncoded rendering, byte-identical to before).
+export function fail(msg, code) { throw new FactoryCommandError(msg, { code }); }
 
 export function requireStep(pipeline, step) {
   if (!pipeline.steps[step] || pipeline.steps[step].status !== "done") {
-    fail(`Step "${step}" has not been completed yet. Run "factory ${step}" first.`);
+    fail(`Step "${step}" has not been completed yet. Run "factory ${step}" first.`, "GE0004");
   }
 }
 
