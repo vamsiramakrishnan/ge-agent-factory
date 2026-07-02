@@ -37,14 +37,18 @@ test("the checked-in stylesheets match the generator (repo is not stale)", () =>
   expect(result.ok).toBe(true);
 });
 
-test("$green-200 stays pinned to its shipped value until palette.mjs grows an entry for it", () => {
+test("$green-200 keeps its shipped value, now traced to PALETTE.tertiarySwatchDark", () => {
   // setup.scss shipped $green-200: #1e8e3e before palette.mjs (wrongly)
-  // documented it as matching --color-tertiary (#34a853). The generator pins
-  // the shipped value as a raw literal so generating never changes a color.
-  // If this hex ever lands in PALETTE, swap the raw pin in TOKEN_TABLE for
-  // that key and update this test.
+  // documented it as matching --color-tertiary (#34a853). The hex has since
+  // landed in PALETTE as tertiarySwatchDark (the deliberately-darker
+  // tip-callout accent) and TOKEN_TABLE's raw pin was swapped for that key —
+  // this guards that the rendered value still matches the shipped bytes and
+  // that the trace is to a real palette entry, not a raw literal.
   expect(renderRegion("setup.scss")).toContain("$green-200: #1e8e3e;");
-  expect(Object.values(PALETTE)).not.toContain("#1e8e3e");
+  expect(PALETTE.tertiarySwatchDark).toBe("#1e8e3e");
+  const row = TOKEN_TABLE.find((r) => r.name === "$green-200");
+  expect(row?.key).toBe("tertiarySwatchDark");
+  expect(row?.raw).toBeUndefined();
 });
 
 test("splitRegion throws on missing, reversed, and duplicated markers", () => {
