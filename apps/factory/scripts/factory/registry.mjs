@@ -270,11 +270,26 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
         "force-agent": { type: "string", alias: ["regenerate-agent"], description: "Force regeneration of app/agent.py even if it already exists (true/false; alias: --regenerate-agent)" },
         "run-tests": str("Set to 'false' to skip generating + running smoke tests (default: true)"),
       }, handlers.quickstart),
+    // test — retyped: cmdTest reads flags.out / flags.run (`!== "false"`) /
+    // flags["include-integration"] (`=== "true"`), the same string-comparison
+    // shape as the already-typed `eval`. (The old note here — `"flag" in flags`
+    // presence detection — actually describes quality-gate's shouldRunFlag
+    // helper, which cmdTest never uses.) Every subprocess caller (three
+    // runNodeScript sites in apps/factory/src/cli.js) passes only
+    // --dir/--run with explicit values; in-process callers (cmdFromUseCase,
+    // cmdQuickstart, cmdBatchAudit) invoke the handler directly and bypass
+    // this parsing entirely. Same accepted valueless-flag divergence as eval:
+    // a bare `--include-integration` now parses to "" (falsy) instead of
+    // legacy's "true" — no caller passes it bare.
+    test: dirCmd("test", "Generate (and by default run) the workspace smoke tests",
+      {
+        out: str("Output path for the generated smoke-test file (default: tests/test_smoke.py)"),
+        run: str("Set to 'false' to generate tests without running pytest"),
+        "include-integration": str("Set to 'true' to run the whole tests/ dir instead of just the smoke file"),
+      }, handlers.test),
 
     // ── Legacy passthrough — each kept legacy for a CONCRETE reason citty's
     //    strict parsing would break; not yet typed:
-    //    test          — uses `"flag" in flags` presence detection; citty fills
-    //                    declared flags with defaults, so `in` is always true.
     //    quality-gate  — `--lint-fix`/`--lint-mypy` are `=== "true"` checks used
     //                    bare; runs agents-cli (can't verify parsing offline).
     //    harness-review/refine — `--soft`/`--vertex` are passed WITH values
@@ -286,7 +301,6 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
     //                    (deploy path, unverifiable in this environment).
     //    batch-audit   — FORWARDS arbitrary flags to other commands; citty strict
     //                    parsing rejects undeclared flags.
-    test: legacy("test", "Run the workspace smoke tests", handlers.test),
     "quality-gate": legacy("quality-gate", "Run the quality gate", handlers.qualityGate),
     "harness-review": legacy("harness-review", "Antigravity harness review (read-only)", handlers.harnessReview),
     "harness-refine": legacy("harness-refine", "Antigravity harness refine (write-enabled)", handlers.harnessRefine),
