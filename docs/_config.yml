@@ -54,4 +54,4 @@ exclude:
   - plans/
   - runbooks/
   - skills/
-  - superpowers/
+  - design-specs/

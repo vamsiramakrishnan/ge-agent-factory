@@ -8,7 +8,7 @@
 
 **Tech Stack:** React 19, TypeScript, Tailwind CSS, Motion (Framer Motion), Lucide React icons, Vite
 
-**Spec Document:** `docs/superpowers/specs/2026-04-13-procurement-agent-catalog.md` — contains all 78 agent definitions with three-layer breakdown (Integration & Orchestration, Traditional ML, LLM Reasoning), systems, triggers, HITL gates, personas, and KPIs.
+**Spec Document:** `docs/design-specs/specs/2026-04-13-procurement-agent-catalog.md` — contains all 78 agent definitions with three-layer breakdown (Integration & Orchestration, Traditional ML, LLM Reasoning), systems, triggers, HITL gates, personas, and KPIs.
 
 ---
 
@@ -235,7 +235,7 @@ git commit -m "feat: add 78 Procurement agents to agent constants"
 - Create: `src/components/slides/use-cases/procurement/ProcurementMaturityAssessor.tsx`
 - Create: `src/components/slides/use-cases/procurement/StakeholderSatisfactionAnalyzer.tsx`
 
-**Reference:** Read spec sections P1-01 through P1-07 in `docs/superpowers/specs/2026-04-13-procurement-agent-catalog.md` for detailed agent definitions including three-layer breakdown, systems, triggers, and HITL gates.
+**Reference:** Read spec sections P1-01 through P1-07 in `docs/design-specs/specs/2026-04-13-procurement-agent-catalog.md` for detailed agent definitions including three-layer breakdown, systems, triggers, and HITL gates.
 
 **Instructions:** For each agent, create a component following the exact pattern of the existing HR use cases (e.g., `src/components/slides/use-cases/WorkforceScenarioModeling.tsx`). Each component must:
 

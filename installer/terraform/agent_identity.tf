@@ -2,7 +2,7 @@
 # role set granted to the runtime SA in data_plane.tf/mcp.tf, but target the SPIFFE
 # principalSet so every agent in the project carries them. SA remains the fallback
 # when identity_type is unset at deploy. See
-# docs/superpowers/specs/2026-06-01-mcp-tool-plane-design.md (Agent Identity) and
+# docs/design-specs/specs/2026-06-01-mcp-tool-plane-design.md (Agent Identity) and
 # https://docs.cloud.google.com/iam/docs/agent-identity-overview.
 
 # Derive the org id (and validate the project) from the project itself, so

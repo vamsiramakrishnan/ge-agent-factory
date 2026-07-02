@@ -152,5 +152,5 @@ bun test apps tools    # run the test suite directly
 ## More
 
 - Operator runbook: [`docs/OPERATIONS.md`](docs/OPERATIONS.md)
-- Design specs: [`docs/superpowers/specs/`](docs/superpowers/specs)
+- Design specs: [`docs/design-specs/specs/`](docs/design-specs/specs)
 - CLI internals: [`tools/README.md`](tools/README.md)

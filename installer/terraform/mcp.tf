@@ -1,7 +1,7 @@
 # MCP tool plane IAM. The runner + runtime SAs call 1P managed MCP servers
 # (roles/mcp.toolUser → mcp.tools.call) and register custom MCP servers in Agent
 # Registry (roles/agentregistry.editor). Per-product data roles are granted by
-# data_plane.tf. See docs/superpowers/specs/2026-06-01-mcp-tool-plane-design.md.
+# data_plane.tf. See docs/design-specs/specs/2026-06-01-mcp-tool-plane-design.md.
 
 locals {
   mcp_sas = [google_service_account.runner.email, google_service_account.gateway.email]
