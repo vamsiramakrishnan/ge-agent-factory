@@ -49,6 +49,7 @@ import { canonicalSystemId, safePyName, snakeCase, titleCase, validPythonIdentif
 import { CONTRACT_INTENT_KINDS, ensureContractQueryTables } from "./factory/core/contract-schema.mjs";
 import { FactoryCommandError, STEPS, cloudDataDir, deployPlanPath, fail, fixturesDir, loadPipeline, manifestPath, markStep, nextCommandFor, ok, readJson, requireStep, savePipeline, schemaPath, warnMkdirFailure, writeJson, writeText } from "./factory/core/pipeline.mjs";
 import { generateDocument, generateDomainDocuments, generateParagraph, pickEntityRefs } from "./factory/fixtures/document-gen.mjs";
+import { generateValue } from "./factory/fixtures/value-gen.mjs";
 import { buildSourceIntegrationPlan } from "./factory/integration/source-integration.mjs";
 import { pyEscape, pyTripleEscape } from "./factory/tools/py-emit.mjs";
 import { canonicalIntentToolName, tableToolName } from "./factory/tools/tool-naming.mjs";
@@ -2013,45 +2014,6 @@ async function cmdListUseCases(flags) {
   } catch (e) {
     fail(`Could not load catalog: ${e.message}`);
   }
-}
-
-// ── Value generation (reuses faker) ──────────────────────────
-
-function generateValue(col, rowIndex, generatedTables) {
-  const type = col.type || "string";
-  if (type === "seq") {
-    const p = col.pattern || `${(col.name || "ID").slice(0, 3).toUpperCase()}-{n:4}`;
-    return p.replace(/\{n(?::(\d+))?\}/g, (_, pad) => String(rowIndex + 1).padStart(Number(pad) || 4, "0"));
-  }
-  if (type === "number") return faker.number.int({ min: col.min ?? 0, max: col.max ?? 1000 });
-  if (type === "float") return Number(faker.number.float({ min: col.min ?? 0, max: col.max ?? 1000, fractionDigits: col.decimals ?? 2 }));
-  if (type === "date") return faker.date.between({ from: col.min || "2020-01-01", to: col.max || "2026-01-01" }).toISOString().slice(0, 10);
-  if (type === "enum") {
-    const vals = Array.isArray(col.values) ? col.values : ["A", "B", "C"];
-    if (col.weights) return faker.helpers.weightedArrayElement(vals.map((v, i) => ({ value: v, weight: col.weights[i] || 1 })));
-    return faker.helpers.arrayElement(vals);
-  }
-  if (type === "boolean") return faker.datatype.boolean({ probability: col.trueRate ?? 0.5 });
-  if (type === "ref") {
-    const [entity, field] = (col.ref || "").split(".");
-    const ref = generatedTables[entity];
-    if (ref?.length) return faker.helpers.arrayElement(ref)[field || "id"] ?? null;
-    return `${entity}-${faker.number.int({ min: 1, max: 100 })}`;
-  }
-  const parts = type.split(".");
-  if (parts.length === 2) {
-    try {
-      const fn = faker[parts[0]]?.[parts[1]];
-      if (typeof fn === "function") {
-        const opts = {};
-        if (col.min !== undefined) opts.min = col.min;
-        if (col.max !== undefined) opts.max = col.max;
-        if (col.len !== undefined) opts.length = col.len;
-        return Object.keys(opts).length ? fn(opts) : fn();
-      }
-    } catch { /* fall through */ }
-  }
-  return faker.lorem.word();
 }
 
 // ── Help ─────────────────────────────────────────────────────
