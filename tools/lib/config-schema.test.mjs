@@ -26,6 +26,10 @@ test("precedence: flag beats env beats file beats default", () => {
 test("project reads either env alias", () => {
   expect(resolveConfigField("project", { env: { GOOGLE_CLOUD_PROJECT: "p2" } })).toEqual({ value: "p2", source: "env:GOOGLE_CLOUD_PROJECT" });
   expect(resolveConfigField("project", { env: { GCP_PROJECT_ID: "p1", GOOGLE_CLOUD_PROJECT: "p2" } }).value).toBe("p1");
+  // GCLOUD_PROJECT is honored as a last-resort fallback (gcp-config.mjs parity),
+  // without displacing GCP_PROJECT_ID / GOOGLE_CLOUD_PROJECT precedence.
+  expect(resolveConfigField("project", { env: { GCLOUD_PROJECT: "p3" } })).toEqual({ value: "p3", source: "env:GCLOUD_PROJECT" });
+  expect(resolveConfigField("project", { env: { GOOGLE_CLOUD_PROJECT: "p2", GCLOUD_PROJECT: "p3" } }).value).toBe("p2");
 });
 
 test("geApp flag maps to geAppId field", () => {

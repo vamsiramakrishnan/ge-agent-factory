@@ -16,6 +16,7 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { extractFirstJsonObject } from "@ge/std/json-repair";
+import { resolveGcpProject } from "@ge/std/gcp-config";
 
 // Non-fatal: validate parsed harness output against its zod source of truth.
 // Warns (keeps the output) so a contract drift surfaces without breaking a run.
@@ -114,7 +115,7 @@ export async function cmdHarnessReview(dir, flags, deps) {
     permissionProfile: flags["permission-profile"] || "review",
     model: flags.model || "default",
     vertex: wantsVertex(flags),
-    project: flags.project || flags["gcp-project"] || process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT || null,
+    project: resolveGcpProject({ explicit: flags.project || flags["gcp-project"] }),
     location: flags.location || flags.region || process.env.GOOGLE_CLOUD_LOCATION || process.env.GOOGLE_GENAI_LOCATION || null,
     responseSchemaFile: harnessResponseSchemaFile("harness-review"),
     ...reviewFanoutOptions(),
@@ -272,7 +273,7 @@ export async function cmdHarnessRefine(dir, flags, deps) {
     stage: "harness_refine",
     adapter: provider,
     locality: flags.locality || process.env.GE_HARNESS_LOCALITY || (process.env.K_SERVICE ? "remote" : "local"),
-    project: flags.project || flags["gcp-project"] || process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT || null,
+    project: resolveGcpProject({ explicit: flags.project || flags["gcp-project"] }),
     location: flags.location || flags.region || process.env.GOOGLE_CLOUD_LOCATION || process.env.GOOGLE_GENAI_LOCATION || null,
     targetGate: flags["target-gate"] || "validate",
     permissionProfile: flags["permission-profile"] || "workspace_write",
@@ -298,7 +299,7 @@ export async function cmdHarnessRefine(dir, flags, deps) {
     permissionProfile: workItem.permissionProfile,
     model: workItem.model,
     vertex: wantsVertex(flags),
-    project: flags.project || flags["gcp-project"] || process.env.GOOGLE_CLOUD_PROJECT || process.env.GCLOUD_PROJECT || null,
+    project: resolveGcpProject({ explicit: flags.project || flags["gcp-project"] }),
     location: flags.location || flags.region || process.env.GOOGLE_CLOUD_LOCATION || process.env.GOOGLE_GENAI_LOCATION || null,
     responseSchemaFile: harnessResponseSchemaFile("harness-refine"),
     protectFiles: ["tools.py"],
