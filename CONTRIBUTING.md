@@ -167,6 +167,19 @@ Knowledge Format) v0.1**, a portable BRD exchange format, via the converters in
 
 ---
 
+## Adding a `ge` command / console action
+
+The console, CLI, and doctor bind mutating operator commands through one
+registry (`tools/lib/ge-command-registry.mjs` — its header JSDoc is the field
+contract). One entry gives a command its `/api/ge/*` route, preflight gating,
+risk label, and live job streaming; don't add bespoke console route logic for
+something a registry entry covers.
+
+- Cookbook: [Add a ge command](docs/cookbooks/add-a-ge-command.md)
+- Layer rules: [`skills/operating-console/references/api-transport-contract.md`](skills/operating-console/references/api-transport-contract.md)
+
+---
+
 ## Adding a simulator
 
 Generated agents are grounded by simulated source systems under
