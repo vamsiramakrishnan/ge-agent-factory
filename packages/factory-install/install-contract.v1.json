@@ -90,7 +90,8 @@
       "bigtable_instance",
       "firestore_location",
       "mcp_enabled",
-      "agent_identity_principalset"
+      "agent_identity_principalset",
+      "agent_identity_org_id_resolved"
     ]
   },
   "runtimeTargets": {
