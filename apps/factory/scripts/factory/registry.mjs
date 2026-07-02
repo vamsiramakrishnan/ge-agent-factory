@@ -282,15 +282,26 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
         "force-agent": { type: "string", alias: ["regenerate-agent"], description: "Force regeneration of app/agent.py even if it already exists (true/false; alias: --regenerate-agent)" },
         "run-tests": str("Set to 'false' to skip generating + running smoke tests (default: true)"),
       }, handlers.quickstart),
+    // test — retyped: cmdTest reads flags.out / flags.run (`!== "false"`) /
+    // flags["include-integration"] (`=== "true"`), the same string-comparison
+    // shape as the already-typed `eval`. (The old note here — `"flag" in flags`
+    // presence detection — actually describes quality-gate's shouldRunFlag
+    // helper, which cmdTest never uses.) Every subprocess caller (three
+    // runNodeScript sites in apps/factory/src/cli.js) passes only
+    // --dir/--run with explicit values; in-process callers (cmdFromUseCase,
+    // cmdQuickstart, cmdBatchAudit) invoke the handler directly and bypass
+    // this parsing entirely. Same accepted valueless-flag divergence as eval:
+    // a bare `--include-integration` now parses to "" (falsy) instead of
+    // legacy's "true" — no caller passes it bare.
+    test: dirCmd("test", "Generate (and by default run) the workspace smoke tests",
+      {
+        out: str("Output path for the generated smoke-test file (default: tests/test_smoke.py)"),
+        run: str("Set to 'false' to generate tests without running pytest"),
+        "include-integration": str("Set to 'true' to run the whole tests/ dir instead of just the smoke file"),
+      }, handlers.test),
 
     // ── Legacy passthrough — each kept legacy for a CONCRETE reason citty's
     //    strict parsing would break; not yet typed:
-    //    test          — reads flags.out/flags["run"]/flags["include-integration"],
-    //                    the same shape as the already-typed `eval` command, so
-    //                    the `"flag" in flags` presence-detection hazard (real in
-    //                    shouldRunFlag/wantsVertex/shouldRunHarnessReview elsewhere
-    //                    in factory.mjs) doesn't apply here; retyping `test` is
-    //                    deferred as its own decision, not blocked on that hazard.
     //    quality-gate  — `--lint-fix`/`--lint-mypy` are `=== "true"` checks used
     //                    bare; runs agents-cli (can't verify parsing offline).
     //    harness-review/refine — `--soft`/`--vertex` are passed WITH values
@@ -307,14 +318,8 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
     //    `factory <cmd> --help` shows real flag info again — see the note
     //    above legacy() itself: this is purely --help metadata, verified to
     //    leave ctx.rawArgs/parseLegacy (and therefore actual flag parsing)
-    //    byte-for-byte unchanged.
-    test: legacy("test", "Run the workspace smoke tests", handlers.test, true, {
-      dir: legacyDir,
-      out: str("Output path for the generated smoke-test file (default tests/test_smoke.py)"),
-      run: str("Set to 'false' to skip actually running the generated tests (default: true)"),
-      "include-integration": str("Set to 'true' to run the whole tests/ directory (integration probes) instead of just the generated smoke test"),
-      json: legacyJson,
-    }),
+    //    byte-for-byte unchanged. (`test` used to live here too — it's now
+    //    fully TYPED above, not just help-annotated.)
     "quality-gate": legacy("quality-gate", "Run the quality gate", handlers.qualityGate, true, {
       dir: legacyDir,
       evals: str("Run agents-cli evals (default: true; 'false'/'0'/'no'/'off' to skip)"),
@@ -377,14 +382,14 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
     mcp: legacy("mcp", "MCP tool-plane operations", handlers.mcp, true, {
       dir: legacyDir,
       action: str("Sub-action: plan|list|enable|disable (default 'list'; the first positional word also works, e.g. `factory mcp enable`)"),
-      project: str("GCP project (default: GOOGLE_CLOUD_PROJECT or `gcloud config get-value project`)"),
+      project: str("GCP project (default: GOOGLE_CLOUD_PROJECT / GCLOUD_PROJECT, or `gcloud config get-value project`)"),
       region: str("GCP region for Agent Registry checks (default us-central1)"),
       service: str("MCP service id for --action enable|disable (e.g. bigquery, maps, spanner)"),
       json: legacyJson,
     }),
     deploy: legacy("deploy", "Deploy the agent (Cloud Run / Agent Runtime)", handlers.deploy, true, {
       dir: legacyDir,
-      project: str("GCP project (default: GOOGLE_CLOUD_PROJECT or `gcloud config get-value project`)"),
+      project: str("GCP project (default: GOOGLE_CLOUD_PROJECT / GCLOUD_PROJECT, or `gcloud config get-value project`)"),
       region: str("GCP region (default us-central1)"),
       target: str("Deploy target: agent_runtime|cloud_run (default 'agent_runtime')"),
       wait: str("Set to 'true' to wait for the deploy to finish (default: false, i.e. --no-wait)"),
@@ -394,7 +399,7 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
     }),
     register: legacy("register", "Register the agent (Gemini Enterprise / MCP)", handlers.register, true, {
       dir: legacyDir,
-      project: str("GCP project (default: GOOGLE_CLOUD_PROJECT or `gcloud config get-value project`)"),
+      project: str("GCP project (default: GOOGLE_CLOUD_PROJECT / GCLOUD_PROJECT, or `gcloud config get-value project`)"),
       region: str("GCP region / Agent Registry location (default us-central1)"),
       as: str("Registration mode: adk|mcp|a2a (default 'adk')"),
       "display-name": str("Display name for the registered agent/service (default: workspace name)"),
