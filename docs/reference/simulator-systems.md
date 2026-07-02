@@ -158,8 +158,8 @@ All three CLIs live under `apps/factory/scripts/`.
 ### Scaffold a pack
 
 ```bash
-node scripts/scaffold-simulator-pack.mjs --id <system> --archetype <family> [--root .] [--force true]
-node scripts/scaffold-simulator-pack.mjs --listArchetypes
+node apps/factory/scripts/scaffold-simulator-pack.mjs --id <system> --archetype <family> [--root .] [--force true]
+node apps/factory/scripts/scaffold-simulator-pack.mjs --listArchetypes
 ```
 
 Generates all six pack files from an archetype (e.g. `hr_talent`, `procurement`,
@@ -169,7 +169,7 @@ human-readable name.
 ### Validate a pack
 
 ```bash
-node scripts/validate-simulator-pack.mjs [--system <id>] [--strict] [--check]
+node apps/factory/scripts/validate-simulator-pack.mjs [--system <id>] [--strict] [--check]
 ```
 
 Validates binding resolution, workflow ↔ tool ↔ schema consistency, projection /
@@ -180,8 +180,8 @@ seed resolves), and scenario coverage. `--strict` promotes warnings to errors;
 ### Generate seed data
 
 ```bash
-node scripts/generate-simulator-data.mjs --system <id> [--seed 42] [--out <path>] [--no-snowfakery] [--stdout]
-node scripts/generate-simulator-data.mjs --pack <dir> [--seed 42]
+node apps/factory/scripts/generate-simulator-data.mjs --system <id> [--seed 42] [--out <path>] [--no-snowfakery] [--stdout]
+node apps/factory/scripts/generate-simulator-data.mjs --pack <dir> [--seed 42]
 ```
 
 Builds a deterministic recipe from the contract and produces `seed.json` — using

@@ -3,6 +3,7 @@ import { parseList } from "@ge/std/list";
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join, dirname, resolve } from "node:path";
 import { readJson as baseReadJson, writeJson } from "@ge/std/json-io";
+import { resolveGcpProject } from "@ge/std/gcp-config";
 import dotenv from "dotenv";
 
 // Resolve presentation root and load local env parameters
@@ -10,7 +11,7 @@ const PRESENTATION_ROOT = resolve(import.meta.dirname, "../..");
 dotenv.config({ path: join(PRESENTATION_ROOT, ".env") });
 
 const IS_PROD = process.env.NODE_ENV === "production" || !!process.env.K_SERVICE;
-const CONTROL_PLANE_PROJECT = process.env.GOOGLE_CLOUD_PROJECT || "";
+const CONTROL_PLANE_PROJECT = resolveGcpProject() || "";
 const CONTROL_PLANE_BUCKET = process.env.GE_AGENT_FACTORY_BUCKET || (CONTROL_PLANE_PROJECT ? `${CONTROL_PLANE_PROJECT}-ge-agent-factory` : "");
 
 // Worker URL is required only to DISPATCH a provisioning run — validated in
@@ -714,7 +715,7 @@ export async function submitFactoryRun(request) {
   } else {
     // Local Mode Shell fallback path (compatibility-only sandbox execution)
     const harnessEnv = readHarnessEnv();
-    const localProject = target.projectId || harnessEnv.GOOGLE_CLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT;
+    const localProject = target.projectId || harnessEnv.GOOGLE_CLOUD_PROJECT || resolveGcpProject();
     const localProjectNum = target.projectNumber || harnessEnv.GOOGLE_CLOUD_PROJECT_NUMBER || process.env.GOOGLE_CLOUD_PROJECT_NUMBER;
     if (!localProject) throw new Error("Local mode requires GOOGLE_CLOUD_PROJECT in env or .ge.json");
     const localRegion = target.runtimeRegion || harnessEnv.GE_AGENT_RUNTIME_REGION || "us-central1";

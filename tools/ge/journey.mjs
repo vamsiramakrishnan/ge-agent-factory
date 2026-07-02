@@ -4,7 +4,7 @@
 import { defineCommand } from "citty";
 import { buildJourneyPlan } from "../lib/journey-plan.mjs";
 import {
-  common, cfgFrom, emit, out, pc, core,
+  guarded, common, cfgFrom, emit, out, pc, core,
   daemonPort, daemonStatusSnapshot, daemonRequest, parseIds,
   renderMissionGraph, renderJourneyPlan,
 } from "./shared.mjs";
@@ -47,16 +47,16 @@ async function buildCliJourney(args, { includeTasks = false } = {}) {
 const journeyPlanCmd = defineCommand({
   meta: { name: "plan", description: "Show the user-facing pipeline plan" },
   args: journeyArgs,
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const journey = await buildCliJourney(args, { includeTasks: false });
     emit(args, journey, renderJourneyPlan);
-  },
+  }),
 });
 
 const journeyStatusCmd = defineCommand({
   meta: { name: "status", description: "Show the journey with recent runtime state" },
   args: journeyArgs,
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const cfg = cfgFrom(args);
     const tasks = await journeyTasks(args);
     const [status, fleet] = await Promise.all([Promise.resolve(core.statusBoard(cfg)), core.fleetStatus(cfg)]);
@@ -75,7 +75,7 @@ const journeyStatusCmd = defineCommand({
       includePlannedMission: !latestMission,
     });
     emit(args, journey, renderJourneyPlan);
-  },
+  }),
 });
 
 const journeyRunCmd = defineCommand({
@@ -89,7 +89,7 @@ const journeyRunCmd = defineCommand({
     model: { type: "string", description: "Model for the Antigravity review node" },
     location: { type: "string", description: "Location for the Antigravity review node" },
   },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const port = daemonPort(args);
     const daemon = await daemonStatusSnapshot(port);
     if (!daemon.ok) throw new Error(`ge daemon is ${daemon.status || "stopped"}; run: ge daemon start`);
@@ -125,7 +125,7 @@ const journeyRunCmd = defineCommand({
       out(pc.dim(`\n  status: ge journey status --scenario ${args.scenario || args.usecase || "<scenario>"}`));
       out(pc.dim(`  events: ge runtime events ${t.id} --follow`));
     });
-  },
+  }),
 });
 
 export const journey = defineCommand({

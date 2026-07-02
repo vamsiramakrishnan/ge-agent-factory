@@ -190,9 +190,14 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
     typed(name, description, withJsonFlag({ dir: { type: "string", description: "Workspace directory", default: "." }, ...flags }),
       ({ args }) => dispatch(name, handler(resolveDir(args.dir), args), { json: args.json }));
 
-  const legacy = (name, description, handler, takesDir = true) =>
+  // `args` here is DISPLAY-ONLY (citty --help), never a parsing gate: the
+  // handler still runs off `parseLegacy(ctx.rawArgs)` below regardless of
+  // what citty itself parsed from ctx.args, so declaring a flag's shape for
+  // --help can never change what the handler actually reads at runtime.
+  const legacy = (name, description, handler, takesDir = true, args) =>
     defineCommand({
       meta: { name, description },
+      args,
       run: (ctx) => {
         const flags = parseLegacy(ctx.rawArgs);
         return dispatch(
@@ -204,6 +209,13 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
     });
 
   const str = (description) => ({ type: "string", description });
+  const bool = (description) => ({ type: "boolean", description });
+  // Shared display-only fragments for legacy() commands (see the note above
+  // legacy() itself): `dir` mirrors dirCmd's own `--dir` (default ".") and
+  // `json` mirrors withJsonFlag's boolean, just declared for a command whose
+  // real parsing goes through parseLegacy(ctx.rawArgs) instead of citty args.
+  const legacyDir = { type: "string", description: "Workspace directory", default: "." };
+  const legacyJson = { type: "boolean", description: "Force JSON output even at an interactive terminal" };
 
   return {
     // ── Typed (flags-only handlers) ──────────────────────────────────────────
@@ -270,11 +282,26 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
         "force-agent": { type: "string", alias: ["regenerate-agent"], description: "Force regeneration of app/agent.py even if it already exists (true/false; alias: --regenerate-agent)" },
         "run-tests": str("Set to 'false' to skip generating + running smoke tests (default: true)"),
       }, handlers.quickstart),
+    // test — retyped: cmdTest reads flags.out / flags.run (`!== "false"`) /
+    // flags["include-integration"] (`=== "true"`), the same string-comparison
+    // shape as the already-typed `eval`. (The old note here — `"flag" in flags`
+    // presence detection — actually describes quality-gate's shouldRunFlag
+    // helper, which cmdTest never uses.) Every subprocess caller (three
+    // runNodeScript sites in apps/factory/src/cli.js) passes only
+    // --dir/--run with explicit values; in-process callers (cmdFromUseCase,
+    // cmdQuickstart, cmdBatchAudit) invoke the handler directly and bypass
+    // this parsing entirely. Same accepted valueless-flag divergence as eval:
+    // a bare `--include-integration` now parses to "" (falsy) instead of
+    // legacy's "true" — no caller passes it bare.
+    test: dirCmd("test", "Generate (and by default run) the workspace smoke tests",
+      {
+        out: str("Output path for the generated smoke-test file (default: tests/test_smoke.py)"),
+        run: str("Set to 'false' to generate tests without running pytest"),
+        "include-integration": str("Set to 'true' to run the whole tests/ dir instead of just the smoke file"),
+      }, handlers.test),
 
     // ── Legacy passthrough — each kept legacy for a CONCRETE reason citty's
     //    strict parsing would break; not yet typed:
-    //    test          — uses `"flag" in flags` presence detection; citty fills
-    //                    declared flags with defaults, so `in` is always true.
     //    quality-gate  — `--lint-fix`/`--lint-mypy` are `=== "true"` checks used
     //                    bare; runs agents-cli (can't verify parsing offline).
     //    harness-review/refine — `--soft`/`--vertex` are passed WITH values
@@ -286,14 +313,123 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
     //                    (deploy path, unverifiable in this environment).
     //    batch-audit   — FORWARDS arbitrary flags to other commands; citty strict
     //                    parsing rejects undeclared flags.
-    test: legacy("test", "Run the workspace smoke tests", handlers.test),
-    "quality-gate": legacy("quality-gate", "Run the quality gate", handlers.qualityGate),
-    "harness-review": legacy("harness-review", "Antigravity harness review (read-only)", handlers.harnessReview),
-    "harness-refine": legacy("harness-refine", "Antigravity harness refine (write-enabled)", handlers.harnessRefine),
-    mcp: legacy("mcp", "MCP tool-plane operations", handlers.mcp),
-    deploy: legacy("deploy", "Deploy the agent (Cloud Run / Agent Runtime)", handlers.deploy),
-    register: legacy("register", "Register the agent (Gemini Enterprise / MCP)", handlers.register),
-    "batch-audit": legacy("batch-audit", "Audit use-case specs in batch", handlers.batchAudit, false),
+    //
+    //    Every legacy() call below now also passes an `args` object so
+    //    `factory <cmd> --help` shows real flag info again — see the note
+    //    above legacy() itself: this is purely --help metadata, verified to
+    //    leave ctx.rawArgs/parseLegacy (and therefore actual flag parsing)
+    //    byte-for-byte unchanged. (`test` used to live here too — it's now
+    //    fully TYPED above, not just help-annotated.)
+    "quality-gate": legacy("quality-gate", "Run the quality gate", handlers.qualityGate, true, {
+      dir: legacyDir,
+      evals: str("Run agents-cli evals (default: true; 'false'/'0'/'no'/'off' to skip)"),
+      preview: str("Run the agents-cli preview 'run' step (default: true; set to 'false' to skip)"),
+      lint: str("Run agents-cli lint (default: true; set to 'false' to skip)"),
+      optimize: str("Run agents-cli eval optimize (default: false; set to 'true' to enable)"),
+      "lint-fix": str("Set to 'true' to pass --fix to agents-cli lint"),
+      "lint-mypy": str("Set to 'true' to pass --mypy to agents-cli lint"),
+      "skip-codespell": str("Set to 'false' to NOT skip codespell in agents-cli lint (default: true = skipped)"),
+      "skip-ty": str("Set to 'false' to NOT skip ty in agents-cli lint (default: true = skipped)"),
+      "eval-timeout-ms": str("Timeout in ms for the agents-cli eval run step (default 900000)"),
+      "optimize-config": str("Path (relative to --dir) to the eval optimization config (default tests/eval/optimization_config.json)"),
+      "target-metric": str("Optimization target metric passed to agents-cli eval optimize"),
+      dataset: str("Dataset passed to agents-cli eval optimize"),
+      "optimize-timeout-ms": str("Timeout in ms for agents-cli eval optimize (default 1800000)"),
+      "preview-timeout-ms": str("Timeout in ms for the agents-cli preview 'run' step (default 120000)"),
+      prompt: str("Prompt used for the agents-cli preview 'run' step (default 'hello')"),
+      "harness-review": str("Set to 'true' to also run harness review as part of the gate (alias: --review; see `factory harness-review --help` for the flags it forwards)"),
+      review: str("Alias for --harness-review"),
+      "harness-refine": str("Set to 'true' to also run harness refine as part of the gate (alias: --refine; see `factory harness-refine --help` for the flags it forwards)"),
+      refine: str("Alias for --harness-refine"),
+      json: legacyJson,
+    }),
+    "harness-review": legacy("harness-review", "Antigravity harness review (read-only)", handlers.harnessReview, true, {
+      dir: legacyDir,
+      agent: str("Harness agent/provider id (default antigravity-sdk)"),
+      provider: str("Alias for --agent"),
+      model: str("Model for the harness review run (default 'default')"),
+      project: str("GCP project (default: --gcp-project / GOOGLE_CLOUD_PROJECT / GCLOUD_PROJECT)"),
+      "gcp-project": str("Alias for --project"),
+      region: str("Alias for --location"),
+      location: str("Vertex/GenAI location (default: --region / GOOGLE_CLOUD_LOCATION / GOOGLE_GENAI_LOCATION)"),
+      vertex: bool("Use Vertex AI for the harness run (default: true unless --no-vertex)"),
+      "no-vertex": bool("Disable Vertex AI for the harness run"),
+      "permission-profile": str("Harness permission profile (default 'review')"),
+      "timeout-sec": str("Harness run timeout in seconds (default 300)"),
+      soft: bool("Degrade gracefully (keep the deterministic generated code) instead of failing when the harness run fails or returns unparseable output"),
+      json: legacyJson,
+    }),
+    "harness-refine": legacy("harness-refine", "Antigravity harness refine (write-enabled)", handlers.harnessRefine, true, {
+      dir: legacyDir,
+      agent: str("Harness agent/provider id (default antigravity-sdk)"),
+      provider: str("Alias for --agent"),
+      model: str("Model for the harness refine run (default 'default')"),
+      project: str("GCP project (default: --gcp-project / GOOGLE_CLOUD_PROJECT / GCLOUD_PROJECT)"),
+      "gcp-project": str("Alias for --project"),
+      region: str("Alias for --location"),
+      location: str("Vertex/GenAI location (default: --region / GOOGLE_CLOUD_LOCATION / GOOGLE_GENAI_LOCATION)"),
+      vertex: bool("Use Vertex AI for the harness run (default: true unless --no-vertex)"),
+      "no-vertex": bool("Disable Vertex AI for the harness run"),
+      "run-id": str("Run id to associate with this work item (default: GE_AGENT_FACTORY_RUN_ID env var)"),
+      "item-id": str("Work-item id (default: GE_AGENT_FACTORY_ITEM_ID env var)"),
+      locality: str("Harness locality: local|remote (default: GE_HARNESS_LOCALITY env var, or 'remote' under Cloud Run)"),
+      "target-gate": str("Target pipeline gate for this refine pass (default 'validate')"),
+      "permission-profile": str("Harness permission profile (default 'workspace_write')"),
+      "timeout-sec": str("Harness run timeout in seconds (default 600)"),
+      soft: bool("Degrade gracefully (keep the deterministic generated code) instead of failing when the harness run fails"),
+      json: legacyJson,
+    }),
+    mcp: legacy("mcp", "MCP tool-plane operations", handlers.mcp, true, {
+      dir: legacyDir,
+      action: str("Sub-action: plan|list|enable|disable (default 'list'; the first positional word also works, e.g. `factory mcp enable`)"),
+      project: str("GCP project (default: GOOGLE_CLOUD_PROJECT / GCLOUD_PROJECT, or `gcloud config get-value project`)"),
+      region: str("GCP region for Agent Registry checks (default us-central1)"),
+      service: str("MCP service id for --action enable|disable (e.g. bigquery, maps, spanner)"),
+      json: legacyJson,
+    }),
+    deploy: legacy("deploy", "Deploy the agent (Cloud Run / Agent Runtime)", handlers.deploy, true, {
+      dir: legacyDir,
+      project: str("GCP project (default: GOOGLE_CLOUD_PROJECT / GCLOUD_PROJECT, or `gcloud config get-value project`)"),
+      region: str("GCP region (default us-central1)"),
+      target: str("Deploy target: agent_runtime|cloud_run (default 'agent_runtime')"),
+      wait: str("Set to 'true' to wait for the deploy to finish (default: false, i.e. --no-wait)"),
+      "deploy-timeout-ms": str("Timeout in ms for the deploy step (default 180000 when not waiting, 900000 when waiting)"),
+      force: bool("Override the promotion gate and deploy despite unresolved blockers"),
+      json: legacyJson,
+    }),
+    register: legacy("register", "Register the agent (Gemini Enterprise / MCP)", handlers.register, true, {
+      dir: legacyDir,
+      project: str("GCP project (default: GOOGLE_CLOUD_PROJECT / GCLOUD_PROJECT, or `gcloud config get-value project`)"),
+      region: str("GCP region / Agent Registry location (default us-central1)"),
+      as: str("Registration mode: adk|mcp|a2a (default 'adk')"),
+      "display-name": str("Display name for the registered agent/service (default: workspace name)"),
+      "agent-id": str("Agent id used in the per-department MCP service URL (--as mcp; default: workspace name)"),
+      "service-url": str("Department MCP service base URL (--as mcp; falls back to the deploy step's serviceUrl)"),
+      protocol: str("Agent Registry protocol binding for --as mcp (default 'jsonrpc')"),
+      "agent-principalset": str("principalSet:// member to grant roles/iap.egressor on the MCP server (--as mcp)"),
+      principalset: str("Alias for --agent-principalset"),
+      "agent-identity-org-id": str("Org id used to construct the default agent principalSet when --agent-principalset is absent (--as mcp)"),
+      "agent-org-id": str("Alias for --agent-identity-org-id"),
+      "read-only": bool("Scope the granted roles/iap.egressor binding to read-only tool calls (--as mcp)"),
+      json: legacyJson,
+    }),
+    "batch-audit": legacy("batch-audit", "Audit use-case specs in batch", handlers.batchAudit, false, {
+      department: str("Filter catalog use cases by department"),
+      search: str("Filter catalog use cases by a case-insensitive substring across id/title/department"),
+      offset: str("Skip this many matching use cases before selecting (default 0)"),
+      limit: str("Max number of use cases to audit (default: all matching)"),
+      rows: str("Rows per generated table for each audited workspace (default 8)"),
+      seed: str("Faker seed for each audited workspace (default 42)"),
+      root: str("Root directory for generated audit workspaces (default /tmp/factory-batch-audit-<timestamp>)"),
+      out: str("Path to write the JSON batch-audit report (default <root>/batch-audit.json)"),
+      md: str("Path to write the markdown batch-audit report (default <root>/batch-audit.md)"),
+      run: str("Set to 'false' to skip running smoke tests for each audited workspace (default: true)"),
+      "harness-review": str("Set to 'true' to run harness review for each audited workspace (alias: --review; forwards its flags too — see `factory harness-review --help`)"),
+      review: str("Alias for --harness-review"),
+      "harness-refine": str("Set to 'true' to run harness refine for each audited workspace (alias: --refine; forwards its flags too — see `factory harness-refine --help`)"),
+      refine: str("Alias for --harness-refine"),
+      json: legacyJson,
+    }),
   };
 }
 

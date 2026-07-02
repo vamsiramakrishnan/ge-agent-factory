@@ -60,7 +60,7 @@ CANARY=1 mise run bootstrap
 | `apps/factory/simulator-systems/` | Source-system simulator packs | Adding Workday/SAP/etc. behavior without a live system |
 | `apps/factory/mcp-service/` | Runtime MCP facade for generated agents | Changing how cloud agents call source-system tools |
 | `installer/terraform/` | Cloud project platform | Changing infra, IAM, data stores, Cloud Run, Agent Gateway, or MCP |
-| `packages/` | Shared workspace libraries | Changing cross-app contracts or reusable UI/runtime code |
+| `packages/` | Shared workspace libraries — not all are wired in yet; see the [modularization audit](./modularization-audit.html) for per-package integration status | Changing cross-app contracts or reusable UI/runtime code |
 | `docs/` | GitHub Pages docs | Changing public explanation, guides, reference, or operations docs |
 
 ## Mental model
@@ -165,6 +165,12 @@ merging shared behavior.
 | Generator | Relevant `apps/factory` tests | `mise run ci` plus canary build |
 | Python simulator runtime | `npm run test:py` | `mise run ci` plus simulator conformance test |
 | Terraform/platform | `ge infra plan`, `ge doctor` | Canary bootstrap in a test project |
+
+`mise run ci` mirrors `cloudbuild.ci.yaml`: source hygiene → `bun run lint` →
+the catalog build → `bun run docs:gate` → `bun run test:gated` (the last one
+wraps `bun test apps tools packages` and cross-checks failures against
+`tools/known-test-failures.json` — see AGENTS.md's "Before you commit"
+section).
 
 ## Documentation rules
 

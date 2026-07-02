@@ -73,7 +73,7 @@ fails, you get a list of specific blockers instead of a deploy — you can
 override with `--force` or `GE_ALLOW_UNPROMOTED=1`, but the gate exists so a
 broken or unreviewed agent can't reach the cloud by accident.
 
-**Where you'll meet it:** Run `ge agents promotion-gate` (implemented in
+**Where you'll meet it:** Run `factory promotion-gate` (implemented in
 `apps/factory/src/promotion-packet.js`); it's also section `## Promotion
 Gate` inside the generated promotion packet artifact, and the quickstart doc
 (`apps/docs/src/content/docs/start/quickstart.md`) mentions it as the check
@@ -112,7 +112,7 @@ don't have to build from scratch.
 
 **Where you'll meet it:** `docs/concepts/simulators-and-byo.md` for
 simulator packs; `apps/factory/scripts/factory/packs/index.mjs` and the
-`ge agents pack-coverage` CLI command for the use-case-level scenario packs.
+`factory pack-coverage` CLI command for the use-case-level scenario packs.
 
 ---
 

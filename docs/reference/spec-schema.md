@@ -183,3 +183,86 @@ each stage's label/description against the tool intents to produce the multi-age
 > `apps/factory/generated/use-cases.generated.json` (under the app dir),
 > not at the repo root.
 {: .note }
+
+---
+
+## Adding a new spec field — the consumer checklist
+
+The spec shape is **duck-typed**: there is no single schema module that every
+consumer validates against. Each consumer reads the fields it knows about and
+silently ignores the rest — so a new field that isn't threaded through the
+right files doesn't error, it just quietly fails to reach the OKF bundle, the
+generated workspace, or the round-trip back to a spec. This checklist is the
+verified consumer set (as of 2026-07). Work through it top to bottom; skip a
+row only when you can say why it doesn't apply.
+
+### Where a spec is authored and assembled
+
+| # | File | What it does with the spec | Touch it when… |
+|---|---|---|---|
+| 1 | `apps/presentation/src/types/architecture.ts` | The TypeScript types of record (`UseCaseGenerationSpec`, `AgentBehaviorContract`, `UseCaseEntitySpec`, …) for slide-authored specs | Always — add the field to the right interface first |
+| 2 | `apps/factory/scripts/sync-use-cases-from-slides.mjs` | Evaluates each slide's explicit `generationSpec` const into the build catalog (`mise run catalog` → `apps/factory/generated/use-cases.generated.json`), and **synthesizes** a fallback spec (`synthesizeGenerationSpec`) for slides without one | Explicit specs pass a new field through untouched; the *synthesized* fallback only has fields this file builds — add it there if fallback specs need it |
+| 3 | `apps/factory/scripts/emit-baseline-specs.mjs` + `apps/factory/scripts/factory/baseline/{spec,behavior-contract}.mjs` | Programmatically emits baseline `generationSpec`/`behaviorContract` blocks into slide TSX | Baseline-emitted specs should carry the field |
+| 4 | `apps/factory/src/agent-spec-registry.js` (`writeInterviewSpecEntry`) + `packages/std/src/spec-gaps.mjs` | Registers interview-authored specs under `apps/factory/catalog/interview-specs` and gates buildability via named gap codes (`missing_source_systems`, …) | The field is *required* for a buildable spec — add a gap code in both files |
+| 5 | `apps/console/src/components/interview/artifacts/specArtifact.ts` (+ `SpecCanvas.tsx`) and `apps/console/src/server/interview-docs.mjs` | The console's interview-side spec types/labels, and the `/api/interviews/:id/okf` bundle built from the interview's `agent-spec.json` | The field is authored or displayed in the interview flow |
+
+### Where a spec is consumed at build time
+
+| # | File | What it does with the spec | Touch it when… |
+|---|---|---|---|
+| 6 | `apps/factory/scripts/factory/use-case/schema-from-generation-spec.mjs` | Turns explicit `generationSpec.entities`/`sourceSystems` into the generator's table plan — note it copies column attributes through an **explicit allowlist** (`name, type, values, weights, ref, min, max`) | Any new entity/column attribute — it is dropped here otherwise |
+| 7 | `apps/factory/scripts/factory/use-case/schema-derivation.mjs` | Legacy heuristic derivation for use cases *without* an explicit `generationSpec` | The field should also exist on heuristically-derived specs |
+| 8 | `apps/factory/scripts/factory/agent-workflow.mjs` (`buildWorkflowFromPipeline`) | Derives `behaviorContract.workflow` from `architecture.pipeline` + `toolIntents` | The field affects workflow topology |
+| 9 | `apps/factory/scripts/lib/okf-capabilities.mjs` | Derives `answerableQueries` / test `mechanisms` from the contract when not explicit | The field feeds the capability spine (queries/tests) |
+| 10 | `tools/lib/spec-review.mjs` and `apps/factory/scripts/audit-usecase-specs.mjs` | `ge`/console spec-review summary (`/api/ge/specs/review`) and the spec-maturity audit | The field should be surfaced or audited |
+
+### The round-trip-critical pair
+
+| # | File | Role |
+|---|---|---|
+| 11 | `apps/factory/scripts/spec-to-okf.mjs` (`buildBundle`) | **Renders** known spec fields into OKF concept markdown. A field it doesn't render never reaches the bundle |
+| 12 | `apps/factory/scripts/okf-to-spec.mjs` (`okfToSpec`) | **Parses** the markdown back into a partial spec. A field must have a matching render ↔ parse pair (frontmatter key, `**Label:**` line, or section) or it is lost on the way back |
+| 13 | `apps/factory/scripts/factory/agents/okf-artifacts.mjs` (`writeOkfArtifacts`) | Rebuilds an `okfSpec` from the workspace manifest with an **explicit field list** (`id, title, subtitle, persona, department, kpis, architecture` + `generationSpec.{behaviorContract, sourceSystems, entities, documents}`) before calling `buildBundle` — a new top-level field is dropped from the deployed agent's `app/knowledge/` bundle unless added here |
+
+A field is **round-trip-critical** when it must survive spec → OKF → spec
+(anything a re-imported BRD or the interview OKF export depends on):
+`behaviorContract.{role, primaryObjective, inScope, outOfScope, refusalRules,
+toolIntents, workflow, answerableQueries, goldenEvals}` and
+`generationSpec.{sourceSystems, entities, documents}` are the set today. If
+your field belongs in that set, rows 11–12 are mandatory, and prefer carrying
+it as **frontmatter** (like `source_id`) over prose — frontmatter round-trips
+losslessly; prose parsing is best-effort.
+
+> There is a known **open round-trip bug** in `spec-to-okf.mjs`: workflow step
+> ids with double underscores come back single-underscored (see the
+> `round-trip recovers tool names…` and `capability spine: …` entries and
+> their `notes` in `tools/known-test-failures.json`). Those two failures are
+> pre-existing and allowed by `bun run test:gated`; a *new* round-trip
+> failure for your field is yours — don't add it to the known-failures list.
+{: .warning }
+
+### Verify
+
+```bash
+# unit + round-trip tests — extend these with your field
+bun test apps/factory/scripts/spec-to-okf.test.mjs
+
+# byte-exact golden for buildBundle (see AGENTS.md's golden-test policy):
+# a diff here means your change altered emitted bytes — only regenerate
+# (GE_UPDATE_GOLDEN=1 bun test apps/factory/tests/spec-to-okf-golden.test.js)
+# after confirming the new output is intentional; also add your field to the
+# representative SPEC in that test so the golden covers it
+bun test apps/factory/tests/spec-to-okf-golden.test.js
+
+# rebuild the catalog and convert a real spec end-to-end
+mise run catalog
+node apps/factory/scripts/spec-to-okf.mjs --id account-reconciliation-agent
+node apps/factory/scripts/okf-to-spec.mjs --bundle apps/factory/artifacts/okf/account-reconciliation-agent/
+
+# full gate — expect no NEWLY failing tests
+bun run test:gated
+```
+
+Finally, document the field: the tables above on this page, and the
+spec → OKF mapping table in the [Spec ⇄ OKF cookbook](../cookbooks/spec-to-okf.html)
+if it maps to a concept.

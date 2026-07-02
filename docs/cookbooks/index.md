@@ -27,6 +27,7 @@ what has to exist first, which commands do we run, and how do we know it worked?
 | 7 | [Provision the platform](provision-the-platform.html) | Stand up the cloud planes (`ge up`, `ge data up`, `ge mcp deploy`) |
 | 8 | [Deploy the Agent Gateway](deploy-the-agent-gateway.html) | Provision the managed gateway + authz extension/policy |
 | 9 | [Run evals](run-evals.html) | Run the per-agent behavior-contract eval set |
+| 10 | [Add a ge command](add-a-ge-command.html) | Wire a `ge` command into the shared registry so the console gets a route, preflight, and job streaming |
 
 > Where a path or flag differs from common assumptions, the recipe calls it out
 > explicitly.
