@@ -1,4 +1,3 @@
-import { join } from "node:path";
 import { spawn } from "node:child_process";
 import * as core from "../../../../tools/lib/factory-core.mjs";
 import { execStream } from "../../../../tools/lib/exec-stream.mjs";
@@ -9,6 +8,9 @@ import {
   runAutopilotConvergence,
 } from "../../../../tools/lib/autopilot-runner.mjs";
 import { handleGeApi } from "./ge-api.mjs";
+import { makeSseWriter } from "./transport/sse.mjs";
+import { daemonBaseUrl } from "./transport/daemon.mjs";
+import { GE_CLI, REPO_ROOT } from "./transport/paths.mjs";
 import {
   appendAutopilotEvent,
   appendJobEvent,
@@ -26,8 +28,6 @@ import {
   updateAutopilotItem,
 } from "./job-store.mjs";
 
-const GE_CLI = join(import.meta.dirname, "..", "..", "..", "..", "tools", "ge.mjs");
-
 // ── background jobs ───────────────────────────────────────────────────────────
 // Long mutating ops (up, mcp deploy, build, ship, sync) must NOT run in-process —
 // factory-core shells out synchronously and would block the server's event loop.
@@ -39,42 +39,6 @@ const autopilotActive = new Set();
 let autopilotSeq = 0;
 let firestoreLedgerReaderPromise = null;
 let firestoreLedgerReaderOverride = null;
-
-function daemonBaseUrl() {
-  return `http://127.0.0.1:${Number(process.env.GE_DAEMON_PORT || 17654)}`;
-}
-
-// SSE reconnect support.
-// The actual `data: <line>\n\n` framing is produced by the router's writeSSE
-// (ge-api-router.mjs). To make streams reconnect-safe we wrap that writer so we
-// can also emit `id: <seq>` (lets the browser's EventSource replay from
-// Last-Event-ID) and a one-time `retry: <ms>` (caps the reconnect backoff).
-//
-// Two writer shapes are supported, both backward compatible:
-//   1. Plain  writeSSE(line)            -> router frames as `data: line\n\n`
-//   2. Framed writeSSE.frame({ id, retry, data })
-//      (if the router exposes a `.frame` method it can emit the extra field
-//       lines; until then we fall back to plain framing, preserving behavior)
-const SSE_RETRY_MS = 3000;
-
-function makeSseWriter(writeSSE) {
-  const canFrame = typeof writeSSE === "function" && typeof writeSSE.frame === "function";
-  let retrySent = false;
-  // emit(line, { seq }) — line is the NDJSON payload string (the event body).
-  return (line, { seq } = {}) => {
-    if (canFrame) {
-      const frame = { data: line };
-      if (!retrySent) { frame.retry = SSE_RETRY_MS; retrySent = true; }
-      if (Number.isFinite(seq)) frame.id = seq;
-      writeSSE.frame(frame);
-      return;
-    }
-    // Plain writer: framing is owned by the router; we can only pass the data
-    // payload. The router change to honor id/retry is a one-liner noted in the
-    // PR summary. Behavior is identical to before for plain writers.
-    writeSSE(line);
-  };
-}
 
 function normalizeLedgerSource(source = null) {
   const value = String(source || process.env.GE_LEDGER_BACKEND || process.env.GE_LEDGER_SOURCE || "local").trim().toLowerCase();
@@ -692,7 +656,7 @@ function streamDoctorSubprocess({ scope = "all", command, query = {} } = {}, wri
 
   const argv = doctorArgv(scope, command);
   const child = spawn("bun", [GE_CLI, ...argv], {
-    cwd: join(import.meta.dirname, "..", "..", "..", ".."),
+    cwd: REPO_ROOT,
     env: { ...process.env, CLOUDSDK_CORE_DISABLE_PROMPTS: "1" },
     stdio: ["ignore", "pipe", "pipe"],
   });
