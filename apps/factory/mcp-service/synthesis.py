@@ -66,196 +66,18 @@ from synthesis_validation import (  # noqa: F401 - re-exported for compatibility
     validate_contract,
 )
 
-# ── sketch sources ──────────────────────────────────────────────────────────
-def sketch_from_samples(samples: dict[str, list[dict[str, Any]]], *, system_id: str, display_name: str | None = None) -> dict[str, Any]:
-    """Infer a sketch from example rows keyed by collection name."""
-    collections = []
-    for name, rows in samples.items():
-        rows = rows or []
-        fields: dict[str, str] = {}
-        for row in rows[:25]:
-            for key, value in row.items():
-                if key in fields:
-                    continue
-                if isinstance(value, bool):
-                    fields[key] = "boolean"
-                elif isinstance(value, (int, float)):
-                    fields[key] = "number"
-                elif key.endswith("_id") and key != f"{_singular(name)}_id":
-                    fields[key] = f"ref:{_pluralize(key[:-3])}.{key}"
-                else:
-                    fields[key] = "string"
-        primary_key = next((k for k in fields if k == f"{_singular(name)}_id"), None) or next((k for k in fields if k.endswith("_id")), f"{_singular(name)}_id")
-        collections.append({"name": name, "primaryKey": primary_key, "fields": fields})
-    return {"id": system_id, "displayName": display_name, "source": "samples", "collections": collections}
-
-
-def sketch_from_openapi(spec: dict[str, Any], *, system_id: str, display_name: str | None = None) -> dict[str, Any]:
-    """Infer a sketch from an OpenAPI document's component schemas."""
-    schemas = (spec.get("components") or {}).get("schemas") or spec.get("definitions") or {}
-    collections = []
-    for schema_name, schema in list(schemas.items())[:12]:
-        props = (schema or {}).get("properties") or {}
-        if not props:
-            continue
-        name = _pluralize(re.sub(r"[^a-z0-9]+", "_", schema_name.lower()).strip("_"))
-        fields = {}
-        for prop, prop_schema in props.items():
-            ptype = (prop_schema or {}).get("type")
-            if ptype in ("integer", "number"):
-                fields[prop] = "number"
-            elif ptype == "boolean":
-                fields[prop] = "boolean"
-            else:
-                fields[prop] = "string"
-        primary_key = next((p for p in fields if p in ("id", f"{_singular(name)}_id")), None) or f"{_singular(name)}_id"
-        fields.setdefault(primary_key, "string")
-        collections.append({"name": name, "primaryKey": primary_key, "fields": fields})
-    return {
-        "id": system_id,
-        "displayName": display_name or spec.get("info", {}).get("title"),
-        "source": "openapi",
-        "collections": collections,
-    }
-
-
-def _heuristic_sketch(description: str, *, system_id: str, display_name: str | None) -> dict[str, Any]:
-    """Always-available offline NL parse: nouns -> collections, approval words -> a gate."""
-    nouns = _extract_nouns(description, system_id=system_id, display_name=display_name, limit=4) or ["record"]
-    wants_approval = any(hint in description.lower() for hint in _APPROVAL_HINTS)
-
-    collections = []
-    for i, noun in enumerate(nouns):
-        name = _pluralize(noun)
-        col: dict[str, Any] = {"name": name, "primaryKey": f"{noun}_id",
-                               "fields": {f"{noun}_id": "string", "name": "string", "status": "enum:open|pending_approval|approved|rejected", "owner": "string", "created_at": "date"}}
-        if i == 0:  # primary entity carries the workflow
-            col.update({
-                "stateField": "status",
-                "transitions": {"open": ["pending_approval"], "pending_approval": ["approved", "rejected"]},
-                "approvalGated": wants_approval,
-            })
-        collections.append(col)
-    if wants_approval and not any(c["name"] == "approvals" for c in collections):
-        collections.append({
-            "name": "approvals",
-            "primaryKey": "approval_id",
-            "fields": {"approval_id": "string", f"{nouns[0]}_id": f"ref:{_pluralize(nouns[0])}.{nouns[0]}_id", "state": "enum:requested|approved|rejected", "reason": "string"},
-        })
-    return {"id": system_id, "displayName": display_name, "source": "nl-heuristic", "collections": collections}
-
-
-_SKETCH_RESPONSE_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "displayName": {"type": "string"},
-        "roles": {"type": "array", "items": {"type": "string"}},
-        "collections": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "name": {"type": "string"},
-                    "primaryKey": {"type": "string"},
-                    "fields": {"type": "object"},
-                    "stateField": {"type": "string"},
-                    "states": {"type": "array", "items": {"type": "string"}},
-                    "transitions": {"type": "object"},
-                    "approvalGated": {"type": "boolean"},
-                },
-                "required": ["name", "primaryKey"],
-            },
-        },
-    },
-    "required": ["collections"],
-}
-
-
-_SKETCH_SYSTEM_RULES = (
-    "You design enterprise-system simulators. Return a JSON sketch of a system's data model "
-    "and workflow. Model EVERY distinct entity named in the description as its own collection — "
-    "including child / line-item entities (e.g. work_orders, components) and join entities "
-    "(e.g. technician_certifications). Aim for one collection per noun the user mentions; do not "
-    "collapse the system into a single table. Use snake_case plural collection names and a "
-    "`<singular>_id` primary key per collection. Relate collections with foreign keys. Field types: "
-    "'string', 'number', 'boolean', 'date', 'enum:a|b|c', or 'ref:<collection>.<field>' for foreign "
-    "keys. The primary transactional entity MUST have a stateField + states + transitions (a realistic "
-    "lifecycle). If the description mentions approvals/review/sign-off, add an `approvals` collection "
-    "with a ref to the gated entity and set approvalGated=true on it. Every ref MUST point at a "
-    "collection you also define."
+import synthesis_sketch
+from synthesis_sketch import (  # noqa: F401 - re-exported for compatibility
+    _SKETCH_RESPONSE_SCHEMA,
+    _SKETCH_SYSTEM_RULES,
+    _genai_json,
+    _heuristic_sketch,
+    _llm_repair,
+    _llm_sketch,
+    sketch_from_nl,
+    sketch_from_openapi,
+    sketch_from_samples,
 )
-
-
-def _genai_json(prompt: str) -> dict[str, Any] | None:
-    """One structured Vertex call (``global`` endpoint). Returns parsed JSON or None."""
-    try:
-        from google import genai
-        from google.genai import types as genai_types
-    except Exception:  # noqa: BLE001
-        return None
-    project = os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get("GCLOUD_PROJECT")
-    if not project:
-        return None
-    location = os.environ.get("GE_SYNTHESIS_LOCATION") or os.environ.get("GOOGLE_CLOUD_LOCATION") or "global"
-    model = os.environ.get("GE_SYNTHESIS_MODEL", "gemini-3.5-flash")
-    try:
-        client = genai.Client(vertexai=True, project=project, location=location)
-        resp = client.models.generate_content(
-            model=model,
-            contents=prompt,
-            config=genai_types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=_SKETCH_RESPONSE_SCHEMA,
-                temperature=0.2,
-            ),
-        )
-        return json.loads(resp.text or "{}")
-    except Exception as exc:  # noqa: BLE001 - any LLM/auth failure ⇒ caller falls back
-        logger.warning("LLM tier failed (%s)", exc)
-        return None
-
-
-def _llm_sketch(description: str, *, system_id: str, display_name: str | None) -> dict[str, Any] | None:
-    """High-fidelity NL tier via Vertex. Returns None on any failure."""
-    sketch = _genai_json(f"{_SKETCH_SYSTEM_RULES}\n\nDescription:\n{description}")
-    if not sketch:
-        return None
-    sketch["id"] = system_id
-    sketch.setdefault("displayName", display_name)
-    sketch["source"] = "nl-llm"
-    return sketch
-
-
-def _llm_repair(description: str, prior_sketch: dict[str, Any], errors: list[str], *,
-                system_id: str, display_name: str | None) -> dict[str, Any] | None:
-    """Ask the model to FIX a sketch given the validator's errors — the agentic loop.
-
-    This is the 'it can write code, so let it check and correct itself' tier: the model
-    sees its previous sketch and the concrete validation failures and returns a repaired
-    sketch. Returns None on failure (caller keeps the last valid-enough sketch).
-    """
-    prompt = (
-        f"{_SKETCH_SYSTEM_RULES}\n\nA previous sketch failed validation. Fix EVERY listed error "
-        "and return the full corrected sketch (same JSON shape).\n\n"
-        f"Description:\n{description}\n\nPrevious sketch:\n{json.dumps(prior_sketch, indent=2)}\n\n"
-        f"Validation errors to fix:\n- " + "\n- ".join(errors)
-    )
-    sketch = _genai_json(prompt)
-    if not sketch or not sketch.get("collections"):
-        return None
-    sketch["id"] = system_id
-    sketch.setdefault("displayName", display_name)
-    sketch["source"] = "nl-llm-repaired"
-    return sketch
-
-
-def sketch_from_nl(description: str, *, system_id: str, display_name: str | None = None, use_llm: bool = True) -> dict[str, Any]:
-    if use_llm:
-        llm = _llm_sketch(description, system_id=system_id, display_name=display_name)
-        if llm and llm.get("collections"):
-            return llm
-    return _heuristic_sketch(description, system_id=system_id, display_name=display_name)
-
 
 # ── top-level orchestration ─────────────────────────────────────────────────
 def synthesize_system(spec: dict[str, Any], *, register: bool = True) -> dict[str, Any]:
@@ -279,7 +101,7 @@ def synthesize_system(spec: dict[str, Any], *, register: bool = True) -> dict[st
     elif mode == "openapi":
         sketch = sketch_from_openapi(spec["openapi"], system_id=system_id, display_name=display_name)
     else:
-        sketch = sketch_from_nl(description, system_id=system_id, display_name=display_name, use_llm=use_llm)
+        sketch = synthesis_sketch.sketch_from_nl(description, system_id=system_id, display_name=display_name, use_llm=use_llm)
     sketch["id"] = system_id
 
     # ── Agentic generate → validate → repair loop ──
@@ -300,7 +122,7 @@ def synthesize_system(spec: dict[str, Any], *, register: bool = True) -> dict[st
         gaps = completeness_gaps(contract, description, system_id=system_id, display_name=display_name) if can_repair else []
         if (not errors and not gaps) or attempt == max_attempts - 1:
             break
-        repaired = _llm_repair(description, sketch, errors + gaps, system_id=system_id, display_name=display_name)
+        repaired = synthesis_sketch._llm_repair(description, sketch, errors + gaps, system_id=system_id, display_name=display_name)
         if not repaired:
             break
         sketch, repairs = repaired, repairs + 1

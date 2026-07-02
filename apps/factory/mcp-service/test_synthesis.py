@@ -8,6 +8,7 @@ from copy import deepcopy
 import pytest
 
 import synthesis
+import synthesis_sketch
 from simulator_runtime import overlay
 from simulator_runtime.router import execute_simulator_tool
 from simulator_runtime.simulators import reset_handler_cache
@@ -148,9 +149,9 @@ def test_repair_loop_self_corrects(monkeypatch):
     good["collections"].append({"name": "customers", "primaryKey": "customer_id",
                                 "fields": {"customer_id": "string", "name": "string"}})
 
-    monkeypatch.setattr(synthesis, "_llm_sketch",
+    monkeypatch.setattr(synthesis_sketch, "_llm_sketch",
                         lambda description, *, system_id, display_name: {**deepcopy(bad), "id": system_id})
-    monkeypatch.setattr(synthesis, "_llm_repair",
+    monkeypatch.setattr(synthesis_sketch, "_llm_repair",
                         lambda description, prior, errors, *, system_id, display_name: {**deepcopy(good), "id": system_id})
 
     out = synthesis.synthesize_system({
@@ -195,9 +196,9 @@ def test_invalid_synthesis_is_not_registered(monkeypatch):
         "collections": [{"name": "orders", "primaryKey": "order_id",
                          "fields": {"order_id": "string", "customer_id": "ref:customers.customer_id"}}],
     }
-    monkeypatch.setattr(synthesis, "_llm_sketch",
+    monkeypatch.setattr(synthesis_sketch, "_llm_sketch",
                         lambda description, *, system_id, display_name: {**deepcopy(bad), "id": system_id})
-    monkeypatch.setattr(synthesis, "_llm_repair",
+    monkeypatch.setattr(synthesis_sketch, "_llm_repair",
                         lambda description, prior, errors, *, system_id, display_name: None)  # repair fails
     out = synthesis.synthesize_system({"mode": "nl", "id": "byo_broken", "use_llm": True, "description": "x"})
     assert not out["valid"] and not out["registered"]
