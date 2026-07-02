@@ -1,2 +1,2 @@
-export * from "./events.d.ts";
-export * from "./contract.d.ts";
+export * from "./events";
+export * from "./contract";
