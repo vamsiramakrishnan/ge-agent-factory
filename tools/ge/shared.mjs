@@ -136,7 +136,7 @@ export async function daemonRequest(port, path, { method = "GET", body, timeoutM
     signal: AbortSignal.timeout(timeoutMs),
   });
   let payload = null;
-  try { payload = await response.json(); } catch {}
+  try { payload = await response.json(); } catch { /* best-effort: non-JSON body falls through to the status-text error below */ }
   if (!response.ok) {
     const detail = payload?.error || `${response.status} ${response.statusText}`.trim();
     throw new Error(`daemon request failed: ${detail}`);

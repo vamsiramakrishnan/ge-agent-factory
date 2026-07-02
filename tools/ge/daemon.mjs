@@ -42,7 +42,7 @@ const daemonStart = defineCommand({
     if (existing.status === "unreachable") {
       const pid = readPidFile(paths.pidPath);
       if (pid && processAlive(pid) && processLooksLikeDaemon(pid)) {
-        try { process.kill(pid, "SIGTERM"); } catch {}
+        try { process.kill(pid, "SIGTERM"); } catch { /* best-effort: stale pid may exit between the liveness probe and the kill */ }
       }
       rmSync(paths.pidPath, { force: true });
       out(pc.yellow(`▲ cleared unreachable ge daemon pid=${existing.pid}`));
