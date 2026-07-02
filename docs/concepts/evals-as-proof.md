@@ -13,6 +13,10 @@ comparisons between an agent's contract and its actual behavior — generated
 evals, a spec-to-code trace, and independent review verdicts — collected
 before release and enforced by a gate that refuses to ship without them.
 
+<p align="center">
+  <img src="../assets/diagrams/signature-pipeline-evals-as-proof.svg" alt="signature pipeline zoomed to prove, lit; generated code and source-system twins feed prove, which produces the passport and proof pack, with the rest of the pipeline shown dimmed for context" width="700">
+</p>
+
 ## Why it exists
 
 "The demo went well" is not a release criterion an enterprise can sign. The

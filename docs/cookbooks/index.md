@@ -40,6 +40,10 @@ and the [Glossary](../GLOSSARY.html).
 
 ## Recommended paths
 
+<p align="center">
+  <img src="../assets/diagrams/cookbook-paths.svg" alt="four guide paths: fresh clone with no cloud runs getting started, capture in the interview, compile a contract, prove an agent; business use case runs capture from documents, capture in the interview, contract to OKF, compile a contract; new source system runs capture from OpenAPI, generate simulations, prove an agent; first cloud release runs provision the platform, deploy the agent gateway, run and observe" width="800">
+</p>
+
 | Situation | Path |
 |---|---|
 | Fresh clone, no cloud | [Getting started](../start/getting-started.html) → [Capture a contract in the interview](capture-from-interview.html) → [Compile a contract](compile-a-contract.html) → [Prove an agent](prove-an-agent.html) |

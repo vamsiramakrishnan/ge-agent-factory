@@ -16,6 +16,10 @@ that refused promotion, an eval that missed its trajectory — is a work item,
 not a dead end. This guide runs the repair loop: observe the blockers, let
 the repair runner fix and retry each blocked workspace, and re-prove.
 
+<p align="center">
+  <img src="../assets/diagrams/repair-loop.svg" alt="ge fleet status surveys blockers, then ge agents logs reads the failing stage, then ge fleet repair observes, repairs, and retries; a converged item goes to re-prove, an exhausted item is blocked and loops back to reading logs after a manual fix; an interrupted (not blocked) item resumes directly to re-prove" width="500">
+</p>
+
 ## When to use this
 
 - [Prove an agent](prove-an-agent.html) ended with promotion-gate blockers

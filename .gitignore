@@ -46,6 +46,7 @@ docs/vendor/bundle/
 .ge-daemon/
 .ge-harness/
 .ge-missions/
+.ge-docs-shots/
 .factory-runs.json
 
 # Generated design tokens (presentation app)

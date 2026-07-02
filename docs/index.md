@@ -25,7 +25,7 @@ can read, a simulation you can test against, and proof you can show an
 auditor.
 
 <p align="center">
-  <img src="assets/diagrams/concept-pipeline.svg" alt="use case to contract to generate to validate and refine to simulate to deploy to publish" width="800">
+  <img src="assets/diagrams/signature-pipeline.svg" alt="capture flows into the Enterprise Agent Contract; the contract generates code, tools, and source-system twins under authority-graph control; twins and generated code feed prove (evals, harness, promotion gate); prove produces a passport and proof pack; the passport hands off across the build boundary to agents-cli, ADK, and Gemini Enterprise" width="900">
 </p>
 
 ## The problem it solves
@@ -75,6 +75,14 @@ tools, fixture data, smoke tests, an eval suite, and the validation artifacts
 the promotion gate reads. Continue with the
 [ten-minute tutorial](https://vamsiramakrishnan.github.io/ge-agent-factory/start/quickstart/)
 or the fuller [local setup guide](./start/getting-started.html).
+
+<p align="center">
+  <img src="assets/screenshots/overview.png" alt="Console Overview view showing the build-to-deploy pipeline rail (362 in Build, 1 in Ship), a Next step card recommending ge init, and Pipeline / Fleet summary cards with 0 deployed, 1 submitted, 1 failed" width="820">
+</p>
+
+The console (`mise run console` → `http://localhost:18260`) shows the same
+state live — a real capture from the screenshot factory below, not a mock.
+See [Console](./console/).
 
 ## Where to go
 
