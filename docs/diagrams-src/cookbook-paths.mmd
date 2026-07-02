@@ -1,0 +1,18 @@
+flowchart LR
+    A(["fresh clone,\nno cloud"]) --> GS["Getting started\nlocally"]
+    GS --> GA["Generate\nan agent"]
+    GA --> RE["Run evals"]
+
+    B(["business use case,\nno spec yet"]) --> AI["Author a spec\nvia the interview"]
+    AI --> SO["Spec ⇄ OKF"]
+    SO --> GA
+
+    C(["new source\nsystem"]) --> BYO["Bring your own\nsimulator"]
+    BYO --> RF["Run the\nfactory"]
+
+    D(["first cloud\nrelease"]) --> PP["Provision the\nplatform"]
+    PP --> DG["Deploy the\nAgent Gateway"]
+    DG --> RF
+
+    classDef cloud fill:#e6f4ea,stroke:#34a853,color:#202124
+    class PP,DG cloud

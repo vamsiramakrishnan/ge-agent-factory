@@ -57,6 +57,7 @@ described, and you can trace any line of generated code back to a spec intent.
 > It is an agent **factory**, not a prompt-only demo generator: the output is a
 > versioned workspace of running code, gated by tests, deployed under
 > least-privilege identities in single-tenant infrastructure.
+{: .note }
 
 ## Concept to source map
 

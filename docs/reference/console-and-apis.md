@@ -54,7 +54,36 @@ Routes are dispatched in `apps/console/src/server/ge-api-router.mjs` (with handl
 in `ge-api.mjs`, `interview-docs.mjs`, `systems.mjs`). `(SSE)` marks a streaming
 endpoint.
 
-### `/api/ge/*` — factory core
+Most mutating `/api/ge/*` routes are not bespoke handlers — they come from the
+shared command registry (`tools/lib/ge-command-registry.mjs`), which gives each
+one preflight gating, risk labeling, and job streaming for free:
+
+<p align="center">
+  <img src="../assets/diagrams/ge-command-flow.svg" alt="One registry entry backs both the ge CLI and a console route; a matched route runs preflight from the entry's requirements — a failure persists a blocked job, a pass submits the argv to the daemon (with a local spawn fallback), and events stream to the browser over SSE labeled with the entry's risk" width="520">
+</p>
+
+See [Add a ge command](../cookbooks/add-a-ge-command.html) for the full walkthrough.
+
+### Registry-backed mutating routes
+
+This table is **generated from the registry** (`bun run docs:console-api`;
+drift fails CI), so it always matches what the routes actually do. Each
+returns `202 { jobId, command }`; stream progress via
+`GET /api/ge/jobs/:id/logs` (SSE).
+
+<!-- BEGIN GENERATED: ge-console-commands — do not edit; run `bun run docs:console-api` -->
+| Route | CLI | Purpose | Risk | Preflight requires |
+|---|---|---|---|---|
+| `POST /api/ge/up` | `ge up` | Provision infra, data, and tool planes | `mutates-cloud` | `gcloud`, `terraform` on PATH · `.ge.json`: project, geAppId · cloud auth · Terraform root · writable `.ge.json` |
+| `POST /api/ge/data/up` | `ge data up` | Apply Terraform for shared stores and merge coordinates into .ge.json | `mutates-cloud` | `gcloud`, `terraform` on PATH · `.ge.json`: project, geAppId · cloud auth · Terraform root · writable `.ge.json` · BigQuery API (hard) |
+| `POST /api/ge/mcp/deploy` | `ge mcp deploy` | Deploy per-department MCP services | `mutates-cloud` | `gcloud` on PATH · `.ge.json`: project, serviceAccount, dataBucket · cloud auth · writable `.ge.json` |
+| `POST /api/ge/agents/build` | `ge agents build` | Build selected agents through the cloud factory | `starts-workloads` | `gcloud` on PATH · `.ge.json`: project, geAppId, gatewayUrl · cloud auth · tool plane deployed |
+| `POST /api/ge/agents/ship` | `ge agents ship` | Upload locally built agents and continue cloud deployment | `mutates-cloud` | `gcloud` on PATH · `.ge.json`: project, gatewayUrl, dataBucket · cloud auth · tool plane deployed · BigQuery API (hard) · ship handoff wiring |
+| `POST /api/ge/agents/sync` | `ge agents sync` | Copy generated agent code into the repository | `writes-repo` | `git` on PATH |
+| `POST /api/ge/daemon/start` | `ge daemon start` | Start the local GE runtime daemon (idempotent — no-op if already running) | `starts-local-workloads` | `node` on PATH |
+<!-- END GENERATED: ge-console-commands -->
+
+### `/api/ge/*` — read routes and bespoke handlers
 
 | Method · Path | Purpose |
 |---|---|
@@ -84,8 +113,10 @@ endpoint.
 | `GET /api/ge/autopilot` · `/:id` · `/:id/events` | Autopilot runs; `/events` takes `afterSeq` |
 | `POST /api/ge/autopilot` · `/:id/resume` | Start / resume autopilot |
 | `POST /api/ge/mode` | Set mode (`local`\|`remote`) |
-| `POST /api/ge/up` · `/data/up` · `/mcp/deploy` | Deploy platform / data plane / MCP services |
-| `POST /api/ge/agents/build` · `/ship` · `/sync` | Agent lifecycle (return a jobId; stream via SSE) |
+
+The deploy and agent-lifecycle POST routes (`/api/ge/up`, `/data/up`,
+`/mcp/deploy`, `/agents/build`, `/ship`, `/sync`, `/daemon/start`) live in the
+[generated registry table above](#registry-backed-mutating-routes).
 
 ### `/api/runtime/*` — daemon proxy
 

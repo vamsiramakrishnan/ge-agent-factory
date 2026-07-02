@@ -7,6 +7,9 @@ layout: default
 
 # Bring your own simulator
 
+**Scope:** local by default — NL synthesis calls Vertex unless you pass
+`--no-llm`; `--promote` writes into the repo.
+
 ## Goal
 
 Create a new simulated source system — from natural language, an OpenAPI spec, or
@@ -15,14 +18,20 @@ sample rows — and mount it via the runtime overlay into the running MCP
 reach source systems. Optionally promote it into the curated corpus so it
 loads as a built-in.
 
+<p align="center">
+  <img src="../assets/diagrams/byo-synthesis.svg" alt="A description, samples, or OpenAPI spec is synthesized into a sketch, then a contract with tool bindings and workflows, then referentially-consistent seed data, and finally registered into the runtime overlay where the generic engine resolves it" width="700">
+</p>
+
 ## Prerequisites
 
 - Local toolchain installed (`mise run setup`).
 - The synthesis CLI runs `synthesis.py` from the mcp-service. The interpreter is
   resolved as `$GE_HARNESS_PYTHON` → the repo `.venv/bin/python` → `python3`.
 - NL synthesis uses Vertex; pass `--no-llm` to force the offline heuristic tier.
-- Run `synthesize_cli.py` with **cwd =
-  `apps/factory/mcp-service/`** (it does a bare `import synthesis`).
+
+> Run `synthesize_cli.py` with **cwd = `apps/factory/mcp-service/`** — it does
+> a bare `import synthesis`, so from any other directory it fails immediately.
+{: .important }
 
 ## Steps
 
@@ -84,9 +93,13 @@ overwrite.
 
 - **Runtime overlay** — `synthesize_cli.py` registers the synthesized contract
   into the overlay by default so the running mcp-service resolves it immediately
-  (no files written). Set `GE_SIMULATOR_OVERLAY_BACKEND=firestore` to make the
-  mounted pack visible to **every** mcp-service instance (durable, shared);
-  otherwise it's in-process only. `--no-register` disables mounting.
+  (no files written). `--no-register` disables mounting.
+
+  > The default overlay is **in-process only** — other mcp-service instances
+  > (and every Cloud Run replica) won't see the mounted pack. Set
+  > `GE_SIMULATOR_OVERLAY_BACKEND=firestore` *before* synthesizing to make it
+  > durable and shared.
+  {: .warning }
 - **Promote to the corpus** — add `--promote` to write the 6 per-section files
   into `apps/factory/simulator-systems/<id>/` and upsert the
   `registry.json` entry, graduating the system to a built-in. Promotion runs only

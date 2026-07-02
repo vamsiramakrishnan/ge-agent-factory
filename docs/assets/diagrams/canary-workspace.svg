@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 982.377 429.90000000000003" width="982.377" height="429.90000000000003" style="--bg:#ffffff;--fg:#202124;--line:#5f6368;--accent:#1a73e8;--muted:#80868b;--surface:#eef3f9;--border:#dadce0;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<polyline class="edge" data-from="S" data-to="B" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="208.661,219.175 256.661,219.17499999999998" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="B" data-to="W" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="457.185,219.17499999999998 505.185,219.175" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="W" data-to="A" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="720.529,219.175 738.529,219.175 738.529,75.35 756.529,75.35" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="W" data-to="T" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="720.529,219.175 738.529,219.175 738.529,174.04999999999998 756.529,174.04999999999998" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="W" data-to="K" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="720.529,219.175 738.529,219.175 738.529,264.3 756.529,264.3" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="W" data-to="V" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="720.529,219.175 738.529,219.175 738.529,354.55000000000007 756.529,354.55000000000007" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<g class="node" data-id="S" data-label="spec
+the use-case contract" data-shape="rectangle">
+  <rect x="40" y="192.275" width="168.661" height="53.800000000000004" rx="0" ry="0" fill="#e8f0fe" stroke="#1a73e8" stroke-width="0.75" />
+  <text x="124.3305" y="219.175" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="124.3305" dy="-3.9000000000000012">spec</tspan><tspan x="124.3305" dy="16.900000000000002">the use-case contract</tspan></text>
+</g>
+<g class="node" data-id="B" data-label="ge agents build --canary
+local mode stops at the
+'previewed' build boundary" data-shape="rectangle">
+  <rect x="256.661" y="183.825" width="200.524" height="70.7" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="356.923" y="219.17499999999998" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="356.923" dy="-12.350000000000001">ge agents build --canary</tspan><tspan x="356.923" dy="16.900000000000002">local mode stops at the</tspan><tspan x="356.923" dy="16.900000000000002">&#39;previewed&#39; build boundary</tspan></text>
+</g>
+<g class="node" data-id="W" data-label=".ge/factory/workspaces/&lt;id&gt;/" data-shape="rectangle">
+  <rect x="505.185" y="200.72500000000002" width="215.34399999999997" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="612.857" y="219.175" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">.ge/factory/workspaces/&lt;id&gt;/</text>
+</g>
+<g class="node" data-id="A" data-label="app/agent.py
+real ADK agent +
+the 3 callbacks" data-shape="rectangle">
+  <rect x="756.529" y="40" width="139.021" height="70.7" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="826.0395" y="75.35" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="826.0395" dy="-12.350000000000001">app/agent.py</tspan><tspan x="826.0395" dy="16.900000000000002">real ADK agent +</tspan><tspan x="826.0395" dy="16.900000000000002">the 3 callbacks</tspan></text>
+</g>
+<g class="node" data-id="T" data-label="app/tools.py
+dual backend:
+fixtures | mcp" data-shape="rectangle">
+  <rect x="756.529" y="138.7" width="124.20099999999998" height="70.7" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="818.6295" y="174.04999999999998" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="818.6295" dy="-12.350000000000001">app/tools.py</tspan><tspan x="818.6295" dy="16.900000000000002">dual backend:</tspan><tspan x="818.6295" dy="16.900000000000002">fixtures | mcp</tspan></text>
+</g>
+<g class="node" data-id="K" data-label="app/knowledge/
+OKF grounding bundle" data-shape="rectangle">
+  <rect x="756.529" y="237.4" width="173.84799999999996" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="843.453" y="264.3" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="843.453" dy="-3.9000000000000012">app/knowledge/</tspan><tspan x="843.453" dy="16.900000000000002">OKF grounding bundle</tspan></text>
+</g>
+<g class="node" data-id="V" data-label="tests/eval/ + fixtures/
+evalset, eval config,
+offline data" data-shape="rectangle">
+  <rect x="756.529" y="319.20000000000005" width="162.73300000000003" height="70.7" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="837.8955" y="354.55000000000007" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="837.8955" dy="-12.350000000000001">tests/eval/ + fixtures/</tspan><tspan x="837.8955" dy="16.900000000000002">evalset, eval config,</tspan><tspan x="837.8955" dy="16.900000000000002">offline data</tspan></text>
+</g>
+</svg>

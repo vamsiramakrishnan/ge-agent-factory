@@ -7,11 +7,18 @@ layout: default
 
 # Deploy the Agent Gateway
 
+**Scope:** cloud — mutates your Google Cloud project; lands in audit-only
+(DRY_RUN) mode.
+
 ## Goal
 
 Provision the managed Agent Gateway that fronts the factory's MCP servers, then
 apply the authz layer (extension + policy) and grant the agent runtime identity
 egress — landing in audit (DRY_RUN) mode.
+
+<p align="center">
+  <img src="../assets/diagrams/tool-authz-chain.svg" alt="The authorization chain the gateway governs: an agent with a per-agent SPIFFE identity resolves its toolset from the Agent Registry, invokes the registered per-department MCP server on Cloud Run, which reads and writes the per-agent store" width="650">
+</p>
 
 ## Prerequisites
 
@@ -20,12 +27,14 @@ egress — landing in audit (DRY_RUN) mode.
   the MCP servers that step deploys; it has nothing to front otherwise.
 - `gcloud` authenticated; `terraform` installed.
 - A project id (`PROJECT_ID` env or a gcloud default project).
-- **The Agent Gateway is REGIONAL** — use a region (e.g. `us-central1`), never
-  `global` (`global` returns HTTP 501). Gemini Enterprise `global`/`us` →
-  gateway `us-central1`; `eu` → `europe-west1`.
 - For egress enforcement later: register the MCP servers in the **Agent
   Registry** first (the directory of MCP servers/tools that the gateway and
   generated agents resolve by name — egress blocks unregistered hosts).
+
+> The Agent Gateway is **REGIONAL** — use a region (e.g. `us-central1`), never
+> `global` (`global` returns HTTP 501). Gemini Enterprise `global`/`us` →
+> gateway `us-central1`; `eu` → `europe-west1`.
+{: .important }
 
 ## Steps
 

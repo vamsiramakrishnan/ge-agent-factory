@@ -7,10 +7,16 @@ layout: default
 
 # Spec ⇄ OKF
 
+**Scope:** local-only — file in, file out; no daemon or cloud needed.
+
 ## Goal
 
 Convert a generated agent spec into a portable **OKF (Open Knowledge Format) v0.1**
 Knowledge Bundle, inspect what's inside, and round-trip it back into a spec.
+
+<p align="center">
+  <img src="../assets/diagrams/okf-spine.svg" alt="The OKF spine: an interview produces a spec in OKF form, which drives generation of real ADK code, validation, tests derived from the contract, and runtime grounding where the agent cites the same systems and entities" width="750">
+</p>
 
 ## Prerequisites
 

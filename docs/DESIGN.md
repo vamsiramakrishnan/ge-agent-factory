@@ -187,9 +187,35 @@ line in between**:
 {: .note }
 ```
 
+A callout may also live *inside* a list item — indent the blockquote and the
+class line to the item's continuation depth (see the step-level gotchas in
+`docs/cookbooks/run-evals.md`). The website's sync converts indented callouts
+to asides too, keeping them attached to their step.
+
 The callout box auto-renders its own label (`NOTE`, `WARNING`, etc., styled in
 the site's display font). Don't also hand-write a redundant lead-in like
 `**Note:**` inside the blockquote text — remove it; the box already says it.
+
+## Cookbook scope strips
+
+Every cookbook opens with a one-line scope strip directly under the H1:
+
+```markdown
+**Scope:** local-only — no cloud project or credentials required.
+```
+
+The shape is `**Scope:** <label> — <description>` (an em dash separates the
+two). It answers the reader's first question — "will this touch my cloud
+project?" — before anything else on the page. Labels in use: `local-only`,
+`cloud`, `local or remote`, `local by default`, `repo change`. On GitHub and
+the Jekyll site it renders as plain bold text; the website's sync
+(`apps/docs/scripts/lib/enrich.mjs`) upgrades it to a Starlight badge —
+green for `local-only`, orange for `cloud`, neutral otherwise. The same sync
+wraps a cookbook's `## Steps` ordered list in Starlight's `<Steps>` component,
+so keep Steps sections as a single numbered list where possible, and turns a
+section index's link-plus-description tables (like the cookbooks' recipe
+table) into a card grid — tables whose first content column is prose are
+left as tables.
 
 ## In-page table of contents
 

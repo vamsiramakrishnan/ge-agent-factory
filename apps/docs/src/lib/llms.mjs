@@ -106,6 +106,10 @@ export function plainifyMdx(body, { base, siteRoot } = {}) {
 
   // Components that carry prose in their attributes keep it …
   text = text.replace(/^([ \t]*)<(?:TabItem|Card)\s[^>]*\b(?:label|title)="([^"]*)"[^>]*>[ \t]*$/gm, "$1**$2**");
+  text = text.replace(/<Badge\s([^<>]*?)\/>/g, (_, attrs) => {
+    const label = attrs.match(/\btext="([^"]*)"/)?.[1];
+    return label ? `**${label}**` : "";
+  });
   text = text.replace(/<LinkCard\s([^<>]*?)\/>/g, (_, attrs) => {
     const title = attrs.match(/\btitle="([^"]*)"/)?.[1];
     const href = attrs.match(/\bhref="([^"]*)"/)?.[1];
