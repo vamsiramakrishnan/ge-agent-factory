@@ -7,7 +7,7 @@
 // MissionArtifactRefSchema) modulo required-ness (this side guarantees
 // name/type/status and a nullable path after normalization; the schema keeps
 // everything optional pre-normalization) — merge tracked by the action-kinds
-// reconciliation spec (docs/superpowers/specs/2026-06-14-console-presentation-unification.md).
+// reconciliation spec (docs/design-specs/specs/2026-06-14-console-presentation-unification.md).
 export type ArtifactRef = {
   name: string;
   type: string;

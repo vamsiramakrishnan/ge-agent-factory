@@ -4,7 +4,7 @@
 
 **Goal:** Provision real, shared per-project data stores (BigQuery, GCS, AlloyDB, Firestore, Bigtable) with per-agent objects, loaded at `load_data`, and queryable at runtime — so generated agents run on real infra, not just fixtures.
 
-**Architecture:** Three tiers — Tier-1 shared instances via Terraform (`installer/terraform/data_plane.tf`), Tier-2 per-agent objects created+loaded idempotently in the existing `load_data` factory stage, Tier-3 generated `tools.py` backend switch (`GE_DATA_BACKEND`, default `fixtures`). Spec: `docs/superpowers/specs/2026-06-01-per-agent-data-plane-design.md`.
+**Architecture:** Three tiers — Tier-1 shared instances via Terraform (`installer/terraform/data_plane.tf`), Tier-2 per-agent objects created+loaded idempotently in the existing `load_data` factory stage, Tier-3 generated `tools.py` backend switch (`GE_DATA_BACKEND`, default `fixtures`). Spec: `docs/design-specs/specs/2026-06-01-per-agent-data-plane-design.md`.
 
 **Tech Stack:** Terraform (google + google-beta ~>6.0), Bun + citty CLI (`tools/`), Node generator (`apps/factory`), Python ADK (`tools.py`), gcloud/bq/psql.
 
