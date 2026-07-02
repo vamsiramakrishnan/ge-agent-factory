@@ -23,7 +23,7 @@ export async function buildCloudDataArtifacts(dir, flags = {}, deps) {
   const pipeline = await loadPipeline(dir);
   requireStep(pipeline, "generate");
   const manifest = await readJson(manifestPath(dir), null);
-  if (!manifest) fail("No fixture manifest. Run 'factory generate' first.");
+  if (!manifest) fail("No fixture manifest. Run 'factory generate' first.", "GE0003");
 
   const project = flags.project || "<gcp-project>";
   const location = flags.location || flags.region || "US";

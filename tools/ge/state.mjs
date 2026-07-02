@@ -18,7 +18,7 @@ const stateReset = defineCommand({
     const pid = readPidFile(paths.pidPath);
     const stopped = Boolean(pid && processAlive(pid) && processLooksLikeDaemon(pid));
     if (stopped) {
-      try { process.kill(pid, "SIGTERM"); } catch {}
+      try { process.kill(pid, "SIGTERM"); } catch { /* best-effort: daemon may exit between the liveness probe and the kill */ }
     }
     const targets = [
       STATE_PATHS.root,

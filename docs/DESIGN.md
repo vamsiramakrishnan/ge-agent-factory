@@ -10,6 +10,14 @@ The style guide for anyone (human or agent) adding a page or a diagram to this
 site. Reference page, not an essay — if you're about to add a `.mmd` file or a
 callout, read the relevant section below first.
 
+> The public website now renders these same `docs/` pages through
+> Astro/Starlight (`apps/docs` — see its README). Everything on this page
+> about authoring in `docs/` (diagrams, callouts, links) still governs; the
+> sync step translates callouts and links for the website automatically. A
+> **new top-level** `docs/*.md` page additionally needs a `PAGE_MAP` entry in
+> `apps/docs/scripts/sync-content.mjs` to get a place in the site's sidebar.
+{: .status }
+
 ## Table of contents
 {: .no_toc .text-delta }
 

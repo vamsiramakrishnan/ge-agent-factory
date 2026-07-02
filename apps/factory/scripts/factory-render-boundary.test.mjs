@@ -16,6 +16,8 @@
 //     underlying error message.
 import { describe, expect, test } from "bun:test";
 import { buildFactoryCommandTree, __test } from "./factory/registry.mjs";
+import { DOCS_SITE_BASE_URL, ERROR_CODES } from "./factory/core/error-codes.mjs";
+import { FactoryCommandError, fail } from "./factory/core/pipeline.mjs";
 
 const { renderResult, renderError, isRealTTY, HUMAN_RENDERERS } = __test;
 
@@ -155,6 +157,53 @@ describe("renderError", () => {
   test("handles a non-Error thrown value without crashing", () => {
     const { errors } = captureConsole(() => renderError("generate", "plain string failure", { isTTY: false }));
     expect(errors).toEqual([JSON.stringify({ ok: false, error: "plain string failure" }, null, 2)]);
+  });
+});
+
+describe("renderError — stable error codes (B4)", () => {
+  const codedError = () => {
+    try {
+      fail("No manifest. Run 'factory generate' first.", "GE0003");
+    } catch (e) {
+      return e;
+    }
+  };
+
+  test("non-TTY: a registered code lands as a `code` field in the JSON payload", () => {
+    const { errors } = captureConsole(() => renderError("tools", codedError(), { isTTY: false }));
+    expect(errors).toEqual([
+      JSON.stringify({ ok: false, error: "No manifest. Run 'factory generate' first.", code: "GE0003" }, null, 2),
+    ]);
+  });
+
+  test("real TTY: `✗ GE#### <message>` plus a docs-site deep link on the next line", () => {
+    const { errors } = captureConsole(() => renderError("tools", codedError(), { isTTY: true }));
+    expect(errors).toEqual([
+      "✗ GE0003 No manifest. Run 'factory generate' first.",
+      `→ ${DOCS_SITE_BASE_URL}${ERROR_CODES.GE0003.docsAnchor}`,
+    ]);
+  });
+
+  test("--json at a real TTY: JSON with the code field, no human lines", () => {
+    const { errors } = captureConsole(() => renderError("tools", codedError(), { isTTY: true, json: true }));
+    expect(errors).toEqual([
+      JSON.stringify({ ok: false, error: "No manifest. Run 'factory generate' first.", code: "GE0003" }, null, 2),
+    ]);
+  });
+
+  test("UNCODED FactoryCommandError renders byte-identically to the pre-B4 output on both paths", () => {
+    const uncoded = new FactoryCommandError("--step required");
+    const json = captureConsole(() => renderError("reset", uncoded, { isTTY: false }));
+    expect(json.errors).toEqual([JSON.stringify({ ok: false, error: "--step required" }, null, 2)]);
+    const human = captureConsole(() => renderError("reset", uncoded, { isTTY: true }));
+    expect(human.errors).toEqual(["✗ --step required"]);
+  });
+
+  test("a Node system code (ENOENT) is NOT a registered code — output stays byte-identical", () => {
+    const e = new Error("ENOENT: no such file or directory");
+    e.code = "ENOENT";
+    const { errors } = captureConsole(() => renderError("generate", e, { isTTY: false }));
+    expect(errors).toEqual([JSON.stringify({ ok: false, error: "ENOENT: no such file or directory" }, null, 2)]);
   });
 });
 

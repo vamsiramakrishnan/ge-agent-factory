@@ -655,7 +655,22 @@ test("scenario packs enrich behavior contracts with eval hints", () => {
 });
 
 test("skill registry maps harness capabilities to repository skills", async () => {
-  const registry = await loadSkillRegistry(REPO_ROOT);
+  // Hermetic: point the installed-Agents-CLI-skills lookup at a checked-in
+  // fixture instead of the machine-global ~/.agents/skills, so the registry
+  // contents (and therefore every assertion below) are identical on every
+  // machine. AGENTS_CLI_SKILLS_DIR is the first root the production resolver
+  // consults and it dedupes by skill id, so the fixture's seven official
+  // skills fully shadow whatever is (or isn't) installed under the runner's
+  // home directory. No production resolution logic changes.
+  const previousSkillsDir = process.env.AGENTS_CLI_SKILLS_DIR;
+  process.env.AGENTS_CLI_SKILLS_DIR = join(REPO_ROOT, "tests", "fixtures", "agents-cli-skills");
+  let registry;
+  try {
+    registry = await loadSkillRegistry(REPO_ROOT);
+  } finally {
+    if (previousSkillsDir === undefined) delete process.env.AGENTS_CLI_SKILLS_DIR;
+    else process.env.AGENTS_CLI_SKILLS_DIR = previousSkillsDir;
+  }
   assert.equal(registry.root, `${CANONICAL_REPO_ROOT}/skills`);
   const missingBindings = registry.bindings.filter((binding) => !registry.skills.some((skill) => skill.id === binding.skill));
   assert.deepEqual(missingBindings, []);
@@ -663,9 +678,7 @@ test("skill registry maps harness capabilities to repository skills", async () =
   assert.ok(registry.skills.some((skill) => skill.id === "interviewing-specs" && skill.origin === "repository"));
   assert.ok(registry.skills.some((skill) => skill.id === "running-factory" && skill.relativePath === "skills/running-factory/SKILL.md"));
   assert.ok(registry.skills.some((skill) => skill.id === "checking-workspaces" && skill.origin === "repository"));
-  if (existsSync(INSTALLED_AGENTS_CLI_WORKFLOW)) {
-    assert.ok(registry.skills.some((skill) => skill.id === "google-agents-cli-workflow" && skill.origin === "agents-cli"));
-  }
+  assert.ok(registry.skills.some((skill) => skill.id === "google-agents-cli-workflow" && skill.origin === "agents-cli"));
 
   const selected = selectSkillsForContext({
     registry,
@@ -678,11 +691,9 @@ test("skill registry maps harness capabilities to repository skills", async () =
   assert.ok(selectedIds.includes("running-factory"));
   assert.ok(selectedIds.includes("building-simulators"));
   assert.ok(selectedIds.includes("checking-workspaces"));
-  if (existsSync(INSTALLED_AGENTS_CLI_WORKFLOW)) {
-    assert.ok(selectedIds.includes("google-agents-cli-workflow"));
-    assert.ok(selectedIds.includes("google-agents-cli-adk-code"));
-    assert.ok(selectedIds.includes("google-agents-cli-eval"));
-  }
+  assert.ok(selectedIds.includes("google-agents-cli-workflow"));
+  assert.ok(selectedIds.includes("google-agents-cli-adk-code"));
+  assert.ok(selectedIds.includes("google-agents-cli-eval"));
 
   const handoff = buildHandoffPacket({
     receiver: "gemini",
@@ -703,10 +714,8 @@ test("skill registry maps harness capabilities to repository skills", async () =
   });
   assert.match(handoff, /skills\/running-factory\/SKILL\.md/);
   assert.match(handoff, /\.ge-harness\/skills\/running-factory\/SKILL\.md/);
-  if (existsSync(INSTALLED_AGENTS_CLI_WORKFLOW)) {
-    assert.match(handoff, /google-agents-cli-workflow\/SKILL\.md/);
-    assert.match(handoff, /\.ge-harness\/skills\/google-agents-cli-workflow\/SKILL\.md/);
-  }
+  assert.match(handoff, /google-agents-cli-workflow\/SKILL\.md/);
+  assert.match(handoff, /\.ge-harness\/skills\/google-agents-cli-workflow\/SKILL\.md/);
   assert.match(handoff, /Gemini CLI, Codex CLI, Claude Code/);
   assert.match(handoff, /Spec-To-Code Quality Gate/);
   assert.match(handoff, /behaviorContract\.toolIntents/);
@@ -746,9 +755,15 @@ test("factory control plane models managed release orchestration", () => {
   assert.equal(plan.services.cloudBuild.ownsStages.includes("publish_enterprise"), true);
   assert.ok(plan.commands.some((cmd) => cmd.includes("cloudbuild.googleapis.com")));
   assert.ok(plan.commands.some((cmd) => cmd.includes("gcloud tasks queues create")));
+  // C8: the worker-service step must NOT gcloud-run-deploy — Terraform owns the
+  // Cloud Run worker config (installer/terraform/cloud_run.tf; see the deploy
+  // contract in docs/OPERATIONS.md). The step only points at that ownership.
   const workerStep = plan.provisionSteps.find((step) => step.id === "worker-service");
-  assert.ok(workerStep.apply.includes("--no-allow-unauthenticated"));
-  assert.ok(workerStep.apply.includes("--timeout"));
+  assert.equal(workerStep.kind, "note");
+  assert.equal(workerStep.apply, undefined);
+  assert.ok(workerStep.description.includes("Terraform-owned"));
+  assert.ok(workerStep.description.includes("installer/terraform/cloud_run.tf"));
+  assert.ok(!plan.provisionSteps.some((step) => Array.isArray(step.apply) && step.apply.includes("deploy")));
 });
 
 test("factory worker parses payloads and dispatches release stages to Cloud Build", async () => {

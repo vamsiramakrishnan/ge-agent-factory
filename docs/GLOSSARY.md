@@ -1,9 +1,16 @@
+---
+title: Glossary
+nav_order: 8
+layout: default
+---
+
 # Glossary
 
 Plain-language translations of the internal jargon you'll run into while
-reading the `ge-agent-factory` codebase and docs. Each entry gives the term
-as you'll actually see it, what it IS in one sentence, and where you're
-likely to first bump into it.
+reading the `ge-agent-factory` codebase and docs (the "GE" is **Gemini
+Enterprise** — the Google Cloud product the factory publishes agents into).
+Each entry gives the term as you'll actually see it, what it IS in one
+sentence, and where you're likely to first bump into it.
 
 If a term you needed isn't here, it's probably still worth a doc PR — this
 list is deliberately focused, not exhaustive.
@@ -15,7 +22,8 @@ list is deliberately focused, not exhaustive.
 **What it is:** The local, LLM-driven "does this generated agent actually
 match the spec?" review-and-fix step that runs on your machine (or the
 worker) after code generation and before anything ships to the cloud. It's
-powered by the **Antigravity SDK** (`apps/factory/scripts/antigravity-sdk-agent.py`),
+powered by [Antigravity](#antigravity)
+(`apps/factory/scripts/antigravity-sdk-agent.py`),
 which reviews the generated ADK code against the spec (writing
 `artifacts/generator-feedback.json`), then tries to auto-fix mismatches
 (writing `artifacts/harness-refine.json` with a `spec_to_code_fidelity`
@@ -27,6 +35,20 @@ surface — the CLI loop, the daemon, and the pipeline stages named
 `docs/concepts/the-factory-line.md`; `apps/factory/docs/harness-data-model.md`;
 in the console, the Activity feed shows a line like "Antigravity review:
 &lt;provider&gt; · score &lt;n&gt;" for any run that went through this step.
+
+---
+
+### Antigravity
+
+**What it is:** Google's agent SDK (the `google-antigravity` Python package)
+that powers the [harness](#harness) review/refine step — the factory drives
+it headlessly to judge and repair spec-to-code fidelity. `mise run deps`
+installs it into the repo `.venv`; if `google.antigravity` isn't importable,
+local harness runs fail.
+
+**Where you'll meet it:** `mise run doctor-local` checks it;
+`apps/factory/scripts/antigravity-sdk-agent.py` is the driver; console
+Activity lines read "Antigravity review: …".
 
 ---
 
@@ -67,8 +89,9 @@ console's spec editor renders this as the agent's role/scope/rules section.
 ### Promotion Gate
 
 **What it is:** An automated pass/fail check that runs right before deploy
-and refuses to ship a workspace whose validation report, spec-to-code
-trace, or harness verdicts (review/refine) haven't cleared their bar. If it
+and refuses to ship a [workspace](#workspace) whose validation report,
+[spec-to-code trace](#spec-to-code-trace), or harness verdicts
+(review/refine) haven't cleared their bar. If it
 fails, you get a list of specific blockers instead of a deploy — you can
 override with `--force` or `GE_ALLOW_UNPROMOTED=1`, but the gate exists so a
 broken or unreviewed agent can't reach the cloud by accident.
@@ -76,7 +99,7 @@ broken or unreviewed agent can't reach the cloud by accident.
 **Where you'll meet it:** Run `factory promotion-gate` (implemented in
 `apps/factory/src/promotion-packet.js`); it's also section `## Promotion
 Gate` inside the generated promotion packet artifact, and the quickstart doc
-(`apps/docs/src/content/docs/start/quickstart.md`) mentions it as the check
+(`apps/docs/src/content/docs/start/quickstart.mdx`) mentions it as the check
 that "blocks a ship that hasn't passed validation and the harness verdicts."
 
 ---
@@ -93,8 +116,8 @@ dispatched to Cloud Build. In code this shows up as the constant
 
 **Where you'll meet it:** The "AUTHOR & BUILD / VALIDATE & REFINE / RELEASE"
 diagram and "The build boundary: local build vs remote release" section in
-`docs/concepts/the-factory-line.md`; the `buildBoundary` field on mission
-plans (`tools/lib/factory-autopilot-mission.mjs`).
+`docs/concepts/the-factory-line.md`; the `buildBoundary` field on
+[mission](#mission) plans (`tools/lib/factory-autopilot-mission.mjs`).
 
 ---
 
@@ -125,7 +148,7 @@ code skeleton, and the eval harness format. The factory in this repo is a
 higher-level orchestrator that *drives* `agents-cli` as one step among many
 (alongside spec generation, data synthesis, and the harness review); you
 won't usually call it directly, but you'll see its fingerprints in generated
-workspaces and its evalset format.
+workspaces and its [evalset](#evalset) format.
 
 **Where you'll meet it:** `docs/concepts/agents-and-adk.md` ("the
 ADK/`agents-cli` command surface"); `mise run doctor-local` checks whether it's
@@ -134,28 +157,241 @@ locates and invokes it.
 
 ---
 
-### A few more terms that trip people up
+### Planes
 
-- **Canary** — a build of exactly **one** agent, used to prove the pipeline
-  works end to end before committing to the whole catalog. `--canary` on
-  `ge agents build` (or `CANARY=1` on the `mise run provision*` tasks) is the
-  opposite of `--all`. Nothing to do with feature-flag canary releases — it's
-  just "one workspace, all the way through."
-- **Interview** — the guided, conversational flow where a business user (or
-  agent) describes a use case and the factory turns it into a formal spec.
-  See `apps/console/src/views/Interview.tsx`.
-- **Mission** — one orchestrated, resumable run of the factory pipeline for
-  a use case (plan → generate → harness → validate → deploy). See
-  `skills/planning-missions/references/mission-contract.md`.
-- **Spec-to-Code Trace** — the automated check that verifies the code the
-  factory generated actually matches what the spec asked for; one of the
-  inputs the Promotion Gate reads. See `apps/factory/src/spec-code-trace.js`.
-- **Workspace** — the on-disk folder for one generated agent
-  (`.ge/factory/projects/<workspace>/`), with a `workspace.json` manifest
-  describing what's in it. This is the unit that flows down the factory
-  line from stage to stage.
-- **Review vs. Refine** — two distinct sub-steps of the harness. "Review"
-  just reports how well the generated code matches the spec
-  (`generator-feedback.json`); "Refine" goes further and tries to
-  automatically fix mismatches (`harness-refine.json`). Easy to conflate,
-  but only Refine changes code.
+**What it is:** The three infrastructure layers the platform stands up in
+your cloud project — the **factory plane** (gateway, worker, Cloud Tasks
+queue, Cloud Build: the machinery that runs builds), the **data plane**
+(GCS, BigQuery, Bigtable, Firestore, AlloyDB, per-agent data + IAM), and the
+**tool plane** (the per-department MCP services, Agent Registry entries, and
+the Agent Gateway that agents call tools through). `ge up` provisions all
+three; `--infra`/`--data`/`--mcp` pick one. Not the same thing as the
+"durable control plane," which is the run-orchestration loop *inside* the
+factory plane.
+
+**Where you'll meet it:** Bare `ge`'s status board ("planes ✓/○"); the
+three-planes diagram in `docs/developers.md`; `tools/lib/planes/` in code.
+
+---
+
+### Daemon
+
+**What it is:** The local background process (`ge daemon start`, HTTP on
+port `17654` / `GE_DAEMON_PORT`) that runs long factory work —
+[missions](#mission), [Autopilot](#autopilot), generic jobs — as durable
+runtime *tasks*, so a run survives your terminal closing and can be
+resumed. `mise run setup` starts it for you; the console and CLI both talk
+to it.
+
+**Where you'll meet it:** `ge daemon status` / `ge daemon tasks`;
+`tools/lib/runtime-daemon.mjs` in code; every `--port` flag on
+`ge mission|journey|autopilot` commands is this daemon's port.
+
+---
+
+### Ledger
+
+**What it is:** The durable, event-sourced record of every run — one entry
+per run, item, and stage — that `ge agents status`, the Fleet view, and the
+console's Activity feed all read. Progress lives in the ledger (SQLite or
+Postgres locally, via the `@ge/run-ledger` package; mirrored to Firestore
+for cloud runs), never in a process — which is what makes runs observable
+and resumable after a crash.
+
+**Where you'll meet it:** "The durable control plane" in
+`docs/concepts/the-factory-line.md`; `ge ledger backfill`;
+`tools/lib/ledger/run-ledger.mjs` (shim over `packages/run-ledger`).
+
+---
+
+### Doctor
+
+**What it is:** The health-check family: a set of read-only, actionable
+pass/fail checks over the toolchain and the three [planes](#planes).
+`ge doctor` is the unified check (toolchain · factory · data plane · tool
+plane); `ge doctor --local` checks only the local toolchain; `ge data
+doctor` and `ge mcp doctor` scope to one plane. It diagnoses; it never
+mutates.
+
+**Where you'll meet it:** `mise run doctor-local` right after setup; the
+console's Doctor tab; `tools/lib/doctor/` in code.
+
+---
+
+### DevEx gate and smoke
+
+**What it is:** Two developer-experience commands that prove the repo works
+on your machine. `ge devex check` (the *gate*) is the fast read-only pass:
+local [doctor](#doctor) + docs link check + generated workspace manifest
+contracts. `ge devex smoke` (the *smoke*) is the one-command proof: doctor →
+local mode → build one validated [canary](#canary) workspace, then print its
+paths and next commands.
+
+**Where you'll meet it:** `mise run devex-check` / `mise run devex-smoke`;
+`docs/cookbooks/getting-started.md` steps 1–2.
+
+---
+
+### Canary
+
+**What it is:** A build of exactly **one** agent, used to prove the pipeline
+works end to end before committing to the whole catalog. `--canary` on
+`ge agents build` (or `CANARY=1` on the `mise run provision*` tasks) is the
+opposite of `--all`. Nothing to do with feature-flag canary releases — it's
+just "one [workspace](#workspace), all the way through."
+
+**Where you'll meet it:** `mise run devex-smoke` builds one;
+`CANARY=1 mise run provision-local`; the bootstrap task's optional canary
+step.
+
+---
+
+### Fleet
+
+**What it is:** The whole set of generated agents/workspaces, treated as one
+unit — the opposite end of the scale from a [canary](#canary). "Fleet-level"
+operations (bulk build, ship, sync, health) apply to every agent at once:
+`ge agents build --all`, the shared MCP services, fleet health checks.
+
+**Where you'll meet it:** The console's Fleet view (bulk build/ship/sync);
+`tools/lib/fleet-ops.mjs` and `tools/lib/doctor/fleet-health.mjs` in code.
+
+---
+
+### Workspace
+
+**What it is:** The on-disk folder for one generated agent
+(`.ge/factory/workspaces/<workspace-id>/`), with a `workspace.json` manifest
+describing what's in it. This is the unit that flows down the factory
+line from stage to stage — and the thing the [Promotion Gate](#promotion-gate)
+inspects before a deploy.
+
+**Where you'll meet it:** `ge devex smoke` prints the primary workspace
+path; "Workspace manifest" in `docs/developers.md`; `ge state paths` shows
+where they land.
+
+---
+
+### Mission
+
+**What it is:** One orchestrated, resumable run of the factory pipeline for
+a use case, executed as a DAG of [daemon](#daemon) child tasks — data
+readiness, simulator checks, optionally the factory build itself, the
+[Antigravity](#antigravity) review node, and convergence to a target stage.
+Plan it without running (`ge mission plan`), run it (`ge mission run`),
+resume it after a failure (`ge mission resume`).
+
+**Where you'll meet it:** `ge mission plan|run|status|resume`; scenario
+state under `.ge/missions/<scenario>`;
+`skills/planning-missions/references/mission-contract.md` for the contract.
+
+---
+
+### Journey
+
+**What it is:** The user-facing, end-to-end path from business intent to a
+deployed agent — interview → spec → data → simulator → build → eval →
+preview → deploy — rendered as a plan you can read (`ge journey plan`) and
+watch (`ge journey status`). `ge journey run` doesn't have its own engine:
+it starts the durable [mission](#mission) graph under the hood. Journey is
+the human-readable view; mission is the executable graph.
+
+**Where you'll meet it:** `ge journey plan --usecase <id>`;
+`tools/lib/journey-plan.mjs` in code.
+
+---
+
+### Autopilot
+
+**What it is:** The [daemon](#daemon)-native convergence loop for *many*
+workspaces at once: given a set of ids (or the current queue), it observes
+each workspace's blockers, runs repair up to `--attempts` times, and keeps
+going until every item reaches the target stage (default `preview`). Think
+"keep the [fleet](#fleet) converged" rather than "run one pipeline."
+
+**Where you'll meet it:** `ge autopilot run|status|events`; the Autopilot
+queue in the console; `tools/ge/autopilot.mjs` in code.
+
+---
+
+### Mission vs. journey vs. autopilot vs. factory run
+
+**What it is:** Four orchestration words that are easy to conflate. They are
+different layers, not synonyms (and their names are persisted in task kinds
+and ledger tables, so none of them is getting renamed):
+
+| Name | What it orchestrates | Where it lives |
+|---|---|---|
+| **Factory run** | One agent workspace through the stage pipeline (generate → validate → … → publish) | `ge agents build` / per-stage `factory` commands; recorded in the run [ledger](#ledger) |
+| **[Mission](#mission)** | A DAG of daemon tasks around one scenario: data, simulators, optional factory build, harness review, convergence | `ge mission plan\|run\|status\|resume`; `.ge/missions/<scenario>` |
+| **[Journey](#journey)** | The human-readable end-to-end plan (interview → … → deploy); `run` delegates to the mission graph | `ge journey plan\|status\|run` |
+| **[Autopilot](#autopilot)** | Convergence across many workspaces: observe blockers → repair → retry to a target stage | `ge autopilot run\|status\|events` (daemon-native) |
+
+**Where you'll meet it:** The `ge` CLI reference's autopilot/mission/journey
+sections (`docs/reference/cli.md`); the daemon's task list (`ge daemon tasks`).
+
+---
+
+### Gateway vs. Agent Gateway
+
+**What it is:** Two different front doors that share a word. "The
+**gateway**" (lowercase, factory-plane) is the Cloud Run service that
+receives operator/CLI/console requests and enqueues factory work onto Cloud
+Tasks — part of the durable control plane that runs builds. The "**Agent
+Gateway**" (capitalized, managed Google Cloud product) is the governed
+runtime front door that *deployed agents* call their MCP tools through, with
+its own authz layer. Operator traffic goes through the first; agent tool
+calls go through the second.
+
+**Where you'll meet it:** Factory-plane gateway: the plane table in
+`docs/developers.md` and `docs/concepts/the-factory-line.md`. Agent Gateway:
+`docs/concepts/security-and-the-agent-gateway.md` and
+`installer/terraform/agent_gateway.tf`.
+
+---
+
+### Interview
+
+**What it is:** The guided, conversational flow where a business user (or
+agent) describes a use case and the factory turns it into a formal spec.
+It's the very first box in the [journey](#journey).
+
+**Where you'll meet it:** `apps/console/src/views/Interview.tsx`; the
+"Author a spec via the interview" cookbook.
+
+---
+
+### Evalset
+
+**What it is:** The generated evaluation suite for one agent — prompts plus
+expected behavior in `agents-cli`'s eval format — that scores whether the
+agent actually behaves as the spec's behavior contract says. It's generated
+into the [workspace](#workspace) alongside the code and run with
+`factory eval` (or the eval commands `workspace.json` lists).
+
+**Where you'll meet it:** `docs/cookbooks/run-evals.md`; the eval config
+path `ge devex smoke` prints; [`agents-cli`](#agents-cli)'s eval surface.
+
+---
+
+### Spec-to-Code Trace
+
+**What it is:** The automated check that verifies the code the
+factory generated actually matches what the spec asked for; one of the
+inputs the [Promotion Gate](#promotion-gate) reads.
+
+**Where you'll meet it:** `apps/factory/src/spec-code-trace.js`; the trace
+artifact listed in `workspace.json`.
+
+---
+
+### Review vs. Refine
+
+**What it is:** Two distinct sub-steps of the [harness](#harness). "Review"
+just reports how well the generated code matches the spec
+(`generator-feedback.json`); "Refine" goes further and tries to
+automatically fix mismatches (`harness-refine.json`). Easy to conflate,
+but only Refine changes code.
+
+**Where you'll meet it:** The `harness_reviewed` and `harness_refined`
+pipeline stages; `factory harness-review` vs. `factory harness-refine`.

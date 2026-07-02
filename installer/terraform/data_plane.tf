@@ -1,7 +1,7 @@
 # Shared data plane (Tier-1): one set of instances per project; per-agent objects
 # (datasets/databases/tables/named-DBs/prefixes) are created at the load_data
 # stage. All stores default on (enable_* for teardown/cost control). See
-# docs/superpowers/specs/2026-06-01-per-agent-data-plane-design.md.
+# docs/design-specs/specs/2026-06-01-per-agent-data-plane-design.md.
 
 locals {
   data_bucket = var.data_bucket_name != "" ? var.data_bucket_name : "${var.project_id}-ge-agent-data"

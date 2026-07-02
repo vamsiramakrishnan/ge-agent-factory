@@ -266,7 +266,7 @@ async function main() {
     if (!args.bundle && !args.help) process.exit(1);
     return;
   }
-  const info = await stat(args.bundle).catch(() => null);
+  const info = await stat(args.bundle).catch(() => null); // best-effort: null converts to the explicit bundle-not-found throw below
   if (!info || !info.isDirectory()) throw new Error(`Bundle directory not found: ${args.bundle}`);
   const spec = await okfToSpec(args.bundle);
   process.stdout.write(`${JSON.stringify(spec, null, 2)}\n`);

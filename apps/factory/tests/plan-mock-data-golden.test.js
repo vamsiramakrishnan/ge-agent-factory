@@ -7,10 +7,11 @@ import { runGoldenOracle, walkAndSnapshot, stableSnapshotJson, compareOrUpdateGo
 //
 // plan-mock-data emits a workspace of mock_data/** artifacts (data plans, schemas,
 // load scripts, adapter contracts, simulator seed plans, …). The output is fully
-// deterministic given (use case, source map) EXCEPT a single `generatedAt` ISO
-// timestamp per artifact (the script does not honor GE_SOURCE_DATE). We mask the
-// ISO-8601 timestamps and snapshot every emitted file into one golden, so any
-// extraction that changes a single byte of any artifact fails here.
+// deterministic given (use case, source map, GE_SOURCE_DATE): the script honors
+// the injectable source clock (apps/factory/src/source-clock.js), so this oracle
+// pins GE_SOURCE_DATE and compares every emitted byte — including generatedAt
+// timestamps — against the golden. No masking: any drift in a single byte of any
+// artifact fails here.
 //
 // Fixed input: use case "0" against the committed source map. To regenerate after an
 // INTENTIONAL output change: `GE_UPDATE_GOLDEN=1 bun test apps/factory/tests/plan-mock-data-golden.test.js`
@@ -22,18 +23,18 @@ const SOURCE_MAP = join(HERE, "..", "src", "use-case-source-map.generated.json")
 const GOLDEN = join(HERE, "fixtures", "plan-mock-data-golden", "snapshot.json");
 const USECASE = "0";
 
-// Mask the lone non-deterministic value (generatedAt ISO-8601 timestamps).
-const TIMESTAMP_RE = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/g;
+// The repo-wide test pin (bunfig.test-preload.mjs) sets the same value, but the
+// oracle states it explicitly so it stays byte-reproducible when this file is
+// run under a caller that overrode GE_SOURCE_DATE for its own purposes.
+const PINNED_SOURCE_DATE = "2026-01-01T00:00:00.000Z";
 
 function snapshot() {
   return runGoldenOracle({
     tmpPrefix: "ge-pmd-golden-",
     command: "node",
     args: (ws) => [SCRIPT, "--dir", ws, "--usecase", USECASE, "--sourceMap", SOURCE_MAP],
-    snapshot: (ws) => {
-      const dir = join(ws, "mock_data");
-      return stableSnapshotJson(walkAndSnapshot(dir, { mask: TIMESTAMP_RE }));
-    },
+    env: () => ({ ...process.env, GE_SOURCE_DATE: PINNED_SOURCE_DATE }),
+    snapshot: (ws) => stableSnapshotJson(walkAndSnapshot(join(ws, "mock_data"))),
   });
 }
 

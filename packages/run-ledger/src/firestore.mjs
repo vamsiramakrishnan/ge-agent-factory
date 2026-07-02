@@ -197,7 +197,10 @@ export async function createFirestoreLedgerReader({
     if (!snapshot?.exists) return null;
     const [runEvents, itemDocs] = await Promise.all([
       events(runId, { limit: 10000 }),
-      queryDocs(itemsCollection(runId)).catch(() => []),
+      queryDocs(itemsCollection(runId)).catch((error) => {
+        console.warn(`[run-ledger] items query failed for ${runId}; returning run without items: ${error?.message || error}`);
+        return [];
+      }),
     ]);
     return summarizeRunDoc(snapshot, { events: runEvents, items: itemDocs });
   };

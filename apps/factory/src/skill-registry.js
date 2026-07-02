@@ -390,7 +390,7 @@ async function resolveCanonicalRepoRoot(startRoot) {
 }
 
 async function loadRepoSkills({ repoRoot, skillsRoot, origin = "repository", rootLabel = "repository skills", routing = {} }) {
-  const dirs = await readdir(skillsRoot, { withFileTypes: true }).catch(() => []);
+  const dirs = await readdir(skillsRoot, { withFileTypes: true }).catch(() => []); // best-effort: a repo without a skills dir simply has no repo skills
   const skills = [];
   for (const dirent of dirs) {
     if (!dirent.isDirectory()) continue;

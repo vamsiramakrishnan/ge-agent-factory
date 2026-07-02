@@ -52,7 +52,7 @@ const autopilotRun = defineCommand({
 const autopilotStatus = defineCommand({
   meta: { name: "status", description: "Show one Autopilot run, or list recent daemon-native Autopilot runs" },
   args: {
-    id: { type: "positional", required: false },
+    id: { type: "positional", required: false, description: "Autopilot task id (omit to list recent runs)" },
     json: { type: "boolean", description: "Machine-readable JSON result on stdout" },
     port: { type: "string", description: "Daemon port (default 17654)" },
     limit: { type: "string", description: "Recent Autopilot run count when no id is provided" },
@@ -87,7 +87,7 @@ const autopilotStatus = defineCommand({
 const autopilotEvents = defineCommand({
   meta: { name: "events", description: "Show daemon-native Autopilot task events" },
   args: {
-    id: { type: "positional", required: true },
+    id: { type: "positional", required: true, description: "Autopilot task id" },
     json: { type: "boolean", description: "Machine-readable JSON result on stdout" },
     port: { type: "string", description: "Daemon port (default 17654)" },
   },

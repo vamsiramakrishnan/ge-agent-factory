@@ -9,6 +9,9 @@ layout: default
 This guide is the fastest way to understand why the repo exists, where the code
 lives, and how to make a change without guessing.
 
+Unfamiliar term? See the [Glossary](./GLOSSARY.html) — plain-language
+translations of the jargon (harness, OKF, canary, planes, missions, …).
+
 ## Purpose first
 
 GE Agent Factory exists to close the gap between "we can imagine an enterprise
@@ -19,7 +22,8 @@ and cloud release stages all trace back to that contract.
 
 That is why the repo has more than an app shell. It has a generator, local
 fixtures, simulator packs, an operator CLI, a console, an MCP server, Terraform,
-run ledgers, evals, and generated-agent workspaces. Those pieces exist so a
+run [ledgers](./GLOSSARY.html#ledger) (durable run records), evals, and
+generated-agent workspaces. Those pieces exist so a
 developer can reproduce the agent locally and an operator can release the same
 artifact into a governed project.
 
@@ -36,7 +40,9 @@ CANARY=1 mise run provision-local
 ```
 
 The local path installs the toolchain, checks docs and workspace contracts,
-proves one validated canary workspace, starts the daemon, opens the console at
+proves one validated [canary](./GLOSSARY.html#canary) workspace (a single agent
+that proves the pipeline), starts the [daemon](./GLOSSARY.html#daemon) (the
+local background task runner), opens the console at
 `http://localhost:18260`, and can build one agent up to the build boundary. The
 default `mise run devex-smoke` path does not require cloud credentials.
 
@@ -53,8 +59,8 @@ CANARY=1 mise run bootstrap
 |---|---|---|
 | `tools/ge.mjs` | Human CLI over the factory core | Adding or debugging operator commands |
 | `tools/lib/factory-core.mjs` | Shared engine used by CLI, console, and MCP | Changing build, ship, sync, doctor, or platform behavior |
-| `tools/lib/run-ledger.mjs` | Local/remote run state and event history | Debugging status, fleet, logs, or resumability |
-| `tools/mcp-server.mjs` | MCP surface over factory operations | Letting models or harnesses drive the factory |
+| `tools/lib/ledger/run-ledger.mjs` | Local/remote run state and event history | Debugging status, fleet, logs, or resumability |
+| `tools/mcp-server.mjs` | MCP surface over factory operations | Letting models or [harnesses](./GLOSSARY.html#harness) (LLM review/driver loops) drive the factory |
 | `apps/console/` | React operator UI | Changing Pipeline, Fleet, Activity, Doctor, or agent detail flows |
 | `apps/factory/` | Generator, workbench, simulator tooling, factory worker | Changing generated workspaces, data, evals, or simulator integration |
 | `apps/factory/simulator-systems/` | Source-system simulator packs | Adding Workday/SAP/etc. behavior without a live system |
@@ -76,7 +82,8 @@ The build boundary is `previewed`. Stages before it are pure computation and can
 run locally. Stages after it touch cloud resources and run through the remote
 factory or `ge agents ship`.
 
-The three platform planes are:
+The three platform [planes](./GLOSSARY.html#planes) — the infrastructure
+layers `ge up` stands up — are:
 
 <p align="center">
   <img src="assets/diagrams/three-planes.svg" alt="ge CLI and console drive the factory plane, which reads and writes the data plane and the tool (MCP) plane" width="650">

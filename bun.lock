@@ -7,6 +7,7 @@
       "dependencies": {
         "@clack/prompts": "^1.6.0",
         "@ge/agent-resolver": "workspace:*",
+        "@ge/agent-spec": "workspace:*",
         "@ge/run-ledger": "workspace:*",
         "@ge/runtime": "workspace:*",
         "@ge/std": "workspace:*",
@@ -72,6 +73,8 @@
       "name": "@ge/docs",
       "dependencies": {
         "@astrojs/starlight": "^0.34",
+        "@fontsource/geist-mono": "^5",
+        "@fontsource/space-grotesk": "^5",
         "astro": "^5",
         "sharp": "^0.33",
       },
@@ -86,6 +89,7 @@
       },
       "dependencies": {
         "@faker-js/faker": "^10.4.0",
+        "@ge/agent-workspace": "workspace:*",
         "@ge/okf": "workspace:*",
         "@ge/run-ledger": "workspace:*",
         "@ge/runtime": "workspace:*",
@@ -132,6 +136,13 @@
       "name": "@ge/agent-resolver",
       "version": "0.1.0",
     },
+    "packages/agent-spec": {
+      "name": "@ge/agent-spec",
+      "version": "0.1.0",
+      "dependencies": {
+        "zod": "^4.4.3",
+      },
+    },
     "packages/agent-workspace": {
       "name": "@ge/agent-workspace",
       "version": "0.1.0",
@@ -150,13 +161,6 @@
         "lucide-react": "^0.546.0",
       },
     },
-    "packages/factory-install": {
-      "name": "@ge/factory-install",
-      "version": "0.1.0",
-      "bin": {
-        "ge-factory-install": "./src/cli.mjs",
-      },
-    },
     "packages/okf": {
       "name": "@ge/okf",
       "version": "0.1.0",
@@ -168,14 +172,6 @@
     "packages/runtime": {
       "name": "@ge/runtime",
       "version": "0.1.0",
-    },
-    "packages/simulator-packs": {
-      "name": "@ge/simulator-packs",
-      "version": "0.1.0",
-      "bin": {
-        "ge-simulator-packs-validate": "./scripts/validate.mjs",
-        "ge-simulator-packs-manifest": "./scripts/print-manifest.mjs",
-      },
     },
     "packages/std": {
       "name": "@ge/std",
@@ -418,7 +414,13 @@
 
     "@firebase/webchannel-wrapper": ["@firebase/webchannel-wrapper@1.0.6", "", {}, "sha512-Vr/Mqu79dMwGRAyGbJ4uN4+BtXB3/mRTdzetD1daWNeG8QaWuzhhbG77GltO5c0yYmYls8i250iX73624GJd7Q=="],
 
+    "@fontsource/geist-mono": ["@fontsource/geist-mono@5.2.8", "", {}, "sha512-YqZUb3X42GjRaHkibUNyE8K4Rk9A6I9Ez81YpJYiuJN4ggmTW2ixoQpa9EWCPfXZtIsCQJTyrDoV9OJOZO/UcA=="],
+
+    "@fontsource/space-grotesk": ["@fontsource/space-grotesk@5.2.10", "", {}, "sha512-XNXEbT74OIITPqw2H6HXwPDp85fy43uxfBwFR5PU+9sLnjuLj12KlhVM9nZVN6q6dlKjkuN8JisW/OBxwxgUew=="],
+
     "@ge/agent-resolver": ["@ge/agent-resolver@workspace:packages/agent-resolver"],
+
+    "@ge/agent-spec": ["@ge/agent-spec@workspace:packages/agent-spec"],
 
     "@ge/agent-workspace": ["@ge/agent-workspace@workspace:packages/agent-workspace"],
 
@@ -430,15 +432,11 @@
 
     "@ge/factory": ["@ge/factory@workspace:apps/factory"],
 
-    "@ge/factory-install": ["@ge/factory-install@workspace:packages/factory-install"],
-
     "@ge/okf": ["@ge/okf@workspace:packages/okf"],
 
     "@ge/run-ledger": ["@ge/run-ledger@workspace:packages/run-ledger"],
 
     "@ge/runtime": ["@ge/runtime@workspace:packages/runtime"],
-
-    "@ge/simulator-packs": ["@ge/simulator-packs@workspace:packages/simulator-packs"],
 
     "@ge/std": ["@ge/std@workspace:packages/std"],
 

@@ -7,7 +7,7 @@
 // runtime-unverified until driven against a hosted project.
 
 import * as core from "../../../../../tools/lib/factory-core.mjs";
-import { createFirestoreLedgerReader } from "../../../../../tools/lib/run-ledger-firestore.mjs";
+import { createFirestoreLedgerReader } from "../../../../../tools/lib/ledger/run-ledger-firestore.mjs";
 import { makeSseWriter } from "./sse.mjs";
 
 let firestoreLedgerReaderPromise = null;
@@ -114,7 +114,7 @@ async function streamFirestoreLedger({ runId, afterSeq = 0 } = {}, emitEvent, is
     ended = true;
     if (eventTimer) clearInterval(eventTimer);
     if (statusTimer) clearInterval(statusTimer);
-    try { unsubscribe?.(); } catch {}
+    try { unsubscribe?.(); } catch { /* best-effort: unsubscribing an already-torn-down listener */ }
     onEnd();
   };
   const emitEvents = (events) => {

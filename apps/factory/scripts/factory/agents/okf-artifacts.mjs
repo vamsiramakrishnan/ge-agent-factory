@@ -46,7 +46,7 @@ export async function writeOkfArtifacts({ dir, manifest, behaviorContract, gener
     okfBundleDir = join(dir, "app", "knowledge");
     for (const concept of concepts) {
       const abs = join(okfBundleDir, `${concept.relPath}.md`);
-      await mkdir(join(abs, ".."), { recursive: true }).catch(() => {});
+      await mkdir(join(abs, ".."), { recursive: true }).catch(() => {}); // best-effort: a real mkdir failure surfaces via the writeFile below
       await writeFile(abs, renderOkfConcept(concept.fields, concept.body), "utf8");
     }
   } catch (error) {
@@ -77,7 +77,7 @@ export async function writeOkfArtifacts({ dir, manifest, behaviorContract, gener
       mechanisms: (t.mechanisms || []).map(canon).filter(Boolean),
     }));
     if (queries.length || tests.length) {
-      await mkdir(join(dir, "artifacts"), { recursive: true }).catch(() => {});
+      await mkdir(join(dir, "artifacts"), { recursive: true }).catch(() => {}); // best-effort: a real mkdir failure surfaces via the writeJson below
       await writeJson(join(dir, "artifacts", "okf-coverage.json"), {
         generatedAt,
         agentId: manifest?.id || "generated",

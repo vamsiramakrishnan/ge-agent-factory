@@ -13,19 +13,19 @@ import { parseConcurrency } from "./concurrency.mjs";
 import { readJson, writeJson, updateJson } from "@ge/std/json-io";
 import { buildFactoryConfig, explainFactoryConfig } from "./config-schema.mjs";
 import { commandMeta, commandRequirements } from "./ge-command-registry.mjs";
-import { runDoctorSection } from "./factory-doctor.mjs";
+import { runDoctorSection } from "./doctor/report.mjs";
 import { runCommand } from "./factory-exec.mjs";
-import { createDataPlane } from "./data-plane.mjs";
-import { createMcpPlane } from "./mcp-plane.mjs";
-import { createFactoryPlane, serviceUrl } from "./factory-plane.mjs";
+import { createDataPlane } from "./planes/data-plane.mjs";
+import { createMcpPlane } from "./planes/mcp-plane.mjs";
+import { createFactoryPlane, serviceUrl } from "./planes/factory-plane.mjs";
 import { STATE_PATHS, DEPARTMENTS } from "./state-paths.mjs";
 // Week-4: app-domain ops are imported via the two cycle-break boundary modules,
 // NOT directly from apps/factory — factory-core keeps zero app imports (enforced
 // by tools/check-no-app-imports.mjs).
 import { createGatewayClient, postJson } from "./gateway-client.mjs";
-import { createDoctorPlane } from "./doctor.mjs";
+import { createDoctorPlane } from "./doctor/engine.mjs";
 import { createProvisionOps } from "./provision.mjs";
-import { selectionDepartments, toolPlaneChecks, shipProxyCheck, gatewayProvisionCheck, bigQueryApiCheck, selectWorkspacesForRegen } from "./tool-plane-checks.mjs";
+import { selectionDepartments, toolPlaneChecks, shipProxyCheck, gatewayProvisionCheck, bigQueryApiCheck, selectWorkspacesForRegen } from "./planes/tool-plane-checks.mjs";
 import {
   runLedger,
   ledgerWrite,
@@ -33,13 +33,13 @@ import {
   ledgerRun,
   ledgerFleet,
   ledgerBackfillFromDisk,
-} from "./factory-ledger.mjs";
+} from "./ledger/factory-ledger.mjs";
 import { mergeLedgerAndFileRuns, listFactoryRuns } from "./factory-runs.mjs";
 import { loadCatalog, resolveCatalogId, listUsecases, listSpecs } from "./factory-catalog-search.mjs";
 import { reviewSpec } from "./spec-review.mjs";
 import { registerSpecWith } from "./register-spec.mjs";
 import { createAgentIdentityOps } from "./agent-identity.mjs";
-import { createWorkspaceDoctorOps } from "./workspace-doctor.mjs";
+import { createWorkspaceDoctorOps } from "./doctor/workspace.mjs";
 import { createFleetOps } from "./fleet-ops.mjs";
 import { createApplyOps } from "./apply-ops.mjs";
 import { createRemoteRunOps } from "./remote-run-ops.mjs";
@@ -51,9 +51,9 @@ export {
   gatewayProvisionCheck,
   bigQueryApiCheck,
   selectWorkspacesForRegen,
-} from "./tool-plane-checks.mjs";
-export { HARNESS_VENV_DIR, harnessVenvPython } from "./doctor.mjs";
-export { runLedger, ledgerRuns, ledgerRun, ledgerFleet, ledgerPlan, ledgerBackfillFromDisk } from "./factory-ledger.mjs";
+} from "./planes/tool-plane-checks.mjs";
+export { HARNESS_VENV_DIR, harnessVenvPython } from "./doctor/engine.mjs";
+export { runLedger, ledgerRuns, ledgerRun, ledgerFleet, ledgerPlan, ledgerBackfillFromDisk } from "./ledger/factory-ledger.mjs";
 export { mergeLedgerAndFileRuns, listFactoryRuns } from "./factory-runs.mjs";
 export { loadCatalog, resolveCatalogId, listUsecases, listSpecs } from "./factory-catalog-search.mjs";
 export { reviewSpec } from "./spec-review.mjs";
@@ -91,8 +91,8 @@ export function run(bin, args, { capture = true, allowFail = false, cwd = REPO_R
 const gcloud = (args, opts) => run("gcloud", args, opts);
 
 export function ensureBin(bin, hint) {
-  try { execFileSync(bin, ["--version"], { stdio: "ignore" }); return; } catch {}
-  try { execFileSync(bin, ["-version"], { stdio: "ignore" }); return; } catch {}
+  try { execFileSync(bin, ["--version"], { stdio: "ignore" }); return; } catch { /* best-effort: probe; fall through to -version then the not-found error */ }
+  try { execFileSync(bin, ["-version"], { stdio: "ignore" }); return; } catch { /* best-effort: probe; fall through to the not-found error below */ }
   throw new Error(`${bin} not found on PATH.${hint ? " " + hint : ""}`);
 }
 const ensureGcloud = () => ensureBin("gcloud", "Install the Google Cloud CLI: https://cloud.google.com/sdk/docs/install");
@@ -184,6 +184,9 @@ export async function init(cfg, { log = noop } = {}) {
   cfg.bucket = cfg.bucket || `${cfg.project}-ge-agent-factory`;
 
   const out = {
+    // Points editors at the tracked, generated schema (tools/gen-config-schema.mjs).
+    // Every other .ge.json writer merges (`...existing`), so the key survives.
+    $schema: "./.ge.schema.json",
     project: cfg.project, projectNumber: cfg.projectNumber, region: cfg.region,
     gatewayService: cfg.gatewayService, workerService: cfg.workerService,
     gatewayUrl: cfg.gatewayUrl, workerUrl: cfg.workerUrl, bucket: cfg.bucket,

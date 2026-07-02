@@ -2,7 +2,7 @@
 // that mint or consume them. This is a byte-faithful NAMING of strings already on the wire —
 // NO merging, NO behavior change. The reconciliation that collapses these into one canonical
 // dispatch is a later, behavior-changing wave (see
-// docs/superpowers/specs/2026-06-14-console-presentation-unification.md).
+// docs/design-specs/specs/2026-06-14-console-presentation-unification.md).
 //
 // zod-backed: each vocabulary is a z.enum (runtime-validatable) with the type inferred, so the
 // exported type names + members are unchanged for consumers.
@@ -23,7 +23,7 @@ export const JourneyPlanActionKindSchema = z.enum([
 ]);
 export type JourneyPlanActionKind = z.infer<typeof JourneyPlanActionKindSchema>;
 
-// (b) Minted by tools/lib/fleet-health.mjs actionPlanFor() — now plural build_agents (unified).
+// (b) Minted by tools/lib/doctor/fleet-health.mjs actionPlanFor() — now plural build_agents (unified).
 export const FleetActionKindSchema = z.enum([
   "ship_agents",
   "none",

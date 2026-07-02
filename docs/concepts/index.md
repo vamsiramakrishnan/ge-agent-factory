@@ -16,18 +16,24 @@ Read Concepts when you need to understand why the factory has a spec, why local
 and remote mode are separate, why simulators exist, and why deployment is modeled
 as a staged control plane instead of a single script.
 
+Unfamiliar term? See the [Glossary](../GLOSSARY.html) — plain-language
+translations of the jargon (harness, OKF, canary, planes, missions, …).
+
 ## The big idea
 
 The factory turns an enterprise **use case** into a **real, tested, deployable
 [ADK](https://google.github.io/adk-docs/) agent** — code, tools, fixtures, tests,
 and evals — grounded by **simulated source systems**. The same workspace runs
 locally against fixtures (no cloud needed) and, when you are ready, is promoted to
-*your own* Google Cloud project: per-agent data stores, an MCP tool plane, Agent
-Runtime, Agent Registry, and a Gemini Enterprise publish.
+*your own* Google Cloud project: per-agent data stores, an MCP tool
+[plane](../GLOSSARY.html#planes) (one of the platform's three infrastructure
+layers — factory, data, tool), Agent Runtime, Agent Registry, and a Gemini
+Enterprise publish.
 
 One idea ties it all together: **the spec is the contract.** A use case becomes a
-normalized spec (portable as an [Open Knowledge Format](https://openknowledge.foundation/)
-bundle). Generation, validation, simulation, evals, and runtime grounding all read
+normalized spec (portable as an [Open Knowledge Format (OKF)](../reference/okf.html)
+bundle — this repo's own spec-as-Markdown format, not an external standard).
+Generation, validation, simulation, evals, and runtime grounding all read
 from that one contract — so the agent the factory builds *is* the agent the spec
 described, and you can trace any line of generated code back to a spec intent.
 
@@ -57,7 +63,7 @@ described, and you can trace any line of generated code back to a spec intent.
 | Concept | Source anchor | Why it matters |
 |---|---|---|
 | Factory line | `tools/lib/factory-core.mjs` | Shared engine behind CLI, console, and MCP |
-| Durable ledger | `tools/lib/run-ledger.mjs` | Single source of truth for local and remote runs |
+| Durable [ledger](../GLOSSARY.html#ledger) | `tools/lib/ledger/run-ledger.mjs` | Single source of truth for local and remote runs |
 | Generated agent | `apps/factory/src/agent-workspace-pipeline.js` | Turns specs into ADK workspaces |
 | Simulator systems | `apps/factory/simulator-systems/` | Makes source systems testable before real integration |
 | Tool plane | `apps/factory/mcp-service/` | Runtime facade that generated agents call through MCP |

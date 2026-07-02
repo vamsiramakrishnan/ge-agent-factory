@@ -18,7 +18,7 @@ import { existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readJson } from "@ge/std/json-io";
-import { ledgerPlan } from "./factory-ledger.mjs";
+import { ledgerPlan } from "./ledger/factory-ledger.mjs";
 import { planReconcile } from "./reconcile.mjs";
 
 const noop = () => {};

@@ -21,7 +21,7 @@ AGENTS_SKILLS_DIR = "{{env.AGENTS_SKILLS_DIR | default(value=env.HOME ~ '/.agent
 # ── Setup & toolchain ────────────────────────────────────────────────────
 
 [tasks.setup]
-description = "Install deps, sync catalog/skills, install the ge command, start the daemon"
+description = "Install deps, sync the use-case catalog (generated registry of buildable agents) + skills, install the ge command, start the daemon"
 run = """#!/usr/bin/env bash
 set -euo pipefail
 bun install
@@ -41,7 +41,7 @@ echo "                                     # build one agent locally up to previ
 """
 
 [tasks.bootstrap]
-description = "END-TO-END: toolchain + `ge init` + `ge up` (factory+data+tool planes → doctor). Needs GEMINI_ENTERPRISE_APP_ID + gcloud auth. CANARY=1 also builds one agent."
+description = "END-TO-END: toolchain + `ge init` + `ge up` (factory+data+tool planes — the three infrastructure layers → doctor). Needs GEMINI_ENTERPRISE_APP_ID + gcloud auth. CANARY=1 also builds one agent."
 run = """#!/usr/bin/env bash
 set -euo pipefail
 if [ -z "${GEMINI_ENTERPRISE_APP_ID:-}" ] && [ ! -f .ge.json ]; then
@@ -124,7 +124,7 @@ command -v gcloud >/dev/null 2>&1 \
 """
 
 [tasks.data-runtime]
-description = "Warm the local data-generation runtime used by mission mock/simulator stages"
+description = "Warm the local data-generation runtime (Snowfakery) used when missions — orchestrated pipeline runs — generate mock/simulator data"
 run = """#!/usr/bin/env bash
 set -uo pipefail
 mkdir -p .ge/cache/uv
@@ -174,7 +174,7 @@ echo "  Note: not wired into 'install' yet — that still installs the bun-wrapp
 # ── Skills (harness) ─────────────────────────────────────────────────────
 
 [tasks.skills-sync]
-description = "Validate repository skills and write the harness skill manifest"
+description = "Validate repository skills and write the harness skill manifest (the index coding-agent harnesses load skills from)"
 run = "node scripts/sync-harness-skills.mjs"
 
 [tasks.skills-doctor]
@@ -223,8 +223,12 @@ run = 'bun tools/ge.mjs devex check ${ID:+--id "$ID"}'
 description = "Docs-specific gate: link/image/blockquote check, diagram freshness, design-token drift"
 run = "bun run docs:gate"
 
+[tasks.docs-site]
+description = "Run the docs website locally (Astro/Starlight; content synced from docs/ on start)"
+run = "bun run docs:site:dev"
+
 [tasks.devex-smoke]
-description = "One-command local proof: doctor → local mode → one validated canary workspace (ID=<usecase> TARGET=validated|previewed)"
+description = "One-command local proof: doctor → local mode → one validated canary workspace (a single agent that proves the pipeline; ID=<usecase> TARGET=validated|previewed)"
 run = 'bun tools/ge.mjs devex smoke ${ID:+--id "$ID"} ${TARGET:+--target "$TARGET"}'
 
 [tasks.up]
@@ -244,7 +248,7 @@ description = "Check shared data stores and local mock/simulator data runtime"
 run = "bun tools/ge.mjs data doctor"
 
 [tasks.mcp-deploy]
-description = "Tool plane: deploy the 5 per-department custom MCP services to Cloud Run (fleet-level)"
+description = "Tool plane: deploy the 5 per-department custom MCP services to Cloud Run (fleet-level: shared by all agents, not one)"
 run = "bun tools/ge.mjs mcp deploy"
 
 [tasks.mcp-doctor]
@@ -256,7 +260,7 @@ description = "Status board: project/app, mode, planes ✓/○, next command"
 run = "bun tools/ge.mjs"
 
 [tasks.mode-local]
-description = "Switch to local mode (build on this machine, up to the build boundary)"
+description = "Switch to local mode (build on this machine, up to the build boundary — the last stage that needs no cloud credentials)"
 run = "bun tools/ge.mjs mode local"
 
 [tasks.mode-remote]
@@ -268,7 +272,7 @@ description = "Build agents in the active mode (CANARY=1 for one, else --all)"
 run = 'bun tools/ge.mjs agents build ${CANARY:+--canary} ${CANARY:---all}'
 
 [tasks.provision-local]
-description = "Build agents on this machine via the Antigravity harness (CANARY=1 for one)"
+description = "Build agents on this machine via the Antigravity harness (LLM spec-fidelity review; CANARY=1 builds just one agent)"
 run = 'bun tools/ge.mjs agents build --local ${CANARY:+--canary} ${CANARY:---all}'
 
 [tasks.sync]
