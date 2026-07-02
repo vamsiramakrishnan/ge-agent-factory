@@ -94,6 +94,14 @@ A remote build is a chain of HTTP tasks, one per `(runId, item, stage)`:
   AlloyDB, streams bounded log frames, and enqueues the next stage. It runs as the
   runner SA (Firestore, AlloyDB, GCS, Secret Manager access).
 
+The stages themselves, in execution order, each colored by the component that
+owns it (this diagram is generated from `FACTORY_STAGE_GRAPH` in
+`apps/factory/src/factory-orchestration.js` — `bun run docs:stage-diagram`):
+
+<p align="center">
+  <img src="../assets/diagrams/factory-stages.svg" alt="the factory stage graph in execution order, from plan through generate/package/refine/validate/preview to deploy, register, publish, and verify-live, with each stage colored by its owner: control plane (blue), Cloud Run service (grey), Cloud Build (green), or Cloud Tasks (dark blue)" width="800">
+</p>
+
 This replaces the original model where the operator's laptop ran the whole fleet:
 the control plane is now Cloud Tasks + a Cloud Run worker + a Firestore/AlloyDB
 ledger, durable across restarts.

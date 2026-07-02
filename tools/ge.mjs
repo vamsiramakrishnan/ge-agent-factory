@@ -72,6 +72,11 @@ const root = defineCommand({
   },
 });
 
+// The full citty command tree, exported so tooling (tools/gen-cli-reference.mjs)
+// can walk it without spawning the CLI. Importing this module never runs the
+// CLI — see the __isEntryPoint guard below.
+export const rootCommand = root;
+
 // Pure logic exported for unit tests (e.g. the init-command project-resolution
 // gating below, defined in ./ge/init.mjs). Guarded so importing this module
 // for tests doesn't also run the CLI against the test runner's own argv.
