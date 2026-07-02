@@ -101,7 +101,10 @@ export const TOKEN_TABLE = [
 
 const CSS_BEGIN = "  /* BEGIN GENERATED: palette — do not edit; run `bun run docs:tokens` */";
 const CSS_END = "  /* END GENERATED: palette */";
-const SCSS_BEGIN = "// BEGIN GENERATED: palette — do not edit; run `bun run docs:tokens`";
+// NB: the SCSS markers are ASCII-only on purpose — Jekyll's Ruby Sass
+// converter (jekyll-sass-converter 1.5.x) parses _sass files as US-ASCII and
+// dies on multibyte characters like an em-dash.
+const SCSS_BEGIN = "// BEGIN GENERATED: palette -- do not edit; run `bun run docs:tokens`";
 const SCSS_END = "// END GENERATED: palette";
 
 export const TARGETS = [
