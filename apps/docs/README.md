@@ -26,6 +26,21 @@ excluded: `runbooks/`, `adr/`, `plans/`, …) and, per page:
    published set (`SETUP.md`, `docs/runbooks/…`) become GitHub blob URLs
 5. copies referenced images/SVGs (the beautiful-mermaid diagrams in
    `docs/assets/diagrams/`) into `public/` and absolutizes their URLs
+6. emits **`.mdx`** (routes don't change — slugs are extension-less), escaping
+   the tokens MDX would read as JSX (`{…}`, `<placeholder>`) so authors keep
+   writing plain CommonMark; every emitted page is then parsed with the same
+   MDX compiler Astro uses, and the sync **fails with `docs/<file>:<line>`
+   context** on anything hostile that slips past the escapes
+7. auto-links the first prose mention of each `docs/GLOSSARY.md` term to the
+   glossary page, with the entry's first sentence as an `<a title>` hover
+   tooltip (never inside code, links, or headings — see
+   `scripts/lib/glossary.mjs`)
+
+Because pages are MDX, generated and curated content can use the components
+in `src/components/` — e.g. `CommandCard.astro`, which renders a command's
+label/CLI/risk/requirements straight from `tools/lib/ge-command-registry.mjs`
+at build time (via the `src/lib/ge-commands.mjs` shim), so command docs can
+never drift from the registry.
 
 Everything the script writes is gitignored (see `.gitignore`) — edit the
 `docs/` source, never the generated files. Top-level `docs/*.md` pages must be

@@ -1,0 +1,148 @@
+---
+// Registry-backed command card: give it a GE_COMMANDS id and it renders that
+// command's label, CLI invocation, risk badge, expected duration, and
+// requirements — read at build time from tools/lib/ge-command-registry.mjs
+// (via the src/lib/ge-commands.mjs shim), the same single source of truth the
+// CLI, console routes, and MCP server dispatch through. The card can never
+// drift from the command: an unknown id fails the build.
+import { GE_COMMANDS } from "../lib/ge-commands.mjs";
+import RiskBadge from "./RiskBadge.astro";
+
+const { id } = Astro.props;
+const command = GE_COMMANDS[id];
+if (!command) {
+  throw new Error(
+    `CommandCard: unknown registry id "${id}" — valid ids live in tools/lib/ge-command-registry.mjs (${Object.keys(GE_COMMANDS).join(", ")})`,
+  );
+}
+
+// Human phrasing for the registry's boolean requirement flags — meanings per
+// the `requirements` field contract documented in ge-command-registry.mjs.
+const FLAG_LABELS = {
+  cloudAuth: "authenticated gcloud session",
+  terraformRoot: "a Terraform root checkout",
+  configWritable: "writable .ge.json (may merge new values)",
+  localToolchain: "local dev toolchain (mise run setup)",
+  toolPlane: "MCP tool plane deployed",
+  bigQueryHard: "BigQuery API enabled (hard blocker)",
+  shipHandoff: "cloud-run-proxy component + gateway agent-provision flag",
+  dataGenerationRuntime: "local data-generation runtime",
+};
+
+const { bins = [], config = [], ...flags } = command.requirements ?? {};
+const requirements = [
+  ...(bins.length ? [`on PATH: ${bins.join(", ")}`] : []),
+  ...(config.length ? [`.ge.json keys: ${config.join(", ")}`] : []),
+  ...Object.keys(FLAG_LABELS)
+    .filter((key) => flags[key])
+    .map((key) => FLAG_LABELS[key]),
+];
+---
+
+<article class="command-card not-content" aria-label={`Command: ${command.label}`}>
+  <header>
+    <span class="label">{command.label}</span>
+    <RiskBadge risk={command.risk} />
+  </header>
+  <code class="cli">{command.cli}</code>
+  <p class="summary">{command.summary}</p>
+  <dl class="meta">
+    <div>
+      <dt>Expected duration</dt>
+      <dd>{command.expectedDuration}</dd>
+    </div>
+    {
+      requirements.length > 0 && (
+        <div>
+          <dt>Requires</dt>
+          <dd>
+            <ul>
+              {requirements.map((req) => (
+                <li>{req}</li>
+              ))}
+            </ul>
+          </dd>
+        </div>
+      )
+    }
+  </dl>
+  <footer>
+    From the operator registry (<code>tools/lib/ge-command-registry.mjs</code>) — the same entry drives the CLI, console route, and MCP tool.
+  </footer>
+</article>
+
+<style>
+  .command-card {
+    margin: 1rem 0;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.5rem;
+    background: var(--sl-color-black);
+    box-shadow: var(--sl-shadow-sm);
+  }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .label {
+    font-family: var(--sl-font-headings, inherit);
+    font-size: var(--sl-text-lg);
+    font-weight: 600;
+    color: var(--sl-color-white);
+  }
+  .cli {
+    display: block;
+    margin: 0.6rem 0;
+    padding: 0.45rem 0.7rem;
+    border-radius: 0.35rem;
+    background: var(--sl-color-gray-6);
+    color: var(--sl-color-text);
+    font-size: var(--sl-text-sm);
+    overflow-x: auto;
+  }
+  .summary {
+    margin: 0.25rem 0 0.6rem;
+    color: var(--sl-color-gray-2);
+    font-size: var(--sl-text-sm);
+  }
+  .meta {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0;
+  }
+  .meta div {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+  }
+  .meta dt {
+    flex: none;
+    font-size: var(--sl-text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--sl-color-gray-3);
+  }
+  .meta dd {
+    margin: 0;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-text);
+  }
+  .meta ul {
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+  footer {
+    margin-top: 0.7rem;
+    padding-top: 0.6rem;
+    border-top: 1px dashed var(--sl-color-gray-5);
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-gray-3);
+  }
+  footer code {
+    font-size: inherit;
+  }
+</style>
