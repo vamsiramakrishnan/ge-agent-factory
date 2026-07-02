@@ -9,6 +9,7 @@ import {
   WORKSPACE_PATHS,
   WORKSPACE_SCHEMA_VERSION,
 } from "./workspace-contract.js";
+import * as agentWorkspacePackage from "@ge/agent-workspace";
 
 const roots = [];
 
@@ -71,5 +72,15 @@ describe("workspace contract", () => {
     expect(report.ok).toBe(true);
     expect(report.manifest.fails).toBe(0);
     expect(report.required.every((item) => item.exists)).toBe(true);
+  });
+});
+
+describe("@ge/agent-workspace integration", () => {
+  test("workspace-contract re-exports the package's contract verbatim", () => {
+    // workspace-contract.js is the package's first (and canonical) consumer:
+    // its re-exported constants must be the package's own objects, not copies.
+    expect(WORKSPACE_SCHEMA_VERSION).toBe(agentWorkspacePackage.WORKSPACE_SCHEMA_VERSION);
+    expect(WORKSPACE_PATHS).toBe(agentWorkspacePackage.WORKSPACE_PATHS);
+    expect(REQUIRED_WORKSPACE_FILES).toBe(agentWorkspacePackage.REQUIRED_WORKSPACE_FILES);
   });
 });
