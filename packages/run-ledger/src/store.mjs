@@ -376,7 +376,7 @@ export function createRunLedger(adapter) {
       const failed = Object.entries(stateJson.failed || {});
       if (completed.length || failed.length) {
         const importRunId = "backfill-remote-state";
-        startRun({ id: importRunId, mode, kind: "build", status: "done", total: completed.length + failed.length });
+        startRun({ id: importRunId, mode, kind: "build", total: completed.length + failed.length });
         for (const [agentId, e] of completed) {
           recordTransition({ runId: importRunId, workItemId: agentId, useCaseId: agentId, workspaceId: e.workspaceId, stage: "created", status: "submitted", ts: e.at || nowIso(), data: { remoteRunId: e.runId } });
           items += 1;
