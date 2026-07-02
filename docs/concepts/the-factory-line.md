@@ -145,7 +145,7 @@ engine**. Nothing re-executes a stage from those values today.
   to the boundary; `CANARY=1 mise run bootstrap` stands up the planes and proves one
   agent end to end. Run `mise run help` for the grouped menu or `mise run next` for a
   status-based recommendation.
-- The **console** is the day-to-day UI (Pipeline · Fleet · Activity · Doctor) with
+- The **console** is the day-to-day UI (Overview · Pipeline · Fleet · Repair Queue · Runs · Readiness) with
   a live Run Drawer over the same ledger.
 
 See the [Reference](../reference/) for the full `mise` and `ge` command surface,

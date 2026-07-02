@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Button } from "@ge/ui";
 import { useRuntimeStatus } from "../hooks/useRuntimeStatus";
 import { ge, startJob, type RuntimeStatus } from "../services/geClient";
 
@@ -92,27 +93,20 @@ export function RuntimeStatusBadge() {
                 Interviews, missions, and local runs need it. {status?.error ? `(${status.error})` : ""}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <button
-                  onClick={start}
-                  disabled={starting}
-                  className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-primary-container disabled:opacity-50"
-                >
+                <Button size="sm" onClick={start} loading={starting}>
                   {starting ? "Starting…" : "Start daemon"}
-                </button>
-                <button
-                  onClick={handleCopy}
-                  className="rounded-md border border-outline-variant/50 px-3 py-1.5 text-xs font-medium text-secondary transition-colors hover:bg-surface-container"
-                >
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleCopy}>
                   {copied ? "Copied" : "Copy restart command"}
-                </button>
+                </Button>
               </div>
             </>
           )}
           <div className="mt-3 flex items-center justify-between border-t border-outline-variant/30 pt-2">
             <code className="truncate text-[11px] text-secondary">{restart}</code>
-            <button onClick={() => refresh()} className="shrink-0 pl-2 text-xs font-medium text-primary hover:underline">
+            <Button variant="ghost" size="sm" className="shrink-0" onClick={() => refresh()}>
               Re-check
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -163,20 +157,13 @@ export function RuntimeStatusCard() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {down && (
-            <button
-              onClick={start}
-              disabled={starting}
-              className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-primary-container disabled:opacity-50"
-            >
+            <Button size="sm" onClick={start} loading={starting}>
               {starting ? "Starting…" : "Start daemon"}
-            </button>
+            </Button>
           )}
-          <button
-            onClick={() => refresh()}
-            className="px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/10 transition-colors rounded-lg"
-          >
+          <Button variant="ghost" size="sm" onClick={() => refresh()}>
             Re-check
-          </button>
+          </Button>
         </div>
       </div>
       {down && (

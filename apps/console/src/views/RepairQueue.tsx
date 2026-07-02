@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Loader2, Play, RotateCw, Wrench } from "lucide-react";
-import { Button, EmptyState, Select, Stat } from "@ge/ui";
+import { Button, EmptyState, PageHeader, Section, Select, Stat } from "@ge/ui";
 import { useGeQuery } from "../lib/query";
 import { ge, type AutopilotDetail, type AutopilotRun, type Fleet, type FleetAgent, type MissionPlan, type StatusBoard } from "../services/geClient";
 import { StatusPill } from "../components/StatusPill";
@@ -139,27 +139,26 @@ export default function RepairQueue({ status }: RepairQueueProps) {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex items-start justify-between gap-4 mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
             <Wrench className="w-5 h-5 text-primary" />
-            <h1 className="text-2xl font-bold text-on-surface">Repair Queue</h1>
-          </div>
-          <p className="text-sm text-on-surface-variant">
-            Pick agents, check the next gate, and resume only the work that needs attention.
-          </p>
-        </div>
-        <Button variant="ghost" size="sm" onClick={load} disabled={busy}>
-          <RotateCw className="w-4 h-4" />
-          Refresh
-        </Button>
-      </div>
+            Repair Queue
+          </span>
+        }
+        subtitle="Pick agents, check the next gate, and resume only the work that needs attention."
+        actions={
+          <Button variant="ghost" size="sm" onClick={load} disabled={busy}>
+            <RotateCw className="w-4 h-4" />
+            Refresh
+          </Button>
+        }
+      />
 
       {loadError && <ErrorBanner tone="amber" message={loadError} onRetry={load} />}
 
       <div className="grid grid-cols-1 xl:grid-cols-[420px_1fr] gap-6">
-        <section className="editorial-micro-card rounded-lg p-4">
-          <h2 className="text-sm font-semibold text-on-surface mb-4">Choose work to fix</h2>
+        <Section title="Choose work to fix">
           <div className="grid grid-cols-2 gap-3 mb-4">
             <Select value={department} onChange={(e) => setDepartment(e.target.value)}>
               {departments.map((item) => <option key={item} value={item}>{item === "all" ? "All departments" : item}</option>)}
@@ -213,15 +212,14 @@ export default function RepairQueue({ status }: RepairQueueProps) {
             {!busy && <Play className="w-4 h-4" />}
             Start Repair Run
           </Button>
-        </section>
+        </Section>
 
         <section className="space-y-4">
           {mission && (
-            <div className="editorial-micro-card rounded-lg p-4">
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-semibold text-on-surface">Run Plan</h2>
-                <span className="text-xs text-on-surface-variant">{mission.mode} · gate {mission.target.workspaceGate}</span>
-              </div>
+            <Section
+              title="Run Plan"
+              actions={<span className="text-xs text-on-surface-variant">{mission.mode} · gate {mission.target.workspaceGate}</span>}
+            >
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                 <Stat size="md" label="Selected" value={mission.summary.selected} />
                 <Stat size="md" label="Needs build" value={mission.summary.factory} />
@@ -250,14 +248,13 @@ export default function RepairQueue({ status }: RepairQueueProps) {
               <p className="text-xs text-on-surface-variant mt-3">
                 Builds create missing workspaces. Repair runs only inspect, fix, or observe work that already exists.
               </p>
-            </div>
+            </Section>
           )}
 
-          <div className="editorial-micro-card rounded-lg p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-on-surface">Repair Runs</h2>
-              <span className="text-xs text-on-surface-variant">{status?.mode || "local"} mode</span>
-            </div>
+          <Section
+            title="Repair Runs"
+            actions={<span className="text-xs text-on-surface-variant">{status?.mode || "local"} mode</span>}
+          >
             <div className="flex flex-wrap gap-2">
               {runs.map((run) => (
                 <button
@@ -273,7 +270,7 @@ export default function RepairQueue({ status }: RepairQueueProps) {
               ))}
               {!runs.length && <EmptyState title="No repair runs yet." className="w-full py-4" />}
             </div>
-          </div>
+          </Section>
 
           {detail && (
             <div className="editorial-micro-card rounded-lg overflow-hidden">

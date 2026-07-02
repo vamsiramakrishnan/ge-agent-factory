@@ -3,4 +3,4 @@
 // hand-mirrored copies.
 export const SITE_TITLE = "GE Agent Factory";
 export const SITE_DESCRIPTION =
-  "Turn a business use case into a tested, deployable Gemini Enterprise agent.";
+  "Turn an enterprise use case into a generated, tested, deployable Gemini Enterprise agent.";

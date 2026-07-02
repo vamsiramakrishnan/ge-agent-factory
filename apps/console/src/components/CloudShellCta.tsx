@@ -1,4 +1,5 @@
 import { Cloud, ExternalLink } from "lucide-react";
+import { ButtonLink } from "@ge/ui";
 
 // Self-service install CTA. Mirrors the presentation's DeployYourOwnSlide: opens
 // Cloud Shell with the installer repo cloned + the guided walkthrough, so the
@@ -31,16 +32,16 @@ export function CloudShellCta() {
           </p>
         </div>
       </div>
-      <a
+      <ButtonLink
         href={cloudShellHref}
         target="_blank"
         rel="noreferrer noopener"
-        className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-container"
+        className="shrink-0"
       >
         <Cloud className="h-4 w-4" />
         Open in Cloud Shell
         <ExternalLink className="h-3.5 w-3.5 opacity-70" />
-      </a>
+      </ButtonLink>
     </div>
   );
 }

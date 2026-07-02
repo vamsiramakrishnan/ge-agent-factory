@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Copy, ExternalLink, Loader2, Pause, Pin, PinOff, Play, Wifi, X } from "lucide-react";
+import { Button } from "@ge/ui";
 import { ge, type LedgerEvent } from "../services/geClient";
 import { useRunStream, type RunStageView } from "../hooks/useRunStream";
 import { useRunScrubber } from "../hooks/useRunScrubber";
@@ -275,28 +276,16 @@ function Footer({ runId, blocked, blockedReason, onClose }: { runId: string; blo
       {error && <div className="mb-2 text-xs text-rose-600">{error}</div>}
       <div className="flex items-center gap-2">
         {blocked && (
-          <button
-            onClick={resume}
-            disabled={resuming}
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-primary-container disabled:opacity-50"
-            title={blockedReason || "Resume this run"}
-          >
-            {resuming ? <Loader2 className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" /> : null}
+          <Button size="sm" onClick={resume} loading={resuming} title={blockedReason || "Resume this run"}>
             {resuming ? "Resuming…" : "Resume"}
-          </button>
+          </Button>
         )}
-        <button
-          onClick={openFull}
-          className="inline-flex items-center gap-1.5 rounded-md border border-outline/30 px-3 py-2 text-xs font-medium text-on-surface transition-colors hover:bg-surface-container"
-        >
+        <Button variant="outline" size="sm" onClick={openFull}>
           <ExternalLink className="h-3.5 w-3.5" /> Open full
-        </button>
-        <button
-          onClick={onClose}
-          className="ml-auto rounded-md px-3 py-2 text-xs font-medium text-secondary transition-colors hover:bg-surface-container"
-        >
+        </Button>
+        <Button variant="ghost" size="sm" className="ml-auto" onClick={onClose}>
           Close
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -208,6 +208,32 @@ The console UI moved from hand-rolled-per-view to a small system:
   caught by the Playwright tour, not by tsc or unit tests — the browser pass
   earns its keep.
 
+## Wave 5 — foundational revamp (four parallel teams)
+
+- **The Interview became the flagship it should be**: a stage eyebrow
+  ("Pipeline · Stage 1"), a progress arc (Brief → Interview → Spec →
+  Registered) derived only from real signals, a two-pane
+  Conversation/Artifact narrative with skeleton materialization while the
+  spec streams, and a single emerald registered-payoff CTA. Streaming and the
+  locked form-driven design untouched.
+- **A page grammar exists now**: `PageHeader` and `Section` in `@ge/ui`
+  replaced seven subtly-different hand-rolled headers and nine card headers;
+  every view closes its header with the same rule. Route changes get a calm
+  150ms enter-only transition (reduced-motion respected).
+- **One status vocabulary**: run-status normalization stays owned by
+  `@ge/run-ledger`, `@ge/ui` is the styling authority (`runStatusStyle`,
+  `StatusChip`), and the console's `lib/runStatus.tsx` is a byte-compatible
+  shim — the two parallel status systems are gone.
+- **The docs site has a front door**: hero with the product one-liner, the
+  three-step journey as cards with effort pills, path cards into the golden
+  flows, canonical IA labels; site build green (35 pages).
+- **System completion**: `useRuntimeStatus` on the query layer; JobToast,
+  RunDrawer footer, RuntimeStatusBadge, PlaneCard, CloudShellCta, ErrorBanner
+  on the primitives (replay scrubber byte-identical); the last stale
+  "Pipeline · Fleet · Activity · Doctor" lists in docs/ corrected.
+- Verified as one tree: 972 tests passing (0 newly failing), hygiene + docs
+  gates green, and a seven-view Playwright tour with zero page errors.
+
 ## Known gaps, deliberately not fixed here
 
 - **Run replay** (`ge run replay` / console scrubber) is the flagship item in

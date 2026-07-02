@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ge/contracts": "workspace:*",
+    "@ge/run-ledger": "workspace:*",
     "lucide-react": "^0.546.0"
   },
   "peerDependencies": {

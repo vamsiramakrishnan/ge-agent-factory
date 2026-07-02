@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Button, EmptyState, Segmented } from "@ge/ui";
+import { Button, EmptyState, PageHeader, Segmented } from "@ge/ui";
 import { useActivity } from "../hooks/useActivity";
 import { useUrlParam } from "../lib/useUrlState";
 import { StatusPill } from "../components/StatusPill";
@@ -274,17 +274,15 @@ export default function Activity() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
-      <div className="mb-6">
-        <div className="flex items-baseline justify-between mb-2">
-          <h1 className="text-2xl font-bold text-on-surface">Runs</h1>
+      <PageHeader
+        title="Runs"
+        subtitle="One timeline for every run — missions, factory builds, and console jobs, newest first."
+        actions={
           <Button variant="ghost" size="sm" onClick={handleRefresh} disabled={loading && agents.length === 0}>
             Refresh
           </Button>
-        </div>
-        <p className="text-sm text-secondary">
-          One timeline for every run — missions, factory builds, and console jobs, newest first.
-        </p>
-      </div>
+        }
+      />
 
       {error && <ErrorBanner tone="amber" message={error} onRetry={refresh} />}
       {(listsErrorMessage || actionError) && <ErrorBanner tone="amber" message={listsErrorMessage || actionError || ""} onRetry={refreshJobs} />}

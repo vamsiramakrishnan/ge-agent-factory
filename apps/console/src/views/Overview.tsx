@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button, ButtonLink, CommandChip, EmptyState } from "@ge/ui";
+import { Button, ButtonLink, CommandChip, EmptyState, PageHeader, Section, Stat } from "@ge/ui";
 import { useGeQuery } from "../lib/query";
 import { ge, startJob, type StatusBoard, type Fleet, type RuntimeTaskSummary, type ReconcilePlan } from "../services/geClient";
 import { PlaneCard } from "../components/PlaneCard";
@@ -276,19 +276,17 @@ export default function Overview({ status, refresh }: OverviewProps) {
       {error && <ErrorBanner message={error} onRetry={refetchOverview} />}
 
 
-      <div className="mb-6">
-        <div className="flex flex-wrap items-baseline gap-3 mb-1">
-          <span className="text-sm font-semibold text-on-surface capitalize">
-            {mode} mode
-          </span>
-          <span className="text-sm text-secondary">
-            {status?.project ?? "No GCP project"}
-          </span>
-          <span className="text-xs text-secondary/60">{status?.app ?? ""}</span>
-        </div>
-        <h1 className="text-2xl font-bold text-on-surface">Overview</h1>
-        <p className="text-sm text-secondary mt-1">Where your agents are in the pipeline, and what to do next.</p>
-      </div>
+      <PageHeader
+        title="Overview"
+        subtitle="Where your agents are in the pipeline, and what to do next."
+        meta={
+          <>
+            <Stat size="sm" label="Mode" value={mode} />
+            <Stat size="sm" label="GCP Project" value={status?.project ?? "No GCP project"} />
+            {status?.app ? <Stat size="sm" label="App" value={status.app} /> : null}
+          </>
+        }
+      />
 
       {/* Self-service install — bring the whole factory up in your own project. */}
       <CloudShellCta />
@@ -307,20 +305,18 @@ export default function Overview({ status, refresh }: OverviewProps) {
       )}
 
       {/* Pipeline rail — the build→ship→deploy→run flow, mode-aware. */}
-      <div className="editorial-micro-card rounded-lg p-5 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-sm font-semibold text-on-surface">Pipeline</h2>
-            <p className="text-xs text-secondary mt-0.5">
-              {mode === "remote"
-                ? "This machine submits; the cloud builds, deploys, and publishes."
-                : "This machine runs build → preview (the build boundary). Ship hands off to the cloud."}
-            </p>
-          </div>
+      <Section
+        className="mb-6"
+        title="Pipeline"
+        description={mode === "remote"
+          ? "This machine submits; the cloud builds, deploys, and publishes."
+          : "This machine runs build → preview (the build boundary). Ship hands off to the cloud."}
+        actions={
           <Button variant="ghost" size="sm" onClick={() => { location.hash = "#/pipeline"; }}>
             Open Pipeline <ArrowRight className="w-4 h-4" />
           </Button>
-        </div>
+        }
+      >
         <div className="flex items-stretch gap-1 overflow-x-auto">
           {phases.map((phase, index) => (
             <div key={phase.key} className="flex items-stretch gap-1 min-w-0">
@@ -351,7 +347,7 @@ export default function Overview({ status, refresh }: OverviewProps) {
             </div>
           ))}
         </div>
-      </div>
+      </Section>
 
       {/* Next step. */}
       <div className="editorial-micro-card rounded-lg p-5 mb-6">
@@ -413,16 +409,14 @@ export default function Overview({ status, refresh }: OverviewProps) {
       </div>
 
       {/* Remote readiness — the platform must be deployed from local before remote runs. */}
-      <div className="editorial-micro-card rounded-lg p-5 mb-8">
-        <div className="flex items-center justify-between mb-1">
-          <h2 className="text-sm font-semibold text-on-surface">Platform planes</h2>
-          <span className="text-xs text-secondary">{readyPlanes}/{planes.length || 3} ready</span>
-        </div>
-        <p className="text-xs text-secondary mb-4">
-          {mode === "remote"
-            ? "Remote builds need the platform deployed from this machine first — the factory gateway, the tool plane (per-department MCP), and data stores. A remote build is blocked until the selected agents' tool plane is deployed."
-            : "Optional for local preview. Required before you ship or switch to remote: stand these up from this machine."}
-        </p>
+      <Section
+        className="mb-8"
+        title="Platform planes"
+        description={mode === "remote"
+          ? "Remote builds need the platform deployed from this machine first — the factory gateway, the tool plane (per-department MCP), and data stores. A remote build is blocked until the selected agents' tool plane is deployed."
+          : "Optional for local preview. Required before you ship or switch to remote: stand these up from this machine."}
+        actions={<span className="text-xs text-secondary">{readyPlanes}/{planes.length || 3} ready</span>}
+      >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {planes.map((p) => {
             const key = planeKey(p.name);
@@ -445,7 +439,7 @@ export default function Overview({ status, refresh }: OverviewProps) {
             <CommandChip command="ge mcp deploy" />
           </div>
         )}
-      </div>
+      </Section>
 
       {/* Reconcile drift — desired manifest vs actual (ge apply). */}
       {reconcile && (
@@ -527,8 +521,7 @@ export default function Overview({ status, refresh }: OverviewProps) {
         </div>
       ) : null}
 
-      <div className="editorial-micro-card rounded-lg p-5">
-        <h2 className="text-sm font-semibold text-on-surface mb-3">Recently Touched Agents</h2>
+      <Section title="Recently Touched Agents">
         {recentAgents.length > 0 ? (
           <div className="space-y-2">
             {recentAgents.map((agent) => (
@@ -549,7 +542,7 @@ export default function Overview({ status, refresh }: OverviewProps) {
             action={<ButtonLink variant="ghost" size="sm" href="#/fleet">View all agents</ButtonLink>}
           />
         )}
-      </div>
+      </Section>
     </div>
   );
 }
