@@ -1,54 +1,29 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useMemo } from "react";
+import { useGeQuery } from "../lib/query";
 import { ge, type FleetAgent } from "../services/geClient";
 
+// Active-agent slice of the fleet for the Runs view. Data comes from the
+// shared query layer — the same ["fleet"] key Overview/Fleet observe, so this
+// hook never issues a duplicate fleet request; it only reshapes the cache.
 export function useActivity(intervalMs = 8000) {
-  const [agents, setAgents] = useState<FleetAgent[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const query = useGeQuery(["fleet"], () => ge.fleet(), { intervalMs });
 
-  const fetchAgents = useCallback(async () => {
-    try {
-      const fleet = await ge.fleet();
-
-      // Filter to active agents (non-"none" status)
-      const active = fleet.agents.filter((a) => a.status !== "none");
-
-      // Sort: failed first, then submitted, then others (most "interesting" first)
-      const sorted = active.sort((a, b) => {
+  const agents: FleetAgent[] = useMemo(() => {
+    const all = query.data?.agents ?? [];
+    // Active agents only, most "interesting" first: failed, then submitted.
+    return all
+      .filter((a) => a.status !== "none")
+      .sort((a, b) => {
         const scoreA = a.status === "failed" ? 3 : a.status === "submitted" ? 2 : 1;
         const scoreB = b.status === "failed" ? 3 : b.status === "submitted" ? 2 : 1;
         return scoreB - scoreA;
       });
+  }, [query.data]);
 
-      setAgents(sorted);
-      setError(null);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch activity");
-      // Keep existing agents on error (best-effort)
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const refresh = useCallback(() => {
-    setLoading(true);
-    return fetchAgents();
-  }, []);
-
-  useEffect(() => {
-    // Initial fetch
-    fetchAgents();
-
-    // Set up polling
-    intervalRef.current = setInterval(fetchAgents, intervalMs);
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [intervalMs]);
-
-  return { agents, loading, error, refresh };
+  return {
+    agents,
+    loading: query.isLoading,
+    error: query.error ? (query.error as Error).message || "Failed to fetch activity" : null,
+    refresh: () => { void query.refetch(); },
+  };
 }

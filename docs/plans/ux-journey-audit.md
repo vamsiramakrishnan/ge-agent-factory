@@ -148,6 +148,36 @@ modernized in the same change series:
   are fixed and can't silently drift again; `geClient.ts` now types risk
   from contracts instead of hand-mirroring).
 
+## Wave 3 — the frontend itself
+
+The console UI moved from hand-rolled-per-view to a small system:
+
+- **Primitives in `@ge/ui`** (Button/ButtonLink, EmptyState, Stat, Field/
+  Select, Segmented, `cx`): one recipe table replaces ~40 inline button
+  variants across five dialects and two competing spinner idioms; 14
+  empty-state blocks, four `Metric*` implementations, four segmented
+  controls, and two divergent input dialects each collapse to one component.
+  Render-tested via happy-dom + @testing-library (registered per-file with a
+  symmetric unregister — `bun test` is single-process, and a leaked DOM
+  breaks suite files that branch on `typeof window`).
+- **One data layer** (`lib/query.ts`, TanStack Query): the per-view
+  useState/useEffect/setInterval/`ge:job:done` stacks are gone from
+  Overview, Fleet, Activity, RepairQueue, and `useActivity` — replaced by
+  `useGeQuery` with the same calm poll cadences, one global job-done
+  invalidation, request dedupe (Overview/Fleet/Activity all observe one
+  `["fleet"]` query), and conditional cadence (repair detail fast-polls only
+  while the run is live). AgentDetail keeps its imperative loader by choice
+  (silent-sync semantics that don't map to a query).
+- **Decomposition**: Pipeline.tsx 1014 → 665 lines, its 11 local
+  subcomponents extracted to `components/pipeline/{SpecPicker,
+  WizardControls, InterviewPanels}`.
+- **Progressive disclosure**: Fleet's sync destination/push options and
+  RepairQueue's target/repair configuration fold behind summaries that state
+  the current effect; the primary flows read as pick → act.
+- Verified end-to-end in a real browser (Playwright): nav vocabulary,
+  get-started card, legacy hash redirects, and all views render with zero
+  page errors.
+
 ## Known gaps, deliberately not fixed here
 
 - **Run replay** (`ge run replay` / console scrubber) is the flagship item in
