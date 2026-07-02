@@ -14,7 +14,7 @@ the fast DevEx gate and one-command smoke proof fit into the loop — all
 without touching a cloud project.
 
 Unfamiliar term? See the [Glossary](../GLOSSARY.html) — plain-language
-translations of the jargon (harness, OKF, canary, planes, missions, …).
+translations of the jargon (harness, OKF, canary, planes, pipeline runs, …).
 
 ## Prerequisites + install
 
@@ -89,7 +89,7 @@ ge mode                # prints: mode: local (or remote)
 ge state paths         # shows where state lands (.ge/...)
 ```
 
-The console should load at http://localhost:18260 and show the Doctor tab.
+The console should load at http://localhost:18260 and show the Readiness view.
 
 ## Troubleshoot
 

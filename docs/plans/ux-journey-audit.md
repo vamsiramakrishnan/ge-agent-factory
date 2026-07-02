@@ -178,6 +178,36 @@ The console UI moved from hand-rolled-per-view to a small system:
   get-started card, legacy hash redirects, and all views render with zero
   page errors.
 
+## Wave 4 — replay, the unified timeline, and one product voice
+
+- **Run replay shipped** (the taste campaign's flagship B9), on both surfaces
+  from the same primitive: a run is its ordered event list and the reducer is
+  pure, so any position in a run is a fold over a prefix. CLI:
+  `ge runs replay <id>` re-paces the recorded events (10× default, gaps
+  capped/floored). Console: terminal runs grow a play/scrub bar in the run
+  drawer (`useRunScrubber`), rendering the stage timeline as it was at any
+  event position.
+- **Ledger unification, read side**: `ge runs list` is now ONE timeline —
+  daemon tasks + durable ledger runs merged newest-first, the same merge the
+  console's Runs view performs, with graceful degradation when no ledger
+  driver exists. The write side (one store) deliberately remains a follow-up:
+  daemon task stages are not `LEDGER_STAGES`, so naively mirroring tasks into
+  the ledger would pollute `ge ledger plan`/fleet planning — the store merge
+  needs a schema decision first.
+- **Dev affordances**: every suggested CLI command in the console is now a
+  `CommandChip` (one-click copy, `@ge/ui`); the TopBar grew a Help menu
+  (shortcuts + Glossary/Cookbooks links).
+- **One product voice**: README, cookbooks, and concepts teach only the
+  canonical vocabulary and tell the same three-step first-run story with the
+  same effort estimates as bare `ge` and the console's get-started card.
+- **A real bug found by verification**: the first `@ge/ui` component to use
+  React hooks (CommandChip) exposed a duplicate-React hazard — packages/ui
+  carries a test-harness react in its node_modules, and Vite resolved it as a
+  second copy ("Cannot read properties of null (reading 'useState')"). Fixed
+  with `resolve.dedupe: ["react", "react-dom"]` in both apps' Vite configs;
+  caught by the Playwright tour, not by tsc or unit tests — the browser pass
+  earns its keep.
+
 ## Known gaps, deliberately not fixed here
 
 - **Run replay** (`ge run replay` / console scrubber) is the flagship item in

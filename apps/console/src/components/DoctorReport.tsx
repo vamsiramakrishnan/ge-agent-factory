@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { CommandChip } from "@ge/ui";
 import { StatusPill } from "./StatusPill";
 import { useRunFollow } from "../state/runFollow";
 import { resolveFix, runFix } from "../lib/doctorFix";
@@ -31,21 +32,7 @@ function sectionGlyph(fail: number, warn: number) {
 
 export function DoctorReport({ report, loading, failuresOnly = false }: DoctorReportProps) {
   const { followRun } = useRunFollow();
-  const [copied, setCopied] = useState<string | null>(null);
-  const [copyError, setCopyError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-
-  const handleCopyFix = async (fix: string, key: string) => {
-    try {
-      await navigator.clipboard.writeText(fix);
-      setCopied(key);
-      setTimeout(() => setCopied(null), 2000);
-    } catch (err) {
-      console.error("Failed to copy fix:", err);
-      setCopyError(key);
-      setTimeout(() => setCopyError(null), 2000);
-    }
-  };
 
   const handleRun = (command: string) => {
     void runFix(command, followRun);
@@ -119,7 +106,7 @@ export function DoctorReport({ report, loading, failuresOnly = false }: DoctorRe
                 <div key={key} className="flex flex-wrap items-center gap-2 text-xs">
                   <span className="rounded bg-surface-container-low px-2 py-1 font-medium text-secondary">{item.category}</span>
                   <span className="font-medium text-on-surface">{item.check}</span>
-                  <code className="ml-auto rounded border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-slate-700">{item.command}</code>
+                  <CommandChip command={item.command} className="ml-auto" />
                   {runnable && (
                     <button
                       onClick={() => handleRun(item.command)}
@@ -128,12 +115,6 @@ export function DoctorReport({ report, loading, failuresOnly = false }: DoctorRe
                       Run
                     </button>
                   )}
-                  <button
-                    onClick={() => handleCopyFix(item.command, key)}
-                    className="rounded-lg px-2.5 py-1 text-xs font-medium text-secondary transition-colors hover:bg-surface-container"
-                  >
-                    {copied === key ? "Copied" : copyError === key ? "Copy failed" : "Copy"}
-                  </button>
                 </div>
               );
             })}
@@ -180,7 +161,6 @@ export function DoctorReport({ report, loading, failuresOnly = false }: DoctorRe
 
             <div className="space-y-3">
               {section.checks.map((check, checkIdx) => {
-                const fixKey = `${section.name}-${check.name}-${checkIdx}`;
                 const runnable = !!check.fix && !!resolveFix(check.fix);
                 return (
                   <div key={checkIdx} className="flex flex-col gap-2">
@@ -199,9 +179,7 @@ export function DoctorReport({ report, loading, failuresOnly = false }: DoctorRe
 
                     {check.status !== "pass" && check.fix && (
                       <div className="ml-6 flex items-start gap-2">
-                        <code className="flex-1 overflow-x-auto rounded border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-xs text-slate-700">
-                          {check.fix}
-                        </code>
+                        <CommandChip command={check.fix} className="min-w-0 flex-1" />
                         {runnable && (
                           <button
                             onClick={() => handleRun(check.fix!)}
@@ -210,12 +188,6 @@ export function DoctorReport({ report, loading, failuresOnly = false }: DoctorRe
                             Run
                           </button>
                         )}
-                        <button
-                          onClick={() => handleCopyFix(check.fix!, fixKey)}
-                          className="whitespace-nowrap rounded-lg px-3 py-2 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
-                        >
-                          {copied === fixKey ? "Copied" : copyError === fixKey ? "Copy failed" : "Copy"}
-                        </button>
                       </div>
                     )}
                   </div>

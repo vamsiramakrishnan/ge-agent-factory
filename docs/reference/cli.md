@@ -278,16 +278,16 @@ Show one repair run, or list recent repair runs
 
 ### `ge runs`
 
-Run activity across every kind: list · show · events · resume · job
+Run activity across every kind: list · show · events · replay · resume · job
 
 ### `ge runs list`
 
-List recent local GE runtime daemon tasks
+One timeline over every run: daemon tasks + durable ledger runs, newest first
 
 | Flag | Type | Description |
 |---|---|---|
 | `--port` | string | Daemon port (default 17654) |
-| `--limit` | string | Max tasks to list (default 20) |
+| `--limit` | string | Max runs to list per source (default 20) |
 
 ### `ge runs show`
 
@@ -307,6 +307,17 @@ Show or follow one local GE runtime task event stream
 | `<id>` | positional (required) | Runtime task id |
 | `--port` | string | Daemon port (default 17654) |
 | `--follow` | boolean | Follow the live event stream (SSE) |
+
+### `ge runs replay`
+
+Replay a finished run's recorded events at speed (default 10×)
+
+| Flag | Type | Description |
+|---|---|---|
+| `<id>` | positional (required) | Run id (daemon task) |
+| `--speed` | string | Time-compression factor (default 10; gaps capped at 2s) |
+| `--instant` | boolean | No pacing — dump the whole event log |
+| `--port` | string | Daemon port (default 17654) |
 
 ### `ge runs resume`
 
