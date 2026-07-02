@@ -1,12 +1,12 @@
 // tools/ge/agents.mjs — `ge agents build|ship|status|fleet|logs|sync`. Moved
 // verbatim out of tools/ge.mjs.
 import { defineCommand } from "citty";
-import { common, cfgFrom, emit, out, pc, elog, core, modeOf, LOCAL_BUILD_BOUNDARY } from "./shared.mjs";
+import { guarded, common, cfgFrom, emit, out, pc, elog, core, modeOf, LOCAL_BUILD_BOUNDARY } from "./shared.mjs";
 
 const agentsBuild = defineCommand({
   meta: { name: "build", description: "Build agents. Uses the active mode (ge mode); --local/--remote override" },
   args: { ...common, canary: { type: "boolean" }, all: { type: "boolean" }, dept: { type: "string" }, ids: { type: "string" }, concurrency: { type: "string" }, force: { type: "boolean" }, "no-proxy": { type: "boolean" }, local: { type: "boolean", description: "Override: run on this machine via the harness" }, remote: { type: "boolean", description: "Override: submit to the cloud factory" }, limit: { type: "string" }, target: { type: "string", description: `Harness target (local; default ${LOCAL_BUILD_BOUNDARY})` }, vertex: { type: "boolean", description: "Use Vertex for local harness review/preview stages (default true)" }, "no-vertex": { type: "boolean", description: "Disable Vertex-backed harness stages (negates --vertex; same as --vertex=false)" }, location: { type: "string", description: "Vertex/GenAI location for local harness stages" }, model: { type: "string", description: "Model for harness review/refine + generated agents (local and remote)" }, "max-output-tokens": { type: "string", description: "Override generated-agent max_output_tokens (local and remote); default unset = model default" }, "no-refine": { type: "boolean", description: "Skip the cloud Antigravity refine stage (REFINE=0)" }, warm: { type: "boolean", description: "Pre-warm the shared uv cache before running (local)" } },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const cfg = cfgFrom(args);
     const scope = args.canary ? "canary" : args.all ? "all" : undefined;
     if (modeOf(args, cfg) === "local") {
@@ -29,13 +29,13 @@ const agentsBuild = defineCommand({
       out(`\nSubmitted ${pc.green(r.submitted)}  failed ${r.failed ? pc.red(r.failed) : "0"}${r.note ? pc.dim("  " + r.note) : ""}`);
       if (r.submitted) out(pc.dim("  next: ge agents status --watch   (track the submitted runs to completion)"));
     });
-  },
+  }),
 });
 
 const agentsStatus = defineCommand({
   meta: { name: "status", description: "Poll submitted runs (stage tally)" },
   args: { ...common, watch: { type: "boolean" }, "no-proxy": { type: "boolean" } },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const render = (r) => {
       if (args.json) return;
       process.stdout.write("\x1bc");
@@ -49,13 +49,13 @@ const agentsStatus = defineCommand({
     }
     const res = await core.status(cfgFrom(args), { noProxy: args["no-proxy"] });
     emit(args, res, render);
-  },
+  }),
 });
 
 const agentsFleet = defineCommand({
   meta: { name: "fleet", description: "Show fleet pipeline health, bottlenecks, and repair owners" },
   args: { ...common, limit: { type: "string" } },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const res = await core.fleetStatus(cfgFrom(args));
     emit(args, res, (r) => {
       const health = r.health || {};
@@ -84,13 +84,13 @@ const agentsFleet = defineCommand({
       }
       out(pc.dim("\n  next: ge runtime start autopilot --ids <comma-ids> --stage preview"));
     });
-  },
+  }),
 });
 
 const agentsLogs = defineCommand({
   meta: { name: "logs", description: "Pretty-print a stage's result + errors" },
   args: { ...common, runId: { type: "positional", required: true }, stage: { type: "string" }, item: { type: "string" } },
-  run({ args }) {
+  run: guarded(({ args }) => {
     const res = core.logs(cfgFrom(args), { runId: args.runId, stage: args.stage || "validate", item: args.item });
     emit(args, res, (r) => {
       if (!r.found) { out(pc.yellow(`no result at ${r.uri}`)); r.available?.forEach((l) => out(pc.dim("  " + l))); return; }
@@ -104,13 +104,13 @@ const agentsLogs = defineCommand({
       }
       if (x.logUrl) out(`\nCloud Build log: ${pc.cyan(x.logUrl)}`);
     });
-  },
+  }),
 });
 
 const agentsSync = defineCommand({
   meta: { name: "sync", description: "Generated agent code → generated-agents/ → git (cloud: GCS; --local: harness workspaces)" },
   args: { ...common, ids: { type: "string", description: "Comma-separated agent/workspace ids (default: all syncable workspaces)" }, push: { type: "boolean" }, force: { type: "boolean" }, "no-commit": { type: "boolean" }, local: { type: "boolean", description: "Override: sync locally-generated workspaces" }, "remote-mode": { type: "boolean", description: "Override: pull from GCS (cloud mode)" }, remote: { type: "string", description: "Push to a specific git remote/URL (the repo the agent code must sit in)" }, create: { type: "boolean", description: "Create the Cloud Source repo if it doesn't exist (local mode)" } },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const cfg = cfgFrom(args);
     const mode = args["remote-mode"] ? "remote" : args.local ? "local" : cfg.mode || "remote";
     if (mode === "local") {
@@ -120,16 +120,16 @@ const agentsSync = defineCommand({
     }
     const res = await core.sync(cfgFrom(args), { ids: args.ids, force: args.force, commit: !args["no-commit"], push: args.push, log: elog });
     emit(args, res, (r) => out(`\nSynced ${pc.green(r.synced)}  failed ${r.failed}${r.committed ? pc.dim("  (committed)") : ""}${r.pushed ? pc.dim(" (pushed)") : ""}`));
-  },
+  }),
 });
 
 const agentsShip = defineCommand({
   meta: { name: "ship", description: "Hand off locally-built agents to the cloud: upload + run deploy→register→publish remotely" },
   args: { ...common, ids: { type: "string", description: "Comma-separated local workspace ids (default: all built locally)" }, "start-stage": { type: "string", description: "Stage to start at remotely (default load_data)" }, "target-stage": { type: "string", description: "Stage to stop at (default publish_enterprise)" }, concurrency: { type: "string" }, "no-proxy": { type: "boolean" } },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const res = await core.ship(cfgFrom(args), { ids: args.ids, startStage: args["start-stage"] || "load_data", targetStage: args["target-stage"] || "publish_enterprise", concurrency: args.concurrency || "2", noProxy: args["no-proxy"], log: elog });
     emit(args, res, (r) => out(`\nShipped ${pc.green(r.submitted)}  failed ${r.failed ? pc.red(r.failed) : "0"}  ${pc.dim(`(${r.startStage} → ${r.targetStage}, remote)`)}`));
-  },
+  }),
 });
 
 export const agents = defineCommand({ meta: { name: "agents", description: "Agent lifecycle: build · ship · status · fleet · logs · sync" }, subCommands: { build: agentsBuild, ship: agentsShip, status: agentsStatus, fleet: agentsFleet, logs: agentsLogs, sync: agentsSync } });

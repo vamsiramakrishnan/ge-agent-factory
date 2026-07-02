@@ -44,6 +44,29 @@ export function emit(args, result, human) {
 
 export const ICON = { pass: pc.green("✓"), warn: pc.yellow("▲"), fail: pc.red("✗") };
 
+// ── Error boundary ──────────────────────────────────────────────────────
+// citty's own runMain() catches whatever escapes a command's run() and logs
+// the raw Error object (full stack trace, via `console.error(error, "\n")`)
+// before process.exit(1)ing — see runCommand()/runMain() in citty's
+// dist/index.mjs. There is no per-command hook into that path, so the only
+// way to get a clean one-line "✗ <message>" is to make sure the error never
+// escapes run() in the first place. Wrap every subcommand's run with this so
+// a thrown/rejected error renders once, here, instead of reaching citty's
+// crash handler. Mirrors the render-boundary shape of dispatch() in
+// apps/factory/scripts/factory/registry.mjs: prints "✗ <message>" and sets
+// process.exitCode (NOT process.exit()), so stdout/stderr already written
+// this run fully flush before the process exits.
+export function guarded(run) {
+  return async (ctx) => {
+    try {
+      return await run(ctx);
+    } catch (e) {
+      process.stderr.write(pc.red(`✗ ${e?.message || e}`) + "\n");
+      process.exitCode = 1;
+    }
+  };
+}
+
 export function readPidFile(pidPath) {
   if (!existsSync(pidPath)) return null;
   const pid = Number(readFileSync(pidPath, "utf8").trim());

@@ -16,7 +16,7 @@ import { closeSync, mkdirSync, openSync, rmSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { daemonPaths, getDaemonStatus, startDaemonServer } from "../lib/runtime-daemon.mjs";
 import {
-  emit, out, pc, core,
+  guarded, emit, out, pc, core,
   readPidFile, processAlive, processLooksLikeDaemon, daemonStatusSnapshot,
   renderResumePlan, daemonPort, daemonRequest, statusText,
 } from "./shared.mjs";
@@ -26,7 +26,7 @@ const GE_CLI_PATH = fileURLToPath(new URL("../ge.mjs", import.meta.url));
 const daemonStart = defineCommand({
   meta: { name: "start", description: "Start the local GE runtime daemon" },
   args: { foreground: { type: "boolean" }, port: { type: "string" }, host: { type: "string" } },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const port = Number(args.port || process.env.GE_DAEMON_PORT || daemonPaths().defaultPort);
     const host = args.host || process.env.GE_DAEMON_HOST || "127.0.0.1";
     const paths = daemonPaths();
@@ -77,13 +77,13 @@ const daemonStart = defineCommand({
     out(pc.yellow("▲ ge daemon did not become healthy within 5s"));
     out(pc.dim(`  log: ${paths.logPath}`));
     out(pc.dim("  fallback: console and ge doctor will run without the daemon"));
-  },
+  }),
 });
 
 const daemonStatus = defineCommand({
   meta: { name: "status", description: "Show local GE runtime daemon status" },
   args: { json: { type: "boolean" }, port: { type: "string" } },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const port = Number(args.port || process.env.GE_DAEMON_PORT || daemonPaths().defaultPort);
     const status = await daemonStatusSnapshot(port);
     emit(args, status, (s) => {
@@ -96,13 +96,13 @@ const daemonStatus = defineCommand({
       if (s.error && !s.ok) out(`  detail    ${pc.dim(s.error)}`);
       out(`  runs      ${s.runs?.length || 0}`);
     });
-  },
+  }),
 });
 
 const daemonTasks = defineCommand({
   meta: { name: "tasks", description: "List recent local GE runtime daemon tasks" },
   args: { json: { type: "boolean" }, port: { type: "string" }, limit: { type: "string" } },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const port = Number(args.port || process.env.GE_DAEMON_PORT || daemonPaths().defaultPort);
     const status = await daemonStatusSnapshot(port);
     const tasks = status.runs || [];
@@ -118,13 +118,13 @@ const daemonTasks = defineCommand({
         out(`  ${statusText.padEnd(14)} ${String(task.kind || "task").padEnd(12)} ${task.id} ${pc.dim(task.updatedAt || task.createdAt || "")}`);
       }
     });
-  },
+  }),
 });
 
 const daemonTask = defineCommand({
   meta: { name: "task", description: "Show one local GE runtime daemon task" },
   args: { id: { type: "positional", required: true }, json: { type: "boolean" }, port: { type: "string" } },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const port = Number(args.port || process.env.GE_DAEMON_PORT || daemonPaths().defaultPort);
     const response = await fetch(`http://127.0.0.1:${port}/api/tasks/${encodeURIComponent(args.id)}`, {
       signal: AbortSignal.timeout(1500),
@@ -144,13 +144,13 @@ const daemonTask = defineCommand({
       renderResumePlan(t.summary?.resumePlan);
       if (t.error) out(`  error     ${pc.red(t.error)}`);
     });
-  },
+  }),
 });
 
 const runtimeResume = defineCommand({
   meta: { name: "resume", description: "Resume a runtime task using its deterministic resumePlan" },
   args: { id: { type: "positional", required: true }, json: { type: "boolean" }, port: { type: "string" } },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const port = daemonPort(args);
     const daemon = await daemonStatusSnapshot(port);
     if (!daemon.ok) throw new Error(`ge daemon is ${daemon.status || "stopped"}; run: ge daemon start`);
@@ -162,13 +162,13 @@ const runtimeResume = defineCommand({
       renderResumePlan(t.summary?.resumePlan);
       out(pc.dim(`\n  events: ge runtime events ${t.id} --follow`));
     });
-  },
+  }),
 });
 
 const daemonEvents = defineCommand({
   meta: { name: "events", description: "Show or follow one local GE runtime task event stream" },
   args: { id: { type: "positional", required: true }, json: { type: "boolean" }, port: { type: "string" }, follow: { type: "boolean" } },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const port = Number(args.port || process.env.GE_DAEMON_PORT || daemonPaths().defaultPort);
     if (args.follow) {
       const response = await fetch(`http://127.0.0.1:${port}/api/tasks/${encodeURIComponent(args.id)}/events`);
@@ -204,13 +204,13 @@ const daemonEvents = defineCommand({
         out(`  ${String(seq).padStart(3)} ${type.padEnd(24)} ${event.line || ""}`);
       }
     });
-  },
+  }),
 });
 
 const runtimeStartAutopilot = defineCommand({
   meta: { name: "autopilot", description: "Start an Autopilot runtime task" },
   args: { ids: { type: "string" }, stage: { type: "string" }, repair: { type: "boolean" }, attempts: { type: "string" }, runPreview: { type: "boolean" }, json: { type: "boolean" }, port: { type: "string" } },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const port = Number(args.port || process.env.GE_DAEMON_PORT || daemonPaths().defaultPort);
     const body = {
       kind: "autopilot.run",
@@ -233,13 +233,13 @@ const runtimeStartAutopilot = defineCommand({
       out(pc.green(`✓ started autopilot task ${t.id}`));
       out(pc.dim(`  next: ge runtime events ${t.id} --follow`));
     });
-  },
+  }),
 });
 
 const runtimeStartJob = defineCommand({
   meta: { name: "job", description: "Start a GE command runtime task; pass command args after --" },
   args: { json: { type: "boolean" }, port: { type: "string" } },
-  async run({ args }) {
+  run: guarded(async ({ args }) => {
     const separator = process.argv.indexOf("--");
     const argv = separator >= 0 ? process.argv.slice(separator + 1) : [];
     if (!argv.length) throw new Error("usage: ge runtime start job -- ge <args>");
@@ -257,7 +257,7 @@ const runtimeStartJob = defineCommand({
       out(pc.green(`✓ started job task ${t.id}`));
       out(pc.dim(`  next: ge runtime events ${t.id} --follow`));
     });
-  },
+  }),
 });
 
 const runtimeStart = defineCommand({
@@ -268,7 +268,7 @@ const runtimeStart = defineCommand({
 const daemonStop = defineCommand({
   meta: { name: "stop", description: "Stop the local GE runtime daemon" },
   args: {},
-  run() {
+  run: guarded(() => {
     const { pidPath } = daemonPaths();
     const pid = readPidFile(pidPath);
     if (!pid) {
@@ -288,7 +288,7 @@ const daemonStop = defineCommand({
       rmSync(pidPath, { force: true });
       throw new Error(`failed to stop daemon pid=${pid}: ${e.message}`);
     }
-  },
+  }),
 });
 
 export const daemon = defineCommand({
