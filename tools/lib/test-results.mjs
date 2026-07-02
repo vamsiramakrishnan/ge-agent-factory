@@ -40,7 +40,15 @@ export function parseJUnitTestcases(xml) {
     const classname = extractAttr(attrs, "classname") ?? "";
     if (name == null) continue;
     const failed = /<failure\b/.test(body) || /<error\b/.test(body);
-    cases.push({ name: decodeXmlEntities(name), classname: decodeXmlEntities(classname), failed });
+    const file = extractAttr(attrs, "file");
+    cases.push({
+      name: decodeXmlEntities(name),
+      classname: decodeXmlEntities(classname),
+      failed,
+      // bun's reporter emits the test file path (repo-relative) on every
+      // <testcase>; used to re-run just the failing files on the flake retry.
+      file: file == null ? null : decodeXmlEntities(file),
+    });
   }
   return cases;
 }
@@ -89,6 +97,59 @@ export function failingTestNamesFromJUnit(xml) {
  */
 export function failingTestNamesFromJUnitFile(path) {
   return failingTestNamesFromJUnit(readFileSync(path, "utf8"));
+}
+
+/**
+ * Parse JUnit XML text and return every failed/errored testcase as
+ * { name: fullName, file: repo-relative test file path or null }.
+ * The file attribution is what lets the checker re-run only the test files
+ * containing newly-failing names on its single flake retry.
+ * @param {string} xml
+ * @returns {{ name: string, file: string | null }[]}
+ */
+export function failingTestcasesFromJUnit(xml) {
+  return parseJUnitTestcases(xml)
+    .filter((tc) => tc.failed)
+    .map((tc) => ({ name: fullTestName(tc), file: tc.file }));
+}
+
+/**
+ * Normalize the checked-in known-failures document. Entries are objects
+ * ({ name, kind: "env" | "bug", addedAt: "YYYY-MM-DD", notes }); bare strings
+ * are tolerated for backward compatibility and normalized to an entry with
+ * null metadata.
+ *
+ * @param {{ failures?: (string | { name: string, kind?: string, addedAt?: string, notes?: string })[] }} known
+ * @returns {{ name: string, kind: string | null, addedAt: string | null, notes: string | null }[]}
+ */
+export function normalizeKnownFailureEntries(known) {
+  return (known?.failures ?? []).map((entry) =>
+    typeof entry === "string"
+      ? { name: entry, kind: null, addedAt: null, notes: null }
+      : { name: entry.name, kind: entry.kind ?? null, addedAt: entry.addedAt ?? null, notes: entry.notes ?? null },
+  );
+}
+
+/**
+ * Known-failure entries of kind "bug" that have been parked in the baseline
+ * longer than `maxAgeDays` (default 30). A "bug" entry is a real product
+ * defect deliberately not gating unrelated work — aging it out loudly is the
+ * expiry mechanism that keeps this list from becoming accepted behavior.
+ *
+ * @param {ReturnType<typeof normalizeKnownFailureEntries>} entries
+ * @param {{ now?: Date, maxAgeDays?: number }} [options]
+ * @returns {{ name: string, addedAt: string, ageDays: number }[]}
+ */
+export function staleBugEntries(entries, { now = new Date(), maxAgeDays = 30 } = {}) {
+  const stale = [];
+  for (const entry of entries) {
+    if (entry.kind !== "bug" || !entry.addedAt) continue;
+    const added = new Date(entry.addedAt);
+    if (Number.isNaN(added.getTime())) continue;
+    const ageDays = Math.floor((now.getTime() - added.getTime()) / 86_400_000);
+    if (ageDays > maxAgeDays) stale.push({ name: entry.name, addedAt: entry.addedAt, ageDays });
+  }
+  return stale;
 }
 
 /**
