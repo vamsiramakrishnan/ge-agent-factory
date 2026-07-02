@@ -1,7 +1,6 @@
 import { spawn } from "node:child_process";
 import * as core from "../../../../tools/lib/factory-core.mjs";
 import { execStream } from "../../../../tools/lib/exec-stream.mjs";
-import { createFirestoreLedgerReader } from "../../../../tools/lib/run-ledger-firestore.mjs";
 import {
   autopilotItemsFromMission,
   autopilotSkipReason,
@@ -11,6 +10,7 @@ import { handleGeApi } from "./ge-api.mjs";
 import { makeSseWriter } from "./transport/sse.mjs";
 import { daemonBaseUrl } from "./transport/daemon.mjs";
 import { GE_CLI, REPO_ROOT } from "./transport/paths.mjs";
+export { streamLedger, __setFirestoreLedgerReaderForTest } from "./transport/ledger.mjs";
 import {
   appendAutopilotEvent,
   appendJobEvent,
@@ -37,28 +37,6 @@ const jobs = new Map(); // id -> { id, argv, status, events[], code, listeners:S
 let jobSeq = 0;
 const autopilotActive = new Set();
 let autopilotSeq = 0;
-let firestoreLedgerReaderPromise = null;
-let firestoreLedgerReaderOverride = null;
-
-function normalizeLedgerSource(source = null) {
-  const value = String(source || process.env.GE_LEDGER_BACKEND || process.env.GE_LEDGER_SOURCE || "local").trim().toLowerCase();
-  if (["firestore", "cloud", "remote"].includes(value)) return "firestore";
-  return "local";
-}
-
-async function firestoreLedgerReader() {
-  if (firestoreLedgerReaderOverride) return firestoreLedgerReaderOverride;
-  if (!firestoreLedgerReaderPromise) firestoreLedgerReaderPromise = createFirestoreLedgerReader().catch((error) => {
-    firestoreLedgerReaderPromise = null;
-    throw error;
-  });
-  return firestoreLedgerReaderPromise;
-}
-
-export function __setFirestoreLedgerReaderForTest(reader) {
-  firestoreLedgerReaderOverride = reader;
-  firestoreLedgerReaderPromise = null;
-}
 
 function terminalJobEvent(ev) {
   return ["stage_done", "stage_failed", "stage_blocked"].includes(ev?.type) && (!ev.stage || ev.stage === "job" || ev.stage === "preflight");
@@ -506,131 +484,6 @@ function replayDoctorReport(report, emit) {
     })) return false;
   }
   return true;
-}
-
-// Live ledger run stream (ADR 0001 phase 2): stream the durable run ledger over
-// SSE, advancing afterSeq, until the run is terminal or the client disconnects.
-// Local/dev reads the SQLite ledger. Hosted console reads Firestore's
-// factoryRuns/{runId}/events mirror using the same event shape.
-export async function streamLedger({ runId, afterSeq = 0, source = null } = {}, writeSSE, isClosed, onEnd = () => {}) {
-  const emit = makeSseWriter(writeSSE);
-  const backend = normalizeLedgerSource(source);
-  const emitEvent = (event) => {
-    if (!isClosed()) emit(JSON.stringify(event), { seq: event.seq });
-  };
-  if (!isClosed()) {
-    emitEvent({
-      type: "ledger_source",
-      status: backend,
-      ts: new Date().toISOString(),
-      data: { source: backend },
-    });
-  }
-  if (backend === "firestore") {
-    await streamFirestoreLedger({ runId, afterSeq }, emitEvent, isClosed, onEnd);
-    return;
-  }
-  const ledger = await core.runLedger();
-  if (!ledger) {
-    if (!isClosed()) emitEvent({ type: "ledger_unavailable", level: "warn", line: "run ledger unavailable (no driver)", ts: new Date().toISOString() });
-    onEnd();
-    return;
-  }
-  let cursor = Number(afterSeq) || 0;
-  let timer;
-  let ended = false;
-  const finish = () => {
-    if (ended) return;
-    ended = true;
-    if (timer) clearInterval(timer);
-    onEnd();
-  };
-  const tick = () => {
-    if (isClosed()) { finish(); return; }
-    try {
-      for (const ev of ledger.events(runId, { afterSeq: cursor })) {
-        cursor = ev.seq;
-        emitEvent(ev);
-      }
-      const run = ledger.getRun(runId);
-      if (run && (run.status === "done" || run.status === "failed")) {
-        if (!isClosed()) emitEvent({ type: "run_complete", status: run.status, ok: run.ok, ts: new Date().toISOString() });
-        finish();
-      }
-    } catch { /* transient read; keep polling */ }
-  };
-  timer = setInterval(tick, 1000);
-  tick();
-}
-
-async function streamFirestoreLedger({ runId, afterSeq = 0 } = {}, emitEvent, isClosed, onEnd) {
-  let reader;
-  try {
-    reader = await firestoreLedgerReader();
-  } catch (error) {
-    if (!isClosed()) emitEvent({
-      type: "ledger_unavailable",
-      status: "firestore",
-      level: "error",
-      line: error.message || String(error),
-      ts: new Date().toISOString(),
-    });
-    onEnd();
-    return;
-  }
-
-  let cursor = Number(afterSeq) || 0;
-  let eventTimer = null;
-  let statusTimer = null;
-  let unsubscribe = null;
-  let ended = false;
-  const finish = () => {
-    if (ended) return;
-    ended = true;
-    if (eventTimer) clearInterval(eventTimer);
-    if (statusTimer) clearInterval(statusTimer);
-    try { unsubscribe?.(); } catch {}
-    onEnd();
-  };
-  const emitEvents = (events) => {
-    for (const ev of events) {
-      if (isClosed()) { finish(); return; }
-      cursor = Math.max(cursor, Number(ev.seq) || cursor);
-      emitEvent(ev);
-    }
-  };
-  const pollEvents = async () => {
-    if (isClosed()) { finish(); return; }
-    try {
-      emitEvents(await reader.events(runId, { afterSeq: cursor }));
-    } catch {
-      // Transient Firestore read failures should not kill the SSE stream.
-    }
-  };
-  const pollStatus = async () => {
-    if (isClosed()) { finish(); return; }
-    try {
-      const run = await reader.getRun(runId);
-      if (run && (run.status === "done" || run.status === "failed")) {
-        emitEvent({ type: "run_complete", status: run.status, ok: run.ok, ts: new Date().toISOString() });
-        finish();
-      }
-    } catch {
-      // Keep the event stream alive on transient run-doc reads.
-    }
-  };
-
-  try {
-    unsubscribe = reader.listenEvents?.(runId, { afterSeq: cursor }, emitEvents, () => {});
-  } catch {
-    unsubscribe = null;
-  }
-  await pollEvents();
-  await pollStatus();
-  if (!ended) {
-    if (!unsubscribe) eventTimer = setInterval(pollEvents, 1000);
-    statusTimer = setInterval(pollStatus, 1000);
-  }
 }
 
 export function streamDoctor(args = {}, writeSSE, isClosed, onEnd = () => {}) {
