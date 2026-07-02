@@ -6,9 +6,8 @@
 // tools/mcp-server.mjs exposes the same ops as typed MCP tools.
 
 import { execFileSync } from "node:child_process";
-import { parseList } from "@ge/std/list";
-import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync, statSync } from "node:fs";
-import { basename, join, dirname, resolve } from "node:path";
+import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync } from "node:fs";
+import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { pool } from "./gcp.mjs";
 import { parseConcurrency } from "./concurrency.mjs";
@@ -23,19 +22,32 @@ import { createMcpPlane } from "./mcp-plane.mjs";
 import { createFactoryPlane, serviceUrl } from "./factory-plane.mjs";
 import { buildFleetHealth } from "./fleet-health.mjs";
 import { buildJourneyPlan } from "./journey-plan.mjs";
-import { LEGACY_STATE_PATHS, STATE_PATHS, displayStatePath, DEPARTMENTS } from "./state-paths.mjs";
+import { STATE_PATHS, DEPARTMENTS } from "./state-paths.mjs";
 // Week-4: app-domain ops are imported via the two cycle-break boundary modules,
 // NOT directly from apps/factory — factory-core keeps zero app imports (enforced
 // by tools/check-no-app-imports.mjs).
-import { loadInterviewSpecEntries, slug, validateGenerationSpec } from "./factory-catalog.mjs";
-import { openRunLedger } from "./run-ledger.mjs";
-import { planWorkItem } from "./pipeline-state-machine.mjs";
 import { planReconcile } from "./reconcile.mjs";
 import { createGatewayClient, getJson, postJson } from "./gateway-client.mjs";
 import { createDoctorPlane } from "./doctor.mjs";
 import { createProvisionOps } from "./provision.mjs";
-import { localWorkspaceIndexByUseCase, resolveLocalWorkspaceId, localWorkspaceExists } from "./local-workspaces.mjs";
+import { localWorkspaceIndexByUseCase } from "./local-workspaces.mjs";
 import { selectionDepartments, toolPlaneChecks, shipProxyCheck, gatewayProvisionCheck, bigQueryApiCheck, selectWorkspacesForRegen } from "./tool-plane-checks.mjs";
+import {
+  runLedger,
+  ledgerWrite,
+  ledgerReadsEnabled,
+  ledgerRuns,
+  ledgerRun,
+  ledgerFleet,
+  ledgerPlan,
+  ledgerBackfillFromDisk,
+} from "./factory-ledger.mjs";
+import { mergeLedgerAndFileRuns, listFactoryRuns } from "./factory-runs.mjs";
+import { loadCatalog, resolveCatalogId, listUsecases, listSpecs } from "./factory-catalog-search.mjs";
+import { reviewSpec } from "./spec-review.mjs";
+import { registerSpecWith } from "./register-spec.mjs";
+import { createAgentIdentityOps } from "./agent-identity.mjs";
+import { createWorkspaceDoctorOps } from "./workspace-doctor.mjs";
 
 export {
   selectionDepartments,
@@ -46,14 +58,16 @@ export {
   selectWorkspacesForRegen,
 } from "./tool-plane-checks.mjs";
 export { HARNESS_VENV_DIR, harnessVenvPython } from "./doctor.mjs";
+export { runLedger, ledgerRuns, ledgerRun, ledgerFleet, ledgerPlan, ledgerBackfillFromDisk } from "./factory-ledger.mjs";
+export { mergeLedgerAndFileRuns, listFactoryRuns } from "./factory-runs.mjs";
+export { loadCatalog, resolveCatalogId, listUsecases, listSpecs } from "./factory-catalog-search.mjs";
+export { reviewSpec } from "./spec-review.mjs";
 
 
 export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const CONFIG_PATH = join(REPO_ROOT, ".ge.json");
 const STATE_PATH = STATE_PATHS.envState;
 const SYNC_STATE_PATH = STATE_PATHS.syncState;
-const CATALOG_PATH = join(REPO_ROOT, "apps/factory/generated/use-cases.generated.json");
-const AGENT_SPEC_REGISTRY_PATH = join(REPO_ROOT, "apps/factory/src/agent-spec-registry.generated.json");
 const TF_DIR = join(REPO_ROOT, "installer/terraform");
 const MCP_SERVICE_DIR = join(REPO_ROOT, "apps/factory/mcp-service");
 const FACTORY_HARNESS_DIR = STATE_PATHS.factory.root;
@@ -69,307 +83,9 @@ const noop = () => {};
 // callers stay valid.
 export { readJson, writeJson, updateJson };
 
-// Ledger is authoritative; keep only file runs it doesn't already cover (matched by
-// startedAt — covers in-flight sessions + any run the best-effort ingest missed). Pure.
-export function mergeLedgerAndFileRuns(ledgerRuns, fileRuns) {
-  if (!ledgerRuns?.length) return fileRuns;
-  const seen = new Set(ledgerRuns.map((r) => r.startedAt));
-  return [...ledgerRuns, ...fileRuns.filter((r) => !seen.has(r.startedAt))];
-}
-
-export async function listFactoryRuns(_cfg = {}, { limit = 10 } = {}) {
-  const max = Math.max(1, Math.min(100, Number(limit) || 10));
-  const eventsPath = join(FACTORY_HARNESS_DIR, "factory-events.jsonl");
-  const eventSessions = readFactoryEventSessions(eventsPath);
-  const sessionByRunPath = new Map(
-    eventSessions
-      .filter((session) => session.runPath)
-      .map((session) => [resolve(session.runPath), session])
-  );
-
-  const files = existsSync(FACTORY_HARNESS_DIR)
-    ? readdirSync(FACTORY_HARNESS_DIR)
-      .filter((file) => /^factory-run-.*\.json$/.test(file))
-      .map((file) => {
-        const path = join(FACTORY_HARNESS_DIR, file);
-        return { file, path, stat: statSync(path) };
-      })
-      .sort((a, b) => b.stat.mtimeMs - a.stat.mtimeMs)
-    : [];
-
-  const completedRuns = files.map(({ file, path, stat }) => {
-    const run = readJson(path, null);
-    if (!run || typeof run !== "object") return null;
-    const session = sessionByRunPath.get(resolve(path)) || null;
-    return summarizeFactoryRun(run, {
-      id: file.replace(/\.json$/, ""),
-      runPath: path,
-      mtime: stat.mtime.toISOString(),
-      eventsPath,
-      session,
-    });
-  }).filter(Boolean);
-
-  const completedPaths = new Set(completedRuns.map((run) => resolve(run.runPath)));
-  const liveRuns = eventSessions
-    .filter((session) => !session.runPath || !completedPaths.has(resolve(session.runPath)))
-    .map((session) => summarizeFactoryEventSession(session, eventsPath));
-
-  let merged = [...liveRuns, ...completedRuns];
-  let ledgerUsed = false;
-  if (ledgerReadsEnabled()) {
-    const l = await runLedger();
-    const ledgerRunsList = l ? l.listRuns({ limit: max }) : [];
-    if (ledgerRunsList.length) {
-      merged = mergeLedgerAndFileRuns(ledgerRunsList, merged);
-      ledgerUsed = true;
-    }
-  }
-  const runs = merged
-    .sort((a, b) => new Date(b.updatedAt || b.startedAt).getTime() - new Date(a.updatedAt || a.startedAt).getTime())
-    .slice(0, max);
-
-  return {
-    kind: "ge.factory.runs",
-    root: FACTORY_HARNESS_DIR,
-    eventLog: eventsPath,
-    ledger: ledgerUsed,
-    runs,
-  };
-}
-
-function readFactoryEventSessions(eventsPath) {
-  if (!existsSync(eventsPath)) return [];
-  const lines = readFileSync(eventsPath, "utf8").split(/\r?\n/).filter(Boolean);
-  const sessions = [];
-  let current = null;
-  for (const line of lines) {
-    let event;
-    try { event = JSON.parse(line); } catch { continue; }
-    if (event.type === "run_started") {
-      current = {
-        id: `factory-live-${safeTimestamp(event.ts)}`,
-        startedAt: event.ts,
-        updatedAt: event.ts,
-        targetStage: event.targetStage || null,
-        total: event.total || 0,
-        planPath: event.planPath || null,
-        runPath: null,
-        markdownPath: null,
-        ok: null,
-        failed: null,
-        events: [],
-      };
-      sessions.push(current);
-    }
-    if (!current) continue;
-    current.events.push(event);
-    current.updatedAt = event.ts || current.updatedAt;
-    if (event.type === "run_done") {
-      current.ok = event.ok === true;
-      current.failed = event.failed ?? null;
-      current.total = event.total ?? current.total;
-      current.runPath = event.runPath || null;
-      current.markdownPath = event.markdown || null;
-      current.finishedAt = event.ts || current.updatedAt;
-      current = null;
-    }
-  }
-  return sessions;
-}
-
-function summarizeFactoryRun(run, { id, runPath, mtime, eventsPath, session }) {
-  const updatedAt = run.finishedAt || session?.updatedAt || mtime || run.startedAt;
-  return {
-    id,
-    kind: run.kind || "ge.agent_factory.run",
-    status: run.ok === true ? "done" : "failed",
-    ok: run.ok === true,
-    startedAt: run.startedAt,
-    updatedAt,
-    finishedAt: run.finishedAt || null,
-    targetStage: run.targetStage || null,
-    planPath: run.planPath || null,
-    runPath,
-    markdownPath: siblingMarkdownPath(runPath),
-    eventsPath,
-    totals: run.totals || null,
-    selected: run.totals?.workItems ?? run.results?.length ?? session?.total ?? 0,
-    failed: run.totals?.failed ?? run.results?.filter((item) => item.error).length ?? 0,
-    results: (run.results || []).map(summarizeFactoryResult),
-    recentEvents: summarizeFactoryEvents(session?.events || []),
-  };
-}
-
-function summarizeFactoryEventSession(session, eventsPath) {
-  const failed = session.failed ?? session.events.filter((event) => event.type === "item_failed").length;
-  return {
-    id: session.runPath ? basename(session.runPath).replace(/\.json$/, "") : session.id,
-    kind: "ge.agent_factory.run",
-    status: session.finishedAt ? (session.ok ? "done" : "failed") : "running",
-    ok: session.ok,
-    startedAt: session.startedAt,
-    updatedAt: session.updatedAt,
-    finishedAt: session.finishedAt || null,
-    targetStage: session.targetStage || null,
-    planPath: session.planPath || null,
-    runPath: session.runPath,
-    markdownPath: session.markdownPath,
-    eventsPath,
-    totals: { workItems: session.total || 0, failed },
-    selected: session.total || 0,
-    failed,
-    results: summarizeFactorySessionItems(session.events),
-    recentEvents: summarizeFactoryEvents(session.events),
-  };
-}
-
-function summarizeFactoryResult(result) {
-  return {
-    id: result.id,
-    useCaseId: result.useCaseId,
-    title: result.title || result.useCaseId || result.id,
-    department: result.department || null,
-    status: result.status || "unknown",
-    targetStage: result.targetStage || null,
-    workspaceId: result.workspaceId || result.workspaceName || null,
-    workspacePath: result.workspacePath || null,
-    error: result.error || null,
-    systems: result.systems || [],
-    stages: [
-      factoryStage("created", !!result.workspacePath, result.error && !result.workspacePath),
-      factoryStage("validated", result.validation?.ok === true, result.validation && result.validation.ok !== true),
-      factoryStage("harness_reviewed", result.harnessReview?.ok === true, result.harnessReview && result.harnessReview.ok !== true),
-      factoryStage("harness_refined", result.harnessRefine?.ok === true, result.harnessRefine && result.harnessRefine.ok !== true),
-      factoryStage("data_packaged", result.dataPackage?.ok === true, result.dataPackage && result.dataPackage.ok !== true),
-      factoryStage("previewed", result.preview?.ok === true, result.preview && result.preview.ok !== true),
-    ],
-    validation: result.validation?.summary || null,
-    harnessReview: result.harnessReview ? {
-      provider: result.harnessReview.provider || null,
-      score: result.harnessReview.score ?? null,
-      okToPromote: result.harnessReview.okToPromote ?? null,
-    } : null,
-    dataPackage: result.dataPackage ? {
-      datastores: result.dataPackage.datastores || [],
-      cloudTarget: result.dataPackage.cloudTarget || null,
-      targets: result.dataPackage.targets || null,
-    } : null,
-    preview: result.preview || null,
-  };
-}
-
-function summarizeFactorySessionItems(events) {
-  const byKey = new Map();
-  for (const event of events) {
-    const key = event.useCaseId || event.workspace;
-    if (!key) continue;
-    const item = byKey.get(key) || {
-      id: key,
-      useCaseId: event.useCaseId || key,
-      title: event.useCaseId || event.workspace || key,
-      department: null,
-      status: "running",
-      targetStage: null,
-      workspaceId: event.workspaceId || event.workspace || null,
-      workspacePath: null,
-      error: null,
-      systems: [],
-      stages: [],
-      validation: null,
-      harnessReview: null,
-      dataPackage: null,
-      preview: null,
-    };
-    if (event.workspaceId) item.workspaceId = event.workspaceId;
-    if (event.type === "stage_started") item.stages = upsertFactoryStage(item.stages, event.stage, "running");
-    if (event.type === "stage_done") item.stages = upsertFactoryStage(item.stages, event.stage, "done");
-    if (event.type === "item_failed") {
-      item.status = "failed";
-      item.error = event.error || "factory item failed";
-      if (event.status) item.stages = upsertFactoryStage(item.stages, event.status, "failed");
-    }
-    if (event.type === "item_done") item.status = event.status || "done";
-    byKey.set(key, item);
-  }
-  return Array.from(byKey.values());
-}
-
-function factoryStage(name, done, failed) {
-  return { name, status: failed ? "failed" : done ? "done" : "pending" };
-}
-
-function upsertFactoryStage(stages, name, status) {
-  if (!name) return stages;
-  const next = [...stages];
-  const index = next.findIndex((stage) => stage.name === name);
-  if (index >= 0) next[index] = { ...next[index], status };
-  else next.push({ name, status });
-  return next;
-}
-
-function summarizeFactoryEvents(events) {
-  return events.slice(-80).map((event) => ({
-    ts: event.ts || null,
-    type: event.type || "event",
-    stage: event.stage || null,
-    level: event.type?.includes("failed") ? "error" : "info",
-    line: formatFactoryEventLine(event),
-  }));
-}
-
-function formatFactoryEventLine(event) {
-  if (event.type === "run_started") return `factory run started → ${event.targetStage || "target"} (${event.total || 0})`;
-  if (event.type === "run_done") return `factory run ${event.ok ? "done" : "failed"} · ${event.failed || 0} failed`;
-  if (event.type === "item_started") return `${event.index || "?"}/${event.total || "?"} ${event.workspace || event.useCaseId}: started`;
-  if (event.type === "item_done") return `${event.index || "?"}/${event.total || "?"} ${event.workspaceId || event.workspace || event.useCaseId}: ${event.status || "done"}`;
-  if (event.type === "item_failed") return `${event.index || "?"}/${event.total || "?"} ${event.workspace || event.useCaseId}: ${event.error || "failed"}`;
-  if (event.type === "stage_started") return `${event.index || "?"}/${event.total || "?"} ${event.workspace || event.useCaseId}: ${event.stage}...`;
-  if (event.type === "stage_done") return `${event.index || "?"}/${event.total || "?"} ${event.workspaceId || event.workspace || event.useCaseId}: ${event.stage} done`;
-  return event.line || event.type || "factory event";
-}
-
-function siblingMarkdownPath(runPath) {
-  if (!runPath) return null;
-  const file = basename(runPath).replace(/^factory-run-/, "FACTORY_RUN_").replace(/\.json$/, ".md");
-  return join(dirname(runPath), file);
-}
-
-function safeTimestamp(value) {
-  return String(value || Date.now()).replace(/[^0-9A-Za-z]+/g, "-").replace(/^-|-$/g, "");
-}
-
-function parseJsonObjects(text) {
-  const objects = [];
-  let start = -1;
-  let depth = 0;
-  let inString = false;
-  let escaped = false;
-  for (let i = 0; i < text.length; i += 1) {
-    const ch = text[i];
-    if (start < 0) {
-      if (ch === "{") { start = i; depth = 1; inString = false; escaped = false; }
-      continue;
-    }
-    if (inString) {
-      if (escaped) escaped = false;
-      else if (ch === "\\") escaped = true;
-      else if (ch === "\"") inString = false;
-      continue;
-    }
-    if (ch === "\"") inString = true;
-    else if (ch === "{") depth += 1;
-    else if (ch === "}") {
-      depth -= 1;
-      if (depth === 0) {
-        try { objects.push(JSON.parse(text.slice(start, i + 1))); } catch {}
-        start = -1;
-      }
-    }
-  }
-  if (!objects.length) throw new Error(`command did not emit JSON: ${text.slice(-500)}`);
-  return objects[objects.length - 1];
-}
+// Run listing/summarization (mergeLedgerAndFileRuns, listFactoryRuns) now live in
+// factory-runs.mjs; imported below and re-exported for the public API contract
+// (see factory-core.export-surface.json / factory-core.export-surface.test.mjs).
 
 export function run(bin, args, { capture = true, allowFail = false, cwd = REPO_ROOT } = {}) {
   const result = runCommand(bin, args, { capture, allowFail, cwd });
@@ -415,58 +131,14 @@ export function tfOutputs() {
   try { const j = JSON.parse(r.out); const o = {}; for (const [k, v] of Object.entries(j)) o[k] = v.value; return o; } catch { return {}; }
 }
 
-function agentIdentityPrincipalSet(orgId, projectNumber) {
-  return orgId && projectNumber
-    ? `principalSet://agents.global.org-${orgId}.system.id.goog/attribute.platformContainer/aiplatform/projects/${projectNumber}`
-    : "";
-}
-
-function inferAgentIdentityOrgId(cfg) {
-  if (cfg.agentIdentityOrgId || !cfg.project) return cfg.agentIdentityOrgId || "";
-  const r = gcloud(["projects", "get-ancestors", cfg.project, "--format=json"], { allowFail: true });
-  if (!r.ok) return "";
-  try {
-    const ancestors = JSON.parse(r.out);
-    return ancestors.find((a) => a.type === "organization")?.id || "";
-  } catch {
-    return "";
-  }
-}
-
-function describeProjectNumber(cfg) {
-  const r = gcloud(["projects", "describe", cfg.project, "--format=value(projectNumber)"], { allowFail: true });
-  return r.ok ? r.out : "";
-}
-
-function ensureAgentIdentityConfig(cfg, { log = noop } = {}) {
-  if (!cfg.agentIdentityOrgId) {
-    const orgId = inferAgentIdentityOrgId(cfg);
-    if (orgId) {
-      cfg.agentIdentityOrgId = orgId;
-      log(`detected Agent Identity org id ${orgId}`);
-    }
-  }
-  if (!cfg.agentIdentityPrincipalSet && cfg.agentIdentityOrgId && cfg.projectNumber) {
-    cfg.agentIdentityPrincipalSet = agentIdentityPrincipalSet(cfg.agentIdentityOrgId, cfg.projectNumber);
-  }
-  if (!cfg.agentIdentityOrgId) {
-    log("Agent Identity org id not detected; set GE_AGENT_IDENTITY_ORG_ID or pass --agentIdentityOrgId before applying infra.");
-  }
-  return cfg;
-}
-
-function persistAgentIdentityConfig(cfg) {
-  if (!cfg.project || !cfg.agentIdentityOrgId) return;
-  const existing = readJson(CONFIG_PATH, {});
-  if (existing.project && existing.project !== cfg.project) return;
-  writeJson(CONFIG_PATH, {
-    ...existing,
-    project: existing.project || cfg.project,
-    projectNumber: existing.projectNumber || cfg.projectNumber || "",
-    agentIdentityOrgId: cfg.agentIdentityOrgId,
-    agentIdentityPrincipalSet: cfg.agentIdentityPrincipalSet || existing.agentIdentityPrincipalSet || "",
-  });
-}
+// Agent Identity org id / principalSet inference + persistence now live in
+// agent-identity.mjs; wired here the same way as the plane modules below, since
+// they need live gcloud/readJson/writeJson access.
+const {
+  ensureAgentIdentityConfig,
+  persistAgentIdentityConfig,
+  describeProjectNumber,
+} = createAgentIdentityOps({ gcloud, readJson, writeJson, configPath: CONFIG_PATH, noop });
 
 const gitShortSha = () => { const r = run("git", ["rev-parse", "--short", "HEAD"], { allowFail: true }); return r.ok ? r.out : "manual"; };
 export function resolveRepo(cfg) {
@@ -479,385 +151,17 @@ export function resolveRepo(cfg) {
 // `run` is injected the same way factory-core wires it into the plane modules.
 const { withGateway } = createGatewayClient({ run });
 
-// ── catalog ───────────────────────────────────────────────────────────────────
-export async function loadCatalog() {
-  if (!existsSync(CATALOG_PATH)) {
-    throw new Error(`catalog not found: ${CATALOG_PATH} (generated artifact — run \`npm run use-cases:sync\`)`);
-  }
-  // Read the JSON artifact fresh each call so a regenerated catalog is picked up
-  // without restarting a long-running daemon.
-  const generated = JSON.parse(readFileSync(CATALOG_PATH, "utf8"));
-  let interviewEntries = [];
-  try {
-    interviewEntries = await loadInterviewSpecEntries({ repoRoot: GEN_DIR });
-  } catch {
-    interviewEntries = [];
-  }
-  const byId = new Map(generated.map((entry) => [entry.id, entry]));
-  for (const entry of interviewEntries) byId.set(entry.id, entry);
-  return [...byId.values()];
-}
+// Catalog/use-case/agent-spec search (loadCatalog/resolveCatalogId/listUsecases/
+// listSpecs) now lives in factory-catalog-search.mjs; the spec-review workflow
+// (reviewSpec) in spec-review.mjs — imported above and re-exported for the public
+// API contract (see factory-core.export-surface.json /
+// factory-core.export-surface.test.mjs).
 
-/**
- * Resolve ANY agent id form (catalog slug, uc-NNNN, A-NNNN, numeric) to the catalog id.
- * Uses @ge/agent-resolver to normalize ids and match against catalog entries.
- * Returns the catalog id on match, or null if no match.
- */
-export async function resolveCatalogId(anyId) {
-  if (!anyId) return null;
-  try {
-    const { candidateKeys, normalizeAgentId } = await import("@ge/agent-resolver");
-    const catalog = await loadCatalog();
-    const keys = candidateKeys(anyId);
-    const normalized = normalizeAgentId(anyId);
-
-    // Try exact match on id/slug first
-    for (const key of keys) {
-      const entry = catalog.find((c) => c.id === key);
-      if (entry) return entry.id;
-    }
-
-    // Try matching subtitle prefix if we have an A-<num> form
-    if (normalized.agentId) {
-      const agentIdPrefix = `${normalized.agentId} `;
-      const entry = catalog.find((c) => c.subtitle?.startsWith(agentIdPrefix));
-      if (entry) return entry.id;
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-}
-export async function listUsecases({ department, search, limit } = {}) {
-  let cases = await loadCatalog();
-  if (department) cases = cases.filter((u) => u.department === department);
-  if (search) { const q = search.toLowerCase(); cases = cases.filter((u) => `${u.id} ${u.title}`.toLowerCase().includes(q)); }
-  const byDept = {};
-  for (const u of cases) byDept[u.department] = (byDept[u.department] || 0) + 1;
-  return { total: cases.length, byDepartment: byDept, useCases: cases.slice(0, limit || cases.length).map((u) => ({ id: u.id, title: u.title, department: u.department })) };
-}
-
-function specSearchText(spec) {
-  return [
-    spec.id,
-    spec.title,
-    spec.department,
-    spec.domainId,
-    spec.persona,
-    spec.subtitle,
-    spec.description,
-    spec.familyId,
-    spec.variantId,
-    spec.variantLabel,
-    ...(spec.systems || []),
-  ].filter(Boolean).join(" ").toLowerCase();
-}
-
-function matchesSpecSearch(spec, search) {
-  const terms = String(search || "").trim().toLowerCase().split(/\s+/).filter(Boolean);
-  if (!terms.length) return true;
-  const text = specSearchText(spec);
-  return terms.every((term) => text.includes(term));
-}
-
-function splitCsvLike(value) {
-  if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean);
-  return parseList(String(value || ""));
-}
-
-function summarizeSpec(usecase, registryEntry) {
-  const registry = registryEntry?.registry || {};
-  const variant = registry.variant || {};
-  return {
-    id: usecase.id,
-    title: usecase.title,
-    department: usecase.department || registryEntry?.department || null,
-    domainId: usecase.domainId || registryEntry?.domainId || null,
-    persona: usecase.persona || null,
-    subtitle: usecase.subtitle || null,
-    systems: usecase.systems || registryEntry?.systems || [],
-    source: registry.sourceKind || "slide",
-    sourcePath: usecase.sourcePath || registry.sourcePath || null,
-    familyId: variant.familyId || registry.familyId || usecase.id,
-    variantId: variant.variantId || usecase.id,
-    variantLabel: variant.label || "Canonical",
-    buildable: registryEntry?.buildable !== false,
-    hasBehaviorContract: registryEntry?.hasBehaviorContract === true,
-    description: (usecase.statusQuo?.[0] || usecase.agentification?.[0] || usecase.subtitle || "").trim(),
-  };
-}
-
-export async function listSpecs({ department, search, limit = 100, ids = [] } = {}) {
-  const catalog = await loadCatalog();
-  const registry = readJson(AGENT_SPEC_REGISTRY_PATH, { entries: [], summary: {} });
-  const registryById = new Map((registry.entries || []).map((entry) => [entry.id, entry]));
-  const idSet = new Set(splitCsvLike(ids));
-  const q = String(search || "").trim().toLowerCase();
-  const interviewEntries = await loadInterviewSpecEntries({ repoRoot: GEN_DIR });
-  const byId = new Map();
-  for (const usecase of catalog) byId.set(usecase.id, summarizeSpec(usecase, registryById.get(usecase.id)));
-  for (const entry of interviewEntries) byId.set(entry.id, summarizeSpec(entry, entry));
-  let specs = [...byId.values()];
-  if (department) specs = specs.filter((spec) => spec.department === department);
-  if (idSet.size) specs = specs.filter((spec) => idSet.has(spec.id));
-  if (q) specs = specs.filter((spec) => matchesSpecSearch(spec, q));
-  specs.sort((a, b) => `${a.department || ""}/${a.title}`.localeCompare(`${b.department || ""}/${b.title}`));
-  const byDepartment = {};
-  for (const spec of specs) byDepartment[spec.department || "unknown"] = (byDepartment[spec.department || "unknown"] || 0) + 1;
-  const capped = Math.max(1, Math.min(Number(limit) || 100, 1000));
-  return {
-    kind: "ge.agent_spec.catalog",
-    version: 1,
-    total: specs.length,
-    returned: Math.min(specs.length, capped),
-    byDepartment,
-    departments: DEPARTMENTS,
-    summary: registry.summary || {},
-    specs: specs.slice(0, capped),
-  };
-}
-
-function isInsideDir(filePath, rootDir) {
-  const root = resolve(rootDir);
-  const file = resolve(filePath);
-  return file === root || file.startsWith(`${root}/`);
-}
-
-function safeSpecReviewPath({ usecaseId, path } = {}) {
-  const rawPath = path
-    ? String(path)
-    : join(displayStatePath(STATE_PATHS.interviews.root), slug(usecaseId || "new-agent", 64) || "new-agent", "agent-spec.json");
-  const fullPath = resolve(REPO_ROOT, rawPath);
-  const allowedRoots = [
-    STATE_PATHS.interviews.root,
-    LEGACY_STATE_PATHS.interviews.root,
-    join(GEN_DIR, "catalog", "interview-specs"),
-  ];
-  if (!allowedRoots.some((root) => isInsideDir(fullPath, root))) {
-    throw new Error("spec review path must be under .ge/interviews or apps/factory/catalog/interview-specs");
-  }
-  return fullPath;
-}
-
-function summarizeReviewedSpec(spec, usecaseId = null) {
-  const generation = spec.generationSpec || spec;
-  const quality = validateGenerationSpec(generation);
-  return {
-    summary: {
-      id: spec.id || usecaseId,
-      title: spec.title || spec.id || usecaseId || "Generated agent spec",
-      department: spec.department || null,
-      persona: spec.persona || generation.behaviorContract?.role || null,
-      systems: spec.systems || (generation.sourceSystems || []).map((system) => system.id || system.name).filter(Boolean),
-      sourceSystems: Array.isArray(generation.sourceSystems) ? generation.sourceSystems.length : 0,
-      entities: Array.isArray(generation.entities) ? generation.entities.length : 0,
-      documents: Array.isArray(generation.documents) ? generation.documents.length : 0,
-      anomalies: Array.isArray(generation.anomalies) ? generation.anomalies.length : 0,
-      goldenEvals: Array.isArray(generation.behaviorContract?.goldenEvals) ? generation.behaviorContract.goldenEvals.length : 0,
-      buildable: quality.ok,
-      maturity: quality.maturity,
-    },
-    gaps: quality.gaps || [],
-  };
-}
-
-function generatedInterviewSpecs() {
-  const roots = [STATE_PATHS.interviews.root, LEGACY_STATE_PATHS.interviews.root].filter((root, index, all) => all.indexOf(root) === index);
-  return roots.flatMap((root) => {
-    if (!existsSync(root)) return [];
-    return readdirSync(root, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => {
-      const specPath = join(root, entry.name, "agent-spec.json");
-      if (!existsSync(specPath)) return null;
-      try {
-        const content = readFileSync(specPath, "utf8");
-        const spec = JSON.parse(content);
-        return {
-          id: spec.id || entry.name,
-          title: spec.title || spec.id || entry.name,
-          department: spec.department || null,
-          source: "generated_artifact",
-          path: specPath,
-          relativePath: specPath.slice(REPO_ROOT.length + 1),
-          content,
-          spec,
-        };
-      } catch {
-        return null;
-      }
-    })
-    .filter(Boolean);
-  });
-}
-
-function candidateScore(entry, words) {
-  const text = `${entry.id || ""} ${entry.title || ""} ${entry.subtitle || ""}`.toLowerCase();
-  return words.reduce((score, word) => score + (text.includes(word) ? 1 : 0), 0);
-}
-
-async function specReviewCandidates(usecaseId) {
-  const q = String(usecaseId || "").replace(/-/g, " ").trim().toLowerCase();
-  if (!q) return [];
-  const words = q.split(/\s+/).filter((word) => word.length > 2);
-  if (!words.length) return [];
-  const catalog = await loadCatalog();
-  const generated = generatedInterviewSpecs().map((entry) => ({
-    id: entry.id,
-    title: entry.title,
-    department: entry.department,
-    source: entry.source,
-    score: candidateScore(entry, words),
-  }));
-  const canonical = catalog
-    .map((entry) => ({
-      id: entry.id,
-      title: entry.title,
-      department: entry.department || null,
-      source: "canonical_catalog_spec",
-      score: candidateScore(entry, words),
-    }));
-  return [...generated, ...canonical]
-    .filter((entry) => entry.score > 0)
-    .sort((a, b) => b.score - a.score || a.id.localeCompare(b.id))
-    .slice(0, 8)
-    .map(({ score: _score, ...entry }) => entry);
-}
-
-export async function reviewSpec({ usecaseId, path } = {}) {
-  const fullPath = safeSpecReviewPath({ usecaseId, path });
-  const relativePath = fullPath.startsWith(`${REPO_ROOT}/`) ? fullPath.slice(REPO_ROOT.length + 1) : fullPath;
-  const normalizedUsecaseId = usecaseId ? slug(usecaseId, 64) : (relativePath.match(/\.ge(?:-harness)?\/interviews\/([^/]+)\/agent-spec\.json$/)?.[1] || null);
-  if (existsSync(fullPath)) {
-    const content = readFileSync(fullPath, "utf8");
-    let spec;
-    try {
-      spec = JSON.parse(content);
-    } catch (error) {
-      return {
-        kind: "ge.spec.review",
-        source: "generated_artifact",
-        found: true,
-        parseError: error.message,
-        usecaseId: normalizedUsecaseId,
-        path: relativePath,
-        spec: null,
-        content,
-        summary: null,
-        gaps: ["invalid_json"],
-      };
-    }
-    const reviewed = summarizeReviewedSpec(spec, normalizedUsecaseId);
-    return {
-      kind: "ge.spec.review",
-      source: "generated_artifact",
-      found: true,
-      usecaseId: normalizedUsecaseId || reviewed.summary.id,
-      path: relativePath,
-      spec,
-      content,
-      ...reviewed,
-    };
-  }
-
-  if (!path && normalizedUsecaseId) {
-    const interviewEntries = await loadInterviewSpecEntries({ repoRoot: GEN_DIR });
-    const registered = interviewEntries.find((entry) => entry.id === normalizedUsecaseId || entry.registry?.familyId === normalizedUsecaseId);
-    if (registered) {
-      const reviewed = summarizeReviewedSpec(registered, normalizedUsecaseId);
-      const registeredPath = registered.sourcePath?.startsWith(`${REPO_ROOT}/`) ? registered.sourcePath.slice(REPO_ROOT.length + 1) : registered.sourcePath || `apps/factory/catalog/interview-specs/${registered.id}.json`;
-      return {
-        kind: "ge.spec.review",
-        source: "registered_interview_spec",
-        found: true,
-        usecaseId: registered.id,
-        path: registeredPath,
-        spec: registered,
-        content: `${JSON.stringify(registered, null, 2)}\n`,
-        ...reviewed,
-      };
-    }
-
-    const catalog = await loadCatalog();
-    const catalogEntry = catalog.find((entry) => entry.id === normalizedUsecaseId);
-    if (catalogEntry) {
-      const reviewed = summarizeReviewedSpec(catalogEntry, normalizedUsecaseId);
-      return {
-        kind: "ge.spec.review",
-        source: "canonical_catalog_spec",
-        found: true,
-        usecaseId: catalogEntry.id,
-        path: `apps/factory/generated/use-cases.generated.json#${catalogEntry.id}`,
-        spec: catalogEntry,
-        content: `${JSON.stringify(catalogEntry, null, 2)}\n`,
-        ...reviewed,
-      };
-    }
-
-    const words = String(normalizedUsecaseId || "").replace(/-/g, " ").trim().toLowerCase().split(/\s+/).filter((word) => word.length > 2);
-    const generatedMatches = generatedInterviewSpecs()
-      .map((entry) => ({ ...entry, score: candidateScore(entry, words) }))
-      .filter((entry) => entry.score > 0)
-      .sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
-    if (generatedMatches.length && generatedMatches[0].score >= Math.min(words.length, 2) && generatedMatches.filter((entry) => entry.score === generatedMatches[0].score).length === 1) {
-      const match = generatedMatches[0];
-      const reviewed = summarizeReviewedSpec(match.spec, match.id);
-      return {
-        kind: "ge.spec.review",
-        source: "generated_artifact",
-        resolvedFrom: normalizedUsecaseId,
-        found: true,
-        usecaseId: match.id,
-        path: match.relativePath,
-        spec: match.spec,
-        content: match.content,
-        ...reviewed,
-      };
-    }
-  }
-
-  return {
-    kind: "ge.spec.review",
-    source: "unresolved",
-    found: false,
-    usecaseId: normalizedUsecaseId,
-    path: relativePath,
-    spec: null,
-    content: "",
-    summary: null,
-    gaps: ["spec_id_not_found"],
-    candidates: await specReviewCandidates(normalizedUsecaseId),
-  };
-}
-
-export async function registerSpec({ input, allowDraft = false, syncCatalog = true } = {}) {
-  if (!input) throw new Error("missing spec input path");
-  const inputPath = resolve(REPO_ROOT, input);
-  if (!existsSync(inputPath)) throw new Error(`spec not found: ${inputPath}`);
-  const args = ["scripts/register-agent-spec.mjs", "--input", inputPath];
-  if (allowDraft) args.push("--allow-draft", "true");
-  const registered = run("node", args, { cwd: GEN_DIR, allowFail: true });
-  if (!registered.ok) throw new Error((registered.err || registered.out || "spec registration failed").trim());
-  let result = {};
-  try { result = JSON.parse(registered.out); } catch (err) {
-    console.warn(`registerSpec: failed to parse register-agent-spec.mjs output as JSON (${err.message}); continuing with empty result`);
-  }
-  let sync = null;
-  if (syncCatalog) {
-    sync = run("node", ["scripts/sync-use-cases-from-slides.mjs"], { cwd: GEN_DIR, allowFail: true });
-    if (!sync.ok) throw new Error((sync.err || sync.out || "spec registered but catalog sync failed").trim());
-  }
-  return {
-    ok: true,
-    ...result,
-    input: inputPath,
-    catalog: {
-      synced: Boolean(syncCatalog),
-      stdout: sync?.out || "",
-      note: syncCatalog ? "generated catalog synced" : "generated catalog sync skipped; interview registry is available immediately",
-    },
-  };
+// registerSpec's implementation lives in register-spec.mjs; `run`/REPO_ROOT/GEN_DIR
+// are injected the same way factory-core wires them into the plane modules (GEN_DIR
+// is declared further down, but this reference is deferred until call time).
+export function registerSpec(opts) {
+  return registerSpecWith({ run, repoRoot: REPO_ROOT, genDir: GEN_DIR }, opts);
 }
 
 // ── operations ────────────────────────────────────────────────────────────────
@@ -1120,68 +424,12 @@ export async function sync(cfg, { ids = "", force = false, commit = true, push =
 const GEN_DIR = join(REPO_ROOT, "apps/factory");
 const FACTORY_DATA_ROOT = STATE_PATHS.factory.root;
 const LOCAL_PROJECTS = STATE_PATHS.factory.workspaces;
-const LEDGER_PATH = join(FACTORY_HARNESS_DIR, "ledger.sqlite");
 
-// Durable run ledger (ADR 0001). Best-effort + cached: opens a local SQLite ledger
-// when a driver is available (bun:sqlite / better-sqlite3), else returns null and
-// callers fall back to the legacy files. Set GE_LEDGER=0 to disable. The cloud
-// control plane points this at AlloyDB via pgAdapter (future phase).
-let _ledgerPromise = null;
-export async function runLedger() {
-  if (process.env.GE_LEDGER === "0") return null;
-  if (!_ledgerPromise) _ledgerPromise = openRunLedger(LEDGER_PATH).catch(() => null);
-  return _ledgerPromise;
-}
-// Never let a ledger write break a build/ship: best-effort, swallow errors.
-async function ledgerWrite(fn) {
-  try {
-    const l = await runLedger();
-    if (l) await fn(l);
-  } catch (error) {
-    // The ledger is a shadow store in phase 1, so a write failure is never fatal to
-    // the build/ship — but silently dropping it means a run/submission can vanish
-    // from the durable ledger with no trace, leaving the UI/CLI disagreeing about
-    // run state. Surface the reason; the swallow (and fallback to file state) is unchanged.
-    console.warn(`[factory-core] ledger write skipped — durable run/job record not persisted: ${error?.message || String(error)}`);
-  }
-}
+// Ledger read/write (runLedger/ledgerWrite/ledgerReadsEnabled/ledgerRuns/ledgerRun/
+// ledgerFleet/ledgerPlan/ledgerBackfillFromDisk) now live in factory-ledger.mjs;
+// imported above and re-exported for the public API contract (see
+// factory-core.export-surface.json / factory-core.export-surface.test.mjs).
 
-// Read cutover (default ON; set GE_LEDGER_READS=0 to disable): fleetStatus and
-// listFactoryRuns treat the ledger as authoritative and fall back to the legacy
-// files for anything it doesn't cover. Safe to default on because both readers
-// merge per-item — an empty/partial ledger never drops file-only state.
-function ledgerReadsEnabled() {
-  return process.env.GE_LEDGER_READS !== "0";
-}
-
-// Read APIs over the ledger (used by `ge ledger …`; the console can adopt these to
-// replace the file-based fleet/runs reads once validated against a live install).
-export async function ledgerRuns({ limit = 25 } = {}) {
-  const l = await runLedger();
-  return l ? l.listRuns({ limit }) : [];
-}
-export async function ledgerRun(id) {
-  const l = await runLedger();
-  return l ? l.getRun(id) : null;
-}
-export async function ledgerFleet() {
-  const l = await runLedger();
-  if (!l) return [];
-  return [...l.fleetByUseCase().entries()].map(([useCaseId, s]) => ({ useCaseId, ...s }));
-}
-// Next action per work item, from the ledger's latest state + the pipeline state
-// machine (ADR 0001 phase 4). One authoritative "what happens next" for build /
-// ship / retry / regenerate — replacing ad-hoc stageReached skipping.
-export async function ledgerPlan({ targetStage = "previewed", mode = null } = {}) {
-  const l = await runLedger();
-  if (!l) return [];
-  const effectiveMode = mode || "local";
-  return [...l.fleetByUseCase().entries()].map(([useCaseId, s]) => ({
-    useCaseId,
-    workspaceId: s.workspaceId || null,
-    ...planWorkItem({ stage: s.stage, status: s.status === "failed" ? "failed" : "done" }, { targetStage, mode: effectiveMode }),
-  }));
-}
 // ── declarative reconcile (ADR 0001 phase 5) ──────────────────────────────────
 const APPLY_MANIFEST_PATH = join(REPO_ROOT, "ge.manifest.json");
 
@@ -1220,121 +468,10 @@ export async function applyApply(cfg, { manifest = null, log = noop } = {}) {
   return { applied: planResult.steps.length, plan: planResult };
 }
 
-// One-shot import of the legacy file stores (.ge-state.json + factory-run-*.json)
-// into the ledger. Idempotent — safe to re-run.
-export async function ledgerBackfillFromDisk() {
-  const l = await runLedger();
-  if (!l) return { runs: 0, items: 0, note: "ledger unavailable (no sqlite driver — run under bun)" };
-  const stateJson = readJson(STATE_PATH, null);
-  const factoryRuns = [];
-  if (existsSync(FACTORY_HARNESS_DIR)) {
-    for (const f of readdirSync(FACTORY_HARNESS_DIR).filter((name) => /^factory-run-.*\.json$/.test(name))) {
-      const run = readJson(join(FACTORY_HARNESS_DIR, f), null);
-      if (run) factoryRuns.push(run);
-    }
-  }
-  return l.backfill({ stateJson, factoryRuns });
-}
-function missingWorkspaceReport({ id, workspaceId, stage }) {
-  return {
-    kind: "ge.workspace_doctor",
-    ok: false,
-    blocked: true,
-    workspace: workspaceId || id,
-    stage,
-    summary: { total: 1, passed: 0, failed: 1 },
-    blockers: [{
-      id: "workspace:missing",
-      message: `No local generated workspace exists for ${id}. Run Factory build before using the workspace doctor.`,
-      detail: { requestedId: id, resolvedWorkspaceId: workspaceId || null },
-    }],
-    repairTasks: [{
-      id: "factory:build-local-workspace",
-      command: `ge agents build --ids ${id} --local`,
-      reason: "Workspace doctor can only inspect generated local workspaces. Factory must create this workspace first.",
-      owner: "factory",
-    }],
-    evidence: {},
-  };
-}
-
-export function workspaceDoctor(cfg, { id, stage = "preview" } = {}) {
-  if ((cfg.mode || "local") !== "local") {
-    return {
-      ok: false,
-      blocked: true,
-      workspace: id,
-      stage,
-      blockers: [{ id: "console:mode", message: "Workspace doctor is available for local workspaces in this console path." }],
-      repairTasks: [],
-    };
-  }
-  const workspaceId = resolveLocalWorkspaceId(id);
-  if (!localWorkspaceExists(workspaceId)) {
-    return missingWorkspaceReport({ id, workspaceId, stage });
-  }
-  const result = run("node", ["src/cli.js", "workspace", "doctor", workspaceId, "--stage", stage], { cwd: GEN_DIR, allowFail: true });
-  if (!result.out && !result.ok) {
-    return {
-      ok: false,
-      blocked: true,
-      workspace: workspaceId,
-      stage,
-      blockers: [{ id: "doctor:command", message: result.err || "workspace doctor command failed" }],
-      repairTasks: [],
-    };
-  }
-  return parseJsonObjects(result.out || result.err || "{}");
-}
-
-export function workspaceRepair(cfg, { id, stage = "preview", attempts = 3, agent = "none", runPreview = false } = {}) {
-  if ((cfg.mode || "local") !== "local") {
-    return {
-      ok: false,
-      blocked: true,
-      workspace: id,
-      stage,
-      finalDoctor: {
-        blockers: [{ id: "console:mode", message: "Workspace repair is available for local workspaces in this console path." }],
-      },
-      attempts: [],
-    };
-  }
-  const workspaceId = resolveLocalWorkspaceId(id);
-  if (!localWorkspaceExists(workspaceId)) {
-    const doctor = missingWorkspaceReport({ id, workspaceId, stage });
-    return {
-      kind: "ge.workspace_repair",
-      ok: false,
-      workspace: workspaceId,
-      stage,
-      attempts: [],
-      finalDoctor: doctor,
-      nextRepairTasks: doctor.repairTasks,
-    };
-  }
-  const args = [
-    "src/cli.js", "workspace", "repair", workspaceId,
-    "--stage", stage,
-    "--attempts", String(attempts),
-    "--agent", agent,
-    "--run-preview", runPreview ? "true" : "false",
-  ];
-  const result = run("node", args, { cwd: GEN_DIR, allowFail: true });
-  if (!result.out && !result.ok) {
-    return {
-      ok: false,
-      blocked: true,
-      workspace: workspaceId,
-      stage,
-      finalDoctor: {
-        blockers: [{ id: "repair:command", message: result.err || "workspace repair command failed" }],
-      },
-      attempts: [],
-    };
-  }
-  return parseJsonObjects(result.out || result.err || "{}");
-}
+// Workspace doctor/repair (single-workspace inspect/repair) now live in
+// workspace-doctor.mjs; `run`/GEN_DIR are injected the same way factory-core
+// wires them into the plane modules.
+export const { workspaceDoctor, workspaceRepair } = createWorkspaceDoctorOps({ run, genDir: GEN_DIR });
 
 export function infra(cfg, { sub, gatewayImage, workerImage, yes = false, log = noop } = {}) {
   return factoryPlane.infra(cfg, { sub, gatewayImage, workerImage, yes, log });
