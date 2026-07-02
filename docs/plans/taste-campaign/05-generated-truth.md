@@ -1,6 +1,6 @@
 # WS5 — Generated truth: reference docs, diagrams, and tokens emitted from source
 
-**Status:** `[ ]` open — four independent tracks (A–D), each assignable to a
+**Status:** `[x]` done — all four tracks merged 2026-07-02, each assignable to a
 separate worker; their write-sets are disjoint.
 **Depends on:** WS1 merged (track A reads the enlarged registry); WS2 merged
 (track D only).

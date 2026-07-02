@@ -1,6 +1,6 @@
 # WS6 — Finish the silent-catch sweep; resolve the three unintegrated packages
 
-**Status:** `[~]` partially landed (main merged a 25-site warn sweep; 58
+**Status:** `[x]` done — merged 2026-07-02 (was: main merged a 25-site warn sweep; 58
 silent sites remain as of 2026-07-02)
 **Write-set:** individual `catch` sites repo-wide (one-line edits) · NEW
 `tools/check-silent-catches.mjs` · root `package.json` (`workspaces` +

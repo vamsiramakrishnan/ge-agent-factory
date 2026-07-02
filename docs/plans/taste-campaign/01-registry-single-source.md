@@ -1,6 +1,6 @@
 # WS1 — Make the command registry the single source for MCP and console routing
 
-**Status:** `[ ]` open
+**Status:** `[x]` done — merged 2026-07-02
 **Write-set:** `tools/lib/ge-command-registry.mjs` · `tools/mcp-server.mjs` ·
 `apps/console/src/server/ge-api.mjs` + `apps/console/src/server/ge-api.test.mjs` ·
 `apps/console/src/services/geClient.ts` (risk union line only) ·

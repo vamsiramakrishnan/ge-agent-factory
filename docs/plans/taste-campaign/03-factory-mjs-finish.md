@@ -1,6 +1,6 @@
 # WS3 — Finish `scripts/factory.mjs`: extract the data-gen and pipeline-state residue
 
-**Status:** `[ ]` open
+**Status:** `[x]` done — merged 2026-07-02
 **Write-set:** `apps/factory/scripts/factory.mjs` · NEW
 `apps/factory/scripts/factory/fixtures/{document-gen.mjs,value-gen.mjs}` · NEW
 `apps/factory/scripts/factory/data/snowfakery-recipe-render.mjs` · NEW

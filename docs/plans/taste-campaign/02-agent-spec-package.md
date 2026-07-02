@@ -1,6 +1,6 @@
 # WS2 — `@ge/agent-spec`: one home for the agent-spec shape
 
-**Status:** `[ ]` open
+**Status:** `[x]` done — merged 2026-07-02
 **Write-set:** NEW `packages/agent-spec/**` · `apps/factory/src/agent-spec-registry.js` ·
 `apps/console/src/components/interview/artifacts/specArtifact.ts` ·
 `apps/presentation/src/types/architecture.ts` (re-export shim only) ·
