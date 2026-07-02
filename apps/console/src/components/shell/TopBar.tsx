@@ -69,18 +69,18 @@ function HelpMenu() {
       </Button>
       {open && (
         <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-lg border border-outline-variant/40 bg-surface p-3 shadow-ambient">
-          <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-secondary">Keyboard</div>
+          <div className="mb-1 text-4xs font-semibold uppercase tracking-wide text-secondary">Keyboard</div>
           <div className="space-y-1.5 text-xs text-on-surface">
             <div className="flex items-center justify-between gap-3">
-              <span className="rounded border border-outline-variant/40 bg-surface-container-low px-1.5 py-0.5 font-mono text-[11px]">⌘K</span>
+              <span className="rounded border border-outline-variant/40 bg-surface-container-low px-1.5 py-0.5 font-mono text-3xs">⌘K</span>
               <span className="text-secondary">command palette</span>
             </div>
             <div className="flex items-center justify-between gap-3">
-              <span className="rounded border border-outline-variant/40 bg-surface-container-low px-1.5 py-0.5 font-mono text-[11px]">Esc</span>
+              <span className="rounded border border-outline-variant/40 bg-surface-container-low px-1.5 py-0.5 font-mono text-3xs">Esc</span>
               <span className="text-secondary">close panels</span>
             </div>
           </div>
-          <div className="mb-1 mt-3 text-[10px] font-semibold uppercase tracking-wide text-secondary">Docs</div>
+          <div className="mb-1 mt-3 text-4xs font-semibold uppercase tracking-wide text-secondary">Docs</div>
           <div className="space-y-0.5">
             <a
               href="https://github.com/vamsiramakrishnan/ge-agent-factory/blob/main/docs/GLOSSARY.md"
@@ -114,9 +114,10 @@ interface TopBarProps {
 
 export function TopBar({ status, mode, onModeChange, onOpenPalette }: TopBarProps) {
   return (
-    <header className="h-14 bg-surface border-b border-outline-variant/30 flex items-center justify-between px-6">
-      <div className="flex items-center gap-3">
-        <h1 className="text-sm font-semibold text-on-surface">
+    <header className="h-14 bg-surface border-b border-outline-variant/60 flex items-center justify-between px-6">
+      <div className="flex items-center gap-2.5">
+        <span className="h-2 w-2 rounded-full bg-primary" aria-hidden />
+        <h1 className="font-headline text-sm font-semibold tracking-tight text-on-surface">
           GE Agent Factory
         </h1>
       </div>

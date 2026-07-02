@@ -104,7 +104,7 @@ export function GetStartedCard({ hasAgents, hasRuns, hasDeployed, mode, onDismis
             >
               <div className="flex items-center gap-2 mb-1.5">
                 <span
-                  className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${
+                  className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-3xs font-semibold ${
                     step.done ? "bg-primary text-white" : active ? "bg-primary/15 text-primary" : "bg-surface-container text-secondary"
                   }`}
                 >
@@ -112,7 +112,7 @@ export function GetStartedCard({ hasAgents, hasRuns, hasDeployed, mode, onDismis
                 </span>
                 <span className="text-sm font-semibold text-on-surface">{step.title}</span>
               </div>
-              <div className="text-[11px] font-medium text-primary mb-1.5">{step.effort}</div>
+              <div className="text-3xs font-medium text-primary mb-1.5">{step.effort}</div>
               <p className="text-xs leading-5 text-secondary mb-3">{step.detail}</p>
               {active && (
                 <a

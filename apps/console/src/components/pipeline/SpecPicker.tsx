@@ -19,7 +19,7 @@ export function SpecSearchResults({
           {specs.length} result{specs.length === 1 ? "" : "s"}
         </div>
         {search.trim() && (
-          <div className="max-w-48 truncate rounded-full bg-primary/5 px-2 py-1 text-[11px] font-medium text-primary">
+          <div className="max-w-48 truncate rounded-full bg-primary/5 px-2 py-1 text-3xs font-medium text-primary">
             {search.trim()}
           </div>
         )}
@@ -42,16 +42,16 @@ export function SpecSearchResults({
             >
               <span className="flex min-w-0 flex-wrap items-center gap-2">
                 <span className="min-w-0 flex-1 truncate text-sm font-semibold text-on-surface">{spec.title}</span>
-                <span className="rounded-full bg-surface-container px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-secondary">
+                <span className="rounded-full bg-surface-container px-2 py-0.5 text-4xs font-medium uppercase tracking-wide text-secondary">
                   {spec.department || "unknown"}
                 </span>
                 {selected && (
-                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-4xs font-semibold uppercase tracking-wide text-primary">
                     selected
                   </span>
                 )}
               </span>
-              <span className="font-mono text-[11px] text-secondary">{spec.id}</span>
+              <span className="font-mono text-3xs text-secondary">{spec.id}</span>
               {(spec.subtitle || spec.description || spec.persona) && (
                 <span className="line-clamp-2 text-xs leading-5 text-secondary">
                   {spec.subtitle || spec.description || spec.persona}
@@ -60,7 +60,7 @@ export function SpecSearchResults({
               {!!spec.systems?.length && (
                 <span className="flex flex-wrap gap-1.5">
                   {spec.systems.slice(0, 5).map((system) => (
-                    <span key={system} className="rounded bg-surface-container px-2 py-0.5 text-[11px] text-secondary">
+                    <span key={system} className="rounded bg-surface-container px-2 py-0.5 text-3xs text-secondary">
                       {system}
                     </span>
                   ))}
@@ -85,16 +85,16 @@ export function SpecSummary({ spec }: { spec: SpecOption | null }) {
   return (
     <div className="border-l border-outline-variant/50 pl-3">
       <div className="mb-2 flex flex-wrap items-center gap-2">
-        <span className="rounded-full bg-surface-container px-2 py-1 text-[11px] font-medium text-secondary">{spec.department || "unknown"}</span>
-        <span className="rounded-full bg-surface-container px-2 py-1 text-[11px] font-medium text-secondary">{spec.variantLabel || "Canonical"}</span>
-        {spec.hasBehaviorContract && <span className="rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-medium text-emerald-700">behavior contract</span>}
+        <span className="rounded-full bg-surface-container px-2 py-1 text-3xs font-medium text-secondary">{spec.department || "unknown"}</span>
+        <span className="rounded-full bg-surface-container px-2 py-1 text-3xs font-medium text-secondary">{spec.variantLabel || "Canonical"}</span>
+        {spec.hasBehaviorContract && <span className="rounded-full bg-status-passed/10 px-2 py-1 text-3xs font-medium text-status-passed-ink">behavior contract</span>}
       </div>
       <div className="text-sm font-semibold text-on-surface">{spec.title}</div>
-      <div className="mt-1 font-mono text-[11px] text-secondary">{spec.id}</div>
+      <div className="mt-1 font-mono text-3xs text-secondary">{spec.id}</div>
       {spec.description && <p className="mt-2 line-clamp-2 text-xs leading-5 text-secondary">{spec.description}</p>}
       <div className="mt-3 flex flex-wrap gap-1.5">
         {(spec.systems || []).slice(0, 5).map((system) => (
-          <span key={system} className="rounded bg-surface-container px-2 py-1 text-[11px] text-secondary">{system}</span>
+          <span key={system} className="rounded bg-surface-container px-2 py-1 text-3xs text-secondary">{system}</span>
         ))}
       </div>
     </div>
@@ -141,9 +141,9 @@ export function BulkSpecPicker({
               />
               <span className="min-w-0">
                 <span className="block truncate text-sm font-medium text-on-surface">{spec.title}</span>
-                <span className="mt-0.5 block truncate text-[11px] text-secondary">{spec.department} · {spec.id}</span>
+                <span className="mt-0.5 block truncate text-3xs text-secondary">{spec.department} · {spec.id}</span>
               </span>
-              <span className="hidden truncate text-[11px] text-secondary md:block">{(spec.systems || []).slice(0, 3).join(", ")}</span>
+              <span className="hidden truncate text-3xs text-secondary md:block">{(spec.systems || []).slice(0, 3).join(", ")}</span>
             </label>
           );
         })}

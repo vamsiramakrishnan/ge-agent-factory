@@ -45,17 +45,17 @@ export function NowPulse() {
       title="Live runs — open Activity"
       aria-label={`${counts.running} running, ${counts.blocked} need attention, ${counts.failed} failed, ${counts.done} done`}
     >
-      <span className={`inline-flex items-center gap-1 ${counts.running ? "text-blue-600" : "text-secondary"}`}>
+      <span className={`inline-flex items-center gap-1 ${counts.running ? "text-status-running-ink" : "text-secondary"}`}>
         <span className={counts.running ? "animate-pulse motion-reduce:animate-none" : ""}>▶</span>
         {counts.running}
       </span>
-      <span className={`inline-flex items-center gap-1 ${counts.blocked ? "text-amber-600" : "text-secondary"}`}>
+      <span className={`inline-flex items-center gap-1 ${counts.blocked ? "text-status-blocked-ink" : "text-secondary"}`}>
         ⏸{counts.blocked}
       </span>
-      <span className={`inline-flex items-center gap-1 ${counts.failed ? "text-rose-600" : "text-secondary"}`}>
+      <span className={`inline-flex items-center gap-1 ${counts.failed ? "text-status-failed-ink" : "text-secondary"}`}>
         ✕{counts.failed}
       </span>
-      <span className={`inline-flex items-center gap-1 ${counts.done ? "text-emerald-600" : "text-secondary"}`}>
+      <span className={`inline-flex items-center gap-1 ${counts.done ? "text-status-passed-ink" : "text-secondary"}`}>
         ✓{counts.done}
       </span>
     </button>

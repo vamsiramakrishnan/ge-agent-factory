@@ -64,7 +64,7 @@ export function ArtifactBrowser({ runId, item, stage }: ArtifactBrowserProps) {
 
       <div className="flex flex-col gap-1 p-2 border-b border-outline-variant bg-surface-container-low">
         {artifacts.length === 0 ? (
-          <p className="text-xs text-on-surface-variant px-2 py-1">None for this stage</p>
+          <p className="text-xs text-secondary px-2 py-1">None for this stage</p>
         ) : (
           artifacts.map((name) => (
             <button
@@ -74,7 +74,7 @@ export function ArtifactBrowser({ runId, item, stage }: ArtifactBrowserProps) {
               className={`text-left px-2 py-1.5 rounded text-xs transition-colors inline-flex items-center gap-2 ${
                 selected === name
                   ? "bg-primary/10 text-primary font-medium"
-                  : "text-on-surface hover:bg-surface-container-high disabled:text-on-surface-variant disabled:cursor-not-allowed"
+                  : "text-on-surface hover:bg-surface-container-high disabled:text-secondary disabled:cursor-not-allowed"
               }`}
             >
               <FileText className="w-3.5 h-3.5 flex-shrink-0" />
@@ -85,18 +85,18 @@ export function ArtifactBrowser({ runId, item, stage }: ArtifactBrowserProps) {
       </div>
 
       <div className="flex-1 overflow-auto bg-surface p-3">
-        {loading && <p className="text-sm text-on-surface-variant">Loading…</p>}
-        {notFound && <p className="text-sm text-on-surface-variant">Artifact not found</p>}
+        {loading && <p className="text-sm text-secondary">Loading…</p>}
+        {notFound && <p className="text-sm text-secondary">Artifact not found</p>}
         {content && (
           <pre className="text-xs text-on-surface font-mono whitespace-pre-wrap break-words">
             {content}
           </pre>
         )}
         {!loading && !content && !notFound && selected && (
-          <p className="text-sm text-on-surface-variant">No content</p>
+          <p className="text-sm text-secondary">No content</p>
         )}
         {!selected && (
-          <p className="text-sm text-on-surface-variant">Select an artifact to preview</p>
+          <p className="text-sm text-secondary">Select an artifact to preview</p>
         )}
       </div>
     </div>

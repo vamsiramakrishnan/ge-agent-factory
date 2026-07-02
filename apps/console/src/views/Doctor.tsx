@@ -157,12 +157,12 @@ export default function Doctor({ status }: DoctorProps) {
   }, [report]);
 
   const verdict = loading
-    ? { label: "CHECKING…", className: "text-secondary" }
+    ? { label: "CHECKING…", className: "text-secondary", rail: "bg-outline-variant" }
     : counts.fail > 0
-      ? { label: "NOT READY", className: "text-rose-600" }
+      ? { label: "NOT READY", className: "text-status-failed-ink", rail: "bg-status-failed" }
       : counts.warn > 0
-        ? { label: "NEEDS ATTENTION", className: "text-amber-600" }
-        : { label: "READY", className: "text-emerald-600" };
+        ? { label: "NEEDS ATTENTION", className: "text-status-warning-ink", rail: "bg-status-warning" }
+        : { label: "READY", className: "text-status-passed-ink", rail: "bg-status-passed" };
 
   const handleRunRecommended = () => {
     if (recommended) void runFix(recommended, followRun);
@@ -241,15 +241,17 @@ export default function Doctor({ status }: DoctorProps) {
 
       {error && <ErrorBanner message={error} onRetry={() => fetchReport(scope, command)} />}
 
-      {/* Verdict header — the scannable bottom line. */}
-      <div className="mb-4 editorial-micro-card rounded-lg p-5" aria-live="polite">
+      {/* Verdict header — the certification stamp. A colored rail along the top
+          edge carries the verdict tone even before the eye reaches the label. */}
+      <div className="relative mb-4 overflow-hidden editorial-micro-card rounded-lg p-5" aria-live="polite">
+        <span className={`absolute inset-x-0 top-0 h-1 ${verdict.rail}`} aria-hidden />
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <div className={`text-2xl font-bold tracking-tight ${verdict.className}`}>{verdict.label}</div>
-            <div className="mt-1 flex items-center gap-3 text-sm">
-              <span className="font-medium text-emerald-700">✓ {counts.pass}</span>
-              <span className="font-medium text-amber-700">! {counts.warn}</span>
-              <span className="font-medium text-rose-700">✕ {counts.fail}</span>
+            <div className={`font-headline text-2xl font-bold tracking-tight tabular-nums ${verdict.className}`}>{verdict.label}</div>
+            <div className="mt-1 flex items-center gap-3 text-sm tabular-nums">
+              <span className="font-medium text-status-passed-ink">✓ {counts.pass}</span>
+              <span className="font-medium text-status-warning-ink">! {counts.warn}</span>
+              <span className="font-medium text-status-failed-ink">✕ {counts.fail}</span>
             </div>
           </div>
           {!loading && (counts.fail > 0 || counts.warn > 0) && recommended && (
@@ -298,13 +300,13 @@ export default function Doctor({ status }: DoctorProps) {
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.4 0 0 5.4 0 12h4z" />
                     </svg>
                   ) : row.state === "fail" ? (
-                    <span className="text-rose-600" aria-hidden="true">✕</span>
+                    <span className="text-status-failed-ink" aria-hidden="true">✕</span>
                   ) : (
-                    <span className="text-emerald-600" aria-hidden="true">✓</span>
+                    <span className="text-status-passed-ink" aria-hidden="true">✓</span>
                   )}
                   <span className="text-on-surface">{row.name}</span>
                   {row.state === "fail" && row.fails > 0 && (
-                    <span className="text-rose-600">{row.fails} fail{row.fails === 1 ? "" : "s"}</span>
+                    <span className="text-status-failed-ink tabular-nums">{row.fails} fail{row.fails === 1 ? "" : "s"}</span>
                   )}
                   {row.state === "checking" && <span className="text-secondary">checking…</span>}
                 </div>
@@ -319,7 +321,7 @@ export default function Doctor({ status }: DoctorProps) {
               <div className="mt-2 max-h-48 overflow-auto rounded border border-outline-variant/30 bg-surface-container-low/40">
                 {events.map((event, index) => (
                   <div key={`${event.ts || index}-${index}`} className="flex gap-2 border-b border-outline-variant/20 px-3 py-1.5 text-xs last:border-b-0">
-                    <span className={`w-14 shrink-0 font-medium ${event.level === "error" ? "text-rose-600" : event.level === "warn" ? "text-amber-700" : "text-secondary"}`}>
+                    <span className={`w-14 shrink-0 font-medium ${event.level === "error" ? "text-status-failed-ink" : event.level === "warn" ? "text-status-warning-ink" : "text-secondary"}`}>
                       {event.level || "info"}
                     </span>
                     <span className="min-w-0 flex-1 truncate text-on-surface">{event.line || event.type}</span>

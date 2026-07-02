@@ -94,7 +94,7 @@ export function DocumentDropzone({
             <div className="text-xs font-medium text-on-surface">
               Drop a BRD or supporting document, or <span className="text-primary">browse</span>
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-secondary">
+            <div className="flex items-center gap-1.5 text-3xs text-secondary">
               <FileUp className="h-3 w-3" />
               .txt .md .csv .json .pdf .docx .pptx .xlsx · up to {formatBytes(MAX_BYTES)}
             </div>
@@ -114,7 +114,7 @@ export function DocumentDropzone({
         />
       </div>
       {error && (
-        <div className="mt-2 flex items-start gap-2 rounded-md border border-amber-400/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-700">
+        <div className="mt-2 flex items-start gap-2 rounded-md border border-status-warning/20 bg-status-warning/10 px-3 py-2 text-xs text-status-warning-ink">
           <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>{error}</span>
         </div>

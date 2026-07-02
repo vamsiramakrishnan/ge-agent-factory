@@ -39,7 +39,7 @@ export function CommandChip({ command, className }: CommandChipProps) {
         className="shrink-0 rounded p-0.5 text-secondary transition-colors hover:bg-surface-container hover:text-on-surface"
       >
         {copied
-          ? <Check className="h-3.5 w-3.5 text-emerald-600" aria-hidden />
+          ? <Check className="h-3.5 w-3.5 text-status-passed-ink" aria-hidden />
           : <Copy className="h-3.5 w-3.5" aria-hidden />}
       </button>
     </span>

@@ -20,14 +20,14 @@ interface ErrorBannerProps {
 
 const TONE_CLASSES: Record<"rose" | "amber", { box: string; text: string; button: string }> = {
   rose: {
-    box: "border-rose-400/20 bg-rose-500/10",
-    text: "text-rose-700",
-    button: "border-rose-400/30 text-rose-700 hover:bg-rose-500/10",
+    box: "border-status-failed/20 bg-status-failed/10",
+    text: "text-status-failed-ink",
+    button: "border-status-failed/30 text-status-failed-ink hover:bg-status-failed/10",
   },
   amber: {
-    box: "border-amber-400/20 bg-amber-500/10",
-    text: "text-amber-700",
-    button: "border-amber-400/30 text-amber-700 hover:bg-amber-500/10",
+    box: "border-status-warning/20 bg-status-warning/10",
+    text: "text-status-warning-ink",
+    button: "border-status-warning/30 text-status-warning-ink hover:bg-status-warning/10",
   },
 };
 

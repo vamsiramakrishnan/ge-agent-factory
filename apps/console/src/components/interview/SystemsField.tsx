@@ -247,16 +247,16 @@ export function SystemsField({
             <span
               key={id}
               className={
-                "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[12px] font-medium " +
+                "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-3xs font-medium " +
                 (synth
-                  ? "border-violet-400/40 bg-violet-500/10 text-violet-700"
+                  ? "border-accent-synthesized/40 bg-accent-synthesized/10 text-accent-synthesized-ink"
                   : "border-primary/20 bg-primary/5 text-primary")
               }
             >
               {synth && <Sparkles className="h-3 w-3" aria-hidden />}
               {label}
               {synth && (
-                <span className="rounded-sm bg-violet-500/20 px-1 text-[9px] uppercase tracking-wide">
+                <span className="rounded-sm bg-accent-synthesized/20 px-1 text-4xs uppercase tracking-wide">
                   synthesized
                 </span>
               )}
@@ -320,10 +320,10 @@ export function SystemsField({
             >
               <span className="flex flex-col">
                 <span className="font-medium text-on-surface">{sys.displayName}</span>
-                <span className="font-mono text-[11px] text-secondary">{sys.id}</span>
+                <span className="font-mono text-3xs text-secondary">{sys.id}</span>
               </span>
               {sys.family && (
-                <span className="shrink-0 rounded-full border border-outline-variant/50 px-2 py-0.5 text-[10px] text-secondary">
+                <span className="shrink-0 rounded-full border border-outline-variant/50 px-2 py-0.5 text-4xs text-secondary">
                   {sys.family}
                 </span>
               )}
@@ -337,7 +337,7 @@ export function SystemsField({
                 setByoOpen(true);
                 setOpen(false);
               }}
-              className="flex w-full items-center gap-2 border-t border-outline-variant/40 px-3 py-2 text-left text-sm font-medium text-violet-700 hover:bg-violet-500/5"
+              className="flex w-full items-center gap-2 border-t border-outline-variant/40 px-3 py-2 text-left text-sm font-medium text-accent-synthesized-ink hover:bg-accent-synthesized/5"
             >
               <Sparkles className="h-4 w-4" />
               Define “{query.trim()}” as a new system
@@ -350,7 +350,7 @@ export function SystemsField({
         <button
           type="button"
           onClick={() => setByoOpen(true)}
-          className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-violet-700 hover:underline"
+          className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-accent-synthesized-ink hover:underline"
         >
           <Plus className="h-3.5 w-3.5" />
           Bring your own system
@@ -437,7 +437,7 @@ function ByoSystemModal({
       >
         <div className="flex items-center justify-between border-b border-outline-variant/40 px-5 py-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-violet-600" />
+            <Sparkles className="h-4 w-4 text-accent-synthesized" />
             <h2 className="text-sm font-semibold text-on-surface">Bring your own system</h2>
           </div>
           <button type="button" onClick={onClose} aria-label="Close" className="rounded-md p-1 hover:bg-surface-container">
@@ -452,7 +452,7 @@ function ByoSystemModal({
           </p>
 
           <div
-            className="flex items-start gap-2 rounded-md border border-outline-variant/40 bg-surface-container/60 px-3 py-2 text-[11px] leading-5 text-secondary"
+            className="flex items-start gap-2 rounded-md border border-outline-variant/40 bg-surface-container/60 px-3 py-2 text-3xs leading-5 text-secondary"
           >
             <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-secondary" aria-hidden />
             <span>
@@ -490,7 +490,7 @@ function ByoSystemModal({
               aria-describedby="byo-description-hint"
               className={cx(CONTROL_CLASS, "resize-y leading-6 disabled:opacity-60")}
             />
-            <p id="byo-description-hint" className="mt-1 text-[11px] text-secondary">
+            <p id="byo-description-hint" className="mt-1 text-3xs text-secondary">
               {tooShort
                 ? `Add a bit more detail (at least ${MIN_DESCRIPTION_LENGTH} characters) so we can sketch entities and tools.`
                 : "Mention the key entities, tools, and any workflow you want simulated."}
@@ -507,17 +507,17 @@ function ByoSystemModal({
             )}
 
             {error && !busy && (
-              <div className="rounded-md border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-700">
+              <div className="rounded-md border border-status-failed/30 bg-status-failed/10 px-3 py-2 text-xs text-status-failed-ink">
                 <div className="flex items-center gap-1.5 font-medium">
                   <AlertTriangle className="h-3.5 w-3.5" aria-hidden />
                   Synthesis failed
                 </div>
-                <p className="mt-1 text-rose-700/90">{error}</p>
+                <p className="mt-1 text-status-failed-ink/90">{error}</p>
                 <button
                   type="button"
                   onClick={synthesize}
                   disabled={tooShort}
-                  className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-rose-400/40 px-2 py-1 text-[11px] font-medium text-rose-700 hover:bg-rose-500/10 disabled:opacity-50"
+                  className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-status-failed/40 px-2 py-1 text-3xs font-medium text-status-failed-ink hover:bg-status-failed/10 disabled:opacity-50"
                 >
                   <RefreshCw className="h-3 w-3" aria-hidden />
                   Retry
@@ -530,7 +530,7 @@ function ByoSystemModal({
         </div>
 
         <div className="flex items-center justify-between gap-2 border-t border-outline-variant/40 px-5 py-3">
-          <div className="min-w-0 truncate text-[11px] text-secondary">
+          <div className="min-w-0 truncate text-3xs text-secondary">
             {summary?.canAdd ? (
               <>
                 Will add <span className="font-mono text-on-surface">{summary.id}</span>
@@ -547,7 +547,7 @@ function ByoSystemModal({
                 onClick={() => result && summary.canAdd && onAdded(result)}
                 disabled={!summary.canAdd}
                 title={summary.canAdd ? undefined : "Resolve validation errors before adding"}
-                className="inline-flex items-center gap-1.5 rounded-md bg-violet-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-md bg-accent-synthesized px-3 py-1.5 text-xs font-medium text-white hover:bg-accent-synthesized-ink disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Plus className="h-3.5 w-3.5" aria-hidden />
                 Add to interview
@@ -584,34 +584,34 @@ function SynthPreview({
     <div
       className={
         "rounded-lg border p-3 " +
-        (valid ? "border-violet-400/30 bg-violet-500/5" : "border-rose-400/30 bg-rose-500/5")
+        (valid ? "border-accent-synthesized/30 bg-accent-synthesized/5" : "border-status-failed/30 bg-status-failed/5")
       }
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2 text-sm font-semibold text-on-surface">
-          <Sparkles className="h-4 w-4 shrink-0 text-violet-600" aria-hidden />
+          <Sparkles className="h-4 w-4 shrink-0 text-accent-synthesized" aria-hidden />
           <span className="truncate">{summary.displayName}</span>
         </div>
         {valid ? (
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-status-passed/40 bg-status-passed/10 px-2 py-0.5 text-4xs font-medium text-status-passed-ink">
             <CheckCircle2 className="h-3 w-3" aria-hidden />
             Valid
           </span>
         ) : (
-          <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-rose-400/40 bg-rose-500/10 px-2 py-0.5 text-[10px] font-medium text-rose-700">
+          <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-status-failed/40 bg-status-failed/10 px-2 py-0.5 text-4xs font-medium text-status-failed-ink">
             <AlertTriangle className="h-3 w-3" aria-hidden />
             Invalid
           </span>
         )}
       </div>
 
-      <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-secondary">
+      <div className="mt-1 flex flex-wrap items-center gap-2 text-3xs text-secondary">
         <span className="font-mono">{summary.id}</span>
-        <span className="rounded-sm bg-violet-500/15 px-1.5 py-0.5 uppercase tracking-wide text-violet-700">
+        <span className="rounded-sm bg-accent-synthesized/15 px-1.5 py-0.5 uppercase tracking-wide text-accent-synthesized-ink">
           {summary.sourceLabel}
         </span>
         {summary.repairs > 0 && (
-          <span className="inline-flex items-center gap-1 rounded-sm bg-amber-500/15 px-1.5 py-0.5 text-amber-700">
+          <span className="inline-flex items-center gap-1 rounded-sm bg-status-warning/15 px-1.5 py-0.5 text-status-warning-ink">
             <Wrench className="h-3 w-3" aria-hidden />
             {summary.repairs} {summary.repairs === 1 ? "repair" : "repairs"}
           </span>
@@ -619,12 +619,12 @@ function SynthPreview({
       </div>
 
       {!valid && summary.errors.length > 0 && (
-        <div className="mt-3 rounded-md border border-rose-400/30 bg-rose-500/10 px-3 py-2">
-          <div className="flex items-center gap-1.5 text-[11px] font-medium text-rose-700">
+        <div className="mt-3 rounded-md border border-status-failed/30 bg-status-failed/10 px-3 py-2">
+          <div className="flex items-center gap-1.5 text-3xs font-medium text-status-failed-ink">
             <AlertTriangle className="h-3.5 w-3.5" aria-hidden />
             Validation errors
           </div>
-          <ul className="mt-1 list-disc space-y-0.5 pl-4 text-[11px] text-rose-700/90">
+          <ul className="mt-1 list-disc space-y-0.5 pl-4 text-3xs text-status-failed-ink/90">
             {summary.errors.map((err, index) => (
               <li key={index}>{err}</li>
             ))}
@@ -633,7 +633,7 @@ function SynthPreview({
             type="button"
             onClick={onRetry}
             disabled={retryDisabled}
-            className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-rose-400/40 px-2 py-1 text-[11px] font-medium text-rose-700 hover:bg-rose-500/10 disabled:opacity-50"
+            className="mt-2 inline-flex items-center gap-1.5 rounded-md border border-status-failed/40 px-2 py-1 text-3xs font-medium text-status-failed-ink hover:bg-status-failed/10 disabled:opacity-50"
           >
             <RefreshCw className="h-3 w-3" aria-hidden />
             Retry synthesis
@@ -653,14 +653,14 @@ function SynthPreview({
             {summary.toolNames.map((name) => (
               <span
                 key={name}
-                className="rounded-full border border-outline-variant/50 px-2 py-0.5 text-[11px] text-on-surface"
+                className="rounded-full border border-outline-variant/50 px-2 py-0.5 text-3xs text-on-surface"
               >
                 {name}
               </span>
             ))}
           </div>
         ) : (
-          <span className="px-1 text-[11px] text-secondary">No tools synthesized.</span>
+          <span className="px-1 text-3xs text-secondary">No tools synthesized.</span>
         )}
       </div>
 
@@ -677,14 +677,14 @@ function SynthPreview({
             {summary.collections.map((collection) => (
               <span
                 key={collection.name}
-                className="rounded-md bg-surface-container px-2 py-0.5 text-[11px] text-on-surface"
+                className="rounded-md bg-surface-container px-2 py-0.5 text-3xs text-on-surface"
               >
                 {collection.name} <span className="text-secondary">· {collection.rows} rows</span>
               </span>
             ))}
           </div>
         ) : (
-          <span className="px-1 text-[11px] text-secondary">No collections seeded.</span>
+          <span className="px-1 text-3xs text-secondary">No collections seeded.</span>
         )}
       </div>
     </div>

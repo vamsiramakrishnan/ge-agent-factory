@@ -291,7 +291,7 @@ export default function Activity() {
         <div className="mb-3 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-on-surface">Timeline</h2>
-            <span className="text-xs text-secondary">{filteredRows.length}/{unifiedRows.length} shown</span>
+            <span className="text-xs text-secondary tabular-nums">{filteredRows.length}/{unifiedRows.length} shown</span>
           </div>
           <div className="grid gap-2 md:grid-cols-[1fr_auto_auto]">
             <label className="relative block">
@@ -384,7 +384,7 @@ export default function Activity() {
         <div className="editorial-micro-card rounded-lg p-6">
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-12 bg-slate-200/60 rounded-lg animate-pulse motion-reduce:animate-none" />
+              <div key={i} className="h-12 bg-surface-container rounded-lg animate-pulse motion-reduce:animate-none" />
             ))}
           </div>
           <div className="mt-4 text-sm text-secondary text-center">Loading activity...</div>
@@ -425,7 +425,7 @@ export default function Activity() {
                   </div>
                 </div>
                 {agent.error && (
-                  <div className="text-xs text-rose-600 max-w-xs truncate">{agent.error}</div>
+                  <div className="text-xs text-status-failed-ink max-w-xs truncate">{agent.error}</div>
                 )}
               </div>
             </a>
@@ -438,7 +438,7 @@ export default function Activity() {
 
 function KindTag({ kind }: { kind: RowKind }) {
   return (
-    <span className="shrink-0 rounded-md border border-outline-variant/40 bg-on-surface/[0.03] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-secondary">
+    <span className="shrink-0 rounded-md border border-outline-variant/40 bg-on-surface/[0.03] px-1.5 py-0.5 text-4xs font-semibold uppercase tracking-wide text-secondary">
       {KIND_LABEL[kind]}
     </span>
   );
@@ -504,7 +504,7 @@ function TimelineRowCard({
       {expanded && row.kind === "build" && row.run && <FactoryRunDetails run={row.run} />}
       {expanded && row.kind === "mission" && (
         <div className="mt-3 border-t border-outline-variant/30 pt-3">
-          <pre className="max-h-80 overflow-y-auto rounded-md bg-on-surface/[0.03] px-3 py-2 text-[11px] leading-snug font-mono text-secondary whitespace-pre-wrap">
+          <pre className="max-h-80 overflow-y-auto rounded-md bg-on-surface/[0.03] px-3 py-2 text-3xs leading-snug font-mono text-secondary whitespace-pre-wrap">
             {runtimeLines.join("\n") || "Waiting for runtime events..."}
           </pre>
         </div>
@@ -512,17 +512,17 @@ function TimelineRowCard({
       {expanded && row.kind === "job" && row.job && (
         <div className="mt-3 border-t border-outline-variant/30 pt-3">
           {row.job.checks?.some((check) => check.status === "fail") && (
-            <div className="mb-3 space-y-2 rounded-md border border-amber-400/20 bg-amber-500/5 px-3 py-2">
+            <div className="mb-3 space-y-2 rounded-md border border-status-warning/20 bg-status-warning/5 px-3 py-2">
               {row.job.checks.filter((check) => check.status === "fail").map((check) => (
-                <div key={check.name} className="text-xs text-amber-800">
+                <div key={check.name} className="text-xs text-status-warning-ink">
                   <div className="font-semibold">{check.name}</div>
                   <div>{check.detail}</div>
-                  {check.fix && <code className="mt-1 block text-[11px] text-amber-700">{check.fix}</code>}
+                  {check.fix && <code className="mt-1 block text-3xs text-status-warning-ink">{check.fix}</code>}
                 </div>
               ))}
             </div>
           )}
-          <pre className="max-h-80 overflow-y-auto rounded-md bg-on-surface/[0.03] px-3 py-2 text-[11px] leading-snug font-mono text-secondary whitespace-pre-wrap">
+          <pre className="max-h-80 overflow-y-auto rounded-md bg-on-surface/[0.03] px-3 py-2 text-3xs leading-snug font-mono text-secondary whitespace-pre-wrap">
             {jobLines.join("\n") || "Loading job output..."}
           </pre>
         </div>
@@ -545,7 +545,7 @@ function FactoryRunDetails({ run }: { run: FactoryRunSummary }) {
 
   return (
     <div className="mt-3 border-t border-outline-variant/30 pt-3">
-      <div className="mb-3 grid gap-2 text-[11px] text-secondary sm:grid-cols-2">
+      <div className="mb-3 grid gap-2 text-3xs text-secondary sm:grid-cols-2">
         {run.runPath && (
           <div className="min-w-0 rounded bg-on-surface/[0.025] px-2 py-1">
             <span className="font-medium text-on-surface">Run</span>{" "}
@@ -572,15 +572,15 @@ function FactoryRunDetails({ run }: { run: FactoryRunSummary }) {
       )}
       {liveEvents.length ? (
         <div className="mt-3">
-          <div className="mb-1 flex items-center gap-1.5 text-[11px] font-medium text-secondary">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse motion-reduce:animate-none" /> live · {liveEvents.length} event{liveEvents.length === 1 ? "" : "s"}
+          <div className="mb-1 flex items-center gap-1.5 text-3xs font-medium text-secondary">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-status-running animate-pulse motion-reduce:animate-none" /> live · {liveEvents.length} event{liveEvents.length === 1 ? "" : "s"}
           </div>
-          <pre className="max-h-64 overflow-y-auto rounded-md bg-on-surface/[0.03] px-3 py-2 text-[11px] leading-snug font-mono text-secondary whitespace-pre-wrap">
+          <pre className="max-h-64 overflow-y-auto rounded-md bg-on-surface/[0.03] px-3 py-2 text-3xs leading-snug font-mono text-secondary whitespace-pre-wrap">
             {liveEvents.map(formatLedgerEvent).join("\n")}
           </pre>
         </div>
       ) : run.recentEvents?.length ? (
-        <pre className="mt-3 max-h-64 overflow-y-auto rounded-md bg-on-surface/[0.03] px-3 py-2 text-[11px] leading-snug font-mono text-secondary whitespace-pre-wrap">
+        <pre className="mt-3 max-h-64 overflow-y-auto rounded-md bg-on-surface/[0.03] px-3 py-2 text-3xs leading-snug font-mono text-secondary whitespace-pre-wrap">
           {run.recentEvents.slice(-40).map(formatFactoryEvent).join("\n")}
         </pre>
       ) : null}
@@ -607,8 +607,8 @@ function FactoryResultRow({ result }: { key?: string; result: FactoryRunResult }
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="text-xs font-semibold text-on-surface">{result.title || result.useCaseId}</span>
-            {result.department && <span className="text-[11px] text-secondary">{result.department}</span>}
-            {result.workspaceId && <span className="font-mono text-[11px] text-secondary">{result.workspaceId}</span>}
+            {result.department && <span className="text-3xs text-secondary">{result.department}</span>}
+            {result.workspaceId && <span className="font-mono text-3xs text-secondary">{result.workspaceId}</span>}
           </div>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {normalizedFactoryStages(result).map((stage) => (
@@ -616,7 +616,7 @@ function FactoryResultRow({ result }: { key?: string; result: FactoryRunResult }
             ))}
           </div>
           {result.error && (
-            <div className="mt-2 line-clamp-3 text-xs text-rose-700">{result.error}</div>
+            <div className="mt-2 line-clamp-3 text-xs text-status-failed-ink">{result.error}</div>
           )}
           {result.harnessReview && (
             <div className="mt-2 text-xs text-secondary">
@@ -624,11 +624,11 @@ function FactoryResultRow({ result }: { key?: string; result: FactoryRunResult }
             </div>
           )}
         </div>
-        <div className="shrink-0 text-right text-[11px] text-secondary">
+        <div className="shrink-0 text-right text-3xs text-secondary">
           {Array.isArray(result.dataPackage?.datastores) && result.dataPackage.datastores.length ? (
             <div>{result.dataPackage.datastores.length} datastore{result.dataPackage.datastores.length === 1 ? "" : "s"}</div>
           ) : null}
-          {result.preview?.ok === true ? <div className="text-emerald-700">preview ok</div> : null}
+          {result.preview?.ok === true ? <div className="text-status-passed-ink">preview ok</div> : null}
         </div>
       </div>
     </div>
@@ -637,14 +637,14 @@ function FactoryResultRow({ result }: { key?: string; result: FactoryRunResult }
 
 function StageChip({ name, status }: { key?: string; name: string; status: string }) {
   const cls = status === "done"
-    ? "border-emerald-500/20 bg-emerald-500/5 text-emerald-700"
+    ? "border-status-passed/20 bg-status-passed/5 text-status-passed-ink"
     : status === "failed"
-      ? "border-rose-500/20 bg-rose-500/5 text-rose-700"
+      ? "border-status-failed/20 bg-status-failed/5 text-status-failed-ink"
       : status === "running"
-        ? "border-blue-500/20 bg-blue-500/5 text-blue-700"
+        ? "border-status-running/20 bg-status-running/5 text-status-running-ink"
         : "border-outline-variant/40 bg-on-surface/[0.025] text-secondary";
   return (
-    <span className={`rounded-full border px-2 py-1 text-[11px] ${cls}`}>
+    <span className={`rounded-full border px-2 py-1 text-3xs ${cls}`}>
       {name.replaceAll("_", " ")}
     </span>
   );
@@ -659,7 +659,7 @@ function MissionTaskDetails({ task }: { task: RuntimeTaskSummary }) {
 
   return (
     <div className="mt-3 border-t border-outline-variant/30 pt-3">
-      <div className="mb-3 flex flex-wrap items-center gap-2 text-[11px] text-secondary">
+      <div className="mb-3 flex flex-wrap items-center gap-2 text-3xs text-secondary">
         {nodeCounts && <MetricChip label="nodes" value={formatCounts(nodeCounts)} />}
         <MetricChip label="artifacts" value={formatArtifactCounts(artifactCounts)} tone={artifactCounts.invalid || artifactCounts.missing ? "warn" : "default"} />
         <MetricChip label="blockers" value={String(blockers.length)} tone={blockers.length ? "warn" : "default"} />
@@ -703,17 +703,17 @@ function MissionNodeRow({ node }: { key?: string; node: MissionRuntimeNode }) {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="text-xs font-semibold text-on-surface">{node.label || node.id}</span>
-            <span className="font-mono text-[11px] text-secondary">{kindLabel}</span>
-            {node.childTaskId && <span className="font-mono text-[11px] text-secondary">{node.childTaskId}</span>}
+            <span className="font-mono text-3xs text-secondary">{kindLabel}</span>
+            {node.childTaskId && <span className="font-mono text-3xs text-secondary">{node.childTaskId}</span>}
           </div>
           {summary && <div className="mt-1 text-xs text-secondary">{summary}</div>}
           {node.resumePlan?.reason && ["blocked", "failed", "paused"].includes(node.status) && (
-            <div className="mt-1 text-xs text-amber-700">{node.resumePlan.reason}</div>
+            <div className="mt-1 text-xs text-status-blocked-ink">{node.resumePlan.reason}</div>
           )}
         </div>
-        <div className="shrink-0 text-right text-[11px] text-secondary">
+        <div className="shrink-0 text-right text-3xs text-secondary">
           <div>{formatArtifactCounts(artifactCounts)}</div>
-          {blockers.length > 0 && <div className="text-amber-700">{blockers.length} blocker{blockers.length === 1 ? "" : "s"}</div>}
+          {blockers.length > 0 && <div className="text-status-blocked-ink">{blockers.length} blocker{blockers.length === 1 ? "" : "s"}</div>}
         </div>
       </div>
       {node.artifacts?.length ? (
@@ -730,13 +730,13 @@ function MissionNodeRow({ node }: { key?: string; node: MissionRuntimeNode }) {
 function ArtifactLine({ artifact }: { key?: string; artifact: MissionArtifactRef }) {
   const status = artifact.status || "planned";
   const tone = status === "present"
-    ? "text-emerald-700"
+    ? "text-status-passed-ink"
     : status === "missing" || status === "invalid"
-      ? "text-amber-700"
+      ? "text-status-warning-ink"
       : "text-secondary";
   const details = artifactDetail(artifact);
   return (
-    <div className="flex min-w-0 items-center justify-between gap-2 rounded bg-on-surface/[0.025] px-2 py-1 text-[11px]">
+    <div className="flex min-w-0 items-center justify-between gap-2 rounded bg-on-surface/[0.025] px-2 py-1 text-3xs">
       <span className="min-w-0 truncate text-secondary">{artifact.name || artifact.path || "artifact"}</span>
       <span className={`shrink-0 ${tone}`}>{details ? `${status} · ${details}` : status}</span>
     </div>
@@ -745,7 +745,7 @@ function ArtifactLine({ artifact }: { key?: string; artifact: MissionArtifactRef
 
 function MetricChip({ label, value, tone = "default" }: { label: string; value: string; tone?: "default" | "warn" }) {
   const cls = tone === "warn"
-    ? "border-amber-400/25 bg-amber-500/5 text-amber-800"
+    ? "border-status-warning/25 bg-status-warning/5 text-status-warning-ink"
     : "border-outline-variant/40 bg-on-surface/[0.025] text-secondary";
   return (
     <span className={`rounded-full border px-2 py-1 ${cls}`}>

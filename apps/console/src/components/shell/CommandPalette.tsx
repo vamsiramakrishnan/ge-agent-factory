@@ -251,7 +251,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                   return (
                     <div key={item.id}>
                       {header && (
-                        <div className="px-4 pt-3 pb-1 text-[11px] font-medium uppercase tracking-wide text-secondary">
+                        <div className="px-4 pt-3 pb-1 text-3xs font-medium uppercase tracking-wide text-secondary">
                           {header}
                         </div>
                       )}
@@ -285,7 +285,7 @@ export function CommandPalette({ open, onClose }: CommandPaletteProps) {
                 <div className="px-4 py-2 text-xs text-secondary border-t border-outline-variant/30">Running…</div>
               )}
               {error && (
-                <div className="px-4 py-2 text-xs text-rose-600 bg-rose-500/5 border-t border-rose-500/20 break-words">{error}</div>
+                <div className="px-4 py-2 text-xs text-status-failed-ink bg-status-failed/5 border-t border-status-failed/20 break-words">{error}</div>
               )}
             </motion.div>
           </div>
