@@ -20,6 +20,7 @@
   },
   "scripts": {
     "test": "node --test src/index.test.mjs",
-    "check": "node --check src/index.mjs"
+    "check": "node --check src/index.mjs",
+    "typecheck": "bunx tsc --noEmit -p ."
   }
 }
