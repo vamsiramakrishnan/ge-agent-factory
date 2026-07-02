@@ -51,6 +51,7 @@ export async function writeOkfArtifacts({ dir, manifest, behaviorContract, gener
     }
   } catch (error) {
     // Non-fatal: knowledge bundle is grounding, not a build gate.
+    console.warn(`[okf-artifacts] failed to build OKF knowledge bundle: ${error?.message || error}`);
     okfBundleDir = null;
   }
 

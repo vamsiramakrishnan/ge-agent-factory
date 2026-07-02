@@ -20,13 +20,14 @@
 import { join, basename } from "node:path";
 import { mkdir } from "node:fs/promises";
 import { snakeCase } from "@ge/std/naming";
+import { resolveGcpProject } from "@ge/std/gcp-config";
 import { MANAGED_MCP_SERVICES } from "../integration/source-integration.mjs";
 import { mcpToolDescriptors } from "../data/mcp-tool-descriptors.mjs";
 
 // ── gcloud helpers ───────────────────────────────────────────
 
 async function getGcloudProject(flags, { runCommand }) {
-  const p = flags.project || process.env.GOOGLE_CLOUD_PROJECT;
+  const p = resolveGcpProject({ explicit: flags.project });
   if (p) return p;
   try {
     const r = await runCommand("gcloud", ["config", "get-value", "project"], { timeout: 10000 });
@@ -82,7 +83,7 @@ async function hydrateDeployStepFromMetadata(dir, pipeline, flags = {}, deps) {
   const runtimeId = parseAgentRuntimeId(meta, pipeline.steps?.deploy?.runtimeId);
   if (!runtimeId) return pipeline.steps?.deploy || null;
 
-  const project = flags.project || process.env.GOOGLE_CLOUD_PROJECT || runtimeId.match(/^projects\/([^/]+)/)?.[1] || null;
+  const project = resolveGcpProject({ explicit: flags.project }) || runtimeId.match(/^projects\/([^/]+)/)?.[1] || null;
   const region = flags.region || flags.location || process.env.GOOGLE_CLOUD_LOCATION || runtimeId.match(/\/locations\/([^/]+)/)?.[1] || null;
   markStep(pipeline, "deploy", "done", {
     ...(pipeline.steps?.deploy || {}),
