@@ -2,7 +2,6 @@ import { spawn } from "node:child_process";
 import { createServer } from "node:http";
 import { existsSync, mkdirSync, writeFileSync, appendFileSync, rmSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { homedir } from "node:os";
 import * as core from "./factory-core.mjs";
 import { readJson, writeJson } from "@ge/std/json-io";
 import { resolveGcpProject } from "@ge/std/gcp-config";
@@ -41,6 +40,15 @@ import {
   waitForTaskTerminal,
 } from "./daemon/run-store.mjs";
 import { resumeDoctorTask, startDoctorTask } from "./daemon/doctor-run.mjs";
+import {
+  resumeGeCommandTask,
+  resumeProcessCommandTask,
+  safeGeCommand,
+  safeProcessCommand,
+  startGeCommandTask,
+  startProcessCommandTask,
+  toolAugmentedPath,
+} from "./daemon/command-run.mjs";
 
 const GE_CLI = join(REPO_ROOT, "tools", "ge.mjs");
 const HARNESS_CLI = join(REPO_ROOT, "apps", "factory", "src", "cli.js");
@@ -49,7 +57,6 @@ const RUNS_DIR = STATE_PATHS.runtime.runs;
 const PID_PATH = STATE_PATHS.runtime.pid;
 const META_PATH = STATE_PATHS.runtime.meta;
 const LOG_PATH = STATE_PATHS.runtime.log;
-const DEFAULT_UV_CACHE_DIR = STATE_PATHS.cache.uv;
 const DEFAULT_PORT = 17654;
 const DAEMON_PROTOCOL_VERSION = 2;
 const SUPPORTED_TASK_KINDS = [
@@ -70,68 +77,7 @@ const json = (res, status, body) => {
   res.end(JSON.stringify(body, null, 2));
 };
 
-export function safeGeCommand(argv = []) {
-  const args = Array.isArray(argv) ? argv.map(String) : [];
-  const [noun, verb] = args;
-  if (noun === "doctor") return true;
-  if (noun === "config" && verb === "explain") return true;
-  if (noun === "daemon" && ["status", "tasks", "task", "events"].includes(verb)) return true;
-  if (noun === "runtime" && ["status", "tasks", "task", "events"].includes(verb)) return true;
-  if (noun === "autopilot" && ["status", "events"].includes(verb)) return true;
-  if (noun === "agents" && ["status", "logs"].includes(verb)) return true;
-  if (noun === "data" && verb === "doctor") return true;
-  if (noun === "mcp" && verb === "doctor") return true;
-  return false;
-}
-
-export function safeProcessCommand(argv = []) {
-  const args = Array.isArray(argv) ? argv.map(String).filter(Boolean) : [];
-  const [cmd, script] = args;
-  if (!cmd || !script) return false;
-  if (cmd === "uv" && script === "run" && args.includes("--with") && args.includes("snowfakery") && args.includes("setuptools<81")) {
-    const toolIndex = args.lastIndexOf("snowfakery");
-    const recipe = toolIndex >= 0 ? args[toolIndex + 1] : null;
-    const outputIndex = args.indexOf("--output-folder");
-    return String(recipe || "").endsWith("mock_data/snowfakery/structured.recipe.yml")
-      && outputIndex > 0
-      && String(args[outputIndex + 1] || "").endsWith("mock_data/snowfakery/output");
-  }
-  if (cmd !== "node" && cmd !== process.execPath) return false;
-  const allowedScripts = [
-    "apps/factory/scripts/plan-mock-data.mjs",
-    "apps/factory/scripts/materialize-simulator-seeds.mjs",
-    "apps/factory/scripts/validate-simulator-pack.mjs",
-  ];
-  return allowedScripts.some((allowed) => script === allowed || script.endsWith(`/${allowed}`));
-}
-
-// Tool dirs where uv / node / gcloud commonly live but which a daemon launched from a minimal
-// environment (GUI, launchd, systemd, an IDE) may NOT have on PATH. Spawned commands like
-// `uv run --with snowfakery snowfakery …` then fail with a cryptic ENOENT surfaced as "exit 1"
-// (the binary, not the recipe, is the problem). Ensure these are on PATH for every spawned command.
-export function toolAugmentedPath(env = process.env) {
-  const sep = process.platform === "win32" ? ";" : ":";
-  const merged = String(env.PATH || "").split(sep).filter(Boolean);
-  const extra = [
-    join(homedir(), ".local", "bin"),
-    join(homedir(), ".cargo", "bin"),
-    "/usr/local/bin",
-    "/opt/homebrew/bin",
-  ];
-  for (const dir of extra) if (dir && !merged.includes(dir)) merged.push(dir);
-  return merged.join(sep);
-}
-
-function runtimeEnv(extra = {}) {
-  mkdirSync(DEFAULT_UV_CACHE_DIR, { recursive: true });
-  return {
-    ...process.env,
-    PATH: toolAugmentedPath(process.env),
-    UV_CACHE_DIR: process.env.UV_CACHE_DIR || DEFAULT_UV_CACHE_DIR,
-    CLOUDSDK_CORE_DISABLE_PROMPTS: "1",
-    ...extra,
-  };
-}
+export { safeGeCommand, safeProcessCommand, toolAugmentedPath };
 
 export function safeMissionRuntimeCommand(kind, input = {}) {
   return safeMissionNodeCommand(kind, input);
@@ -344,79 +290,6 @@ function normalizedTaskDetail(run) {
 
 function listRunSummaries(limit = 50) {
   return listRuns(limit).map(normalizedTaskSummary).filter(Boolean);
-}
-
-function startGeCommandTask({ argv = [], command = null } = {}) {
-  const safeArgv = Array.isArray(argv) ? argv.map(String).filter(Boolean) : [];
-  if (!safeArgv.length) throw new Error("argv is required");
-  const run = createRun({
-    id: newTaskId("job"),
-    kind: "ge.command",
-    input: { argv: safeArgv, command },
-  });
-  appendEvent(run.id, { type: "stage_started", stage: "job", line: `$ ge ${safeArgv.join(" ")}` });
-
-  execStream(process.execPath, [GE_CLI, ...safeArgv], {
-    cwd: REPO_ROOT,
-    env: { ...process.env, CLOUDSDK_CORE_DISABLE_PROMPTS: "1" },
-    meta: { runId: run.id, stage: "job" },
-    onEvent: (event) => appendEvent(run.id, event),
-  }).then((result) => {
-    const status = terminalStatusForCode(result.code);
-    const line = `exit ${result.code}`;
-    appendEvent(run.id, {
-      type: status === "done" ? "stage_done" : "stage_failed",
-      stage: "job",
-      level: status === "done" ? "info" : "error",
-      line,
-      data: { code: result.code, signal: result.signal || null },
-    });
-    updateRun(run.id, { status, code: result.code, endedAt: new Date().toISOString(), output: commandOutput(result, { preserveMachineStdout: true }) });
-  }).catch((error) => {
-    const line = error?.message || String(error);
-    appendEvent(run.id, { type: "stage_failed", stage: "job", level: "error", line });
-    updateRun(run.id, { status: "failed", code: 1, endedAt: new Date().toISOString(), error: line });
-  });
-
-  return run;
-}
-
-function startProcessCommandTask({ argv = [], command = null } = {}) {
-  const safeArgv = Array.isArray(argv) ? argv.map(String).filter(Boolean) : [];
-  if (!safeArgv.length) throw new Error("argv is required");
-  if (!safeProcessCommand(safeArgv)) throw new Error("process command is not classified safe to run");
-  const cmd = safeArgv[0] === "node" ? process.execPath : safeArgv[0];
-  const args = safeArgv.slice(1);
-  const run = createRun({
-    id: newTaskId("proc"),
-    kind: "process.command",
-    input: { argv: safeArgv, command },
-  });
-  appendEvent(run.id, { type: "stage_started", stage: "process", line: `$ ${safeArgv.join(" ")}` });
-
-  execStream(cmd, args, {
-    cwd: REPO_ROOT,
-    env: runtimeEnv(),
-    meta: { runId: run.id, stage: "process" },
-    onEvent: (event) => appendEvent(run.id, event),
-  }).then((result) => {
-    const status = terminalStatusForCode(result.code);
-    const line = `exit ${result.code}`;
-    appendEvent(run.id, {
-      type: status === "done" ? "stage_done" : "stage_failed",
-      stage: "process",
-      level: status === "done" ? "info" : "error",
-      line,
-      data: { code: result.code, signal: result.signal || null },
-    });
-    updateRun(run.id, { status, code: result.code, endedAt: new Date().toISOString(), output: commandOutput(result, { preserveMachineStdout: true }) });
-  }).catch((error) => {
-    const line = error?.message || String(error);
-    appendEvent(run.id, { type: "stage_failed", stage: "process", level: "error", line });
-    updateRun(run.id, { status: "failed", code: 1, endedAt: new Date().toISOString(), error: line });
-  });
-
-  return run;
 }
 
 function harnessRunArgv(input = {}) {
@@ -930,66 +803,6 @@ async function startMissionTask({ ids = [], scenario = null, spec = null, worksp
   })();
 
   return readJson(runMetaPath(run.id), run);
-}
-
-function resumeGeCommandTask(run) {
-  const argv = Array.isArray(run.input?.argv) ? run.input.argv.map(String).filter(Boolean) : [];
-  if (!argv.length) throw new Error("stored argv is empty");
-  updateRun(run.id, { status: "running", endedAt: null, error: null });
-  appendEvent(run.id, { type: "stage_started", stage: "job", line: `$ ge ${argv.join(" ")} (resume)` });
-  execStream(process.execPath, [GE_CLI, ...argv], {
-    cwd: REPO_ROOT,
-    env: { ...process.env, CLOUDSDK_CORE_DISABLE_PROMPTS: "1" },
-    meta: { runId: run.id, stage: "job" },
-    onEvent: (event) => appendEvent(run.id, event),
-  }).then((result) => {
-    const status = terminalStatusForCode(result.code);
-    appendEvent(run.id, {
-      type: status === "done" ? "resume_done" : "resume_failed",
-      stage: "job",
-      level: status === "done" ? "info" : "error",
-      line: `exit ${result.code}`,
-      data: { code: result.code, signal: result.signal || null },
-    });
-    appendResumeAttempt(run.id, { status, action: "rerun_command", code: result.code });
-    updateRun(run.id, { status, code: result.code, endedAt: new Date().toISOString(), output: { ...runOutput(run.id), ...commandOutput(result, { preserveMachineStdout: true }) } });
-  }).catch((error) => {
-    const line = error?.message || String(error);
-    appendEvent(run.id, { type: "resume_failed", stage: "job", level: "error", line });
-    appendResumeAttempt(run.id, { status: "failed", action: "rerun_command", error: line });
-    updateRun(run.id, { status: "failed", code: 1, endedAt: new Date().toISOString(), error: line });
-  });
-}
-
-function resumeProcessCommandTask(run) {
-  const argv = Array.isArray(run.input?.argv) ? run.input.argv.map(String).filter(Boolean) : [];
-  if (!argv.length) throw new Error("stored argv is empty");
-  const cmd = argv[0] === "node" ? process.execPath : argv[0];
-  const args = argv.slice(1);
-  updateRun(run.id, { status: "running", endedAt: null, error: null });
-  appendEvent(run.id, { type: "stage_started", stage: "process", line: `$ ${argv.join(" ")} (resume)` });
-  execStream(cmd, args, {
-    cwd: REPO_ROOT,
-    env: runtimeEnv(),
-    meta: { runId: run.id, stage: "process" },
-    onEvent: (event) => appendEvent(run.id, event),
-  }).then((result) => {
-    const status = terminalStatusForCode(result.code);
-    appendEvent(run.id, {
-      type: status === "done" ? "resume_done" : "resume_failed",
-      stage: "process",
-      level: status === "done" ? "info" : "error",
-      line: `exit ${result.code}`,
-      data: { code: result.code, signal: result.signal || null },
-    });
-    appendResumeAttempt(run.id, { status, action: "rerun_process", code: result.code });
-    updateRun(run.id, { status, code: result.code, endedAt: new Date().toISOString(), output: { ...runOutput(run.id), ...commandOutput(result, { preserveMachineStdout: true }) } });
-  }).catch((error) => {
-    const line = error?.message || String(error);
-    appendEvent(run.id, { type: "resume_failed", stage: "process", level: "error", line });
-    appendResumeAttempt(run.id, { status: "failed", action: "rerun_process", error: line });
-    updateRun(run.id, { status: "failed", code: 1, endedAt: new Date().toISOString(), error: line });
-  });
 }
 
 function resumeHarnessRunTask(run) {
