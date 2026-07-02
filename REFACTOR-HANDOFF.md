@@ -1,5 +1,12 @@
 # Refactor session — handoff & status
 
+> **Historical (2026-07-01).** The queued work in §7 and the recommendations
+> in §8 have since been executed and superseded by the **taste campaign** —
+> see [`docs/plans/taste-campaign/`](docs/plans/taste-campaign/)
+> (`00-orchestration.md` for the record of what shipped, `08-next-horizon.md`
+> and `09-cloud-factory.md` for what's queued next). Kept for the §6
+> "deliberately NOT done" list, which remains binding.
+
 **Branch:** `claude/elite-engineers-top-areas-g994w3` (pushed, in sync with origin)
 **Test baseline:** judge by distinct fail **names**, not count — the only real failure is the pre-existing environmental `skill registry maps harness capabilities…` (no gcloud/agents-cli/uv/Python/`.ge.json`/Firestore in this sandbox). The subprocess-heavy golden/workflow tests produce flaky **timeout** fails that inflate the count run-to-run; identical before and after every change (verified by stash-compares). No regressions introduced. Latest: factory.mjs decomposition (see §9).
 **PR:** none opened yet (deliberately — awaiting go-ahead).

@@ -1,6 +1,6 @@
 # WS7 — De-theater the `.d.ts`: real types for run-ledger's store and runtime's normalizers
 
-**Status:** `[ ]` open
+**Status:** `[x]` done — merged 2026-07-02
 **Write-set:** `packages/run-ledger/src/index.d.ts` · NEW
 `packages/run-ledger/src/store.d.ts` · `packages/runtime/src/contract.d.ts` ·
 NEW per-package `tsconfig.json` + `typecheck.ts` in both packages · both

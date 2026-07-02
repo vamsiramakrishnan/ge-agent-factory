@@ -1,6 +1,6 @@
 # WS4 — `tools/lib` topology: folder the clusters, resolve the doctor collision
 
-**Status:** `[ ]` open
+**Status:** `[x]` done — merged 2026-07-02
 **Write-set:** file moves inside `tools/lib/**` (EXCLUDING
 `ge-command-registry.mjs`, which WS1 owns) · import-path lines in every
 importer · `tools/lib/factory-core.export-surface.json` only if a move forces

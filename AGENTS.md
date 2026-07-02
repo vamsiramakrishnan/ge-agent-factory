@@ -25,12 +25,20 @@ invoke it directly.
 Run this before every commit; it's cheap (seconds) and CI enforces it:
 
 ```bash
-node tools/source-hygiene.mjs && node tools/check-no-app-imports.mjs && node apps/factory/scripts/gen-harness-schemas.mjs --check && node tools/check-design-tokens.mjs
+bun run source:hygiene && node tools/check-design-tokens.mjs
 ```
 
+`source:hygiene` is the full chain: source hygiene, layering guards (both
+directions), harness-schema drift, the frozen apps→tools/lib import surface,
+the silent-catch policy, and `.ge.schema.json` drift. All of it is enforced
+in CI too.
+
 If you touched `docs/`, also run `bun run docs:gate` (link/image/blockquote
-correctness, diagram-source-vs-generated-SVG drift, design-token drift — regenerate
-stale diagrams with `bun run docs:diagrams`). See
+correctness, diagram drift, design-token drift, plus the generated-region
+checks: the `ge` CLI reference, the stage-graph diagram, and the spec-schema
+field tables are rendered from source — regenerate with `bun run docs:cli`,
+`bun run docs:stage-diagram`, `bun run docs:spec-ref`, and diagrams with
+`bun run docs:diagrams`). See
 [`docs/DESIGN.md`](docs/DESIGN.md) for the diagram/callout authoring
 conventions, including a silent-failure gotcha in the Mermaid renderer that's
 worth reading before adding a new diagram.
@@ -58,14 +66,14 @@ id-mangling round-trip discrepancy), not an environment gap — see the `notes`
 field in `known-test-failures.json` — kept in the list so it doesn't block
 unrelated work, but it's an open bug, not accepted behavior.
 
-Two test files (`packages/runtime/src/index.test.mjs`,
-`packages/factory-install/tests/install-contract.test.mjs`) crash outright on
+One test file (`packages/runtime/src/index.test.mjs`) crashes outright on
 a Bun limitation (nested `describe()`/`test()` — [bun#5090](https://github.com/oven-sh/bun/issues/5090))
-rather than failing individual tests, so they're invisible to
+rather than failing individual tests, so it's invisible to
 `check-test-results.mjs`'s name-based comparison; the tool warns about this
 count mismatch but can't fully close the gap. Check the raw `bun test`
-console output if that warning fires and the two file names above aren't
-already why.
+console output if that warning fires and that file name isn't already why.
+The gate also retries newly-failing test *files* exactly once (logged) to
+absorb the known subprocess-load flakes — a real regression fails twice.
 
 ## Layering rule
 
