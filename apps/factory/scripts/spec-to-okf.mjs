@@ -61,6 +61,44 @@ export function parseArgs(argv) {
   return args;
 }
 
+function asArray(value) {
+  if (Array.isArray(value)) return value.filter((item) => item !== undefined && item !== null && String(item).length);
+  if (value === undefined || value === null || value === "") return [];
+  return [value];
+}
+
+function compactList(items) {
+  return (items || []).filter((item) => item !== undefined && item !== null && String(item).length);
+}
+
+function isWriteLikeTool(tool = {}) {
+  const text = [tool.name, tool.kind, tool.description].filter(Boolean).join(" ").toLowerCase();
+  return /\b(action|write|create|update|delete|post|submit|approve|execute|close|send|notify)\b/.test(text);
+}
+
+function policyText(policy) {
+  if (policy.kind === "refusal") return policy.rule;
+  if (policy.kind === "escalation") {
+    return [
+      policy.rule?.trigger ? `When ${policy.rule.trigger}` : null,
+      policy.rule?.action ? `action: ${policy.rule.action}` : null,
+      policy.rule?.handoffTarget ? `handoff: ${policy.rule.handoffTarget}` : null,
+    ]
+      .filter(Boolean)
+      .join("; ");
+  }
+  return policy.rule || policy.title;
+}
+
+function specGeneratedFields({ source, inferred = false, from } = {}) {
+  return {
+    source_kind: "generationSpec",
+    source_path: source || from,
+    generation_status: inferred ? "inferred" : "generated",
+    ge_status: inferred ? "inferred" : "generated",
+  };
+}
+
 /**
  * Build the in-memory bundle (list of `{ relPath, fields, body }` concepts)
  * from a spec. Pure: takes the spec, returns concepts — easy to test.
@@ -76,6 +114,7 @@ export function buildBundle(spec, { timestamp = new Date().toISOString() } = {})
   const sourceSystems = gen.sourceSystems || [];
   const entities = gen.entities || [];
   const toolIntents = bc.toolIntents || [];
+  const apis = gen.apis || [];
   const workflow = bc.workflow && Array.isArray(bc.workflow.steps) ? bc.workflow : null;
 
   // --- id maps (stable, slugged, collision-disambiguated) ------------------
@@ -120,6 +159,26 @@ export function buildBundle(spec, { timestamp = new Date().toISOString() } = {})
   const entConceptId = (name) => `tables/${entitySlug.get(name) || slug(name)}`;
   const toolConceptId = (name) => `tools/${toolSlug.get(name) || slug(name)}`;
   const stepConceptId = (sid) => `workflow/${stepSlug.get(sid) || slug(sid)}`;
+  const actionApiForTool = (tool) =>
+    apis.find((api) => {
+      if (tool.apiId && api.id === tool.apiId) return true;
+      if (api.sourceSystemId && tool.sourceSystemId && api.sourceSystemId !== tool.sourceSystemId) return false;
+      const method = String(api.method || "").toUpperCase();
+      const path = String(api.path || api.id || "").toLowerCase();
+      return isWriteLikeTool(tool) && ["POST", "PUT", "PATCH", "DELETE"].includes(method) && path.includes(String(tool.name || "").split("_").at(-1));
+    }) || (isWriteLikeTool(tool)
+      ? apis.find((api) => api.sourceSystemId === tool.sourceSystemId && ["POST", "PUT", "PATCH", "DELETE"].includes(String(api.method || "").toUpperCase()))
+      : null);
+  const toolPermissions = (tool, api) => compactList([
+    ...asArray(tool.permissions),
+    ...asArray(tool.requiredPermissions),
+    ...asArray(api?.permissions),
+    ...asArray(api?.requiredPermissions),
+  ]);
+  const toolFailureModes = (tool, api) => compactList([
+    ...asArray(tool.failureModes),
+    ...(api?.failureModes && !Array.isArray(api.failureModes) ? Object.keys(api.failureModes) : asArray(api?.failureModes)),
+  ]);
 
   // Reverse indexes for relationship edges.
   const toolsBySystem = new Map(); // sysId -> [toolName]
@@ -170,15 +229,132 @@ export function buildBundle(spec, { timestamp = new Date().toISOString() } = {})
   const answerableQueries = deriveAnswerableQueries(bc);
   const testMechanisms = deriveTestMechanisms(bc);
   const documents = specDocuments(spec);
+  const evidenceRequirements = Array.isArray(bc.evidenceRequirements) ? bc.evidenceRequirements : [];
+  const goldenEvals = Array.isArray(bc.goldenEvals) ? bc.goldenEvals : [];
+  const claims = evidenceRequirements
+    .map((req, index) => ({
+      id: req?.id || slug(req?.claim || (typeof req === "string" ? req : `evidence-requirement-${index + 1}`)),
+      claim: typeof req === "string" ? req : req?.claim,
+      mustCite: typeof req === "string" ? [] : asArray(req?.mustCite),
+      sourceSystemIds: typeof req === "string" ? [] : asArray(req?.sourceSystemIds),
+      sourceIndex: index,
+    }))
+    .filter((claim) => claim.claim);
+  const policyConcepts = [
+    ...(bc.refusalRules || []).map((rule, index) => ({
+      id: `refusal-${index + 1}`,
+      kind: "refusal",
+      title: `Refusal policy ${index + 1}`,
+      rule,
+      source: `behaviorContract.refusalRules.${index}`,
+    })),
+    ...(bc.escalationRules || []).map((rule, index) => ({
+      id: `escalation-${index + 1}`,
+      kind: "escalation",
+      title: `Escalation policy ${index + 1}`,
+      rule,
+      source: `behaviorContract.escalationRules.${index}`,
+    })),
+    ...toolIntents.flatMap((tool) => {
+      const api = actionApiForTool(tool);
+      const out = [];
+      if (isWriteLikeTool(tool)) {
+        out.push({
+          id: `confirmation-${toolSlug.get(tool.name) || slug(tool.name)}`,
+          kind: "tool confirmation",
+          title: `Confirmation policy — ${tool.name}`,
+          toolName: tool.name,
+          rule: `Confirm before invoking write-like tool ${tool.name}.`,
+          source: `behaviorContract.toolIntents.${tool.name}`,
+          inferred: true,
+        });
+      }
+      const idempotency = tool.idempotencyKey || tool.idempotency_key || api?.idempotencyKey;
+      if (idempotency || asArray(tool.requiredInputs).some((input) => /idempotency[_-]?key/i.test(input))) {
+        out.push({
+          id: `idempotency-${toolSlug.get(tool.name) || slug(tool.name)}`,
+          kind: "tool idempotency",
+          title: `Idempotency policy — ${tool.name}`,
+          toolName: tool.name,
+          rule: idempotency ? `Use idempotency key ${idempotency} for ${tool.name}.` : `Supply the declared idempotency key input for ${tool.name}.`,
+          source: api?.id ? `generationSpec.apis.${api.id}` : `behaviorContract.toolIntents.${tool.name}`,
+          inferred: !idempotency,
+        });
+      }
+      return out;
+    }),
+  ];
+  const proofObligations = [
+    ...claims.map((claim) => ({
+      id: `evidence-${claim.id}`,
+      kind: "evidence requirement",
+      title: `Evidence obligation — ${claim.claim}`,
+      source: `behaviorContract.evidenceRequirements.${claim.sourceIndex}`,
+      claimId: claim.id,
+      mustCite: claim.mustCite,
+      sourceSystemIds: claim.sourceSystemIds,
+    })),
+    ...testMechanisms.map((test, index) => {
+      const sourceEval = goldenEvals.find((entry) => entry && typeof entry === "object" && entry.id === test.id) || goldenEvals[index] || {};
+      return {
+        id: `eval-${test.id}`,
+        kind: "golden eval",
+        title: `Golden eval obligation — ${test.prompt}`,
+        source: `behaviorContract.goldenEvals.${index}`,
+        evalId: test.id,
+        mechanisms: test.mechanisms || sourceEval.expectedToolCalls || [],
+        mustCiteDocuments: test.mustCiteDocuments?.length ? test.mustCiteDocuments : sourceEval.mustCiteDocuments || [],
+        mustReferenceEntities: test.mustReferenceEntities?.length ? test.mustReferenceEntities : sourceEval.mustReferenceEntities || [],
+        forbiddenBehaviors: test.forbiddenBehaviors?.length ? test.forbiddenBehaviors : sourceEval.forbiddenBehaviors || [],
+        validates: test.validates,
+      };
+    }),
+  ];
   if (answerableQueries.length) sectionLinks.push(link("queries/index", "Query Capabilities"));
   if (testMechanisms.length) sectionLinks.push(link("tests/index", "Eval Scenarios"));
   if (documents.length) sectionLinks.push(link("documents/index", "Source Documents"));
+  if (claims.length) sectionLinks.push(link("claims/index", "Claims"));
+  if (policyConcepts.length) sectionLinks.push(link("policies/index", "Policies"));
+  if (proofObligations.length) sectionLinks.push(link("proof-obligations/index", "Proof Obligations"));
   sectionLinks.push(link("kpis", "KPIs"));
   sectionLinks.push(link("evals", "Golden Evals"));
 
   const kpiSummary = (spec.kpis || [])
     .map((k) => `- **${k.label}**: ${k.before} → ${k.after}`)
     .join("\n");
+
+  const slugClaim = makeSlugger();
+  const claimSlug = new Map();
+  for (const claim of claims) claimSlug.set(claim.id, slugClaim(claim.id, claim.id));
+  const claimConceptId = (claimId) => `claims/${claimSlug.get(claimId) || slug(claimId)}`;
+
+  const slugPolicy = makeSlugger();
+  const policySlug = new Map();
+  for (const policy of policyConcepts) policySlug.set(policy.id, slugPolicy(policy.id, policy.id));
+  const policyConceptId = (policyId) => `policies/${policySlug.get(policyId) || slug(policyId)}`;
+
+  const slugProof = makeSlugger();
+  const proofSlug = new Map();
+  for (const proof of proofObligations) proofSlug.set(proof.id, slugProof(proof.id, proof.id));
+  const proofConceptId = (proofId) => `proof-obligations/${proofSlug.get(proofId) || slug(proofId)}`;
+
+  const policiesByTool = new Map();
+  for (const policy of policyConcepts) {
+    if (!policy.toolName) continue;
+    if (!policiesByTool.has(policy.toolName)) policiesByTool.set(policy.toolName, []);
+    policiesByTool.get(policy.toolName).push(policy);
+  }
+  const evalsByTool = new Map();
+  for (const evalScenario of testMechanisms) {
+    for (const toolName of evalScenario.mechanisms || evalScenario.expectedToolCalls || []) {
+      if (!evalsByTool.has(toolName)) evalsByTool.set(toolName, []);
+      evalsByTool.get(toolName).push(evalScenario);
+    }
+  }
+  const slugTest = makeSlugger();
+  const testSlug = new Map(); // test id -> slug
+  for (const t of testMechanisms) testSlug.set(t.id, slugTest(t.id, t.id));
+  const testConceptId = (tid) => `tests/${testSlug.get(tid) || slug(tid)}`;
 
   push(
     "index",
@@ -400,6 +576,19 @@ export function buildBundle(spec, { timestamp = new Date().toISOString() } = {})
     const ownerSys = sourceSystems.find((s) => s.id === tool.sourceSystemId);
     const usingSteps = stepsByTool.get(tool.name) || [];
     const sampleArgs = (tool.requiredInputs || []).map((i) => `${i}=<${i}>`).join(", ");
+    const api = actionApiForTool(tool);
+    const isWriteTool = isWriteLikeTool(tool);
+    const idempotency = tool.idempotencyKey || tool.idempotency_key || api?.idempotencyKey;
+    const permissions = toolPermissions(tool, api);
+    const failureModes = toolFailureModes(tool, api);
+    const relatedPolicies = policiesByTool.get(tool.name) || [];
+    const relatedEvals = evalsByTool.get(tool.name) || [];
+    const sideEffects = compactList([
+      ...asArray(tool.sideEffects),
+      ...asArray(tool.side_effects),
+      isWriteTool ? `May change ${ownerSys?.name || tool.sourceSystemId || "the source system"} state because the spec classifies it as ${tool.kind || "write-like"}.` : null,
+      !isWriteTool ? "No mutation is declared by the spec for this tool." : null,
+    ]);
     push(
       toolConceptId(tool.name),
       {
@@ -408,6 +597,7 @@ export function buildBundle(spec, { timestamp = new Date().toISOString() } = {})
         description: tool.description || `${tool.kind || "tool"} tool ${tool.name}.`,
         tags,
         timestamp,
+        ...specGeneratedFields({ source: "behaviorContract.toolIntents", inferred: false }),
       },
       body([
         `# ${tool.name}`,
@@ -416,6 +606,63 @@ export function buildBundle(spec, { timestamp = new Date().toISOString() } = {})
         tool.description ? "" : null,
         `- **Kind:** ${tool.kind || "—"}`,
         `- **Source system:** ${ownerSys ? link(sysConceptId(ownerSys.id), ownerSys.name || ownerSys.id) : tool.sourceSystemId || "—"}`,
+        api ? `- **API:** ${api.method || ""} ${api.path || api.id}`.trim() : null,
+        "",
+        "## Inputs",
+        "",
+        bullets(tool.requiredInputs),
+        "",
+        "## Outputs",
+        "",
+        bullets(tool.produces),
+        "",
+        "## Side Effects",
+        "",
+        bullets(sideEffects),
+        "",
+        "## Idempotency",
+        "",
+        idempotency
+          ? `Declared idempotency key: ${idempotency}.`
+          : isWriteTool
+            ? "No idempotency key is declared in the spec or matched API; require one before production writes."
+            : "No idempotency key declared; no mutation is declared by the spec for this tool.",
+        "",
+        "## Confirmation",
+        "",
+        relatedPolicies.some((policy) => policy.kind === "tool confirmation")
+          ? relatedPolicies.filter((policy) => policy.kind === "tool confirmation").map((policy) => `- ${link(policyConceptId(policy.id), policy.title)}`).join("\n")
+          : isWriteTool
+            ? "Write-like tool; confirmation policy is inferred from the tool kind."
+            : "No write confirmation policy is derivable from the spec.",
+        "",
+        "## Permissions",
+        "",
+        permissions.length
+          ? bullets(permissions)
+          : ownerSys
+            ? `No explicit permission scopes declared; source-system access is tied to ${link(sysConceptId(ownerSys.id), ownerSys.name || ownerSys.id)}.`
+            : "No source-system permission profile declared.",
+        "",
+        "## Failure Modes",
+        "",
+        failureModes.length ? bullets(failureModes) : "No explicit failure modes are declared in the spec; rely on refusal/escalation policies for unsafe or incomplete evidence.",
+        "",
+        "## Used By",
+        "",
+        usingSteps.length
+          ? usingSteps.map((sid) => `- ${link(stepConceptId(sid), sid)}`).join("\n")
+          : "_Not bound to a workflow stage._",
+        "",
+        "## Evals",
+        "",
+        relatedEvals.length
+          ? relatedEvals.map((evalScenario) => `- ${link(testConceptId(evalScenario.id), evalScenario.prompt)}`).join("\n")
+          : "_No eval scenario explicitly exercises this tool._",
+        "",
+        "## Evidence emitted",
+        "",
+        bullets(tool.evidenceEmitted),
         "",
         "## Required inputs",
         "",
@@ -425,21 +672,18 @@ export function buildBundle(spec, { timestamp = new Date().toISOString() } = {})
         "",
         bullets(tool.produces),
         "",
-        "## Evidence emitted",
-        "",
-        bullets(tool.evidenceEmitted),
-        "",
         "# Examples",
         "",
         "```",
         `${tool.name}(${sampleArgs})`,
         "```",
         "",
-        "## Used by",
+        "# Citations",
         "",
-        usingSteps.length
-          ? usingSteps.map((sid) => `- ${link(stepConceptId(sid), sid)}`).join("\n")
-          : "_Not bound to a workflow stage._",
+        compactList([
+          ownerSys ? `- ${link(sysConceptId(ownerSys.id), ownerSys.name || ownerSys.id)}` : null,
+          ...relatedPolicies.map((policy) => `- ${link(policyConceptId(policy.id), policy.title)}`),
+        ]).join("\n") || "_No source-system or policy citations derivable from the spec._",
       ]),
     );
   }
@@ -533,12 +777,188 @@ export function buildBundle(spec, { timestamp = new Date().toISOString() } = {})
     }
   }
 
+  const docById = new Map(documents.map((d) => [d.id, d]));
+  const citationLinks = (docIds = []) => {
+    const scoped = (docIds || []).filter((id) => docById.has(id));
+    const sourceDocs = scoped.length ? scoped.map((id) => docById.get(id)) : documents;
+    return sourceDocs.length
+      ? sourceDocs.map((d) => `- ${link(docConceptId(d.id), d.title || d.id)}`).join("\n")
+      : "_No external citations generated; link source documents before production use._";
+  };
+
+  // --- claims/ (Claim concepts from evidence requirements) -------------------
+  if (claims.length) {
+    push(
+      "claims/index",
+      { type: "Index", title: "Claims", description: "Claims that require source-system evidence.", timestamp },
+      ["# Claims", "", claims.map((claim) => `- ${link(claimConceptId(claim.id), claim.claim)}`).join("\n")].join("\n"),
+    );
+    for (const claim of claims) {
+      push(
+        claimConceptId(claim.id),
+        {
+          type: "Claim",
+          title: claim.claim,
+          description: `Evidence-backed claim: ${claim.claim}`,
+          source_id: claim.id,
+          tags,
+          timestamp,
+          ...specGeneratedFields({ source: `behaviorContract.evidenceRequirements.${claim.sourceIndex}`, inferred: false }),
+        },
+        body([
+          `# ${claim.claim}`,
+          "",
+          "## Authority",
+          "",
+          claim.sourceSystemIds.length
+            ? claim.sourceSystemIds.map((sysId) => (systemSlug.has(sysId) ? `- ${link(sysConceptId(sysId), sysId)}` : `- ${sysId}`)).join("\n")
+            : "_No source systems listed on this evidence requirement._",
+          "",
+          "## Required Evidence",
+          "",
+          bullets(claim.mustCite),
+          "",
+          "## Citation Requirements",
+          "",
+          claim.mustCite.length ? `Must cite: ${claim.mustCite.join(", ")}` : "Must cite linked source-system evidence before answering.",
+          "",
+          "## Proof obligations",
+          "",
+          `- ${link(proofConceptId(`evidence-${claim.id}`), `Evidence obligation — ${claim.claim}`)}`,
+          "",
+          "# Citations",
+          "",
+          citationLinks(),
+        ]),
+      );
+    }
+  }
+
+  // --- policies/ (Policy concepts from guardrails/tool gates) --------------
+  if (policyConcepts.length) {
+    push(
+      "policies/index",
+      { type: "Index", title: "Policies", description: "Refusal, escalation, confirmation, and idempotency policies derivable from the spec.", timestamp },
+      ["# Policies", "", policyConcepts.map((policy) => `- ${link(policyConceptId(policy.id), policy.title)}`).join("\n")].join("\n"),
+    );
+    for (const policy of policyConcepts) {
+      const linkedTool = policy.toolName && toolSlug.has(policy.toolName) ? toolConceptId(policy.toolName) : null;
+      push(
+        policyConceptId(policy.id),
+        {
+          type: "Policy",
+          title: policy.title,
+          description: policyText(policy),
+          source_id: policy.id,
+          tags,
+          timestamp,
+          ...specGeneratedFields({ source: policy.source, inferred: Boolean(policy.inferred), from: policy.source }),
+        },
+        body([
+          `# ${policy.title}`,
+          "",
+          `- **Policy kind:** ${policy.kind}`,
+          `- **Spec source:** ${policy.source}`,
+          linkedTool ? `- **Tool:** ${link(linkedTool, policy.toolName)}` : null,
+          "",
+          "## Rule",
+          "",
+          policy.kind === "escalation"
+            ? mdTable(
+                ["Trigger", "Action", "Handoff", "Rationale"],
+                [[policy.rule.trigger, policy.rule.action, policy.rule.handoffTarget || "", policy.rule.rationale || ""]],
+              )
+            : policy.rule,
+          policy.kind === "refusal" || policy.kind === "escalation" ? "" : null,
+          policy.kind === "refusal" || policy.kind === "escalation" ? "## Used by" : null,
+          policy.kind === "refusal" || policy.kind === "escalation" ? "" : null,
+          policy.kind === "refusal" || policy.kind === "escalation" ? `- ${link("playbook", "Playbook")}` : null,
+          "",
+          "# Citations",
+          "",
+          linkedTool ? `- ${link(linkedTool, policy.toolName)}` : `- ${link("playbook", "Playbook")}`,
+        ]),
+      );
+    }
+  }
+
+  // --- proof-obligations/ --------------------------------------------------
+  if (proofObligations.length) {
+    push(
+      "proof-obligations/index",
+      { type: "Index", title: "Proof Obligations", description: "Assertions the bundle must prove through evidence requirements and golden evals.", timestamp },
+      ["# Proof Obligations", "", proofObligations.map((proof) => `- ${link(proofConceptId(proof.id), proof.title)}`).join("\n")].join("\n"),
+    );
+    for (const proof of proofObligations) {
+      const linkedClaim = proof.claimId ? claimConceptId(proof.claimId) : null;
+      const linkedEval = proof.evalId ? testConceptId(proof.evalId) : null;
+      push(
+        proofConceptId(proof.id),
+        {
+          type: "Proof Obligation",
+          title: proof.title,
+          description: `${proof.kind} proof obligation`,
+          source_id: proof.id,
+          tags,
+          timestamp,
+          ...specGeneratedFields({ source: proof.source, inferred: false }),
+        },
+        body([
+          `# ${proof.title}`,
+          "",
+          `- **Kind:** ${proof.kind}`,
+          `- **Spec source:** ${proof.source}`,
+          linkedClaim ? `- **Claim:** ${link(linkedClaim, claims.find((claim) => claim.id === proof.claimId)?.claim || proof.claimId)}` : null,
+          linkedEval ? `- **Eval:** ${link(linkedEval, proof.evalId)}` : null,
+          "",
+          proof.mustCite?.length ? "## Required citations" : null,
+          proof.mustCite?.length ? "" : null,
+          proof.mustCite?.length ? bullets(proof.mustCite) : null,
+          proof.sourceSystemIds?.length ? "" : null,
+          proof.sourceSystemIds?.length ? "## Source systems" : null,
+          proof.sourceSystemIds?.length ? "" : null,
+          proof.sourceSystemIds?.length
+            ? proof.sourceSystemIds.map((sysId) => (systemSlug.has(sysId) ? `- ${link(sysConceptId(sysId), sysId)}` : `- ${sysId}`)).join("\n")
+            : null,
+          proof.mechanisms?.length ? "" : null,
+          proof.mechanisms?.length ? "## Mechanisms" : null,
+          proof.mechanisms?.length ? "" : null,
+          proof.mechanisms?.length
+            ? proof.mechanisms.map((toolName) => (toolSlug.has(toolName) ? `- ${link(toolConceptId(toolName), toolName)}` : `- ${toolName}`)).join("\n")
+            : null,
+          proof.mustReferenceEntities?.length ? "" : null,
+          proof.mustReferenceEntities?.length ? "## Entities that must be referenced" : null,
+          proof.mustReferenceEntities?.length ? "" : null,
+          proof.mustReferenceEntities?.length ? bullets(proof.mustReferenceEntities) : null,
+          proof.forbiddenBehaviors?.length ? "" : null,
+          proof.forbiddenBehaviors?.length ? "## Forbidden behaviors" : null,
+          proof.forbiddenBehaviors?.length ? "" : null,
+          proof.forbiddenBehaviors?.length ? bullets(proof.forbiddenBehaviors) : null,
+          proof.mustCiteDocuments?.length ? "" : null,
+          proof.mustCiteDocuments?.length ? "# Citations" : null,
+          proof.mustCiteDocuments?.length ? "" : null,
+          proof.mustCiteDocuments?.length
+            ? proof.mustCiteDocuments.map((docId) => (docSlug.has(docId) ? `- ${link(docConceptId(docId), docId)}` : `- ${docId}`)).join("\n")
+            : null,
+        ]),
+      );
+    }
+  }
+
   // --- queries/ (Query Capability concepts) --------------------------------
   const slugQuery = makeSlugger();
   const querySlug = new Map(); // query id -> slug
   for (const q of answerableQueries) querySlug.set(q.id, slugQuery(q.id, q.id));
   const queryConceptId = (qid) => `queries/${querySlug.get(qid) || slug(qid)}`;
-  const docById = new Map(documents.map((d) => [d.id, d]));
+  const evalsForQuery = (query) => {
+    const direct = testMechanisms.filter((test) => {
+      if (test.validates === query.id) return true;
+      const testTools = new Set(test.mechanisms || test.expectedToolCalls || []);
+      return (query.tools || []).some((tool) => testTools.has(tool));
+    });
+    if (direct.length) return direct;
+    return testMechanisms.filter((test) => /end-to-end|workflow|current period/i.test(`${test.id || ""} ${test.prompt || ""}`));
+  };
   if (answerableQueries.length) {
     push(
       "queries/index",
@@ -556,6 +976,7 @@ export function buildBundle(spec, { timestamp = new Date().toISOString() } = {})
     );
     for (const q of answerableQueries) {
       const stageConcept = q.stage && stepSlug.has(q.stage) ? stepConceptId(q.stage) : null;
+      const coveredBy = evalsForQuery(q);
       push(
         queryConceptId(q.id),
         {
@@ -563,6 +984,7 @@ export function buildBundle(spec, { timestamp = new Date().toISOString() } = {})
           title: q.request.length > 80 ? `${q.request.slice(0, 77)}...` : q.request,
           description: q.request,
           source_id: q.id,
+          generation_status: Array.isArray(bc.answerableQueries) && bc.answerableQueries.length ? "generated" : "inferred",
           tags,
           timestamp,
         },
@@ -582,6 +1004,12 @@ export function buildBundle(spec, { timestamp = new Date().toISOString() } = {})
           "## Evidence expected",
           "",
           bullets(q.evidence),
+          "",
+          "## Evals",
+          "",
+          coveredBy.length
+            ? coveredBy.map((test) => `- ${link(testConceptId(test.id), test.prompt || test.id)}`).join("\n")
+            : "_No eval mapped yet._",
           documents.length ? "" : null,
           documents.length ? "# Citations" : null,
           documents.length ? "" : null,
@@ -594,10 +1022,6 @@ export function buildBundle(spec, { timestamp = new Date().toISOString() } = {})
   }
 
   // --- tests/ (Eval Scenario concepts) -------------------------------------
-  const slugTest = makeSlugger();
-  const testSlug = new Map(); // test id -> slug
-  for (const t of testMechanisms) testSlug.set(t.id, slugTest(t.id, t.id));
-  const testConceptId = (tid) => `tests/${testSlug.get(tid) || slug(tid)}`;
   if (testMechanisms.length) {
     push(
       "tests/index",
@@ -624,6 +1048,7 @@ export function buildBundle(spec, { timestamp = new Date().toISOString() } = {})
           title: t.prompt.length > 80 ? `${t.prompt.slice(0, 77)}...` : t.prompt,
           description: t.prompt,
           source_id: t.id,
+          generation_status: Array.isArray(bc.goldenEvals) && bc.goldenEvals.some((e) => e && typeof e === "object" && Array.isArray(e.mechanisms)) ? "generated" : "inferred",
           tags,
           timestamp,
         },
