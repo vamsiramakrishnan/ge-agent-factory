@@ -771,8 +771,19 @@ def _create_handler(
             if not limiter.check(rate_limit_key(ctx, rate_limit_config), rate_limit_config):
                 event = audit_event(ctx=ctx, action=tool_name, entity=singular, entity_id="*", outcome="rate_limited")
                 raise SimulatorError("rate_limited", f"rate limit exceeded for {tool_name}", audit=event)
-        if latency_config:
-            apply_latency(latency_config)
+        # Chaos (opt-in, see chaos.py) may scale/introduce latency; no active
+        # profile returns latency_config untouched. Under virtual time (opt-in,
+        # clock.py) the sampled latency is recorded instead of slept; the default
+        # path keeps the exact legacy single-argument call.
+        from simulator_runtime.chaos import effective_latency
+        from simulator_runtime import clock
+
+        latency_effective = effective_latency(latency_config, contract=contract)
+        if latency_effective:
+            if clock.enabled(ctx, contract):
+                apply_latency(latency_effective, ctx=ctx, contract=contract, tool=tool_name)
+            else:
+                apply_latency(latency_effective)
 
         state = generic_state(ctx)
         if workflow:
@@ -787,6 +798,7 @@ def _create_handler(
                     entity=singular,
                     entity_id=str(args.get(primary_key) or args.get("id") or "*"),
                     seed=args.get("seed", 0),
+                    call_index=len(state.get("audit_events") or []),
                 )
             except Exception as injected:  # noqa: BLE001 - persist audit, then re-raise
                 audit = getattr(injected, "audit", None)
@@ -907,9 +919,20 @@ def _submit_update_handler(contract: dict[str, Any], tool_name: str, workflow: d
                 event = audit_event(ctx=ctx, action=tool_name, entity=singular, entity_id="*", outcome="rate_limited")
                 raise SimulatorError("rate_limited", f"rate limit exceeded for {tool_name}", audit=event)
 
-        # Per-tool latency injection (no-op when unconfigured).
-        if latency_config:
-            apply_latency(latency_config)
+        # Per-tool latency injection (no-op when unconfigured). Chaos (opt-in,
+        # chaos.py) may scale/introduce latency — no active profile returns the
+        # config untouched. Under virtual time (opt-in, clock.py) the sampled
+        # latency is recorded instead of slept; the default path keeps the exact
+        # legacy single-argument call.
+        from simulator_runtime.chaos import effective_latency
+        from simulator_runtime import clock
+
+        latency_effective = effective_latency(latency_config, contract=contract)
+        if latency_effective:
+            if clock.enabled(ctx, contract):
+                apply_latency(latency_effective, ctx=ctx, contract=contract, tool=tool_name)
+            else:
+                apply_latency(latency_effective)
 
         state = generic_state(ctx)
         # Deterministically inject a realistic failure mode if the contract
@@ -929,6 +952,7 @@ def _submit_update_handler(contract: dict[str, Any], tool_name: str, workflow: d
                     args.get(primary_key) or args.get("id") or args.get("source_record_id") or "*"
                 ),
                 seed=args.get("seed", 0),
+                call_index=len(state.get("audit_events") or []),
             )
         except Exception as injected:  # noqa: BLE001 - persist audit, then re-raise
             audit = getattr(injected, "audit", None)
