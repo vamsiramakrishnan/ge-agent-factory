@@ -19,6 +19,10 @@ runtime library inside (see
 proven workspace as exactly that — an ordinary project any ADK engineer can
 run, eval, and deploy with tools they already know.
 
+<p align="center">
+  <img src="../assets/diagrams/signature-pipeline-handoff-targets.svg" alt="signature pipeline zoomed to hand off, lit; the passport crosses the build boundary via a thick edge into agents-cli, ADK, and Gemini Enterprise, with the rest of the pipeline shown dimmed for context" width="700">
+</p>
+
 ## When to use this
 
 - You want to verify there is no lock-in: the agent must work with stock

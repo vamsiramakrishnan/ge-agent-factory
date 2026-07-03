@@ -1,0 +1,26 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "Widget Orders API", "version": "1.0.0" },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "Order": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "customer_id": { "type": "string" },
+          "status": { "type": "string" },
+          "total_amount": { "type": "number" }
+        }
+      },
+      "Customer": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "email": { "type": "string" }
+        }
+      }
+    }
+  }
+}

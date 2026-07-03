@@ -8,7 +8,7 @@ contract and proof artifacts they need.
 [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/?cloudshell_git_repo=https://github.com/vamsiramakrishnan/ge-agent-factory&cloudshell_workspace=installer&cloudshell_tutorial=installer/TUTORIAL.md)
 
 <p align="center">
-  <img src="docs/assets/diagrams/readme-hero-pipeline.svg" alt="Flow diagram: capture enterprise intent produces a contract, which fans out to simulate source-system twins, eval suites, and tool plans, which converge on a proof pack, which hands off to agents-cli, ADK, or Gemini Enterprise" width="800">
+  <img src="docs/assets/diagrams/signature-pipeline.svg" alt="Flow diagram: capture flows into the Enterprise Agent Contract; the contract generates code, tools, and source-system twins under authority-graph control; twins and generated code feed prove (evals, harness, promotion gate); prove produces a passport and proof pack; the passport hands off across the build boundary to agents-cli, ADK, and Gemini Enterprise" width="900">
 </p>
 
 The golden path is three commands:
@@ -31,24 +31,24 @@ Not sure this is the layer you need? Read
 <table>
 <tr>
 <td width="50%">
-<img src="docs/assets/screenshots/console-overview.png" alt="Console Overview screen showing local mode, project ge-agent-factory-demo, a three-step get-started flow, and pipeline stage counts: spec and build both at 363, deploy at 1">
+<img src="docs/assets/screenshots/overview.png" alt="Console Overview screen showing local mode, pipeline stage counts (spec, build 362, ship, deploy 1), and fleet health (0 deployed, 1 submitted, 1 failed)">
 <br>
-<strong>Overview.</strong> Mode, project, and where all 363 specs sit in the pipeline — one screen.
+<strong>Overview.</strong> Where every agent sits in the pipeline, and what to do next.
 </td>
 <td width="50%">
-<img src="docs/assets/screenshots/console-pipeline.png" alt="Console Pipeline screen: choose a route (deploy from registered specs, or interview to a registered spec), then a stage-by-stage status list starting with Interview: skipped">
+<img src="docs/assets/screenshots/pipeline.png" alt="Console Pipeline screen: choose a route (deploy from registered specs, or interview to a registered spec) across 364 factory-grade specs, then a stage-by-stage status list">
 <br>
 <strong>Pipeline.</strong> The build &amp; deploy flow for one spec or a batch — same stages the CLI runs.
 </td>
 </tr>
 <tr>
 <td width="50%">
-<img src="docs/assets/screenshots/console-agent.png" alt="Agent detail view for the Account Reconciliation Agent: 7 of 8 pipeline stages complete, deploy pending, next action Ship with the exact ge agents ship command to run">
+<img src="docs/assets/screenshots/agent-detail.png" alt="Agent detail view for the ASC 606 Contract Analyzer: 7 of 8 pipeline stages complete, deploy pending, next action Ship with the exact ge agents ship command to run">
 <br>
 <strong>Agent detail.</strong> Every stage's evidence in one place, down to the exact command to ship it.
 </td>
 <td width="50%">
-<img src="docs/assets/screenshots/console-repair.png" alt="Repair Queue screen showing 250 agents selected for repair, 249 needing a build, grouped by department and status">
+<img src="docs/assets/screenshots/repair-queue.png" alt="Repair Queue screen showing 250 agents selected for repair, 249 needing a build, one repair run in progress">
 <br>
 <strong>Repair Queue.</strong> Triage what's blocked across the whole fleet instead of re-running everything.
 </td>
@@ -56,9 +56,9 @@ Not sure this is the layer you need? Read
 </table>
 
 <p align="center">
-  <img src="docs/assets/screenshots/presentation-periodic-table.png" alt="The Periodic Table of HR Agents: 82 AI agents across 10 HR domains, laid out as a periodic-table grid with department tabs for HR, Procurement, Finance, IT, and Marketing">
+  <img src="docs/assets/screenshots/periodic-table.png" alt="The Periodic Table of HR Agents: 82 AI agents across 10 HR domains, laid out as a periodic-table grid with department tabs for HR, Procurement, Finance, IT, and Marketing">
   <br>
-  <em>The full catalog — 363 use cases across five departments — laid out as a periodic table. One tile per agent, click to explore.</em>
+  <em>The full catalog — 363 agents across five departments — laid out as a periodic table. One tile per agent, click to explore.</em>
 </p>
 
 Terminal, not screenshots — these are `.gif`s of real runs, not staged:
@@ -112,7 +112,7 @@ ge agents ship               # hand off: cloud runs load_data → deploy → reg
 ## How it fits
 
 <p align="center">
-  <img src="docs/assets/diagrams/readme-layer-stack.svg" alt="Layer stack diagram: GE Agent Factory (intent to contract to simulations to evals to proof) sits below agents-cli / ADK (agent project scaffold, build, deploy), which sits below ADK Agent Engine (runtime), which sits below Gemini Enterprise (end-user surface)" width="800">
+  <img src="docs/assets/diagrams/factory-vs-agents-cli-layers.svg" alt="GE Agent Factory turns enterprise intent into a contract (behaviorContract + generationSpec), then simulation, evals, and proof; the proof flows into agents-cli / ADK, which scaffolds the agent project and deploys it to Agent Runtime; Agent Runtime publishes into Gemini Enterprise for end users" width="900">
 </p>
 
 | Layer | Owned by |

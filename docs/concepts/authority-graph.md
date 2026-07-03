@@ -13,6 +13,10 @@ by whom* that connects an agent's contract to its runtime — from declared
 scope, through generated guardrails, through least-privilege cloud identity,
 to the policy-enforced Agent Gateway.
 
+<p align="center">
+  <img src="../assets/diagrams/signature-pipeline-authority-graph.svg" alt="signature pipeline zoomed to the authority graph, lit; its dashed control edges run from the Enterprise Agent Contract into generate and into handoff, with the rest of the pipeline shown dimmed for context" width="700">
+</p>
+
 ## Why it exists
 
 An agent's authority cannot live in a prompt, because a prompt is a
