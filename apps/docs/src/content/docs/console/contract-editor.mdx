@@ -1,0 +1,59 @@
+---
+title: "Contract editor"
+description: "The Interview view and Spec Review canvas — where enterprise intent is captured and the Enterprise Agent Contract is edited and exported."
+editUrl: "https://github.com/vamsiramakrishnan/ge-agent-factory/edit/main/docs/console/contract-editor.md"
+sidebar:
+  order: 1
+---
+Two connected surfaces capture intent and edit the resulting
+[Enterprise Agent Contract](/ge-agent-factory/concepts/enterprise-agent-contract/): the
+**<a href="/ge-agent-factory/reference/glossary/#interview" title="The guided, conversational flow where a business user (or agent) describes a use case and the factory turns it into a formal spec.">Interview</a>** view (conversational capture) and the **Spec Review** canvas
+(structured editing and export).
+
+## Interview — capture
+
+An artifact-driven interview: a chat transcript pane on one side, a live
+contract canvas on the other, and a document dropzone for grounding. You
+describe the use case (or upload a BRD and let the interview read it); the
+interview agent asks what it still needs and streams the contract into the
+canvas as it firms up — role, scope, tool intents, workflow, evidence and
+escalation rules.
+
+Use it when no contract exists yet. The result feeds straight into the
+**Pipeline** view for compilation. Step-by-step:
+[Capture from an interview](/ge-agent-factory/cookbooks/capture-from-interview/) and
+[Capture from documents](/ge-agent-factory/cookbooks/capture-from-documents/).
+
+<p align="center">
+  <img src="/ge-agent-factory/assets/screenshots/interview.png" alt="Interview view's Brief step: an input-brief form (business outcome, systems, guardrails, grounding documents) on the left and the not-yet-materialized Agent Spec artifact panel on the right, with a runtime-daemon-needs-a-refresh notice" width="820" />
+</p>
+
+## Spec Review — edit and export
+
+The Spec Review canvas renders the contract half-by-half — the behavior half
+(role, scope, rules, tool intents, workflow, golden evals) and the world
+half (source systems, entities) — with field-level editing. It is also where
+the contract's portable Markdown form is produced: the **Export <a href="/ge-agent-factory/reference/glossary/#okf--knowledge-bundle" title="OKF (Open Knowledge Format) is a portable, human-readable version of an agent's spec — a folder of plain Markdown files (called &quot;concepts&quot;) instead of one big JSON blob.">OKF</a>** action
+and the OKF Knowledge Bundle preview
+(`GET /api/interviews/<id>/okf` behind the scenes).
+
+:::note
+The OKF export is fully wired at the API level; the canvas's export button
+coverage is still being finished. `curl` against
+`/api/interviews/<id>/okf` always works.
+:::
+
+
+## What it writes
+
+- The contract: a catalog entry under `apps/factory/catalog/interview-specs/`
+  (and `usecase-spec.json` in any <a href="/ge-agent-factory/reference/glossary/#workspace" title="The on-disk folder for one generated agent (.ge/factory/workspaces/workspace-id/), with a workspace.json manifest describing what's in it.">workspace</a> later compiled from it).
+- Uploaded grounding documents, attached to the interview
+  (`POST /api/interviews/<usecaseId>/documents`).
+- The OKF bundle, on export.
+
+## See also
+
+- [The Enterprise Agent Contract](/ge-agent-factory/concepts/enterprise-agent-contract/) — what the fields mean.
+- [Contract ⇄ OKF](/ge-agent-factory/cookbooks/spec-to-okf/) — the CLI path for the same conversion.
+- [Pipeline & runs](/ge-agent-factory/console/pipeline-and-runs/) — compiling the captured contract.

@@ -1,0 +1,61 @@
+---
+title: "Console"
+description: "The operator console — the browser surface over the same engine the CLI drives, view by view."
+editUrl: "https://github.com/vamsiramakrishnan/ge-agent-factory/edit/main/docs/console/index.md"
+sidebar:
+  label: Overview
+  order: 0
+---
+The console (`mise run console`, [http://localhost:18260](http://localhost:18260)) is the browser
+surface over the factory. Its server exposes the same JSON the `ge` CLI
+emits, dispatched through the same command registry — so the console and the
+CLI are two views of one engine and can never disagree about state.
+
+The left sidebar has seven entries; two detail surfaces open from them:
+
+| View | What it's for | Page |
+|---|---|---|
+| **Overview** | The whole system at a glance: <a href="/ge-agent-factory/reference/glossary/#fleet" title="The whole set of generated agents/workspaces, treated as one unit — the opposite end of the scale from a canary.">fleet</a> summary, recent runs, <a href="/ge-agent-factory/reference/glossary/#planes" title="The three infrastructure layers the platform stands up in your cloud project — the factory plane (gateway, worker, Cloud Tasks queue, Cloud Build: the machinery that runs builds), the data plane (GCS, BigQuery, Bigtable, Firestore, AlloyDB, per-agent data + IAM), and the tool plane (the per-department MCP services, Agent Registry entries, and the Agent Gateway that agents call tools through).">plane</a> status, next action | this page, below |
+| **<a href="/ge-agent-factory/reference/glossary/#interview" title="The guided, conversational flow where a business user (or agent) describes a use case and the factory turns it into a formal spec.">Interview</a>** | Capture enterprise intent into a contract, conversationally, with document grounding | [Contract editor](/ge-agent-factory/console/contract-editor/) |
+| **Pipeline** | Drive a use case from contract to generated agent (Source → Configure → Review) | [Pipeline & runs](/ge-agent-factory/console/pipeline-and-runs/) |
+| **Runs** | One chronological timeline over everything the factory is doing, with live follow | [Pipeline & runs](/ge-agent-factory/console/pipeline-and-runs/) |
+| **Fleet** | Every generated agent, filterable, with bulk actions | [Fleet & repair](/ge-agent-factory/console/fleet-and-repair/) |
+| **Repair Queue** | Drive batches of agents to a target stage, auto-repairing blockers | [Fleet & repair](/ge-agent-factory/console/fleet-and-repair/) |
+| **Readiness** | A preflight verdict with runnable fixes, before anything mutating | [Readiness](/ge-agent-factory/console/readiness/) |
+| *Agent detail* | Deep view of one agent: stages, artifacts, per-stage actions | [Fleet & repair](/ge-agent-factory/console/fleet-and-repair/) |
+| *Spec Review* | The contract rendered half-by-half for editing and <a href="/ge-agent-factory/reference/glossary/#okf--knowledge-bundle" title="OKF (Open Knowledge Format) is a portable, human-readable version of an agent's spec — a folder of plain Markdown files (called &quot;concepts&quot;) instead of one big JSON blob.">OKF</a> export | [Contract editor](/ge-agent-factory/console/contract-editor/) |
+
+## Overview — the home base
+
+The landing view pulls the fleet, recent runs, and a best-effort apply plan,
+and surfaces plane cards plus a quick path into the pipeline. Use it to see
+overall state and jump to the next action; bare `ge` in a terminal prints
+the equivalent status board.
+
+<p align="center">
+  <img src="/ge-agent-factory/assets/screenshots/overview.png" alt="Console Overview view showing the build-to-deploy pipeline rail (362 in Build, 1 in Ship), a Next step card recommending ge init, and Pipeline / Fleet summary cards with 0 deployed, 1 submitted, 1 failed" width="820" />
+</p>
+
+## The live status model
+
+Everything live in the console is built on the durable run record (the
+*<a href="/ge-agent-factory/reference/glossary/#ledger" title="The durable, event-sourced record of every run — one entry per run, item, and stage — that ge agents status, the Fleet view, and the console's Activity feed all read.">ledger</a>* — the event log every status surface reads):
+
+- The **Now pulse** in the top bar polls it on a calm cadence and shows a
+  compact `▶running ⏸blocked ✕failed ✓done` cluster; clicking it opens
+  **Runs**.
+- **Follow** on any run subscribes the **Run Drawer** — a right-side panel
+  with an ordered stage timeline, a rolling log tail, and the blocked
+  reason when a run pauses — to that run's live event stream.
+- **Remote** runs stream their stage logs through the same record, so a
+  cloud run looks and follows exactly like a local one.
+
+<p align="center">
+  <img src="/ge-agent-factory/assets/diagrams/run-drawer-follow.svg" alt="Now pulse polls the ledger; Follow subscribes the Run Drawer to a run's SSE event stream, which reduces into the stage timeline and log tail, and auto-reconnects on drop" width="700" />
+</p>
+
+## See also
+
+- [Console & APIs](/ge-agent-factory/reference/console-and-apis/) — the `/api/ge/*`
+  route surface behind these views.
+- [CLI reference](/ge-agent-factory/reference/cli/) — the same engine from a terminal.

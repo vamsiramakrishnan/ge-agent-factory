@@ -160,12 +160,12 @@ The factory's spec is the spine of generation. Specs round-trip to **OKF (Open
 Knowledge Format) v0.1**, a portable BRD exchange format, via the converters in
 `apps/factory/scripts/` (`spec-to-okf.mjs` / `okf-to-spec.mjs`).
 
-- Concept: [Specs & OKF](docs/concepts/specs-and-okf.md)
+- Concept: [Specs & OKF](docs/concepts/enterprise-agent-contract.md)
 - Reference: [Spec schema](docs/reference/spec-schema.md) · [OKF](docs/reference/okf.md)
 - Adding a new spec field? The shape is duck-typed across ~13 consumer files —
   follow the [consumer checklist](docs/reference/spec-schema.md#adding-a-new-spec-field--the-consumer-checklist)
   so the field survives the OKF round-trip.
-- Cookbook: [Spec ⇄ OKF](docs/cookbooks/spec-to-okf.md) · [Author a spec via interview](docs/cookbooks/author-a-spec-via-interview.md)
+- Cookbook: [Spec ⇄ OKF](docs/cookbooks/spec-to-okf.md) · [Capture from an interview](docs/cookbooks/capture-from-interview.md)
 - Skill: [`authoring-okf-specs`](skills/authoring-okf-specs/SKILL.md)
 
 ---
@@ -178,7 +178,7 @@ contract). One entry gives a command its `/api/ge/*` route, preflight gating,
 risk label, and live job streaming; don't add bespoke console route logic for
 something a registry entry covers.
 
-- Cookbook: [Add a ge command](docs/cookbooks/add-a-ge-command.md)
+- Cookbook: [Add a ge command](docs/contributing/add-a-ge-command.md)
 - Layer rules: [`skills/operating-console/references/api-transport-contract.md`](skills/operating-console/references/api-transport-contract.md)
 
 ---
@@ -199,17 +199,39 @@ There is also a **Bring Your Own System** flow that synthesizes a brand-new live
 simulator from a natural-language description (NL / OpenAPI / samples) directly from
 the console's Systems field.
 
-- Concept: [Simulators & BYO](docs/concepts/simulators-and-byo.md)
+- Concept: [Simulators & BYO](docs/concepts/source-system-twins.md)
 - Reference: [Simulator systems](docs/reference/simulator-systems.md)
-- Cookbook: [Bring your own simulator](docs/cookbooks/bring-your-own-simulator.md)
+- Cookbook: [Generate simulations](docs/cookbooks/generate-simulations.md)
 
 ---
+
+## Regenerating README assets
+
+Every image in the root [`README.md`](README.md) rebuilds from a command —
+no hand-screenshotted or hand-recorded asset is checked in.
+
+| Asset | Source | Regenerate |
+|---|---|---|
+| Diagrams (`docs/assets/diagrams/*.svg`) | `docs/diagrams-src/*.mmd` | `bun run docs:diagrams` |
+| Console + presentation screenshots (`docs/assets/screenshots/*.png`) | `tools/docs-shots/*.mjs` (Playwright) — see [Screenshots](docs/DESIGN.md#screenshots) | `bun run docs:shots` |
+| Terminal captures (`docs/assets/tapes/*.gif`) | `docs/tapes/*.tape` ([vhs](https://github.com/charmbracelet/vhs)) | `bun run readme:tapes` |
+
+`bun run readme:assets` runs all three. `docs:shots` is fully self-contained
+(builds its own throwaway seed state and production servers — see
+[docs/DESIGN.md](docs/DESIGN.md#screenshots)). vhs needs a one-time local
+setup beyond what `mise run setup` installs:
+
+- [`ttyd`](https://github.com/tsl0922/ttyd) and `ffmpeg` on PATH
+  (`apt-get install ttyd ffmpeg` or your platform's equivalent), plus the
+  `vhs` binary itself (`go install github.com/charmbracelet/vhs@latest`).
+- Recording as root needs `VHS_NO_SANDBOX=true` (Chromium's sandbox refuses
+  to start as root).
 
 ## More
 
 - Docs site: <https://vamsiramakrishnan.github.io/ge-agent-factory/>
 - Cookbooks: [docs/cookbooks/](docs/cookbooks/)
-- Console Tour: [docs/reference/console-tour.md](docs/reference/console-tour.md)
+- Console Tour: [docs/console/index.md](docs/console/index.md)
 - Operator runbook: [docs/OPERATIONS.md](docs/OPERATIONS.md)
 - CLI internals: [tools/README.md](tools/README.md)
 - Docs design system (theme, diagrams, callouts): [docs/DESIGN.md](docs/DESIGN.md)
