@@ -1,0 +1,16 @@
+flowchart LR
+  O(["operator intent"]) --> I["Interview view\nbrief · documents · questions"]
+  I --> S["Spec Review\ncontract fields · diffs · approve"]
+  S --> K["OKF view\nknowledge bundle · concept map · export"]
+  K --> D["GE Drive view\nge prove · ge agents build · follow logs"]
+  D --> R[("Run ledger\nstages · artifacts · blockers")]
+  R --> V["Workspace views\nfiles · ADK preview · proof pack"]
+  R --> P{{"promotion gate\nevals · validation · readiness"}}
+  P ==> H(["handoff\nagents-cli · ADK · Gemini Enterprise"])
+
+  classDef contract fill:#e8f0fe,stroke:#1a73e8,color:#202124
+  classDef system fill:#e8eef7,stroke:#5f6368,color:#202124
+  classDef proof fill:#e6f4ea,stroke:#34a853,color:#202124
+  class S,K contract
+  class R system
+  class P,H proof
