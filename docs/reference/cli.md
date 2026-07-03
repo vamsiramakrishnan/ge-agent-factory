@@ -679,6 +679,67 @@ Next action per work item from the ledger + pipeline state machine
 | `--target` | string | Target stage (default previewed) |
 | `--mode` | string | local\|remote (default local) |
 
+### `ge okf`
+
+OKF knowledge substrate: compile · audit · graph · explain · diff · repair
+
+### `ge okf audit`
+
+Audit an OKF bundle across base conformance, navigability, semantics, behavior, and consumption readiness
+
+| Flag | Type | Description |
+|---|---|---|
+| `<bundle>` | positional (required) |  |
+| `--strict` | boolean |  |
+
+### `ge okf graph`
+
+Extract concept authority/relationship graph from an OKF bundle
+
+| Flag | Type | Description |
+|---|---|---|
+| `<bundle>` | positional (required) |  |
+| `--format` | string | json or cytoscape |
+
+### `ge okf explain`
+
+Explain one OKF concept's authority, backlinks, proof, citations, and gaps
+
+| Flag | Type | Description |
+|---|---|---|
+| `<concept>` | positional (required) |  |
+| `--bundle` | string | OKF bundle directory |
+
+### `ge okf compile`
+
+Compile spec→OKF bundle or OKF bundle→spec
+
+| Flag | Type | Description |
+|---|---|---|
+| `--from` | string |  |
+| `--to` | string |  |
+| `--spec` | string |  |
+| `--bundle` | string |  |
+| `--out` | string |  |
+
+### `ge okf diff`
+
+Machine-readable OKF/spec round-trip diff summary
+
+| Flag | Type | Description |
+|---|---|---|
+| `<left>` | positional (required) |  |
+| `<right>` | positional (required) |  |
+
+### `ge okf repair`
+
+Conservatively repair navigability (missing indexes/log); dry-run by default
+
+| Flag | Type | Description |
+|---|---|---|
+| `<bundle>` | positional (required) |  |
+| `--dryRun` | boolean |  |
+
 ### `ge apply`
 
 Reconcile actual → desired platform + fleet from a manifest (ge.manifest.json). Plans by default; --yes executes.

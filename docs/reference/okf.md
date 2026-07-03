@@ -142,3 +142,21 @@ It moves a spec across the OKF boundary for portable, human-authored exchange an
   reconstructed partial spec JSON on stdout.
 - **Next step**: hand the bundle to a consumer/human, or feed an ingested spec
   back through `interviewing-specs`.
+
+## GE OKF Profile and substrate commands
+
+GE treats OKF as the curated knowledge substrate: interview captures knowledge into OKF, OKF compiles into the buildable agent spec, and Live Proof validates the deployed surface against the compiled behavioral contract. The current agent spec remains the normalized build contract; the compiler keeps OKF and spec synchronized and reports drift.
+
+Base OKF conformance follows the upstream permissive specification: concept Markdown files use YAML frontmatter with a non-empty `type`, recommended fields are not required, custom keys and unknown concept types are preserved, Markdown links express relationships, `index.md` supports progressive disclosure, `log.md` records update history, and `# Citations` is conventional for backing claims. GE quality gates are stricter but are reported separately from base conformance. See the official OKF ground truth: <https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md>.
+
+The `ge okf` command group adds substrate operations:
+
+- `ge okf compile --from spec --to bundle --spec <path> --out <okf-dir>` compiles the current build contract into an OKF bundle.
+- `ge okf compile --from bundle --to spec --bundle <okf-dir> --out <spec.json>` compiles OKF back into a generation-spec-compatible object.
+- `ge okf audit <bundle> [--json] [--strict]` reports base conformance, navigability, semantic coverage, behavioral coverage, and consumption readiness.
+- `ge okf graph <bundle> [--json] [--format cytoscape]` extracts concept nodes and section-inferred edges.
+- `ge okf explain <concept-id> --bundle <bundle> [--json]` renders authority, backlinks, proof, risk, and citation context.
+- `ge okf diff <left> <right> [--json]` emits a machine-readable round-trip diff summary.
+- `ge okf repair <bundle> [--dry-run]` conservatively proposes missing indexes/logs without fabricating citations or authority.
+
+GE profile concept types include Agent, Enterprise Agent Contract, Capability, Query Capability, Workflow, Source System, Tool, Entity, Field, Document, Policy, Claim, Evidence, Eval, Synthetic World, Persona, Risk, Reference, Bench Profile, Proof Obligation, and Promotion Gate.
