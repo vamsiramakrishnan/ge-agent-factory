@@ -5,7 +5,7 @@ Feed it an agent contract (a `GenerationSpecEnvelope`) and it compiles the
 set-cover-selected conversation cases, ADK evalset, agents-cli grading dataset,
 bench/load profile — plus the metrics and statistics to grade the results.
 
-It is a **leaf package**: it imports only `@ge/std` and `zod`, never `apps/*`
+It is a **leaf package**: it imports only `@ge/std`, `yaml`, and `zod`, never `apps/*`
 or `tools/*` (enforced by `node tools/check-no-app-imports.mjs`), so the `ge`
 CLI, the factory's generate pipeline, and the live-proof harness all grade
 against one engine that cannot drift between them.
@@ -46,13 +46,28 @@ family header and the byte-golden constraints that pin each):
 - `emitAgentsCliDataset` / `writeAgentsCliDataset` — flat agents-cli grading
   records.
 - `renderGoldenEvals`, `renderAgentsCliEvalSet`, `renderEvalConfig`,
-  `renderOptimizationConfig` — the generated-workspace v1 artifacts.
+  `renderOptimizationConfig` — the generated-workspace legacy (v1) artifacts,
+  kept byte-golden during the agents-cli migration window.
   `renderAgentsCliEvalSet` takes the factory's naming/derivation helpers as an
   injected parameter; the factory's binding lives at
   `apps/factory/scripts/factory/evals/render-eval-artifacts.mjs`.
-- `renderHoldoutSplit`, `renderSplitEvalSets`, `renderOptimizationConfigV2`,
-  `renderJudgePanelConfig` — the opt-in judge-rigor v2 artifacts
-  (`GE_EVAL_V2=1`).
+- `renderEvalDataset`, `renderSplitEvalDatasets` — the modern agents-cli
+  (>= 1.0) `EvaluationDataset` for `eval generate`/`eval grade`
+  (`tests/eval/datasets/*.json`), derived from the rendered v1 evalset via the
+  CLI's own evalset→dataset migration transform, plus its holdout
+  train/validation partitions (direct `eval optimize` inputs).
+- `renderEvalConfigYaml` — `tests/eval/eval_config.yaml` for `eval grade`:
+  built-in metrics mapped from the v1 criteria, the behavior-contract
+  LLM-judge metric (`judge_model_sampling_count: 5` — native
+  self-consistency), and the `ge_thresholds` CI-gate extension block.
+- `renderHoldoutSplit` — the deterministic per-id train/validation split that
+  feeds the split datasets (written as `tests/eval/holdout_split.json`).
+
+Retired with the `GE_EVAL_V2` gate: `renderSplitEvalSets` (split *evalsets* —
+replaced by the split datasets), `renderOptimizationConfigV2` (`eval optimize`
+consumes `EvaluationDataset` files directly), and `renderJudgePanelConfig`
+(`judge_panel.json` — replaced by the judge metric's native sampling knob in
+`eval_config.yaml`).
 
 ## Metrics and stats
 
