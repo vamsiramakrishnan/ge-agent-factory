@@ -10,7 +10,8 @@ Each skill is a directory with a `SKILL.md` (+ optional `references/`, `scripts/
 
 - **Station skills** own one assembly-line station: `interviewing-specs`,
   `planning-missions`, `running-factory`, `building-simulators`, `checking-workspaces`,
-  `running-release`, `operating-console`, `recording-evidence`, `navigating-factory-line`.
+  `running-release`, `driving-live-proof`, `operating-console`, `recording-evidence`,
+  `navigating-factory-line`.
 - **Operator skills** sit on top and run the *operator's* job end to end:
   `operating-the-factory` (the orchestrator/loop), `standing-up-the-platform`,
   `deploying-the-control-plane`, `grounding-interviews-with-documents`,
