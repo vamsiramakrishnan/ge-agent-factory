@@ -136,7 +136,7 @@ export default function App() {
       />
 
       {error && (
-        <div className="px-6 py-2 bg-amber-500/10 border-b border-amber-400/20 text-amber-700 text-xs">
+        <div className="px-6 py-2 bg-status-warning/10 border-b border-status-warning/20 text-status-warning-ink text-xs">
           API unavailable — {error}
         </div>
       )}

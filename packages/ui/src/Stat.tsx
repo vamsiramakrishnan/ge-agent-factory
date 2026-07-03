@@ -23,8 +23,8 @@ export function Stat({ label, value, size = "sm", className, title }: StatProps)
         className,
       )}
     >
-      <div className="text-[10px] font-semibold uppercase tracking-wide text-secondary">{label}</div>
-      <div className={cx("text-on-surface", size === "sm" ? "text-xs font-semibold truncate" : "mt-0.5 text-xl font-semibold")}>{value}</div>
+      <div className="text-4xs font-semibold uppercase tracking-wide text-secondary">{label}</div>
+      <div className={cx("text-on-surface tabular-nums", size === "sm" ? "text-xs font-semibold truncate" : "mt-0.5 font-headline text-xl font-semibold")}>{value}</div>
     </div>
   );
 }

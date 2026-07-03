@@ -49,7 +49,7 @@ export function RuntimeInteractionForm({
         <div className="text-sm font-semibold text-on-surface">{form.title || "Input needed"}</div>
         {form.description && <p className="mt-1 text-xs text-secondary">{form.description}</p>}
         </div>
-        {disabled && <span className="rounded-full bg-surface-container px-2 py-1 text-[11px] font-medium text-secondary">answered</span>}
+        {disabled && <span className="rounded-full bg-surface-container px-2 py-1 text-3xs font-medium text-secondary">answered</span>}
       </div>
       <div className="space-y-4">
         {form.questions.map((question) => {
@@ -60,7 +60,7 @@ export function RuntimeInteractionForm({
               <label className="mb-1 block text-xs font-medium text-secondary">
                 {question.label}{question.required ? " *" : ""}
               </label>
-              {question.help && <div className="mb-2 text-[11px] text-secondary">{question.help}</div>}
+              {question.help && <div className="mb-2 text-3xs text-secondary">{question.help}</div>}
               {question.type === "radio" && (
                 <div className="flex flex-wrap gap-2">
                   {options.map((option) => (

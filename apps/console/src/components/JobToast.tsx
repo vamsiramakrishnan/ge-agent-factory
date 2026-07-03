@@ -123,7 +123,7 @@ export function JobToast({ onDone }: { onDone?: () => void }) {
                 <span className="text-sm font-medium text-on-surface truncate">{j.label}</span>
                 <StatusPill status={j.status} className="shrink-0" />
               </div>
-              <div className="mt-1 flex items-center gap-2 text-[11px] text-secondary">
+              <div className="mt-1 flex items-center gap-2 text-3xs text-secondary">
                 <span>{formatElapsed(now - j.startedAt)}</span>
                 {j.command?.expectedDuration && <span>expected {j.command.expectedDuration}</span>}
                 <span>{j.lines.length} log lines</span>
@@ -151,22 +151,22 @@ export function JobToast({ onDone }: { onDone?: () => void }) {
                 {j.command.summary}
               </div>
             )}
-            <div className="mb-2 rounded-md bg-surface-container-low px-2.5 py-2 text-[11px] font-mono leading-snug text-on-surface/80">
+            <div className="mb-2 rounded-md bg-surface-container-low px-2.5 py-2 text-3xs font-mono leading-snug text-on-surface/80">
               {j.lines.at(-1) || "Waiting for first log line..."}
             </div>
             {expanded[j.jobId] && (
               <>
                 {j.checks.some((check) => check.status === "fail") && (
-                  <div className="mb-2 space-y-1 rounded-md border border-amber-400/20 bg-amber-500/5 px-2.5 py-2">
+                  <div className="mb-2 space-y-1 rounded-md border border-status-warning/20 bg-status-warning/5 px-2.5 py-2">
                     {j.checks.filter((check) => check.status === "fail").map((check) => (
-                      <div key={check.name} className="text-[11px] leading-snug text-amber-800">
+                      <div key={check.name} className="text-3xs leading-snug text-status-warning-ink">
                         <span className="font-semibold">{check.name}:</span> {check.detail}
-                        {check.fix && <span className="block font-mono text-amber-700">{check.fix}</span>}
+                        {check.fix && <span className="block font-mono text-status-warning-ink">{check.fix}</span>}
                       </div>
                     ))}
                   </div>
                 )}
-                <pre className="max-h-56 overflow-y-auto rounded-md bg-on-surface/[0.03] px-2.5 py-2 text-[11px] leading-snug font-mono text-secondary whitespace-pre-wrap">
+                <pre className="max-h-56 overflow-y-auto rounded-md bg-on-surface/[0.03] px-2.5 py-2 text-3xs leading-snug font-mono text-secondary whitespace-pre-wrap">
                   {j.lines.slice(-24).join("\n") || "No output yet."}
                 </pre>
               </>

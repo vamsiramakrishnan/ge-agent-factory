@@ -300,7 +300,7 @@ export default function Fleet({ status, refresh }: FleetProps) {
                       : "border-outline-variant/40 bg-surface-container/40 hover:bg-surface-container"
                   }`}
                 >
-                  <div className="text-[11px] font-medium uppercase text-secondary">{stage}</div>
+                  <div className="text-3xs font-medium uppercase text-secondary">{stage}</div>
                   <div className="mt-1 text-xl font-semibold text-on-surface">{health.byStage[stage] || 0}</div>
                 </button>
               ))}
@@ -344,12 +344,12 @@ export default function Fleet({ status, refresh }: FleetProps) {
                 className="rounded-md border border-outline-variant/40 bg-surface-container/40 p-3 text-left hover:bg-surface-container"
               >
                 <div className="mb-1 flex items-center justify-between gap-2">
-                  <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[11px] font-medium text-amber-700">{item.stage}</span>
+                  <span className="rounded-full bg-status-blocked/10 px-2 py-0.5 text-3xs font-medium text-status-blocked-ink">{item.stage}</span>
                   <span className="text-xs font-semibold text-on-surface">{item.count}</span>
                 </div>
-                <div className="truncate font-mono text-[11px] text-secondary">{item.blockerId}</div>
+                <div className="truncate font-mono text-3xs text-secondary">{item.blockerId}</div>
                 <div className="mt-1 line-clamp-2 text-xs text-secondary">{item.message}</div>
-                <div className="mt-2 text-[11px] text-secondary">
+                <div className="mt-2 text-3xs text-secondary">
                   owner: {item.owner} · {item.actionPlan?.label || "Inspect"}
                 </div>
               </button>

@@ -38,12 +38,12 @@ test("the checked-in stylesheets match the generator (repo is not stale)", () =>
 });
 
 test("$green-200 keeps its shipped value, now traced to PALETTE.tertiarySwatchDark", () => {
-  // setup.scss shipped $green-200: #1e8e3e darker than --color-tertiary on
-  // purpose (the tip-callout accent); palette.mjs carries it as
-  // tertiarySwatchDark and TOKEN_TABLE maps the ramp entry to that key —
-  // no raw hex pins remain anywhere in the table.
-  expect(renderRegion("setup.scss")).toContain("$green-200: #1e8e3e;");
-  expect(PALETTE.tertiarySwatchDark).toBe("#1e8e3e");
+  // setup.scss ships $green-200 darker than --color-tertiary on purpose (the
+  // tip-callout accent); palette.mjs carries it as tertiarySwatchDark and
+  // TOKEN_TABLE maps the ramp entry to that key — no raw hex pins remain
+  // anywhere in the table.
+  expect(renderRegion("setup.scss")).toContain("$green-200: #0d6d3a;");
+  expect(PALETTE.tertiarySwatchDark).toBe("#0d6d3a");
   const row = TOKEN_TABLE.find((r) => r.name === "$green-200");
   expect(row?.key).toBe("tertiarySwatchDark");
   expect(row?.raw).toBeUndefined();
@@ -66,14 +66,14 @@ test("checkTokens flags a hand-edited hex inside a marked region and writeTokens
       writeFileSync(dest, readFileSync(join(ROOT, target.relPath), "utf8"));
     }
     const setupPath = join(tmp, "docs/_sass/custom/setup.scss");
-    writeFileSync(setupPath, readFileSync(setupPath, "utf8").replace("$blue-200: #1a73e8;", "$blue-200: #ff0000;"));
+    writeFileSync(setupPath, readFileSync(setupPath, "utf8").replace("$blue-200: #2953ff;", "$blue-200: #ff0000;"));
 
     const drifted = checkTokens(tmp);
     expect(drifted.ok).toBe(false);
     expect(drifted.findings.map((f) => f.file)).toEqual(["docs/_sass/custom/setup.scss"]);
     const report = formatCheckReport(drifted);
     expect(report).toContain("-$blue-200: #ff0000;");
-    expect(report).toContain("+$blue-200: #1a73e8;");
+    expect(report).toContain("+$blue-200: #2953ff;");
 
     const { changed } = writeTokens(tmp);
     expect(changed).toEqual(["docs/_sass/custom/setup.scss"]);

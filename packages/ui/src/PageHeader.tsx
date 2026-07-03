@@ -30,9 +30,9 @@ export function PageHeader({ eyebrow, title, subtitle, meta, actions, size = "md
       <div className={cx("grid gap-5", hasRight && "xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end")}>
         <div className="min-w-0">
           {eyebrow && (
-            <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-secondary">{eyebrow}</div>
+            <div className="mb-1 text-3xs font-semibold uppercase tracking-widest text-secondary">{eyebrow}</div>
           )}
-          <h1 className={cx("font-bold text-on-surface", size === "lg" ? "text-3xl" : "text-2xl")}>{title}</h1>
+          <h1 className={cx("font-headline font-semibold tracking-tight text-on-surface", size === "lg" ? "text-3xl" : "text-2xl")}>{title}</h1>
           {subtitle && <p className="mt-2 max-w-3xl text-sm leading-6 text-secondary">{subtitle}</p>}
         </div>
         {hasRight && (

@@ -6,19 +6,19 @@
 $color-scheme: ge;
 
 $body-background-color: #ffffff; // --color-surface
-$body-heading-color: #202124; // --color-on-surface
-$body-text-color: #3c4043; // secondary ink, still AA on white
-$link-color: #1a73e8; // --color-primary
-$nav-child-link-color: #3c4043;
-$sidebar-color: #f8fafd; // --color-background
-$base-button-color: #f5f8fc; // --color-surface-container-low
-$btn-primary-color: #1a73e8;
-$code-background-color: #f5f8fc;
+$body-heading-color: #14171c; // --color-on-surface
+$body-text-color: #383e47; // secondary ink, still AA on white
+$link-color: #2953ff; // --color-primary
+$nav-child-link-color: #383e47;
+$sidebar-color: #f3f4f7; // --color-background
+$base-button-color: #f6f7f9; // --color-surface-container-low
+$btn-primary-color: #2953ff;
+$code-background-color: #f6f7f9;
 $feedback-color: darken($sidebar-color, 3%);
 $table-background-color: #ffffff;
 $search-background-color: #ffffff;
-$search-result-preview-color: #3c4043;
-$border-color: #dadce0; // --color-outline-variant
+$search-result-preview-color: #383e47;
+$border-color: #dfe2e8; // --color-outline-variant
 // END GENERATED: palette
 
 @import "./vendor/accessible-pygments/github-light";

@@ -230,7 +230,7 @@ export default function Interview({ status }: { status?: StatusBoard | null }) {
       <div className="border-b border-outline-variant/40 px-6 py-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-secondary">Pipeline · Stage 1</div>
+            <div className="mb-1 text-3xs font-semibold uppercase tracking-wider text-secondary">Pipeline · Stage 1</div>
             <h1 className="text-xl font-bold text-on-surface">Interview to Spec</h1>
             <p className="mt-1 max-w-2xl text-sm text-secondary">
               The agent drives the interview on the left; the spec materializes, structured and editable, on the right.
@@ -252,14 +252,14 @@ export default function Interview({ status }: { status?: StatusBoard | null }) {
       {error && <ErrorBanner tone="amber" message={error} className="mx-6 mt-3" />}
 
       {runtimeProblem && (
-        <div className="mx-6 mt-3 rounded-lg border border-amber-400/20 bg-amber-500/10 p-4">
+        <div className="mx-6 mt-3 rounded-lg border border-status-warning/20 bg-status-warning/10 p-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <div className="text-sm font-semibold text-amber-800">Runtime daemon needs a refresh</div>
-              <p className="mt-1 text-sm text-amber-700">
+              <div className="text-sm font-semibold text-status-warning-ink">Runtime daemon needs a refresh</div>
+              <p className="mt-1 text-sm text-status-warning-ink">
                 The local runtime daemon is running older code and doesn't support interview runs yet. Restart it once so the console can start a new interview.
               </p>
-              {runtimeStatus?.error && <div className="mt-1 text-xs text-amber-700/80">{runtimeStatus.error}</div>}
+              {runtimeStatus?.error && <div className="mt-1 text-xs text-status-warning-ink/80">{runtimeStatus.error}</div>}
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-2">
               <CommandChip command={restartCommand} />
@@ -330,7 +330,7 @@ function InterviewProgress({ steps }: { steps: ProgressStep[] }) {
           {index > 0 && <span aria-hidden className="mx-2.5 h-px w-6 bg-outline-variant/60 sm:w-8" />}
           <span className="flex items-center gap-1.5">
             {step.state === "done" ? (
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" aria-hidden />
+              <CheckCircle2 className="h-3.5 w-3.5 text-status-passed-ink" aria-hidden />
             ) : (
               <span
                 aria-hidden
@@ -351,7 +351,7 @@ function InterviewProgress({ steps }: { steps: ProgressStep[] }) {
               {step.label}
             </span>
             {step.detail && (
-              <span className="rounded-full bg-surface-container px-1.5 py-0.5 text-[10px] font-medium text-secondary">
+              <span className="rounded-full bg-surface-container px-1.5 py-0.5 text-4xs font-medium text-secondary">
                 {step.detail}
               </span>
             )}

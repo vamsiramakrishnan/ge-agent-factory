@@ -89,11 +89,11 @@ function JsonEditor({ value, onChange }: { value: any; onChange: (value: any) =>
             setError(err?.message || "Invalid JSON");
           }
         }}
-        className={`w-full resize-y rounded-md border bg-surface-container px-3 py-2 font-mono text-[11px] leading-snug text-on-surface outline-none ${
-          error ? "border-amber-400/60 focus:border-amber-500" : "border-outline-variant/60 focus:border-primary/50"
+        className={`w-full resize-y rounded-md border bg-surface-container px-3 py-2 font-mono text-3xs leading-snug text-on-surface outline-none ${
+          error ? "border-status-warning/60 focus:border-status-warning" : "border-outline-variant/60 focus:border-primary/50"
         }`}
       />
-      {error && <div className="mt-1 text-[11px] text-amber-700">JSON error: {error}</div>}
+      {error && <div className="mt-1 text-3xs text-status-warning-ink">JSON error: {error}</div>}
     </div>
   );
 }

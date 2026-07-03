@@ -10,7 +10,7 @@ export function ModeToggle({ mode, onChange }: ModeToggleProps) {
         onClick={() => onChange("local")}
         className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
           mode === "local"
-            ? "bg-white text-primary shadow-sm"
+            ? "bg-surface text-primary shadow-sm"
             : "text-secondary hover:text-on-surface"
         }`}
       >
@@ -20,7 +20,7 @@ export function ModeToggle({ mode, onChange }: ModeToggleProps) {
         onClick={() => onChange("remote")}
         className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
           mode === "remote"
-            ? "bg-white text-primary shadow-sm"
+            ? "bg-surface text-primary shadow-sm"
             : "text-secondary hover:text-on-surface"
         }`}
       >

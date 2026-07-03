@@ -105,7 +105,7 @@ export function LogStream({ runId, stage, item }: LogStreamProps) {
 
   if (!runId) {
     return (
-      <div className="flex items-center justify-center h-full text-on-surface-variant">
+      <div className="flex items-center justify-center h-full text-secondary">
         <p>Waiting for a run…</p>
       </div>
     );
@@ -127,18 +127,18 @@ export function LogStream({ runId, stage, item }: LogStreamProps) {
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-2 p-2 border-b border-outline-variant bg-surface-container">
         <div className="flex-1 flex items-center gap-2 px-2 py-1 bg-surface rounded border border-outline">
-          <Search className="w-4 h-4 text-on-surface-variant" />
+          <Search className="w-4 h-4 text-secondary" />
           <input
             type="text"
             placeholder="Filter logs..."
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="flex-1 bg-transparent text-sm outline-none text-on-surface placeholder:text-on-surface-variant"
+            className="flex-1 bg-transparent text-sm outline-none text-on-surface placeholder:text-secondary"
           />
         </div>
         {reconnecting && (
           <span
-            className="px-2 py-1 text-xs font-medium rounded inline-flex items-center gap-1.5 bg-amber-500/10 text-amber-500 border border-amber-500/30"
+            className="px-2 py-1 text-xs font-medium rounded inline-flex items-center gap-1.5 bg-status-warning/10 text-status-warning-ink border border-status-warning/30"
             title="Log stream dropped; reconnecting automatically"
           >
             <Wifi className="w-3 h-3 animate-pulse" />
@@ -148,14 +148,14 @@ export function LogStream({ runId, stage, item }: LogStreamProps) {
         <button
           onClick={() => setFollow(!follow)}
           className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
-            follow ? "bg-primary text-on-primary" : "bg-surface-container-high text-on-surface-variant"
+            follow ? "bg-primary text-on-primary" : "bg-surface-container-high text-secondary"
           }`}
         >
           Follow
         </button>
         <button
           onClick={() => setEvents([])}
-          className="px-3 py-1 text-xs font-medium rounded bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest transition-colors inline-flex items-center gap-1.5"
+          className="px-3 py-1 text-xs font-medium rounded bg-surface-container-high text-secondary hover:bg-outline-variant/50 transition-colors inline-flex items-center gap-1.5"
         >
           <Trash2 className="w-3 h-3" />
           Clear
@@ -168,6 +168,8 @@ export function LogStream({ runId, stage, item }: LogStreamProps) {
       >
         {displayEvents.map((evt, idx) => {
           if (evt.type === "log") {
+            // Dark terminal surface: lighter -400 shades stay legible on
+            // slate-900, unlike the AA-on-light-surface status ramp tokens.
             const levelClass =
               evt.level === "error"
                 ? "text-rose-400"
@@ -205,7 +207,7 @@ export function LogStream({ runId, stage, item }: LogStreamProps) {
 
           if (evt.type === "metric" || evt.type === "artifact") {
             return (
-              <div key={evt.id} className="text-cyan-400 text-[11px]">
+              <div key={evt.id} className="text-cyan-400 text-3xs">
                 [{evt.type}] {JSON.stringify(evt.data)}
               </div>
             );
