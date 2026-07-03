@@ -12,6 +12,9 @@ hero:
     - text: What is GE Agent Factory?
       link: /ge-agent-factory/start/what-is-the-factory/
       icon: right-arrow
+    - text: Skills-first setup
+      link: /ge-agent-factory/start/getting-started/
+      variant: minimal
     - text: Ten-minute tutorial
       link: /ge-agent-factory/start/quickstart/
       variant: minimal
@@ -24,12 +27,38 @@ hero:
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 <p align="center">
-  <img src="/ge-agent-factory/assets/diagrams/concept-pipeline.svg" alt="use case to contract to generate to validate and refine to simulate to deploy to publish" width="900" loading="eager" />
+  <img src="/ge-agent-factory/assets/diagrams/signature-pipeline.svg" alt="use case to contract to generate to validate and refine to simulate to deploy to publish" width="900" loading="eager" />
 </p>
 
-## The layer in three commands
+## Start with skills — let your coding agent install and run the factory
 
-Everything below runs on your machine — no cloud credentials required.
+The fastest path is not a manual checklist. GE Agent Factory ships as agent
+skills, including the installer, so Claude Code, Gemini CLI, Codex,
+Antigravity, agents-cli-style agent sessions, or any MCP-capable assistant can
+bootstrap the repo and then operate the factory with the same playbooks the
+harness uses.
+
+```bash
+bunx create-ge-agent-factory        # clone + guided, verified install
+```
+
+| Surface | Skills-first setup |
+| --- | --- |
+| Claude Code | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory`, then `/plugin install factory-bootstrap@ge-agent-factory` |
+| Gemini CLI | `gemini extensions install https://github.com/vamsiramakrishnan/ge-agent-factory` |
+| Codex · Antigravity · agents-cli-style sessions | `bunx create-ge-agent-factory --skills agents` |
+| Any MCP client | Run `bun tools/mcp-server.mjs` from a checkout to expose the `factory_*` tools |
+
+The generated workspaces still hand off to
+[Google agents-cli](https://google.github.io/agents-cli/) / ADK / Gemini
+Enterprise. Skills are the operator layer that teaches your assistant how to
+set up and drive this factory.
+
+## The manual fallback in three commands
+
+Everything below runs on your machine — no cloud credentials required. Use it
+when you want to drive setup yourself instead of asking an agent to follow the
+skills.
 
 <div class="ge-journey">
   <CardGrid>
