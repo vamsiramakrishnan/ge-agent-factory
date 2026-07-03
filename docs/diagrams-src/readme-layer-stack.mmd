@@ -1,0 +1,12 @@
+flowchart LR
+    FACTORY["GE Agent Factory\nintent -> contract -> simulations -> evals -> proof"]
+    CLI["agents-cli / ADK\nagent project scaffold, build, deploy"]
+    RUNTIME["ADK Agent Engine\nruntime"]
+    GE(["Gemini Enterprise\nend-user surface"])
+
+    FACTORY --> CLI --> RUNTIME --> GE
+
+    classDef factory fill:#e8f0fe,stroke:#1a73e8,color:#202124
+    classDef release fill:#e6f4ea,stroke:#34a853,color:#202124
+    class FACTORY factory
+    class RUNTIME,GE release

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1077.225 133.8" width="1077.225" height="133.8" style="--bg:#ffffff;--fg:#202124;--line:#5f6368;--accent:#1a73e8;--muted:#80868b;--surface:#eef3f9;--border:#dadce0;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<polyline class="edge" data-from="FACTORY" data-to="CLI" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="353.1559999999999,66.9 401.1559999999999,66.9" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="CLI" data-to="RUNTIME" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="646.1399999999999,66.9 694.1399999999999,66.9" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="RUNTIME" data-to="GE" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="842.7939999999999,66.9 890.7939999999999,66.9" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<g class="node" data-id="FACTORY" data-label="GE Agent Factory
+intent -&gt; contract -&gt; simulations -&gt; evals -&gt; proof" data-shape="rectangle">
+  <rect x="40" y="40" width="313.1559999999999" height="53.800000000000004" rx="0" ry="0" fill="#e8f0fe" stroke="#1a73e8" stroke-width="0.75" />
+  <text x="196.57799999999995" y="66.9" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="196.57799999999995" dy="-3.9000000000000012">GE Agent Factory</tspan><tspan x="196.57799999999995" dy="16.900000000000002">intent -&gt; contract -&gt; simulations -&gt; evals -&gt; proof</tspan></text>
+</g>
+<g class="node" data-id="CLI" data-label="agents-cli / ADK
+agent project scaffold, build, deploy" data-shape="rectangle">
+  <rect x="401.1559999999999" y="40" width="244.98399999999995" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="523.6479999999999" y="66.9" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="523.6479999999999" dy="-3.9000000000000012">agents-cli / ADK</tspan><tspan x="523.6479999999999" dy="16.900000000000002">agent project scaffold, build, deploy</tspan></text>
+</g>
+<g class="node" data-id="RUNTIME" data-label="ADK Agent Engine
+runtime" data-shape="rectangle">
+  <rect x="694.1399999999999" y="40" width="148.654" height="53.800000000000004" rx="0" ry="0" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <text x="768.4669999999999" y="66.9" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="768.4669999999999" dy="-3.9000000000000012">ADK Agent Engine</tspan><tspan x="768.4669999999999" dy="16.900000000000002">runtime</tspan></text>
+</g>
+<g class="node" data-id="GE" data-label="Gemini Enterprise
+end-user surface" data-shape="stadium">
+  <rect x="890.7939999999999" y="40" width="146.431" height="53.800000000000004" rx="26.900000000000002" ry="26.900000000000002" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <text x="964.0094999999999" y="66.9" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="964.0094999999999" dy="-3.9000000000000012">Gemini Enterprise</tspan><tspan x="964.0094999999999" dy="16.900000000000002">end-user surface</tspan></text>
+</g>
+</svg>

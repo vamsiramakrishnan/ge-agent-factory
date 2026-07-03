@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1069.5279999999998 263.6" width="1069.5279999999998" height="263.6" style="--bg:#ffffff;--fg:#202124;--line:#5f6368;--accent:#1a73e8;--muted:#80868b;--surface:#eef3f9;--border:#dadce0;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<polyline class="edge" data-from="CAP" data-to="CON" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="177.539,140.25000000000003 225.539,140.25000000000003" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="CON" data-to="SIM" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="420.13499999999993,140.25000000000003 432.13499999999993,140.25000000000003 432.13499999999993,66.9 444.13499999999993,66.9" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="CON" data-to="EVAL" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="420.13499999999993,140.25000000000003 432.13499999999993,140.25000000000003 432.13499999999993,140.25 477.19199999999995,140.25" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="CON" data-to="TOOLS" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="420.13499999999993,140.25000000000003 432.13499999999993,140.25000000000003 432.13499999999993,205.15000000000003 508.602,205.15000000000003" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="SIM" data-to="PROOF" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="606.127,66.9 618.127,66.9 618.127,140.25 630.127,140.25" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="EVAL" data-to="PROOF" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="582.127,140.25 618.127,140.25 618.127,140.25 630.127,140.25" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="TOOLS" data-to="PROOF" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="606.127,205.15000000000003 618.127,205.15000000000003 618.127,140.25 630.127,140.25" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="PROOF" data-to="HAND" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="735.0619999999999,140.25 783.0619999999999,140.25" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<g class="node" data-id="CAP" data-label="capture
+enterprise intent" data-shape="stadium">
+  <rect x="40" y="113.35000000000002" width="137.539" height="53.800000000000004" rx="26.900000000000002" ry="26.900000000000002" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="108.7695" y="140.25000000000003" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="108.7695" dy="-3.9000000000000012">capture</tspan><tspan x="108.7695" dy="16.900000000000002">enterprise intent</tspan></text>
+</g>
+<g class="node" data-id="CON" data-label="contract
+Enterprise Agent Contract" data-shape="rectangle">
+  <rect x="225.539" y="113.35000000000002" width="194.59599999999995" height="53.800000000000004" rx="0" ry="0" fill="#e8f0fe" stroke="#1a73e8" stroke-width="0.75" />
+  <text x="322.837" y="140.25000000000003" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="322.837" dy="-3.9000000000000012">contract</tspan><tspan x="322.837" dy="16.900000000000002">Enterprise Agent Contract</tspan></text>
+</g>
+<g class="node" data-id="SIM" data-label="simulate
+source-system twins" data-shape="rectangle">
+  <rect x="444.13499999999993" y="40" width="161.99200000000002" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="525.131" y="66.9" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="525.131" dy="-3.9000000000000012">simulate</tspan><tspan x="525.131" dy="16.900000000000002">source-system twins</tspan></text>
+</g>
+<g class="node" data-id="EVAL" data-label="eval suites" data-shape="rectangle">
+  <rect x="477.19199999999995" y="121.80000000000001" width="104.93499999999999" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="529.6595" y="140.25" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">eval suites</text>
+</g>
+<g class="node" data-id="TOOLS" data-label="tool plans" data-shape="rectangle">
+  <rect x="508.602" y="186.70000000000002" width="97.525" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="557.3645" y="205.15000000000003" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">tool plans</text>
+</g>
+<g class="node" data-id="PROOF" data-label="proof pack" data-shape="rectangle">
+  <rect x="630.127" y="121.80000000000001" width="104.93499999999999" height="36.900000000000006" rx="0" ry="0" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <text x="682.5944999999999" y="140.25" text-anchor="middle" font-size="13" font-weight="500" fill="#202124" dy="4.55">proof pack</text>
+</g>
+<g class="node" data-id="HAND" data-label="handoff
+agents-cli / ADK / Gemini Enterprise" data-shape="stadium">
+  <rect x="783.0619999999999" y="113.35000000000001" width="246.46599999999995" height="53.800000000000004" rx="26.900000000000002" ry="26.900000000000002" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <text x="906.2949999999998" y="140.25" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="906.2949999999998" dy="-3.9000000000000012">handoff</tspan><tspan x="906.2949999999998" dy="16.900000000000002">agents-cli / ADK / Gemini Enterprise</tspan></text>
+</g>
+</svg>
