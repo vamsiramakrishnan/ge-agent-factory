@@ -1,0 +1,694 @@
+help ge agents build | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge agents build | arg all | type=boolean required=false | Scope: the whole fleet
+help ge agents build | arg canary | type=boolean required=false | Scope: one canary agent
+help ge agents build | arg concurrency | type=string required=false | Parallel remote submissions (default 2)
+help ge agents build | arg dept | type=string required=false | Scope: one department
+help ge agents build | arg force | type=boolean required=false | Rebuild/resubmit even if already completed (local: wipes the selected workspaces first)
+help ge agents build | arg ids | type=string required=false | Scope: comma-separated agent/workspace ids
+help ge agents build | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge agents build | arg limit | type=string required=false | Max workspaces to build (local)
+help ge agents build | arg local | type=boolean required=false | Override: run on this machine via the harness
+help ge agents build | arg location | type=string required=false | Vertex/GenAI location for local harness stages
+help ge agents build | arg max-output-tokens | type=string required=false | Override generated-agent max_output_tokens (local and remote); default unset = model default
+help ge agents build | arg model | type=string required=false | Model for harness review/refine + generated agents (local and remote)
+help ge agents build | arg no-proxy | type=boolean required=false | Call the gateway directly over HTTPS instead of the gcloud run proxy tunnel
+help ge agents build | arg no-refine | type=boolean required=false | Skip the cloud Antigravity refine stage (REFINE=0)
+help ge agents build | arg no-vertex | type=boolean required=false | Disable Vertex-backed harness stages (negates --vertex; same as --vertex=false)
+help ge agents build | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge agents build | arg region | type=string required=false | Region (default us-central1)
+help ge agents build | arg remote | type=boolean required=false | Override: submit to the cloud factory
+help ge agents build | arg target | type=string required=false | Harness target (local; default previewed)
+help ge agents build | arg vertex | type=boolean required=false | Use Vertex for local harness review/preview stages (default true)
+help ge agents build | arg warm | type=boolean required=false | Pre-warm the shared uv cache before running (local)
+help ge agents build | arg watch | type=boolean required=false | Remote: after submitting, watch run status until all runs are terminal
+help ge agents build | description | Build agents. Uses the active mode (ge mode); --local/--remote override
+help ge agents fleet | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge agents fleet | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge agents fleet | arg limit | type=string required=false | Max bottlenecks to list (default 8)
+help ge agents fleet | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge agents fleet | arg region | type=string required=false | Region (default us-central1)
+help ge agents fleet | description | (deprecated → ge fleet status) Fleet pipeline health, bottlenecks, and repair owners
+help ge agents logs | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge agents logs | arg item | type=string required=false | Work item id within the run
+help ge agents logs | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge agents logs | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge agents logs | arg region | type=string required=false | Region (default us-central1)
+help ge agents logs | arg runId | type=positional required=true | Run id (from ge agents status / the ledger)
+help ge agents logs | arg stage | type=string required=false | Stage result to print (default validate)
+help ge agents logs | description | Pretty-print a stage's result + errors
+help ge agents resume | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge agents resume | arg ids | type=string required=false | Only resume these comma-separated use-case/workspace ids
+help ge agents resume | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge agents resume | arg local | type=boolean required=false | Override: plan against local mode
+help ge agents resume | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge agents resume | arg region | type=string required=false | Region (default us-central1)
+help ge agents resume | arg remote | type=boolean required=false | Override: plan against remote mode
+help ge agents resume | arg run | type=boolean required=false | Execute the resume plan (default: print it)
+help ge agents resume | arg target | type=string required=false | Target stage (default: previewed in local mode, published in remote mode)
+help ge agents resume | description | Resume interrupted/failed builds from the ledger: retry failed stages, finish local work, ship past the boundary
+help ge agents ship | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge agents ship | arg concurrency | type=string required=false | Parallel remote submissions (default 2)
+help ge agents ship | arg ids | type=string required=false | Comma-separated local workspace ids (default: all built locally)
+help ge agents ship | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge agents ship | arg no-proxy | type=boolean required=false | Call the gateway directly over HTTPS instead of the gcloud run proxy tunnel
+help ge agents ship | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge agents ship | arg region | type=string required=false | Region (default us-central1)
+help ge agents ship | arg start-stage | type=string required=false | Stage to start at remotely (default load_data)
+help ge agents ship | arg target-stage | type=string required=false | Stage to stop at (default publish_enterprise)
+help ge agents ship | description | Hand off locally-built agents to the cloud: upload + run deploy→register→publish remotely
+help ge agents status | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge agents status | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge agents status | arg no-proxy | type=boolean required=false | Call the gateway directly over HTTPS instead of the gcloud run proxy tunnel
+help ge agents status | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge agents status | arg region | type=string required=false | Region (default us-central1)
+help ge agents status | arg watch | type=boolean required=false | Re-poll every 15s until all runs are terminal
+help ge agents status | description | Poll submitted runs (stage tally)
+help ge agents sync | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge agents sync | arg create | type=boolean required=false | Create the Cloud Source repo if it doesn't exist (local mode)
+help ge agents sync | arg force | type=boolean required=false | Re-download/re-sync even if the run was already synced
+help ge agents sync | arg ids | type=string required=false | Comma-separated agent/workspace ids (default: all syncable workspaces)
+help ge agents sync | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge agents sync | arg local | type=boolean required=false | Override: sync locally-generated workspaces
+help ge agents sync | arg no-commit | type=boolean required=false | Copy the code but skip the git commit
+help ge agents sync | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge agents sync | arg push | type=boolean required=false | git push after committing
+help ge agents sync | arg region | type=string required=false | Region (default us-central1)
+help ge agents sync | arg remote | type=string required=false | Push to a specific git remote/URL (the repo the agent code must sit in)
+help ge agents sync | arg remote-mode | type=boolean required=false | Override: pull from GCS (cloud mode)
+help ge agents sync | description | Generated agent code → generated-agents/ → git (cloud: GCS; --local: harness workspaces)
+help ge agents | description | Agent lifecycle: build · resume · ship · status · fleet · logs · sync
+help ge apply | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge apply | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge apply | arg manifest | type=string required=false | Path to a manifest JSON (default ge.manifest.json)
+help ge apply | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge apply | arg region | type=string required=false | Region (default us-central1)
+help ge apply | arg yes | type=boolean required=false | Execute the plan in dependency order (default: plan only)
+help ge apply | description | Reconcile actual → desired platform + fleet from a manifest (ge.manifest.json). Plans by default; --yes executes.
+help ge autopilot events | arg follow | type=boolean required=false | Follow the live event stream (SSE)
+help ge autopilot events | arg id | type=positional required=true | Runtime task id
+help ge autopilot events | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge autopilot events | arg port | type=string required=false | Daemon port (default 17654)
+help ge autopilot events | description | (deprecated → ge runs events <id>) Show or follow one local GE runtime task event stream
+help ge autopilot run | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge autopilot run | arg attempts | type=string required=false | Repair attempts per item (default 3)
+help ge autopilot run | arg follow | type=boolean required=false | Stay attached and stream the run's live events
+help ge autopilot run | arg ids | type=string required=false | Comma-separated agent/workspace ids (default: current repair queue)
+help ge autopilot run | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge autopilot run | arg no-repair | type=boolean required=false | Observe blockers without running repair
+help ge autopilot run | arg port | type=string required=false | Daemon port (default 17654)
+help ge autopilot run | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge autopilot run | arg region | type=string required=false | Region (default us-central1)
+help ge autopilot run | arg run-preview | type=boolean required=false | Run preview after repair when supported
+help ge autopilot run | arg target-stage | type=string required=false | Gate to converge to (default preview)
+help ge autopilot run | description | (deprecated → ge fleet repair) Converge blocked agents to a target stage: observe blockers → repair → retry
+help ge autopilot status | arg id | type=positional required=false | Repair run id (omit to list recent runs)
+help ge autopilot status | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge autopilot status | arg limit | type=string required=false | Recent repair run count when no id is provided
+help ge autopilot status | arg port | type=string required=false | Daemon port (default 17654)
+help ge autopilot status | description | (deprecated → ge fleet repairs [id]) Show one repair run, or list recent repair runs
+help ge autopilot | description | (deprecated → ge fleet repair) autopilot is a fleet repair run
+help ge capture | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge capture | arg from | type=string required=false | Path to a captured contract (agent-spec.json) to register with the catalog
+help ge capture | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge capture | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge capture | arg region | type=string required=false | Region (default us-central1)
+help ge capture | description | Capture an agent contract: opens the console Interview (starts the console if needed); --from registers an existing contract file
+help ge config explain | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge config explain | arg agentsRepo | type=string required=false | Generated-agents git repo override
+help ge config explain | arg bucket | type=string required=false | GCS bucket override
+help ge config explain | arg gatewayUrl | type=string required=false | Factory gateway URL override
+help ge config explain | arg geApp | type=string required=false | Gemini Enterprise app id override
+help ge config explain | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge config explain | arg mode | type=string required=false | Operating mode override (local|remote)
+help ge config explain | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge config explain | arg projectNumber | type=string required=false | GCP project number override
+help ge config explain | arg region | type=string required=false | Region (default us-central1)
+help ge config explain | description | Show each config value and where it came from (flag · env · .ge.json · default)
+help ge config | description | Operator config: explain (precedence/sources)
+help ge cutover | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge cutover | arg apply | type=boolean required=false | Execute the steps (default: print the plan)
+help ge cutover | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge cutover | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge cutover | arg region | type=string required=false | Region (default us-central1)
+help ge cutover | description | Adopt a hand-managed project into Terraform (plan by default; --apply to run)
+help ge daemon events | arg follow | type=boolean required=false | Follow the live event stream (SSE)
+help ge daemon events | arg id | type=positional required=true | Runtime task id
+help ge daemon events | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge daemon events | arg port | type=string required=false | Daemon port (default 17654)
+help ge daemon events | description | Show or follow one local GE runtime task event stream
+help ge daemon start | arg foreground | type=boolean required=false | Run the daemon in this process instead of detaching
+help ge daemon start | arg host | type=string required=false | Bind host (default 127.0.0.1)
+help ge daemon start | arg port | type=string required=false | Daemon port (default 17654)
+help ge daemon start | description | Start the local GE runtime daemon
+help ge daemon status | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge daemon status | arg port | type=string required=false | Daemon port (default 17654)
+help ge daemon status | description | Show local GE runtime daemon status
+help ge daemon stop | description | Stop the local GE runtime daemon
+help ge daemon task | arg id | type=positional required=true | Runtime task id
+help ge daemon task | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge daemon task | arg port | type=string required=false | Daemon port (default 17654)
+help ge daemon task | description | Show one local GE runtime daemon task
+help ge daemon tasks | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge daemon tasks | arg limit | type=string required=false | Max tasks to list (default 20)
+help ge daemon tasks | arg port | type=string required=false | Daemon port (default 17654)
+help ge daemon tasks | description | List recent local GE runtime daemon tasks
+help ge daemon | description | Local GE runtime daemon: start · status · tasks · task · stop
+help ge data doctor | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge data doctor | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge data doctor | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge data doctor | arg region | type=string required=false | Region (default us-central1)
+help ge data doctor | description | Check the shared data stores (bucket, AlloyDB DSN secret, Bigtable, BigQuery)
+help ge data up | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge data up | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge data up | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge data up | arg region | type=string required=false | Region (default us-central1)
+help ge data up | description | Provision the shared data stores (terraform apply) → merge coords into .ge.json
+help ge data | description | Data plane (GCS/BigQuery/AlloyDB/Bigtable/Firestore): up · doctor
+help ge devex check | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge devex check | arg all-workspaces | type=boolean required=false | Also check scratch/test workspaces without a use-case id
+help ge devex check | arg id | type=string required=false | Workspace or use-case id to check (default: generated use-case workspaces)
+help ge devex check | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge devex check | arg no-docs | type=boolean required=false | Skip local docs link checks
+help ge devex check | arg no-local | type=boolean required=false | Skip local toolchain doctor checks
+help ge devex check | arg no-strict-workspaces | type=boolean required=false | Warn instead of fail on missing generated workspace files
+help ge devex check | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge devex check | arg region | type=string required=false | Region (default us-central1)
+help ge devex check | description | Fast DevEx gate: local doctor, docs links, and workspace manifest contracts
+help ge devex smoke | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge devex smoke | arg force | type=boolean required=false | Regenerate matching local workspace(s) from scratch
+help ge devex smoke | arg id | type=string required=false | Use-case id to build (default: catalog canary)
+help ge devex smoke | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge devex smoke | arg no-vertex | type=boolean required=false | Disable Vertex-backed harness stages
+help ge devex smoke | arg preview | type=boolean required=false | Shortcut for --target previewed (may require project/Vertex auth)
+help ge devex smoke | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge devex smoke | arg region | type=string required=false | Region (default us-central1)
+help ge devex smoke | arg target | type=string required=false | Local harness target (default validated; use previewed for full build boundary)
+help ge devex smoke | arg vertex | type=boolean required=false | Use Vertex-backed harness stages when target reaches them
+help ge devex smoke | arg warm | type=boolean required=false | Pre-warm the shared uv cache before running
+help ge devex smoke | description | One-command local DevEx proof: doctor → local mode → canary workspace manifest
+help ge devex | description | Developer-experience checks and one-command local smoke paths
+help ge doctor | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge doctor | arg cloud | type=boolean required=false | Only the factory section
+help ge doctor | arg command | type=string required=false | Check readiness for a mutating command (up|data.up|mcp.deploy|agents.build|agents.build.local|agents.ship|agents.sync)
+help ge doctor | arg data | type=boolean required=false | Only the data plane section
+help ge doctor | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge doctor | arg local | type=boolean required=false | Include the uv toolchain section
+help ge doctor | arg mcp | type=boolean required=false | Only the tool plane section
+help ge doctor | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge doctor | arg region | type=string required=false | Region (default us-central1)
+help ge doctor | description | Unified health: toolchain · factory · data plane · tool plane (--local/--cloud/--data/--mcp to filter). Narrower scoped checks: `ge data doctor` (data plane only), `ge mcp doctor` (tool plane / MCP services only).
+help ge fleet repair | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge fleet repair | arg attempts | type=string required=false | Repair attempts per item (default 3)
+help ge fleet repair | arg follow | type=boolean required=false | Stay attached and stream the run's live events
+help ge fleet repair | arg ids | type=string required=false | Comma-separated agent/workspace ids (default: current repair queue)
+help ge fleet repair | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge fleet repair | arg no-repair | type=boolean required=false | Observe blockers without running repair
+help ge fleet repair | arg port | type=string required=false | Daemon port (default 17654)
+help ge fleet repair | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge fleet repair | arg region | type=string required=false | Region (default us-central1)
+help ge fleet repair | arg run-preview | type=boolean required=false | Run preview after repair when supported
+help ge fleet repair | arg target-stage | type=string required=false | Gate to converge to (default preview)
+help ge fleet repair | description | Converge blocked agents to a target stage: observe blockers → repair → retry
+help ge fleet repairs | arg id | type=positional required=false | Repair run id (omit to list recent runs)
+help ge fleet repairs | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge fleet repairs | arg limit | type=string required=false | Recent repair run count when no id is provided
+help ge fleet repairs | arg port | type=string required=false | Daemon port (default 17654)
+help ge fleet repairs | description | Show one repair run, or list recent repair runs
+help ge fleet status | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge fleet status | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge fleet status | arg limit | type=string required=false | Max bottlenecks to list (default 8)
+help ge fleet status | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge fleet status | arg region | type=string required=false | Region (default us-central1)
+help ge fleet status | description | Fleet pipeline health, bottlenecks, and repair owners
+help ge fleet | description | Many-agent state and convergence: status · repair · repairs
+help ge handoff | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge handoff | arg ids | type=string required=false | Comma-separated local workspace ids (default: all built locally)
+help ge handoff | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge handoff | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge handoff | arg region | type=string required=false | Region (default us-central1)
+help ge handoff | arg target | type=positional required=false | Deploy target (default agents-cli)
+help ge handoff | description | Hand off proven agents to a deploy target (supported today: agents-cli → Agent Engine → Gemini Enterprise)
+help ge images build | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge images build | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge images build | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge images build | arg region | type=string required=false | Region (default us-central1)
+help ge images build | arg target | type=positional required=false | builder = shared toolchain image (default: gateway+worker)
+help ge images build | description | Build images: no arg = gateway+worker; 'builder' = shared toolchain image
+help ge images deploy | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge images deploy | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge images deploy | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge images deploy | arg region | type=string required=false | Region (default us-central1)
+help ge images deploy | arg target | type=positional required=false | gateway|worker|all (advisory; terraform apply reconciles the whole module)
+help ge images deploy | description | Build gateway/worker images + bind via terraform (Terraform owns Cloud Run config)
+help ge images | description | Gateway/worker images: build · deploy
+help ge infra | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge infra | arg gatewayImage | type=string required=false | Gateway container image to bind
+help ge infra | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge infra | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge infra | arg region | type=string required=false | Region (default us-central1)
+help ge infra | arg sub | type=positional required=true | init | plan | apply | output | destroy
+help ge infra | arg workerImage | type=string required=false | Worker container image to bind
+help ge infra | arg yes | type=boolean required=false | Required confirmation for destroy
+help ge infra | description | Drive the terraform module (init|plan|apply|output|destroy)
+help ge init | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge init | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge init | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge init | arg region | type=string required=false | Region (default us-central1)
+help ge init | description | Discover config (terraform outputs → gcloud) → .ge.json
+help ge journey plan | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge journey plan | arg ids | type=string required=false | Comma-separated agent/workspace ids
+help ge journey plan | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge journey plan | arg port | type=string required=false | Daemon port (default 17654)
+help ge journey plan | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge journey plan | arg region | type=string required=false | Region (default us-central1)
+help ge journey plan | arg scenario | type=string required=false | Scenario/use-case id
+help ge journey plan | arg systems | type=string required=false | Comma-separated source-system simulator ids
+help ge journey plan | arg target-stage | type=string required=false | Target stage (default preview)
+help ge journey plan | arg usecase | type=string required=false | Use case id from interview/spec registry
+help ge journey plan | description | (deprecated → ge pipeline plan) Show the pipeline plan for a spec/scenario (stages, owners, first commands)
+help ge journey run | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge journey run | arg attempts | type=string required=false | Repair attempts per item (default 3)
+help ge journey run | arg follow | type=boolean required=false | Stay attached and stream the run's live events
+help ge journey run | arg harness-agent | type=string required=false | Harness agent for the review node (default antigravity-sdk)
+help ge journey run | arg ids | type=string required=false | Comma-separated agent/workspace ids
+help ge journey run | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge journey run | arg location | type=string required=false | Location for the Antigravity review node
+help ge journey run | arg model | type=string required=false | Model for the Antigravity review node
+help ge journey run | arg no-antigravity | type=boolean required=false | Do not include the Antigravity spec/data review node
+help ge journey run | arg port | type=string required=false | Daemon port (default 17654)
+help ge journey run | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge journey run | arg region | type=string required=false | Region (default us-central1)
+help ge journey run | arg run-preview | type=boolean required=false | Run preview after repair when supported
+help ge journey run | arg scenario | type=string required=false | Scenario/use-case id
+help ge journey run | arg systems | type=string required=false | Comma-separated source-system simulator ids
+help ge journey run | arg target-stage | type=string required=false | Target stage (default preview)
+help ge journey run | arg usecase | type=string required=false | Use case id from interview/spec registry
+help ge journey run | arg with-factory | type=boolean required=false | Actually schedule the factory build node
+help ge journey run | arg workspace | type=string required=false | Scenario workspace path (default .ge/missions/<scenario>)
+help ge journey run | description | (deprecated → ge pipeline run) Start a pipeline run: the durable orchestration graph on the daemon
+help ge journey status | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge journey status | arg id | type=positional required=false | Pipeline run id (omit for the stage view)
+help ge journey status | arg ids | type=string required=false | Comma-separated agent/workspace ids
+help ge journey status | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge journey status | arg port | type=string required=false | Daemon port (default 17654)
+help ge journey status | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge journey status | arg region | type=string required=false | Region (default us-central1)
+help ge journey status | arg scenario | type=string required=false | Scenario/use-case id
+help ge journey status | arg systems | type=string required=false | Comma-separated source-system simulator ids
+help ge journey status | arg target-stage | type=string required=false | Target stage (default preview)
+help ge journey status | arg usecase | type=string required=false | Use case id from interview/spec registry
+help ge journey status | description | (deprecated → ge pipeline status) Pipeline status: bare → the live stage view; with an id → that run's graph + resume plan
+help ge journey | description | (deprecated → ge pipeline) the user journey is the pipeline
+help ge ledger backfill | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge ledger backfill | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge ledger backfill | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge ledger backfill | arg region | type=string required=false | Region (default us-central1)
+help ge ledger backfill | description | Import legacy run state (.ge-state.json + factory-run-*.json) into the durable ledger
+help ge ledger fleet | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge ledger fleet | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge ledger fleet | arg limit | type=string required=false | Max rows to list (default 50)
+help ge ledger fleet | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge ledger fleet | arg region | type=string required=false | Region (default us-central1)
+help ge ledger fleet | description | Latest work-item state per use case, from the ledger
+help ge ledger plan | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge ledger plan | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge ledger plan | arg mode | type=string required=false | local|remote (default local)
+help ge ledger plan | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge ledger plan | arg region | type=string required=false | Region (default us-central1)
+help ge ledger plan | arg target | type=string required=false | Target stage (default previewed)
+help ge ledger plan | description | Next action per work item from the ledger + pipeline state machine
+help ge ledger runs | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge ledger runs | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge ledger runs | arg limit | type=string required=false | Max runs to list (default 25)
+help ge ledger runs | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge ledger runs | arg region | type=string required=false | Region (default us-central1)
+help ge ledger runs | description | List runs recorded in the durable ledger (local + remote, one source of truth)
+help ge ledger | description | Durable run ledger (ADR 0001): backfill · runs · fleet · plan
+help ge mcp deploy | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge mcp deploy | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge mcp deploy | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge mcp deploy | arg region | type=string required=false | Region (default us-central1)
+help ge mcp deploy | description | Deploy the per-department custom MCP services to Cloud Run (fleet-level)
+help ge mcp doctor | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge mcp doctor | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge mcp doctor | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge mcp doctor | arg region | type=string required=false | Region (default us-central1)
+help ge mcp doctor | description | Check the per-department MCP services + Agent Registry readiness
+help ge mcp | description | Tool plane (per-department custom MCP services): deploy · doctor
+help ge mission plan | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge mission plan | arg attempts | type=string required=false | Repair attempts per item (default 3)
+help ge mission plan | arg follow | type=boolean required=false | Stay attached and stream the run's live events
+help ge mission plan | arg harness-agent | type=string required=false | Harness agent for the review node (default antigravity-sdk)
+help ge mission plan | arg ids | type=string required=false | Comma-separated agent/workspace ids
+help ge mission plan | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge mission plan | arg location | type=string required=false | Location for the Antigravity review node
+help ge mission plan | arg model | type=string required=false | Model for the Antigravity review node
+help ge mission plan | arg no-antigravity | type=boolean required=false | Do not include the Antigravity spec/data review node
+help ge mission plan | arg port | type=string required=false | Daemon port (default 17654)
+help ge mission plan | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge mission plan | arg region | type=string required=false | Region (default us-central1)
+help ge mission plan | arg run-preview | type=boolean required=false | Run preview after repair when supported
+help ge mission plan | arg scenario | type=string required=false | Scenario/use-case id
+help ge mission plan | arg systems | type=string required=false | Comma-separated source-system simulator ids
+help ge mission plan | arg target-stage | type=string required=false | Target stage (default preview)
+help ge mission plan | arg usecase | type=string required=false | Use case id from interview/spec registry
+help ge mission plan | arg with-factory | type=boolean required=false | Actually schedule the factory build node
+help ge mission plan | arg workspace | type=string required=false | Scenario workspace path (default .ge/missions/<scenario>)
+help ge mission plan | description | (deprecated → ge pipeline graph) Build the pipeline's orchestration DAG without running it
+help ge mission resume | arg id | type=positional required=true | Pipeline run id
+help ge mission resume | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge mission resume | arg port | type=string required=false | Daemon port (default 17654)
+help ge mission resume | description | (deprecated → ge pipeline resume) Resume a pipeline run via its deterministic resume plan
+help ge mission run | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge mission run | arg attempts | type=string required=false | Repair attempts per item (default 3)
+help ge mission run | arg follow | type=boolean required=false | Stay attached and stream the run's live events
+help ge mission run | arg harness-agent | type=string required=false | Harness agent for the review node (default antigravity-sdk)
+help ge mission run | arg ids | type=string required=false | Comma-separated agent/workspace ids
+help ge mission run | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge mission run | arg location | type=string required=false | Location for the Antigravity review node
+help ge mission run | arg model | type=string required=false | Model for the Antigravity review node
+help ge mission run | arg no-antigravity | type=boolean required=false | Do not include the Antigravity spec/data review node
+help ge mission run | arg port | type=string required=false | Daemon port (default 17654)
+help ge mission run | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge mission run | arg region | type=string required=false | Region (default us-central1)
+help ge mission run | arg run-preview | type=boolean required=false | Run preview after repair when supported
+help ge mission run | arg scenario | type=string required=false | Scenario/use-case id
+help ge mission run | arg systems | type=string required=false | Comma-separated source-system simulator ids
+help ge mission run | arg target-stage | type=string required=false | Target stage (default preview)
+help ge mission run | arg usecase | type=string required=false | Use case id from interview/spec registry
+help ge mission run | arg with-factory | type=boolean required=false | Actually schedule the factory build node
+help ge mission run | arg workspace | type=string required=false | Scenario workspace path (default .ge/missions/<scenario>)
+help ge mission run | description | (deprecated → ge pipeline run) Start a pipeline run: the durable orchestration graph on the daemon
+help ge mission status | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge mission status | arg id | type=positional required=false | Pipeline run id (omit for the stage view)
+help ge mission status | arg ids | type=string required=false | Comma-separated agent/workspace ids
+help ge mission status | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge mission status | arg port | type=string required=false | Daemon port (default 17654)
+help ge mission status | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge mission status | arg region | type=string required=false | Region (default us-central1)
+help ge mission status | arg scenario | type=string required=false | Scenario/use-case id
+help ge mission status | arg systems | type=string required=false | Comma-separated source-system simulator ids
+help ge mission status | arg target-stage | type=string required=false | Target stage (default preview)
+help ge mission status | arg usecase | type=string required=false | Use case id from interview/spec registry
+help ge mission status | description | (deprecated → ge pipeline status <id> · ge pipeline runs) Pipeline status: bare → the live stage view; with an id → that run's graph + resume plan
+help ge mission | description | (deprecated → ge pipeline) a mission is a pipeline run
+help ge mode | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge mode | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge mode | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge mode | arg region | type=string required=false | Region (default us-central1)
+help ge mode | arg set | type=positional required=false | local | remote
+help ge mode | description | Show or set the operating mode: local (build on this machine) | remote (cloud factory)
+help ge pipeline graph | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge pipeline graph | arg attempts | type=string required=false | Repair attempts per item (default 3)
+help ge pipeline graph | arg follow | type=boolean required=false | Stay attached and stream the run's live events
+help ge pipeline graph | arg harness-agent | type=string required=false | Harness agent for the review node (default antigravity-sdk)
+help ge pipeline graph | arg ids | type=string required=false | Comma-separated agent/workspace ids
+help ge pipeline graph | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge pipeline graph | arg location | type=string required=false | Location for the Antigravity review node
+help ge pipeline graph | arg model | type=string required=false | Model for the Antigravity review node
+help ge pipeline graph | arg no-antigravity | type=boolean required=false | Do not include the Antigravity spec/data review node
+help ge pipeline graph | arg port | type=string required=false | Daemon port (default 17654)
+help ge pipeline graph | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge pipeline graph | arg region | type=string required=false | Region (default us-central1)
+help ge pipeline graph | arg run-preview | type=boolean required=false | Run preview after repair when supported
+help ge pipeline graph | arg scenario | type=string required=false | Scenario/use-case id
+help ge pipeline graph | arg systems | type=string required=false | Comma-separated source-system simulator ids
+help ge pipeline graph | arg target-stage | type=string required=false | Target stage (default preview)
+help ge pipeline graph | arg usecase | type=string required=false | Use case id from interview/spec registry
+help ge pipeline graph | arg with-factory | type=boolean required=false | Actually schedule the factory build node
+help ge pipeline graph | arg workspace | type=string required=false | Scenario workspace path (default .ge/missions/<scenario>)
+help ge pipeline graph | description | Build the pipeline's orchestration DAG without running it
+help ge pipeline plan | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge pipeline plan | arg ids | type=string required=false | Comma-separated agent/workspace ids
+help ge pipeline plan | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge pipeline plan | arg port | type=string required=false | Daemon port (default 17654)
+help ge pipeline plan | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge pipeline plan | arg region | type=string required=false | Region (default us-central1)
+help ge pipeline plan | arg scenario | type=string required=false | Scenario/use-case id
+help ge pipeline plan | arg systems | type=string required=false | Comma-separated source-system simulator ids
+help ge pipeline plan | arg target-stage | type=string required=false | Target stage (default preview)
+help ge pipeline plan | arg usecase | type=string required=false | Use case id from interview/spec registry
+help ge pipeline plan | description | Show the pipeline plan for a spec/scenario (stages, owners, first commands)
+help ge pipeline resume | arg id | type=positional required=true | Pipeline run id
+help ge pipeline resume | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge pipeline resume | arg port | type=string required=false | Daemon port (default 17654)
+help ge pipeline resume | description | Resume a pipeline run via its deterministic resume plan
+help ge pipeline run | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge pipeline run | arg attempts | type=string required=false | Repair attempts per item (default 3)
+help ge pipeline run | arg follow | type=boolean required=false | Stay attached and stream the run's live events
+help ge pipeline run | arg harness-agent | type=string required=false | Harness agent for the review node (default antigravity-sdk)
+help ge pipeline run | arg ids | type=string required=false | Comma-separated agent/workspace ids
+help ge pipeline run | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge pipeline run | arg location | type=string required=false | Location for the Antigravity review node
+help ge pipeline run | arg model | type=string required=false | Model for the Antigravity review node
+help ge pipeline run | arg no-antigravity | type=boolean required=false | Do not include the Antigravity spec/data review node
+help ge pipeline run | arg port | type=string required=false | Daemon port (default 17654)
+help ge pipeline run | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge pipeline run | arg region | type=string required=false | Region (default us-central1)
+help ge pipeline run | arg run-preview | type=boolean required=false | Run preview after repair when supported
+help ge pipeline run | arg scenario | type=string required=false | Scenario/use-case id
+help ge pipeline run | arg systems | type=string required=false | Comma-separated source-system simulator ids
+help ge pipeline run | arg target-stage | type=string required=false | Target stage (default preview)
+help ge pipeline run | arg usecase | type=string required=false | Use case id from interview/spec registry
+help ge pipeline run | arg with-factory | type=boolean required=false | Actually schedule the factory build node
+help ge pipeline run | arg workspace | type=string required=false | Scenario workspace path (default .ge/missions/<scenario>)
+help ge pipeline run | description | Start a pipeline run: the durable orchestration graph on the daemon
+help ge pipeline runs | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge pipeline runs | arg limit | type=string required=false | Max runs to list (default 20)
+help ge pipeline runs | arg port | type=string required=false | Daemon port (default 17654)
+help ge pipeline runs | description | List recent pipeline runs
+help ge pipeline status | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge pipeline status | arg id | type=positional required=false | Pipeline run id (omit for the stage view)
+help ge pipeline status | arg ids | type=string required=false | Comma-separated agent/workspace ids
+help ge pipeline status | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge pipeline status | arg port | type=string required=false | Daemon port (default 17654)
+help ge pipeline status | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge pipeline status | arg region | type=string required=false | Region (default us-central1)
+help ge pipeline status | arg scenario | type=string required=false | Scenario/use-case id
+help ge pipeline status | arg systems | type=string required=false | Comma-separated source-system simulator ids
+help ge pipeline status | arg target-stage | type=string required=false | Target stage (default preview)
+help ge pipeline status | arg usecase | type=string required=false | Use case id from interview/spec registry
+help ge pipeline status | description | Pipeline status: bare → the live stage view; with an id → that run's graph + resume plan
+help ge pipeline | description | The spec-to-deploy pipeline: plan · run · status · resume · graph · runs
+help ge prove | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge prove | arg force | type=boolean required=false | Re-prove from scratch (wipes matching local workspaces first)
+help ge prove | arg id | type=string required=false | Prove one use-case/workspace id (default: everything built, or the catalog canary when fresh)
+help ge prove | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge prove | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge prove | arg region | type=string required=false | Region (default us-central1)
+help ge prove | arg target | type=string required=false | Stop at this stage (default: validated when fresh, the build boundary otherwise)
+help ge prove | arg vertex | type=boolean required=false | Use Vertex-backed stages when the target reaches them
+help ge prove | arg warm | type=boolean required=false | Pre-warm the shared uv cache before running
+help ge prove | arg watch | type=boolean required=false | Watch contract sources and re-prove on change (local, pure computation — safe to loop)
+help ge prove | description | Prove the current contracts end to end: fresh machine → health check + first agent build; agents built already → rebuild their proof. --watch re-proves on contract change
+help ge runs events | arg follow | type=boolean required=false | Follow the live event stream (SSE)
+help ge runs events | arg id | type=positional required=true | Runtime task id
+help ge runs events | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge runs events | arg port | type=string required=false | Daemon port (default 17654)
+help ge runs events | description | Show or follow one local GE runtime task event stream
+help ge runs job | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge runs job | arg port | type=string required=false | Daemon port (default 17654)
+help ge runs job | description | Run a ge command as a background run; pass args after --
+help ge runs list | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge runs list | arg limit | type=string required=false | Max runs to list per source (default 20)
+help ge runs list | arg port | type=string required=false | Daemon port (default 17654)
+help ge runs list | description | One timeline over every run: daemon tasks + durable ledger runs, newest first
+help ge runs replay | arg id | type=positional required=true | Run id (daemon task)
+help ge runs replay | arg instant | type=boolean required=false | No pacing — dump the whole event log
+help ge runs replay | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge runs replay | arg port | type=string required=false | Daemon port (default 17654)
+help ge runs replay | arg speed | type=string required=false | Time-compression factor (default 10; gaps capped at 2s)
+help ge runs replay | description | Replay a finished run's recorded events at speed (default 10×)
+help ge runs resume | arg id | type=positional required=true | Runtime task id
+help ge runs resume | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge runs resume | arg port | type=string required=false | Daemon port (default 17654)
+help ge runs resume | description | Resume a runtime task using its deterministic resumePlan
+help ge runs show | arg id | type=positional required=true | Runtime task id
+help ge runs show | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge runs show | arg port | type=string required=false | Daemon port (default 17654)
+help ge runs show | description | Show one local GE runtime daemon task
+help ge runs | description | Run activity across every kind: list · show · events · replay · resume · job
+help ge runtime events | arg follow | type=boolean required=false | Follow the live event stream (SSE)
+help ge runtime events | arg id | type=positional required=true | Runtime task id
+help ge runtime events | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge runtime events | arg port | type=string required=false | Daemon port (default 17654)
+help ge runtime events | description | Show or follow one local GE runtime task event stream
+help ge runtime resume | arg id | type=positional required=true | Runtime task id
+help ge runtime resume | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge runtime resume | arg port | type=string required=false | Daemon port (default 17654)
+help ge runtime resume | description | Resume a runtime task using its deterministic resumePlan
+help ge runtime start autopilot | arg attempts | type=string required=false | Repair attempts per item (default 3)
+help ge runtime start autopilot | arg ids | type=string required=false | Comma-separated agent/workspace ids
+help ge runtime start autopilot | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge runtime start autopilot | arg port | type=string required=false | Daemon port (default 17654)
+help ge runtime start autopilot | arg repair | type=boolean required=false | Run repair on blockers (default true; --no-repair to observe only)
+help ge runtime start autopilot | arg runPreview | type=boolean required=false | Run preview after repair when supported
+help ge runtime start autopilot | arg stage | type=string required=false | Target convergence stage (default preview)
+help ge runtime start autopilot | description | Start an Autopilot runtime task
+help ge runtime start job | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge runtime start job | arg port | type=string required=false | Daemon port (default 17654)
+help ge runtime start job | description | Start a GE command runtime task; pass command args after --
+help ge runtime start repair | arg attempts | type=string required=false | Repair attempts per item (default 3)
+help ge runtime start repair | arg ids | type=string required=false | Comma-separated agent/workspace ids
+help ge runtime start repair | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge runtime start repair | arg port | type=string required=false | Daemon port (default 17654)
+help ge runtime start repair | arg repair | type=boolean required=false | Run repair on blockers (default true; --no-repair to observe only)
+help ge runtime start repair | arg runPreview | type=boolean required=false | Run preview after repair when supported
+help ge runtime start repair | arg stage | type=string required=false | Target convergence stage (default preview)
+help ge runtime start repair | description | Start an Autopilot runtime task
+help ge runtime start | description | Start runtime tasks: repair (canonical) · autopilot (deprecated) · job
+help ge runtime status | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge runtime status | arg port | type=string required=false | Daemon port (default 17654)
+help ge runtime status | description | Show local GE runtime daemon status
+help ge runtime task | arg id | type=positional required=true | Runtime task id
+help ge runtime task | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge runtime task | arg port | type=string required=false | Daemon port (default 17654)
+help ge runtime task | description | Show one local GE runtime daemon task
+help ge runtime tasks | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge runtime tasks | arg limit | type=string required=false | Max tasks to list (default 20)
+help ge runtime tasks | arg port | type=string required=false | Daemon port (default 17654)
+help ge runtime tasks | description | List recent local GE runtime daemon tasks
+help ge runtime | description | (deprecated → ge runs · ge fleet repair) runtime task plumbing: status · tasks · task · events · resume · start
+help ge state paths | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge state paths | description | Show the canonical local GE state layout
+help ge state reset | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge state reset | arg yes | type=boolean required=false | Confirm destructive local state reset
+help ge state reset | description | Clear local GE runtime/factory/mission/interview state
+help ge state | description | Local GE state: paths · reset
+help ge status | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge status | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge status | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge status | arg region | type=string required=false | Region (default us-central1)
+help ge status | description | Where am I? Position on capture → prove → handoff, the current blocker, and the exact next command
+help ge up | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge up | arg data | type=boolean required=false | Stand up the data plane only (combinable with --infra/--mcp)
+help ge up | arg infra | type=boolean required=false | Stand up the infra plane only (combinable with --data/--mcp)
+help ge up | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge up | arg mcp | type=boolean required=false | Stand up the tool (MCP) plane only (combinable with --infra/--data)
+help ge up | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge up | arg region | type=string required=false | Region (default us-central1)
+help ge up | description | Stand up the platform: infra + data + tool planes → unified doctor (--infra/--data/--mcp for one)
+help ge | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+help ge | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+help ge | arg project | type=string required=false alias=gcp-project | GCP project id
+help ge | arg region | type=string required=false | Region (default us-central1)
+help ge | description | GE Agent Factory — set up · stand up · run agents. Bare `ge` shows status + next step.
+mcp factory_capture | description | Start the golden path: ensures the console is running and returns the Interview deep link for conversational contract capture (document grounding, contract editing). Optional from=<path> registers an already-captured agent-spec.json with the catalog. Read-mostly: starts a local dev server if one is not already up.
+mcp factory_capture | param from | type=string optional=true
+mcp factory_doctor | description | Preflight the FACTORY/cloud plane: required GCP APIs, IAM bindings, IAP, memory, and core service health, with suggested fixes. Scope: the factory pipeline itself (build/deploy machinery), not the per-department MCP tool services. See also: factory_mcp_doctor for MCP-service-specific checks.
+mcp factory_handoff | description | Mutating: hand proven, locally-built agents to a deploy target. 'agents-cli' is the supported target today (uploads the prebuilt workspaces, then runs deploy→register→publish remotely — same path as factory_ship). An unsupported target returns a structured what/where/why/fix error, never a stack trace.
+mcp factory_handoff | param ids | type=string optional=true
+mcp factory_handoff | param target | type=string enum=agents-cli optional=true
+mcp factory_list_usecases | description | List the agent use-case catalog (filterable by department/search).
+mcp factory_list_usecases | param department | type=string optional=true
+mcp factory_list_usecases | param limit | type=number optional=true
+mcp factory_list_usecases | param search | type=string optional=true
+mcp factory_logs | description | Fetch a stage's result JSON for a run (errors, exit codes, build log URL).
+mcp factory_logs | param item | type=string optional=true
+mcp factory_logs | param runId | type=string optional=false
+mcp factory_logs | param stage | type=string optional=true
+mcp factory_mcp_deploy | description | Deploy the per-department custom MCP services to Cloud Run (fleet-level).
+mcp factory_mcp_doctor | description | Check the TOOL plane only: per-department custom MCP service health (Cloud Run readiness) + Agent Registry entries. Narrower than factory_doctor, which covers the overall factory/cloud plane (APIs, IAM, IAP, memory) and does not inspect individual MCP services.
+mcp factory_prove | description | Mutating (local): prove the current contracts. Dispatch rule: no local workspaces yet → the fresh-machine proof (doctor → validated canary workspace, i.e. devex smoke); workspaces present → rebuild them through the harness to the build boundary (agents build). Returns the proof verdicts; hand off with factory_handoff afterwards.
+mcp factory_prove | param force | type=boolean optional=true
+mcp factory_prove | param id | type=string optional=true
+mcp factory_prove | param target | type=string optional=true
+mcp factory_provision | description | Mutating: build agents. local=true runs on-machine via the Antigravity harness (stops at the local build boundary; use factory_ship to hand off to the cloud afterwards); otherwise submits directly to the cloud gateway end-to-end. scope: 'canary' | 'all'; or dept/ids. Poll cloud submissions with factory_status.
+mcp factory_provision | param concurrency | type=string optional=true
+mcp factory_provision | param dept | type=string optional=true
+mcp factory_provision | param force | type=boolean optional=true
+mcp factory_provision | param ids | type=string optional=true
+mcp factory_provision | param limit | type=string optional=true
+mcp factory_provision | param local | type=boolean optional=true
+mcp factory_provision | param noProxy | type=boolean optional=true
+mcp factory_provision | param scope | type=string enum=canary,all optional=true
+mcp factory_provision | param target | type=string optional=true
+mcp factory_provision | param vertex | type=boolean optional=true
+mcp factory_ship | description | Mutating: hand off agents already built LOCALLY (via factory_provision with local=true) to the cloud: uploads the prebuilt workspaces, then runs deploy→register→publish remotely. Use factory_status afterwards to poll the resulting cloud run(s). Not for agents built directly in the cloud — those go straight through factory_provision.
+mcp factory_ship | param ids | type=string optional=true
+mcp factory_ship | param noProxy | type=boolean optional=true
+mcp factory_ship | param startStage | type=string optional=true
+mcp factory_ship | param targetStage | type=string optional=true
+mcp factory_status | description | Read-only: poll already-submitted CLOUD runs (from a prior factory_provision without local=true) and return the stage tally + per-run status. Does not track local harness builds — see factory_provision's local mode for those.
+mcp factory_status | param noProxy | type=boolean optional=true
+mcp factory_sync | description | Mutating: sync generated agent CODE (not deploy state) to/from git. local=true pushes on-machine harness workspaces (to agentsRepo/remote); otherwise pulls the cloud-built output from GCS into generated-agents/. Distinct from factory_ship, which hands off local builds into the cloud deploy pipeline rather than syncing source.
+mcp factory_sync | param commit | type=boolean optional=true
+mcp factory_sync | param create | type=boolean optional=true
+mcp factory_sync | param force | type=boolean optional=true
+mcp factory_sync | param local | type=boolean optional=true
+mcp factory_sync | param push | type=boolean optional=true
+mcp factory_sync | param remote | type=string optional=true
+registry agents.build | requires bins=["gcloud"]
+registry agents.build | requires cloudAuth=true
+registry agents.build | requires config=["project","geAppId","gatewayUrl"]
+registry agents.build | requires toolPlane=true
+registry agents.build | route POST /api/ge/agents/build | cli ge agents build | risk starts-workloads | duration varies
+registry agents.build.local | requires bins=["node","uv"]
+registry agents.build.local | requires config=["project"]
+registry agents.build.local | requires localToolchain=true
+registry agents.build.local | route none | cli ge agents build --local | risk starts-local-workloads | duration varies
+registry agents.ship | requires bigQueryHard=true
+registry agents.ship | requires bins=["gcloud"]
+registry agents.ship | requires cloudAuth=true
+registry agents.ship | requires config=["project","gatewayUrl","dataBucket"]
+registry agents.ship | requires shipHandoff=true
+registry agents.ship | requires toolPlane=true
+registry agents.ship | route POST /api/ge/agents/ship | cli ge agents ship | risk mutates-cloud | duration varies
+registry agents.sync | requires bins=["git"]
+registry agents.sync | requires config=[]
+registry agents.sync | route POST /api/ge/agents/sync | cli ge agents sync | risk writes-repo | duration 1-5m
+registry capture | requires bins=["bun"]
+registry capture | requires config=[]
+registry capture | route none | cli ge capture | risk starts-local-workloads | duration under 30s
+registry daemon.start | requires bins=["node"]
+registry daemon.start | requires config=[]
+registry daemon.start | route POST /api/ge/daemon/start | cli ge daemon start | risk starts-local-workloads | duration under 10s
+registry data.up | requires bigQueryHard=true
+registry data.up | requires bins=["gcloud","terraform"]
+registry data.up | requires cloudAuth=true
+registry data.up | requires config=["project","geAppId"]
+registry data.up | requires configWritable=true
+registry data.up | requires terraformRoot=true
+registry data.up | route POST /api/ge/data/up | cli ge data up | risk mutates-cloud | duration 10-25m
+registry doctor | requires bins=[]
+registry doctor | requires config=[]
+registry doctor | route none | cli ge doctor | risk read-only | duration under 1m
+registry handoff | requires bigQueryHard=true
+registry handoff | requires bins=["gcloud"]
+registry handoff | requires cloudAuth=true
+registry handoff | requires config=["project","gatewayUrl","dataBucket"]
+registry handoff | requires shipHandoff=true
+registry handoff | requires toolPlane=true
+registry handoff | route POST /api/ge/handoff | cli ge handoff | risk mutates-cloud | duration varies
+registry logs | requires bins=[]
+registry logs | requires config=[]
+registry logs | route none | cli ge agents logs | risk read-only | duration under 10s
+registry mcp.deploy | requires bins=["gcloud"]
+registry mcp.deploy | requires cloudAuth=true
+registry mcp.deploy | requires config=["project","serviceAccount","dataBucket"]
+registry mcp.deploy | requires configWritable=true
+registry mcp.deploy | route POST /api/ge/mcp/deploy | cli ge mcp deploy | risk mutates-cloud | duration 5-20m
+registry mcp.doctor | requires bins=[]
+registry mcp.doctor | requires config=[]
+registry mcp.doctor | route none | cli ge mcp doctor | risk read-only | duration under 1m
+registry mission.run | requires bins=["node","uv"]
+registry mission.run | requires config=["project"]
+registry mission.run | requires dataGenerationRuntime=true
+registry mission.run | requires localToolchain=true
+registry mission.run | route none | cli ge pipeline run | risk starts-local-workloads | duration varies
+registry prove | requires bins=["node","uv"]
+registry prove | requires config=[]
+registry prove | requires localToolchain=true
+registry prove | route POST /api/ge/prove | cli ge prove | risk starts-local-workloads | duration varies
+registry status | requires bins=[]
+registry status | requires config=[]
+registry status | route none | cli ge agents status | risk read-only | duration under 1m
+registry up | requires bins=["gcloud","terraform"]
+registry up | requires cloudAuth=true
+registry up | requires config=["project","geAppId"]
+registry up | requires configWritable=true
+registry up | requires terraformRoot=true
+registry up | route POST /api/ge/up | cli ge up | risk mutates-cloud | duration 20-45m
+registry usecases.list | requires bins=[]
+registry usecases.list | requires config=[]
+registry usecases.list | route none | cli factory list-usecases | risk read-only | duration under 10s
