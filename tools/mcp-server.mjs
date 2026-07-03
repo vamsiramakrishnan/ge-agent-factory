@@ -19,6 +19,11 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import * as core from "./lib/factory-core.mjs";
 import { GE_COMMANDS } from "./lib/ge-command-registry.mjs";
+import { runDrive } from "./lib/live/drive-session.mjs";
+import { proveLive } from "./lib/live/prove-live.mjs";
+import { runBench } from "./lib/bench/runner.mjs";
+import { compileEvals } from "./lib/behavioral-compiler/compile-command.mjs";
+import { DxError } from "./lib/errors/dx-error.mjs";
 
 const cfg = () => core.loadConfig({});
 const result = (data) => ({ content: [{ type: "text", text: JSON.stringify(data, null, 2) }] });
@@ -57,6 +62,45 @@ const HANDLERS = {
     : core.sync(cfg(), a),
   "mcp.deploy":    () => core.mcpDeploy(cfg()),
   "mcp.doctor":    () => core.mcpDoctor(cfg()),
+  // Live surfaces — same core functions as `ge drive` / `ge prove --live` /
+  // `ge bench` / `ge evals compile`, called in-process.
+  "drive":         (a) => runDrive(cfg(), {
+    turns: String(a.turns || "").split("\n").map((line) => line.trim()).filter(Boolean),
+    cassette: a.cassette,
+    record: a.record,
+    recordId: a.recordId,
+    recordCassette: a.recordCassette,
+    targetAgent: a.targetAgent,
+    assistant: a.assistant,
+    strictResponder: a.strictResponder,
+  }),
+  "prove.live":    (a) => proveLive(cfg(), {
+    evalset: a.evalset,
+    cassette: a.cassette,
+    maxCases: a.maxCases,
+    maxTurns: a.maxTurns,
+    strictResponder: a.strictResponder,
+    updateBaseline: a.updateBaseline,
+    targetAgent: a.targetAgent,
+    assistant: a.assistant,
+  }),
+  "bench":         (a) => {
+    if (!a.cassette && !a.confirm) {
+      throw new DxError("a live bench sends real traffic at a paid surface — pass confirm=true", {
+        where: "factory_bench",
+        why: "live load runs are explicit and cost-guarded by design; cassette replays never need confirmation",
+        fix: "factory_bench with cassette=<recording>, or confirm=true",
+      });
+    }
+    return runBench(cfg(), {
+      cassette: a.cassette,
+      sessions: a.sessions,
+      turnsPerSession: a.turns,
+      concurrency: a.concurrency ? String(a.concurrency).split(",").map(Number).filter((level) => Number.isFinite(level) && level > 0) : [1],
+      targetAgent: a.targetAgent,
+    });
+  },
+  "evals.compile": (a) => compileEvals({ spec: a.spec, id: a.id, maxCases: a.maxCases }),
 };
 
 for (const command of Object.values(GE_COMMANDS)) {
