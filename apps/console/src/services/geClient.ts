@@ -309,6 +309,22 @@ export interface GeCommand {
     localToolchain?: boolean;
   };
 }
+// Golden-path position (GET /api/ge/position) — the same contract
+// tools/lib/golden-path.mjs's goldenPathPosition() emits for the bare-`ge`
+// board: where am I on capture → prove → handoff, what blocks me, and the
+// exact next command to run.
+export type GoldenPathStageId = "capture" | "prove" | "handoff";
+export interface GoldenPathStage {
+  id: GoldenPathStageId;
+  done: boolean;
+  detail: string;
+}
+export interface GoldenPathPosition {
+  stages: GoldenPathStage[];
+  current: GoldenPathStageId;
+  blocker: string | null;
+  next: string;
+}
 export interface GeJob {
   id: string;
   argv: string[];
@@ -497,6 +513,8 @@ const post = (url: string, body: unknown) => j(url, { method: "POST", body: JSON
 export const ge = {
   status: () => j<StatusBoard>("/api/ge/status"),
   commands: () => j<{ commands: GeCommand[] }>("/api/ge/commands"),
+  // Golden-path position for the shell's capture → prove → handoff band.
+  position: () => j<GoldenPathPosition>("/api/ge/position"),
   specs: (body: { q?: string; department?: string; ids?: string[]; limit?: number } = {}) => {
     const params = new URLSearchParams();
     if (body.q) params.set("q", body.q);

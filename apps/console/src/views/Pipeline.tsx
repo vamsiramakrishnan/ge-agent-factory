@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, Boxes, Database, FileText, GitBranch, ListChecks
 import { Button, CONTROL_CLASS, Field, PageHeader, Segmented, Select, Stat } from "@ge/ui";
 import { ge, startJob, type JourneyPlan, type JourneyStage, type RuntimeTaskSummary, type SpecCatalog, type SpecOption, type StatusBoard } from "../services/geClient";
 import { Lifecycle } from "../components/Lifecycle";
+import { CliEquivalent } from "../components/CliEquivalent";
 import { ErrorBanner } from "../components/ErrorBanner";
 import { actionCommand, isExecutableAction, planNavigates } from "../lib/actionPlans";
 import { useToast } from "../lib/toast";
@@ -614,6 +615,9 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
                   <Play className="h-4 w-4" />
                   {primaryCtaLabel}
                 </Button>
+                {/* Registry-derived CLI equivalent of this launch: interview
+                    capture vs the resumable pipeline run. */}
+                <CliEquivalent commandId={sourceMode === "new" ? "capture" : "mission.run"} />
                 {sourceMode === "existing" && selectedCount === 0 && (
                   <p className="text-xs text-secondary">Select at least one spec before running.</p>
                 )}

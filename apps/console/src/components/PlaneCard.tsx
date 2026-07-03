@@ -1,5 +1,6 @@
 import { Wrench, Rocket } from "lucide-react";
 import { Button, StatusPill } from "@ge/ui";
+import { CliEquivalent } from "./CliEquivalent";
 
 export interface PlaneCardProps {
   name: string;
@@ -8,9 +9,15 @@ export interface PlaneCardProps {
   onCheckReadiness: () => void;
   onStandUp: () => void;
   busy?: boolean;
+  /**
+   * Registry command id behind "Stand up" (e.g. "data.up", "mcp.deploy").
+   * When set, the card shows the CLI-equivalent chip derived from the command
+   * registry — the console teaching the CLI. Optional and additive.
+   */
+  cliCommandId?: string;
 }
 
-export function PlaneCard({ name, up, detail, onCheckReadiness, onStandUp, busy = false }: PlaneCardProps) {
+export function PlaneCard({ name, up, detail, onCheckReadiness, onStandUp, busy = false, cliCommandId }: PlaneCardProps) {
   return (
     <div className="editorial-micro-card rounded-lg p-5">
       <div className="flex items-start justify-between mb-3">
@@ -32,6 +39,12 @@ export function PlaneCard({ name, up, detail, onCheckReadiness, onStandUp, busy 
           Stand up
         </Button>
       </div>
+
+      {cliCommandId && !up && (
+        <div className="mt-3">
+          <CliEquivalent commandId={cliCommandId} />
+        </div>
+      )}
     </div>
   );
 }
