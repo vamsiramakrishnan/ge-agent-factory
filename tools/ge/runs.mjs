@@ -133,14 +133,58 @@ const runsReplayCmd = defineCommand({
   }),
 });
 
+// `respond` closes the operator↔run loop for anything driving this CLI (a
+// human, CI, or an AI assistant): a running task that pauses on a question
+// emits a `ge.interaction.request` event on its stream; this verb submits the
+// answer through the same daemon route the console uses. Watch with
+// `ge runs events <id> --follow`, answer with `ge runs respond`.
+const runsRespondCmd = defineCommand({
+  meta: { name: "respond", description: "Answer a running task's pending question (interaction): --answers JSON, --freeform text, or --cancel" },
+  args: {
+    task: { type: "positional", required: true, description: "Task id (from ge runs list / the event stream)" },
+    interaction: { type: "positional", required: true, description: "Interaction id (from the ge.interaction.request event)" },
+    answers: { type: "string", description: 'Full responses JSON: [{"questionId":"q1","selectedOptionIds":["a"],"freeformResponse":"..."}]' },
+    question: { type: "string", description: "Question id for --freeform/--select (single-question shorthand)" },
+    freeform: { type: "string", description: "Freeform answer text (with --question)" },
+    select: { type: "string", description: "Comma-separated option ids to select (with --question)" },
+    cancel: { type: "boolean", description: "Cancel the interaction instead of answering" },
+    json: { type: "boolean", description: "Machine-readable JSON result on stdout" },
+    port: { type: "string", description: "Daemon port (default 17654)" },
+  },
+  run: guarded(async ({ args }) => {
+    let responses = [];
+    if (args.answers) responses = JSON.parse(args.answers);
+    else if (args.question) {
+      responses = [{
+        questionId: args.question,
+        ...(args.select ? { selectedOptionIds: String(args.select).split(",").map((option) => option.trim()).filter(Boolean) } : {}),
+        ...(args.freeform ? { freeformResponse: args.freeform } : {}),
+      }];
+    }
+    const result = await daemonRequest(daemonPort(args), `/api/tasks/${encodeURIComponent(args.task)}/interactions/${encodeURIComponent(args.interaction)}`, {
+      method: "POST",
+      body: { cancelled: !!args.cancel, responses },
+    });
+    emit(args, result, (r) => {
+      out(ui.kv([
+        ["submitted", pc.green(args.interaction)],
+        ["answers", String(r.responseCount ?? responses.length)],
+        args.cancel && ["cancelled", pc.yellow("yes")],
+      ]));
+      out(ui.next(`ge runs events ${args.task} --follow`, "watch the task pick the answer up"));
+    });
+  }),
+});
+
 export const runs = defineCommand({
-  meta: { name: "runs", description: "Run activity across every kind: list · show · events · replay · resume · job" },
+  meta: { name: "runs", description: "Run activity across every kind: list · show · events · replay · resume · respond · job" },
   subCommands: {
     list: runsListCmd,
     show: defineCommand({ meta: { name: "show", description: runtimeLeaves.task.meta.description }, args: runtimeLeaves.task.args, run: runtimeLeaves.task.run }),
     events: runtimeLeaves.events,
     replay: runsReplayCmd,
     resume: runtimeLeaves.resume,
+    respond: runsRespondCmd,
     job: defineCommand({ meta: { name: "job", description: "Run a ge command as a background run; pass args after --" }, args: runtimeLeaves.startJob.args, run: runtimeLeaves.startJob.run }),
   },
 });
