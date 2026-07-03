@@ -151,7 +151,8 @@ Base OKF conformance follows the upstream permissive specification: concept Mark
 
 The `ge okf` command group adds substrate operations:
 
-- `ge okf compile --from spec --to bundle --spec <path> --out <okf-dir>` compiles the current build contract into an OKF bundle.
+- `ge okf compile --from spec --to bundle --spec <path> --out <okf-dir>` compiles one current build contract into an OKF bundle.
+- `ge okf compile --all --out <okf-root>` compiles every generated catalog agent spec into OKF bundles and writes per-bundle audit, graph, and coverage sidecars under each bundle's `.ge/` directory.
 - `ge okf compile --from bundle --to spec --bundle <okf-dir> --out <spec.json>` compiles OKF back into a generation-spec-compatible object.
 - `ge okf audit <bundle> [--json] [--strict]` reports base conformance, navigability, semantic coverage, behavioral coverage, and consumption readiness.
 - `ge okf graph <bundle> [--json] [--format cytoscape]` extracts concept nodes and section-inferred edges.

@@ -721,6 +721,7 @@ Compile spec→OKF bundle or OKF bundle→spec
 | `--spec` | string |  |
 | `--bundle` | string |  |
 | `--out` | string |  |
+| `--all` | boolean | Compile every generated catalog agent spec into an OKF bundle and write audit/graph/coverage sidecars |
 
 ### `ge okf diff`
 
