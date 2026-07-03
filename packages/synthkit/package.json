@@ -1,0 +1,22 @@
+{
+  "name": "@ge/synthkit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Deterministic synthetic-data engine: pack recipes (schema → generators, FK topology), seeded statistical distributions, the statistical realism tier, faker-backed cell-value generation, and the Snowfakery recipe renderers. Depends only on @ge/std and third-party leaves (faker, yaml) — nothing in apps or tools — so it can be imported from anywhere without a layering cycle.",
+  "exports": {
+    "./recipe": "./src/recipe.mjs",
+    "./distributions": "./src/distributions.mjs",
+    "./realism": "./src/realism.mjs",
+    "./values": "./src/values.mjs",
+    "./snowfakery": "./src/snowfakery.mjs"
+  },
+  "scripts": {
+    "test": "bun test src"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^10.4.0",
+    "@ge/std": "workspace:*",
+    "yaml": "^2.9.0"
+  }
+}

@@ -22,7 +22,7 @@ import { GE_COMMANDS } from "./lib/ge-command-registry.mjs";
 import { runDrive } from "./lib/live/drive-session.mjs";
 import { proveLive } from "./lib/live/prove-live.mjs";
 import { runBench } from "./lib/bench/runner.mjs";
-import { compileEvals } from "./lib/behavioral-compiler/compile-command.mjs";
+import { compileEvals } from "./lib/evals/compile-command.mjs";
 import { DxError } from "./lib/errors/dx-error.mjs";
 
 const cfg = () => core.loadConfig({});

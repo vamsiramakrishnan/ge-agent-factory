@@ -6,7 +6,7 @@
 // sha256 of the input envelope — so two compiles of the same spec are
 // byte-identical, which is what lets goldens/parity checks hold downstream.
 import { createHash } from "node:crypto";
-import { DxError } from "../errors/dx-error.mjs";
+import { DxError } from "@ge/std/dx-error";
 import { validateBehavioralGraph, BEHAVIORAL_GRAPH_API_VERSION, BEHAVIORAL_GRAPH_KIND } from "./graph.mjs";
 import { expandConversationCases } from "./expansions.mjs";
 import { slugify, sharesToken } from "./text.mjs";
@@ -216,7 +216,7 @@ export function compileBehavioralGraph(envelope, { sourcePath } = {}) {
     throw new DxError("compiled BehavioralGraph failed its own schema", {
       where: sourcePath || envelope.id,
       why: result.issues.join("; "),
-      fix: "bun test tools/lib/behavioral-compiler",
+      fix: "bun test packages/evalkit",
     });
   }
   return result.graph;

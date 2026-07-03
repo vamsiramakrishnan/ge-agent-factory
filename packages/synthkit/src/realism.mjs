@@ -1,6 +1,7 @@
 /**
- * realism-profiles.mjs — statistical "realistic" realization tier on top of the
- * offline generator in data-recipe.mjs.
+ * realism.mjs — statistical "realistic" realization tier on top of the
+ * offline generator in recipe.mjs.
+ * (Formerly apps/factory/scripts/lib/realism-profiles.mjs.)
  *
  * `generateRealistic(recipe, contract, { seed })` first runs `generateWithFaker`
  * (so primary keys, FK closure, and row counts are exactly the proven baseline)
@@ -13,8 +14,10 @@
  *                            position, so early/source states outnumber terminal
  *   - lifecycle dates     -> per-row monotone eventSequence anchored on a
  *                            business-hours creation timestamp
- *   - person/email fields -> a shared deterministic persona pool, so the same
- *                            humans recur across collections and emails match names
+ *   - person/email fields -> a shared deterministic persona pool (seeded
+ *                            faker names derived from the recipe seed), so the
+ *                            same humans recur across collections and emails
+ *                            match names
  *   - a seeded fraction of rows gets realistic edge cases (unicode names,
  *     max-length text, 0.01 amounts, same-day lifecycles, near-duplicate names)
  *
@@ -25,7 +28,9 @@
  * Returns { data: { [collection]: rows[] }, report: { personas, edgeCases, distributions } }.
  */
 
-import { generateWithFaker } from "./data-recipe.mjs";
+import { Faker, en } from "@faker-js/faker";
+
+import { generateWithFaker } from "./recipe.mjs";
 import {
   rngFor,
   logNormal,
@@ -35,7 +40,7 @@ import {
   weightedChoice,
   businessHoursTimestamp,
   eventSequence,
-} from "./synth-distributions.mjs";
+} from "./distributions.mjs";
 
 // ── profiles ──────────────────────────────────────────────────────────────────
 
@@ -54,8 +59,7 @@ export const REALISM_PROFILES = {
 
 // ── persona pool ──────────────────────────────────────────────────────────────
 
-const PERSONA_FIRST = ["Avery", "Jordan", "Riley", "Casey", "Morgan", "Quinn", "Sasha", "Devin", "Noah", "Priya", "Marco", "Lena", "Sofia", "Dwayne", "Noor", "Kai", "Ingrid", "Mateo", "Yuki", "Tunde", "Elena", "Ravi", "Maeve", "Omar"];
-const PERSONA_LAST = ["Johnson", "Raman", "Silva", "Becker", "Kallio", "Ortiz", "Fischer", "Nguyen", "Patel", "Costa", "Hassan", "Ibrahim", "Reyes", "Tan", "Okafor", "Singh", "Larsen", "Moreau", "Sato", "Adeyemi", "Petrova", "Iyer", "Gallagher", "Haddad"];
+export const PERSONA_POOL_SIZE = 24;
 
 /** ASCII-fold a name fragment for use as an email local-part token. */
 export function personaSlug(text) {
@@ -67,20 +71,34 @@ export function personaSlug(text) {
 }
 
 /**
- * Fixed, deterministic 24-persona pool shared by every collection in a pack.
- * The (i*7+3)%24 pairing avoids first[i]/last[i] lockstep without randomness.
+ * Deterministic 24-persona pool shared by every collection in a pack, drawn
+ * from a PRIVATE seeded faker instance (`new Faker`, never the shared
+ * singleton — the singleton's seed belongs to its callers; see values.mjs).
+ * The faker seed derives from the recipe seed, so the same humans recur
+ * across collections for a given seed and the whole pool changes coherently
+ * when the seed does. Full names are deduped (email/name coherence checks
+ * key on the name) and each fragment must ASCII-fold to a non-empty email
+ * local-part, so emails stay derivable from names.
  */
-export function buildPersonaPool() {
+export function buildPersonaPool(seed = 0) {
+  const personaFaker = new Faker({ locale: [en] });
+  personaFaker.seed(Number(seed) >>> 0);
   const personas = [];
-  for (let i = 0; i < 24; i += 1) {
-    const first = PERSONA_FIRST[i];
-    const last = PERSONA_LAST[(i * 7 + 3) % 24];
+  const seen = new Set();
+  while (personas.length < PERSONA_POOL_SIZE) {
+    const first = personaFaker.person.firstName();
+    const last = personaFaker.person.lastName();
+    const firstSlug = personaSlug(first);
+    const lastSlug = personaSlug(last);
+    const name = `${first} ${last}`;
+    if (!firstSlug || !lastSlug || seen.has(name)) continue;
+    seen.add(name);
     personas.push({
       first,
       last,
-      name: `${first} ${last}`,
+      name,
       display: `${last}, ${first}`,
-      email: `${personaSlug(first)}.${personaSlug(last)}@example.com`,
+      email: `${firstSlug}.${lastSlug}@example.com`,
     });
   }
   return personas;
@@ -251,7 +269,7 @@ export function generateRealistic(recipe, contract, { seed, profile = "realistic
   const baseSeed = (Number(seed ?? recipe.seed) >>> 0) || 0;
   const rate = edgeCaseRate === undefined ? spec.edgeCaseRate : Number(edgeCaseRate);
   const data = generateWithFaker(recipe, { seed: baseSeed });
-  const personas = buildPersonaPool();
+  const personas = buildPersonaPool(baseSeed);
   const stateOrders = workflowStateOrders(contract);
   const distributions = {};
   const edgeCases = [];

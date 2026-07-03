@@ -11,7 +11,7 @@ import {
   applyMaterialization,
   mergeByKey,
   checkFkClosure,
-} from "./lib/data-recipe.mjs";
+} from "@ge/synthkit/recipe";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, "../../..");

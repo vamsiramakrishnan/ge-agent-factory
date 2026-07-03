@@ -7,10 +7,10 @@ import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { compileEvals } from "./compile-command.mjs";
-import { normalizeEvalset } from "../evals/evalset.mjs";
+import { normalizeEvalset } from "./evalset.mjs";
 import { isDxError } from "../errors/dx-error.mjs";
 
-const FIXTURE_SPEC = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "benefits-enrollment.spec.json");
+const FIXTURE_SPEC = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "packages", "evalkit", "src", "fixtures", "benefits-enrollment.spec.json");
 
 test("compiles a bring-your-own spec file into the full artifact set", async () => {
   const outDir = mkdtempSync(join(tmpdir(), "ge-evals-compile-"));

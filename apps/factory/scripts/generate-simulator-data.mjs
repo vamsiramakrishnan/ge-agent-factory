@@ -4,7 +4,7 @@
  *
  * Given a simulator system id (resolved against the registry) OR an explicit pack
  * contract (schema/projection/materialization/workflows), this:
- *   1. builds a normalized recipe from the contract (scripts/lib/data-recipe.mjs),
+ *   1. builds a normalized recipe from the contract (@ge/synthkit/recipe),
  *   2. tries the Snowfakery tier — spawns `snowfakery` on the recipe; if `snowfakery`
  *      is not on PATH or the run fails, logs a clear notice and falls back to the
  *      in-process Faker tier (zero external deps, fully offline),
@@ -19,7 +19,7 @@
  *   node scripts/generate-simulator-data.mjs --system servicenow --no-snowfakery   # force offline tier
  *   node scripts/generate-simulator-data.mjs --system servicenow --stdout          # print seed, don't write
  *   node scripts/generate-simulator-data.mjs --system servicenow --profile realistic [--edge-case-rate 0.06]
- *                                                                # statistical realism tier (lib/realism-profiles.mjs)
+ *                                                                # statistical realism tier (@ge/synthkit/realism)
  */
 import { readFileSync, writeFileSync, mkdirSync, existsSync, mkdtempSync, rmSync } from "node:fs";
 import { parseFlagArgs } from "@ge/std/cli-args";
@@ -31,14 +31,14 @@ import { writeJson, readJson } from "@ge/std/json-io";
 import {
   buildRecipe,
   generateWithFaker,
-  toSnowfakeryYaml,
   scenarioCoverageRows,
   applyMaterialization,
   mergeByKey,
   checkFkClosure,
   snakeCase,
-} from "./lib/data-recipe.mjs";
-import { generateRealistic, REALISM_PROFILES } from "./lib/realism-profiles.mjs";
+} from "@ge/synthkit/recipe";
+import { toSnowfakeryYaml } from "@ge/synthkit/snowfakery";
+import { generateRealistic, REALISM_PROFILES } from "@ge/synthkit/realism";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const SYSTEMS_DIR = resolve(SCRIPT_DIR, "../simulator-systems");

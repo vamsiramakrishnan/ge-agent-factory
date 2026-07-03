@@ -3,9 +3,11 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { buildRecipe, toSnowfakeryYaml } from "../scripts/lib/data-recipe.mjs";
+import { buildRecipe } from "@ge/synthkit/recipe";
+import { toSnowfakeryYaml } from "@ge/synthkit/snowfakery";
 
-// PARITY ORACLE for data-recipe.mjs's toSnowfakeryYaml, which — prior to this oracle's
+// PARITY ORACLE for @ge/synthkit/snowfakery's toSnowfakeryYaml (recipe dialect;
+// formerly scripts/lib/data-recipe.mjs), which — prior to this oracle's
 // existence — had NO byte-level regression coverage. toSnowfakeryYaml is a pure function
 // (recipe in, string out) so this needs no CLI/tmpdir harness: build a recipe from a real,
 // representative simulator pack contract (servicenow — covers pk/ref/enum/number/boolean/

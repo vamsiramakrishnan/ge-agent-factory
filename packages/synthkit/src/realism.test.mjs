@@ -3,16 +3,20 @@ import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { buildRecipe, checkFkClosure } from "./data-recipe.mjs";
+import { buildRecipe, checkFkClosure } from "./recipe.mjs";
 import {
   REALISM_PROFILES,
   buildPersonaPool,
   personaSlug,
   generateRealistic,
-} from "./realism-profiles.mjs";
+} from "./realism.mjs";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
-const SERVICENOW = resolve(SCRIPT_DIR, "../../simulator-systems/servicenow");
+// Test-fixture DATA only (not an import): the servicenow pack is the
+// representative contract corpus, owned by apps/factory. Resolved via the
+// repo root so the path reads unambiguously from the package.
+const REPO_ROOT = resolve(SCRIPT_DIR, "../../..");
+const SERVICENOW = join(REPO_ROOT, "apps", "factory", "simulator-systems", "servicenow");
 
 function loadContract(packDir) {
   const read = (name) => JSON.parse(readFileSync(join(packDir, name), "utf8"));
@@ -35,7 +39,7 @@ function totalRows(data) {
   return Object.values(data).reduce((sum, rows) => sum + rows.length, 0);
 }
 
-describe("realism-profiles: contract", () => {
+describe("realism: contract", () => {
   test("REALISM_PROFILES exposes the realistic profile", () => {
     expect(REALISM_PROFILES.realistic).toBeDefined();
     expect(typeof REALISM_PROFILES.realistic.description).toBe("string");
@@ -75,7 +79,7 @@ describe("realism-profiles: contract", () => {
   });
 });
 
-describe("realism-profiles: temporal coherence", () => {
+describe("realism: temporal coherence", () => {
   test("lifecycle dates are causally ordered per row (opened <= resolved)", () => {
     const { data } = generate(42);
     for (const row of data.incidents) {
@@ -94,19 +98,26 @@ describe("realism-profiles: temporal coherence", () => {
   });
 });
 
-describe("realism-profiles: persona coherence", () => {
-  test("persona pool is deterministic, sized 24, emails derived from names", () => {
-    const pool = buildPersonaPool();
+describe("realism: persona coherence", () => {
+  test("persona pool is deterministic per seed, sized 24, emails derived from names", () => {
+    const pool = buildPersonaPool(42);
     expect(pool.length).toBe(24);
-    expect(JSON.stringify(pool)).toBe(JSON.stringify(buildPersonaPool()));
+    expect(JSON.stringify(pool)).toBe(JSON.stringify(buildPersonaPool(42)));
+    // A different seed yields a different pool (faker-backed, seed-derived).
+    expect(JSON.stringify(pool)).not.toBe(JSON.stringify(buildPersonaPool(43)));
+    // Full names are unique so name -> email lookups are unambiguous.
+    expect(new Set(pool.map((p) => p.name)).size).toBe(24);
     for (const p of pool) {
       expect(p.email).toBe(`${personaSlug(p.first)}.${personaSlug(p.last)}@example.com`);
+      expect(personaSlug(p.first).length).toBeGreaterThan(0);
+      expect(personaSlug(p.last).length).toBeGreaterThan(0);
     }
   });
 
   test("person fields draw from the shared pool across collections", () => {
     const { data, report } = generate(42);
-    const names = new Set(buildPersonaPool().map((p) => p.name));
+    // The pool is derived from the same seed the generator ran with.
+    const names = new Set(buildPersonaPool(42).map((p) => p.name));
     const edgeIds = new Set(report.edgeCases.map((e) => `${e.collection}:${e.id}`));
     const checks = [
       ["incidents", "incident_id", "assigned_to"],
@@ -128,7 +139,7 @@ describe("realism-profiles: persona coherence", () => {
 
   test("emails match the row's primary persona name", () => {
     const { data, report } = generate(42);
-    const pool = buildPersonaPool();
+    const pool = buildPersonaPool(42);
     const byName = new Map(pool.map((p) => [p.name, p.email]));
     const edgeIds = new Set(report.edgeCases.filter((e) => e.collection === "assignment_groups").map((e) => e.id));
     let verified = 0;
@@ -142,7 +153,7 @@ describe("realism-profiles: persona coherence", () => {
   });
 });
 
-describe("realism-profiles: distributions", () => {
+describe("realism: distributions", () => {
   test("money fields are logNormal with 2-decimal rounding and positive values", () => {
     const { data, report } = generate(42);
     expect(report.distributions["service_requests.price"]).toBe("logNormal");
@@ -172,7 +183,7 @@ describe("realism-profiles: distributions", () => {
   });
 });
 
-describe("realism-profiles: edge cases", () => {
+describe("realism: edge cases", () => {
   test("edge cases are injected at roughly the configured rate and reported", () => {
     const { data, report } = generate(42, { edgeCaseRate: 0.1 });
     const rows = totalRows(data);

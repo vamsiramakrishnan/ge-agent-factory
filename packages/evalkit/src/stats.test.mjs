@@ -1,8 +1,8 @@
 // Known-value contracts for the advisory statistics: Wilson bounds, seeded
 // bootstrap determinism, the unbiased pass@k estimator, and flake detection.
 import { test, expect } from "bun:test";
-import { wilsonInterval, bootstrapCI, passAtK, flakiness, mulberry32 } from "./eval-stats.mjs";
-import { isDxError } from "../errors/dx-error.mjs";
+import { wilsonInterval, bootstrapCI, passAtK, flakiness, mulberry32 } from "./stats.mjs";
+import { isDxError } from "@ge/std/dx-error";
 
 test("wilsonInterval(9, 10): the textbook 95% bounds", () => {
   const { low, high, rate } = wilsonInterval(9, 10);

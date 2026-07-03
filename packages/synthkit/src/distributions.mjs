@@ -1,7 +1,8 @@
 /**
- * synth-distributions.mjs — seeded statistical distributions for synthetic data.
+ * distributions.mjs — seeded statistical distributions for synthetic data.
+ * (Formerly apps/factory/scripts/lib/synth-distributions.mjs.)
  *
- * Zero-dependency companion to data-recipe.mjs. Every sampler takes an explicit
+ * Zero-dependency companion to recipe.mjs. Every sampler takes an explicit
  * `rng` (a mulberry32 closure from `makeRng` / `rngFor`) so identical (seed) =>
  * identical byte output; nothing here reads Math.random(), Date.now(), or the
  * wall clock. Date math only converts already-drawn epoch milliseconds to ISO
@@ -13,9 +14,9 @@
  * eventSequence (monotone lifecycle timestamps).
  */
 
-import { makeRng } from "./data-recipe.mjs";
+import { makeRng } from "./recipe.mjs";
 
-// FNV-1a, duplicated from data-recipe.mjs (not exported there) so per-label
+// FNV-1a, duplicated from recipe.mjs (not exported there) so per-label
 // sub-streams fold the same way across both libraries.
 function hashLabel(value) {
   let hash = 0x811c9dc5;
