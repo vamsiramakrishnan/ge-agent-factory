@@ -71,7 +71,7 @@ Capture an agent contract: opens the console Interview (starts the console if ne
 
 ### `ge prove`
 
-Prove the current contracts end to end: fresh machine → health check + first agent build; agents built already → rebuild their proof. --watch re-proves on contract change
+Prove the current contracts end to end: fresh machine → health check + first agent build; agents built already → rebuild their proof. --live verifies the shipped agent through its assist surface; --watch re-proves on contract change
 
 | Flag | Type | Description |
 |---|---|---|
@@ -82,6 +82,14 @@ Prove the current contracts end to end: fresh machine → health check + first a
 | `--vertex` | boolean | Use Vertex-backed stages when the target reaches them |
 | `--warm` | boolean | Pre-warm the shared uv cache before running |
 | `--watch` | boolean | Watch contract sources and re-prove on change (local, pure computation — safe to loop) |
+| `--live` | boolean | Release verification: run evalset cases through the deployed agent's live assist surface (explicit, cost-guarded — never the default) |
+| `--evalset` | string | Evalset to prove live (ADK-compatible; record one with ge drive --record) |
+| `--cassette` | string | Replay a recorded cassette instead of live traffic (deterministic, no cloud) |
+| `--maxCases` | string | Cap the number of eval cases run live (cost guard) |
+| `--maxTurns` | string | Cap turns per case (cost guard) |
+| `--strictResponder` | boolean | Fail cases whose responder identity cannot be verified |
+| `--updateBaseline` | boolean | Accept the current live behavior as the new conformance baseline |
+| `--targetAgent` | string | Expected responding agent id (asserted against the stream) |
 
 ### `ge handoff`
 
