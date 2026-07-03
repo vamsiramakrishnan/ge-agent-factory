@@ -1,20 +1,18 @@
 // tools/ge/pipeline.mjs — `ge pipeline plan|run|status|resume|graph|runs`.
 //
-// THE canonical noun for taking specs through the factory. This group absorbs
-// two former surfaces that described the same thing from different angles:
-//   · `ge journey`  — the user-facing stage view (interview → … → deploy)
-//   · `ge mission`  — the executable orchestration DAG behind it
+// THE canonical noun for taking specs through the factory. Two views of the
+// same thing from different angles:
+//   · `plan`  — the user-facing stage view (interview → … → deploy)
+//   · `graph` — the executable orchestration DAG behind it
 // A "pipeline run" is one execution of that DAG (daemon task kind
-// `pipeline.run`; persisted wire kind `mission.run` — see TASK_KIND_ALIASES in
-// tools/lib/runtime-daemon.mjs). The old groups remain as deprecated aliases
-// in tools/ge/journey.mjs and tools/ge/mission.mjs.
+// `pipeline.run`, which is also the persisted wire kind — no alias layer).
 import { defineCommand } from "citty";
-import { buildJourneyPlan } from "../lib/journey-plan.mjs";
-import { buildMissionGraph } from "../lib/mission/mission-plan.mjs";
+import { buildPipelinePlan } from "../lib/pipeline-plan.mjs";
+import { buildPipelineGraph } from "../lib/pipeline/pipeline-graph-plan.mjs";
 import {
   guarded, common, cfgFrom, emit, out, pc, core,
   daemonPort, daemonStatusSnapshot, daemonRequest, parseIds,
-  renderMissionGraph, renderJourneyPlan, renderResumePlan, statusText,
+  renderPipelineGraph, renderPipelinePlan, renderResumePlan, statusText,
   followTaskEvents,
 } from "./shared.mjs";
 
@@ -30,7 +28,7 @@ const pipelineArgs = {
 
 const runArgs = {
   ...pipelineArgs,
-  workspace: { type: "string", description: "Scenario workspace path (default .ge/missions/<scenario>)" },
+  workspace: { type: "string", description: "Scenario workspace path (default .ge/pipelines/<scenario>)" },
   attempts: { type: "string", description: "Repair attempts per item (default 3)" },
   "run-preview": { type: "boolean", description: "Run preview after repair when supported" },
   "with-factory": { type: "boolean", description: "Actually schedule the factory build node" },
@@ -66,7 +64,7 @@ export const pipelinePlanCmd = defineCommand({
   args: pipelineArgs,
   run: guarded(async ({ args }) => {
     const cfg = cfgFrom(args);
-    const journey = await core.journeyPlan(cfg, {
+    const pipeline = await core.pipelinePlan(cfg, {
       scenario: args.scenario || null,
       usecaseId: args.usecase || null,
       systems: parseIds(args.systems),
@@ -74,7 +72,7 @@ export const pipelinePlanCmd = defineCommand({
       targetStage: args["target-stage"] || "preview",
       tasks: [],
     });
-    emit(args, journey, renderJourneyPlan);
+    emit(args, pipeline, renderPipelinePlan);
   }),
 });
 
@@ -87,7 +85,7 @@ export const pipelineStatusCmd = defineCommand({
       const port = await requireDaemon(args);
       const task = await daemonRequest(port, `/api/tasks/${encodeURIComponent(args.id)}`, { timeoutMs: 3000 });
       emit(args, task, (t) => {
-        renderMissionGraph(t.output?.graph || {});
+        renderPipelineGraph(t.output?.graph || {});
         renderResumePlan(t.summary?.resumePlan);
       });
       return;
@@ -95,8 +93,8 @@ export const pipelineStatusCmd = defineCommand({
     const cfg = cfgFrom(args);
     const tasks = await pipelineTasks(args);
     const [status, fleet] = await Promise.all([Promise.resolve(core.statusBoard(cfg)), core.fleetStatus(cfg)]);
-    const latestRun = tasks.find((task) => task.kind === "mission.run" && task.output?.graph);
-    const journey = buildJourneyPlan({
+    const latestRun = tasks.find((task) => task.kind === "pipeline.run" && task.output?.graph);
+    const pipeline = buildPipelinePlan({
       scenario: args.scenario || latestRun?.input?.scenario || null,
       usecaseId: args.usecase || null,
       systems: parseIds(args.systems || latestRun?.input?.systems?.join?.(",") || ""),
@@ -107,9 +105,9 @@ export const pipelineStatusCmd = defineCommand({
       fleet,
       tasks,
       graph: latestRun?.output?.graph || null,
-      includePlannedMission: !latestRun,
+      includePlannedPipeline: !latestRun,
     });
-    emit(args, journey, renderJourneyPlan);
+    emit(args, pipeline, renderPipelinePlan);
   }),
 });
 
@@ -120,7 +118,7 @@ export const pipelineRunsCmd = defineCommand({
   run: guarded(async ({ args }) => {
     const port = await requireDaemon(args);
     const body = await daemonRequest(port, `/api/tasks?limit=${encodeURIComponent(args.limit || "50")}`, { timeoutMs: 3000 });
-    const tasks = (body.tasks || []).filter((task) => task.kind === "mission.run");
+    const tasks = (body.tasks || []).filter((task) => task.kind === "pipeline.run");
     emit(args, { tasks }, (r) => {
       out(pc.bold("\nPipeline Runs"));
       if (!r.tasks.length) {
@@ -171,7 +169,7 @@ export const pipelineRunCmd = defineCommand({
     });
     emit(args, task, (t) => {
       out(pc.green(`✓ started pipeline run ${t.id}`));
-      if (t.output?.graph) renderMissionGraph(t.output.graph);
+      if (t.output?.graph) renderPipelineGraph(t.output.graph);
       if (!args.follow) {
         out(pc.dim(`\n  status: ge pipeline status ${t.id}`));
         out(pc.dim(`  events: ge runs events ${t.id} --follow`));
@@ -206,7 +204,7 @@ export const pipelineGraphCmd = defineCommand({
   },
   run: guarded(({ args }) => {
     const cfg = cfgFrom(args);
-    const graph = buildMissionGraph({
+    const graph = buildPipelineGraph({
       mode: cfg.mode || "local",
       ids: parseIds(args.ids),
       scenario: args.scenario,
@@ -228,7 +226,7 @@ export const pipelineGraphCmd = defineCommand({
       harnessModel: args.model || "gemini-3.5-flash",
       harnessLocation: args.location || "global",
     });
-    emit(args, graph, renderMissionGraph);
+    emit(args, graph, renderPipelineGraph);
   }),
 });
 

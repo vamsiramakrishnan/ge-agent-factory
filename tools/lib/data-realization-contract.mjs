@@ -10,7 +10,7 @@ function compact(value) {
 }
 
 function scenarioWorkspace(scenario) {
-  return scenario ? join(relativeToRepo(STATE_PATHS.missions.root), String(scenario).replace(/[^a-zA-Z0-9._-]+/g, "-").toLowerCase()) : null;
+  return scenario ? join(relativeToRepo(STATE_PATHS.pipelines.root), String(scenario).replace(/[^a-zA-Z0-9._-]+/g, "-").toLowerCase()) : null;
 }
 
 function requestedSystems(systems = []) {
@@ -116,7 +116,7 @@ export function dataRealizationArtifacts(plan) {
   };
 }
 
-export function dataRealizationMissionNodes(plan, { missionId = null } = {}) {
+export function dataRealizationPipelineNodes(plan, { pipelineId = null } = {}) {
   const commands = dataRealizationCommands(plan);
   const artifacts = dataRealizationArtifacts(plan);
   const mockInput = {
@@ -145,7 +145,7 @@ export function dataRealizationMissionNodes(plan, { missionId = null } = {}) {
   return [
     {
       id: "mock.generate",
-      missionId,
+      pipelineId,
       kind: "mock.generate",
       label: "Generate Scenario Data Plan",
       status: "pending",
@@ -157,7 +157,7 @@ export function dataRealizationMissionNodes(plan, { missionId = null } = {}) {
     },
     {
       id: "snowfakery.generate",
-      missionId,
+      pipelineId,
       kind: "snowfakery.generate",
       label: "Generate Snowfakery Rows",
       status: "pending",
@@ -169,7 +169,7 @@ export function dataRealizationMissionNodes(plan, { missionId = null } = {}) {
     },
     {
       id: "simulator.seed",
-      missionId,
+      pipelineId,
       kind: "simulator.seed",
       label: "Materialize Simulator Seeds",
       status: "pending",
@@ -181,7 +181,7 @@ export function dataRealizationMissionNodes(plan, { missionId = null } = {}) {
     },
     {
       id: "simulator.validate",
-      missionId,
+      pipelineId,
       kind: "simulator.validate",
       label: "Validate Simulator Pack",
       status: "pending",

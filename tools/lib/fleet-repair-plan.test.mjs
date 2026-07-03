@@ -1,8 +1,8 @@
 import { test, expect } from "bun:test";
-import { buildFactoryAutopilotMission } from "./factory-autopilot-mission.mjs";
+import { buildFactoryRepairPipeline } from "./fleet-repair-plan.mjs";
 
-test("mission splits missing workspaces to factory and existing workspaces to autopilot", () => {
-  const mission = buildFactoryAutopilotMission({
+test("pipeline splits missing workspaces to factory and existing workspaces to repair", () => {
+  const pipeline = buildFactoryRepairPipeline({
     cfg: { mode: "local" },
     now: "2026-06-06T00:00:00.000Z",
     targetStage: "publish:plan",
@@ -15,27 +15,27 @@ test("mission splits missing workspaces to factory and existing workspaces to au
     ids: ["a1", "a2"],
   });
 
-  expect(mission.kind).toBe("ge.factory_autopilot.mission");
-  expect(mission.target.workspaceGate).toBe("publish:plan");
-  expect(mission.modeContract.autopilotCapability).toBe("local_doctor_repair");
-  expect(mission.target.effectiveFactoryTarget).toBe("publish_planned");
-  expect(mission.target.cloudContinuation.commandId).toBe("agents.ship");
-  expect(mission.summary).toEqual(expect.objectContaining({
+  expect(pipeline.kind).toBe("ge.factory_repair.pipeline");
+  expect(pipeline.target.workspaceGate).toBe("publish:plan");
+  expect(pipeline.modeContract.repairCapability).toBe("local_doctor_repair");
+  expect(pipeline.target.effectiveFactoryTarget).toBe("publish_planned");
+  expect(pipeline.target.cloudContinuation.commandId).toBe("handoff");
+  expect(pipeline.summary).toEqual(expect.objectContaining({
     selected: 2,
     factory: 1,
-    autopilot: 1,
+    repair: 1,
     remoteObserve: 0,
-    autopilotAfterFactory: 1,
+    repairAfterFactory: 1,
     missingWorkspaces: 1,
     existingWorkspaces: 1,
   }));
-  expect(mission.roster.find((item) => item.agentId === "a1").autopilotAction).toBe("doctor_repair");
-  expect(mission.roster.find((item) => item.agentId === "a2").factoryAction).toBe("build_local");
-  expect(mission.phases.find((phase) => phase.id === "factory").command.commandId).toBe("agents.build.local");
+  expect(pipeline.roster.find((item) => item.agentId === "a1").repairAction).toBe("doctor_repair");
+  expect(pipeline.roster.find((item) => item.agentId === "a2").factoryAction).toBe("build_local");
+  expect(pipeline.phases.find((phase) => phase.id === "factory").command.commandId).toBe("agents.build.local");
 });
 
-test("remote mission observes existing runs instead of local repair", () => {
-  const mission = buildFactoryAutopilotMission({
+test("remote pipeline observes existing runs instead of local repair", () => {
+  const pipeline = buildFactoryRepairPipeline({
     cfg: { mode: "remote" },
     now: "2026-06-06T00:00:00.000Z",
     targetStage: "deploy:plan",
@@ -46,23 +46,23 @@ test("remote mission observes existing runs instead of local repair", () => {
       ],
     },
   });
-  expect(mission.modeContract.autopilotCapability).toBe("remote_observe_only");
-  expect(mission.target.effectiveFactoryTarget).toBe("plan_deploy");
-  expect(mission.summary.factory).toBe(1);
-  expect(mission.summary.autopilot).toBe(0);
-  expect(mission.summary.remoteObserve).toBe(1);
-  expect(mission.roster.find((item) => item.agentId === "a1").autopilotAction).toBe("observe_remote_run");
-  expect(mission.roster.find((item) => item.agentId === "a2").factoryAction).toBe("build_remote");
+  expect(pipeline.modeContract.repairCapability).toBe("remote_observe_only");
+  expect(pipeline.target.effectiveFactoryTarget).toBe("plan_deploy");
+  expect(pipeline.summary.factory).toBe(1);
+  expect(pipeline.summary.repair).toBe(0);
+  expect(pipeline.summary.remoteObserve).toBe(1);
+  expect(pipeline.roster.find((item) => item.agentId === "a1").repairAction).toBe("observe_remote_run");
+  expect(pipeline.roster.find((item) => item.agentId === "a2").factoryAction).toBe("build_remote");
 });
 
-test("mission defaults unknown target and mode to remote preview contract", () => {
-  const mission = buildFactoryAutopilotMission({
+test("pipeline defaults unknown target and mode to remote preview contract", () => {
+  const pipeline = buildFactoryRepairPipeline({
     cfg: { mode: "unexpected" },
     now: "2026-06-06T00:00:00.000Z",
     targetStage: "unknown",
     fleet: { agents: [{ id: "a1", status: "none" }] },
   });
-  expect(mission.mode).toBe("remote");
-  expect(mission.target.requested).toBe("preview");
-  expect(mission.phases.find((phase) => phase.id === "factory").command.commandId).toBe("agents.build");
+  expect(pipeline.mode).toBe("remote");
+  expect(pipeline.target.requested).toBe("preview");
+  expect(pipeline.phases.find((phase) => phase.id === "factory").command.commandId).toBe("agents.build");
 });

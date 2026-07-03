@@ -1,20 +1,20 @@
-// tools/lib/daemon/mission-graph-run.mjs — the "mission.run" run-kind: the
-// mission-graph resume-rehydration cluster. Plans a mission DAG
-// (mission-plan.mjs), walks it scheduling one runnable node at a time by
+// tools/lib/daemon/pipeline-graph-run.mjs — the "pipeline.run" run-kind: the
+// pipeline-graph resume-rehydration cluster. Plans a pipeline DAG
+// (pipeline-graph-plan.mjs), walks it scheduling one runnable node at a time by
 // delegating to whichever of the other five run-kinds a node's runtimeKind
 // names, verifies each node's expected artifacts before advancing, and — on
 // resume — rehydrates a stale graph against a freshly-planned one so nodes
 // downstream of the resume point re-run with the *current* node-registry
 // command shape rather than a possibly-stale persisted one. Also owns
-// attaching a resumed mission's delegated child run back onto the parent
-// run record (rehoming the child's graph/resumePlan mission-id references
+// attaching a resumed pipeline's delegated child run back onto the parent
+// run record (rehoming the child's graph/resumePlan pipeline-id references
 // onto the parent). Moved verbatim out of tools/lib/runtime-daemon.mjs.
 import { readJson } from "@ge/std/json-io";
 import * as core from "../factory-core.mjs";
-import { verifyMissionArtifacts } from "../mission/mission-artifacts.mjs";
-import { isDataMissionNodeKind, validateMissionNodeArtifacts } from "../mission/mission-node-registry.mjs";
-import { summarizeMissionNode } from "../mission/mission-node-summary.mjs";
-import { buildMissionGraph, nextRunnableMissionNode, patchMissionNode, resetMissionGraphForResume } from "../mission/mission-plan.mjs";
+import { verifyPipelineArtifacts } from "../pipeline/pipeline-artifacts.mjs";
+import { isDataPipelineNodeKind, validatePipelineNodeArtifacts } from "../pipeline/pipeline-node-registry.mjs";
+import { summarizePipelineNode } from "../pipeline/pipeline-node-summary.mjs";
+import { buildPipelineGraph, nextRunnablePipelineNode, patchPipelineNode, resetPipelineGraphForResume } from "../pipeline/pipeline-graph-plan.mjs";
 import { REPO_ROOT } from "../state-paths.mjs";
 import {
   appendEvent,
@@ -29,8 +29,8 @@ import { taskDetail, taskSummary } from "./resume-plan.mjs";
 import { startDoctorTask } from "./doctor-run.mjs";
 import { startGeCommandTask, startProcessCommandTask } from "./command-run.mjs";
 import { startHarnessRunTask } from "./harness-run.mjs";
-import { startMissionNodeCommandTask } from "./mission-node-run.mjs";
-import { startAutopilotTask } from "./autopilot-run.mjs";
+import { startPipelineNodeCommandTask } from "./pipeline-node-run.mjs";
+import { startRepairTask } from "./repair-run.mjs";
 
 export function childStatusToNodeStatus(status) {
   if (status === "done") return "done";
@@ -39,41 +39,41 @@ export function childStatusToNodeStatus(status) {
   return status || "blocked";
 }
 
-export function rehomeResumePlan(plan = null, fromMissionId = null, toMissionId = null) {
-  if (!plan || !toMissionId) return plan;
-  const from = fromMissionId ? String(fromMissionId) : "";
+export function rehomeResumePlan(plan = null, fromPipelineId = null, toPipelineId = null) {
+  if (!plan || !toPipelineId) return plan;
+  const from = fromPipelineId ? String(fromPipelineId) : "";
   return {
     ...plan,
     commands: Array.isArray(plan.commands)
-      ? plan.commands.map((command) => from ? String(command).replaceAll(from, toMissionId) : String(command))
+      ? plan.commands.map((command) => from ? String(command).replaceAll(from, toPipelineId) : String(command))
       : [],
   };
 }
 
-export function rehomeMissionGraph(graph = null, missionId = null, fromMissionId = null) {
-  if (!graph || !missionId) return graph;
+export function rehomePipelineGraph(graph = null, pipelineId = null, fromPipelineId = null) {
+  if (!graph || !pipelineId) return graph;
   return {
     ...graph,
-    id: missionId,
+    id: pipelineId,
     nodes: (graph.nodes || []).map((node) => ({
       ...node,
-      missionId,
-      resumePlan: rehomeResumePlan(node.resumePlan, fromMissionId || graph.id, missionId),
+      pipelineId,
+      resumePlan: rehomeResumePlan(node.resumePlan, fromPipelineId || graph.id, pipelineId),
       childTask: node.childTask?.resumePlan
-        ? { ...node.childTask, resumePlan: rehomeResumePlan(node.childTask.resumePlan, fromMissionId || graph.id, missionId) }
+        ? { ...node.childTask, resumePlan: rehomeResumePlan(node.childTask.resumePlan, fromPipelineId || graph.id, pipelineId) }
         : node.childTask || null,
     })),
     edges: graph.edges || [],
   };
 }
 
-export function attachMissionResumeChild({ parentId, child, nodeId = null }) {
+export function attachPipelineResumeChild({ parentId, child, nodeId = null }) {
   const parent = readJson(runMetaPath(parentId), null);
   if (!parent || !child) return;
   const currentOutput = parent.output || {};
   const parentGraph = currentOutput.graph || null;
   const delegatedGraph = parentGraph && nodeId
-    ? patchMissionNode(parentGraph, nodeId, {
+    ? patchPipelineNode(parentGraph, nodeId, {
       status: "running",
       childTaskId: child.id,
       childTask: taskSummary(child),
@@ -97,7 +97,7 @@ export function attachMissionResumeChild({ parentId, child, nodeId = null }) {
       const event = wrapped.event || {};
       if (!event.line) return;
       appendEvent(parentId, {
-        type: "mission_resume_child_event",
+        type: "pipeline_resume_child_event",
         level: event.level || "info",
         childTaskId: child.id,
         childSeq: wrapped.seq,
@@ -109,7 +109,7 @@ export function attachMissionResumeChild({ parentId, child, nodeId = null }) {
     const latestParent = readJson(runMetaPath(parentId), parent);
     const childOutput = finishedChild?.output || {};
     const childGraph = childOutput.graph
-      ? rehomeMissionGraph(childOutput.graph, parentId, child.id)
+      ? rehomePipelineGraph(childOutput.graph, parentId, child.id)
       : latestParent.output?.graph || null;
     const nextOutput = {
       ...(latestParent.output || {}),
@@ -121,10 +121,10 @@ export function attachMissionResumeChild({ parentId, child, nodeId = null }) {
       delegatedNodeId: nodeId,
     };
     appendEvent(parentId, {
-      type: "mission_resume_child_terminal",
+      type: "pipeline_resume_child_terminal",
       level: finishedChild.status === "done" ? "info" : "warn",
       childTaskId: child.id,
-      line: `child mission ${child.id} ${finishedChild.status}`,
+      line: `child pipeline ${child.id} ${finishedChild.status}`,
       counts: nextOutput.counts || null,
     });
     updateRun(parentId, {
@@ -135,22 +135,22 @@ export function attachMissionResumeChild({ parentId, child, nodeId = null }) {
     });
   }).catch((error) => {
     const line = error?.message || String(error);
-    appendEvent(parentId, { type: "mission_resume_child_failed", level: "error", childTaskId: child.id, line });
+    appendEvent(parentId, { type: "pipeline_resume_child_failed", level: "error", childTaskId: child.id, line });
     updateRun(parentId, { status: "failed", endedAt: new Date().toISOString(), error: line });
   });
 }
 
-export async function startChildForMissionNode(node) {
+export async function startChildForPipelineNode(node) {
   if (node.runtimeKind === "doctor") return startDoctorTask(node.input || {});
   if (node.runtimeKind === "ge.command") return startGeCommandTask(node.input || {});
   if (node.runtimeKind === "process.command") return startProcessCommandTask(node.input || {});
   if (node.runtimeKind === "harness.run") return startHarnessRunTask(node.input || {});
-  if (isDataMissionNodeKind(node.runtimeKind)) return startMissionNodeCommandTask(node.runtimeKind, node.input || {});
-  if (node.runtimeKind === "autopilot.run") return await startAutopilotTask(node.input || {});
-  throw new Error(`unsupported mission node runtime kind: ${node.runtimeKind || "<unset>"}`);
+  if (isDataPipelineNodeKind(node.runtimeKind)) return startPipelineNodeCommandTask(node.runtimeKind, node.input || {});
+  if (node.runtimeKind === "repair.run") return await startRepairTask(node.input || {});
+  throw new Error(`unsupported pipeline node runtime kind: ${node.runtimeKind || "<unset>"}`);
 }
 
-export function affectedMissionNodeIds(graph = {}, startNodeId = null) {
+export function affectedPipelineNodeIds(graph = {}, startNodeId = null) {
   if (!startNodeId) return new Set();
   const nodes = graph.nodes || [];
   const childrenById = new Map();
@@ -172,10 +172,10 @@ export function affectedMissionNodeIds(graph = {}, startNodeId = null) {
   return affected;
 }
 
-export function rehydrateMissionGraphForResume(resumeGraph = {}, plannedGraph = {}, startNodeId = null) {
+export function rehydratePipelineGraphForResume(resumeGraph = {}, plannedGraph = {}, startNodeId = null) {
   if (!resumeGraph || !plannedGraph) return resumeGraph;
   const plannedById = new Map((plannedGraph.nodes || []).map((node) => [node.id, node]));
-  const affected = affectedMissionNodeIds(resumeGraph, startNodeId);
+  const affected = affectedPipelineNodeIds(resumeGraph, startNodeId);
   const nodes = (resumeGraph.nodes || []).map((node) => {
     const planned = plannedById.get(node.id);
     if (!planned) return node;
@@ -202,9 +202,9 @@ export function rehydrateMissionGraphForResume(resumeGraph = {}, plannedGraph = 
   };
 }
 
-export async function startMissionTask({ ids = [], scenario = null, spec = null, workspace = null, systems = [], targetStage = "preview", repair = true, attempts = 3, runPreview = false, query = {}, mode = null, executeFactory = false, useAntigravity = true, harnessAgent = "antigravity-sdk", harnessModel = "gemini-3.5-flash", harnessLocation = "global", resumedFrom = null, resumeGraph = null, startAtNode = null } = {}) {
+export async function startPipelineTask({ ids = [], scenario = null, spec = null, workspace = null, systems = [], targetStage = "preview", repair = true, attempts = 3, runPreview = false, query = {}, mode = null, executeFactory = false, useAntigravity = true, harnessAgent = "antigravity-sdk", harnessModel = "gemini-3.5-flash", harnessLocation = "global", resumedFrom = null, resumeGraph = null, startAtNode = null } = {}) {
   const cfg = core.loadConfig(query || {});
-  const plannedGraph = buildMissionGraph({
+  const plannedGraph = buildPipelineGraph({
     mode: mode || cfg.mode || "local",
     ids,
     scenario,
@@ -222,20 +222,20 @@ export async function startMissionTask({ ids = [], scenario = null, spec = null,
     harnessModel,
     harnessLocation,
   });
-  const rehydratedGraph = resumeGraph && startAtNode ? rehydrateMissionGraphForResume(resumeGraph, plannedGraph, startAtNode) : null;
-  const graph = rehydratedGraph && startAtNode ? resetMissionGraphForResume({ ...rehydratedGraph, id: plannedGraph.id }, startAtNode) : plannedGraph;
+  const rehydratedGraph = resumeGraph && startAtNode ? rehydratePipelineGraphForResume(resumeGraph, plannedGraph, startAtNode) : null;
+  const graph = rehydratedGraph && startAtNode ? resetPipelineGraphForResume({ ...rehydratedGraph, id: plannedGraph.id }, startAtNode) : plannedGraph;
   const run = createRun({
     id: graph.id,
-    kind: "mission.run",
+    kind: "pipeline.run",
     input: { ids, scenario, spec, workspace, systems, targetStage, repair, attempts, runPreview, query, mode: mode || cfg.mode || "local", executeFactory, useAntigravity, harnessAgent, harnessModel, harnessLocation, resumedFrom, startAtNode },
   });
   updateRunOutput(run.id, { graph, counts: graph.counts, artifactRefs: [] });
-  appendEvent(run.id, { type: "mission_started", line: `mission ${run.id} started`, graph: { id: graph.id, counts: graph.counts } });
+  appendEvent(run.id, { type: "pipeline_started", line: `pipeline ${run.id} started`, graph: { id: graph.id, counts: graph.counts } });
   if (rehydratedGraph) {
     appendEvent(run.id, {
-      type: "mission_graph_rehydrated",
+      type: "pipeline_graph_rehydrated",
       level: "info",
-      line: `mission graph rehydrated from current node registry at ${startAtNode}`,
+      line: `pipeline graph rehydrated from current node registry at ${startAtNode}`,
       startAtNode,
     });
   }
@@ -244,21 +244,21 @@ export async function startMissionTask({ ids = [], scenario = null, spec = null,
     let current = graph;
     try {
       for (;;) {
-        const node = nextRunnableMissionNode(current);
+        const node = nextRunnablePipelineNode(current);
         if (!node) break;
-        current = patchMissionNode(current, node.id, { status: "running" });
+        current = patchPipelineNode(current, node.id, { status: "running" });
         updateRunOutput(run.id, { graph: current, counts: current.counts });
-        appendEvent(run.id, { type: "mission_node_started", nodeId: node.id, line: `${node.id}: scheduling ${node.runtimeKind}` });
-        const child = await startChildForMissionNode(node);
-        current = patchMissionNode(current, node.id, { childTaskId: child.id, status: "running", childTask: taskSummary(child) });
+        appendEvent(run.id, { type: "pipeline_node_started", nodeId: node.id, line: `${node.id}: scheduling ${node.runtimeKind}` });
+        const child = await startChildForPipelineNode(node);
+        current = patchPipelineNode(current, node.id, { childTaskId: child.id, status: "running", childTask: taskSummary(child) });
         updateRunOutput(run.id, { graph: current, counts: current.counts });
-        appendEvent(run.id, { type: "mission_child_started", nodeId: node.id, childTaskId: child.id, line: `${node.id}: child task ${child.id}` });
+        appendEvent(run.id, { type: "pipeline_child_started", nodeId: node.id, childTaskId: child.id, line: `${node.id}: child task ${child.id}` });
         const finishedChild = await waitForTaskTerminal(child.id, {
           onEvent: (wrapped) => {
             const event = wrapped.event || {};
             if (!event.line) return;
             appendEvent(run.id, {
-              type: "mission_child_log",
+              type: "pipeline_child_log",
               level: event.level || "info",
               nodeId: node.id,
               childTaskId: child.id,
@@ -270,9 +270,9 @@ export async function startMissionTask({ ids = [], scenario = null, spec = null,
         });
         const childDetail = taskDetail(finishedChild);
         const plan = childDetail?.summary?.resumePlan || null;
-        const baseArtifactCheck = verifyMissionArtifacts(node.artifacts || [], { repoRoot: REPO_ROOT, childTask: finishedChild });
-        const nodeSummary = summarizeMissionNode({ node, childTask: finishedChild, artifactCheck: baseArtifactCheck });
-        const semanticCheck = validateMissionNodeArtifacts(node.kind || node.runtimeKind, { input: node.input || {}, artifactCheck: baseArtifactCheck, summary: nodeSummary });
+        const baseArtifactCheck = verifyPipelineArtifacts(node.artifacts || [], { repoRoot: REPO_ROOT, childTask: finishedChild });
+        const nodeSummary = summarizePipelineNode({ node, childTask: finishedChild, artifactCheck: baseArtifactCheck });
+        const semanticCheck = validatePipelineNodeArtifacts(node.kind || node.runtimeKind, { input: node.input || {}, artifactCheck: baseArtifactCheck, summary: nodeSummary });
         const artifactCheck = {
           ...baseArtifactCheck,
           ok: baseArtifactCheck.ok && semanticCheck.ok,
@@ -286,7 +286,7 @@ export async function startMissionTask({ ids = [], scenario = null, spec = null,
           ...(plan?.blockers || []),
           ...(childNodeStatus === "done" ? artifactCheck.blockers : []),
         ];
-        current = patchMissionNode(current, node.id, {
+        current = patchPipelineNode(current, node.id, {
           status: nodeStatus,
           childTaskId: child.id,
           childTask: childDetail?.summary || null,
@@ -302,7 +302,7 @@ export async function startMissionTask({ ids = [], scenario = null, spec = null,
           artifactRefs: current.nodes.flatMap((graphNode) => graphNode.artifacts || []),
         });
         appendEvent(run.id, {
-          type: nodeStatus === "blocked" ? "mission_node_blocked" : "mission_node_done",
+          type: nodeStatus === "blocked" ? "pipeline_node_blocked" : "pipeline_node_done",
           level: nodeStatus === "blocked" ? "error" : "info",
           nodeId: node.id,
           childTaskId: child.id,
@@ -315,15 +315,15 @@ export async function startMissionTask({ ids = [], scenario = null, spec = null,
       }
       const finalStatus = current.status === "blocked" ? "blocked" : current.counts.pending || current.counts.running ? "paused" : "done";
       appendEvent(run.id, {
-        type: finalStatus === "done" ? "mission_done" : "mission_blocked",
+        type: finalStatus === "done" ? "pipeline_done" : "pipeline_blocked",
         level: finalStatus === "done" ? "info" : "warn",
-        line: `mission ${finalStatus}`,
+        line: `pipeline ${finalStatus}`,
         counts: current.counts,
       });
       updateRun(run.id, { status: finalStatus, endedAt: new Date().toISOString(), output: { ...runOutput(run.id), graph: { ...current, status: finalStatus }, counts: current.counts } });
     } catch (error) {
       const line = error?.message || String(error);
-      appendEvent(run.id, { type: "mission_failed", level: "error", line });
+      appendEvent(run.id, { type: "pipeline_failed", level: "error", line });
       updateRun(run.id, { status: "failed", endedAt: new Date().toISOString(), error: line, output: runOutput(run.id) });
     }
   })();

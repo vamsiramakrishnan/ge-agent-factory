@@ -44,7 +44,7 @@ export function parseStdoutJson(stdout = "") {
   }
 }
 
-export function inspectMissionArtifact(artifact = {}, { repoRoot = process.cwd(), childTask = null } = {}) {
+export function inspectPipelineArtifact(artifact = {}, { repoRoot = process.cwd(), childTask = null } = {}) {
   const record = { ...artifact, status: "missing", metadata: {} };
   if (artifact.type === "stdout-json") {
     try {
@@ -95,8 +95,8 @@ export function inspectMissionArtifact(artifact = {}, { repoRoot = process.cwd()
   }
 }
 
-export function verifyMissionArtifacts(artifacts = [], options = {}) {
-  const inspected = artifacts.map((artifact) => inspectMissionArtifact(artifact, options));
+export function verifyPipelineArtifacts(artifacts = [], options = {}) {
+  const inspected = artifacts.map((artifact) => inspectPipelineArtifact(artifact, options));
   const blockers = inspected
     .filter((artifact) => artifact.status !== "present")
     .map((artifact) => ({

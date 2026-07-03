@@ -15,11 +15,11 @@ function writeRun(repo, id, run) {
 }
 
 describe("fleet health projection", () => {
-  test("projects autopilot item blockers onto fleet agents", () => {
-    const repo = tmpRepo("autopilot");
+  test("projects repair item blockers onto fleet agents", () => {
+    const repo = tmpRepo("repair");
     writeRun(repo, "auto-1", {
       id: "auto-1",
-      kind: "autopilot.run",
+      kind: "repair.run",
       status: "blocked",
       updatedAt: "2026-06-07T10:00:00.000Z",
       output: {
@@ -43,21 +43,21 @@ describe("fleet health projection", () => {
     const a1 = health.agents.find((agent) => agent.id === "a1");
     expect(a1.healthStatus).toBe("blocked");
     expect(a1.stage).toBe("preview");
-    expect(a1.owner).toBe("autopilot");
+    expect(a1.owner).toBe("repair");
     expect(a1.blocker.id).toBe("preview-missing");
-    expect(a1.actionPlan.kind).toBe("resume_autopilot");
+    expect(a1.actionPlan.kind).toBe("resume_repair");
     expect(a1.actionPlan.commands[0]).toBe("ge runs resume auto-1");
     expect(health.bottlenecks[0].count).toBe(1);
-    expect(health.bottlenecks[0].actionPlan.kind).toBe("resume_autopilot");
+    expect(health.bottlenecks[0].actionPlan.kind).toBe("resume_repair");
     expect(health.byStage.preview).toBe(1);
     expect(health.byStage.spec).toBe(1);
   });
 
-  test("projects mission node blockers onto selected ids", () => {
-    const repo = tmpRepo("mission");
-    writeRun(repo, "mission-1", {
-      id: "mission-1",
-      kind: "mission.run",
+  test("projects pipeline node blockers onto selected ids", () => {
+    const repo = tmpRepo("pipeline");
+    writeRun(repo, "pipeline-1", {
+      id: "pipeline-1",
+      kind: "pipeline.run",
       status: "blocked",
       updatedAt: "2026-06-07T11:00:00.000Z",
       input: { ids: ["a1"] },
@@ -80,14 +80,14 @@ describe("fleet health projection", () => {
     expect(health.agents[0].stage).toBe("simulator");
     expect(health.agents[0].healthStatus).toBe("blocked");
     expect(health.agents[0].owner).toBe("antigravity");
-    expect(health.agents[0].actionPlan.kind).toBe("resume_mission");
+    expect(health.agents[0].actionPlan.kind).toBe("resume_pipeline");
   });
 
-  test("newer local workspace suppresses stale mission blocker", () => {
-    const repo = tmpRepo("mission-stale");
-    writeRun(repo, "mission-1", {
-      id: "mission-1",
-      kind: "mission.run",
+  test("newer local workspace suppresses stale pipeline blocker", () => {
+    const repo = tmpRepo("pipeline-stale");
+    writeRun(repo, "pipeline-1", {
+      id: "pipeline-1",
+      kind: "pipeline.run",
       status: "blocked",
       updatedAt: "2026-06-08T01:35:29.377Z",
       input: { ids: ["audit-report-generator"] },
@@ -118,12 +118,12 @@ describe("fleet health projection", () => {
 
     expect(health.agents[0].workspaceId).toBe("factory-finance-audit-report-generator-4");
     expect(health.agents[0].healthStatus).toBe("ready");
-    expect(health.agents[0].nextAction).toBe("ship");
+    expect(health.agents[0].nextAction).toBe("handoff");
     expect(health.agents[0].owner).toBe("factory");
     expect(health.agents[0].actionPlan).toMatchObject({
-      kind: "ship_agents",
+      kind: "handoff_agents",
       workspaceIds: ["factory-finance-audit-report-generator-4"],
-      commands: ["ge agents ship --ids factory-finance-audit-report-generator-4"],
+      commands: ["ge handoff agents-cli --ids factory-finance-audit-report-generator-4"],
     });
     expect(health.agents[0].source).toBe("catalog");
     expect(health.blocked).toBe(0);

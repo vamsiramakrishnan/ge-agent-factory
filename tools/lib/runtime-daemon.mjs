@@ -1,7 +1,7 @@
 import { createServer } from "node:http";
 import { writeFileSync, appendFileSync, rmSync } from "node:fs";
 import { readJson, writeJson } from "@ge/std/json-io";
-import { isDataMissionNodeKind, safeMissionNodeCommand } from "./mission/mission-node-registry.mjs";
+import { isDataPipelineNodeKind, safePipelineNodeCommand } from "./pipeline/pipeline-node-registry.mjs";
 import { LEGACY_STATE_PATHS, STATE_PATHS } from "./state-paths.mjs";
 import {
   appendEvent,
@@ -22,8 +22,8 @@ import {
   startProcessCommandTask,
   toolAugmentedPath,
 } from "./daemon/command-run.mjs";
-import { resumeMissionNodeCommandTask } from "./daemon/mission-node-run.mjs";
-import { startAutopilotTask } from "./daemon/autopilot-run.mjs";
+import { resumePipelineNodeCommandTask } from "./daemon/pipeline-node-run.mjs";
+import { startRepairTask } from "./daemon/repair-run.mjs";
 import {
   harnessRunArgv,
   normalizeInteractionResponses,
@@ -40,11 +40,11 @@ import {
 } from "./daemon/resume-plan.mjs";
 import { createDaemonApp } from "./daemon/http-app.mjs";
 import {
-  attachMissionResumeChild,
-  rehomeMissionGraph,
-  rehydrateMissionGraphForResume,
-  startMissionTask,
-} from "./daemon/mission-graph-run.mjs";
+  attachPipelineResumeChild,
+  rehomePipelineGraph,
+  rehydratePipelineGraphForResume,
+  startPipelineTask,
+} from "./daemon/pipeline-graph-run.mjs";
 
 const DAEMON_DIR = STATE_PATHS.runtime.root;
 const RUNS_DIR = STATE_PATHS.runtime.runs;
@@ -55,44 +55,23 @@ const DEFAULT_PORT = 17654;
 // v3: canonical task kinds (pipeline.run/repair.run), zod-validated task
 // creation, and resumable SSE (id:/retry:/heartbeat + Last-Event-ID/afterSeq).
 const DAEMON_PROTOCOL_VERSION = 3;
+// The operator vocabulary collapsed to two orchestration nouns: a *pipeline
+// run* (the orchestration graph a spec moves through) and a *repair run*
+// (blocker convergence). These ARE the wire kinds — persisted in run.json
+// files and mirrored stores as-is; there is no alias layer (the product is
+// unreleased, so no legacy spellings are accepted).
 const SUPPORTED_TASK_KINDS = [
   "ge.command",
   "process.command",
   "harness.run",
   "pipeline.run",
   "repair.run",
-  "mission.run",
-  "autopilot.run",
   "doctor",
   "mock.generate",
   "snowfakery.generate",
   "simulator.seed",
   "simulator.validate",
 ];
-
-// ── Task-kind vocabulary boundary ───────────────────────────────────────────
-// The operator vocabulary collapsed to two nouns: a *pipeline run* (the
-// orchestration graph a spec moves through — formerly "mission"/"journey")
-// and a *repair run* (blocker convergence — formerly "autopilot"). Wire kinds
-// are persisted in run.json files and mirrored stores, so they stay stable
-// forever; the rename lives here at the boundary. Canonical kinds are
-// accepted on POST (normalized to the wire kind before anything is stored)
-// and wire kinds render back as canonical in human surfaces.
-export const TASK_KIND_ALIASES = {
-  "pipeline.run": "mission.run",
-  "repair.run": "autopilot.run",
-};
-const CANONICAL_TASK_KINDS = Object.fromEntries(
-  Object.entries(TASK_KIND_ALIASES).map(([canonical, wire]) => [wire, canonical]),
-);
-// canonical/legacy → the stable persisted kind.
-export function wireTaskKind(kind) {
-  return TASK_KIND_ALIASES[kind] || kind;
-}
-// persisted kind → the canonical operator-facing name.
-export function displayTaskKind(kind) {
-  return CANONICAL_TASK_KINDS[kind] || kind;
-}
 
 const json = (res, status, body) => {
   res.writeHead(status, { "content-type": "application/json" });
@@ -101,8 +80,8 @@ const json = (res, status, body) => {
 
 export { safeGeCommand, safeProcessCommand, toolAugmentedPath, safeHarnessRunInput, resumePlanFor };
 
-export function safeMissionRuntimeCommand(kind, input = {}) {
-  return safeMissionNodeCommand(kind, input);
+export function safePipelineRuntimeCommand(kind, input = {}) {
+  return safePipelineNodeCommand(kind, input);
 }
 
 async function resumeTask(id) {
@@ -116,22 +95,22 @@ async function resumeTask(id) {
     appendResumeAttempt(id, { status: plan.state === "done" ? "done" : "blocked", action: plan.nextAction, reason: plan.reason });
     return { status: 200, body: normalizedTaskDetail(readJson(runMetaPath(id), run)) };
   }
-  if (run.kind === "autopilot.run") {
-    const child = await startAutopilotTask({ ...(run.input || {}), resumedFrom: run.id });
-    appendEvent(id, { type: "resume_done", line: `started child Autopilot task ${child.id}`, childTaskId: child.id });
-    appendResumeAttempt(id, { status: "done", action: "resume_autopilot", childTaskId: child.id });
-  } else if (run.kind === "mission.run") {
+  if (run.kind === "repair.run") {
+    const child = await startRepairTask({ ...(run.input || {}), resumedFrom: run.id });
+    appendEvent(id, { type: "resume_done", line: `started child Repair task ${child.id}`, childTaskId: child.id });
+    appendResumeAttempt(id, { status: "done", action: "resume_repair", childTaskId: child.id });
+  } else if (run.kind === "pipeline.run") {
     const graph = run.output?.graph || null;
     const blockedNode = (graph?.nodes || []).find((node) => ["blocked", "failed"].includes(node.status));
-    const child = await startMissionTask({ ...(run.input || {}), resumedFrom: run.id, resumeGraph: graph, startAtNode: blockedNode?.id || null });
-    appendEvent(id, { type: "resume_done", line: blockedNode ? `started child mission task ${child.id} at ${blockedNode.id}` : `started child mission task ${child.id}`, childTaskId: child.id, nodeId: blockedNode?.id || null });
-    appendResumeAttempt(id, { status: "done", action: "resume_mission", childTaskId: child.id, nodeId: blockedNode?.id || null });
-    attachMissionResumeChild({ parentId: id, child, nodeId: blockedNode?.id || null });
+    const child = await startPipelineTask({ ...(run.input || {}), resumedFrom: run.id, resumeGraph: graph, startAtNode: blockedNode?.id || null });
+    appendEvent(id, { type: "resume_done", line: blockedNode ? `started child pipeline task ${child.id} at ${blockedNode.id}` : `started child pipeline task ${child.id}`, childTaskId: child.id, nodeId: blockedNode?.id || null });
+    appendResumeAttempt(id, { status: "done", action: "resume_pipeline", childTaskId: child.id, nodeId: blockedNode?.id || null });
+    attachPipelineResumeChild({ parentId: id, child, nodeId: blockedNode?.id || null });
   } else if (run.kind === "doctor") resumeDoctorTask(run);
   else if (run.kind === "ge.command") resumeGeCommandTask(run);
   else if (run.kind === "process.command") resumeProcessCommandTask(run);
   else if (run.kind === "harness.run") resumeHarnessRunTask(run);
-  else if (isDataMissionNodeKind(run.kind)) resumeMissionNodeCommandTask(run);
+  else if (isDataPipelineNodeKind(run.kind)) resumePipelineNodeCommandTask(run);
   else {
     appendEvent(id, { type: "resume_blocked", level: "warn", line: `no resume handler for ${run.kind || "<unset>"}` });
     appendResumeAttempt(id, { status: "blocked", action: "inspect_blocker", reason: `no resume handler for ${run.kind || "<unset>"}` });
@@ -184,7 +163,7 @@ function daemonStatus(port) {
     supportedTaskKinds: SUPPORTED_TASK_KINDS,
     capabilities: {
       harnessRun: true,
-      missionRun: true,
+      pipelineRun: true,
       runtimeResume: true,
       eventStream: true,
       resumableEventStream: true,
@@ -216,12 +195,11 @@ export function startDaemonServer({ host = "127.0.0.1", port = DEFAULT_PORT, for
     normalizedTaskDetail,
     readRun: (id) => readJson(runMetaPath(id), null),
     listSequencedEvents,
-    wireTaskKind,
     startGeCommandTask,
     startProcessCommandTask,
     startHarnessRunTask,
-    startMissionTask,
-    startAutopilotTask,
+    startPipelineTask,
+    startRepairTask,
     startDoctorTask,
     submitInteractionResponse,
     resumeTask,
@@ -262,8 +240,8 @@ export async function getDaemonStatus({ port = Number(process.env.GE_DAEMON_PORT
 }
 
 export const __test = {
-  rehydrateMissionGraphForResume,
-  rehomeMissionGraph,
+  rehydratePipelineGraphForResume,
+  rehomePipelineGraph,
   commandOutput,
   harnessRunArgv,
   normalizeInteractionResponses,

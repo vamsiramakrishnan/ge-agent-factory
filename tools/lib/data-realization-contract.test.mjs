@@ -1,25 +1,25 @@
 import { expect, test } from "bun:test";
-import { dataMissionNodes } from "./mission/mission-nodes.mjs";
-import { buildMissionNode } from "./mission/mission-node-registry.mjs";
+import { dataPipelineNodes } from "./pipeline/pipeline-nodes.mjs";
+import { buildPipelineNode } from "./pipeline/pipeline-node-registry.mjs";
 import {
   buildDataRealizationPlan,
   dataRealizationArtifacts,
   dataRealizationCommands,
-  dataRealizationMissionNodes,
+  dataRealizationPipelineNodes,
 } from "./data-realization-contract.mjs";
 
-test("buildDataRealizationPlan uses existing mission workspace slug logic", () => {
+test("buildDataRealizationPlan uses existing pipeline workspace slug logic", () => {
   const plan = buildDataRealizationPlan({ scenario: "Benefits Enrollment" });
 
-  expect(plan.workspace).toBe(".ge/missions/benefits-enrollment");
-  expect(plan.paths.snowfakeryRecipe).toBe(".ge/missions/benefits-enrollment/mock_data/snowfakery/structured.recipe.yml");
-  expect(plan.paths.snowfakeryOutput).toBe(".ge/missions/benefits-enrollment/mock_data/snowfakery/output");
+  expect(plan.workspace).toBe(".ge/pipelines/benefits-enrollment");
+  expect(plan.paths.snowfakeryRecipe).toBe(".ge/pipelines/benefits-enrollment/mock_data/snowfakery/structured.recipe.yml");
+  expect(plan.paths.snowfakeryOutput).toBe(".ge/pipelines/benefits-enrollment/mock_data/snowfakery/output");
 });
 
 test("dataRealizationCommands preserve exact command argv order", () => {
   const plan = buildDataRealizationPlan({
     scenario: "benefits",
-    workspace: ".ge/missions/benefits",
+    workspace: ".ge/pipelines/benefits",
     systems: ["workday"],
   });
 
@@ -28,7 +28,7 @@ test("dataRealizationCommands preserve exact command argv order", () => {
       "node",
       "apps/factory/scripts/plan-mock-data.mjs",
       "--dir",
-      ".ge/missions/benefits",
+      ".ge/pipelines/benefits",
       "--usecase",
       "benefits",
       "--sourceMap",
@@ -42,17 +42,17 @@ test("dataRealizationCommands preserve exact command argv order", () => {
       "--with",
       "setuptools<81",
       "snowfakery",
-      ".ge/missions/benefits/mock_data/snowfakery/structured.recipe.yml",
+      ".ge/pipelines/benefits/mock_data/snowfakery/structured.recipe.yml",
       "--output-format",
       "csv",
       "--output-folder",
-      ".ge/missions/benefits/mock_data/snowfakery/output",
+      ".ge/pipelines/benefits/mock_data/snowfakery/output",
     ],
     simulatorSeed: [
       "node",
       "apps/factory/scripts/materialize-simulator-seeds.mjs",
       "--dir",
-      ".ge/missions/benefits",
+      ".ge/pipelines/benefits",
     ],
     simulatorValidate: [
       "node",
@@ -94,8 +94,8 @@ test("sourceMap is a pass-through input", () => {
   expect(dataRealizationCommands(plan).mockGenerate).toContain("tmp/custom-source-map.json");
 });
 
-test("data realization artifacts use mission artifact names", () => {
-  const plan = buildDataRealizationPlan({ scenario: "benefits", workspace: ".ge/missions/benefits" });
+test("data realization artifacts use pipeline artifact names", () => {
+  const plan = buildDataRealizationPlan({ scenario: "benefits", workspace: ".ge/pipelines/benefits" });
   const artifacts = dataRealizationArtifacts(plan);
 
   expect(artifacts["mock.generate"].map((artifact) => artifact.name)).toEqual([
@@ -118,17 +118,17 @@ test("data realization artifacts use mission artifact names", () => {
   ]);
 });
 
-test("dataRealizationMissionNodes preserves current dataMissionNodes contract", () => {
+test("dataRealizationPipelineNodes preserves current dataPipelineNodes contract", () => {
   const plan = buildDataRealizationPlan({
     scenario: "benefits",
-    workspace: ".ge/missions/benefits",
+    workspace: ".ge/pipelines/benefits",
     systems: ["workday"],
   });
-  const fromContract = dataRealizationMissionNodes(plan, { missionId: "mission-x" });
-  const existing = dataMissionNodes({
-    missionId: "mission-x",
+  const fromContract = dataRealizationPipelineNodes(plan, { pipelineId: "pipeline-x" });
+  const existing = dataPipelineNodes({
+    pipelineId: "pipeline-x",
     scenario: "benefits",
-    workspace: ".ge/missions/benefits",
+    workspace: ".ge/pipelines/benefits",
     systems: ["workday"],
   });
 
@@ -138,20 +138,20 @@ test("dataRealizationMissionNodes preserves current dataMissionNodes contract", 
   expect(fromContract.map((node) => node.artifacts)).toEqual(existing.map((node) => node.artifacts));
 });
 
-test("dataRealizationMissionNodes matches registry-built node contract", () => {
+test("dataRealizationPipelineNodes matches registry-built node contract", () => {
   const context = {
-    missionId: "mission-x",
+    pipelineId: "pipeline-x",
     scenario: "benefits",
-    workspace: ".ge/missions/benefits",
+    workspace: ".ge/pipelines/benefits",
     systems: ["workday"],
   };
   const plan = buildDataRealizationPlan(context);
-  const fromContract = dataRealizationMissionNodes(plan, { missionId: context.missionId });
+  const fromContract = dataRealizationPipelineNodes(plan, { pipelineId: context.pipelineId });
   const fromRegistry = [
-    buildMissionNode("mock.generate", context),
-    buildMissionNode("snowfakery.generate", context),
-    buildMissionNode("simulator.seed", context),
-    buildMissionNode("simulator.validate", context),
+    buildPipelineNode("mock.generate", context),
+    buildPipelineNode("snowfakery.generate", context),
+    buildPipelineNode("simulator.seed", context),
+    buildPipelineNode("simulator.validate", context),
   ];
 
   expect(fromContract.map((node) => node.id)).toEqual([

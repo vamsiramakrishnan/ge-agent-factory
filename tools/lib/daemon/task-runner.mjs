@@ -1,7 +1,7 @@
 // tools/lib/daemon/task-runner.mjs — the one process-task execution skeleton.
 //
 // Every process-backed run kind (ge.command, process.command, the typed
-// mission-node commands, harness.run) used to carry its own copy of the same
+// pipeline-node commands, harness.run) used to carry its own copy of the same
 // orchestration: announce `stage_started` → execStream → map exit code →
 // emit the terminal event → persist the run — and a second, ~90%-identical
 // copy for resume (resume_* terminal events, a resume attempt record, and

@@ -1,18 +1,18 @@
 const TERMINAL_ITEM_STATUSES = new Set(["passed", "repaired"]);
 
-export function autopilotItemsFromMission(mission = {}) {
-  return (mission.roster || [])
-    .filter((item) => ["doctor_repair", "observe_remote_run"].includes(item.autopilotAction))
+export function repairItemsFromPipeline(pipeline = {}) {
+  return (pipeline.roster || [])
+    .filter((item) => ["doctor_repair", "observe_remote_run"].includes(item.repairAction))
     .map((item) => ({ agentId: item.agentId, workspaceId: item.workspaceId }));
 }
 
-export function autopilotSkipReason(mission = {}) {
-  return mission.summary?.selected
-    ? "No selected agents need an Autopilot doctor, repair, or remote observation step for this target."
-    : "No agents matched the current Autopilot queue.";
+export function repairSkipReason(pipeline = {}) {
+  return pipeline.summary?.selected
+    ? "No selected agents need a repair doctor, repair, or remote observation step for this target."
+    : "No agents matched the current repair queue.";
 }
 
-export function autopilotCounts(items = []) {
+export function repairCounts(items = []) {
   return {
     total: items.length,
     passed: items.filter((item) => item.status === "passed").length,
@@ -21,7 +21,7 @@ export function autopilotCounts(items = []) {
   };
 }
 
-export function createAutopilotItemState({ runId, targetStage, agentId, workspaceId }) {
+export function createRepairItemState({ runId, targetStage, agentId, workspaceId }) {
   return {
     runId,
     agentId,
@@ -37,9 +37,9 @@ export function createAutopilotItemState({ runId, targetStage, agentId, workspac
   };
 }
 
-export function createAutopilotRunState({ id, targetStage, options = {}, items = [], status = "running" }) {
+export function createRepairRunState({ id, targetStage, options = {}, items = [], status = "running" }) {
   const now = new Date().toISOString();
-  const counts = autopilotCounts(items);
+  const counts = repairCounts(items);
   return {
     id,
     targetStage,
@@ -55,7 +55,7 @@ export function createAutopilotRunState({ id, targetStage, options = {}, items =
   };
 }
 
-export function patchAutopilotItem(item, patch = {}) {
+export function patchRepairItem(item, patch = {}) {
   return {
     ...item,
     ...patch,
@@ -66,13 +66,13 @@ export function patchAutopilotItem(item, patch = {}) {
   };
 }
 
-export function finishAutopilotStatus(items = []) {
+export function finishRepairStatus(items = []) {
   const blocked = items.some((item) => item.status === "blocked");
   const pending = items.some((item) => ["pending", "doctor_running", "repairing"].includes(item.status));
   return pending ? "paused" : blocked ? "blocked" : "done";
 }
 
-export async function runAutopilotConvergence({
+export async function runRepairConvergence({
   run,
   items = [],
   cfg,
@@ -83,19 +83,19 @@ export async function runAutopilotConvergence({
   emit = () => {},
   updateItem = async () => {},
 } = {}) {
-  const mission = run.options?.mission || null;
-  const modeContract = mission?.modeContract || null;
+  const pipeline = run.options?.pipeline || null;
+  const modeContract = pipeline?.modeContract || null;
   let currentItems = items.map((item) => ({ ...item }));
   const setItem = async (agentId, patch) => {
-    currentItems = currentItems.map((item) => item.agentId === agentId ? patchAutopilotItem(item, patch) : item);
+    currentItems = currentItems.map((item) => item.agentId === agentId ? patchRepairItem(item, patch) : item);
     const next = currentItems.find((item) => item.agentId === agentId);
     await updateItem(next);
     return next;
   };
 
-  emit({ type: "stage_started", line: `autopilot ${run.id} started` });
+  emit({ type: "stage_started", line: `repair ${run.id} started` });
   for (const item of currentItems.filter((entry) => !TERMINAL_ITEM_STATUSES.has(entry.status))) {
-    if (modeContract?.autopilotCapability === "remote_observe_only") {
+    if (modeContract?.repairCapability === "remote_observe_only") {
       const observation = {
         kind: "ge.remote_factory_observation",
         ok: true,
@@ -151,7 +151,7 @@ export async function runAutopilotConvergence({
     });
   }
 
-  const status = finishAutopilotStatus(currentItems);
-  emit({ type: "stage_done", line: `autopilot ${status}` });
-  return { status, items: currentItems, counts: autopilotCounts(currentItems) };
+  const status = finishRepairStatus(currentItems);
+  emit({ type: "stage_done", line: `repair ${status}` });
+  return { status, items: currentItems, counts: repairCounts(currentItems) };
 }

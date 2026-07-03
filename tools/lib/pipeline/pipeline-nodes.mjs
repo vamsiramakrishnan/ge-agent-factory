@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { parseList } from "@ge/std/list";
-import { buildMissionNode } from "./mission-node-registry.mjs";
+import { buildPipelineNode } from "./pipeline-node-registry.mjs";
 import { STATE_PATHS, relativeToRepo } from "../state-paths.mjs";
 
 const DEMO_ROOT = "apps/factory";
@@ -11,10 +11,10 @@ function slug(value) {
 
 function scenarioWorkspace(scenario, spec = null) {
   const id = scenario || String(spec || "").replace(/\/agent-spec\.json$/i, "").split("/").filter(Boolean).pop();
-  return id ? join(relativeToRepo(STATE_PATHS.missions.root), slug(id)) : null;
+  return id ? join(relativeToRepo(STATE_PATHS.pipelines.root), slug(id)) : null;
 }
 
-export function missionDataContext({ scenario = null, spec = null, workspace = null, systems = [] } = {}) {
+export function pipelineDataContext({ scenario = null, spec = null, workspace = null, systems = [] } = {}) {
   const resolvedWorkspace = workspace || scenarioWorkspace(scenario, spec);
   return {
     scenario: scenario || null,
@@ -25,7 +25,7 @@ export function missionDataContext({ scenario = null, spec = null, workspace = n
   };
 }
 
-export function missionNodeArtifacts(kind, input = {}) {
+export function pipelineNodeArtifacts(kind, input = {}) {
   const workspace = input.workspace || "<workspace>";
   if (kind === "mock.generate") {
     return [
@@ -60,13 +60,13 @@ export function missionNodeArtifacts(kind, input = {}) {
   return [];
 }
 
-export function dataMissionNodes({ missionId, scenario, spec, workspace, systems = [] } = {}) {
-  const context = { ...missionDataContext({ scenario, spec, workspace, systems }), missionId };
+export function dataPipelineNodes({ pipelineId, scenario, spec, workspace, systems = [] } = {}) {
+  const context = { ...pipelineDataContext({ scenario, spec, workspace, systems }), pipelineId };
   if (!context.enabled) return [];
   return [
-    buildMissionNode("mock.generate", context),
-    buildMissionNode("snowfakery.generate", context),
-    buildMissionNode("simulator.seed", context),
-    buildMissionNode("simulator.validate", context),
+    buildPipelineNode("mock.generate", context),
+    buildPipelineNode("snowfakery.generate", context),
+    buildPipelineNode("simulator.seed", context),
+    buildPipelineNode("simulator.validate", context),
   ];
 }

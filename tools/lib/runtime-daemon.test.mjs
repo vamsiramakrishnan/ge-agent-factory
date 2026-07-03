@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { buildMissionGraph } from "./mission/mission-plan.mjs";
-import { resumePlanFor, safeGeCommand, safeHarnessRunInput, safeMissionRuntimeCommand, safeProcessCommand, toolAugmentedPath, __test } from "./runtime-daemon.mjs";
+import { buildPipelineGraph } from "./pipeline/pipeline-graph-plan.mjs";
+import { resumePlanFor, safeGeCommand, safeHarnessRunInput, safePipelineRuntimeCommand, safeProcessCommand, toolAugmentedPath, __test } from "./runtime-daemon.mjs";
 
 describe("toolAugmentedPath", () => {
   test("adds ~/.local/bin (where uv lives) so spawned tools resolve, preserving existing PATH", () => {
@@ -15,10 +15,10 @@ describe("toolAugmentedPath", () => {
 });
 
 describe("runtime resume plan", () => {
-  test("autopilot blocked tasks are resumable from persisted item state", () => {
+  test("repair blocked tasks are resumable from persisted item state", () => {
     const plan = resumePlanFor({
       id: "auto-1",
-      kind: "autopilot.run",
+      kind: "repair.run",
       status: "blocked",
       input: { targetStage: "preview" },
       output: {
@@ -36,7 +36,7 @@ describe("runtime resume plan", () => {
 
     expect(plan.safeToRun).toBe(true);
     expect(plan.state).toBe("blocked");
-    expect(plan.nextAction).toBe("resume_autopilot");
+    expect(plan.nextAction).toBe("resume_repair");
     expect(plan.commands).toContain("ge runs resume auto-1");
     expect(plan.blockers[0].id).toBe("missing-preview");
   });
@@ -78,7 +78,7 @@ describe("runtime resume plan", () => {
   test("failed process commands only resume for whitelisted repo scripts", () => {
     expect(safeProcessCommand(["node", "apps/factory/scripts/plan-mock-data.mjs", "--dir", "x"])).toBe(true);
     expect(safeProcessCommand([process.execPath, "/repo/apps/factory/scripts/materialize-simulator-seeds.mjs", "--dir", "x"])).toBe(true);
-    expect(safeProcessCommand(["uv", "run", "--with", "snowfakery", "--with", "setuptools<81", "snowfakery", ".ge/missions/benefits/mock_data/snowfakery/structured.recipe.yml", "--output-format", "csv", "--output-folder", ".ge/missions/benefits/mock_data/snowfakery/output"])).toBe(true);
+    expect(safeProcessCommand(["uv", "run", "--with", "snowfakery", "--with", "setuptools<81", "snowfakery", ".ge/pipelines/benefits/mock_data/snowfakery/structured.recipe.yml", "--output-format", "csv", "--output-folder", ".ge/pipelines/benefits/mock_data/snowfakery/output"])).toBe(true);
     expect(safeProcessCommand(["node", "scripts/unknown.mjs"])).toBe(false);
 
     const safe = resumePlanFor({
@@ -102,9 +102,9 @@ describe("runtime resume plan", () => {
     expect(unsafe.nextAction).toBe("inspect_blocker");
   });
 
-  test("failed typed mission data nodes resume through node registry", () => {
-    expect(safeMissionRuntimeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "true", "--system", "workday"] })).toBe(true);
-    expect(safeMissionRuntimeCommand("simulator.validate", { argv: ["node", "scripts/unknown.mjs"] })).toBe(false);
+  test("failed typed pipeline data nodes resume through node registry", () => {
+    expect(safePipelineRuntimeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "true", "--system", "workday"] })).toBe(true);
+    expect(safePipelineRuntimeCommand("simulator.validate", { argv: ["node", "scripts/unknown.mjs"] })).toBe(false);
 
     const safe = resumePlanFor({
       id: "simval-1",
@@ -195,16 +195,16 @@ describe("runtime resume plan", () => {
     expect(response.responses[1].freeformResponse).toBe("Require approval");
   });
 
-  test("blocked mission tasks expose mission resume command", () => {
+  test("blocked pipeline tasks expose pipeline resume command", () => {
     const plan = resumePlanFor({
-      id: "mission-1",
-      kind: "mission.run",
+      id: "pipeline-1",
+      kind: "pipeline.run",
       status: "blocked",
       output: {
         graph: {
           nodes: [
             {
-              id: "autopilot.converge",
+              id: "repair.converge",
               status: "blocked",
               resumePlan: { reason: "agent blocked", blockers: [{ id: "preview-missing" }], artifacts: [] },
             },
@@ -214,14 +214,14 @@ describe("runtime resume plan", () => {
     });
 
     expect(plan.safeToRun).toBe(true);
-    expect(plan.nextAction).toBe("resume_mission");
-    expect(plan.commands).toContain("ge pipeline resume mission-1");
+    expect(plan.nextAction).toBe("resume_pipeline");
+    expect(plan.commands).toContain("ge pipeline resume pipeline-1");
     expect(plan.blockers[0].id).toBe("preview-missing");
   });
 
-  test("resumed missions rehydrate data node commands from the current registry", () => {
-    const staleGraph = buildMissionGraph({
-      id: "mission-old",
+  test("resumed pipelines rehydrate data node commands from the current registry", () => {
+    const staleGraph = buildPipelineGraph({
+      id: "pipeline-old",
       scenario: "account-reconciliation-agent",
       useAntigravity: false,
     });
@@ -243,11 +243,11 @@ describe("runtime resume plan", () => {
             ...node.input,
             argv: [
               "snowfakery",
-              ".ge/missions/account-reconciliation-agent/mock_data/snowfakery/structured.recipe.yml",
+              ".ge/pipelines/account-reconciliation-agent/mock_data/snowfakery/structured.recipe.yml",
               "--output-format",
               "csv",
               "--output-folder",
-              ".ge/missions/account-reconciliation-agent/mock_data/snowfakery/output",
+              ".ge/pipelines/account-reconciliation-agent/mock_data/snowfakery/output",
             ],
           },
           blockers: [{ id: "old-snowfakery-command" }],
@@ -255,13 +255,13 @@ describe("runtime resume plan", () => {
       }
       return node;
     });
-    const plannedGraph = buildMissionGraph({
-      id: "mission-new",
+    const plannedGraph = buildPipelineGraph({
+      id: "pipeline-new",
       scenario: "account-reconciliation-agent",
       useAntigravity: false,
     });
 
-    const hydrated = __test.rehydrateMissionGraphForResume(
+    const hydrated = __test.rehydratePipelineGraphForResume(
       { ...staleGraph, nodes },
       plannedGraph,
       "snowfakery.generate",
@@ -282,16 +282,16 @@ describe("runtime resume plan", () => {
     expect(snowfakery.artifacts.map((artifact) => artifact.name)).toContain("snowfakery_output");
   });
 
-  test("resumed child mission graphs are rehomed onto the parent mission", () => {
+  test("resumed child pipeline graphs are rehomed onto the parent pipeline", () => {
     const childGraph = {
-      id: "mission-child",
+      id: "pipeline-child",
       nodes: [
         {
           id: "snowfakery.generate",
-          missionId: "mission-child",
+          pipelineId: "pipeline-child",
           status: "done",
           resumePlan: {
-            commands: ["ge mission status mission-child"],
+            commands: ["ge pipeline status pipeline-child"],
             blockers: [],
             artifacts: [],
           },
@@ -299,10 +299,10 @@ describe("runtime resume plan", () => {
       ],
     };
 
-    const parentGraph = __test.rehomeMissionGraph(childGraph, "mission-parent", "mission-child");
+    const parentGraph = __test.rehomePipelineGraph(childGraph, "pipeline-parent", "pipeline-child");
 
-    expect(parentGraph.id).toBe("mission-parent");
-    expect(parentGraph.nodes[0].missionId).toBe("mission-parent");
-    expect(parentGraph.nodes[0].resumePlan.commands[0]).toBe("ge mission status mission-parent");
+    expect(parentGraph.id).toBe("pipeline-parent");
+    expect(parentGraph.nodes[0].pipelineId).toBe("pipeline-parent");
+    expect(parentGraph.nodes[0].resumePlan.commands[0]).toBe("ge pipeline status pipeline-parent");
   });
 });

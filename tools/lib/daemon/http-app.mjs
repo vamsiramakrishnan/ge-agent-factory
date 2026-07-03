@@ -33,9 +33,9 @@ function afterSeqFrom(c) {
 
 // deps: everything stateful, injected so the app stays a pure route table.
 // { daemonStatus(port), listRuns, listRunSummaries, normalizedTaskDetail,
-//   readRun(id), listSequencedEvents(id), wireTaskKind(kind),
+//   readRun(id), listSequencedEvents(id),
 //   startGeCommandTask, startProcessCommandTask, startHarnessRunTask,
-//   startMissionTask, startAutopilotTask, startDoctorTask,
+//   startPipelineTask, startRepairTask, startDoctorTask,
 //   submitInteractionResponse, resumeTask, port }
 export function createDaemonApp(deps) {
   const app = new Hono();
@@ -58,9 +58,8 @@ export function createDaemonApp(deps) {
         return c.json({ error: `invalid JSON body: ${error.message}` }, 400);
       }
     }
-    // Canonical kinds (pipeline.run / repair.run) normalize to the stable wire
-    // kind before validation or any stored state — see TASK_KIND_ALIASES.
-    const kind = deps.wireTaskKind(body.kind);
+    // pipeline.run / repair.run ARE the wire kinds — no alias normalization.
+    const kind = body.kind;
     const checked = validateTaskCreate(kind, body);
     if (!checked.ok) return c.json({ error: checked.error }, 400);
     const input = checked.value;
@@ -68,10 +67,10 @@ export function createDaemonApp(deps) {
       if (kind === "ge.command") return c.json(deps.startGeCommandTask({ argv: input.argv, command: input.command || null }), 202);
       if (kind === "process.command") return c.json(deps.startProcessCommandTask({ argv: input.argv, command: input.command || null }), 202);
       if (kind === "harness.run") return c.json(deps.startHarnessRunTask(input.input || input), 202);
-      if (kind === "mission.run") return c.json(await deps.startMissionTask(input), 202);
-      if (kind === "autopilot.run") return c.json(await deps.startAutopilotTask(input), 202);
+      if (kind === "pipeline.run") return c.json(await deps.startPipelineTask(input), 202);
+      if (kind === "repair.run") return c.json(await deps.startRepairTask(input), 202);
     } catch (error) {
-      const status = kind === "mission.run" || kind === "autopilot.run" ? 500 : 400;
+      const status = kind === "pipeline.run" || kind === "repair.run" ? 500 : 400;
       return c.json({ error: error.message || String(error) }, status);
     }
     return c.json({ error: `unsupported task kind: ${body.kind || "<unset>"}` }, 400);

@@ -7,7 +7,7 @@ import { guarded, emit, out, pc, readPidFile, processAlive, processLooksLikeDaem
 import { daemonPaths } from "../lib/runtime-daemon.mjs";
 
 const stateReset = defineCommand({
-  meta: { name: "reset", description: "Clear local GE runtime/factory/mission/interview state" },
+  meta: { name: "reset", description: "Clear local GE runtime/factory/pipeline/interview state" },
   args: {
     yes: { type: "boolean", description: "Confirm destructive local state reset" },
     json: { type: "boolean", description: "Machine-readable JSON result on stdout" },
@@ -23,7 +23,7 @@ const stateReset = defineCommand({
     const targets = [
       STATE_PATHS.root,
       LEGACY_STATE_PATHS.runtime.root,
-      LEGACY_STATE_PATHS.missions.root,
+      LEGACY_STATE_PATHS.pipelines.root,
       LEGACY_STATE_PATHS.interviews.root,
       LEGACY_STATE_PATHS.skills.root,
       LEGACY_STATE_PATHS.console.jobs,
@@ -46,7 +46,7 @@ const stateReset = defineCommand({
       removed,
       recreated: [
         displayStatePath(STATE_PATHS.runtime.runs),
-        displayStatePath(STATE_PATHS.missions.root),
+        displayStatePath(STATE_PATHS.pipelines.root),
         displayStatePath(STATE_PATHS.interviews.root),
         displayStatePath(STATE_PATHS.factory.workspaces),
         displayStatePath(STATE_PATHS.cache.uv),
@@ -70,7 +70,7 @@ const statePaths = defineCommand({
     const paths = {
       root: { path: displayStatePath(STATE_PATHS.root), means: "one local state root for this repository" },
       runtime: { path: displayStatePath(STATE_PATHS.runtime.root), means: "durable task runs, events, resume plans, daemon metadata" },
-      missions: { path: displayStatePath(STATE_PATHS.missions.root), means: "scenario data plans, generated rows, simulator seed overlays, validation artifacts" },
+      pipelines: { path: displayStatePath(STATE_PATHS.pipelines.root), means: "scenario data plans, generated rows, simulator seed overlays, validation artifacts" },
       interviews: { path: displayStatePath(STATE_PATHS.interviews.root), means: "generated interview specs before/after registry review" },
       factory: { path: displayStatePath(STATE_PATHS.factory.root), means: "factory plans, build run metadata, generated workspaces" },
       workspaces: { path: displayStatePath(STATE_PATHS.factory.workspaces), means: "generated agent code workspaces" },

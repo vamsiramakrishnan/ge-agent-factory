@@ -12,7 +12,7 @@
 //   bun run docs:shots -- --no-build   # skip `vite build` (reuse apps/console/dist)
 //
 // Determinism contract (verified by running this script twice and diffing
-// checksums — see the mission report / docs/DESIGN.md):
+// checksums — see docs/DESIGN.md):
 //   - the seed state lives under a fixed, gitignored directory that is wiped
 //     at the start of every run (no leftover state from a previous capture)
 //   - every id/timestamp in the seed is a hardcoded literal (tools/docs-shots/seed.mjs)
@@ -50,7 +50,7 @@ const VIEWS = [
   // Waits for the stream's own "complete" marker (not just the page title) so
   // the shot is never taken mid-stream.
   { name: "readiness", hash: "#/doctor?scope=local", wait: "text=Readiness check complete", settleMs: 1200 },
-  // Stretch surfaces (mission brief: add if the required 5 work reliably).
+  // Stretch surfaces (add if the required 5 work reliably).
   { name: "agent-detail", hash: "#/agent/asc-606-contract-analyzer", wait: "text=ASC 606 Contract Analyzer", settleMs: 1200 },
   { name: "interview", hash: "#/interview", wait: "text=Interview" },
 ];

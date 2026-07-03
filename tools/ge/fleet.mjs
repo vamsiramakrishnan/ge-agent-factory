@@ -1,11 +1,9 @@
 // tools/ge/fleet.mjs — `ge fleet status|repair|repairs`.
 //
 // THE canonical noun for many-agent state and convergence. `status` is the
-// roster health view (formerly `ge agents fleet`); `repair` converges blocked
-// agents to a target stage (formerly `ge autopilot run` — daemon task kind
-// `repair.run`, persisted wire kind `autopilot.run`); `repairs` lists/inspects
-// repair runs (formerly `ge autopilot status`). The old spellings remain as
-// deprecated aliases in tools/ge/autopilot.mjs and under `ge agents fleet`.
+// roster health view; `repair` converges blocked agents to a target stage
+// (daemon task kind `repair.run`, which is also the persisted wire kind);
+// `repairs` lists/inspects repair runs.
 import { defineCommand } from "citty";
 import {
   guarded, common, cfgFrom, emit, out, pc, core,
@@ -116,7 +114,7 @@ export const fleetRepairsCmd = defineCommand({
       return;
     }
     const body = await daemonRequest(port, `/api/tasks?limit=${encodeURIComponent(args.limit || "50")}`, { timeoutMs: 3000 });
-    const tasks = (body.tasks || []).filter((task) => task.kind === "autopilot.run");
+    const tasks = (body.tasks || []).filter((task) => task.kind === "repair.run");
     emit(args, { tasks, daemon: { ok: true, port } }, (r) => {
       out(pc.bold("\nRepair Runs"));
       out(`  daemon    ${pc.green("healthy")}  ${pc.dim(`http://127.0.0.1:${port}`)}`);
