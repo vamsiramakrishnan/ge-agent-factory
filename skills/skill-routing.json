@@ -92,6 +92,25 @@
       ],
       "composes": []
     },
+    "installing-the-factory": {
+      "triggers": [
+        "install the factory",
+        "set up the factory",
+        "bootstrap",
+        "fresh machine",
+        "new machine",
+        "mise run setup",
+        "mise install",
+        "bun install",
+        "ge not found",
+        "getting started",
+        "first proof",
+        "self-install"
+      ],
+      "composes": [
+        "operating-the-factory"
+      ]
+    },
     "managing-access": {
       "triggers": [
         "403",

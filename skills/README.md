@@ -13,9 +13,12 @@ Each skill is a directory with a `SKILL.md` (+ optional `references/`, `scripts/
   `running-release`, `driving-live-proof`, `operating-console`, `recording-evidence`,
   `navigating-factory-line`.
 - **Operator skills** sit on top and run the *operator's* job end to end:
-  `operating-the-factory` (the orchestrator/loop), `standing-up-the-platform`,
-  `deploying-the-control-plane`, `grounding-interviews-with-documents`,
-  `managing-access`, `triaging-runs`, and the shared safety rail `guarding-the-factory`.
+  `installing-the-factory` (the bootstrap: bare machine → verified install —
+  self-contained, so an assistant holding only that skill can install
+  everything else), `operating-the-factory` (the orchestrator/loop),
+  `standing-up-the-platform`, `deploying-the-control-plane`,
+  `grounding-interviews-with-documents`, `managing-access`, `triaging-runs`,
+  and the shared safety rail `guarding-the-factory`.
 
 ## Composition
 
