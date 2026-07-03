@@ -63,7 +63,7 @@ created → validated → harness_reviewed → harness_refined → data_packaged
   `factory-events.jsonl` live stream.
 - Ledger writes to a local SQLite store.
 - Deploy / register / publish are cloud steps — hand the checked workspace off
-  with `ge agents ship` (or switch to remote mode).
+  with `ge handoff agents-cli` (or switch to remote mode).
 
 ### Remote mode (`provision`)
 

@@ -20,7 +20,7 @@ serves one of those five verbs.
 | **Compile** | Materialize an **Enterprise Agent Contract**: the machine-readable statement of role, scope, tools, evidence rules, escalation and refusal rules, plus the world the agent operates in | The use-case spec (`generationSpec` + `behaviorContract`) and its [portable Markdown twin](../concepts/enterprise-agent-contract.html#the-contracts-portable-form) |
 | **Generate** | Emit everything the contract implies: ADK agent code, tools, fixture data, source-system simulations, smoke tests, eval suites | `ge prove` / `ge agents build` (one workspace per contract) |
 | **Prove** | Show — not claim — that the generated agent honors the contract | `ge prove`: evals, the spec-to-code trace, verify-stage review/refine verdicts, the promotion gate |
-| **Hand off** | Give the proven agent to the layer below: agents-cli → ADK Agent Engine → Gemini Enterprise, in your own Google Cloud project | `ge handoff agents-cli` (operator spelling: `ge agents ship`) |
+| **Hand off** | Give the proven agent to the layer below: agents-cli → ADK Agent Engine → Gemini Enterprise, in your own Google Cloud project | `ge handoff agents-cli` |
 
 > `capture`, `prove`, and `handoff` are first-class commands as well as
 > concepts: `ge capture` → `ge prove` → `ge handoff agents-cli` is the
@@ -72,11 +72,12 @@ same workspace crosses the boundary unchanged — simulated backends simply
 give way to governed cloud services.
 
 <details>
-<summary>Operator spelling / under the hood</summary>
+<summary>Under the hood</summary>
 
 The two sides are selected by **mode** (`ge mode local` / `ge mode remote`,
-persisted in `.ge.json`), and `ge handoff agents-cli` delegates to
-`ge agents ship`.
+persisted in `.ge.json`); `ge handoff agents-cli` tars and uploads each
+proven workspace, then runs only the post-boundary release stages in the
+cloud.
 
 </details>
 

@@ -70,12 +70,12 @@ ge prove                     # compile one contract into a validated agent works
 ```
 
 <details>
-<summary>Operator spelling / under the hood</summary>
+<summary>Under the hood</summary>
 
-On a fresh machine, `ge prove` dispatches to `ge devex smoke`: local
-doctor, then one canary workspace built to the `validated` stage. Once
-workspaces exist, `ge prove` rebuilds their proof via `ge agents build`;
-`ge prove --watch` re-proves on contract change.
+On a fresh machine, `ge prove` runs the local doctor, then builds one
+canary workspace to the `validated` stage. Once workspaces exist,
+`ge prove` rebuilds their proof via `ge agents build`; `ge prove --watch`
+re-proves on contract change.
 
 </details>
 

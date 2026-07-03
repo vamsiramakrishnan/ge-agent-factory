@@ -47,14 +47,14 @@ mise run console         # open the operator UI → http://localhost:18260
    re-proves whenever a contract changes).
 
    <details>
-   <summary>Operator spelling / under the hood</summary>
+   <summary>Under the hood</summary>
 
-   On a fresh machine, `ge prove` dispatches to `ge devex smoke` (also
-   exposed as `mise run devex-smoke`): it runs local readiness, sets local
-   mode, and builds one **[canary](../GLOSSARY.html#canary)** workspace (a
-   single throwaway agent used to prove the pipeline works, as opposed to
-   building the whole catalog) to the `validated` stage. Once workspaces
-   exist, `ge prove` rebuilds their proof via `ge agents build`.
+   On a fresh machine, `ge prove` (also exposed as `mise run prove`) runs
+   local readiness checks, sets local mode, and builds one
+   **[canary](../GLOSSARY.html#canary)** workspace (a single throwaway agent
+   used to prove the pipeline works, as opposed to building the whole
+   catalog) to the `validated` stage. Once workspaces exist, `ge prove`
+   rebuilds their proof via `ge agents build`.
 
    The fast pre-check on its own is `mise run devex-check` (=
    `ge devex check`): local doctor, GitHub Pages link check, and generated
@@ -131,7 +131,7 @@ ge state paths         # shows where state lands (.ge/...)
 
 ```bash
 mise run devex-check       # local doctor + docs links + workspace manifest contracts
-mise run devex-smoke       # validates one canary workspace and prints workspace.json
+mise run prove             # validates one canary workspace and prints workspace.json
 ge mode                    # prints: mode: local (or remote)
 ```
 

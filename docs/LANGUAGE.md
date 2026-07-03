@@ -120,8 +120,16 @@ front and report actual duration after.
 
 ## Renames
 
-None. This change-set is additive by law: the golden verbs are a new front
-door over implementations that keep their operator names (`devex smoke`,
-`agents build`, `agents ship`) forever-working. A rename sweep only becomes
-safe once the additive verbs have adoption; until then, every old spelling
-keeps working and the deprecated aliases keep pointing at the canonical ones.
+Done, once, before release. Because the product is unreleased, the rename
+sweep ran as a single pass and the superseded spellings were **removed**, not
+deprecated — there are no aliases to maintain and no compatibility shims to
+document. Wire and persisted identifiers (daemon task kinds, plan JSON kinds,
+state paths) renamed in the same pass, so the operator surface and what it
+persists agree everywhere.
+
+The two-register policy above still governs what leads where: golden-register
+verbs (`capture`, `prove`, `handoff`) front every door, and the
+operator-register families (`pipeline`, `fleet`, `runs`, `devex`, `daemon`)
+live behind it in Operate sections, reference pages, and `<details>` blocks.
+Any future rename follows the same rule — one sweep, no vestiges, gate stays
+green.

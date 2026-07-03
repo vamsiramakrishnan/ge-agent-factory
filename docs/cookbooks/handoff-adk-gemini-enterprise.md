@@ -3,7 +3,7 @@ title: Hand off to ADK Agent Engine / Gemini Enterprise
 parent: Guides
 nav_order: 10
 layout: default
-description: Ship a proven workspace with ge agents ship — the post-boundary release stages deploy it to Agent Engine, register its tools, and publish it into Gemini Enterprise.
+description: Ship a proven workspace with ge handoff agents-cli — the post-boundary release stages deploy it to Agent Engine, register its tools, and publish it into Gemini Enterprise.
 ---
 
 # Hand off to ADK Agent Engine / Gemini Enterprise
@@ -11,7 +11,7 @@ description: Ship a proven workspace with ge agents ship — the post-boundary r
 **Scope:** cloud — every stage in this guide mutates your Google Cloud
 project.
 
-`ge agents ship` is the handoff to the runtime and the end-user surface: it
+`ge handoff agents-cli` is the handoff to the runtime and the end-user surface: it
 uploads each locally-built, proven workspace and runs the post-boundary
 release stages in your GCP project —
 `load_data → deploy_runtime → poll_runtime → register_tools → publish_enterprise`,
@@ -63,8 +63,8 @@ One or more proven local workspaces under `.ge/factory/workspaces/`
 2. **Ship.**
 
    ```bash
-   ge agents ship                          # all locally-built workspaces
-   ge agents ship --ids ws-a,ws-b          # specific workspaces
+   ge handoff agents-cli                   # all locally-built workspaces
+   ge handoff agents-cli --ids ws-a,ws-b   # specific workspaces
    ```
 
    Flags: `--ids <a,b>` (default: all built locally), `--start-stage`
@@ -76,8 +76,8 @@ One or more proven local workspaces under `.ge/factory/workspaces/`
    starting past the build boundary. Useful variants:
 
    ```bash
-   ge agents ship --start-stage deploy_runtime   # skip load_data if stores already loaded
-   ge agents ship --target-stage verify_live     # extend through the live smoke check
+   ge handoff agents-cli --start-stage deploy_runtime   # skip load_data if stores already loaded
+   ge handoff agents-cli --target-stage verify_live     # extend through the live smoke check
    ```
 
    What the stages do: `load_data` creates the per-agent stores (BigQuery
@@ -105,7 +105,7 @@ One or more proven local workspaces under `.ge/factory/workspaces/`
 
 ## Expected output
 
-- `ge agents ship` prints `Shipped <n>  failed 0  (load_data → publish_enterprise, remote)`
+- `ge handoff agents-cli` prints `Shipped <n>  failed 0  (load_data → publish_enterprise, remote)`
   with one run id per workspace.
 - `ge agents status --watch` ends with all runs terminal and none failed.
 - The agent is live in ADK Agent Engine (its runtime id lands in the
@@ -153,7 +153,7 @@ One or more proven local workspaces under `.ge/factory/workspaces/`
 - Retry from the ledger: `ge agents resume` in remote mode plans the exact
   ship/advance actions to reach `published`; `--run` executes them.
 - Re-ship from a later stage once the cause is fixed, e.g.
-  `ge agents ship --ids <id> --start-stage deploy_runtime`.
+  `ge handoff agents-cli --ids <id> --start-stage deploy_runtime`.
 - Pre-boundary failures (validation, harness) belong to
   [Repair a failed proof](repair-failed-proof.html) — converge locally,
   then ship again.

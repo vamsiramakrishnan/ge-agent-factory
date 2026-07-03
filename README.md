@@ -48,7 +48,7 @@ Not sure this is the layer you need? Read
 </tr>
 <tr>
 <td width="50%">
-<img src="docs/assets/screenshots/agent-detail.png" alt="Agent detail view for the ASC 606 Contract Analyzer: 7 of 8 build-and-release stages complete, deploy pending, next action Ship with the exact ge agents ship command to run">
+<img src="docs/assets/screenshots/agent-detail.png" alt="Agent detail view for the ASC 606 Contract Analyzer: 7 of 8 build-and-release stages complete, deploy pending, next action Ship with the exact ge handoff command to run">
 <br>
 <strong>Agent detail.</strong> Every stage's evidence in one place, down to the exact command to ship it.
 </td>
@@ -115,11 +115,11 @@ re-proves automatically whenever a contract changes.
 | Golden-path verb | What it runs today |
 |---|---|
 | `ge capture` | opens the console **Interview** at `http://localhost:18260/#/interview` (starting the console if needed) — conversational capture, document grounding, contract editing. `ge capture --from <agent-spec.json>` registers an already-captured contract with the catalog. |
-| `ge prove` | fresh machine → `ge devex smoke` (doctor + one validated canary workspace); workspaces already built → `ge agents build` rebuilds their proof (evals + spec-to-code trace + harness verdicts + promotion gate). `--watch` re-proves on contract change. |
-| `ge handoff agents-cli` | `ge agents ship`: hands locally proven workspaces to the cloud — `load_data` → deploy via `agents-cli deploy` → Agent Engine → register tools → publish to Gemini Enterprise. |
+| `ge prove` | fresh machine → health check + one validated canary workspace; workspaces already built → `ge agents build` rebuilds their proof (evals + spec-to-code trace + harness verdicts + promotion gate). `--watch` re-proves on contract change. |
+| `ge handoff agents-cli` | hands locally proven workspaces to the cloud — `load_data` → deploy via `agents-cli deploy` → Agent Engine → register tools → publish to Gemini Enterprise. |
 
-The operator-register spellings in that table are first-class commands too,
-and every old command still works unchanged — see [Operate](#operate).
+The machinery each verb drives is first-class and directly operable too —
+see [Operate](#operate).
 </details>
 
 **→ Full setup path: [`SETUP.md`](SETUP.md). Ten-minute tutorial:
@@ -184,20 +184,20 @@ operator register — planes, modes, canary, harness, fleet, and friends
 (each defined in the [Glossary](docs/GLOSSARY.md)). Golden path above;
 levers below.
 
-The golden verbs' operator spellings, step by step:
+The golden path, one lever at a time:
 
 ```bash
-ge devex smoke               # compile + prove one canary agent workspace (~5 min) — what `ge prove` runs on a fresh machine
+ge prove                     # compile + prove one canary agent workspace (~5 min): health check → build → validate
 ge mode local
 ge agents build --canary     # compile one contract → validated workspace (build boundary)
 mise run console             # watch runs live in the operator console → http://localhost:18260
-ge agents ship               # hand off: cloud runs load_data → deploy → register → publish
+ge handoff agents-cli        # hand off: cloud runs load_data → deploy → register → publish
 ```
 
 The mode switch (`ge mode local|remote`, default **local** — billable work
 is opt-in) selects which side of the build boundary does the work;
-`ge agents ship` bridges them by handing a locally proven workspace to the
-cloud for the release stages only.
+`ge handoff agents-cli` bridges them by handing a locally proven workspace
+to the cloud for the release stages only.
 
 ## Deploy the platform to your own GCP project
 
@@ -239,9 +239,9 @@ ge capture             # golden path: capture a contract (console Interview; --f
 ge prove               # golden path: prove contracts → validated workspaces (--watch to loop)
 ge handoff agents-cli  # golden path: ship proven agents to Agent Engine / Gemini Enterprise
 ge init                # discover config → .ge.json
-ge devex smoke         # one-command local proof: doctor → validated canary workspace
+ge devex check         # fast read-only gate: doctor + docs + workspace contracts
 ge agents build --canary
-ge agents ship --ids <workspace-id>
+ge handoff agents-cli --ids <workspace-id>
 ge agents status --watch
 ge pipeline run --scenario <id>   # orchestrate the end-to-end pipeline
 ge fleet status        # fleet convergence; ge fleet repair --ids <a,b> fixes blockers in bulk

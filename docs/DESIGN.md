@@ -388,8 +388,8 @@ related concepts.
 
 Language discipline: lead with the primary nouns (contract, authority,
 source system, simulation, eval, proof, handoff, passport, risk, coverage);
-the demoted nouns (daemon, ledger, planes, fleet, pipeline, mission,
-journey, harness) are explained on first use and never lead a Start Here or
+the demoted nouns (daemon, ledger, planes, fleet, pipeline, repair,
+harness) are explained on first use and never lead a Start Here or
 Core Concepts section.
 
 ## Cookbook scope strips

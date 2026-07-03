@@ -615,10 +615,10 @@ ge                                        # status board: planes ✓/○ + next 
 ge agents build --canary --local          # build one agent on this machine
 ge agents build --all --remote            # submit the whole fleet to the cloud
 ge agents build --ids account-reconciliation-agent --no-refine
-ge journey plan --usecase account-reconciliation-agent
-ge mission run --scenario leave-planning --systems workday,docusign_clm --target-stage preview
-ge autopilot run --ids agent-a,agent-b --target-stage preview
-ge runtime start job -- ge <args>         # run a ge command as a runtime task
+ge pipeline plan --usecase account-reconciliation-agent
+ge pipeline run --scenario leave-planning --systems workday,docusign_clm --target-stage preview
+ge fleet repair --ids agent-a,agent-b --target-stage preview
+ge runs job -- ge <args>                  # run a ge command as a background run
 ge state reset --yes                      # destructive: clear local GE state
 ge ledger backfill                        # import legacy run state into the ledger
 ge apply --yes                            # reconcile actual → desired from ge.manifest.json
@@ -711,7 +711,7 @@ the handful that collide with a built-in mise command name (`doctor`, `install`,
 |---|---|
 | `mise run setup` | Install JS + Python/uv deps, sync catalog/skills, put `ge` on PATH, start the daemon |
 | `mise run devex-check` | Run `ge devex check`: local doctor + docs links + workspace manifest contracts |
-| `mise run devex-smoke` | Run `ge devex smoke`: local doctor → local mode → one validated canary workspace |
+| `mise run prove` | Run `ge prove`: local doctor → local mode → one validated canary workspace |
 | `mise run bootstrap [CANARY=1]` | End-to-end: toolchain + `ge init` + `ge up`. `CANARY=1` also builds one agent. Needs `GEMINI_ENTERPRISE_APP_ID` + gcloud auth |
 | `mise run all` | Alias for `bootstrap` |
 | `mise run deps` / `mise run data-runtime` / `mise run deps-terraform` | Toolchain pieces: uv + agents-cli + `.venv` (google-antigravity); Snowfakery runtime; terraform |
