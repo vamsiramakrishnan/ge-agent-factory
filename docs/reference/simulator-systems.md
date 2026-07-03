@@ -9,10 +9,11 @@ layout: default
 
 The simulator engine serves an agent's enterprise tools (Workday, DocuSign CLM,
 SAP, …) as a stateful, MCP-shaped backend, without the real systems. Each system
-is a **pack** (six JSON files) interpreted by a generic Python runtime under
-[`apps/factory/mcp-service/simulator_runtime/`](https://github.com/vamsiramakrishnan/ge-agent-factory).
-Bring-your-own (BYO) systems are mounted at runtime through a lazy layered registry
-and an overlay.
+is a **pack** (six JSON files) interpreted by a generic Python runtime — the
+standalone `simulator-runtime` package
+([`packages/simulator-runtime/README.md`](../../packages/simulator-runtime/README.md)),
+consumed by the per-department MCP service. Bring-your-own (BYO) systems are
+mounted at runtime through a lazy layered registry and an overlay.
 
 <p align="center">
   <img src="../assets/diagrams/simulator-backend-flow.svg" alt="An agent reads local fixture files when GE_DATA_BACKEND=fixtures, or resolves an MCP toolset from the Agent Registry when GE_DATA_BACKEND=mcp, reaching the per-department FastMCP service, the generic engine with the agent's per-agent store, and a source-system envelope that looks like Workday, Ariba, or SAP" width="750">
@@ -188,14 +189,49 @@ seed resolves), and scenario coverage. `--strict` promotes warnings to errors;
 ### Generate seed data
 
 ```bash
-node apps/factory/scripts/generate-simulator-data.mjs --system <id> [--seed 42] [--out <path>] [--no-snowfakery] [--stdout]
-node apps/factory/scripts/generate-simulator-data.mjs --pack <dir> [--seed 42]
+bun tools/ge.mjs data synth --system <id> [--seed 42] [--profile realistic] [--out <path>] [--no-snowfakery] [--stdout]
+node apps/factory/scripts/generate-simulator-data.mjs --pack <dir> [--seed 42]   # the same core, script form
 ```
 
 Builds a deterministic recipe from the contract and produces `seed.json` — using
 the **Snowfakery** tier when available, falling back to an offline **Faker** tier
-(zero external deps). It applies materialization (aliases + defaults), merges
-scenario-coverage rows, and validates FK closure before writing.
+(zero external deps); `--profile realistic` switches to the statistical realism
+tier (skewed distributions, a shared persona pool, seeded edge cases). It applies
+materialization (aliases + defaults), merges scenario-coverage rows, and validates
+FK closure before writing. The recipe model, tiers, profile, and determinism
+guarantees have their own page: [Synthetic data](synthetic-data.html).
+
+---
+
+## Determinism extras: virtual time, chaos profiles, record/replay
+
+Three opt-in runtime capabilities, each off by default (no env var, no
+contract field ⇒ byte-for-byte the behavior described above) and each fully
+deterministic — every draw is a keyed BLAKE2b digest, never an unseeded RNG.
+Contract-level fields win over the global env vars. Full semantics live in
+[`packages/simulator-runtime/README.md`](../../packages/simulator-runtime/README.md);
+this is the operator's map:
+
+| Capability | Enable (env / contract) | What you get |
+|---|---|---|
+| **Virtual clock** | `GE_SIMULATOR_VIRTUAL_TIME=1` / `virtualTime: true` | Simulation time starts at `GE_SIMULATOR_EPOCH` (ISO-8601, default `2026-01-01T09:00:00Z`) and advances deterministically per call. Audit events gain a reproducible `ts`; latency injection *records* the sampled delay instead of wall-sleeping, so time-shaped simulations run at full speed in tests. |
+| **Chaos profiles** | `GE_SIMULATOR_CHAOS_PROFILE=<name>` / `chaosProfile: "<name>"` | A named failure weather system layered over the pack's own `failureModes` (an independent draw — it never changes which contract-declared failures fire). Injected failures are audited with `detail="chaos:<profile>"`. |
+| **Record/replay cassettes** | `GE_SIMULATOR_RECORD_DIR=<dir>` / `GE_SIMULATOR_REPLAY_DIR=<dir>` | Recording appends every router call to a human-readable `<agent>__<system>.jsonl` cassette; replay serves recorded envelopes (flagged `"replayed": true`) matched by a fingerprint of tool + canonicalized args (volatile client tokens excluded). A replay hit still drives the live handler so simulator state advances exactly as it did while recording; a miss falls through to live execution. Neither var set ⇒ zero file IO. |
+
+The chaos profiles:
+
+| Profile | Weather |
+|---|---|
+| `steady` | labelled baseline — injects nothing |
+| `brownout` | 3× latency plus timeouts |
+| `storm` | heavy rate limiting plus latency spikes |
+| `flaky_dependency` | timeout/conflict bursts confined to deterministic call-index windows |
+| `degraded_writes` | conflicts/validation errors on write tools; reads stay clean |
+
+> These compose: a virtual-clock, `brownout`-profile run replayed from a
+> cassette is byte-reproducible end to end — which is what makes degraded-mode
+> agent behavior testable in CI rather than only observable in incidents.
+{: .tip }
 
 ---
 

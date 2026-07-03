@@ -13,7 +13,7 @@ import { CONTRACT_TOOL_KINDS, inferEvalToolArgs } from "../core/contract-schema.
 import { deriveTestMechanisms } from "../../lib/okf-capabilities.mjs";
 import { canonicalExpectedToolCallName, canonicalIntentToolName, tableToolName } from "../tools/tool-naming.mjs";
 
-export { renderGoldenEvals, renderEvalConfig, renderOptimizationConfig } from "@ge/evalkit/emitters";
+export { renderGoldenEvals, renderEvalConfig, renderOptimizationConfig, renderEvalConfigYaml, renderEvalDataset, renderSplitEvalDatasets, renderHoldoutSplit } from "@ge/evalkit/emitters";
 
 /** renderAgentsCliEvalSet with the factory's canonical naming/derivation bound in. */
 export function renderAgentsCliEvalSet(contract, manifest) {

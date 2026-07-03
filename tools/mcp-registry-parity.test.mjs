@@ -32,6 +32,9 @@ const EXPECTED_TOOLS = {
   factory_prove_live: ["evalset", "cassette?", "maxCases?", "maxTurns?", "strictResponder?", "updateBaseline?", "targetAgent?", "assistant?"],
   factory_bench: ["cassette?", "sessions?", "turns?", "concurrency?", "targetAgent?", "confirm?"],
   factory_evals_compile: ["spec?", "id?", "maxCases?"],
+  // Synthetic-data widening (synthkit surfacing, 2026-07-03): factory_data_synth
+  // exposes the same seed-generation core as `ge data synth`.
+  factory_data_synth: ["system", "seed?", "profile?", "edgeCaseRate?", "out?"],
 };
 
 const KNOWN_RISKS = ["mutates-cloud", "starts-workloads", "starts-local-workloads", "writes-repo", "read-only"];

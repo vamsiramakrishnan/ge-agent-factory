@@ -1,7 +1,7 @@
 ---
 title: Metric applicability
 parent: Reference
-nav_order: 12
+nav_order: 13
 layout: default
 description: Which eval metric families apply locally vs through the live assist surface, why, and the honest-status policy — unavailable and not_applicable are never silent passes.
 ---

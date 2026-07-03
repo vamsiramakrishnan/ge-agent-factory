@@ -366,6 +366,38 @@ export const GE_COMMANDS = {
     },
     argv: () => ["data", "up"],
   },
+  "data.synth": {
+    id: "data.synth",
+    method: "POST",
+    path: "/api/ge/data/synth",
+    cli: "ge data synth",
+    label: "Synthesize simulator seed",
+    summary: "Generate deterministic synthetic seed data for a simulator system twin (pack contract → recipe → seeded rows → seed.json), with an opt-in statistical realism profile",
+    risk: "writes-repo",
+    expectedDuration: "under 30s",
+    observability: { mode: "command-output", events: false },
+    requirements: { bins: ["node"], config: [] },
+    mcp: {
+      tool: "factory_data_synth",
+      description: "Local, deterministic: synthesize seed data for a simulator system twin. Resolves the pack contract (system=<id> under apps/factory/simulator-systems/), builds a normalized recipe, realizes rows — Snowfakery tier when on PATH, offline in-process tier otherwise; profile=realistic switches to the statistical realism tier (skewed distributions, a shared persona pool, seeded edge cases) — applies materialization, merges scenario-coverage rows, verifies FK closure, and writes the pack's seed.json (or out=<path>). Identical (system, seed, profile) inputs produce identical bytes; no cloud calls.",
+      params: {
+        system: { type: "string", description: "Simulator system id (resolved under apps/factory/simulator-systems/)" },
+        seed: { type: "number", optional: true, description: "Deterministic seed (default 42)" },
+        profile: { type: "string", enum: ["baseline", "realistic"], optional: true, description: "Realization profile (default baseline)" },
+        edgeCaseRate: { type: "number", optional: true, description: "Edge-case fraction for profile=realistic, 0..1 (default 0.06)" },
+        out: { type: "string", optional: true, description: "Seed output path (default: the pack's own seed.json)" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["data", "synth", "--json"];
+      if (body.system) argv.push("--system", String(body.system));
+      if (body.seed !== undefined) argv.push("--seed", String(body.seed));
+      if (body.profile) argv.push("--profile", String(body.profile));
+      if (body.edgeCaseRate !== undefined) argv.push("--edge-case-rate", String(body.edgeCaseRate));
+      if (body.out) argv.push("--out", String(body.out));
+      return argv;
+    },
+  },
   "mcp.deploy": {
     id: "mcp.deploy",
     method: "POST",
