@@ -8,7 +8,7 @@ layout: default
 # Console & APIs
 
 The console is the operator UI over the same engine the `ge` CLI drives —
-Pipeline/Journey, Fleet, Activity, Readiness/Doctor, a live Run Drawer, and the
+Pipeline, Fleet, Activity, Readiness/Doctor, a live Run Drawer, and the
 BYO systems flow. Run it with `mise run console` → `http://localhost:18260`. It proxies
 the local GE runtime daemon (default port `17654`).
 
@@ -28,22 +28,22 @@ the local GE runtime daemon (default port `17654`).
 
 | File | Shows |
 |---|---|
-| `Overview.tsx` | Status dashboard: plane cards, reconcile drift, active runtime tasks, quick-start journeys |
-| `Journey.tsx` | The Pipeline/Journey wizard (source → configure → review) to launch a build through to a staged target |
+| `Overview.tsx` | Status dashboard: plane cards, reconcile drift, active runtime tasks, quick-start pipelines |
+| `Journey.tsx` | The Pipeline wizard (source → configure → review) to launch a build through to a staged target |
 | `Fleet.tsx` | All agents with department/stage filters and batch actions (build, ship, sync, repair) |
-| `Activity.tsx` | Unified timeline of runs (mission / build / job) with status filters and live tail |
+| `Activity.tsx` | Unified timeline of runs (pipeline / build / job) with status filters and live tail |
 | `Doctor.tsx` | Readiness/health dashboard, scoped to local / cloud / data / mcp, with pass/warn/fail |
-| `Autopilot.tsx` | Batch readiness / convergence runs polled from the daemon |
+| `Autopilot.tsx` | The Repair Queue: batch readiness / convergence runs polled from the daemon |
 | `Interview.tsx` | The BYO interview UI: form (outcome / systems / constraints) + live spec canvas and grounding docs |
 | `SpecReview.tsx` | Standalone spec inspect/edit (`#/spec-review/:usecaseId`) |
-| `AgentDetail.tsx` | One agent: journey plan, doctor report, repair actions |
+| `AgentDetail.tsx` | One agent: pipeline plan, doctor report, repair actions |
 
 **Run Drawer + "Now" pulse** — `apps/console/src/components/RunDrawer.tsx`, driven
 by the `useRunStream` hook (`apps/console/src/hooks/useRunStream.ts`). It follows
 any run live, including remote runs, by subscribing to the ledger event SSE stream;
 the active stage is the "Now" pulse.
 
-**BYO `SystemsField`** — the systems picker in the interview/journey flow, backed by
+**BYO `SystemsField`** — the systems picker in the interview/pipeline flow, backed by
 `GET /api/systems` and `POST /api/systems/synthesize`.
 
 ---
@@ -96,8 +96,8 @@ returns `202 { jobId, command }`; stream progress via
 | `GET /api/ge/doctor` | Health report (`scope=all\|local\|cloud\|data\|mcp`, `command`) |
 | `GET /api/ge/doctor/stream` | Doctor checks (SSE) |
 | `GET /api/ge/fleet` | All agents + health/actions |
-| `GET /api/ge/journey` | Journey plan (`scenario`, `usecaseId`, `systems`, `ids`, `targetStage`) |
-| `GET /api/ge/mission` | Mission execution plan |
+| `GET /api/ge/journey` | Pipeline plan (`scenario`, `usecaseId`, `systems`, `ids`, `targetStage`) |
+| `GET /api/ge/mission` | Pipeline execution plan (the runnable DAG) |
 | `GET /api/ge/factory/runs` | Factory run summaries (`limit`) |
 | `GET /api/ge/ledger/runs` | Durable run ledger (`limit`) |
 | `GET /api/ge/ledger/runs/:id` | One ledger run |
@@ -111,12 +111,13 @@ returns `202 { jobId, command }`; stream progress via
 | `GET /api/ge/runs/:runId/events` | Run event stream (SSE) |
 | `GET /api/ge/artifacts/:runId/:item/:name` | Artifact content |
 | `GET /api/ge/jobs` · `/:id` · `/:id/logs` | Background jobs; `/logs` is SSE |
-| `GET /api/ge/autopilot` · `/:id` · `/:id/events` | Autopilot runs; `/events` takes `afterSeq` |
-| `POST /api/ge/autopilot` · `/:id/resume` | Start / resume autopilot |
+| `GET /api/ge/autopilot` · `/:id` · `/:id/events` | Repair runs; `/events` takes `afterSeq` |
+| `POST /api/ge/autopilot` · `/:id/resume` | Start / resume a repair run |
 | `POST /api/ge/mode` | Set mode (`local`\|`remote`) |
 
 The deploy and agent-lifecycle POST routes (`/api/ge/up`, `/data/up`,
-`/mcp/deploy`, `/agents/build`, `/ship`, `/sync`, `/daemon/start`) live in the
+`/mcp/deploy`, `/agents/build`, `/handoff`, `/agents/sync`, `/daemon/start`)
+live in the
 [generated registry table above](#registry-backed-mutating-routes).
 
 ### `/api/runtime/*` — daemon proxy
@@ -127,7 +128,7 @@ The deploy and agent-lifecycle POST routes (`/api/ge/up`, `/data/up`,
 | `GET /api/runtime/tasks` | List tasks (`limit`, `full`) |
 | `GET /api/runtime/tasks/:id` | One task |
 | `GET /api/runtime/tasks/:id/events` | Task events (SSE or `?format=json`) |
-| `POST /api/runtime/tasks` | Start a runtime task (e.g. `mission.run`) |
+| `POST /api/runtime/tasks` | Start a runtime task (e.g. `pipeline.run`) |
 | `POST /api/runtime/tasks/:id/resume` | Resume a paused task |
 | `POST /api/runtime/tasks/:id/interactions/:interactionId` | Answer a runtime form/question |
 
@@ -159,7 +160,7 @@ The `ge` export wraps every endpoint. Representative mappings:
 | `ge.status()` / `ge.fleet()` / `ge.doctor(scope, command)` | `GET /api/ge/status` / `/fleet` / `/doctor` |
 | `ge.journey(body)` / `ge.mission(body)` | `GET /api/ge/journey` / `/mission` |
 | `ge.ledgerRuns(limit)` / `ge.ledgerRun(id)` | `GET /api/ge/ledger/runs` / `/:id` |
-| `ge.build(body)` / `ge.ship(body)` / `ge.sync(body)` | `POST /api/ge/agents/build` / `/ship` / `/sync` |
+| `ge.build(body)` / `ge.sync(body)` | `POST /api/ge/agents/build` / `/agents/sync` |
 | `ge.up()` / `ge.dataUp()` / `ge.mcpDeploy()` | `POST /api/ge/up` / `/data/up` / `/mcp/deploy` |
 | `ge.runtimeStart(body)` / `ge.runtimeResume(id)` | `POST /api/runtime/tasks` / `/:id/resume` |
 | `ge.systems()` / `ge.synthesizeSystem(body)` | `GET /api/systems` / `POST /api/systems/synthesize` |

@@ -169,8 +169,8 @@ ingests. The full field-by-field mapping lives in the
 <summary>Operator spellings</summary>
 
 `ge pipeline run` orchestrates the surrounding path around
-`ge agents build`; `ge devex smoke` is what `ge prove` runs on a fresh
-machine; the Markdown knowledge bundle is the OKF bundle.
+`ge agents build`; on a fresh machine `ge prove` runs the health check and
+one validated canary build; the Markdown knowledge bundle is the OKF bundle.
 
 </details>
 

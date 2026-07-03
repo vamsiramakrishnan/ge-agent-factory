@@ -52,7 +52,7 @@ produce identically-refined code, then re-gated by `validate`. It runs with
 `--soft`, so a Vertex outage or harness error degrades to the deterministic code
 instead of failing the run; it is never a hard dependency. On by default for all
 363; opt out per run with `ge agents build --no-refine` (or `REFINE=0`).
-`ge agents ship` resumes at `load_data` (already refined locally) and skips it.
+`ge handoff agents-cli` resumes at `load_data` (already refined locally) and skips it.
 
 ## Lifecycle
 
@@ -82,8 +82,7 @@ bun tools/ge.mjs agents sync --ids account-reconciliation-agent --local
 bun tools/ge.mjs agents sync --ids account-reconciliation-agent --local --remote <git-url> --push
 ```
 
-Run bare `ge` anytime for a status board (mode · planes ✓/○ · next command). Old
-verbs (`provision`/`deploy`/`build`/`status`/`logs`/`sync`) still work as aliases.
+Run bare `ge` anytime for a status board (mode · planes ✓/○ · next command).
 All commands accept `--json` for scripting/CI; `agents build`/`status` accept
 `--no-proxy` if you're already inside an authenticated network.
 
@@ -154,17 +153,17 @@ Local builds stop at the build boundary (`previewed`) and print the next (cloud)
 step. Workspaces land in `.ge/factory/workspaces/` and are indexed by
 `.ge/factory/workspaces.json`.
 
-**Hand off to the cloud (`ge agents ship`).** Build locally, deploy remotely without
-re-generating: `ship` tars + uploads each prebuilt workspace and submits a
-deploy-only run that starts at `load_data` (→ deploy → register → publish),
-consuming the prebuilt archive. So the cloud deploys exactly what you validated —
-no duplicate generation or Antigravity cost.
+**Hand off to the cloud (`ge handoff agents-cli`).** Build locally, deploy remotely
+without re-generating: the handoff tars + uploads each prebuilt workspace and
+submits a deploy-only run that starts at `load_data` (→ deploy → register →
+publish), consuming the prebuilt archive. So the cloud deploys exactly what you
+validated — no duplicate generation or Antigravity cost.
 
 ```bash
 ge agents build --local --canary   # build + validate on this machine
-ge agents ship                     # cloud runs load_data → deploy → register → publish (default: all locally-built)
-ge agents ship --ids ws-a,ws-b     # specific local workspaces
-ge agents ship --start-stage deploy_runtime   # skip load_data if stores already loaded
+ge handoff agents-cli              # cloud runs load_data → deploy → register → publish (default: all locally-built)
+ge handoff agents-cli --ids ws-a,ws-b   # specific local workspaces
+ge handoff agents-cli --start-stage deploy_runtime   # skip load_data if stores already loaded
 ```
 
 Fallback (zero setup): `ge agents build --remote --ids …` re-runs generation in the
@@ -189,7 +188,7 @@ The canonical local state root is `.ge/`:
 | Path | Purpose |
 |---|---|
 | `.ge/runtime/` | daemon task records, events, interaction responses, resume plans |
-| `.ge/missions/` | mission graph workspaces, mock data, Snowfakery output, simulator overlays |
+| `.ge/pipelines/` | pipeline graph workspaces, mock data, Snowfakery output, simulator overlays |
 | `.ge/interviews/` | generated interview specs before/after registry review |
 | `.ge/factory/workspaces/` | local generated agent workspaces |
 | `.ge/factory/runs/` | local factory run metadata and logs |

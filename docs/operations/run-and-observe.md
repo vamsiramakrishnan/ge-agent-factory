@@ -63,7 +63,7 @@ run that has blocked.
 
    ```bash
    ge agents status --watch       # loops every 15s until runs are terminal
-   ge agents fleet                # fleet-wide run/work-item view
+   ge fleet status                # fleet-wide run/work-item view
    ge agents logs <runId>         # logs for a specific run
    ```
 

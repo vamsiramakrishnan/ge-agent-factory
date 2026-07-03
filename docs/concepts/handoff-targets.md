@@ -54,10 +54,9 @@ tool traces to a contract intent. The full anatomy is in
 
 ## The handoff itself
 
-`ge handoff agents-cli` is the handoff command (it delegates to
-`ge agents ship`): it takes workspaces that were built
-and proven locally and runs only the post-boundary stages in your Google
-Cloud project —
+`ge handoff agents-cli` is the handoff command: it takes workspaces that
+were built and proven locally and runs only the post-boundary stages in
+your Google Cloud project —
 
 ```
 load_data → deploy_runtime → poll_runtime → register_tools → publish_enterprise → verify_live
@@ -83,7 +82,7 @@ so the agent that was proven is the agent that ships.
 
 ## Where it appears
 
-- **CLI:** `ge handoff agents-cli` / `ge agents ship` (all locally-built
+- **CLI:** `ge handoff agents-cli` (all locally-built
   workspaces, or `--ids <a,b>`); `ge agents status --watch` for the release
   milestones (`deployed`, `registered`, `published`); cloud-side end-to-end
   runs when you opt to build in the cloud.

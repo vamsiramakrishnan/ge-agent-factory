@@ -72,10 +72,10 @@ agents-cli eval run --all            # the layer below, used directly
 ```
 
 <details>
-<summary>Operator spelling</summary>
+<summary>Under the hood</summary>
 
-On a fresh machine, `ge prove` dispatches to `ge devex smoke` — compile +
-prove one canary workspace.
+On a fresh machine, `ge prove` runs the health check, then compiles and
+proves one canary workspace.
 
 </details>
 

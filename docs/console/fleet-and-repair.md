@@ -17,8 +17,8 @@ Every generated agent, filterable by department, status, and stage — filters
 live in the URL hash, so a filtered view is shareable and reload-safe.
 Select agents to run **bulk** build / ship / sync / repair / regenerate
 actions. CLI equivalent: `ge fleet status`, plus `ge agents build --all` /
-`ge agents ship` (all locally-built workspaces, or `--ids <a,b>`) for the
-bulk actions.
+`ge handoff agents-cli` (all locally-built workspaces, or `--ids <a,b>`) for
+the bulk actions.
 
 <p align="center">
   <img src="../assets/screenshots/fleet.png" alt="Fleet view showing 364 total agents (362 missing, 1 ready, 1 blocked), an Agents by stage breakdown, a Top Bottlenecks card citing a real tools-generation failure, and the filterable agent roster table" width="820">

@@ -10,7 +10,7 @@ This guide is the fastest way to understand why the repo exists, where the code
 lives, and how to make a change without guessing.
 
 Unfamiliar term? See the [Glossary](./GLOSSARY.html) — plain-language
-translations of the jargon (harness, OKF, canary, planes, missions, …).
+translations of the jargon (harness, OKF, canary, planes, pipelines, …).
 
 ## Purpose first
 
@@ -33,7 +33,7 @@ artifact into a governed project.
 mise run setup
 mise run doctor-local
 mise run devex-check
-mise run devex-smoke
+mise run prove
 mise run console
 mise run mode-local
 CANARY=1 mise run provision-local
@@ -44,7 +44,7 @@ proves one validated [canary](./GLOSSARY.html#canary) workspace (a single agent
 that proves the pipeline), starts the [daemon](./GLOSSARY.html#daemon) (the
 local background task runner), opens the console at
 `http://localhost:18260`, and can build one agent up to the build boundary. The
-default `mise run devex-smoke` path does not require cloud credentials.
+default `mise run prove` path does not require cloud credentials.
 
 For cloud release work:
 
@@ -80,7 +80,7 @@ The factory has one stage graph and two execution modes.
 
 The build boundary is `previewed`. Stages before it are pure computation and can
 run locally. Stages after it touch cloud resources and run through the remote
-factory or `ge agents ship`.
+factory or `ge handoff agents-cli`.
 
 The three platform [planes](./GLOSSARY.html#planes) — the infrastructure
 layers `ge up` stands up — are:
@@ -111,7 +111,7 @@ Treat it as the workspace contract for developers and tools:
 | `artifacts.items` | Validation, trace, preview, deploy, publish, data, and tool-plan artifact inventory |
 
 `ge devex check` validates the local doctor, GitHub Pages links, and generated
-workspace contracts. `ge devex smoke` prints the primary workspace path and
+workspace contracts. `ge prove` prints the primary workspace path and
 manifest path, then gives the next commands to run.
 
 ## Development loops
