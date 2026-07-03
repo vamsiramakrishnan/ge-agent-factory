@@ -36,6 +36,7 @@ import { renderToolsPy } from "./factory/tools/render-tools-py.mjs";
 import { renderAgentPy } from "./factory/agents/render-agent-py.mjs";
 import { writeOkfArtifacts } from "./factory/agents/okf-artifacts.mjs";
 import { renderAgentsCliEvalSet, renderEvalConfig, renderGoldenEvals, renderOptimizationConfig } from "./factory/evals/render-eval-artifacts.mjs";
+import { renderHoldoutSplit, renderOptimizationConfigV2, renderJudgePanelConfig } from "./factory/evals/render-eval-artifacts-v2.mjs";
 import { ensureAgentsCliPyprojectMetadata } from "./factory/runtime/agents-cli-metadata.mjs";
 import { bigQueryNumericType, bigQuerySafeName, bigQueryType } from "./factory/data/bigquery-types.mjs";
 import { buildCloudDataArtifacts } from "./factory/data/build-cloud-data-artifacts.mjs";
@@ -704,6 +705,15 @@ async function cmdTools(dir, flags) {
     // instead of the default response_match (which needs a reference answer).
     await writeJson(join(dir, "tests", "eval", "eval_config.json"), renderEvalConfig(behaviorContract));
     await writeJson(join(dir, "tests", "eval", "optimization_config.json"), renderOptimizationConfig(behaviorContract));
+    // Opt-in judge-rigor v2 artifacts (holdout split, split-aware optimizer
+    // config, self-consistency judge panel). Env-gated so the default
+    // generated workspace stays byte-identical to the golden pipeline.
+    if (process.env.GE_EVAL_V2 === "1") {
+      const split = renderHoldoutSplit(agentsCliEvalSet.eval_cases);
+      await writeJson(join(dir, "tests", "eval", "holdout_split.json"), split);
+      await writeJson(join(dir, "tests", "eval", "optimization_config_v2.json"), renderOptimizationConfigV2(behaviorContract, split));
+      await writeJson(join(dir, "tests", "eval", "judge_panel.json"), renderJudgePanelConfig(behaviorContract));
+    }
   }
 
   const okfBundleDir = await writeOkfArtifacts({ dir, manifest, behaviorContract, generatedAt: GENERATED_AT });
