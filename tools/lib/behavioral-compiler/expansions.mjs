@@ -42,7 +42,8 @@ function matchCapability(text, capabilities) {
   return inScope.find((capability) => sharesToken(text, capability.objective)) || inScope[0] || capabilities[0];
 }
 
-function capabilityOwningTool(toolName, capabilities) {
+// Exported for reuse by adversarial.mjs (same capability-attribution rule).
+export function capabilityOwningTool(toolName, capabilities) {
   const inScope = capabilities.filter((capability) => capability.kind === "in_scope");
   return inScope.find((capability) => capability.relatedTools.includes(toolName)) || inScope[0] || capabilities[0];
 }

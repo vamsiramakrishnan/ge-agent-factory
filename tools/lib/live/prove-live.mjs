@@ -13,6 +13,8 @@ import { statePath, relativeToRepo } from "../state-paths.mjs";
 import { loadEvalset } from "../evals/evalset.mjs";
 import { prepareDrive, saveTranscript } from "./drive-session.mjs";
 import { runConversation } from "./conversation.mjs";
+import { lexicalSimilarity } from "./similarity.mjs";
+import { wilsonInterval } from "./eval-stats.mjs";
 
 export const LIVE_PROOF_API_VERSION = "ge.dev/v1";
 export const LIVE_PROOF_KIND = "LiveProofResult";
@@ -73,12 +75,20 @@ export function evaluateCaseMetrics(kase, transcript, { minResponseMatch = 0.35 
   if (references.length) {
     const scores = kase.turns.map((turn, index) => (turn.reference ? tokenF1(turn.reference, transcript.turns[index]?.assistant.text) : null)).filter((score) => score !== null);
     const score = scores.reduce((sum, value) => sum + value, 0) / scores.length;
+    // Advisory companions to the gating token-F1: ROUGE-L sees word order,
+    // trigram cosine sees near-miss surface forms. Reported next to the
+    // score, never thresholded — pass/fail stays tokenF1 vs minResponseMatch.
+    const similarities = kase.turns
+      .map((turn, index) => (turn.reference ? lexicalSimilarity(turn.reference, transcript.turns[index]?.assistant.text) : null))
+      .filter((entry) => entry !== null);
+    const advisoryMean = (key) => Number((similarities.reduce((sum, entry) => sum + entry[key], 0) / similarities.length).toFixed(3));
     metrics.push({
       metric: "response_match",
       runner: "ge",
       status: score >= minResponseMatch ? "pass" : "fail",
       score: Number(score.toFixed(3)),
       detail: `token-F1 ${score.toFixed(3)} vs threshold ${minResponseMatch} (structural check; judged quality is delegated)`,
+      advisory: { lexicalSimilarity: advisoryMean("score"), rougeL: advisoryMean("rougeL"), trigramCosine: advisoryMean("trigramCosine") },
     });
   } else {
     metrics.push({ metric: "response_match", runner: "ge", status: "not_applicable", detail: "no reference answers recorded for this case" });
@@ -232,6 +242,28 @@ export async function proveLive(cfg, {
 
   const failedCases = caseResults.filter((kase) => !kase.ok);
   const passRate = caseResults.length ? (caseResults.length - failedCases.length) / caseResults.length : 0;
+
+  // Advisory statistics: how much n cases actually constrain the pass rate,
+  // plus per-metric status counts. Purely additive — verdicts, blockers, and
+  // baselines are computed exactly as before.
+  const round3 = (value) => Number(value.toFixed(3));
+  const wilson = wilsonInterval(caseResults.length - failedCases.length, caseResults.length);
+  const metricCounts = {};
+  for (const kase of caseResults) {
+    for (const metric of kase.metrics) {
+      const entry = metricCounts[metric.metric] || (metricCounts[metric.metric] = {});
+      entry[metric.status] = (entry[metric.status] || 0) + 1;
+    }
+  }
+  const stats = {
+    cases: {
+      n: caseResults.length,
+      passes: caseResults.length - failedCases.length,
+      wilson95: { low: round3(wilson.low), high: round3(wilson.high), rate: round3(wilson.rate) },
+    },
+    metrics: metricCounts,
+  };
+
   const status = caseResults.length === 0 ? "blocked" : failedCases.length ? "failed" : "passed";
   const conformanceStates = caseResults.map((kase) => kase.conformance);
   const baselineState = conformanceStates.includes("drifted") ? "drifted"
@@ -248,6 +280,7 @@ export async function proveLive(cfg, {
     source: { runner: cassette ? "cassette" : "streamassist", replay: !!cassette },
     cases: caseResults,
     passRate: Number(passRate.toFixed(3)),
+    stats,
     conformance: {
       baseline: baselineState,
       baselineDir: relativeToRepo(baselineDir),

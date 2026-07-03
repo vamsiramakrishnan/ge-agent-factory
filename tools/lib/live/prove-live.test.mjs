@@ -168,6 +168,30 @@ test("gate policy: pass-rate floor, strict responder, and missing-result handlin
   expect(evaluateLiveGate(null, { ...DEFAULT_LIVE_GATE_POLICY, required: true }).passed).toBe(false);
 });
 
+test("advisory similarity and stats ride along without touching verdicts", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "ge-prove-live-"));
+  const evalset = writeSuccessEvalset(dir, { withExpectations: true });
+  const result = await proveLive({}, { evalset, cassette: SUCCESS, targetAgent: "agent-benefits", outRoot: STATE_ROOT });
+
+  // response_match carries advisory lexical-similarity fields; the gating
+  // score/status stay the tokenF1 contract.
+  const match = result.cases[0].metrics.find((metric) => metric.metric === "response_match");
+  expect(match.status).toBe("pass");
+  for (const key of ["lexicalSimilarity", "rougeL", "trigramCosine"]) {
+    expect(match.advisory[key]).toBeGreaterThan(0);
+    expect(match.advisory[key]).toBeLessThanOrEqual(1);
+  }
+  expect(match.detail).toContain("token-F1");
+
+  // The stats block reports the Wilson interval over case pass rate and
+  // per-metric status counts — advisory only, the verdict shape is unchanged.
+  expect(result.stats.cases).toEqual({ n: 1, passes: 1, wilson95: { low: expect.any(Number), high: 1, rate: 1 } });
+  expect(result.stats.cases.wilson95.low).toBeLessThan(1);
+  expect(result.stats.metrics.response_match.pass).toBe(1);
+  expect(result.stats.metrics.transport.pass).toBe(1);
+  expect(result.verdict).toEqual({ gate: "live", passed: true, blockers: [] });
+});
+
 test("baseline summary/diff are policy-level, not byte-level", () => {
   const transcript = {
     responder: { assertion: "matched" },
