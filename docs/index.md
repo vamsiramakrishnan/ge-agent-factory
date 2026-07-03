@@ -56,6 +56,26 @@ bunx create-ge-agent-factory        # any machine: clone + guided, verified inst
 
 The output still hands off to [Google agents-cli](https://google.github.io/agents-cli/) / ADK / Gemini Enterprise; skills are the assistant-facing setup and operations layer above that handoff.
 
+
+## The operating surface: contract, OKF, pipeline, proof
+
+The docs now follow the same path the console actually exposes: start with the
+contract, keep the OKF knowledge bundle beside it, run the existing pipeline and
+runs surfaces, and inspect proof before handoff. That keeps the landing page,
+diagrams, console docs, and CLI language aligned without inventing a separate
+console view.
+
+<p align="center">
+  <img src="assets/diagrams/console-okf-drive-views.svg" alt="Operator intent enters the Interview view, flows through Spec Review and OKF export, continues through Pipeline and Runs, opens Agent detail proof views, and reaches the promotion gate before handoff to agents-cli, ADK, and Gemini Enterprise" width="900">
+</p>
+
+| Surface | What you check | Why it matters |
+|---|---|---|
+| **Interview + Spec Review** | Role, scope, tools, refusal rules, success criteria | The business request becomes an auditable Enterprise Agent Contract |
+| **OKF export** | Knowledge bundle, concepts, source files, export readiness | The reviewed contract has grounded context that can travel with the generated agent |
+| **Pipeline + Runs** | `ge prove`, `ge agents build`, stage logs, blockers | Operators can drive the same factory engine from the browser or terminal |
+| **Agent detail + proof** | Files, ADK preview, eval results, proof pack | Reviewers see the generated output and evidence before promotion |
+
 ## The problem it solves
 
 Enterprise agent programs rarely fail at the model. They fail at the seams:
