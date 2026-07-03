@@ -1,22 +1,22 @@
-// tools/lib/daemon/autopilot-run.mjs — the "autopilot.run" run-kind: plans a
-// mission via factory-core, selects convergence-eligible agent items, and
-// drives autopilot-runner.mjs's convergence loop to a terminal run/items/
+// tools/lib/daemon/repair-run.mjs — the "repair.run" run-kind: plans a
+// pipeline via factory-core, selects convergence-eligible agent items, and
+// drives repair-runner.mjs's convergence loop to a terminal run/items/
 // counts shape. Moved verbatim out of tools/lib/runtime-daemon.mjs. Unlike
-// the other five run-kinds there is no separate resumeAutopilotTask — a
-// resumed autopilot run is simply a fresh startAutopilotTask call carrying
-// `resumedFrom` (see resumeTask's "autopilot.run" branch in
+// the other five run-kinds there is no separate resumeRepairTask — a
+// resumed repair run is simply a fresh startRepairTask call carrying
+// `resumedFrom` (see resumeTask's "repair.run" branch in
 // runtime-daemon.mjs, which stays there since it dispatches across all six
 // run-kinds' resume behavior).
 import { readJson } from "@ge/std/json-io";
 import * as core from "../factory-core.mjs";
 import {
-  autopilotCounts,
-  autopilotItemsFromMission,
-  autopilotSkipReason,
-  createAutopilotItemState,
-  createAutopilotRunState,
-  runAutopilotConvergence,
-} from "../autopilot-runner.mjs";
+  repairCounts,
+  repairItemsFromPipeline,
+  repairSkipReason,
+  createRepairItemState,
+  createRepairRunState,
+  runRepairConvergence,
+} from "../repair-runner.mjs";
 import {
   appendEvent,
   createRun,
@@ -27,35 +27,35 @@ import {
   updateRunOutput,
 } from "./run-store.mjs";
 
-export async function startAutopilotTask({ ids = [], targetStage = "preview", repair = true, attempts = 3, runPreview = false, query = {}, resumedFrom = null } = {}) {
+export async function startRepairTask({ ids = [], targetStage = "preview", repair = true, attempts = 3, runPreview = false, query = {}, resumedFrom = null } = {}) {
   const cfg = core.loadConfig(query || {});
-  const mission = await core.missionPlan(cfg, { ids, targetStage, repair, attempts, runPreview });
-  const selectedItems = autopilotItemsFromMission(mission);
+  const pipeline = await core.pipelineGraphPlan(cfg, { ids, targetStage, repair, attempts, runPreview });
+  const selectedItems = repairItemsFromPipeline(pipeline);
   const id = selectedItems.length ? newTaskId("auto") : newTaskId("auto-skip");
-  const itemStates = selectedItems.map((item) => createAutopilotItemState({ runId: id, targetStage, ...item }));
-  const runState = createAutopilotRunState({
+  const itemStates = selectedItems.map((item) => createRepairItemState({ runId: id, targetStage, ...item }));
+  const runState = createRepairRunState({
     id,
     targetStage,
-    options: { repair, attempts, runPreview, mode: cfg.mode, mission, daemonTask: true },
+    options: { repair, attempts, runPreview, mode: cfg.mode, pipeline, daemonTask: true },
     items: itemStates,
     status: selectedItems.length ? "running" : "skipped",
   });
   const run = createRun({
     id,
-    kind: "autopilot.run",
+    kind: "repair.run",
     input: { ids, targetStage, repair, attempts, runPreview, query, resumedFrom },
     status: runState.status,
   });
-  updateRunOutput(id, { run: runState, items: itemStates, mission, counts: autopilotCounts(itemStates) });
+  updateRunOutput(id, { run: runState, items: itemStates, pipeline, counts: repairCounts(itemStates) });
 
   if (!selectedItems.length) {
-    const reason = autopilotSkipReason(mission);
-    appendEvent(id, { type: "stage_skipped", level: "info", line: reason, data: { summary: mission.summary, modeContract: mission.modeContract } });
+    const reason = repairSkipReason(pipeline);
+    appendEvent(id, { type: "stage_skipped", level: "info", line: reason, data: { summary: pipeline.summary, modeContract: pipeline.modeContract } });
     updateRun(id, { status: "skipped", endedAt: new Date().toISOString(), output: { ...runOutput(id), reason } });
     return readJson(runMetaPath(id), run);
   }
 
-  runAutopilotConvergence({
+  runRepairConvergence({
     run: runState,
     items: itemStates,
     cfg,
@@ -67,7 +67,7 @@ export async function startAutopilotTask({ ids = [], targetStage = "preview", re
     updateItem: async (item) => {
       const output = runOutput(id);
       const items = (output.items || []).map((current) => current.agentId === item.agentId ? item : current);
-      updateRunOutput(id, { items, counts: autopilotCounts(items) });
+      updateRunOutput(id, { items, counts: repairCounts(items) });
     },
   }).then((result) => {
     const output = runOutput(id);

@@ -401,11 +401,11 @@ export function createProvisionOps({
         items: workspaceItems,
       },
       next: ok
-        ? ["ge devex smoke --target validated --force", "mise run console"]
+        ? ["ge prove --target validated --force", "mise run console"]
         : [
           doctor?.fails ? "mise run setup" : null,
           docsResult && !docsResult.ok ? "node tools/docs-check.mjs" : null,
-          workspaceFails ? "ge devex smoke --target validated --force" : null,
+          workspaceFails ? "ge prove --target validated --force" : null,
         ].filter(Boolean),
     };
   }

@@ -37,10 +37,10 @@ const PATHS = {
     ],
   },
   legacy: {
-    label: "operator path (ge devex smoke)",
+    label: "operator path (ge devex smoke, retired spelling)",
     steps: [
       { run: ["tools/ge.mjs"], describe: "ge", decisions: 0, note: "orientation: board names devex smoke on first run" },
-      { run: ["tools/ge.mjs", "devex", "smoke", "--json"], describe: "ge devex smoke", decisions: 2, note: "noun+verb pair: know the devex group, then pick smoke over check" },
+      { run: ["tools/ge.mjs", "devex", "smoke", "--json"], describe: "ge devex smoke", decisions: 2, note: "noun+verb pair: know the devex group, then pick smoke over check (spelling retired; kept as the decision-count comparator)" },
     ],
   },
 };

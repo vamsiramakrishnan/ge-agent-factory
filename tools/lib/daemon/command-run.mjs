@@ -3,7 +3,7 @@
 // repo-local script/uv command and stream its output as daemon events. Moved
 // verbatim out of tools/lib/runtime-daemon.mjs. Also owns the safe-to-rerun
 // classifiers (safeGeCommand/safeProcessCommand) and the PATH/env augmentation
-// helpers (toolAugmentedPath/runtimeEnv) that the mission-node-command
+// helpers (toolAugmentedPath/runtimeEnv) that the pipeline-node-command
 // run-kind reuses for its own uv/node process spawns.
 import { mkdirSync } from "node:fs";
 import { homedir } from "node:os";
@@ -21,8 +21,8 @@ export function safeGeCommand(argv = []) {
   if (noun === "doctor") return true;
   if (noun === "config" && verb === "explain") return true;
   if (noun === "daemon" && ["status", "tasks", "task", "events"].includes(verb)) return true;
-  if (noun === "runtime" && ["status", "tasks", "task", "events"].includes(verb)) return true;
-  if (noun === "autopilot" && ["status", "events"].includes(verb)) return true;
+  if (noun === "runs" && ["list", "show", "events"].includes(verb)) return true;
+  if (noun === "fleet" && ["status", "repairs"].includes(verb)) return true;
   if (noun === "agents" && ["status", "logs"].includes(verb)) return true;
   if (noun === "data" && verb === "doctor") return true;
   if (noun === "mcp" && verb === "doctor") return true;

@@ -16,7 +16,7 @@
 import { defineCommand } from "citty";
 import { runtimeLeaves } from "./daemon.mjs";
 import {
-  guarded, emit, out, pc, core, statusText, displayTaskKind,
+  guarded, emit, out, pc, core, statusText,
   daemonPort, daemonStatusSnapshot, daemonRequest,
 } from "./shared.mjs";
 
@@ -37,7 +37,7 @@ const runsListCmd = defineCommand({
     const tasks = (daemon.runs || []).map((task) => ({
       source: "runtime",
       id: task.id,
-      kind: displayTaskKind(task.kind) || "task",
+      kind: task.kind || "task",
       status: task.status,
       updatedAt: task.updatedAt || task.createdAt || "",
       detail: "",

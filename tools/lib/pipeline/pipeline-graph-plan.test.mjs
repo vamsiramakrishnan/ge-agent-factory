@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { buildMissionGraph, nextRunnableMissionNode, patchMissionNode, resetMissionGraphForResume } from "./mission-plan.mjs";
+import { buildPipelineGraph, nextRunnablePipelineNode, patchPipelineNode, resetPipelineGraphForResume } from "./pipeline-graph-plan.mjs";
 
-describe("mission graph", () => {
+describe("pipeline graph", () => {
   test("builds a durable DAG over runtime task kinds", () => {
-    const graph = buildMissionGraph({ id: "mission-1", ids: ["a1"], targetStage: "preview", mode: "local" });
+    const graph = buildPipelineGraph({ id: "pipeline-1", ids: ["a1"], targetStage: "preview", mode: "local" });
 
-    expect(graph.kind).toBe("ge.mission.graph");
-    expect(graph.nodes.map((node) => node.runtimeKind)).toEqual(["doctor", "harness.run", "ge.command", "autopilot.run"]);
+    expect(graph.kind).toBe("ge.pipeline.graph");
+    expect(graph.nodes.map((node) => node.runtimeKind)).toEqual(["doctor", "harness.run", "ge.command", "repair.run"]);
     const antigravity = graph.nodes.find((node) => node.id === "antigravity.spec-data-review");
     expect(antigravity.input.agent).toBe("antigravity-sdk");
     expect(antigravity.dependsOn).toEqual(["preflight.doctor"]);
@@ -16,11 +16,11 @@ describe("mission graph", () => {
     expect(factory.input.command.id).toBe("agents.build.local");
     expect(graph.edges).toContainEqual({ from: "preflight.doctor", to: "antigravity.spec-data-review" });
     expect(graph.edges).toContainEqual({ from: "antigravity.spec-data-review", to: "factory.build" });
-    expect(graph.edges).toContainEqual({ from: "antigravity.spec-data-review", to: "autopilot.converge" });
+    expect(graph.edges).toContainEqual({ from: "antigravity.spec-data-review", to: "repair.converge" });
   });
 
   test("remote factory node preserves ids and target stage", () => {
-    const graph = buildMissionGraph({ id: "mission-remote", ids: ["a1", "a2"], targetStage: "publish_enterprise", mode: "remote", executeFactory: true });
+    const graph = buildPipelineGraph({ id: "pipeline-remote", ids: ["a1", "a2"], targetStage: "publish_enterprise", mode: "remote", executeFactory: true });
     const factory = graph.nodes.find((node) => node.id === "factory.build");
 
     expect(factory.status).toBe("pending");
@@ -29,24 +29,24 @@ describe("mission graph", () => {
   });
 
   test("selects next runnable node based on completed dependencies", () => {
-    const graph = buildMissionGraph({ id: "mission-2", executeFactory: true });
-    expect(nextRunnableMissionNode(graph).id).toBe("preflight.doctor");
+    const graph = buildPipelineGraph({ id: "pipeline-2", executeFactory: true });
+    expect(nextRunnablePipelineNode(graph).id).toBe("preflight.doctor");
 
-    const afterPreflight = patchMissionNode(graph, "preflight.doctor", { status: "done" });
-    expect(nextRunnableMissionNode(afterPreflight).id).toBe("antigravity.spec-data-review");
+    const afterPreflight = patchPipelineNode(graph, "preflight.doctor", { status: "done" });
+    expect(nextRunnablePipelineNode(afterPreflight).id).toBe("antigravity.spec-data-review");
 
-    const afterHarness = patchMissionNode(afterPreflight, "antigravity.spec-data-review", { status: "done" });
-    expect(nextRunnableMissionNode(afterHarness).id).toBe("factory.build");
+    const afterHarness = patchPipelineNode(afterPreflight, "antigravity.spec-data-review", { status: "done" });
+    expect(nextRunnablePipelineNode(afterHarness).id).toBe("factory.build");
 
-    const afterFactory = patchMissionNode(afterHarness, "factory.build", { status: "done" });
-    expect(nextRunnableMissionNode(afterFactory).id).toBe("autopilot.converge");
+    const afterFactory = patchPipelineNode(afterHarness, "factory.build", { status: "done" });
+    expect(nextRunnablePipelineNode(afterFactory).id).toBe("repair.converge");
   });
 
   test("adds data and simulator nodes when a scenario is provided", () => {
-    const graph = buildMissionGraph({ id: "mission-data", scenario: "BenefitsAssistant", systems: ["workday"] });
+    const graph = buildPipelineGraph({ id: "pipeline-data", scenario: "BenefitsAssistant", systems: ["workday"] });
 
-    expect(graph.input.workspace).toBe(".ge/missions/benefitsassistant");
-    expect(graph.nodes.find((node) => node.id === "preflight.doctor").input.command).toBe("mission.run");
+    expect(graph.input.workspace).toBe(".ge/pipelines/benefitsassistant");
+    expect(graph.nodes.find((node) => node.id === "preflight.doctor").input.command).toBe("pipeline.run");
     expect(graph.nodes.map((node) => node.id)).toEqual([
       "preflight.doctor",
       "antigravity.spec-data-review",
@@ -55,50 +55,50 @@ describe("mission graph", () => {
       "simulator.seed",
       "simulator.validate",
       "factory.build",
-      "autopilot.converge",
+      "repair.converge",
     ]);
     expect(graph.nodes.find((node) => node.id === "mock.generate").runtimeKind).toBe("mock.generate");
     expect(graph.nodes.find((node) => node.id === "mock.generate").dependsOn).toEqual(["antigravity.spec-data-review"]);
     expect(graph.nodes.find((node) => node.id === "simulator.seed").dependsOn).toEqual(["snowfakery.generate"]);
     expect(graph.nodes.find((node) => node.id === "factory.build").dependsOn).toEqual(["simulator.validate"]);
-    expect(graph.nodes.find((node) => node.id === "autopilot.converge").dependsOn).toEqual(["simulator.validate"]);
+    expect(graph.nodes.find((node) => node.id === "repair.converge").dependsOn).toEqual(["simulator.validate"]);
   });
 
   test("adds data and simulator nodes from a concrete spec artifact", () => {
     const spec = ".ge/interviews/new-agent/agent-spec.json";
-    const graph = buildMissionGraph({ id: "mission-spec", spec, systems: ["workday"] });
+    const graph = buildPipelineGraph({ id: "pipeline-spec", spec, systems: ["workday"] });
     const mock = graph.nodes.find((node) => node.id === "mock.generate");
 
     expect(graph.input.spec).toBe(spec);
-    expect(graph.nodes.find((node) => node.id === "preflight.doctor").input.command).toBe("mission.run");
-    expect(graph.input.workspace).toBe(".ge/missions/new-agent");
+    expect(graph.nodes.find((node) => node.id === "preflight.doctor").input.command).toBe("pipeline.run");
+    expect(graph.input.workspace).toBe(".ge/pipelines/new-agent");
     expect(mock.input.argv).toEqual([
       "node",
       "apps/factory/scripts/plan-mock-data.mjs",
       "--dir",
-      ".ge/missions/new-agent",
+      ".ge/pipelines/new-agent",
       "--spec",
       spec,
     ]);
   });
 
   test("node resume plans inherit child task resume plans", () => {
-    const graph = buildMissionGraph({ id: "mission-3" });
-    const childPlan = { state: "blocked", nextAction: "resume_autopilot", safeToRun: true, commands: ["ge runtime resume auto-1"], reason: "blocked", blockers: [], artifacts: [] };
-    const patched = patchMissionNode(graph, "autopilot.converge", {
+    const graph = buildPipelineGraph({ id: "pipeline-3" });
+    const childPlan = { state: "blocked", nextAction: "resume_repair", safeToRun: true, commands: ["ge runs resume auto-1"], reason: "blocked", blockers: [], artifacts: [] };
+    const patched = patchPipelineNode(graph, "repair.converge", {
       status: "blocked",
       childTaskId: "auto-1",
       childTask: { resumePlan: childPlan },
     });
 
-    const node = patched.nodes.find((entry) => entry.id === "autopilot.converge");
+    const node = patched.nodes.find((entry) => entry.id === "repair.converge");
     expect(node.resumePlan).toEqual(childPlan);
     expect(patched.status).toBe("blocked");
   });
 
   test("node-level blockers override completed child resume plans", () => {
-    const graph = buildMissionGraph({ id: "mission-artifact" });
-    const patched = patchMissionNode(graph, "autopilot.converge", {
+    const graph = buildPipelineGraph({ id: "pipeline-artifact" });
+    const patched = patchPipelineNode(graph, "repair.converge", {
       status: "blocked",
       childTask: { resumePlan: { state: "done", nextAction: "none", safeToRun: false, commands: [], reason: "task is done", blockers: [], artifacts: [] } },
       blockers: [{ id: "artifact-missing", message: "preview report is missing" }],
@@ -106,7 +106,7 @@ describe("mission graph", () => {
       artifacts: [{ name: "preview_report", status: "missing" }],
     });
 
-    const node = patched.nodes.find((entry) => entry.id === "autopilot.converge");
+    const node = patched.nodes.find((entry) => entry.id === "repair.converge");
     expect(node.resumePlan.state).toBe("blocked");
     expect(node.resumePlan.nextAction).toBe("rerun_task");
     expect(node.resumePlan.reason).toBe("preview report is missing");
@@ -115,7 +115,7 @@ describe("mission graph", () => {
   });
 
   test("factory handoff is not modeled as a blocking skipped node", () => {
-    const graph = buildMissionGraph({ id: "mission-handoff", ids: ["a1"], mode: "local", executeFactory: false });
+    const graph = buildPipelineGraph({ id: "pipeline-handoff", ids: ["a1"], mode: "local", executeFactory: false });
     const factory = graph.nodes.find((node) => node.id === "factory.build");
 
     expect(factory.status).toBe("skipped");
@@ -126,17 +126,17 @@ describe("mission graph", () => {
     });
   });
 
-  test("resets blocked node and descendants for mission resume", () => {
-    const graph = buildMissionGraph({ id: "mission-original", scenario: "BenefitsAssistant", systems: ["workday"] });
-    const afterDoctor = patchMissionNode(graph, "preflight.doctor", { status: "done", childTaskId: "doctor-1" });
-    const afterHarness = patchMissionNode(afterDoctor, "antigravity.spec-data-review", { status: "done", childTaskId: "harness-1" });
-    const afterMock = patchMissionNode(afterHarness, "mock.generate", { status: "done", childTaskId: "mock-1", summary: { ok: true } });
-    const blocked = patchMissionNode(afterMock, "snowfakery.generate", {
+  test("resets blocked node and descendants for pipeline resume", () => {
+    const graph = buildPipelineGraph({ id: "pipeline-original", scenario: "BenefitsAssistant", systems: ["workday"] });
+    const afterDoctor = patchPipelineNode(graph, "preflight.doctor", { status: "done", childTaskId: "doctor-1" });
+    const afterHarness = patchPipelineNode(afterDoctor, "antigravity.spec-data-review", { status: "done", childTaskId: "harness-1" });
+    const afterMock = patchPipelineNode(afterHarness, "mock.generate", { status: "done", childTaskId: "mock-1", summary: { ok: true } });
+    const blocked = patchPipelineNode(afterMock, "snowfakery.generate", {
       status: "blocked",
       childTaskId: "snow-1",
       blockers: [{ id: "artifact-missing", message: "snowfakery output is missing" }],
     });
-    const reset = resetMissionGraphForResume({ ...blocked, id: "mission-child" }, "snowfakery.generate");
+    const reset = resetPipelineGraphForResume({ ...blocked, id: "pipeline-child" }, "snowfakery.generate");
     const byId = Object.fromEntries(reset.nodes.map((node) => [node.id, node]));
 
     expect(byId["preflight.doctor"].status).toBe("done");
@@ -145,7 +145,7 @@ describe("mission graph", () => {
     expect(byId["snowfakery.generate"].status).toBe("pending");
     expect(byId["snowfakery.generate"].childTaskId).toBe(null);
     expect(byId["simulator.seed"].status).toBe("pending");
-    expect(byId["autopilot.converge"].status).toBe("pending");
-    expect(byId["mock.generate"].missionId).toBe("mission-child");
+    expect(byId["repair.converge"].status).toBe("pending");
+    expect(byId["mock.generate"].pipelineId).toBe("pipeline-child");
   });
 });

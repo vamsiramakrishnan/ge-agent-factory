@@ -3,14 +3,12 @@
 // behavior change). See tools/ge.mjs for the composition root that wires
 // these command groups into the citty command tree.
 import pc from "picocolors";
-import { defineCommand } from "citty";
 import { parseList } from "@ge/std/list";
 import { STATUS_RAMP, statusAnsi } from "@ge/design/status-ramp";
 import { existsSync, readFileSync } from "node:fs";
 import * as core from "../lib/factory-core.mjs";
-import { daemonPaths, getDaemonStatus, displayTaskKind } from "../lib/runtime-daemon.mjs";
+import { daemonPaths, getDaemonStatus } from "../lib/runtime-daemon.mjs";
 
-export { displayTaskKind };
 // Stable-error-code registry — a dependency-free data leaf that lives beside
 // FactoryCommandError (whose fail(msg, code) mints the codes). This is a
 // CLI-boundary file, not tools/lib/*, so the tools/lib → apps/factory layering
@@ -62,22 +60,6 @@ export const ICON = {
   warn: pc[STATUS_RAMP.warning.ansi]("▲"),
   fail: pc[STATUS_RAMP.failed.ansi]("✗"),
 };
-
-// ── Deprecated aliases ──────────────────────────────────────────────────────
-// The orchestration surface collapsed (journey/mission → pipeline,
-// autopilot → fleet repair, runtime observability → runs). Old verbs keep
-// working forever as aliases: identical args and behavior, plus one dim
-// stderr pointer at the canonical spelling — no breakage, no mystery.
-export function deprecatedAlias({ name, hint, command, run }) {
-  return defineCommand({
-    meta: { name, description: `(deprecated → ${hint}) ${command.meta.description}` },
-    args: command.args,
-    run: async (ctx) => {
-      process.stderr.write(pc.dim(`▲ deprecated spelling — canonical: ${hint}`) + "\n");
-      return (run || command.run)(ctx);
-    },
-  });
-}
 
 // ── Duration feedback ───────────────────────────────────────────────────────
 // Long operations should say up front how long they usually take, and say at
@@ -240,8 +222,8 @@ export async function daemonRequest(port, path, { method = "GET", body, timeoutM
 
 // Follow one daemon task's live SSE event stream, printing each event as a
 // human line (or NDJSON with json=true). Returns when the stream ends. Shared
-// by `ge runs events --follow` and the `--follow` flags on pipeline/fleet-repair/
-// autopilot run, so "start it" and "watch it" can be one command.
+// by `ge runs events --follow` and the `--follow` flags on pipeline run and
+// fleet repair, so "start it" and "watch it" can be one command.
 export async function followTaskEvents(port, id, { json = false } = {}) {
   // The daemon's SSE frames carry `id:` (the event seq) and support
   // Last-Event-ID resume (protocol v3) — so a dropped connection reconnects
@@ -336,7 +318,7 @@ export function renderResumePlan(plan) {
   }
 }
 
-export function missionNodeDetail(node) {
+export function pipelineNodeDetail(node) {
   const summary = node.summary || {};
   const artifacts = node.artifactCheck?.counts || {};
   const parts = [];
@@ -370,7 +352,7 @@ export function missionNodeDetail(node) {
   return parts.join(pc.dim(" | "));
 }
 
-export function renderMissionBrief(graph) {
+export function renderPipelineBrief(graph) {
   const nodes = graph.nodes || [];
   const rows = nodes.find((node) => node.id === "snowfakery.generate")?.summary?.output?.rowCount;
   const generatedObjects = nodes.find((node) => node.id === "mock.generate")?.summary?.snowfakery?.objects;
@@ -389,39 +371,39 @@ export function renderMissionBrief(graph) {
   }
 }
 
-export function renderMissionGraph(graph) {
+export function renderPipelineGraph(graph) {
   out(pc.bold(`\nPipeline run ${graph.id}`));
   out(`  status    ${statusText(graph.status)}`);
   out(`  target    ${pc.cyan(graph.input?.targetStage || "preview")}`);
   out(`  nodes     ${graph.counts?.done || 0} done · ${graph.counts?.blocked || 0} blocked · ${graph.counts?.pending || 0} pending · ${graph.counts?.total || 0} total`);
   if (graph.input?.executeFactory === false) out(pc.dim("  factory   represented, not auto-run"));
-  renderMissionBrief(graph);
+  renderPipelineBrief(graph);
   out(pc.bold("\n  Graph"));
   for (const node of graph.nodes || []) {
     const deps = node.dependsOn?.length ? pc.dim(` ← ${node.dependsOn.join(",")}`) : "";
     const child = node.childTaskId ? pc.dim(` child=${node.childTaskId}`) : "";
-    const detail = missionNodeDetail(node);
+    const detail = pipelineNodeDetail(node);
     out(`  ${statusText(node.status).padEnd(14)} ${String(node.id).padEnd(22)} ${pc.dim(node.kind || node.runtimeKind)}${deps}${child}`);
     if (detail) out(`  ${"".padEnd(14)} ${"".padEnd(22)} ${pc.dim(detail)}`);
   }
 }
 
-export function renderJourneyPlan(journey) {
-  out(pc.bold(`\nPipeline ${journey.id}`));
-  out(`  status    ${statusText(journey.status)}`);
-  out(`  target    ${pc.cyan(journey.targetStage || "preview")}`);
-  if (journey.input?.scenario) out(`  scenario  ${pc.cyan(journey.input.scenario)}`);
-  if (journey.input?.systems?.length) out(`  systems   ${journey.input.systems.join(", ")}`);
-  if (journey.input?.ids?.length) out(`  agents    ${journey.input.ids.join(", ")}`);
-  if (journey.next) {
+export function renderPipelinePlan(pipeline) {
+  out(pc.bold(`\nPipeline ${pipeline.id}`));
+  out(`  status    ${statusText(pipeline.status)}`);
+  out(`  target    ${pc.cyan(pipeline.targetStage || "preview")}`);
+  if (pipeline.input?.scenario) out(`  scenario  ${pc.cyan(pipeline.input.scenario)}`);
+  if (pipeline.input?.systems?.length) out(`  systems   ${pipeline.input.systems.join(", ")}`);
+  if (pipeline.input?.ids?.length) out(`  agents    ${pipeline.input.ids.join(", ")}`);
+  if (pipeline.next) {
     out(pc.bold("\n  Next"));
-    out(`  ${statusText(journey.next.status).padEnd(14)} ${String(journey.next.label).padEnd(18)} ${pc.dim(journey.next.owner || "runtime")}`);
-    if (journey.next.blocker?.message) out(`  blocker   ${pc.red(journey.next.blocker.message)}`);
-    if (journey.next.actionPlan?.label) out(`  action    ${journey.next.actionPlan.label}`);
-    for (const command of journey.next.actionPlan?.commands || []) out(`  ${pc.dim("$")} ${command}`);
+    out(`  ${statusText(pipeline.next.status).padEnd(14)} ${String(pipeline.next.label).padEnd(18)} ${pc.dim(pipeline.next.owner || "runtime")}`);
+    if (pipeline.next.blocker?.message) out(`  blocker   ${pc.red(pipeline.next.blocker.message)}`);
+    if (pipeline.next.actionPlan?.label) out(`  action    ${pipeline.next.actionPlan.label}`);
+    for (const command of pipeline.next.actionPlan?.commands || []) out(`  ${pc.dim("$")} ${command}`);
   }
   out(pc.bold("\n  Pipeline"));
-  for (const stage of journey.stages || []) {
+  for (const stage of pipeline.stages || []) {
     const command = stage.actionPlan?.commands?.[0] ? pc.dim(` · ${stage.actionPlan.commands[0]}`) : "";
     const blocker = stage.blocker?.message ? pc.red(` · ${stage.blocker.message}`) : "";
     const task = stage.taskId ? pc.dim(` · ${stage.taskId}`) : "";

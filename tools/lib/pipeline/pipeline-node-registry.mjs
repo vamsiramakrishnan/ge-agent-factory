@@ -34,16 +34,16 @@ function compact(value) {
   return Array.isArray(value) ? value.filter((item) => item !== undefined && item !== null && item !== "") : [];
 }
 
-export function registerMissionNodeDefinition(definition) {
-  if (!definition?.kind) throw new Error("mission node definition missing kind");
+export function registerPipelineNodeDefinition(definition) {
+  if (!definition?.kind) throw new Error("pipeline node definition missing kind");
   for (const field of REQUIRED_DEFINITION_FIELDS) {
-    if (!definition[field]) throw new Error(`mission node definition ${definition.kind} missing ${field}`);
+    if (!definition[field]) throw new Error(`pipeline node definition ${definition.kind} missing ${field}`);
   }
   DEFINITIONS.set(definition.kind, definition);
   return definition;
 }
 
-export function listMissionNodeDefinitions() {
+export function listPipelineNodeDefinitions() {
   return [...DEFINITIONS.values()];
 }
 
@@ -80,7 +80,7 @@ function snowfakeryArgv(recipe, output) {
 // snakeCase now imported from @ge/std/naming (the shared leaf package — tools/lib
 // can depend on it without the apps/factory layering cycle). Used only for internal
 // csv/object name matching below; both operands run through the same fn so matching
-// stays self-consistent. A divergence-probe test (mission-node-registry.test.mjs)
+// stays self-consistent. A divergence-probe test (pipeline-node-registry.test.mjs)
 // guards that the change-case canonical produces the same match outcomes as the
 // former local regex for representative + adversarial object names.
 
@@ -333,7 +333,7 @@ function validateDataNodeArtifacts(kind, options = {}) {
 }
 
 function registerDataNodeDefinition(kind, { label, buildInput, dependsOn }) {
-  return registerMissionNodeDefinition({
+  return registerPipelineNodeDefinition({
     kind,
     runtimeKind: kind,
     label,
@@ -416,17 +416,17 @@ registerDataNodeDefinition("simulator.validate", {
   dependsOn: () => ["simulator.seed"],
 });
 
-export function missionNodeDefinition(kind) {
+export function pipelineNodeDefinition(kind) {
   return DEFINITIONS.get(kind) || null;
 }
 
-export function buildMissionNode(kind, context = {}) {
-  const definition = missionNodeDefinition(kind);
-  if (!definition) throw new Error(`unknown mission node kind: ${kind || "<unset>"}`);
+export function buildPipelineNode(kind, context = {}) {
+  const definition = pipelineNodeDefinition(kind);
+  if (!definition) throw new Error(`unknown pipeline node kind: ${kind || "<unset>"}`);
   const input = definition.buildInput ? definition.buildInput(context) : context.input || {};
   return {
     id: definition.id || kind,
-    missionId: context.missionId,
+    pipelineId: context.pipelineId,
     kind,
     label: definition.label || kind,
     status: context.status || "pending",
@@ -438,18 +438,18 @@ export function buildMissionNode(kind, context = {}) {
   };
 }
 
-export function isDataMissionNodeKind(kind) {
+export function isDataPipelineNodeKind(kind) {
   return DATA_NODE_KINDS.has(kind);
 }
 
-export function safeMissionNodeCommand(kind, input = {}) {
-  return !!missionNodeDefinition(kind)?.safeToRun(input);
+export function safePipelineNodeCommand(kind, input = {}) {
+  return !!pipelineNodeDefinition(kind)?.safeToRun(input);
 }
 
-export function missionNodeCommand(kind, input = {}) {
-  const definition = missionNodeDefinition(kind);
+export function pipelineNodeCommand(kind, input = {}) {
+  const definition = pipelineNodeDefinition(kind);
   const argv = Array.isArray(input.argv) ? input.argv.map(String).filter(Boolean) : [];
-  if (!definition) throw new Error(`unknown mission node kind: ${kind || "<unset>"}`);
+  if (!definition) throw new Error(`unknown pipeline node kind: ${kind || "<unset>"}`);
   if (!argv.length) throw new Error(`${kind} argv is required`);
   if (!definition.safeToRun(input)) throw new Error(`${kind} command is not classified safe to run`);
   const cmd = argv[0] === "node" ? process.execPath : argv[0];
@@ -463,6 +463,6 @@ export function missionNodeCommand(kind, input = {}) {
   };
 }
 
-export function validateMissionNodeArtifacts(kind, options = {}) {
-  return missionNodeDefinition(kind)?.validateArtifacts(options) || { ok: true, blockers: [], warnings: [] };
+export function validatePipelineNodeArtifacts(kind, options = {}) {
+  return pipelineNodeDefinition(kind)?.validateArtifacts(options) || { ok: true, blockers: [], warnings: [] };
 }

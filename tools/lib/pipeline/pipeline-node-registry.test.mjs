@@ -2,27 +2,27 @@ import { describe, expect, test } from "bun:test";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { snakeCase } from "@ge/std/naming";
-import { verifyMissionArtifacts } from "./mission-artifacts.mjs";
-import { dataMissionNodes } from "./mission-nodes.mjs";
-import { buildMissionNode, isDataMissionNodeKind, listMissionNodeDefinitions, missionNodeCommand, missionNodeDefinition, registerMissionNodeDefinition, safeMissionNodeCommand, validateMissionNodeArtifacts } from "./mission-node-registry.mjs";
+import { verifyPipelineArtifacts } from "./pipeline-artifacts.mjs";
+import { dataPipelineNodes } from "./pipeline-nodes.mjs";
+import { buildPipelineNode, isDataPipelineNodeKind, listPipelineNodeDefinitions, pipelineNodeCommand, pipelineNodeDefinition, registerPipelineNodeDefinition, safePipelineNodeCommand, validatePipelineNodeArtifacts } from "./pipeline-node-registry.mjs";
 
 function tmpDir(name) {
-  const dir = join("/tmp", `ge-mission-node-registry-${process.pid}-${name}`);
+  const dir = join("/tmp", `ge-pipeline-node-registry-${process.pid}-${name}`);
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
   return dir;
 }
 
-describe("mission node registry", () => {
+describe("pipeline node registry", () => {
   test("recognizes typed data node kinds", () => {
-    expect(isDataMissionNodeKind("mock.generate")).toBe(true);
-    expect(isDataMissionNodeKind("simulator.validate")).toBe(true);
-    expect(isDataMissionNodeKind("process.command")).toBe(false);
-    expect(missionNodeDefinition("snowfakery.generate").runtimeKind).toBe("snowfakery.generate");
+    expect(isDataPipelineNodeKind("mock.generate")).toBe(true);
+    expect(isDataPipelineNodeKind("simulator.validate")).toBe(true);
+    expect(isDataPipelineNodeKind("process.command")).toBe(false);
+    expect(pipelineNodeDefinition("snowfakery.generate").runtimeKind).toBe("snowfakery.generate");
   });
 
   test("registered data node definitions expose complete registry contract", () => {
-    const definitions = listMissionNodeDefinitions();
+    const definitions = listPipelineNodeDefinitions();
     expect(definitions.map((definition) => definition.kind)).toEqual([
       "mock.generate",
       "snowfakery.generate",
@@ -42,16 +42,16 @@ describe("mission node registry", () => {
     }
   });
 
-  test("registerMissionNodeDefinition rejects incomplete definitions", () => {
-    expect(() => registerMissionNodeDefinition({ kind: "custom.node" })).toThrow(/missing runtimeKind/);
+  test("registerPipelineNodeDefinition rejects incomplete definitions", () => {
+    expect(() => registerPipelineNodeDefinition({ kind: "custom.node" })).toThrow(/missing runtimeKind/);
   });
 
-  test("buildMissionNode preserves data node dependency order and output shape", () => {
-    const context = { missionId: "mission-x", scenario: "benefits", workspace: ".ge/missions/benefits", systems: ["workday"] };
-    const mock = buildMissionNode("mock.generate", context);
-    const snowfakery = buildMissionNode("snowfakery.generate", context);
-    const seed = buildMissionNode("simulator.seed", context);
-    const validate = buildMissionNode("simulator.validate", context);
+  test("buildPipelineNode preserves data node dependency order and output shape", () => {
+    const context = { pipelineId: "pipeline-x", scenario: "benefits", workspace: ".ge/pipelines/benefits", systems: ["workday"] };
+    const mock = buildPipelineNode("mock.generate", context);
+    const snowfakery = buildPipelineNode("snowfakery.generate", context);
+    const seed = buildPipelineNode("simulator.seed", context);
+    const validate = buildPipelineNode("simulator.validate", context);
 
     expect([mock.id, snowfakery.id, seed.id, validate.id]).toEqual([
       "mock.generate",
@@ -60,7 +60,7 @@ describe("mission node registry", () => {
       "simulator.validate",
     ]);
     expect(mock).toMatchObject({
-      missionId: "mission-x",
+      pipelineId: "pipeline-x",
       kind: "mock.generate",
       label: "Generate Scenario Data Plan",
       status: "pending",
@@ -83,7 +83,7 @@ describe("mission node registry", () => {
       "node",
       "apps/factory/scripts/plan-mock-data.mjs",
       "--dir",
-      ".ge/missions/benefits",
+      ".ge/pipelines/benefits",
       "--usecase",
       "benefits",
       "--sourceMap",
@@ -97,17 +97,17 @@ describe("mission node registry", () => {
       "--with",
       "setuptools<81",
       "snowfakery",
-      ".ge/missions/benefits/mock_data/snowfakery/structured.recipe.yml",
+      ".ge/pipelines/benefits/mock_data/snowfakery/structured.recipe.yml",
       "--output-format",
       "csv",
       "--output-folder",
-      ".ge/missions/benefits/mock_data/snowfakery/output",
+      ".ge/pipelines/benefits/mock_data/snowfakery/output",
     ]);
     expect(seed.input.argv).toEqual([
       "node",
       "apps/factory/scripts/materialize-simulator-seeds.mjs",
       "--dir",
-      ".ge/missions/benefits",
+      ".ge/pipelines/benefits",
     ]);
     expect(validate.input.argv).toEqual([
       "node",
@@ -124,29 +124,29 @@ describe("mission node registry", () => {
   });
 
   test("classifies safe node commands by kind contract", () => {
-    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", scenario: "benefits", argv: ["node", "apps/factory/scripts/plan-mock-data.mjs", "--dir", "x", "--usecase", "benefits"] })).toBe(true);
-    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", spec: ".ge/interviews/new/agent-spec.json", argv: ["node", "apps/factory/scripts/plan-mock-data.mjs", "--dir", "x", "--spec", ".ge/interviews/new/agent-spec.json"] })).toBe(true);
-    expect(safeMissionNodeCommand("simulator.seed", { workspace: "x", argv: [process.execPath, "/repo/apps/factory/scripts/materialize-simulator-seeds.mjs", "--dir", "x"] })).toBe(true);
-    expect(safeMissionNodeCommand("snowfakery.generate", { workspace: ".ge/missions/benefits", argv: ["uv", "run", "--with", "snowfakery", "--with", "setuptools<81", "snowfakery", ".ge/missions/benefits/mock_data/snowfakery/structured.recipe.yml", "--output-format", "csv", "--output-folder", ".ge/missions/benefits/mock_data/snowfakery/output"] })).toBe(true);
-    expect(safeMissionNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "true", "--system", "workday"] })).toBe(true);
-    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--dir", "x"] })).toBe(false);
-    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", argv: ["node", "apps/factory/scripts/plan-mock-data.mjs", "--dir", "y"] })).toBe(false);
-    expect(safeMissionNodeCommand("mock.generate", { workspace: "x", spec: ".ge/interviews/new/agent-spec.json", argv: ["node", "apps/factory/scripts/plan-mock-data.mjs", "--dir", "x", "--spec", ".ge/interviews/other/agent-spec.json"] })).toBe(false);
-    expect(safeMissionNodeCommand("snowfakery.generate", { workspace: ".ge/missions/benefits", argv: ["uv", "run", "--with", "snowfakery", "--with", "setuptools<81", "snowfakery", ".ge/missions/benefits/mock_data/snowfakery/structured.recipe.yml", "--output-folder", ".ge/missions/benefits/mock_data/snowfakery/output"] })).toBe(false);
-    expect(safeMissionNodeCommand("snowfakery.generate", { workspace: ".ge/missions/benefits", argv: ["uv", "run", "--with", "snowfakery", "--with", "setuptools<81", "snowfakery", ".ge/missions/benefits/mock_data/snowfakery/structured.recipe.yml", "--output-format", "json", "--output-folder", ".ge/missions/benefits/mock_data/snowfakery/output"] })).toBe(false);
-    expect(safeMissionNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--system", "workday"] })).toBe(false);
-    expect(safeMissionNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "false", "--system", "workday"] })).toBe(false);
-    expect(safeMissionNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "true", "--system", "sap_successfactors"] })).toBe(false);
+    expect(safePipelineNodeCommand("mock.generate", { workspace: "x", scenario: "benefits", argv: ["node", "apps/factory/scripts/plan-mock-data.mjs", "--dir", "x", "--usecase", "benefits"] })).toBe(true);
+    expect(safePipelineNodeCommand("mock.generate", { workspace: "x", spec: ".ge/interviews/new/agent-spec.json", argv: ["node", "apps/factory/scripts/plan-mock-data.mjs", "--dir", "x", "--spec", ".ge/interviews/new/agent-spec.json"] })).toBe(true);
+    expect(safePipelineNodeCommand("simulator.seed", { workspace: "x", argv: [process.execPath, "/repo/apps/factory/scripts/materialize-simulator-seeds.mjs", "--dir", "x"] })).toBe(true);
+    expect(safePipelineNodeCommand("snowfakery.generate", { workspace: ".ge/pipelines/benefits", argv: ["uv", "run", "--with", "snowfakery", "--with", "setuptools<81", "snowfakery", ".ge/pipelines/benefits/mock_data/snowfakery/structured.recipe.yml", "--output-format", "csv", "--output-folder", ".ge/pipelines/benefits/mock_data/snowfakery/output"] })).toBe(true);
+    expect(safePipelineNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "true", "--system", "workday"] })).toBe(true);
+    expect(safePipelineNodeCommand("mock.generate", { workspace: "x", argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--dir", "x"] })).toBe(false);
+    expect(safePipelineNodeCommand("mock.generate", { workspace: "x", argv: ["node", "apps/factory/scripts/plan-mock-data.mjs", "--dir", "y"] })).toBe(false);
+    expect(safePipelineNodeCommand("mock.generate", { workspace: "x", spec: ".ge/interviews/new/agent-spec.json", argv: ["node", "apps/factory/scripts/plan-mock-data.mjs", "--dir", "x", "--spec", ".ge/interviews/other/agent-spec.json"] })).toBe(false);
+    expect(safePipelineNodeCommand("snowfakery.generate", { workspace: ".ge/pipelines/benefits", argv: ["uv", "run", "--with", "snowfakery", "--with", "setuptools<81", "snowfakery", ".ge/pipelines/benefits/mock_data/snowfakery/structured.recipe.yml", "--output-folder", ".ge/pipelines/benefits/mock_data/snowfakery/output"] })).toBe(false);
+    expect(safePipelineNodeCommand("snowfakery.generate", { workspace: ".ge/pipelines/benefits", argv: ["uv", "run", "--with", "snowfakery", "--with", "setuptools<81", "snowfakery", ".ge/pipelines/benefits/mock_data/snowfakery/structured.recipe.yml", "--output-format", "json", "--output-folder", ".ge/pipelines/benefits/mock_data/snowfakery/output"] })).toBe(false);
+    expect(safePipelineNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--system", "workday"] })).toBe(false);
+    expect(safePipelineNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "false", "--system", "workday"] })).toBe(false);
+    expect(safePipelineNodeCommand("simulator.validate", { systems: ["workday"], argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "true", "--system", "sap_successfactors"] })).toBe(false);
   });
 
-  test("registry-built data nodes match existing dataMissionNodes output", () => {
-    const context = { missionId: "mission-x", scenario: "benefits", workspace: ".ge/missions/benefits", systems: ["workday"] };
-    const existing = dataMissionNodes(context);
+  test("registry-built data nodes match existing dataPipelineNodes output", () => {
+    const context = { pipelineId: "pipeline-x", scenario: "benefits", workspace: ".ge/pipelines/benefits", systems: ["workday"] };
+    const existing = dataPipelineNodes(context);
     const fromRegistry = [
-      buildMissionNode("mock.generate", context),
-      buildMissionNode("snowfakery.generate", context),
-      buildMissionNode("simulator.seed", context),
-      buildMissionNode("simulator.validate", context),
+      buildPipelineNode("mock.generate", context),
+      buildPipelineNode("snowfakery.generate", context),
+      buildPipelineNode("simulator.seed", context),
+      buildPipelineNode("simulator.validate", context),
     ];
 
     expect(fromRegistry.map((node) => node.id)).toEqual(existing.map((node) => node.id));
@@ -156,7 +156,7 @@ describe("mission node registry", () => {
   });
 
   test("builds executable command details", () => {
-    const command = missionNodeCommand("simulator.validate", { argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "true"] });
+    const command = pipelineNodeCommand("simulator.validate", { argv: ["node", "apps/factory/scripts/validate-simulator-pack.mjs", "--check", "true"] });
 
     expect(command.kind).toBe("simulator.validate");
     expect(command.stage).toBe("simulator.validate");
@@ -171,14 +171,14 @@ describe("mission node registry", () => {
     writeFileSync(join(root, "scenario-graph.json"), JSON.stringify({ nodes: [], edges: [] }), "utf8");
     writeFileSync(join(root, "realization-plan.json"), JSON.stringify({ objects: [] }), "utf8");
     writeFileSync(join(root, "index.json"), JSON.stringify({ simulators: [{ simulatorId: "servicenow" }] }), "utf8");
-    const artifactCheck = verifyMissionArtifacts([
+    const artifactCheck = verifyPipelineArtifacts([
       { name: "data_plan", type: "json", path: "data-plan.json" },
       { name: "scenario_graph", type: "json", path: "scenario-graph.json" },
       { name: "snowfakery_realization_plan", type: "json", path: "realization-plan.json" },
       { name: "simulator_index", type: "json", path: "index.json" },
     ], { repoRoot: root });
 
-    const result = validateMissionNodeArtifacts("mock.generate", { input: { systems: ["workday"] }, artifactCheck });
+    const result = validatePipelineNodeArtifacts("mock.generate", { input: { systems: ["workday"] }, artifactCheck });
 
     expect(result.ok).toBe(false);
     expect(result.blockers.map((blocker) => blocker.id)).toContain("mock-data-plan-empty-sources");
@@ -192,12 +192,12 @@ describe("mission node registry", () => {
     mkdirSync(join(root, "output"));
     writeFileSync(join(root, "output", "Employee.csv"), "id,name\n1,Ada\n", "utf8");
     writeFileSync(join(root, "realization-plan.json"), JSON.stringify({ objects: [{ object: "Employee" }, { object: "LifeEvent" }] }), "utf8");
-    const artifactCheck = verifyMissionArtifacts([
+    const artifactCheck = verifyPipelineArtifacts([
       { name: "snowfakery_output", type: "dir", path: "output" },
       { name: "snowfakery_realization_plan", type: "json", path: "realization-plan.json" },
     ], { repoRoot: root });
 
-    const result = validateMissionNodeArtifacts("snowfakery.generate", { artifactCheck });
+    const result = validatePipelineNodeArtifacts("snowfakery.generate", { artifactCheck });
 
     expect(result.ok).toBe(false);
     expect(result.blockers.map((blocker) => blocker.id)).toContain("snowfakery-output-missing-object");
@@ -212,11 +212,11 @@ describe("mission node registry", () => {
         { simulatorId: "workday", collections: { workers: 0 }, inputs: [{ object: "Employee", rows: 0 }] },
       ],
     }), "utf8");
-    const artifactCheck = verifyMissionArtifacts([
+    const artifactCheck = verifyPipelineArtifacts([
       { name: "simulator_seed_report", type: "json", path: "report.json" },
     ], { repoRoot: root });
 
-    const result = validateMissionNodeArtifacts("simulator.seed", { input: { systems: ["workday", "sap_successfactors"] }, artifactCheck });
+    const result = validatePipelineNodeArtifacts("simulator.seed", { input: { systems: ["workday", "sap_successfactors"] }, artifactCheck });
 
     expect(result.ok).toBe(false);
     expect(result.blockers.map((blocker) => blocker.id)).toContain("simulator-seed-zero-rows");
@@ -225,7 +225,7 @@ describe("mission node registry", () => {
   });
 
   test("simulator.validate semantic validation maps errors to blockers and warnings to warnings", () => {
-    const result = validateMissionNodeArtifacts("simulator.validate", {
+    const result = validatePipelineNodeArtifacts("simulator.validate", {
       input: { systems: ["workday", "sap_successfactors"] },
       summary: {
         ok: false,
@@ -243,7 +243,7 @@ describe("mission node registry", () => {
   });
 
   test("simulator.validate semantic validation canonicalizes simulator ids and ignores model runtimes", () => {
-    const result = validateMissionNodeArtifacts("simulator.validate", {
+    const result = validatePipelineNodeArtifacts("simulator.validate", {
       input: { systems: ["sap_s_4hana_fi", "blackline", "bigquery", "vertex_ai"] },
       summary: {
         ok: true,
@@ -260,7 +260,7 @@ describe("mission node registry", () => {
   });
 });
 
-// Divergence probe (Wave 1f): mission-node-registry's snakeCase moved from a local
+// Divergence probe (Wave 1f): pipeline-node-registry's snakeCase moved from a local
 // regex (_$1-per-capital) to @ge/std/naming's change-case canonical. The snowfakery
 // validator matches CSV filenames against realization object names via
 // snakeCase(name).replace(/s$/, ""). Both operands run through the same fn, but two
@@ -268,7 +268,7 @@ describe("mission node registry", () => {
 // distinct under the old regex — changing a match. This asserts the MATCH OUTCOMES
 // are identical between the two implementations for representative + adversarial
 // inputs, so the swap is behaviour-preserving for the matching this module performs.
-describe("snakeCase swap (mission-node-registry 1f) preserves csv<->object matching", () => {
+describe("snakeCase swap (pipeline-node-registry 1f) preserves csv<->object matching", () => {
   const stdSnake = snakeCase; // @ge/std/naming change-case canonical (imported below)
   const localSnake = (value) =>
     String(value || "")

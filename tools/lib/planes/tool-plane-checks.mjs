@@ -63,7 +63,7 @@ export function toolPlaneChecks(cfg, departments) {
   });
 }
 
-// `ge agents ship` hands the locally-built workspace to the cloud factory by
+// `ge handoff agents-cli` hands the locally-built workspace to the cloud factory by
 // opening an authenticated proxy to the gateway (gcloud run services proxy),
 // which needs the `cloud-run-proxy` gcloud component. On this install the gcloud
 // component manager is disabled, so the component ships as an apt package — a
@@ -82,7 +82,7 @@ export function shipProxyCheck(probe) {
   };
 }
 
-// `ge agents ship` deploy_runtime POSTs to the gateway, which 403s with "Agent
+// `ge handoff agents-cli` deploy_runtime POSTs to the gateway, which 403s with "Agent
 // provisioning is disabled" unless GE_ENABLE_AGENT_PROVISION=true is set on the
 // gateway service (see apps/presentation/server.js). That 403 fired AFTER
 // load_data already ran, so it must be a HARD pre-flight blocker. Pure: pass the
@@ -110,7 +110,7 @@ export function gatewayProvisionCheck(cfg, describeGateway, readEnv = serviceEnv
   };
 }
 
-// `ge agents ship`/`ge data up` run load_data, which needs the BigQuery API. The
+// `ge handoff agents-cli`/`ge data up` run load_data, which needs the BigQuery API. The
 // other doctors surface a disabled BQ API only as a soft ▲, but for ship/data
 // it's a HARD ✗ (load_data fails mid-run otherwise). Pure: pass a probe that
 // returns whether bigquery.googleapis.com is enabled.

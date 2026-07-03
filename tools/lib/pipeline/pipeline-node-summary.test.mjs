@@ -1,17 +1,17 @@
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, test } from "bun:test";
-import { verifyMissionArtifacts } from "./mission-artifacts.mjs";
-import { summarizeMissionNode } from "./mission-node-summary.mjs";
+import { verifyPipelineArtifacts } from "./pipeline-artifacts.mjs";
+import { summarizePipelineNode } from "./pipeline-node-summary.mjs";
 
 function tmpDir(name) {
-  const dir = join("/tmp", `ge-mission-node-summary-${process.pid}-${name}`);
+  const dir = join("/tmp", `ge-pipeline-node-summary-${process.pid}-${name}`);
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
   return dir;
 }
 
-describe("mission node summaries", () => {
+describe("pipeline node summaries", () => {
   test("normalizes mock.generate stdout and artifacts", () => {
     const root = tmpDir("mock");
     mkdirSync(join(root, "mock_data", "plan"), { recursive: true });
@@ -23,13 +23,13 @@ describe("mission node summaries", () => {
     writeFileSync(join(root, "mock_data", "snowfakery", "realization-plan.json"), JSON.stringify({ objects: [{ object: "Employee" }] }), "utf8");
     writeFileSync(join(root, "mock_data", "simulators", "index.json"), JSON.stringify({ simulators: [{ simulatorId: "workday" }] }), "utf8");
 
-    const artifactCheck = verifyMissionArtifacts([
+    const artifactCheck = verifyPipelineArtifacts([
       { name: "data_plan", type: "json", path: "mock_data/plan/data-plan.json" },
       { name: "scenario_graph", type: "json", path: "mock_data/scenario/scenario-graph.json" },
       { name: "snowfakery_realization_plan", type: "json", path: "mock_data/snowfakery/realization-plan.json" },
       { name: "simulator_index", type: "json", path: "mock_data/simulators/index.json" },
     ], { repoRoot: root });
-    const summary = summarizeMissionNode({
+    const summary = summarizePipelineNode({
       node: { kind: "mock.generate" },
       childTask: { output: { stdout: JSON.stringify({ ok: true, usecase: "benefits", sources: 4 }) } },
       artifactCheck,
@@ -49,11 +49,11 @@ describe("mission node summaries", () => {
     writeFileSync(join(root, "output", "Employee.csv"), "id,name\n1,Ada\n2,Grace\n", "utf8");
     writeFileSync(join(root, "realization-plan.json"), JSON.stringify({ objects: [{ object: "Employee" }] }), "utf8");
 
-    const artifactCheck = verifyMissionArtifacts([
+    const artifactCheck = verifyPipelineArtifacts([
       { name: "snowfakery_output", type: "dir", path: "output" },
       { name: "snowfakery_realization_plan", type: "json", path: "realization-plan.json" },
     ], { repoRoot: root });
-    const summary = summarizeMissionNode({ node: { kind: "snowfakery.generate" }, artifactCheck });
+    const summary = summarizePipelineNode({ node: { kind: "snowfakery.generate" }, artifactCheck });
 
     expect(summary.objects).toBe(1);
     expect(summary.output.csvFiles).toBe(1);
@@ -61,12 +61,12 @@ describe("mission node summaries", () => {
   });
 
   test("normalizes simulator seed and validation stdout", () => {
-    const seedSummary = summarizeMissionNode({
+    const seedSummary = summarizePipelineNode({
       node: { kind: "simulator.seed" },
       childTask: { output: { stdout: JSON.stringify({ ok: true, simulators: [{ simulatorId: "workday", collections: { workers: 2 }, inputs: [{ object: "Employee", rows: 2 }] }] }) } },
       artifactCheck: { ok: true, artifacts: [] },
     });
-    const validateSummary = summarizeMissionNode({
+    const validateSummary = summarizePipelineNode({
       node: { kind: "simulator.validate" },
       childTask: {
         output: {

@@ -229,13 +229,13 @@ export function deploy(cfg, { target = "all", log = noop } = {}) {
 // it needs live run/gcloud plus the composed withGateway client.
 export const { status, logs, sync } = createRemoteRunOps({ run, gcloud, ensureGcloud, withGateway });
 
-// Fleet/mission/journey planning + run-log/artifact reads (fleetStatus/
-// missionPlan/journeyPlan/tailLog/readArtifact) now live in fleet-ops.mjs;
+// Fleet/pipeline planning + run-log/artifact reads (fleetStatus/
+// pipelineGraphPlan/pipelinePlan/tailLog/readArtifact) now live in fleet-ops.mjs;
 // wired here the same way as the plane modules below, since they need live
 // `gcloud` plus `statusBoard` (which closes over the composed factoryPlane).
 // `statusBoard` is a hoisted function declaration, so referencing it here is
 // safe — it only runs at call time, after the planes below are composed.
-export const { fleetStatus, missionPlan, journeyPlan, tailLog, readArtifact } = createFleetOps({ gcloud, statusBoard });
+export const { fleetStatus, pipelineGraphPlan, pipelinePlan, tailLog, readArtifact } = createFleetOps({ gcloud, statusBoard });
 
 const GEN_DIR = join(REPO_ROOT, "apps/factory");
 const FACTORY_DATA_ROOT = STATE_PATHS.factory.root;

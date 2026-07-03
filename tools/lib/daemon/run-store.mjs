@@ -1,6 +1,6 @@
 // tools/lib/daemon/run-store.mjs — the filesystem-backed run store shared by
 // every runtime-daemon run-kind (ge-command, process-command, doctor,
-// harness-run, mission-node-command, autopilot, mission-graph). Moved
+// harness-run, pipeline-node-command, repair, pipeline-graph). Moved
 // verbatim out of tools/lib/runtime-daemon.mjs: these are pure
 // read/write-a-JSON-file-per-run-id primitives with no knowledge of any
 // specific run-kind, so they're the natural leaf layer every run-kind module

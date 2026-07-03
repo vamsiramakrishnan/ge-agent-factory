@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { readJson } from "@ge/std/json-io";
-import { parseStdoutJson } from "./mission-artifacts.mjs";
+import { parseStdoutJson } from "./pipeline-artifacts.mjs";
 
 function readJsonArtifact(artifact) {
   return readJson(artifact?.resolvedPath, null);
@@ -102,13 +102,13 @@ function summarizeSimulatorValidate({ childTask, artifactCheck }) {
   };
 }
 
-export function summarizeMissionNode({ node = {}, childTask = null, artifactCheck = null } = {}) {
+export function summarizePipelineNode({ node = {}, childTask = null, artifactCheck = null } = {}) {
   if (node.kind === "mock.generate") return summarizeMockGenerate({ childTask, artifactCheck });
   if (node.kind === "snowfakery.generate") return summarizeSnowfakeryGenerate({ childTask, artifactCheck });
   if (node.kind === "simulator.seed") return summarizeSimulatorSeed({ childTask, artifactCheck });
   if (node.kind === "simulator.validate") return summarizeSimulatorValidate({ childTask, artifactCheck });
   return {
-    kind: node.kind || node.runtimeKind || "mission.node",
+    kind: node.kind || node.runtimeKind || "pipeline.node",
     ok: artifactCheck?.ok !== false && !["blocked", "failed"].includes(childTask?.status),
   };
 }

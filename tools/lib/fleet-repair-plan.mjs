@@ -28,26 +28,26 @@ const STAGE_CONTRACTS = {
     workspaceGate: "publish:plan",
     localFactoryTarget: "publish_planned",
     remoteFactoryTarget: "publish_enterprise",
-    cloudContinuation: { commandId: "agents.ship", startStage: "load_data", targetStage: "publish_enterprise" },
+    cloudContinuation: { commandId: "handoff", startStage: "load_data", targetStage: "publish_enterprise" },
     requiredArtifacts: ["artifacts/workspace-doctor.json", "artifacts/publish-plan.json"],
   },
 };
 
-export const FACTORY_AUTOPILOT_MISSION_VERSION = 1;
-export const FACTORY_AUTOPILOT_TARGETS = Object.freeze(Object.keys(STAGE_CONTRACTS));
-export const FACTORY_AUTOPILOT_MODES = Object.freeze(["local", "remote"]);
+export const FACTORY_REPAIR_PIPELINE_VERSION = 1;
+export const FACTORY_REPAIR_TARGETS = Object.freeze(Object.keys(STAGE_CONTRACTS));
+export const FACTORY_REPAIR_MODES = Object.freeze(["local", "remote"]);
 
-export function normalizeMissionTarget(targetStage = "preview") {
+export function normalizePipelineTarget(targetStage = "preview") {
   const normalized = String(targetStage || "preview").trim();
   return STAGE_CONTRACTS[normalized] ? normalized : "preview";
 }
 
-export function normalizeMissionMode(mode = "remote") {
+export function normalizePipelineMode(mode = "remote") {
   const normalized = String(mode || "remote").trim();
-  return FACTORY_AUTOPILOT_MODES.includes(normalized) ? normalized : "remote";
+  return FACTORY_REPAIR_MODES.includes(normalized) ? normalized : "remote";
 }
 
-export function buildFactoryAutopilotMission({
+export function buildFactoryRepairPipeline({
   cfg = {},
   fleet = { agents: [] },
   ids = [],
@@ -58,9 +58,9 @@ export function buildFactoryAutopilotMission({
   now = new Date().toISOString(),
 } = {}) {
   const selected = normalizeIds(ids);
-  const target = normalizeMissionTarget(targetStage);
+  const target = normalizePipelineTarget(targetStage);
   const contract = STAGE_CONTRACTS[target];
-  const mode = normalizeMissionMode(cfg.mode);
+  const mode = normalizePipelineMode(cfg.mode);
   const modeContract = buildModeContract(mode, contract);
   const agents = (fleet.agents || []).filter((agent) => {
     if (!selected.length) return true;
@@ -68,15 +68,15 @@ export function buildFactoryAutopilotMission({
   });
   const roster = agents.map((agent) => classifyAgent(agent, mode));
   const factoryItems = roster.filter((item) => item.factoryAction !== "none");
-  const autopilotItems = roster.filter((item) => item.autopilotAction === "doctor_repair");
-  const remoteObserveItems = roster.filter((item) => item.autopilotAction === "observe_remote_run");
-  const pendingAutopilotItems = roster.filter((item) => item.autopilotAction === "after_factory_output");
+  const repairItems = roster.filter((item) => item.repairAction === "doctor_repair");
+  const remoteObserveItems = roster.filter((item) => item.repairAction === "observe_remote_run");
+  const pendingRepairItems = roster.filter((item) => item.repairAction === "after_factory_output");
   const missingWorkspaces = roster.filter((item) => item.workspaceState === "missing");
   const commandBody = buildFactoryCommandBody({ roster, contract, mode, target });
 
   return {
-    kind: "ge.factory_autopilot.mission",
-    version: FACTORY_AUTOPILOT_MISSION_VERSION,
+    kind: "ge.factory_repair.pipeline",
+    version: FACTORY_REPAIR_PIPELINE_VERSION,
     createdAt: now,
     mode,
     modeContract,
@@ -98,22 +98,22 @@ export function buildFactoryAutopilotMission({
       localBuildBoundary: LOCAL_BUILD_BOUNDARY,
       ownership: {
         factory: "produce missing or explicitly rebuilt workspaces and release artifacts",
-        autopilot: "supervise existing workspace health, deterministic repairs, and resumable convergence",
+        repair: "supervise existing workspace health, deterministic repairs, and resumable convergence",
       },
     },
     summary: {
       selected: roster.length,
       factory: factoryItems.length,
-      autopilot: autopilotItems.length,
+      repair: repairItems.length,
       remoteObserve: remoteObserveItems.length,
-      autopilotAfterFactory: pendingAutopilotItems.length,
+      repairAfterFactory: pendingRepairItems.length,
       missingWorkspaces: missingWorkspaces.length,
       existingWorkspaces: roster.length - missingWorkspaces.length,
     },
     phases: [
       {
         id: "preflight",
-        owner: "mission",
+        owner: "pipeline",
         action: "resolve_selection_and_stage_contract",
         status: roster.length ? "ready" : "empty",
       },
@@ -125,16 +125,16 @@ export function buildFactoryAutopilotMission({
         itemCount: factoryItems.length,
       },
       {
-        id: "autopilot",
-        owner: "autopilot",
-        action: autopilotActionForMode({ mode, autopilotItems, remoteObserveItems }),
+        id: "repair",
+        owner: "repair",
+        action: repairActionForMode({ mode, repairItems, remoteObserveItems }),
         gate: contract.workspaceGate,
-        itemCount: mode === "local" ? autopilotItems.length : remoteObserveItems.length,
-        capability: modeContract.autopilotCapability,
+        itemCount: mode === "local" ? repairItems.length : remoteObserveItems.length,
+        capability: modeContract.repairCapability,
       },
       {
         id: "handoff",
-        owner: modeContract.cloudContinuation ? "factory" : "mission",
+        owner: modeContract.cloudContinuation ? "factory" : "pipeline",
         action: modeContract.cloudContinuation ? "ship_local_outputs_to_cloud_release" : "none",
         command: modeContract.cloudContinuation,
       },
@@ -142,8 +142,8 @@ export function buildFactoryAutopilotMission({
     roster,
     disambiguation: [
       "Factory is the producer: it creates or regenerates workspaces and release artifacts.",
-      "Autopilot is the supervisor: it converges existing workspaces through doctor and repair loops.",
-      "A mission records the division of labor so retries and resumes do not reinterpret intent.",
+      "Repair is the supervisor: it converges existing workspaces through doctor and repair loops.",
+      "A pipeline records the division of labor so retries and resumes do not reinterpret intent.",
     ],
   };
 }
@@ -153,7 +153,7 @@ function classifyAgent(agent, mode) {
   const hasWorkspace = Boolean(workspaceId);
   const hasRun = Boolean(agent.runId);
   const factoryAction = hasWorkspace || hasRun ? "none" : mode === "local" ? "build_local" : "build_remote";
-  const autopilotAction = classifyAutopilotAction({ mode, hasWorkspace, hasRun });
+  const repairAction = classifyRepairAction({ mode, hasWorkspace, hasRun });
   return {
     agentId: agent.id,
     title: agent.title || agent.id,
@@ -162,12 +162,12 @@ function classifyAgent(agent, mode) {
     workspaceId: workspaceId || agent.id,
     workspaceState: hasWorkspace ? "existing" : "missing",
     factoryAction,
-    autopilotAction,
+    repairAction,
     runId: agent.runId || null,
   };
 }
 
-function classifyAutopilotAction({ mode, hasWorkspace, hasRun }) {
+function classifyRepairAction({ mode, hasWorkspace, hasRun }) {
   if (mode === "local") return hasWorkspace ? "doctor_repair" : "after_factory_output";
   if (hasRun) return "observe_remote_run";
   return hasWorkspace ? "remote_workspace_not_locally_repairable" : "after_factory_output";
@@ -197,13 +197,13 @@ function buildModeContract(mode, stageContract) {
       factorySurface: "local_harness",
       workspaceSource: ".ge/factory/projects",
       artifactSource: "local_workspace_artifacts",
-      autopilotCapability: "local_doctor_repair",
+      repairCapability: "local_doctor_repair",
       effectiveFactoryTarget: stageContract.localFactoryTarget,
       buildBoundary: LOCAL_BUILD_BOUNDARY,
       cloudContinuation: stageContract.cloudContinuation,
       constraints: [
         "Local mode can repair generated workspaces before cloud side effects.",
-        "Publishing still requires a cloud handoff through ge agents ship.",
+        "Publishing still requires a cloud handoff through ge handoff agents-cli.",
       ],
     };
   }
@@ -212,7 +212,7 @@ function buildModeContract(mode, stageContract) {
     factorySurface: "cloud_factory",
     workspaceSource: "factory run state and GCS artifacts",
     artifactSource: "remote_factory_artifacts",
-    autopilotCapability: "remote_observe_only",
+    repairCapability: "remote_observe_only",
     effectiveFactoryTarget: stageContract.remoteFactoryTarget,
     buildBoundary: null,
     cloudContinuation: null,
@@ -223,9 +223,9 @@ function buildModeContract(mode, stageContract) {
   };
 }
 
-function autopilotActionForMode({ mode, autopilotItems, remoteObserveItems }) {
+function repairActionForMode({ mode, repairItems, remoteObserveItems }) {
   if (mode === "local") {
-    return autopilotItems.length ? "doctor_and_repair_existing_workspaces" : "wait_for_factory_outputs";
+    return repairItems.length ? "doctor_and_repair_existing_workspaces" : "wait_for_factory_outputs";
   }
   return remoteObserveItems.length ? "observe_remote_factory_runs" : "wait_for_cloud_factory_outputs";
 }

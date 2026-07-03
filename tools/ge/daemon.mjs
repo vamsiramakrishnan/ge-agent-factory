@@ -16,7 +16,6 @@ import {
   guarded, emit, out, pc, core,
   readPidFile, processAlive, processLooksLikeDaemon, daemonStatusSnapshot,
   renderResumePlan, daemonPort, daemonRequest, statusText, followTaskEvents,
-  displayTaskKind, deprecatedAlias,
 } from "./shared.mjs";
 
 const GE_CLI_PATH = fileURLToPath(new URL("../ge.mjs", import.meta.url));
@@ -113,7 +112,7 @@ const daemonTasks = defineCommand({
       }
       for (const task of tasks.slice(0, Math.max(1, Math.min(Number(args.limit) || 20, 200)))) {
         const statusText = task.status === "done" ? pc.green(task.status) : task.status === "running" ? pc.cyan(task.status) : pc.yellow(task.status);
-        out(`  ${statusText.padEnd(14)} ${String(displayTaskKind(task.kind) || "task").padEnd(14)} ${task.id} ${pc.dim(task.updatedAt || task.createdAt || "")}`);
+        out(`  ${statusText.padEnd(14)} ${String(task.kind || "task").padEnd(14)} ${task.id} ${pc.dim(task.updatedAt || task.createdAt || "")}`);
       }
     });
   }),
@@ -131,7 +130,7 @@ const daemonTask = defineCommand({
     const task = await response.json();
     emit(args, task, (t) => {
       out(pc.bold(`\nGE Runtime Task ${t.id}`));
-      out(`  kind      ${pc.cyan(displayTaskKind(t.kind) || "task")}`);
+      out(`  kind      ${pc.cyan(t.kind || "task")}`);
       out(`  status    ${t.status === "done" ? pc.green(t.status) : t.status === "running" ? pc.cyan(t.status) : pc.yellow(t.status)}`);
       out(`  created   ${pc.dim(t.createdAt || "")}`);
       out(`  updated   ${pc.dim(t.updatedAt || "")}`);
@@ -193,7 +192,7 @@ const runtimeStartJob = defineCommand({
   run: guarded(async ({ args }) => {
     const separator = process.argv.indexOf("--");
     const argv = separator >= 0 ? process.argv.slice(separator + 1) : [];
-    if (!argv.length) throw new Error("usage: ge runtime start job -- ge <args>");
+    if (!argv.length) throw new Error("usage: ge runs job -- ge <args>");
     const geArgv = argv[0] === "ge" ? argv.slice(1) : argv;
     const port = Number(args.port || process.env.GE_DAEMON_PORT || daemonPaths().defaultPort);
     const response = await fetch(`http://127.0.0.1:${port}/api/tasks`, {

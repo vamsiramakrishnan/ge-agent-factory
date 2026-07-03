@@ -42,7 +42,7 @@ operator path uses the same command contract.
 | `agents sync [--ids <a,b>] [--local] [--remote <git-url>] [--push] [--force] [--no-commit]` | Generated agent code → `generated-agents/` or a dedicated git repo |
 
 **Local state.** Active local persistence is under `.ge/`:
-`.ge/runtime` for daemon tasks, `.ge/missions` for scenario/data/simulator
+`.ge/runtime` for daemon tasks, `.ge/pipelines` for scenario/data/simulator
 artifacts, `.ge/interviews` for generated specs, `.ge/factory/workspaces` for
 local agent workspaces, `.ge/skills` for the harness skill manifest, `.ge/cache`
 for shared caches, and `.ge/console` for console job records. Legacy roots are

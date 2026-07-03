@@ -1,21 +1,21 @@
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, test } from "bun:test";
-import { inspectMissionArtifact, verifyMissionArtifacts } from "./mission-artifacts.mjs";
+import { inspectPipelineArtifact, verifyPipelineArtifacts } from "./pipeline-artifacts.mjs";
 
 function tmpDir(name) {
-  const dir = join("/tmp", `ge-mission-artifacts-${process.pid}-${name}`);
+  const dir = join("/tmp", `ge-pipeline-artifacts-${process.pid}-${name}`);
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
   return dir;
 }
 
-describe("mission artifacts", () => {
+describe("pipeline artifacts", () => {
   test("validates json files and records metadata", () => {
     const root = tmpDir("json");
     writeFileSync(join(root, "data.json"), JSON.stringify({ ok: true }), "utf8");
 
-    const artifact = inspectMissionArtifact({ name: "data", type: "json", path: "data.json" }, { repoRoot: root });
+    const artifact = inspectPipelineArtifact({ name: "data", type: "json", path: "data.json" }, { repoRoot: root });
 
     expect(artifact.status).toBe("present");
     expect(artifact.metadata.sha256).toHaveLength(64);
@@ -27,7 +27,7 @@ describe("mission artifacts", () => {
     mkdirSync(join(root, "output"));
     writeFileSync(join(root, "output", "Employee.csv"), "id,name\n1,Ada\n2,Grace\n", "utf8");
 
-    const artifact = inspectMissionArtifact({ name: "rows", type: "dir", path: "output" }, { repoRoot: root });
+    const artifact = inspectPipelineArtifact({ name: "rows", type: "dir", path: "output" }, { repoRoot: root });
 
     expect(artifact.status).toBe("present");
     expect(artifact.metadata.csvFiles).toBe(1);
@@ -38,7 +38,7 @@ describe("mission artifacts", () => {
     const root = tmpDir("blockers");
     writeFileSync(join(root, "bad.json"), "{", "utf8");
 
-    const result = verifyMissionArtifacts([
+    const result = verifyPipelineArtifacts([
       { name: "missing", type: "json", path: "missing.json" },
       { name: "bad", type: "json", path: "bad.json" },
     ], { repoRoot: root });
@@ -50,7 +50,7 @@ describe("mission artifacts", () => {
   });
 
   test("validates stdout json artifacts from child output", () => {
-    const artifact = inspectMissionArtifact(
+    const artifact = inspectPipelineArtifact(
       { name: "conformance", type: "stdout-json", ref: "validate" },
       { childTask: { output: { stdout: "{\"ok\":true}" } } },
     );
@@ -60,7 +60,7 @@ describe("mission artifacts", () => {
   });
 
   test("uses full machine stdout when display stdout is truncated", () => {
-    const artifact = inspectMissionArtifact(
+    const artifact = inspectPipelineArtifact(
       { name: "conformance", type: "stdout-json", ref: "validate" },
       { childTask: { output: { stdout: "],\"not\":\"complete\"}", stdoutFull: "{\"ok\":true,\"simulators\":[]}" } } },
     );

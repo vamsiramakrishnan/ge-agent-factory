@@ -1,7 +1,7 @@
-import { buildMissionGraph } from "./mission/mission-plan.mjs";
+import { buildPipelineGraph } from "./pipeline/pipeline-graph-plan.mjs";
 import { parseList } from "@ge/std/list";
 
-export const JOURNEY_STAGES = [
+export const PIPELINE_STAGES = [
   "interview",
   "spec",
   "data",
@@ -34,14 +34,14 @@ const STAGE_OWNERS = {
   deploy: "factory",
 };
 
-const MISSION_NODE_STAGE = {
+const PIPELINE_NODE_STAGE = {
   "antigravity.spec-data-review": "spec",
   "mock.generate": "data",
   "snowfakery.generate": "data",
   "simulator.seed": "simulator",
   "simulator.validate": "simulator",
   "factory.build": "build",
-  "autopilot.converge": "preview",
+  "repair.converge": "preview",
 };
 
 const TERMINAL = new Set(["done", "skipped"]);
@@ -100,7 +100,7 @@ function baseStages({ scenario, ids, systems, targetStage, mode, usecaseId }) {
   const specUsecase = usecaseId || scenario || "<usecase>";
   const specReviewRoute = specUsecase === "<usecase>" ? "#/spec-review" : `#/spec-review/${encodeURIComponent(specUsecase)}`;
   const specPath = specUsecase === "<usecase>" ? ".ge/interviews/<usecase>/agent-spec.json" : `.ge/interviews/${specUsecase}/agent-spec.json`;
-  return JOURNEY_STAGES.map((stage) => ({
+  return PIPELINE_STAGES.map((stage) => ({
     id: stage,
     label: STAGE_LABELS[stage],
     owner: STAGE_OWNERS[stage],
@@ -112,20 +112,20 @@ function baseStages({ scenario, ids, systems, targetStage, mode, usecaseId }) {
     actionPlan: {
       interview: action("start_interview", "Start interview", ["Open #/interview"], true),
       spec: action("review_spec", "Review generated spec", [`Open ${specReviewRoute}`], true, { route: specReviewRoute, artifactPath: specPath }),
-      data: action("run_mission", "Generate data", [`ge pipeline run${scenarioArg}${systemsArg}${targetArg}`.trim()], true),
-      simulator: action("run_mission", "Seed simulators", [`ge pipeline run${scenarioArg}${systemsArg}${targetArg}`.trim()], true),
+      data: action("run_pipeline", "Generate data", [`ge pipeline run${scenarioArg}${systemsArg}${targetArg}`.trim()], true),
+      simulator: action("run_pipeline", "Seed simulators", [`ge pipeline run${scenarioArg}${systemsArg}${targetArg}`.trim()], true),
       build: action("build_agents", "Build agents", [`ge agents build${idArg}${mode === "remote" ? "" : " --local"}`.trim()], true),
       eval: action("generate_evals", "Generate evals", [`node apps/factory/scripts/spec-workbench.mjs golden-evals prompt --spec ${specPath}`], true),
       preview: action("run_preview", "Run preview", [`ge pipeline run${scenarioArg}${systemsArg} --run-preview`.trim()], true),
-      deploy: action("ship_agents", "Ship agents", [`ge agents ship${idArg}`.trim()], false),
+      deploy: action("handoff_agents", "Handoff agents", [`ge handoff agents-cli${idArg}`.trim()], false),
     }[stage],
   }));
 }
 
-function applyMissionGraph(stages, graph = null) {
+function applyPipelineGraph(stages, graph = null) {
   if (!graph?.nodes?.length) return;
   for (const node of graph.nodes) {
-    const stageId = MISSION_NODE_STAGE[node.id] || MISSION_NODE_STAGE[node.kind];
+    const stageId = PIPELINE_NODE_STAGE[node.id] || PIPELINE_NODE_STAGE[node.kind];
     if (!stageId) continue;
     const stage = stages.find((entry) => entry.id === stageId);
     if (!stage) continue;
@@ -135,7 +135,7 @@ function applyMissionGraph(stages, graph = null) {
     stage.artifacts.push(...(node.artifacts || []));
     if (BLOCKED.has(node.status) && !stage.blocker) {
       stage.blocker = blockerFromNode(node);
-      stage.actionPlan = action("resume_mission", "Resume pipeline run", node.resumePlan?.commands || [`ge pipeline resume ${graph.id}`], true, { taskId: graph.id, nodeId: node.id });
+      stage.actionPlan = action("resume_pipeline", "Resume pipeline run", node.resumePlan?.commands || [`ge pipeline resume ${graph.id}`], true, { taskId: graph.id, nodeId: node.id });
     }
   }
 }
@@ -154,15 +154,15 @@ function applyRuntimeTasks(stages, tasks = []) {
       interview.actionPlan = action("watch_runtime", "Watch interview", [`ge runs events ${harness.id} --follow`], false, { taskId: harness.id });
     }
   }
-  const mission = latestTask(tasks, (task) => task.kind === "mission.run");
-  if (mission?.output?.graph) {
-    applyMissionGraph(stages, mission.output.graph);
-    const blocked = (mission.output.graph.nodes || []).find((node) => BLOCKED.has(node.status));
+  const pipeline = latestTask(tasks, (task) => task.kind === "pipeline.run");
+  if (pipeline?.output?.graph) {
+    applyPipelineGraph(stages, pipeline.output.graph);
+    const blocked = (pipeline.output.graph.nodes || []).find((node) => BLOCKED.has(node.status));
     if (blocked) {
       const stage = stages.find((entry) => entry.nodeIds.includes(blocked.id));
       if (stage) {
-        stage.taskId = mission.id;
-        stage.actionPlan = action("resume_mission", "Resume pipeline run", mission.summary?.resumePlan?.commands || [`ge pipeline resume ${mission.id}`], true, { taskId: mission.id, nodeId: blocked.id });
+        stage.taskId = pipeline.id;
+        stage.actionPlan = action("resume_pipeline", "Resume pipeline run", pipeline.summary?.resumePlan?.commands || [`ge pipeline resume ${pipeline.id}`], true, { taskId: pipeline.id, nodeId: blocked.id });
       }
     }
   }
@@ -196,7 +196,7 @@ function applyFleet(stages, fleet = null, selectedIds = []) {
     if (deploy) {
       deploy.status = "pending";
       deploy.blocker = null;
-      deploy.actionPlan = action("ship_agents", "Ship agents", [`ge agents ship --ids ${workspaceIds.join(",")}`], true, {
+      deploy.actionPlan = action("handoff_agents", "Handoff agents", [`ge handoff agents-cli --ids ${workspaceIds.join(",")}`], true, {
         agentIds: previewReady.map((agent) => agent.id),
         workspaceIds,
       });
@@ -247,7 +247,7 @@ function nextStage(stages) {
     || stages[stages.length - 1];
 }
 
-export function buildJourneyPlan({
+export function buildPipelinePlan({
   scenario = null,
   spec = null,
   usecaseId = null,
@@ -259,14 +259,14 @@ export function buildJourneyPlan({
   fleet = null,
   tasks = [],
   graph = null,
-  includePlannedMission = true,
+  includePlannedPipeline = true,
 } = {}) {
   const selectedIds = splitIds(ids);
   const selectedSystems = splitIds(systems);
   const normalizedUsecase = usecaseId || slugify(scenario) || null;
   const startsFromCatalogSpec = selectedIds.length > 0 && !spec;
-  const plannedGraph = graph || (includePlannedMission ? buildMissionGraph({
-    id: "mission-planned",
+  const plannedGraph = graph || (includePlannedPipeline ? buildPipelineGraph({
+    id: "pipeline-planned",
     mode,
     ids: selectedIds,
     scenario,
@@ -278,15 +278,15 @@ export function buildJourneyPlan({
     useAntigravity: !startsFromCatalogSpec,
   }) : null);
   const stages = baseStages({ scenario, ids: selectedIds, systems: selectedSystems, targetStage, mode, usecaseId: normalizedUsecase });
-  if (plannedGraph) applyMissionGraph(stages, plannedGraph);
+  if (plannedGraph) applyPipelineGraph(stages, plannedGraph);
   applyRuntimeTasks(stages, tasks);
   applyFleet(stages, fleet, selectedIds);
 
   const next = nextStage(stages);
   return {
-    kind: "ge.journey.plan",
+    kind: "ge.pipeline.plan",
     version: 1,
-    id: normalizedUsecase || scenario || selectedIds[0] || "journey",
+    id: normalizedUsecase || scenario || selectedIds[0] || "pipeline",
     mode,
     targetStage,
     input: { scenario, spec, usecaseId: normalizedUsecase, systems: selectedSystems, ids: selectedIds },
@@ -295,7 +295,7 @@ export function buildJourneyPlan({
     counts: deriveCounts(stages),
     stages,
     implementation: {
-      missionGraph: plannedGraph ? { id: plannedGraph.id, nodes: plannedGraph.nodes.map((node) => ({ id: node.id, kind: node.kind, runtimeKind: node.runtimeKind, dependsOn: node.dependsOn })) } : null,
+      pipelineGraph: plannedGraph ? { id: plannedGraph.id, nodes: plannedGraph.nodes.map((node) => ({ id: node.id, kind: node.kind, runtimeKind: node.runtimeKind, dependsOn: node.dependsOn })) } : null,
       readiness: status ? { mode: status.mode, project: status.project || null, next: status.next || null } : null,
       fleet: fleet?.health ? { total: fleet.total, blocked: fleet.health.blocked, repairable: fleet.health.repairable, byStage: fleet.health.byStage } : null,
     },
