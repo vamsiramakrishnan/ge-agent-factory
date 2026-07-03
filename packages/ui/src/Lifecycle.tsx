@@ -29,12 +29,18 @@ function phaseOf(status: string): Phase {
 
 // A stage's raw status carries more nuance than its coarse Phase — a "blocked"
 // phase might be a hard failure (red ✕) or waiting on something external
-// (orange !). Tone drives both color and icon, so meaning never rides on hue
-// alone.
+// (orange !), and a "running" phase might be an active repair or a soft
+// warning rather than a plain in-progress run. Tone drives both color and
+// icon, so meaning never rides on hue alone.
 function toneOf(status: string, phase: Phase): StatusTone {
+  const s = String(status || "").toLowerCase();
   if (phase === "done") return "passed";
-  if (phase === "running") return "running";
-  if (phase === "blocked") return FAILED_LIKE.has(String(status || "").toLowerCase()) ? "failed" : "blocked";
+  if (phase === "running") {
+    if (s === "repairing") return "repairing";
+    if (s === "warn") return "warning";
+    return "running";
+  }
+  if (phase === "blocked") return FAILED_LIKE.has(s) ? "failed" : "blocked";
   return "queued";
 }
 
@@ -178,7 +184,7 @@ export function Lifecycle({
               <div className="flex flex-col items-center">
                 <span className={`relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-surface ${cls.dot} text-white`}>
                   {phase === "running" && <span className="absolute inset-0 animate-ping rounded-full bg-status-running/30" />}
-                  <Icon className={`relative h-3.5 w-3.5 ${tone === "running" ? "animate-spin" : ""}`} strokeWidth={2.5} />
+                  <Icon className={`relative h-3.5 w-3.5 ${tone === "running" || tone === "repairing" ? "animate-spin" : ""}`} strokeWidth={2.5} />
                 </span>
                 {!last && (
                   <span
@@ -231,7 +237,7 @@ export function Lifecycle({
                   title={`${stage.label} — ${statusLabel(stage.status)}`}
                 >
                   {phase === "running" && <span className="absolute inset-0 animate-ping rounded-full bg-status-running/30" />}
-                  <Icon className={`relative h-4 w-4 ${tone === "running" ? "animate-spin" : ""}`} strokeWidth={2.5} />
+                  <Icon className={`relative h-4 w-4 ${tone === "running" || tone === "repairing" ? "animate-spin" : ""}`} strokeWidth={2.5} />
                 </button>
                 {!last && (
                   <span className={`h-0.5 flex-1 ${phase === "done" ? "bg-status-passed/50" : liveConnector ? "connector-live-x" : "bg-outline-variant/40"}`} />
