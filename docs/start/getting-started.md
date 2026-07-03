@@ -19,7 +19,32 @@ without touching a cloud project.
 Unfamiliar term? See the [Glossary](../GLOSSARY.html) — plain-language
 translations of every internal term, the operator vocabulary included.
 
-## Prerequisites + install
+## Recommended: skills-first install
+
+The easiest setup path is to let your coding agent run the factory's install
+skill. The skill performs the clone/bootstrap, checks each phase, applies the
+structured fixes it knows about, and leaves the `ge` CLI plus harness skills
+ready for the next operator step.
+
+```bash
+bunx create-ge-agent-factory        # any machine: clone + guided, verified install
+bunx create-ge-agent-factory --skills agents  # also install skills for agent sessions
+```
+
+Other surfaces use the same skill bundle:
+
+| Surface | Setup |
+| --- | --- |
+| Claude Code | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory`, then `/plugin install factory-bootstrap@ge-agent-factory` |
+| Gemini CLI | `gemini extensions install https://github.com/vamsiramakrishnan/ge-agent-factory` |
+| Existing checkout | `mise run skills-install` |
+| MCP-capable assistant | `bun tools/mcp-server.mjs` to expose the `factory_*` tools |
+
+The proven workspace this produces is still a standard
+[Google agents-cli](https://google.github.io/agents-cli/) / ADK project. The
+skills just automate setup and operations for the layer above.
+
+## Manual prerequisites + install
 
 **→ For the full step-by-step (clone, prerequisites, `mise run setup`,
 `mise run doctor-local`, first command, optional cloud setup), see

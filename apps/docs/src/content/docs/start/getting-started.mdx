@@ -19,7 +19,32 @@ without touching a cloud project.
 Unfamiliar term? See the [Glossary](/ge-agent-factory/reference/glossary/) — plain-language
 translations of every internal term, the operator vocabulary included.
 
-## Prerequisites + install
+## Recommended: skills-first install
+
+The easiest setup path is to let your coding agent run the factory's install
+skill. The skill performs the clone/bootstrap, checks each phase, applies the
+structured fixes it knows about, and leaves the `ge` CLI plus <a href="/ge-agent-factory/reference/glossary/#harness" title="The local, LLM-driven &quot;does this generated agent actually match the spec?&quot;">harness</a> skills
+ready for the next operator step.
+
+```bash
+bunx create-ge-agent-factory        # any machine: clone + guided, verified install
+bunx create-ge-agent-factory --skills agents  # also install skills for agent sessions
+```
+
+Other surfaces use the same skill bundle:
+
+| Surface | Setup |
+| --- | --- |
+| Claude Code | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory`, then `/plugin install factory-bootstrap@ge-agent-factory` |
+| Gemini CLI | `gemini extensions install https://github.com/vamsiramakrishnan/ge-agent-factory` |
+| Existing checkout | `mise run skills-install` |
+| MCP-capable assistant | `bun tools/mcp-server.mjs` to expose the `factory_*` tools |
+
+The proven <a href="/ge-agent-factory/reference/glossary/#workspace" title="The on-disk folder for one generated agent (.ge/factory/workspaces/workspace-id/), with a workspace.json manifest describing what's in it.">workspace</a> this produces is still a standard
+[Google agents-cli](https://google.github.io/agents-cli/) / ADK project. The
+skills just automate setup and operations for the layer above.
+
+## Manual prerequisites + install
 
 **→ For the full step-by-step (clone, prerequisites, `mise run setup`,
 `mise run doctor-local`, first command, optional cloud setup), see
@@ -42,7 +67,7 @@ mise run console         # open the operator UI → http://localhost:18260
    ```
 
    On a fresh machine this runs local readiness checks, then builds one
-   starter agent to the `validated` stage and prints the <a href="/ge-agent-factory/reference/glossary/#workspace" title="The on-disk folder for one generated agent (.ge/factory/workspaces/workspace-id/), with a workspace.json manifest describing what's in it.">workspace</a> path,
+   starter agent to the `validated` stage and prints the workspace path,
    `workspace.json`, eval config, and next commands. It is the fastest proof
    that the repo is usable on this machine — and it is pure local
    computation, so it is safe to re-run any time (`ge prove --watch`
