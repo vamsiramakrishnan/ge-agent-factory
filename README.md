@@ -30,7 +30,7 @@ command.
 Not sure this is the layer you need? Read
 [GE Agent Factory vs agents-cli](https://vamsiramakrishnan.github.io/ge-agent-factory/start/vs-agents-cli/).
 
-## Works with your coding agent
+## Start with skills — works with your coding agent
 
 <p align="center">
   <img src="docs/assets/icons/claude-code.svg" alt="Claude Code" height="44">&nbsp;
@@ -40,10 +40,11 @@ Not sure this is the layer you need? Read
   <img src="docs/assets/icons/mcp.svg" alt="MCP" height="44">
 </p>
 
-The whole factory is packaged as agent skills — including the install itself
-([`installing-the-factory`](skills/installing-the-factory/SKILL.md)), so your
-coding agent can bootstrap a bare machine and then operate the factory end to
-end:
+The recommended setup path is skills-first. The whole factory is packaged as
+agent skills — including the install itself
+([`installing-the-factory`](skills/installing-the-factory/SKILL.md)) — so your
+coding agent can bootstrap a bare machine, verify each phase, and then operate
+the factory end to end:
 
 ```bash
 bunx create-ge-agent-factory        # any machine: clone + guided, verified install
@@ -53,8 +54,10 @@ bunx create-ge-agent-factory        # any machine: clone + guided, verified inst
 | --- | --- |
 | **Claude Code** | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory` then `/plugin install factory-bootstrap@ge-agent-factory` |
 | **Gemini CLI** | `gemini extensions install https://github.com/vamsiramakrishnan/ge-agent-factory` |
-| **Antigravity · Codex · agents-cli** | `bunx create-ge-agent-factory --skills agents` (in a checkout: `mise run skills-install`) |
+| **Antigravity · Codex · agents-cli-style sessions** | `bunx create-ge-agent-factory --skills agents` (in a checkout: `mise run skills-install`) |
 | **Any MCP client** | `bun tools/mcp-server.mjs` — the `factory_*` tools, same functions as the CLI verbs |
+
+The generated workspaces still hand off to [Google agents-cli](https://google.github.io/agents-cli/) / ADK / Gemini Enterprise. Skills are the assistant-facing setup and operations layer that gets the factory installed and keeps it on the golden path.
 
 ## See it
 
