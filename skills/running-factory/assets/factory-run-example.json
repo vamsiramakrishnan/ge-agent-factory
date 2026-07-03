@@ -1,0 +1,50 @@
+{
+  "kind": "ge.agent_factory.run",
+  "version": 1,
+  "startedAt": "2026-07-03T08:12:04.118Z",
+  "finishedAt": "2026-07-03T08:19:47.902Z",
+  "targetStage": "data_packaged",
+  "ok": true,
+  "totals": {
+    "workItems": 1,
+    "failed": 0,
+    "byStatus": { "data_packaged": 1 }
+  },
+  "planPath": "/home/user/ge-agent-factory/.ge/factory/factory-plan.json",
+  "results": [
+    {
+      "id": "hr-domain-4-benefits-q-a-enrollment",
+      "status": "data_packaged",
+      "targetStage": "data_packaged",
+      "attempts": 0,
+      "useCaseId": "benefits-q-a-enrollment",
+      "title": "Benefits Q&A & Enrollment",
+      "department": "hr",
+      "domainId": "domain-4",
+      "systems": ["Workday", "Benefits Platform", "Google Chat"],
+      "workspaceName": "factory-hr-benefits-q-a-enrollment",
+      "workspaceId": "factory-hr-benefits-q-a-enrollment",
+      "rows": 80,
+      "rowReason": "transactional workflow",
+      "seed": 101,
+      "validation": { "ok": true, "testExitCode": 0, "source": "post_harness_refine" },
+      "harnessReview": { "ok": true, "provider": "antigravity-sdk", "okToPromote": true },
+      "harnessRefine": { "ok": true, "provider": "antigravity-sdk", "changedFiles": ["app/agent.py"] },
+      "artifacts": {
+        "workspace": "workspace.json",
+        "validation": "artifacts/validation-report.json",
+        "harnessReview": "artifacts/antigravity-sdk-harness-review.json",
+        "harnessRefine": "artifacts/antigravity-sdk-harness-refine.json",
+        "generatorFeedback": "artifacts/generator-feedback.json",
+        "dataPlan": "mock_data/plan/data-plan.json",
+        "packageIndex": "mock_data/package-index.yaml",
+        "snowfakery": "mock_data/snowfakery/structured.recipe.yml",
+        "cloudData": "mock_data/cloud/cloud-data-manifest.json",
+        "cloudTopology": "artifacts/cloud-topology.json",
+        "sourceIntegrationPlan": "mock_data/plan/source-integration-plan.json",
+        "toolRegistryPlan": "artifacts/tool-registry-plan.json"
+      },
+      "error": null
+    }
+  ]
+}

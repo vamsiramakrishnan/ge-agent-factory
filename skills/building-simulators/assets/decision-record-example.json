@@ -1,0 +1,18 @@
+{
+  "systemId": "lever",
+  "displayName": "Lever",
+  "archetype": "recruiting",
+  "realism": "enterprise",
+  "objects": ["candidates", "jobs", "applications", "interviews", "offers", "approvals", "audit_events"],
+  "workflows": ["candidate_search", "application_review", "interview_scheduling", "offer_approval", "audit"],
+  "scale": 10000,
+  "assumptions": [
+    "Lever maps to the recruiting archetype (the Greenhouse/ATS/Lever family in references/archetypes.md)",
+    "offer approval needs a state-changing tool plus approval blockers, so realism is enterprise rather than starter"
+  ],
+  "commands": [
+    "npm run generator:new-simulator -- --id lever --name \"Lever\" --archetype recruiting --realism enterprise",
+    "npm run generator:validate-simulators -- --system lever",
+    "bun tools/ge.mjs pipeline run --scenario InterviewScheduling --systems lever --target-stage preview"
+  ]
+}
