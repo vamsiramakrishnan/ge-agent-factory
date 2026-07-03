@@ -46,6 +46,9 @@
     "docs:site:dev": "bun run --filter ./apps/docs dev",
     "docs:site:build": "bun run --filter ./apps/docs build",
     "docs:site:sync": "node apps/docs/scripts/sync-content.mjs",
+    "readme:shots": "node tools/gen-readme-shots.mjs",
+    "readme:tapes": "for f in docs/tapes/*.tape; do vhs \"$f\"; done",
+    "readme:assets": "bun run docs:diagrams && bun run readme:tapes && bun run readme:shots",
     "config:schema": "node tools/gen-config-schema.mjs",
     "config:schema:check": "node tools/gen-config-schema.mjs --check",
     "catalog": "bun apps/factory/scripts/sync-use-cases-from-slides.mjs",
@@ -97,6 +100,7 @@
   "devDependencies": {
     "@google-cloud/discoveryengine": "^2.7.0",
     "@google-cloud/firestore": "^8.6.0",
-    "beautiful-mermaid": "^1.1.3"
+    "beautiful-mermaid": "^1.1.3",
+    "playwright": "^1.56.1"
   }
 }

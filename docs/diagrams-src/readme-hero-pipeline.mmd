@@ -1,0 +1,14 @@
+flowchart LR
+    CAP(["capture\nenterprise intent"]) --> CON["contract\nEnterprise Agent Contract"]
+    CON --> SIM["simulate\nsource-system twins"]
+    CON --> EVAL["eval suites"]
+    CON --> TOOLS["tool plans"]
+    SIM --> PROOF["proof pack"]
+    EVAL --> PROOF
+    TOOLS --> PROOF
+    PROOF --> HAND(["handoff\nagents-cli / ADK / Gemini Enterprise"])
+
+    classDef contract fill:#e8f0fe,stroke:#1a73e8,color:#202124
+    classDef proof fill:#e6f4ea,stroke:#34a853,color:#202124
+    class CON contract
+    class PROOF,HAND proof
