@@ -8,16 +8,23 @@
 import StarlightPage from "@astrojs/starlight/components/StarlightPage.astro";
 import AgentDetail from "../../../components/AgentDetail.astro";
 import catalog from "../../../data/agent-catalog.json";
+import okf from "../../../data/agent-okf.json";
 
 export async function getStaticPaths() {
   const { agents } = catalog as any;
-  return agents.map((agent: any) => ({
-    params: { slug: agent.slug },
-    props: { agent },
-  }));
+  // A handful of use-cases appear as a tile in two departments (e.g. a
+  // regulatory monitor in both Finance and IT) and share one spec slug — emit
+  // one page per unique slug; both tiles link to it.
+  const seen = new Set<string>();
+  return agents
+    .filter((a: any) => !seen.has(a.slug) && seen.add(a.slug))
+    .map((agent: any) => ({
+      params: { slug: agent.slug },
+      props: { agent, okf: (okf as any)[agent.slug] ?? null },
+    }));
 }
 
-const { agent } = Astro.props;
+const { agent, okf: agentOkf } = Astro.props;
 const description = `${agent.title} — ${agent.department?.toUpperCase()} · ${agent.domainTitle}. Systems, integration protocols, governance, and factory build status.`;
 ---
 
@@ -29,5 +36,5 @@ const description = `${agent.title} — ${agent.department?.toUpperCase()} · ${
     pagefind: false,
   }}
 >
-  <AgentDetail agent={agent} />
+  <AgentDetail agent={agent} okf={agentOkf} />
 </StarlightPage>
