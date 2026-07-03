@@ -190,6 +190,68 @@ test("capability spine: queries/, tests/, documents/ concepts emitted + round-tr
   await rm(dirname(out), { recursive: true, force: true });
 });
 
+test("strengthened OKF concepts: claims, policies, proof obligations, and coverage links", async () => {
+  const spec = await getSpec("account-reconciliation-agent");
+  const concepts = buildBundle(spec, { timestamp: "2026-01-01T00:00:00.000Z" });
+  const byPath = new Map(concepts.map((c) => [c.relPath, c]));
+
+  // Evidence requirements become first-class Claim concepts, with source-system
+  // authority and a link into the proof-obligation layer.
+  const claim = byPath.get("claims/auto-certified-accounts-moved-from-20-toward-85");
+  expect(claim).toBeTruthy();
+  expect(claim.fields.type).toBe("Claim");
+  expect(claim.fields.generation_status).toBe("generated");
+  expect(claim.body).toContain("(/systems/sap-s-4hana-fi.md)");
+  expect(claim.body).toContain("(/systems/blackline.md)");
+  expect(claim.body).toContain("(/proof-obligations/evidence-auto-certified-accounts-moved-from-20-toward-85.md)");
+
+  // Guardrails and write-like tool safety become Policy concepts.
+  const confirmationPolicy = byPath.get("policies/confirmation-action-sap-s-4hana-fi-close");
+  expect(confirmationPolicy).toBeTruthy();
+  expect(confirmationPolicy.fields.type).toBe("Policy");
+  expect(["generated", "inferred"]).toContain(confirmationPolicy.fields.generation_status);
+  expect(confirmationPolicy.body).toContain("(/tools/action-sap-s-4hana-fi-close.md)");
+
+  // Golden evals and evidence requirements become Proof Obligation concepts.
+  const proof = byPath.get("proof-obligations/eval-account-reconciliation-agent-end-to-end");
+  expect(proof).toBeTruthy();
+  expect(proof.fields.type).toBe("Proof Obligation");
+  expect(proof.fields.generation_status).toBe("generated");
+  expect(proof.body).toContain("(/tests/account-reconciliation-agent-end-to-end.md)");
+  expect(proof.body).toContain("(/tools/action-sap-s-4hana-fi-close.md)");
+
+  // Capability coverage is navigable: a query links to the eval that covers it.
+  const query = byPath.get("queries/balance-document-pull");
+  expect(query).toBeTruthy();
+  expect(query.fields.generation_status).toBe("inferred");
+  expect(query.body).toContain("## Evals");
+  expect(query.body).toContain("(/tests/account-reconciliation-agent-end-to-end.md)");
+});
+
+test("agent tools include richer operational sections without fake external citations", async () => {
+  const spec = await getSpec("account-reconciliation-agent");
+  const concepts = buildBundle(spec, { timestamp: "2026-01-01T00:00:00.000Z" });
+  const actionTool = concepts.find((c) => c.relPath === "tools/action-sap-s-4hana-fi-close");
+
+  expect(actionTool).toBeTruthy();
+  expect(actionTool.fields.type).toBe("Agent Tool");
+  expect(actionTool.fields.generation_status).toBe("generated");
+  for (const heading of ["## Inputs", "## Outputs", "## Side Effects", "## Idempotency", "## Confirmation", "## Permissions", "## Failure Modes", "## Evals"]) {
+    expect(actionTool.body).toContain(heading);
+  }
+  expect(actionTool.body).toContain("(/policies/confirmation-action-sap-s-4hana-fi-close.md)");
+  expect(actionTool.body).toContain("(/tests/account-reconciliation-agent-end-to-end.md)");
+
+  const citationSections = concepts
+    .map((concept) => concept.body.match(/# Citations\n\n([\s\S]*)/)?.[1] || "")
+    .filter(Boolean);
+  expect(citationSections.length).toBeGreaterThan(0);
+  for (const citations of citationSections) {
+    expect(citations).not.toMatch(/https?:\/\//);
+    expect(citations).not.toContain("example.com");
+  }
+});
+
 test("explicit answerableQueries + eval mechanisms are preferred over derivation", async () => {
   const spec = {
     id: "explicit-spec",

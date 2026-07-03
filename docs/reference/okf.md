@@ -110,6 +110,12 @@ node apps/factory/scripts/spec-to-okf.mjs --spec <path/to/spec.json> [--out <dir
 - Catalog input: `apps/factory/generated/use-cases.generated.json`.
 - Default output: `artifacts/okf/<id>/`.
 - Output: a conformant OKF v0.1 Knowledge Bundle.
+- Strengthened generation is applied to every generated agent spec: when fields
+  are derivable, the bundle emits **Claim**, **Policy**, and **Proof Obligation**
+  concepts alongside systems, tools, queries, tests, and documents. These
+  concepts carry generated/inferred status metadata, link coverage back to tools
+  and eval scenarios, and only cite bundle-local source documents/systems rather
+  than fabricating external references.
 
 ### Ingest — `okf-to-spec.mjs`
 
