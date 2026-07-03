@@ -173,3 +173,79 @@ export function findUseCase(catalog, id) {
 export function joinBundle(outDir, ...segments) {
   return join(outDir, ...segments);
 }
+
+// GE OKF substrate helpers. Base conformance follows the permissive OKF spec:
+// https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md
+export const GE_OKF_CONCEPT_TYPES = [
+  "Agent","Enterprise Agent Contract","Capability","Query Capability","Workflow","Source System","Tool","Entity","Field","Document","Policy","Claim","Evidence","Eval","Synthetic World","Persona","Risk","Reference","Bench Profile","Proof Obligation","Promotion Gate",
+];
+
+export function conceptIdFromPath(relPath) {
+  return String(relPath || "").replace(/\\/g, "/").replace(/^\/+/, "").replace(/\.md$/i, "");
+}
+export function isReservedOkfPath(relPath) {
+  const p = String(relPath || "").replace(/\\/g, "/");
+  return p === "index.md" || p.endsWith("/index.md") || p === "log.md" || p.endsWith("/log.md");
+}
+export function normalizeLinkTarget(href, fromPath = "") {
+  const raw = String(href || "").split("#")[0];
+  if (!raw || /^[a-z]+:/i.test(raw)) return null;
+  const path = raw.startsWith("/") ? raw.slice(1) : `${dirname(fromPath).replace(/\\/g, "/")}/${raw}`;
+  const parts = [];
+  for (const part of path.split("/")) {
+    if (!part || part === ".") continue;
+    if (part === "..") parts.pop(); else parts.push(part);
+  }
+  return conceptIdFromPath(parts.join("/"));
+}
+export function extractMarkdownLinks(markdown, fromPath = "") {
+  const out = [];
+  const re = /\[([^\]]+)\]\(([^)]+)\)/g;
+  let m;
+  while ((m = re.exec(String(markdown || ""))) !== null) {
+    out.push({ text: m[1], href: m[2], target: normalizeLinkTarget(m[2], fromPath) });
+  }
+  return out;
+}
+export function markdownSections(body) {
+  const out = [];
+  let current = { title: "_preamble", level: 0, body: "" };
+  for (const line of String(body || "").split("\n")) {
+    const h = line.match(/^(#{1,6})\s+(.*)$/);
+    if (h) { out.push(current); current = { title: h[2].trim(), level: h[1].length, body: "" }; }
+    else current.body += (current.body ? "\n" : "") + line;
+  }
+  out.push(current);
+  return out.map((s) => ({ ...s, body: s.body.trim() }));
+}
+export async function readOkfBundle(root) {
+  const { readdir, readFile } = await import("node:fs/promises");
+  const { join, relative, basename } = await import("node:path");
+  async function walk(dir) { const files=[]; for (const e of await readdir(dir,{withFileTypes:true})) { const abs=join(dir,e.name); if(e.isDirectory()) files.push(...await walk(abs)); else if(e.name.endsWith(".md")) files.push(abs); } return files; }
+  const concepts=[], indexes=[], logs=[], warnings=[];
+  for (const abs of await walk(root)) {
+    const path = relative(root, abs).replace(/\\/g, "/");
+    const text = await readFile(abs, "utf8");
+    const parsed = parseConcept(text);
+    const entry = { id: conceptIdFromPath(path), path, frontmatter: parsed.frontmatter, body: parsed.body, sections: markdownSections(parsed.body), links: extractMarkdownLinks(parsed.body, path) };
+    if (basename(path) === "index.md") indexes.push(entry);
+    else if (basename(path) === "log.md") logs.push({ ...entry, entries: parseLogEntries(parsed.body) });
+    else {
+      const type = String(parsed.frontmatter.type || "").trim();
+      const c = { ...entry, type, title: parsed.frontmatter.title, description: parsed.frontmatter.description, resource: parsed.frontmatter.resource, tags: Array.isArray(parsed.frontmatter.tags) ? parsed.frontmatter.tags : [], timestamp: parsed.frontmatter.timestamp };
+      if (!type) warnings.push({ level:"error", code:"OKF_TYPE_MISSING", path, message:"Concept frontmatter.type is required by base OKF conformance." });
+      concepts.push(c);
+    }
+  }
+  const ids = new Set(concepts.map(c=>c.id));
+  for (const c of concepts) for (const l of c.links) if (l.target && !ids.has(l.target) && !l.target.endsWith("/index") && l.target !== "index") warnings.push({ level:"warning", code:"OKF_BROKEN_LINK", path:c.path, target:l.target, message:"Broken Markdown link (warning only for base OKF)." });
+  return { root, concepts, indexes, logs, warnings };
+}
+export function parseLogEntries(body) {
+  return markdownSections(body).filter(s=>s.title !== "_preamble").map(s=>({ date:s.title, body:s.body }));
+}
+export function baseConformance(bundle) {
+  const blockers = (bundle.warnings || []).filter(w=>w.level === "error");
+  return { ok: blockers.length === 0, blockers, warnings: (bundle.warnings || []).filter(w=>w.level !== "error") };
+}
+export function geOkfProfile() { return { conceptTypes: GE_OKF_CONCEPT_TYPES, requiredSectionsByType: {}, recommendedSectionsByType: { Claim:["Claim","Authority","Citations"], Capability:["Capability","Tools","Evals"], Tool:["Tool","Source Systems","Confirmation","Idempotency"], Eval:["Eval","Covered Capabilities"] }, semanticRules: [] }; }
