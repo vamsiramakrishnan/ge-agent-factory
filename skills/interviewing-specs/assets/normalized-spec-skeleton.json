@@ -1,0 +1,93 @@
+{
+  "_comment": "Minimal normalized-spec skeleton for the harness interview (see references/harness-interview.md 'Minimum Buildable Contract' and references/spec-shape.md). Replace every <placeholder>, then check with scripts/validate-usecase-spec.mjs — this skeleton itself will NOT pass the quality gates until entities have real column schemas, documents have requiredSections+minimumWordCount, and goldenEvals cover every toolIntent (write-like tools need a refusal eval).",
+  "id": "<kebab-case-use-case-id>",
+  "title": "<Imperative title: Help X do Y before Z>",
+  "department": "<hr|finance|...>",
+  "persona": "<who uses this agent>",
+  "layer": "Layer 3: Custom ADK",
+  "triggerType": "on-demand",
+  "systems": ["<System A>", "<System B>"],
+  "kpis": [{ "metric": "<what improves>", "current": "<baseline>", "target": "<goal>" }],
+  "generationSpec": {
+    "version": 1,
+    "sourceSystems": [
+      {
+        "id": "<system_a_snake_case>",
+        "name": "<System A>",
+        "owns": ["<entity_one>"],
+        "protocol": "<REST API|RFC/BAPI|...>",
+        "localBacking": ["alloydb"],
+        "toolNames": ["query_<system_a>_<entity_one>", "action_<system_a>_<verb>"],
+        "evidence": ["source_system_record"]
+      }
+    ],
+    "entities": [
+      {
+        "name": "<entity_one>",
+        "sourceSystemId": "<system_a_snake_case>",
+        "datastore": "alloydb",
+        "rowCount": 50,
+        "primaryKey": "id",
+        "columns": [
+          { "name": "id", "type": "seq", "required": true },
+          { "name": "status", "type": "enum", "values": ["active", "closed"], "required": true }
+        ]
+      }
+    ],
+    "documents": [
+      {
+        "id": "<policy-or-runbook-id>",
+        "title": "<Document title>",
+        "sourceSystemId": "<system_a_snake_case>",
+        "type": "runbook",
+        "requiredSections": ["<Section the agent must cite>"],
+        "minimumWordCount": 400,
+        "linkedEntities": ["<entity_one>"]
+      }
+    ],
+    "behaviorContract": {
+      "role": "<one-line role of the agent>",
+      "primaryObjective": "<what outcome, for whom, under what constraint>",
+      "inScope": ["<allowed activity>"],
+      "outOfScope": ["<explicitly disallowed activity>"],
+      "toolIntents": [
+        {
+          "name": "query_<system_a>_<entity_one>",
+          "kind": "query",
+          "sourceSystemId": "<system_a_snake_case>",
+          "description": "<what it fetches and why>",
+          "requiredInputs": ["<input_field>"],
+          "produces": ["<output_field>"],
+          "evidenceEmitted": ["source_system_record"]
+        }
+      ],
+      "evidenceRequirements": [
+        {
+          "claim": "<claim the agent makes>",
+          "mustCite": ["<system_a_snake_case>.<entity_one>"],
+          "sourceSystemIds": ["<system_a_snake_case>"]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "<condition that ends automation>",
+          "action": "escalate_to_human",
+          "handoffTarget": "<role/queue>",
+          "rationale": "<why a human must decide>"
+        }
+      ],
+      "refusalRules": ["Never <action> without <evidence/approval>."],
+      "goldenEvals": [
+        {
+          "id": "happy-path-<verb>",
+          "prompt": "<operator prompt exercising the declared tools>",
+          "expectedToolCalls": ["query_<system_a>_<entity_one>"],
+          "mustReferenceEntities": ["<entity_one>"],
+          "mustCiteDocuments": ["<policy-or-runbook-id>"],
+          "expectedBehaviors": ["<observable behavior to grade>"],
+          "forbiddenBehaviors": ["<behavior that fails the eval>"]
+        }
+      ]
+    }
+  }
+}

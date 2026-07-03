@@ -79,6 +79,7 @@ node --check apps/console/src/server/job-store.mjs
 
 ## References
 
+- Read `references/example-session.md` when asked to add a console action/route/button — a worked session (registry check → entry → sentinel test → validation, with real test output) plus the surface-audit failure variant.
 - Read `references/assembly-line-role.md` to understand where this skill fits in the Agent Factory assembly line.
 - Read `references/api-transport-contract.md` before adding console APIs or background jobs.
 - Read `references/ui-operating-model.md` before changing operator-facing UI flows.

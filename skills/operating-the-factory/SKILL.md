@@ -51,3 +51,7 @@ In plain language: this skill does NOT reimplement any station. It reads the cur
 ## Done when
 
 The goal's terminal artifact exists and is verified (spec registered, agent deployed + live-verified, plane green) — or a guard escalated with a recorded reason.
+
+## References
+
+- Read `references/example-session.md` before your first loop — a worked goal ("get one agent to preview, no cloud") run iteration by iteration with real `ge status` / `ge doctor` / `ge pipeline plan` output, a guard escalation, and the dead-daemon failure variant.

@@ -42,3 +42,8 @@ irreversible OR cross-project OR destructive       -> escalate, do not act
 ## Done when
 
 A verdict is returned. On `escalate`, surface the reason and the safe alternative (usually: the self-service installer, or a reversible env/revision change) rather than proceeding.
+
+## References
+
+- Read `references/example-session.md` when an ask trips a gate (live spend, guard caps, `GE_CONFIRM`, readonly) — a worked refusal-and-escalation with the real error texts and the exact wording of a good escalation.
+- Walk `assets/escalation-checklist.md` before any risky action and copy it into the run record — one "yes → escalate" box ends the debate.

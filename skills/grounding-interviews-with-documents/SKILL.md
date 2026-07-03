@@ -34,3 +34,8 @@ In plain language: don't interview from a blank slate when the user has source m
 ## Done when
 
 A registered, evidence-backed agent-spec exists whose claims trace to the uploaded documents, ready for `planning-missions`.
+
+## References
+
+- Read `references/example-session.md` before driving the upload→ground→register flow for the first time — a worked session against the console API with real parser output/notes, the size/type limits, and the parser-unavailable failure variant.
+- Copy `assets/upload-request-example.json` as the request body for `POST /api/interviews/<usecaseId>/documents` — annotated with the server-side limits and supported document kinds.

@@ -50,3 +50,8 @@ installer/build-and-deploy.sh
 ## Done when
 
 The target services run the new image, revisions are Ready, and `managing-access` confirms reachability.
+
+## References
+
+- Read `references/example-session.md` before your first control-plane deploy (or when a revision won't go Ready) — a worked session (scope → guard → Cloud Build → terraform bind → Ready check → report), with the failed-revision variant and how to react without breaking serving traffic.
+- Copy `assets/deploy-record.md` into the run record before starting — the scope/sign-off/tag/verify/rollback checklist a deploy must fill in.

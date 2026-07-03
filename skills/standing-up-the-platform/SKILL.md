@@ -45,3 +45,7 @@ bun tools/ge.mjs mcp doctor          # tool plane + Agent Registry readiness
 ## Done when
 
 `ge doctor` is green for the scope you need, or the remaining blockers are handed to `triaging-runs` with their doctor detail.
+
+## References
+
+- Read `references/example-session.md` when doctor is red and it's unclear which plane to bring up — a worked session (scoped doctor → guard → `mcp deploy` → re-doctor → report), plus the remote-guard refusal variant and how to react to it.
