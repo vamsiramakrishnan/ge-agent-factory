@@ -65,17 +65,20 @@
      prefer `text-secondary`. */
   --color-on-surface-variant: #565e6c;
 
-  /* ─── Status ramp (hand-authored — not part of the generated palette
-     region above; this is the console's own semantic vocabulary, not a
-     cross-app brand color). Every operator-facing state maps to exactly one
-     of these seven hues, each with a vivid "-500" value for dots/fills/icons
-     and a darker "-ink" value for AA text-on-tint. `running` intentionally
-     reuses --color-primary — in this system, blue means "live": it is both
-     the interactive accent and the color of work in progress. `passed`
-     reuses --color-tertiary for the same reason: one green, one meaning.
+  /* ─── Status ramp (generated from packages/design/src/status-ramp.mjs —
+     the same table the `ge` CLI colorizer reads, so status color is ONE
+     identity from TTY to UI; not part of the generated brand-palette region
+     above because this is semantic state vocabulary, not a cross-app brand
+     color). Every operator-facing state maps to exactly one of these seven
+     hues, each with a vivid "-500" value for dots/fills/icons and a darker
+     "-ink" value for AA text-on-tint. `running` intentionally reuses
+     --color-primary — in this system, blue means "live": it is both the
+     interactive accent and the color of work in progress. `passed` reuses
+     --color-tertiary for the same reason: one green, one meaning.
      `synthesized` is not a run status — it flags AI-assisted content (the
      "bring your own system" flow) and is kept visually distinct from the
      status ramp on purpose. ─── */
+  /* BEGIN GENERATED: status-ramp — do not edit; run `bun run docs:tokens` */
   --color-status-queued: #6b7280;
   --color-status-queued-ink: #454c59;
   --color-status-running: var(--color-primary);
@@ -92,6 +95,7 @@
   --color-status-repairing-ink: #0a5f5b;
   --color-accent-synthesized: #7c4fe0;
   --color-accent-synthesized-ink: #5a34a8;
+  /* END GENERATED: status-ramp */
 }
 
 @layer base {

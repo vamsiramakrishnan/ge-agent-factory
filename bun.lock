@@ -9,6 +9,7 @@
         "@ge/agent-resolver": "workspace:*",
         "@ge/agent-spec": "workspace:*",
         "@ge/contracts": "workspace:*",
+        "@ge/design": "workspace:*",
         "@ge/run-ledger": "workspace:*",
         "@ge/runtime": "workspace:*",
         "@ge/std": "workspace:*",

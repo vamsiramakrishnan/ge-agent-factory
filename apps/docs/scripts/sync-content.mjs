@@ -99,6 +99,7 @@ const PAGE_MAP = new Map([
   ["OPERATIONS.md", { dest: "operations/index.md", title: "Operations" }],
   ["MCP.md", { dest: "reference/mcp.md", title: "MCP tools", order: 90 }],
   ["GLOSSARY.md", { dest: "reference/glossary.md", order: 95 }],
+  ["LANGUAGE.md", { dest: "contributing/language.md", title: "The language", order: 25 }],
   ["DESIGN.md", { dest: "contributing/docs-design.md", title: "Docs design system", order: 20 }],
   ["modularization-audit.md", null], // internal audit notes, never published
 ]);

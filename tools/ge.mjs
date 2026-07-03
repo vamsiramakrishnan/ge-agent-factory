@@ -19,12 +19,16 @@
  * group module can import them without a tangle of cross-imports.
  */
 
-import { defineCommand, runMain } from "citty";
+import { defineCommand, runMain, showUsage as cittyShowUsage } from "citty";
 import { resolve } from "node:path";
 import { cfgFrom, common, emit, out, pc } from "./ge/shared.mjs";
 import * as core from "./lib/factory-core.mjs";
 import { init } from "./ge/init.mjs";
 import { cutover, mode, doctor, up, config } from "./ge/orientation.mjs";
+import { capture } from "./ge/capture.mjs";
+import { prove } from "./ge/prove.mjs";
+import { handoff } from "./ge/handoff.mjs";
+import { renderRootUsage } from "./ge/help.mjs";
 import { devex } from "./ge/devex.mjs";
 import { infra } from "./ge/infra.mjs";
 import { images } from "./ge/images.mjs";
@@ -43,42 +47,76 @@ import { ledger } from "./ge/ledger.mjs";
 import { apply } from "./ge/apply.mjs";
 import { shouldPromptForInitProject, GE_INIT_NO_PROJECT_MESSAGE } from "./ge/init.mjs";
 
-// ── root: bare `ge` → status board + next step ────────────────────────────────
+// ── root: bare `ge` → the three-question board + next step ───────────────────
 // citty invokes the root `run` even when a subcommand matches, so only render the
 // board when the first positional is NOT one of our subcommands.
-const SUBCOMMANDS = new Set(["up", "doctor", "init", "cutover", "mode", "devex", "config", "infra", "images", "data", "mcp", "agents", "pipeline", "fleet", "runs", "autopilot", "mission", "journey", "daemon", "runtime", "state", "ledger", "apply"]);
+const SUBCOMMANDS = new Set(["capture", "prove", "handoff", "status", "up", "doctor", "init", "cutover", "mode", "devex", "config", "infra", "images", "data", "mcp", "agents", "pipeline", "fleet", "runs", "autopilot", "mission", "journey", "daemon", "runtime", "state", "ledger", "apply"]);
+
+// The board answers three questions before anything else: where am I on
+// capture → prove → handoff, what blocks me, and the exact next command.
+// The pre-existing mode/planes report stays intact below an Operate divider.
+async function statusBoardResult(args) {
+  const cfg = cfgFrom(args);
+  const res = core.statusBoard(cfg);
+  const goldenPath = await core.goldenPathPosition(cfg, { haveConfig: !!res.project, operateNext: res.next });
+  return { ...res, goldenPath };
+}
+
+function renderStatusBoard(r) {
+  out(pc.bold("\nGE Agent Factory"));
+  const gp = r.goldenPath;
+  if (gp) {
+    const stageWord = (stage) => stage.done ? pc.green(stage.id) : stage.id === gp.current ? pc.bold(pc.cyan(stage.id)) : pc.dim(stage.id);
+    const currentDetail = gp.stages.find((stage) => stage.id === gp.current)?.detail;
+    out(`  ${gp.stages.map(stageWord).join(pc.dim(" → "))}${currentDetail ? pc.dim(`   (${currentDetail})`) : ""}`);
+    out(`  blocker   ${gp.blocker ? pc.red(gp.blocker) : pc.dim("none")}`);
+    out(`  next      ${pc.bold(pc.cyan(gp.next))}`);
+  }
+  // First run (no project configured): orient before reporting. Three
+  // steps, each with an honest effort estimate — the status board's plane
+  // detail only makes sense once there is a project to report on.
+  if (!r.project) {
+    out(pc.dim("\n  Turn an enterprise use case into a generated, tested, deployable agent."));
+    out(pc.bold("\n  First run — three steps, all local, no cloud credentials:"));
+    out(`  1. ${pc.cyan("mise run setup")}      ${pc.dim("toolchain + daemon (one time, ~5-10m)")}`);
+    out(`  2. ${pc.cyan("ge init")}             ${pc.dim("discover config, write .ge.json (~30s)")}`);
+    out(`  3. ${pc.cyan("ge prove")}            ${pc.dim("first proof: doctor → canary agent build (ge devex smoke is the operator spelling)")}`);
+    out(pc.dim("\n  then: ge capture   (capture your own agent contract in the console)"));
+    out(pc.dim("  docs: docs/start/getting-started.md · ge --help for all commands"));
+    return;
+  }
+  out(pc.dim("\n  ── Operate ─────────────────────────────────────────────"));
+  out(`  mode      ${pc.cyan(r.mode)}  ${pc.dim(r.clientDoes)}`);
+  out(`  project   ${pc.cyan(r.project)}`);
+  out(`  app       ${r.app ? pc.dim(r.app) : pc.yellow("<unset>")}`);
+  out("");
+  for (const p of r.planes) out(`  ${p.up ? pc.green("✓") : pc.yellow("○")} ${p.name.padEnd(12)} ${pc.dim(p.detail)}`);
+  out(`\n  next: ${pc.bold(pc.cyan(r.next))}`);
+  out(pc.dim("  (ge --help for all commands · ge mode to switch local/remote · ge pipeline status for the pipeline)"));
+}
+
+// `ge status` — the board as a first-class verb (the bare spelling stays).
+const status = defineCommand({
+  meta: { name: "status", description: "Where am I? Position on capture → prove → handoff, the current blocker, and the exact next command" },
+  args: { ...common },
+  async run({ args }) {
+    const res = await statusBoardResult(args);
+    emit(args, res, renderStatusBoard);
+  },
+});
+
 const root = defineCommand({
   meta: { name: "ge", description: "GE Agent Factory — set up · stand up · run agents. Bare `ge` shows status + next step." },
   args: { ...common },
-  run({ args }) {
+  async run({ args }) {
     const firstPositional = process.argv.slice(2).find((a) => !a.startsWith("-"));
     if (firstPositional && SUBCOMMANDS.has(firstPositional)) return; // a subcommand handles it
-    const res = core.statusBoard(cfgFrom(args));
-    emit(args, res, (r) => {
-      out(pc.bold("\nGE Agent Factory"));
-      // First run (no project configured): orient before reporting. Three
-      // steps, each with an honest effort estimate — the status board's plane
-      // detail only makes sense once there is a project to report on.
-      if (!r.project) {
-        out(pc.dim("  Turn an enterprise use case into a generated, tested, deployable agent."));
-        out(pc.bold("\n  First run — three steps, all local, no cloud credentials:"));
-        out(`  1. ${pc.cyan("mise run setup")}      ${pc.dim("toolchain + daemon (one time, ~5-10m)")}`);
-        out(`  2. ${pc.cyan("ge init")}             ${pc.dim("discover config, write .ge.json (~30s)")}`);
-        out(`  3. ${pc.cyan("ge devex smoke")}      ${pc.dim("prove the pipeline: doctor → canary agent build")}`);
-        out(pc.dim("\n  then: ge pipeline status   (the full pipeline, stage by stage)"));
-        out(pc.dim("  docs: docs/start/getting-started.md · ge --help for all commands"));
-        return;
-      }
-      out(`  mode      ${pc.cyan(r.mode)}  ${pc.dim(r.clientDoes)}`);
-      out(`  project   ${pc.cyan(r.project)}`);
-      out(`  app       ${r.app ? pc.dim(r.app) : pc.yellow("<unset>")}`);
-      out("");
-      for (const p of r.planes) out(`  ${p.up ? pc.green("✓") : pc.yellow("○")} ${p.name.padEnd(12)} ${pc.dim(p.detail)}`);
-      out(`\n  next: ${pc.bold(pc.cyan(r.next))}`);
-      out(pc.dim("  (ge --help for all commands · ge mode to switch local/remote · ge pipeline status for the pipeline)"));
-    });
+    const res = await statusBoardResult(args);
+    emit(args, res, renderStatusBoard);
   },
   subCommands: {
+    // the golden path
+    capture, prove, handoff, status,
     // lifecycle
     up, doctor, init, cutover, mode, devex, config,
     // the consolidated orchestration surface
@@ -91,6 +129,14 @@ const root = defineCommand({
     apply,
   },
 });
+
+// Root `--help` renders grouped (Golden path first, Operate after, aliases
+// last) — progressive disclosure without hiding a single command. Subcommand
+// help stays citty's own renderer.
+async function showGroupedUsage(cmd, parent) {
+  if (cmd !== root) return cittyShowUsage(cmd, parent);
+  out(renderRootUsage(root));
+}
 
 // The full citty command tree, exported so tooling (tools/gen-cli-reference.mjs)
 // can walk it without spawning the CLI. Importing this module never runs the
@@ -112,5 +158,5 @@ const __isEntryPoint = (() => {
 })();
 
 if (__isEntryPoint) {
-  runMain(root).catch((e) => { process.stderr.write(pc.red(`✗ ${e?.message || e}`) + "\n"); process.exit(1); });
+  runMain(root, { showUsage: showGroupedUsage }).catch((e) => { process.stderr.write(pc.red(`✗ ${e?.message || e}`) + "\n"); process.exit(1); });
 }

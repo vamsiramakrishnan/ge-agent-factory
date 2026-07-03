@@ -61,6 +61,40 @@ Every `ge` command accepts these shared flags (omitted from the per-command tabl
 
 GE Agent Factory — set up · stand up · run agents. Bare `ge` shows status + next step.
 
+### `ge capture`
+
+Capture an agent contract: opens the console Interview (starts the console if needed); --from registers an existing contract file
+
+| Flag | Type | Description |
+|---|---|---|
+| `--from` | string | Path to a captured contract (agent-spec.json) to register with the catalog |
+
+### `ge prove`
+
+Prove the current contracts end to end: fresh machine → health check + first agent build; agents built already → rebuild their proof. --watch re-proves on contract change
+
+| Flag | Type | Description |
+|---|---|---|
+| `--id` | string | Prove one use-case/workspace id (default: everything built, or the catalog canary when fresh) |
+| `--target` | string | Stop at this stage (default: validated when fresh, the build boundary otherwise) |
+| `--force` | boolean | Re-prove from scratch (wipes matching local workspaces first) |
+| `--vertex` | boolean | Use Vertex-backed stages when the target reaches them |
+| `--warm` | boolean | Pre-warm the shared uv cache before running |
+| `--watch` | boolean | Watch contract sources and re-prove on change (local, pure computation — safe to loop) |
+
+### `ge handoff`
+
+Hand off proven agents to a deploy target (supported today: agents-cli → Agent Engine → Gemini Enterprise)
+
+| Flag | Type | Description |
+|---|---|---|
+| `<target>` | positional | Deploy target (default agents-cli) |
+| `--ids` | string | Comma-separated local workspace ids (default: all built locally) |
+
+### `ge status`
+
+Where am I? Position on capture → prove → handoff, the current blocker, and the exact next command
+
 ### `ge up`
 
 Stand up the platform: infra + data + tool planes → unified doctor (--infra/--data/--mcp for one)

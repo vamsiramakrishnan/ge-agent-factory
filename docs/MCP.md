@@ -23,14 +23,29 @@ Run standalone: `bun tools/mcp-server.mjs` (speaks MCP over stdio).
 
 ## Tools
 
+The golden path first — the three verbs a model needs to take a contract from
+capture to a deployed agent. Each delegates to the same core function as its
+CLI twin (`ge capture` / `ge prove` / `ge handoff`):
+
+| Tool | Args | Notes |
+|---|---|---|
+| `factory_capture` | `from?` | Ensures the console is running and returns the Interview deep link for contract capture; `from` registers an existing `agent-spec.json`. Starts a local dev server if needed. |
+| `factory_prove` | `id?`, `target?`, `force?` | **Mutates (local)** — proves the current contracts: fresh machine → health check + first validated workspace; workspaces present → rebuild their proof to the build boundary. |
+| `factory_handoff` | `target?`, `ids?` | **Mutates** — hands proven local builds to a deploy target (`agents-cli` today: deploy → register → publish). Unsupported targets return a structured what/where/why/fix error. |
+
+Operator tools — the same machinery under its operator names:
+
 | Tool | Args | Notes |
 |---|---|---|
 | `factory_list_usecases` | `department?`, `search?`, `limit?` | Browse the 363-use-case catalog. Read-only, offline. |
 | `factory_doctor` | — | Preflight (APIs/IAM/IAP/memory/health) with fixes. Read-only. |
 | `factory_status` | `noProxy?` | Stage tally + per-run status for submitted runs. Read-only. |
 | `factory_logs` | `runId`, `stage?`, `item?` | A stage's result JSON (errors, exit codes, build log URL). Read-only. |
-| `factory_provision` | `scope: canary\|all`, `dept?`, `ids?`, `concurrency?`, `force?`, `noProxy?` | **Mutates** — submits agents through the factory. |
-| `factory_sync` | `force?`, `push?`, `commit?` | **Mutates** — pulls generated workspaces into `generated-agents/`, commits. |
+| `factory_provision` | `scope: canary\|all`, `dept?`, `ids?`, `concurrency?`, `force?`, `noProxy?`, `local?`, `vertex?`, `target?`, `limit?` | **Mutates** — builds agents (locally with `local`, or through the cloud factory). |
+| `factory_sync` | `force?`, `push?`, `commit?`, `local?`, `remote?`, `create?` | **Mutates** — syncs generated agent code to/from git. |
+| `factory_ship` | `ids?`, `startStage?`, `targetStage?`, `noProxy?` | **Mutates** — uploads locally-built workspaces and runs deploy→register→publish remotely (what `factory_handoff` delegates to). |
+| `factory_mcp_deploy` | — | **Mutates** — deploys the per-department MCP services (tool plane). |
+| `factory_mcp_doctor` | — | Tool-plane health. Read-only. |
 
 Every tool returns the core's structured result as JSON text. Errors come back
 as `isError` content rather than crashing the server.
@@ -45,8 +60,13 @@ project, bucket, and service identities to work with.
 
 One engine, two surfaces: see
 [`tools/README.md`](https://github.com/vamsiramakrishnan/ge-agent-factory/blob/main/tools/README.md).
-Read-only tools (`list_usecases`, `doctor`, `status`, `logs`) are safe to call
-freely; `provision` and `sync` mutate and should be gated by the calling harness.
+The tool surface (names, descriptions, schemas) is derived from the `mcp`
+blocks in `tools/lib/ge-command-registry.mjs` — the same registry the CLI and
+console read — and frozen by `tools/mcp-registry-parity.test.mjs`.
+Read-only tools (`list_usecases`, `doctor`, `status`, `logs`, `mcp_doctor`)
+are safe to call freely; `capture` starts a local dev server; `prove` runs
+local builds; `handoff`, `provision`, `ship`, `sync`, and `mcp_deploy` mutate
+and should be gated by the calling harness.
 
 `factory_mcp_deploy` / `factory_mcp_doctor` operate the **tool plane** below.
 

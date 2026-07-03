@@ -20,6 +20,7 @@ import { parseConcurrency } from "./concurrency.mjs";
 import { runDocsCheck } from "./docs-check.mjs";
 import { createFactoryPlan, runFactoryPlan, removeWorkspace } from "./factory-local-ops.mjs";
 import { STATE_PATHS, displayStatePath } from "./state-paths.mjs";
+import { DxError } from "./errors/dx-error.mjs";
 import {
   LOCAL_PROJECTS,
   LOCAL_PROJECT_STORE,
@@ -277,7 +278,13 @@ export function createProvisionOps({
 
   // `ge mode local|remote`: set the operating mode (persisted in .ge.json).
   function setMode(mode) {
-    if (!["local", "remote"].includes(mode)) throw new Error(`mode must be 'local' or 'remote' (got '${mode}')`);
+    if (!["local", "remote"].includes(mode)) {
+      throw new DxError(`mode must be 'local' or 'remote' (got '${mode}')`, {
+        where: "config: mode (.ge.json)",
+        why: "the operating mode decides whether builds run on this machine or in the cloud factory — only those two exist",
+        fix: "ge mode local",
+      });
+    }
     const existing = readJson(configPath, {});
     writeJson(configPath, { ...existing, mode });
     return { mode };
@@ -473,7 +480,13 @@ export function createProvisionOps({
     if (!cfg.project) throw new Error("No project. Run `ge init`.");
     if (!cfg.bucket) throw new Error("No artifact bucket in config.");
     if (!cfg.geAppId) throw new Error("geAppId unset. Add it to .ge.json or set GEMINI_ENTERPRISE_APP_ID.");
-    if (!existsSync(LOCAL_PROJECTS)) throw new Error(`no local workspaces at ${LOCAL_PROJECTS} — run \`ge agents build --local\` first.`);
+    if (!existsSync(LOCAL_PROJECTS)) {
+      throw new DxError(`no local workspaces at ${LOCAL_PROJECTS} — run \`ge agents build --local\` first.`, {
+        where: `workspaces: ${LOCAL_PROJECTS}`,
+        why: "shipping hands off locally-built agents, and nothing has been built on this machine yet",
+        fix: "ge prove",
+      });
+    }
     let dirs = readdirSync(LOCAL_PROJECTS).filter((d) => { try { return statSync(join(LOCAL_PROJECTS, d)).isDirectory(); } catch { return false; } });
     if (ids) {
       const requested = parseList(String(ids));
@@ -482,7 +495,13 @@ export function createProvisionOps({
       }));
       dirs = dirs.filter((d) => resolved.has(d));
     }
-    if (!dirs.length) throw new Error("no matching local workspaces to ship.");
+    if (!dirs.length) {
+      throw new DxError("no matching local workspaces to ship.", {
+        where: "workspaces: local workspace registry",
+        why: "the ids requested do not match any locally-built workspace",
+        fix: "ge agents resume",
+      });
+    }
 
     const conc = parseConcurrency(concurrency);
     const results = [];

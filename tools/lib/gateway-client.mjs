@@ -7,6 +7,7 @@ import { spawn } from "node:child_process";
 import { createConnection } from "node:net";
 import pRetry, { AbortError } from "p-retry";
 import { findOpenPort } from "./net.mjs";
+import { DxError } from "./errors/dx-error.mjs";
 
 const noop = () => {};
 
@@ -148,7 +149,13 @@ export function createGatewayClient({ run } = {}) {
     // is the authenticated, tunnel-free path.
     const direct = cfg.gatewayTransport === "direct";
     if (noProxy || direct) {
-      if (!cfg.gatewayUrl) throw new Error("No gateway URL. Run `ge init` or pass --gatewayUrl.");
+      if (!cfg.gatewayUrl) {
+        throw new DxError("No gateway URL. Run `ge init` or pass --gatewayUrl.", {
+          where: "config: gatewayUrl (.ge.json)",
+          why: "direct/no-proxy transport calls the cloud factory gateway by URL, and none is configured",
+          fix: "ge init",
+        });
+      }
       const headers = direct ? gatewayAuthHeader(run, cfg, { log }) : {};
       if (direct) log(`direct gateway ${cfg.gatewayUrl} (no proxy)`);
       return fn(cfg.gatewayUrl, { headers });

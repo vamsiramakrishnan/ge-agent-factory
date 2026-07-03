@@ -74,6 +74,8 @@ returns `202 { jobId, command }`; stream progress via
 <!-- BEGIN GENERATED: ge-console-commands — do not edit; run `bun run docs:console-api` -->
 | Route | CLI | Purpose | Risk | Preflight requires |
 |---|---|---|---|---|
+| `POST /api/ge/prove` | `ge prove` | Prove contracts end to end: fresh machine → health check + first agent build; agents built already → rebuild their proof | `starts-local-workloads` | `node`, `uv` on PATH · local toolchain |
+| `POST /api/ge/handoff` | `ge handoff` | Hand proven agents to a deploy target (agents-cli → Agent Engine → Gemini Enterprise) | `mutates-cloud` | `gcloud` on PATH · `.ge.json`: project, gatewayUrl, dataBucket · cloud auth · tool plane deployed · BigQuery API (hard) · ship handoff wiring |
 | `POST /api/ge/up` | `ge up` | Provision infra, data, and tool planes | `mutates-cloud` | `gcloud`, `terraform` on PATH · `.ge.json`: project, geAppId · cloud auth · Terraform root · writable `.ge.json` |
 | `POST /api/ge/data/up` | `ge data up` | Apply Terraform for shared stores and merge coordinates into .ge.json | `mutates-cloud` | `gcloud`, `terraform` on PATH · `.ge.json`: project, geAppId · cloud auth · Terraform root · writable `.ge.json` · BigQuery API (hard) |
 | `POST /api/ge/mcp/deploy` | `ge mcp deploy` | Deploy per-department MCP services | `mutates-cloud` | `gcloud` on PATH · `.ge.json`: project, serviceAccount, dataBucket · cloud auth · writable `.ge.json` |
