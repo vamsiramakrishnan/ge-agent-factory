@@ -17,7 +17,7 @@ These stages touch cloud resources or publishing surfaces.
 - Do not skip deploy plan.
 - Do not claim publish success from plan artifact alone.
 - Do not run local repair against remote-only state.
-- For local builds, use `ge agents ship` to hand off post-boundary work.
+- For local builds, use `ge handoff` to hand off post-boundary work.
 - For remote builds, observe factory stage artifacts and run state.
 
 ## Proof Artifacts

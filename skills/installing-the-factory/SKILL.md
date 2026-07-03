@@ -99,10 +99,6 @@ mise run skills-install                          # symlink all skills → ~/.age
 AGENTS_SKILLS_DIR=~/.claude/skills mise run skills-install   # same, for Claude Code's skill directory
 ```
 
-See `references/machine-setup.md` for what each phase provisions, the
-environment variables that redirect installs, sandbox/proxy notes, and
-uninstall.
-
 ## Common mistakes
 
 - Declaring success after `mise run setup` prints "Setup done." — the daemon
@@ -125,3 +121,9 @@ uninstall.
 - `bun tools/ge.mjs doctor --local` reports the local toolchain green.
 - `bun tools/ge.mjs prove` passes its first proof.
 - The operator (human or assistant) has been pointed at `operating-the-factory` for what comes next.
+
+## References
+
+- Read `references/example-session.md` first on a bare machine — the whole bootstrap conversation (detect → provision → verify → prove) with real verifier output, including the phase-check failure variant and how to react to it.
+- Read `references/machine-setup.md` for what each phase provisions, the environment variables that redirect installs (`BIN`, `GE_STATE_ROOT`, …), PATH/sandbox/proxy notes, and uninstall.
+- Run `scripts/verify-install.mjs` (plain node, no repo deps) whenever install state is in doubt — one ✓/✗/○ line per phase with the exact fix, `--json` for machines.

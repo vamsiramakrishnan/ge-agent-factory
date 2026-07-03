@@ -10,7 +10,7 @@ Workspace gates are artifact-driven. Prefer reading JSON artifacts before editin
 | `mock_systems/usecase-spec.json` | source spec for expected behavior |
 | `artifacts/spec-code-trace.json` | spec-to-code coverage and gaps |
 | `artifacts/validation-report.json` | validation summary, readiness, tests |
-| `artifacts/checking-workspaces.json` | gate blockers and repair tasks |
+| `artifacts/workspace-doctor.json` | gate blockers and repair tasks (doctor report) |
 | `artifacts/workspace-repair.json` | repair attempts and final doctor result |
 | `artifacts/promotion-packet.json` | promotion readiness evidence |
 | `artifacts/deploy-plan.json` | deployment plan and topology requirements |

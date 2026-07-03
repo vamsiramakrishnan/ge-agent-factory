@@ -19,34 +19,34 @@ In plain language: the harness should not directly reimplement the factory. It s
 
 ## Workflow
 
-1. Prefer mission graph output for target, selection, data dependencies, and resume.
-2. Use `ge mission plan` for end-to-end work that includes data, simulators, factory, or Autopilot.
+1. Prefer pipeline graph output for target, selection, data dependencies, and resume.
+2. Use `ge pipeline plan` for end-to-end work that includes data, simulators, factory, or Autopilot.
 3. Use direct `factory plan` only for a narrow factory-only diagnosis.
 4. Run factory commands with explicit target and continuation policy.
-4. Parse JSON output and inspect generated artifacts.
-5. If a harness refine stage ran, inspect its artifact before validation.
-6. Move to workspace gates only when workspace/data/package artifacts exist.
+5. Parse JSON output and inspect generated artifacts.
+6. If a harness refine stage ran, inspect its artifact before validation.
+7. Move to workspace gates only when workspace/data/package artifacts exist.
 
 ## Commands
 
-Mission plan for a normal factory run:
+Pipeline plan for a normal factory run (local, no daemon needed):
 
 ```bash
-bun tools/ge.mjs mission plan --scenario <usecase_id> --ids <agent_ids> --target-stage preview --json
+bun tools/ge.mjs pipeline plan --scenario <usecase_id> --ids <agent_ids> --target-stage preview --json
 ```
 
-Mission run when the graph should own data, factory, and convergence:
+Pipeline run when the graph should own data, factory, and convergence (needs the daemon):
 
 ```bash
 bun tools/ge.mjs daemon start
-bun tools/ge.mjs mission run --scenario <usecase_id> --ids <agent_ids> --target-stage preview --with-factory
+bun tools/ge.mjs pipeline run --scenario <usecase_id> --ids <agent_ids> --target-stage preview --with-factory
 ```
 
-Mission status and resume:
+Pipeline status and resume:
 
 ```bash
-bun tools/ge.mjs mission status <mission_task_id> --json
-bun tools/ge.mjs mission resume <mission_task_id>
+bun tools/ge.mjs pipeline status <pipeline_task_id> --json
+bun tools/ge.mjs pipeline resume <pipeline_task_id>
 ```
 
 Plan:
@@ -67,13 +67,15 @@ Harness task:
 node apps/factory/src/cli.js agent run --workspace-dir <workspace-dir> --message "<task>" --agent antigravity-sdk
 ```
 
-Summarize a factory run artifact:
+Summarize a factory run artifact (the run writes `factory-run-<stamp>.json` under `.ge/factory/`):
 
 ```bash
-node skills/running-factory/scripts/summarize-factory-run.mjs .ge/factory/factory-run.json
+node skills/running-factory/scripts/summarize-factory-run.mjs .ge/factory/factory-run-<stamp>.json
 ```
 
 ## References
 
+- Read `references/example-session.md` first if this is your first factory run — a worked session (orient → pipeline plan → factory plan → factory run → summarize → hand-off), with real output and a failed-work-item variant.
 - Read `references/cli-harness-loop.md` before automating CLI calls.
 - Read `references/assembly-line-role.md` to understand where this skill fits in the line.
+- Use `assets/factory-run-example.json` as the reference shape of a `ge.agent_factory.run` artifact — what `factory run` writes and what scripts/summarize-factory-run.mjs parses (smoke it against this file).

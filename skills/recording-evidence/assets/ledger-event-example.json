@@ -1,0 +1,38 @@
+{
+  "_comment": "Copy this as the starting point for a new Evidence Ledger event. Every field shown under `Required` in references/ledger-contract.md is filled in; the rest (run, evidence, causality, labels) is optional but is what makes rollups and upstream-fix detection work. Must pass scripts/validate-ledger-event.mjs before being appended anywhere.",
+  "id": "evt_run-20260703-0407_blocker_001",
+  "type": "blocker.detected",
+  "ts": "2026-07-03T06:02:11.000Z",
+  "subject": { "kind": "workspace", "id": "ws-benefits-agent" },
+  "run": {
+    "missionId": "mission_hr_q3",
+    "factoryRunId": "run-20260703-0407",
+    "autopilotRunId": null,
+    "stage": "validated"
+  },
+  "mode": { "name": "local", "capability": "local_doctor_repair" },
+  "actor": { "kind": "harness", "id": "antigravity-sdk" },
+  "evidence": [
+    {
+      "kind": "artifact",
+      "path": ".ge/factory/projects/ws-benefits-agent/artifacts/validation-report.json",
+      "uri": null,
+      "sha256": null
+    }
+  ],
+  "outcome": {
+    "status": "blocked",
+    "blockers": [
+      {
+        "id": "agent:model_is_gemini_3_5_flash",
+        "message": "agent.py uses model='gemini-3.5-flash' (found gemini-2.0-flash)"
+      }
+    ],
+    "repairActions": []
+  },
+  "causality": {
+    "parentEventIds": [],
+    "correlationId": "ws-benefits-agent:validated"
+  },
+  "labels": { "department": "hr", "targetStage": "previewed" }
+}
