@@ -47,6 +47,24 @@
         "managing-access"
       ]
     },
+    "driving-live-proof": {
+      "triggers": [
+        "live proof",
+        "drive the agent",
+        "streamassist",
+        "stream assist",
+        "cassette",
+        "live bench",
+        "ttft",
+        "responder identity",
+        "live transcript",
+        "evalset replay"
+      ],
+      "composes": [
+        "running-release",
+        "guarding-the-factory"
+      ]
+    },
     "grounding-interviews-with-documents": {
       "triggers": [
         "brd",

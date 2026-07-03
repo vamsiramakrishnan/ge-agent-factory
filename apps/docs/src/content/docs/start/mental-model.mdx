@@ -18,7 +18,7 @@ serves one of those five verbs.
 | **Compile** | Materialize an **<a href="/ge-agent-factory/reference/glossary/#enterprise-agent-contract" title="The versioned, machine-readable statement of what an agent may do and what world it operates in — materialized today as the use-case spec (usecase-spec.json: behaviorContract + generationSpec) with a portable Markdown twin (the OKF bundle).">Enterprise Agent Contract</a>**: the machine-readable statement of role, scope, tools, evidence rules, escalation and refusal rules, plus the world the agent operates in | The use-case spec (`generationSpec` + `behaviorContract`) and its [portable Markdown twin](/ge-agent-factory/concepts/enterprise-agent-contract/#the-contracts-portable-form) |
 | **Generate** | Emit everything the contract implies: ADK agent code, tools, fixture data, source-system simulations, smoke tests, eval suites | `ge prove` / `ge agents build` (one <a href="/ge-agent-factory/reference/glossary/#workspace" title="The on-disk folder for one generated agent (.ge/factory/workspaces/workspace-id/), with a workspace.json manifest describing what's in it.">workspace</a> per contract) |
 | **Prove** | Show — not claim — that the generated agent honors the contract | `ge prove`: evals, the <a href="/ge-agent-factory/reference/glossary/#spec-to-code-trace" title="The automated check that verifies the code the factory generated actually matches what the spec asked for; one of the inputs the Promotion Gate reads.">spec-to-code trace</a>, verify-stage review/refine verdicts, the <a href="/ge-agent-factory/reference/glossary/#promotion-gate" title="An automated pass/fail check that runs right before deploy and refuses to ship a workspace whose validation report, spec-to-code trace, or harness verdicts (review/refine) haven't cleared their bar.">promotion gate</a> |
-| **Hand off** | Give the proven agent to the layer below: <a href="/ge-agent-factory/reference/glossary/#agents-cli" title="A lower-level command-line tool (from the google-agents-cli Python package) that actually scaffolds and builds real Google ADK (Agent Development Kit) Python projects — the pyproject.toml, the agent code skeleton, and the eval harness format.">agents-cli</a> → ADK Agent Engine → Gemini Enterprise, in your own Google Cloud project | `ge handoff agents-cli` (operator spelling: `ge agents ship`) |
+| **Hand off** | Give the proven agent to the layer below: <a href="/ge-agent-factory/reference/glossary/#agents-cli" title="A lower-level command-line tool (from the google-agents-cli Python package) that actually scaffolds and builds real Google ADK (Agent Development Kit) Python projects — the pyproject.toml, the agent code skeleton, and the eval harness format.">agents-cli</a> → ADK Agent Engine → Gemini Enterprise, in your own Google Cloud project | `ge handoff agents-cli` |
 
 :::note
 `capture`, `prove`, and `handoff` are first-class commands as well as
@@ -26,7 +26,7 @@ concepts: `ge capture` → `ge prove` → `ge handoff agents-cli` is the
 golden path, and bare `ge` reports where you are on it. What remains on
 the [Roadmap section of the
 README](https://github.com/vamsiramakrishnan/ge-agent-factory#roadmap-the-golden-path):
-capture that lives entirely in the terminal, and more <a href="/ge-agent-factory/reference/glossary/#handoff" title="The factory's release act: giving a locally proven workspace to the layer below — agents-cli → ADK Agent Engine → Gemini Enterprise — via ge agents ship, which runs only the post-boundary stages (load_data → deploy_runtime → register_tools → publish_enterprise).">handoff</a> targets.
+capture that lives entirely in the terminal, and more <a href="/ge-agent-factory/reference/glossary/#handoff" title="The factory's release act: giving a locally proven workspace to the layer below — agents-cli → ADK Agent Engine → Gemini Enterprise — via ge handoff agents-cli, which runs only the post-boundary stages (load_data → deploy_runtime → register_tools → publish_enterprise).">handoff</a> targets.
 :::
 
 
@@ -72,11 +72,12 @@ same workspace crosses the boundary unchanged — simulated backends simply
 give way to governed cloud services.
 
 <details>
-<summary>Operator spelling / under the hood</summary>
+<summary>Under the hood</summary>
 
 The two sides are selected by **mode** (`ge mode local` / `ge mode remote`,
-persisted in `.ge.json`), and `ge handoff agents-cli` delegates to
-`ge agents ship`.
+persisted in `.ge.json`); `ge handoff agents-cli` tars and uploads each
+proven workspace, then runs only the post-boundary release stages in the
+cloud.
 
 </details>
 
