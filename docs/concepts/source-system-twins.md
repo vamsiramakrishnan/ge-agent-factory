@@ -14,7 +14,7 @@ more — realistic enough that a generated agent behaves as if it were wired
 into the real system, without touching it.
 
 <p align="center">
-  <img src="../assets/diagrams/signature-pipeline-source-system-twins.svg" alt="signature pipeline zoomed to source-system twins, lit; generate produces twins which feed into prove, with the rest of the pipeline shown dimmed for context" width="700">
+  <img src="../assets/diagrams/signature-pipeline-source-system-twins.svg" alt="the signature capture-to-handoff diagram zoomed to source-system twins, lit; generate produces twins which feed into prove, with the rest of the flow shown dimmed for context" width="700">
 </p>
 
 ## Why they exist
@@ -54,7 +54,7 @@ redeploy, no new code:
   <img src="../assets/diagrams/byo-synthesis.svg" alt="description, samples, or OpenAPI to sketch to contract to seed to overlay" width="320">
 </p>
 
-The synthesis pipeline (`mcp-service/synthesis.py`) goes **sketch** (compact
+The synthesis flow (`mcp-service/synthesis.py`) goes **sketch** (compact
 intermediate: collections, keys, state machines) → **contract** (explicit
 tool bindings, workflows, projections — no naming-convention guessing) →
 **seed** (referentially consistent rows, plus scenario-coverage rows so
@@ -71,7 +71,7 @@ an operation over the agent's per-agent store — and wraps every result in a
 **source-system envelope**: source system id, evidence kind, audit trail.
 
 <p align="center">
-  <img src="../assets/diagrams/simulator-backend-flow.svg" alt="agent switches between local fixture files and the MCP tool plane, which wraps results in a source-system envelope" width="800">
+  <img src="../assets/diagrams/simulator-backend-flow.svg" alt="agent switches between local fixture files and the MCP tool services, which wrap results in a source-system envelope" width="800">
 </p>
 
 That envelope is exactly what the agent's evidence-capture callback records
@@ -85,9 +85,18 @@ switch is documented in
 
 ## Where they appear
 
-- **CLI:** twins are generated and seeded during `ge agents build`;
-  `ge pipeline run` includes simulator seed/validate steps; pack tooling
-  (scaffold, validate, seed) is under `apps/factory/scripts/`.
+- **CLI:** twins are generated and seeded during `ge prove` /
+  `ge agents build`; the end-to-end build & deploy flow includes simulator
+  seed/validate steps; pack tooling (scaffold, validate, seed) is under
+  `apps/factory/scripts/`.
+
+  <details>
+  <summary>Operator spelling</summary>
+
+  The end-to-end flow with the simulator seed/validate steps is
+  `ge pipeline run`.
+
+  </details>
 - **Console:** the systems catalog and BYO synthesis UI (`POST
   /api/systems/synthesize`); simulator checks surface in **Readiness**.
 - **Generated artifacts:** `fixtures/` (offline data), `mcp-tools.json`

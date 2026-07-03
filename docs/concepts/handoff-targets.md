@@ -14,7 +14,7 @@ Engine** (the runtime), and **Gemini Enterprise** (the end-user surface).
 The factory compiles and proves; the targets build, run, and serve.
 
 <p align="center">
-  <img src="../assets/diagrams/signature-pipeline-handoff-targets.svg" alt="signature pipeline zoomed to hand off, lit; the passport crosses the build boundary via a thick edge into agents-cli, ADK, and Gemini Enterprise, with the rest of the pipeline shown dimmed for context" width="700">
+  <img src="../assets/diagrams/signature-pipeline-handoff-targets.svg" alt="the signature capture-to-handoff diagram zoomed to hand off, lit; the passport crosses the build boundary via a thick edge into agents-cli, ADK, and Gemini Enterprise, with the rest of the flow shown dimmed for context" width="700">
 </p>
 
 ## Why the boundary exists
@@ -33,7 +33,7 @@ the evals, and the proof.
 |---|---|---|
 | **agents-cli** | a complete ADK Python project: `app/agent.py`, `app/tools.py`, `pyproject.toml`, tests, evalsets — plus `agents-cli-manifest.yaml` naming the deploy | the workspace itself |
 | **ADK Agent Engine** (Agent Runtime) | the deployed agent, under its per-agent runtime identity | `deployment_target: agent_runtime` in the manifest; `deploy_runtime` stage |
-| **Agent Registry** | the agent's registration and resolvable toolsets (modes `adk`, `mcp`, `a2a`) | `register_tools` stage |
+| **Agent Registry** | the agent's registration and resolvable toolsets (`adk`, `mcp`, `a2a`) | `register_tools` stage |
 | **Gemini Enterprise** | the published agent your business users talk to | `publish_enterprise` stage |
 
 ## Example — a generated workspace is an agents-cli project
@@ -54,7 +54,8 @@ tool traces to a contract intent. The full anatomy is in
 
 ## The handoff itself
 
-`ge agents ship` is the handoff command: it takes workspaces that were built
+`ge handoff agents-cli` is the handoff command (it delegates to
+`ge agents ship`): it takes workspaces that were built
 and proven locally and runs only the post-boundary stages in your Google
 Cloud project —
 
@@ -65,13 +66,13 @@ load_data → deploy_runtime → poll_runtime → register_tools → publish_ent
 — loading per-agent data stores, deploying to Agent Engine (via
 `agents-cli deploy` under the hood), registering tools, publishing to
 Gemini Enterprise, and verifying live access. The cloud consumes the
-prebuilt workspace; it never regenerates. In remote mode, `ge agents build`
-runs the same stages end to end in the cloud instead.
+prebuilt workspace; it never regenerates. When you opt to build in the
+cloud instead, `ge agents build` runs the same stages end to end there.
 
 One switch makes the same code work on both sides of the line: the generated
 tools read `GE_DATA_BACKEND` and present identical tool names and result
-envelopes whether backed by local fixtures or the cloud MCP tool plane — so
-the agent that was proven is the agent that ships.
+envelopes whether backed by local fixtures or the cloud MCP tool services —
+so the agent that was proven is the agent that ships.
 
 ## What stays out of the factory's scope
 
@@ -82,11 +83,20 @@ the agent that was proven is the agent that ships.
 
 ## Where it appears
 
-- **CLI:** `ge agents ship` (all locally-built workspaces, or `--ids <a,b>`); `ge agents status --watch` for
-  the release milestones (`deployed`, `registered`, `published`); `ge mode
-  remote` + `ge agents build` for cloud-side end-to-end runs.
-- **Console:** release stages in the Agent detail view and **Runs**; fleet
-  rollout state in **Fleet**.
+- **CLI:** `ge handoff agents-cli` / `ge agents ship` (all locally-built
+  workspaces, or `--ids <a,b>`); `ge agents status --watch` for the release
+  milestones (`deployed`, `registered`, `published`); cloud-side end-to-end
+  runs when you opt to build in the cloud.
+
+  <details>
+  <summary>Operator spelling</summary>
+
+  Cloud-side end-to-end runs: `ge mode remote` + `ge agents build`.
+
+  </details>
+- **Console:** release stages in the Agent detail view and **Runs**;
+  rollout state across every agent in the console's
+  [all-agents view](../console/fleet-and-repair.html).
 - **Generated artifacts:** `agents-cli-manifest.yaml`, deployment metadata
   from `deploy_runtime`, the Agent Registry entry, the Gemini Enterprise
   registration, and a live-verification report from `verify_live`.
