@@ -1,0 +1,67 @@
+---
+title: "OKF & GE Drive views"
+description: "How the console exposes the OKF knowledge bundle and the GE Drive run surface."
+editUrl: "https://github.com/vamsiramakrishnan/ge-agent-factory/edit/main/docs/console/okf-and-drive.md"
+sidebar:
+  order: 6
+---
+Yes — the recent <a href="/ge-agent-factory/reference/glossary/#okf--knowledge-bundle" title="OKF (Open Knowledge Format) is a portable, human-readable version of an agent's spec — a folder of plain Markdown files (called &quot;concepts&quot;) instead of one big JSON blob.">OKF</a> and `ge drive` work is represented in the console model.
+It is not a detached dashboard: it is the detail layer between contract review,
+runs, and <a href="/ge-agent-factory/reference/glossary/#workspace" title="The on-disk folder for one generated agent (.ge/factory/workspaces/workspace-id/), with a workspace.json manifest describing what's in it.">workspace</a> proof.
+
+<p align="center">
+  <img src="/ge-agent-factory/assets/diagrams/console-okf-drive-views.svg" alt="Operator intent enters the Interview view, flows through Spec Review and the OKF view into the GE Drive view, records stages in the run ledger, opens workspace proof views, and reaches the promotion gate before handoff to agents-cli, ADK, and Gemini Enterprise" width="860" />
+</p>
+
+## OKF view
+
+The OKF view belongs next to **Spec Review** because OKF is the portable
+knowledge form of the same contract, not a separate source of truth. Use it to
+answer four questions before generating or regenerating an agent:
+
+| Question | Console affordance |
+|---|---|
+| What contract is this OKF bundle tied to? | Spec identity, version, department, use case, and contract diff context |
+| What knowledge is grounded? | Source files, extracted concepts, and coverage by capability or workflow step |
+| What is ready to export? | OKF bundle status, file list, and generated knowledge artifacts |
+| What still needs review? | Missing source references, thin concepts, or contract fields that do not map cleanly |
+
+The important invariant is contract-first ownership: edits happen in the
+contract review surface; OKF export reflects that reviewed state.
+
+## GE Drive view
+
+The GE Drive view is the browser version of the operator loop you run from the
+terminal with commands such as `ge prove` and `ge agents build`. It should make
+these things visible without asking an operator to tail logs manually:
+
+- the selected workspace and target stage;
+- the command that will run, before it runs;
+- live stage progress from the durable run <a href="/ge-agent-factory/reference/glossary/#ledger" title="The durable, event-sourced record of every run — one entry per run, item, and stage — that ge agents status, the Fleet view, and the console's Activity feed all read.">ledger</a>;
+- blocked reasons and retry/repair actions;
+- links to generated files, eval output, ADK preview, and proof-pack artifacts.
+
+This is why the view spans **<a href="/ge-agent-factory/reference/glossary/#pipeline" title="The user-facing, end-to-end path from business intent to a deployed agent — interview → spec → data → simulator → build → eval → preview → deploy — rendered as a plan you can read (ge pipeline plan) and watch (ge pipeline status).">Pipeline</a>**, **Runs**, and **Agent detail** instead
+of appearing as one isolated sidebar item. Pipeline chooses the next command;
+Runs follows it; Agent detail shows the files and proof that command produced.
+
+## View contract
+
+| Area | Must show | Must not do |
+|---|---|---|
+| OKF | Contract identity, bundle status, concepts, source files, export action | Let OKF silently diverge from the reviewed contract |
+| GE Drive | Command preview, stage target, live follow, blockers, artifact links | Hide the underlying `ge` command or invent console-only behavior |
+| Proof | Eval verdicts, validation artifacts, proof-pack location | Treat a green UI state as proof without artifacts |
+
+## Relationship to the rest of the console
+
+- **<a href="/ge-agent-factory/reference/glossary/#interview" title="The guided, conversational flow where a business user (or agent) describes a use case and the factory turns it into a formal spec.">Interview</a>** <a href="/ge-agent-factory/reference/glossary/#capture" title="The golden path's first verb — turning business intent into an Enterprise Agent Contract.">captures</a> intent and supporting documents.
+- **Spec Review** edits and approves the <a href="/ge-agent-factory/reference/glossary/#enterprise-agent-contract" title="The versioned, machine-readable statement of what an agent may do and what world it operates in — materialized today as the use-case spec (usecase-spec.json: behaviorContract + generationSpec) with a portable Markdown twin (the OKF bundle).">Enterprise Agent Contract</a>.
+- **OKF** packages the reviewed contract's knowledge context.
+- **GE Drive** runs the factory against that contract and OKF bundle.
+- **Runs** records the run ledger and live follow stream.
+- **Agent detail** exposes generated files, preview, evals, and proof.
+- **Readiness** checks whether the environment can safely run the next mutating step.
+
+Together, these views make the console an operator cockpit over the same engine
+as the CLI, not a parallel implementation.

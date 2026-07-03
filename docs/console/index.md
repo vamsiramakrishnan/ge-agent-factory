@@ -13,7 +13,7 @@ surface over the factory. Its server exposes the same JSON the `ge` CLI
 emits, dispatched through the same command registry — so the console and the
 CLI are two views of one engine and can never disagree about state.
 
-The left sidebar has seven entries; two detail surfaces open from them:
+The left sidebar has seven entries; four detail surfaces open from them. The recent OKF and GE Drive work is represented as console views rather than a separate product surface: OKF lives under Spec Review, and GE Drive is the run-driving surface shared by Pipeline, Runs, and agent detail actions:
 
 | View | What it's for | Page |
 |---|---|---|
@@ -26,6 +26,8 @@ The left sidebar has seven entries; two detail surfaces open from them:
 | **Readiness** | A preflight verdict with runnable fixes, before anything mutating | [Readiness](./readiness.html) |
 | *Agent detail* | Deep view of one agent: stages, artifacts, per-stage actions | [Fleet & repair](./fleet-and-repair.html) |
 | *Spec Review* | The contract rendered half-by-half for editing and OKF export | [Contract editor](./contract-editor.html) |
+| *OKF view* | The OKF knowledge bundle, concept coverage, source files, and export status for the current contract | [OKF & GE Drive views](./okf-and-drive.html) |
+| *GE Drive view* | Browser controls for `ge prove`, `ge agents build`, stage follow, blockers, and proof artifacts | [OKF & GE Drive views](./okf-and-drive.html) |
 
 ## Overview — the home base
 

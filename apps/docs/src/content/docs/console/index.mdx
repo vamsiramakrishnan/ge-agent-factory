@@ -11,19 +11,21 @@ surface over the factory. Its server exposes the same JSON the `ge` CLI
 emits, dispatched through the same command registry — so the console and the
 CLI are two views of one engine and can never disagree about state.
 
-The left sidebar has seven entries; two detail surfaces open from them:
+The left sidebar has seven entries; four detail surfaces open from them. The recent <a href="/ge-agent-factory/reference/glossary/#okf--knowledge-bundle" title="OKF (Open Knowledge Format) is a portable, human-readable version of an agent's spec — a folder of plain Markdown files (called &quot;concepts&quot;) instead of one big JSON blob.">OKF</a> and GE Drive work is represented as console views rather than a separate product surface: OKF lives under Spec Review, and GE Drive is the run-driving surface shared by <a href="/ge-agent-factory/reference/glossary/#pipeline" title="The user-facing, end-to-end path from business intent to a deployed agent — interview → spec → data → simulator → build → eval → preview → deploy — rendered as a plan you can read (ge pipeline plan) and watch (ge pipeline status).">Pipeline</a>, Runs, and agent detail actions:
 
 | View | What it's for | Page |
 |---|---|---|
 | **Overview** | The whole system at a glance: <a href="/ge-agent-factory/reference/glossary/#fleet" title="The whole set of generated agents/workspaces, treated as one unit — the opposite end of the scale from a canary.">fleet</a> summary, recent runs, <a href="/ge-agent-factory/reference/glossary/#planes" title="The three infrastructure layers the platform stands up in your cloud project — the factory plane (gateway, worker, Cloud Tasks queue, Cloud Build: the machinery that runs builds), the data plane (GCS, BigQuery, Bigtable, Firestore, AlloyDB, per-agent data + IAM), and the tool plane (the per-department MCP services, Agent Registry entries, and the Agent Gateway that agents call tools through).">plane</a> status, next action | this page, below |
 | **<a href="/ge-agent-factory/reference/glossary/#interview" title="The guided, conversational flow where a business user (or agent) describes a use case and the factory turns it into a formal spec.">Interview</a>** | <a href="/ge-agent-factory/reference/glossary/#capture" title="The golden path's first verb — turning business intent into an Enterprise Agent Contract.">Capture</a> enterprise intent into a contract, conversationally, with document grounding | [Contract editor](/ge-agent-factory/console/contract-editor/) |
-| **<a href="/ge-agent-factory/reference/glossary/#pipeline" title="The user-facing, end-to-end path from business intent to a deployed agent — interview → spec → data → simulator → build → eval → preview → deploy — rendered as a plan you can read (ge pipeline plan) and watch (ge pipeline status).">Pipeline</a>** | Drive a use case from contract to generated agent (Source → Configure → Review) | [Pipeline & runs](/ge-agent-factory/console/pipeline-and-runs/) |
+| **Pipeline** | Drive a use case from contract to generated agent (Source → Configure → Review) | [Pipeline & runs](/ge-agent-factory/console/pipeline-and-runs/) |
 | **Runs** | One chronological timeline over everything the factory is doing, with live follow | [Pipeline & runs](/ge-agent-factory/console/pipeline-and-runs/) |
 | **Fleet** | Every generated agent, filterable, with bulk actions | [Fleet & repair](/ge-agent-factory/console/fleet-and-repair/) |
 | **Repair Queue** | Drive batches of agents to a target stage, auto-repairing blockers | [Fleet & repair](/ge-agent-factory/console/fleet-and-repair/) |
 | **Readiness** | A preflight verdict with runnable fixes, before anything mutating | [Readiness](/ge-agent-factory/console/readiness/) |
 | *Agent detail* | Deep view of one agent: stages, artifacts, per-stage actions | [Fleet & repair](/ge-agent-factory/console/fleet-and-repair/) |
-| *Spec Review* | The contract rendered half-by-half for editing and <a href="/ge-agent-factory/reference/glossary/#okf--knowledge-bundle" title="OKF (Open Knowledge Format) is a portable, human-readable version of an agent's spec — a folder of plain Markdown files (called &quot;concepts&quot;) instead of one big JSON blob.">OKF</a> export | [Contract editor](/ge-agent-factory/console/contract-editor/) |
+| *Spec Review* | The contract rendered half-by-half for editing and OKF export | [Contract editor](/ge-agent-factory/console/contract-editor/) |
+| *OKF view* | The OKF knowledge bundle, concept coverage, source files, and export status for the current contract | [OKF & GE Drive views](/ge-agent-factory/console/okf-and-drive/) |
+| *GE Drive view* | Browser controls for `ge prove`, `ge agents build`, stage follow, blockers, and proof artifacts | [OKF & GE Drive views](/ge-agent-factory/console/okf-and-drive/) |
 
 ## Overview — the home base
 
