@@ -14,7 +14,9 @@ interface Props {
 }
 const { agent, okf } = Astro.props;
 const d = agent.detail;
-const base = import.meta.env.BASE_URL;
+// Normalize the trailing slash — BASE_URL is "/ge-agent-factory" (no slash),
+// so a bare `${base}catalog/` would render "/ge-agent-factorycatalog/".
+const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 
 const stageLabel = (s: string | null) =>
   s ? s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : null;
