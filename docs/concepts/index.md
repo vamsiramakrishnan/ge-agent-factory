@@ -1,80 +1,74 @@
 ---
-title: Concepts
+title: Core Concepts
 nav_order: 3
 has_children: true
 layout: default
 ---
 
-# Concepts
+# Core Concepts
 
-These pages explain the *mental model* of the GE Agent Factory — the **why** and
-the **how it fits together**, not the exact commands. For commands, flags, and
-file layouts, follow the links into the [Reference](../reference/) section and the
-[Cookbooks](../cookbooks/).
+These pages explain the mental model of the contract layer — the **why** and
+the **how it fits together**, not the exact commands. For commands, flags,
+and file layouts, follow the links into [Reference](../reference/) and the
+[Guides](../cookbooks/).
 
-Read Concepts when you need to understand why the factory has a spec, why local
-and remote mode are separate, why simulators exist, and why deployment is modeled
-as a staged control plane instead of a single script.
-
-Unfamiliar term? See the [Glossary](../GLOSSARY.html) — plain-language
-translations of the jargon (harness, OKF, canary, planes, pipeline runs, …).
-
-## The big idea
-
-The factory turns an enterprise **use case** into a **real, tested, deployable
-[ADK](https://google.github.io/adk-docs/) agent** — code, tools, fixtures, tests,
-and evals — grounded by **simulated source systems**. The same workspace runs
-locally against fixtures (no cloud needed) and, when you are ready, is promoted to
-*your own* Google Cloud project: per-agent data stores, an MCP tool
-[plane](../GLOSSARY.html#planes) (one of the platform's three infrastructure
-layers — factory, data, tool), Agent Runtime, Agent Registry, and a Gemini
-Enterprise publish.
-
-One idea ties it all together: **the spec is the contract.** A use case becomes a
-normalized spec (portable as an [Open Knowledge Format (OKF)](../reference/okf.html)
-bundle — this repo's own spec-as-Markdown format, not an external standard).
-Generation, validation, simulation, evals, and runtime grounding all read
-from that one contract — so the agent the factory builds *is* the agent the spec
-described, and you can trace any line of generated code back to a spec intent.
+One idea ties the section together: **the contract is the center of
+gravity.** Enterprise intent is captured into an Enterprise Agent Contract;
+simulations, tools, evals, and proof are compiled from it; and the proven
+result is handed off to agents-cli, ADK, and Gemini Enterprise. Each concept
+page covers one link in that chain.
 
 <p align="center">
-  <img src="../assets/diagrams/concept-pipeline.svg" alt="use case to spec (OKF, the contract) to generate to validate and refine to simulate to deploy to publish" width="800">
+  <img src="../assets/diagrams/signature-pipeline.svg" alt="capture flows into the Enterprise Agent Contract; the contract generates code, tools, and source-system twins under authority-graph control; twins and generated code feed prove (evals, harness, promotion gate); prove produces a passport and proof pack; the passport hands off across the build boundary to agents-cli, ADK, and Gemini Enterprise" width="900">
 </p>
+
+Six concepts, one map. Each page below opens with the same diagram, zoomed to
+its own stage — the rest dimmed — so you always know where you are in the
+chain.
+
+## The concepts
+
+| Concept | One sentence | Page |
+|---|---|---|
+| Enterprise Agent Contract | The versioned, machine-readable statement of what an agent may do and what world it operates in | [The Enterprise Agent Contract](./enterprise-agent-contract.html) |
+| Authority Graph | How the contract's scope, tools, evidence, and escalation rules become *enforced* authority — at generation time and at runtime | [The Authority Graph](./authority-graph.html) |
+| Source-system Twins | Simulated enterprise backends with realistic data, so agents are exercised before real integrations exist | [Source-system Twins](./source-system-twins.html) |
+| Evals as Proof | Generated evals, the spec-to-code trace, and harness verdicts — evidence, not vibes, gated before release | [Evals as Proof](./evals-as-proof.html) |
+| Agent Passport & Proof Pack | The artifacts that identify a shipped agent and prove it honored its contract | [Agent Passport & Proof Pack](./agent-passport-and-proof-pack.html) |
+| Handoff Targets | agents-cli, ADK Agent Engine, and Gemini Enterprise — the layer below, and exactly what crosses the line | [Handoff Targets](./handoff-targets.html) |
 
 ## Read these in order
 
-1. **[The factory line](./the-factory-line.html)** — the assembly line and the
-   durable control plane that runs it.
-2. **[Specs and OKF](./specs-and-okf.html)** — the spec as the knowledge contract,
-   and OKF as its portable, human- and agent-authorable form.
-3. **[Agents and ADK](./agents-and-adk.html)** — what a generated agent actually
-   *is*, and how governance is wired into it.
-4. **[Simulators and BYO](./simulators-and-byo.html)** — the simulated
-   source-system plane and how you bring your own.
-5. **[Security and the Agent Gateway](./security-and-the-agent-gateway.html)** —
-   the runtime identity model and the governed front door.
+1. **[The Enterprise Agent Contract](./enterprise-agent-contract.html)** —
+   the artifact everything derives from.
+2. **[The Authority Graph](./authority-graph.html)** — what the agent is
+   *allowed* to do, and who enforces it where.
+3. **[Source-system Twins](./source-system-twins.html)** — the world it is
+   tested in.
+4. **[Evals as Proof](./evals-as-proof.html)** — how "it works" becomes
+   evidence.
+5. **[Agent Passport & Proof Pack](./agent-passport-and-proof-pack.html)** —
+   what you can show an auditor.
+6. **[Handoff Targets](./handoff-targets.html)** — where the result goes and
+   what stays out of the factory's scope.
 
-> It is an agent **factory**, not a prompt-only demo generator: the output is a
-> versioned workspace of running code, gated by tests, deployed under
-> least-privilege identities in single-tenant infrastructure.
+> It is an agent **factory**, not a prompt-only demo generator: the output is
+> a versioned workspace of running code, gated by tests and evals, deployed
+> under least-privilege identities in your own single-tenant Google Cloud
+> project.
 {: .note }
 
 ## Concept to source map
 
 | Concept | Source anchor | Why it matters |
 |---|---|---|
-| Factory line | `tools/lib/factory-core.mjs` | Shared engine behind CLI, console, and MCP |
-| Durable [ledger](../GLOSSARY.html#ledger) | `tools/lib/ledger/run-ledger.mjs` | Single source of truth for local and remote runs |
-| Generated agent | `apps/factory/src/agent-workspace-pipeline.js` | Turns specs into ADK workspaces |
-| Simulator systems | `apps/factory/simulator-systems/` | Makes source systems testable before real integration |
-| Tool plane | `apps/factory/mcp-service/` | Runtime facade that generated agents call through MCP |
+| Contract schema | `packages/agent-spec/src/schema.ts` | The zod source of truth the docs tables are generated from |
+| Operator core | `tools/lib/factory-core.mjs` | Shared engine behind CLI, console, and MCP |
+| Generated agent | `apps/factory/src/agent-workspace-pipeline.js` | Turns contracts into ADK workspaces |
+| Source-system twins | `apps/factory/simulator-systems/` | Makes source systems testable before real integration |
+| Tool plane | `apps/factory/mcp-service/` | Runtime facade generated agents call tools through |
 | Cloud platform | `installer/terraform/` | Owns infra, IAM, data stores, MCP, and runtime services |
 
-## How to use this section
-
-- Start with **The factory line** if the stage names feel abstract.
-- Read **Specs and OKF** before changing generation behavior.
-- Read **Agents and ADK** before editing generated `app/agent.py` or `app/tools.py`.
-- Read **Simulators and BYO** before adding a source-system pack.
-- Read **Security and the Agent Gateway** before changing runtime identity,
-  ingress, IAP, or MCP invocation.
+Unfamiliar term? See the [Glossary](../GLOSSARY.html) — plain-language
+translations of the internal jargon (harness, OKF, canary, planes, pipeline
+runs, …).

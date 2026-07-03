@@ -39,6 +39,8 @@
     "docs:spec-ref:check": "node packages/agent-spec/scripts/gen-spec-reference.mjs --check",
     "docs:console-api": "node tools/gen-console-api-reference.mjs",
     "docs:console-api:check": "node tools/gen-console-api-reference.mjs --check",
+    "docs:shots": "bun tools/docs-shots/capture.mjs && bun tools/docs-shots/capture-presentation.mjs",
+    "docs:shots:seed": "bun tools/docs-shots/seed.mjs",
     "docs:build": "cd docs && BUNDLE_PATH=vendor/bundle bundle exec jekyll build --config _config.yml,_config.local.yml",
     "docs:tokens": "node packages/design/scripts/gen-tokens.mjs",
     "docs:tokens:check": "node packages/design/scripts/gen-tokens.mjs --check",
@@ -46,6 +48,8 @@
     "docs:site:dev": "bun run --filter ./apps/docs dev",
     "docs:site:build": "bun run --filter ./apps/docs build",
     "docs:site:sync": "node apps/docs/scripts/sync-content.mjs",
+    "readme:tapes": "set -e; for f in docs/tapes/*.tape; do vhs \"$f\"; done",
+    "readme:assets": "bun run docs:diagrams && bun run readme:tapes && bun run docs:shots",
     "config:schema": "node tools/gen-config-schema.mjs",
     "config:schema:check": "node tools/gen-config-schema.mjs --check",
     "catalog": "bun apps/factory/scripts/sync-use-cases-from-slides.mjs",
@@ -97,6 +101,7 @@
   "devDependencies": {
     "@google-cloud/discoveryengine": "^2.7.0",
     "@google-cloud/firestore": "^8.6.0",
-    "beautiful-mermaid": "^1.1.3"
+    "beautiful-mermaid": "^1.1.3",
+    "playwright": "^1.61.1"
   }
 }

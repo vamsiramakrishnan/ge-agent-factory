@@ -106,6 +106,42 @@ This replaces the original model where the operator's laptop ran the whole fleet
 the control plane is now Cloud Tasks + a Cloud Run worker + a Firestore/AlloyDB
 ledger, durable across restarts.
 
+### Stations vs. milestones — two stage vocabularies, one line
+
+You will meet **two different stage name sets** and both are correct — they
+name different things. Execution uses **stations** (verbs — the work a stage
+*does*), from `FACTORY_STAGE_GRAPH` in
+`apps/factory/src/factory-orchestration.js`. Everything that reports
+*progress* — `ge agents status`, `ge ledger plan`, the run ledger, the
+pipeline state machine — uses **milestones** (past-tense states an item has
+*reached*), from `LEDGER_STAGES` in `packages/run-ledger/src/store.mjs`.
+Reading `generate_workspace` in a worker log and then seeing `created` in
+`ge agents status` is the same item, described from the other side:
+
+| Station (does the work) | Milestone recorded (what status reports) |
+|---|---|
+| `plan` | `planned` |
+| `generate_workspace`, `generate_data` | `created` |
+| `package_data` | `data_packaged` |
+| `harness_refine` | `harness_reviewed`, then `harness_refined` |
+| `validate` | `validated` |
+| `preview` | `previewed` — the **build boundary** in both vocabularies |
+| `plan_deploy` | `deploy_planned` |
+| `load_data` | (no dedicated milestone — release-movement prep) |
+| `deploy_runtime`, `poll_runtime` | `deploying`, then `deployed` |
+| `register_tools` | `registered` |
+| `publish_enterprise` | `publish_planned`, then `published` |
+| `verify_live` | (no dedicated milestone — verification report artifact) |
+
+Milestones are listed in the ledger's canonical order (its reducer only ever
+advances an item forward through that list); station order is the cloud
+line's execution order — the two orderings differ slightly in the middle
+movement, which is expected, not drift.
+
+The retry metadata on each stage (`RETRY_POLICIES`) describes how a stage
+*may* safely be retried by an operator — it is **metadata, not an automatic
+retry engine**; nothing re-executes a stage from those values today.
+
 ---
 
 ## The run ledger

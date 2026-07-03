@@ -33,13 +33,15 @@ const TOP_LEVEL_ROUTES = {
   "reference/mcp": "MCP.md",
   "reference/glossary": "GLOSSARY.md",
   "start/what-is-the-factory": "index.md",
-  "start/developer-guide": "developers.md",
+  contributing: "developers.md",
 };
 
 function docsSourceFor(route) {
   if (TOP_LEVEL_ROUTES[route]) return join(DOCS, TOP_LEVEL_ROUTES[route]);
   const [head] = route.split("/");
-  if (["concepts", "cookbooks", "reference"].includes(head)) return join(DOCS, `${route}.md`);
+  if (["concepts", "cookbooks", "reference", "start", "console", "operations", "contributing"].includes(head)) {
+    return join(DOCS, `${route}.md`);
+  }
   return null;
 }
 

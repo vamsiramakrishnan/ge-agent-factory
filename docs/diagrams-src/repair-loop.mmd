@@ -1,0 +1,13 @@
+flowchart TD
+    SURVEY(["ge fleet status"]) --> LOGS["ge agents logs\nread failing stage"]
+    LOGS --> REPAIR{{"ge fleet repair\nobserve → repair → retry"}}
+    REPAIR -->|converged| PROVE(["re-prove"])
+    REPAIR -->|attempts exhausted| BLOCKED["blocked"]
+    BLOCKED -.->|fix contract or simulation| LOGS
+    SURVEY -.->|interrupted, not blocked| RESUME["ge runs resume /\nge agents resume"]
+    RESUME --> PROVE
+
+    classDef pass fill:#e6f4ea,stroke:#34a853,color:#202124
+    classDef blocked fill:#fce8e6,stroke:#c5221f,color:#202124
+    class PROVE pass
+    class BLOCKED blocked

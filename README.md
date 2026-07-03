@@ -1,165 +1,225 @@
 # GE Agent Factory
 
-GE (Gemini Enterprise) Agent Factory exists because enterprise agents need more than prompts: they
-need a business contract, source-system grounding, generated tools, tests, evals,
-deployment automation, and runtime identity. This repo makes those pieces one
-traceable path from use case to production.
-
-In one sentence, it turns an enterprise use case into a **generated, tested,
-deployable Gemini Enterprise agent**. You start from a business use case (or an
-interview that produces one), and the factory generates a real ADK agent — code,
-tools, fixtures, tests, and evals — grounded by simulated source systems. The
-same generated workspace runs locally against fixtures and is then promoted to
-**your own** Google Cloud project (single-tenant; no shared/cross-project
-deploys): per-agent data stores, an MCP tool [plane](docs/GLOSSARY.md#planes)
-(one of the platform's three infrastructure layers — factory, data, tool),
-Agent Runtime, Agent Registry, and a Gemini Enterprise publish. It is an agent **factory**, not a
-prompt-only demo generator. After a one-time `mise run setup` (~5-10 min), your
-first canary agent is about five minutes away — then you build, watch it run
-live, and ship it to the cloud.
+GE Agent Factory compiles enterprise workflows into governed agent contracts,
+source-system simulations, eval suites, tool plans, and proof packs. It does
+not replace agents-cli, ADK, or Gemini Enterprise; it produces the upstream
+contract and proof artifacts they need.
 
 [![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/?cloudshell_git_repo=https://github.com/vamsiramakrishnan/ge-agent-factory&cloudshell_workspace=installer&cloudshell_tutorial=installer/TUTORIAL.md)
 
-**Architecture map:** [docs/architecture.svg](docs/architecture.svg) shows the system in
-developer-friendly terms.
+<p align="center">
+  <img src="docs/assets/diagrams/signature-pipeline.svg" alt="Flow diagram: capture flows into the Enterprise Agent Contract; the contract generates code, tools, and source-system twins under authority-graph control; twins and generated code feed prove (evals, harness, promotion gate); prove produces a passport and proof pack; the passport hands off across the build boundary to agents-cli, ADK, and Gemini Enterprise" width="900">
+</p>
 
-## 📚 Documentation
-
-The full docs site (sidebar + search) is published with GitHub Pages:
-
-**→ https://vamsiramakrishnan.github.io/ge-agent-factory/**
-
-- **[Developer Guide](https://vamsiramakrishnan.github.io/ge-agent-factory/developers.html)** — purpose, repo map, development loops, quality gates, and docs rules.
-- **[Concepts](https://vamsiramakrishnan.github.io/ge-agent-factory/concepts/)** — the factory model: local vs remote mode, the stage graph, [OKF](docs/GLOSSARY.md#okf--knowledge-bundle) (Open Knowledge Format — the spec's portable Markdown form) specs, the data plane, the MCP tool plane.
-- **[Reference](https://vamsiramakrishnan.github.io/ge-agent-factory/reference/)** — the `ge` CLI, `mise` tasks, configuration, and the apps.
-- **[Cookbooks](https://vamsiramakrishnan.github.io/ge-agent-factory/cookbooks/)** — task-oriented guides: build a [canary](docs/GLOSSARY.md#canary) (a single agent that proves the pipeline), run the [pipeline](docs/GLOSSARY.md#pipeline-formerly-journey) end to end (one orchestrated, resumable run), bring your own simulator, ship to the cloud.
-- **[Operations](https://vamsiramakrishnan.github.io/ge-agent-factory/OPERATIONS.html)** — deploy, operate, troubleshoot, and recover the factory.
-- **[MCP](https://vamsiramakrishnan.github.io/ge-agent-factory/MCP.html)** — factory MCP tools plus the generated-agent MCP tool plane.
-
-The site is sourced from [`docs/`](docs/) (start at [`docs/index.md`](docs/index.md)).
-
-Unfamiliar term? See the [Glossary](docs/GLOSSARY.md) — plain-language translations of the repo's jargon (harness, OKF, canary, planes, pipeline runs, …).
-
-## Quickstart
-
-**→ See [`SETUP.md`](SETUP.md) for the full step-by-step: clone, prerequisites,
-`mise run setup`, `mise run doctor-local`, first command, optional cloud setup.**
-
-Three steps, all local — no cloud credentials required:
+The golden path is three commands:
 
 ```bash
-curl https://mise.run | sh   # one-time, if you don't have mise yet — see SETUP.md
-mise run setup          # 1. toolchain + daemon (one time, ~5-10m)
-ge init                 # 2. discover config, write .ge.json (~30s)
-ge devex smoke          # 3. first canary agent: doctor → validated workspace (~5 min)
+ge capture "Benefits enrollment agent"   # Proposed — see Roadmap
+ge prove                                 # Proposed — see Roadmap
+ge handoff agents-cli                    # Proposed — see Roadmap
 ```
 
-Then: build agents, watch them run live, ship to the cloud. `mise run console`
-opens the operator UI (Overview · Pipeline · Interview · Fleet · Repair Queue ·
-Runs · Readiness) → http://localhost:18260.
+None of these three exist as literal commands yet. What runs today, for
+real, is below — in [Quickstart](#quickstart) and the
+[Roadmap](#roadmap-the-golden-path).
 
-Run `mise run help` for all targets, or `mise run next` for a status-based recommendation.
+Not sure this is the layer you need? Read
+[GE Agent Factory vs agents-cli](https://vamsiramakrishnan.github.io/ge-agent-factory/start/vs-agents-cli/).
 
-## Deploy to your own GCP project
+## See it
 
-The control plane lands in **your own** GCP project (single-tenant), ~15 min:
+<table>
+<tr>
+<td width="50%">
+<img src="docs/assets/screenshots/overview.png" alt="Console Overview screen showing local mode, pipeline stage counts (spec, build 362, ship, deploy 1), and fleet health (0 deployed, 1 submitted, 1 failed)">
+<br>
+<strong>Overview.</strong> Where every agent sits in the pipeline, and what to do next.
+</td>
+<td width="50%">
+<img src="docs/assets/screenshots/pipeline.png" alt="Console Pipeline screen: choose a route (deploy from registered specs, or interview to a registered spec) across 364 factory-grade specs, then a stage-by-stage status list">
+<br>
+<strong>Pipeline.</strong> The build &amp; deploy flow for one spec or a batch — same stages the CLI runs.
+</td>
+</tr>
+<tr>
+<td width="50%">
+<img src="docs/assets/screenshots/agent-detail.png" alt="Agent detail view for the ASC 606 Contract Analyzer: 7 of 8 pipeline stages complete, deploy pending, next action Ship with the exact ge agents ship command to run">
+<br>
+<strong>Agent detail.</strong> Every stage's evidence in one place, down to the exact command to ship it.
+</td>
+<td width="50%">
+<img src="docs/assets/screenshots/repair-queue.png" alt="Repair Queue screen showing 250 agents selected for repair, 249 needing a build, one repair run in progress">
+<br>
+<strong>Repair Queue.</strong> Triage what's blocked across the whole fleet instead of re-running everything.
+</td>
+</tr>
+</table>
 
-- Click **Open in Cloud Shell** above to clone the repo and run the guided installer
-  ([`installer/TUTORIAL.md`](installer/TUTORIAL.md)).
-- Or, from a checkout with `gcloud` authenticated:
+<p align="center">
+  <img src="docs/assets/screenshots/periodic-table.png" alt="The Periodic Table of HR Agents: 82 AI agents across 10 HR domains, laid out as a periodic-table grid with department tabs for HR, Procurement, Finance, IT, and Marketing">
+  <br>
+  <em>The full catalog — 363 agents across five departments — laid out as a periodic table. One tile per agent, click to explore.</em>
+</p>
 
-  ```bash
-  export GEMINI_ENTERPRISE_APP_ID=projects/<num>/locations/global/collections/default_collection/engines/<app>
-  CANARY=1 mise run bootstrap   # toolchain → ge init → ge up (factory + data + tool planes) → prove one agent
-  ```
+Terminal, not screenshots — these are `.gif`s of real runs, not staged:
 
-## Local vs remote mode
+<table>
+<tr>
+<td width="33%">
+<img src="docs/assets/tapes/ge-status.gif" alt="Terminal recording of the bare ge command, printing the current mode, project, plane status, and the suggested next command">
+<br>
+<code>ge</code> — status board with the next step.
+</td>
+<td width="33%">
+<img src="docs/assets/tapes/ge-init.gif" alt="Terminal recording of ge init writing .ge.json with project, region, and service names">
+<br>
+<code>ge init</code> — discovers config, writes <code>.ge.json</code>.
+</td>
+<td width="33%">
+<img src="docs/assets/tapes/ge-doctor.gif" alt="Terminal recording of ge doctor checking toolchain, data plane, and tool plane health, ending in All hard checks passed">
+<br>
+<code>ge doctor</code> — every plane and toolchain check, one command.
+</td>
+</tr>
+</table>
 
-The factory has two first-class modes, set once with `ge mode local|remote` (persisted in
-`.ge.json`; default `remote`, overridable per command with `--local`/`--remote`). Both share
-the same generated workspace and quality gates; they differ in **where work runs**. There is a
-hard build boundary: everything up to validate/preview is pure computation; everything after
-touches GCP.
+## Quickstart (runs today, all local)
+
+No cloud credentials required; ~10 minutes end to end:
+
+```bash
+curl https://mise.run | sh   # once, if you don't have mise — see SETUP.md
+mise run setup               # toolchain + the `ge` CLI on PATH (~5-10 min, one time)
+ge init                      # discover config, write .ge.json (~30 s)
+ge devex smoke               # compile + prove one canary agent workspace (~5 min)
+```
+
+The result on disk is the whole layer in miniature: the contract
+(`usecase-spec.json` with its `behaviorContract`), generated ADK code and
+tools, fixture data, smoke tests, an eval suite in `agents-cli`'s own
+format, and the artifacts the promotion gate reads. Then:
+
+```bash
+ge mode local
+ge agents build --canary     # compile one contract → validated workspace (build boundary)
+mise run console             # watch runs live in the operator console → http://localhost:18260
+ge agents ship               # hand off: cloud runs load_data → deploy → register → publish
+```
+
+**→ Full setup path: [`SETUP.md`](SETUP.md). Ten-minute tutorial:
+[contract to handoff](https://vamsiramakrishnan.github.io/ge-agent-factory/start/quickstart/).**
+
+## How it fits
+
+<p align="center">
+  <img src="docs/assets/diagrams/factory-vs-agents-cli-layers.svg" alt="GE Agent Factory turns enterprise intent into a contract (behaviorContract + generationSpec), then simulation, evals, and proof; the proof flows into agents-cli / ADK, which scaffolds the agent project and deploys it to Agent Runtime; Agent Runtime publishes into Gemini Enterprise for end users" width="900">
+</p>
+
+| Layer | Owned by |
+|---|---|
+| Intent → contract → simulations → evals → proof | **GE Agent Factory** (this repo) |
+| Agent project scaffold, build, deploy | **agents-cli / ADK** (generated and driven by the factory) |
+| Runtime | **ADK Agent Engine** |
+| End-user surface | **Gemini Enterprise** |
+
+Everything up to *proof* is pure computation on your machine; everything
+after touches your Google Cloud project. The mode switch (`ge mode
+local|remote`, default **local** — billable work is opt-in) selects the
+side; `ge agents ship` bridges them by handing a locally proven workspace to
+the cloud for the release stages only.
 
 <p align="center">
   <img src="docs/assets/diagrams/factory-line.svg" alt="Author and Build, Validate and Refine, Release, with the build boundary between them" width="620">
 </p>
 
-| Mode | What runs here | Use it for |
-|------|----------------|------------|
-| **Local** | generate → validate → preview on your machine, against fixtures | fast iteration, offline tests, coding-agent review |
-| **Remote** | the cloud factory builds → deploys → publishes in your GCP project | release: per-agent data, Agent Runtime, MCP/registry, Gemini Enterprise |
+## Documentation
 
-`ge agents ship` bridges the two: build + validate locally, then hand the post-boundary
-stages (`load_data → deploy_runtime → register_tools → publish_enterprise`) to the cloud
-factory, which consumes the prebuilt workspace instead of regenerating.
+Published docs site (search, sidebar, dark mode):
+**→ https://vamsiramakrishnan.github.io/ge-agent-factory/**
+
+| | |
+|---|---|
+| **[Start Here](https://vamsiramakrishnan.github.io/ge-agent-factory/start/what-is-the-factory/)** | What the factory is, the mental model, the ten-minute tutorial, vs agents-cli. |
+| **[Core Concepts](https://vamsiramakrishnan.github.io/ge-agent-factory/concepts/)** | The Enterprise Agent Contract, the Authority Graph, source-system twins, evals as proof, the passport & proof pack, handoff targets. |
+| **[Guides](https://vamsiramakrishnan.github.io/ge-agent-factory/cookbooks/)** | Capture → compile → simulate → prove → hand off, task by task. |
+| **[Console](https://vamsiramakrishnan.github.io/ge-agent-factory/console/)** | The operator UI, view by view. |
+| **[Operations](https://vamsiramakrishnan.github.io/ge-agent-factory/operations/)** | Provision, run, observe, troubleshoot. |
+| **[Reference](https://vamsiramakrishnan.github.io/ge-agent-factory/reference/)** | CLI (generated from the command tree), contract schema (generated from the zod source), console APIs, config, architecture. |
+| **[Contributor Docs](https://vamsiramakrishnan.github.io/ge-agent-factory/contributing/)** | Developer guide, extending the CLI/console, docs rules. |
+
+The site is sourced from [`docs/`](docs/) (start at [`docs/index.md`](docs/index.md)).
+Unfamiliar term? The [Glossary](docs/GLOSSARY.md) translates the internal
+jargon (harness, OKF, canary, planes, pipeline, …).
+
+## Deploy the platform to your own GCP project
+
+Single-tenant, ~15 min: click **Open in Cloud Shell** above for the guided
+installer ([`installer/TUTORIAL.md`](installer/TUTORIAL.md)), or from an
+authenticated checkout:
 
 ```bash
-ge mode local
-ge agents build --all     # plan → … → preview locally (stops at the build boundary)
-ge agents ship --all      # cloud runs load_data → deploy → register → publish
+export GEMINI_ENTERPRISE_APP_ID=projects/<num>/locations/global/collections/default_collection/engines/<app>
+CANARY=1 mise run bootstrap   # toolchain → ge init → ge up (all three planes) → prove one agent
 ```
+
+## Roadmap: the golden path
+
+The layer's three verbs will eventually be three commands. **None of them
+exist today.** Their current, real equivalents:
+
+| Golden-path verb | Proposed | Runs today |
+|---|---|---|
+| `ge capture "…"` | Proposed | the console **Interview** (`mise run console`) — conversational capture, document grounding, contract editing |
+| `ge prove` | Proposed | `ge devex smoke` / `ge agents build` (evals + spec-to-code trace + harness verdicts + promotion gate) |
+| `ge handoff agents-cli` | Proposed | `ge agents ship` (→ `agents-cli deploy` → Agent Engine → Gemini Enterprise) |
 
 ## Monorepo layout
 
-This is a Bun workspace monorepo (`apps/*`, `packages/*`) driven by one operator core
-(`tools/lib/factory-core.mjs`) behind three surfaces: the `ge` CLI, the web console, and an
-MCP server.
+A Bun workspace monorepo driven by one operator core
+(`tools/lib/factory-core.mjs`) behind three surfaces — the `ge` CLI, the web
+console, and an MCP server — that share a single command registry and can
+never disagree. Full layout, conventions, and how to run one app locally:
+[`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 | Path | What it is |
 |------|------------|
-| [`apps/console`](apps/console) | The main operator UI — a React + Vite + Tailwind app whose Bun server exposes `/api/ge/*` (the same JSON the CLI emits). Views: Overview · Pipeline · Interview · Fleet · Repair Queue · Runs · Readiness, plus Agent detail (stage pipeline + live logs + artifacts). The **third surface** over `factory-core`. |
-| [`apps/presentation`](apps/presentation) | The transformation deck and source use-case catalog used to explain the system. |
-| [`apps/factory`](apps/factory) | The generator: the `factory` generation pipeline, the lower-level web workbench, the factory runner/worker, and the generic multi-tenant FastMCP server under [`mcp-service/`](apps/factory/mcp-service). |
-| [`tools/`](tools) | The `ge` operator CLI (`ge.mjs`), the MCP server (`mcp-server.mjs`), and the shared operator core + runtime [daemon](docs/GLOSSARY.md#daemon) (the local background process that runs long factory tasks durably) under `tools/lib/`. |
-| [`installer/`](installer) | Terraform + the guided Cloud Shell installer (`TUTORIAL.md`) that stands the platform up in your project. |
-| [`docs/`](docs) | This documentation site (GitHub Pages) plus operator runbooks, ADRs, and design specs. |
-
-### Running an app locally
-
-`mise run dev` (or `bun run dev`) just lists the apps and starts nothing — pick one:
-
-| App | Dev (hot reload) | Build | Serve the build |
-|-----|------------------|-------|-----------------|
-| Console — ops UI (:18260) | `mise run console` · `bun run dev:console` | `bun run build:console` | `bun run start:console` (:8261) |
-| Presentation — deck (:18250) | `mise run presentation` · `bun run dev:presentation` | `bun run build:presentation` | `bun run start:presentation` (:8251) |
-| Generator — web (:17655) | `mise run generator` · `bun run dev:generator` | — | — |
+| [`apps/console`](apps/console) | The operator UI: Overview · Pipeline · Interview · Fleet · Repair Queue · Runs · Readiness, plus Agent detail. |
+| [`apps/factory`](apps/factory) | The generator: compiles contracts into workspaces, the simulator runtime, the multi-tenant FastMCP service. |
+| [`apps/presentation`](apps/presentation) | The transformation deck and source use-case catalog — including the periodic table above. |
+| [`apps/docs`](apps/docs) | The Astro/Starlight docs site (content sourced from `docs/`). |
+| [`tools/`](tools) | The `ge` CLI, the MCP server, the shared operator core + local runtime daemon. |
+| [`packages/`](packages) | Shared contracts: the agent-spec schema, the run ledger, OKF, design tokens. |
 
 ## The `ge` CLI
 
-`ge` is the human surface over the factory core (the console and MCP server drive the same
-core). Bare `ge` prints a status board with the next step; every command supports `--json`.
+Bare `ge` prints a status board with the next step; every command supports
+`--json` and is also an HTTP route (console) and an MCP tool — one registry,
+three surfaces.
 
 ```bash
 ge                     # status board: mode · planes ✓/○ · next step
 ge init                # discover config → .ge.json
-ge mode local          # or: ge mode remote
-ge up                  # stand up all planes (infra + data + tool) → unified doctor
-ge doctor              # toolchain · factory · data plane · tool plane
-ge devex check         # fast gate: local doctor + docs links + workspace manifests
 ge devex smoke         # one-command local proof: doctor → validated canary workspace
 ge agents build --canary
-ge agents ship --canary
+ge agents ship --ids <workspace-id>
 ge agents status --watch
-ge agents sync --push
-ge pipeline run --scenario <id>   # orchestrate the end-to-end pipeline (plan|status|resume|graph)
+ge pipeline run --scenario <id>   # orchestrate the end-to-end pipeline
 ge fleet status        # fleet convergence; ge fleet repair --ids <a,b> fixes blockers in bulk
-ge runs list           # every daemon-backed run; ge runs events <id> --follow streams one live
+ge runs list           # every recorded run; ge runs events <id> --follow streams one live
+ge doctor              # health with runnable fixes (console: Readiness)
 ```
 
-Run via `bun tools/ge.mjs <cmd>`, or install it on your PATH with `mise run setup` (then just `ge`).
+Full reference (generated from the command tree, drift-gated in CI):
+[CLI reference](https://vamsiramakrishnan.github.io/ge-agent-factory/reference/cli/).
 
-## Develop
+## Contributing
 
 ```bash
-bun install            # install workspace deps
-mise run devex-check       # fast local gate before or after a focused edit
-mise run ci                # the CI gate: source hygiene + full bun test suite (mirrors CI)
-bun test apps tools    # run the test suite directly
+bun install                # workspace deps
+mise run devex-check       # fast local gate
+mise run ci                # the CI gate: hygiene + lint + typecheck + docs gate + tests
 ```
 
-## More
-
-- Operator runbook: [`docs/OPERATIONS.md`](docs/OPERATIONS.md)
-- Design specs: [`docs/design-specs/specs/`](docs/design-specs/specs)
-- CLI internals: [`tools/README.md`](tools/README.md)
+See [`CONTRIBUTING.md`](CONTRIBUTING.md), the
+[Contributor Docs](https://vamsiramakrishnan.github.io/ge-agent-factory/contributing/),
+and [`docs/OPERATIONS.md`](docs/OPERATIONS.md) for the operator runbook.

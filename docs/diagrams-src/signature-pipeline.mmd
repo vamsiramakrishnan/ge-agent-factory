@@ -1,0 +1,29 @@
+flowchart LR
+    CAP(["capture\ninterview · documents · OpenAPI"])
+    CONTRACT["Enterprise Agent Contract\nspec + OKF twin"]
+    GEN["generate\nADK code · tools · fixtures"]
+    TWIN[("source-system twins")]
+    PROVE{{"prove\nevals · harness · promotion gate"}}
+    PASSPORT["passport & proof pack"]
+    HANDOFF(["hand off\nagents-cli · ADK · Gemini Enterprise"])
+    AUTH{{"authority graph\nscope · tools · evidence · escalation"}}
+
+    CAP --> CONTRACT
+    CONTRACT --> GEN
+    GEN --> TWIN
+    GEN --> PROVE
+    TWIN --> PROVE
+    PROVE --> PASSPORT
+    PASSPORT ==> HANDOFF
+    CONTRACT -.-> AUTH
+    AUTH -.-> GEN
+    AUTH -.-> HANDOFF
+
+    classDef contract fill:#e8f0fe,stroke:#1a73e8,color:#202124
+    classDef system fill:#e8eef7,stroke:#5f6368,color:#202124
+    classDef proof fill:#e6f4ea,stroke:#34a853,color:#202124
+    classDef handoff fill:#e6f4ea,stroke:#34a853,color:#202124
+    class CONTRACT contract
+    class TWIN system
+    class PROVE,PASSPORT,AUTH proof
+    class HANDOFF handoff

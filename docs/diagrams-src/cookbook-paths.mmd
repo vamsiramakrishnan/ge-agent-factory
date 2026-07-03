@@ -1,18 +1,21 @@
 flowchart LR
-    A(["fresh clone,\nno cloud"]) --> GS["Getting started\nlocally"]
-    GS --> GA["Generate\nan agent"]
-    GA --> RE["Run evals"]
+    A(["fresh clone,\nno cloud"]) --> GS["Getting started"]
+    GS --> CI["Capture a contract\nin the interview"]
+    CI --> CC["Compile\na contract"]
+    CC --> PA["Prove\nan agent"]
 
-    B(["business use case,\nno spec yet"]) --> AI["Author a spec\nvia the interview"]
-    AI --> SO["Spec ⇄ OKF"]
-    SO --> GA
+    B(["business use case,\nno contract yet"]) --> CD["Capture a contract\nfrom documents"]
+    CD --> CI2["Capture a contract\nin the interview"]
+    CI2 --> OKF["Contract ⇄ OKF"]
+    OKF --> CC
 
-    C(["new source\nsystem"]) --> BYO["Bring your own\nsimulator"]
-    BYO --> RF["Run the\nfactory"]
+    C(["new source\nsystem"]) --> CO["Capture a source\nsystem from OpenAPI"]
+    CO --> GSIM["Generate\nsimulations"]
+    GSIM --> PA
 
     D(["first cloud\nrelease"]) --> PP["Provision the\nplatform"]
     PP --> DG["Deploy the\nAgent Gateway"]
-    DG --> RF
+    DG --> RO["Run and\nobserve"]
 
     classDef cloud fill:#e6f4ea,stroke:#34a853,color:#202124
-    class PP,DG cloud
+    class PP,DG,RO cloud

@@ -29,25 +29,25 @@ export const ERROR_CODES = Object.freeze({
   // as before (no code, no link). See renderError()/guarded().
   GE0001: {
     summary: "Command failed (no more specific error code)",
-    docsAnchor: "operations/#troubleshooting-failure-modes-weve-actually-hit",
+    docsAnchor: "operations/troubleshooting/#failure-modes-weve-actually-hit",
   },
   // Local pipeline prerequisites (init → schema → generate → tools → test).
   GE0002: {
     summary: "No schema in the workspace — run `factory schema` first",
-    docsAnchor: "cookbooks/getting-started/#steps",
+    docsAnchor: "start/getting-started/#steps",
   },
   GE0003: {
     summary: "No mock-data manifest in the workspace — run `factory generate` first",
-    docsAnchor: "cookbooks/getting-started/#steps",
+    docsAnchor: "start/getting-started/#steps",
   },
   GE0004: {
     summary: "A required earlier pipeline step has not completed yet",
-    docsAnchor: "cookbooks/getting-started/#steps",
+    docsAnchor: "start/getting-started/#steps",
   },
   // Catalog resolution (from-usecase / list-usecases).
   GE0005: {
     summary: "Use case not found in the enterprise catalog, or the catalog could not be loaded",
-    docsAnchor: "cookbooks/generate-an-agent/#steps",
+    docsAnchor: "cookbooks/compile-a-contract/#steps",
   },
   // Gates.
   GE0006: {
@@ -56,7 +56,7 @@ export const ERROR_CODES = Object.freeze({
   },
   GE0007: {
     summary: "Quality gate failed (agents-cli lint/eval/preview)",
-    docsAnchor: "cookbooks/run-evals/#troubleshoot",
+    docsAnchor: "cookbooks/prove-an-agent/#common-failures",
   },
   // Cloud lifecycle (deploy / register / publish).
   GE0008: {
