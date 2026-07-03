@@ -28,7 +28,7 @@ auditor.
   <img src="assets/diagrams/signature-pipeline.svg" alt="capture flows into the Enterprise Agent Contract; the contract generates code, tools, and source-system twins under authority-graph control; twins and generated code feed prove (evals, verify-stage review, promotion gate); prove produces a passport and proof pack; the passport hands off across the build boundary to agents-cli, ADK, and Gemini Enterprise" width="900">
 </p>
 
-## Works with your coding agent
+## Start with skills — works with your coding agent
 
 <p align="center">
   <img src="assets/icons/claude-code.svg" alt="Claude Code" height="44">&nbsp;
@@ -38,8 +38,10 @@ auditor.
   <img src="assets/icons/mcp.svg" alt="MCP" height="44">
 </p>
 
-The factory ships as agent skills — including the install itself — so a
-coding agent can set up a bare machine and then run the whole line:
+The recommended setup path is skills-first. The factory ships as agent skills
+— including the install itself — so a coding agent can set up a bare machine,
+verify each phase, and then run the whole line using the same playbooks the
+harness uses:
 
 ```bash
 bunx create-ge-agent-factory        # any machine: clone + guided, verified install
@@ -49,8 +51,10 @@ bunx create-ge-agent-factory        # any machine: clone + guided, verified inst
 | --- | --- |
 | **Claude Code** | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory` then `/plugin install factory-bootstrap@ge-agent-factory` |
 | **Gemini CLI** | `gemini extensions install https://github.com/vamsiramakrishnan/ge-agent-factory` |
-| **Antigravity · Codex · agents-cli** | `bunx create-ge-agent-factory --skills agents` |
+| **Antigravity · Codex · agents-cli-style sessions** | `bunx create-ge-agent-factory --skills agents` |
 | **Any MCP client** | `bun tools/mcp-server.mjs` from a checkout |
+
+The output still hands off to [Google agents-cli](https://google.github.io/agents-cli/) / ADK / Gemini Enterprise; skills are the assistant-facing setup and operations layer above that handoff.
 
 ## The problem it solves
 
