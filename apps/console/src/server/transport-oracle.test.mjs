@@ -3,7 +3,7 @@
 // code, then hold every extraction to them).
 //
 // Everything here is offline-deterministic:
-//   - daemon-backed paths (job streaming, autopilot, doctor proxy) run against an
+//   - daemon-backed paths (job streaming, repair, doctor proxy) run against an
 //     in-test fake daemon (Bun.serve) whose SSE/JSON payloads we control, so the
 //     emitted line sequence is asserted byte-for-byte;
 //   - the local job fallback and doctor subprocess paths spawn the real `ge` CLI
@@ -15,7 +15,7 @@
 //
 // NOT covered (see transport.mjs decomposition notes): the Firestore ledger
 // reader beyond the injected-fake test in transport.test.mjs (runtime needs GCP),
-// and startAutopilotRun's local mission-plan branch (core.missionPlan requires
+// and startRepairRun's local pipeline-plan branch (core.pipelineGraphPlan requires
 // the generated use-case catalog this environment doesn't materialize — same
 // root cause as the catalog entries in tools/known-test-failures.json).
 
@@ -40,10 +40,10 @@ const {
   streamLedger,
   streamLogs,
   streamDoctor,
-  startAutopilotRun,
-  getAutopilot,
-  getAutopilotEvents,
-  listAutopilots,
+  startRepairRun,
+  getRepair,
+  getRepairEvents,
+  listRepairs,
 } = await import("./transport.mjs");
 const { listJobEvents } = await import("./job-store.mjs");
 
@@ -107,7 +107,7 @@ const CLOSED_PORT = 1;
 const UNIQUE = `${Date.now()}-${process.pid}`;
 const TASK_ID = `oracle-task-${UNIQUE}`;
 const DOCTOR_ID = `oracle-doctor-${UNIQUE}`;
-const AUTO_ID = `oracle-auto-${UNIQUE}`;
+const REPAIR_ID = `oracle-repair-${UNIQUE}`;
 
 // ── 1. shared SSE writer plumbing + blocked-job replay (jobs transport) ───────
 
@@ -400,9 +400,9 @@ test("oracle: streamDoctor falls back to the real doctor subprocess and replays 
   });
 }, 30000);
 
-// ── 8. autopilot orchestration via daemon tasks (autopilot transport) ─────────
+// ── 8. repair orchestration via daemon tasks (repair transport) ───────────────
 
-test("oracle: autopilot daemon path — start records the run, get syncs items, events proxy with afterSeq", async () => {
+test("oracle: repair daemon path — start records the run, get syncs items, events proxy with afterSeq", async () => {
   const submits = [];
   const taskEvents = [
     { seq: 1, type: "log", level: "info", line: "planning" },
@@ -412,7 +412,7 @@ test("oracle: autopilot daemon path — start records the run, get syncs items, 
     if (method === "POST" && path === "/api/tasks") {
       submits.push(await req.json());
       return Response.json({
-        id: AUTO_ID,
+        id: REPAIR_ID,
         status: "done",
         output: {
           run: { targetStage: "preview", options: { repair: true, attempts: 2, runPreview: false }, status: "done" },
@@ -420,9 +420,9 @@ test("oracle: autopilot daemon path — start records the run, get syncs items, 
         },
       });
     }
-    if (method === "GET" && path === `/api/tasks/${AUTO_ID}`) {
+    if (method === "GET" && path === `/api/tasks/${REPAIR_ID}`) {
       return Response.json({
-        id: AUTO_ID,
+        id: REPAIR_ID,
         status: "done",
         output: {
           run: { status: "done" },
@@ -430,7 +430,7 @@ test("oracle: autopilot daemon path — start records the run, get syncs items, 
         },
       });
     }
-    if (method === "GET" && path === `/api/tasks/${AUTO_ID}/events`) {
+    if (method === "GET" && path === `/api/tasks/${REPAIR_ID}/events`) {
       return Response.json({ events: taskEvents });
     }
     return new Response("not found", { status: 404 });
@@ -438,15 +438,15 @@ test("oracle: autopilot daemon path — start records the run, get syncs items, 
 
   try {
     await withDaemonPort(server.port, async () => {
-      const started = await startAutopilotRun({ ids: ["agent-a"], targetStage: "preview", repair: true, attempts: 2 });
-      expect(started).toEqual({ skipped: false, runId: AUTO_ID, reason: undefined, mission: undefined });
+      const started = await startRepairRun({ ids: ["agent-a"], targetStage: "preview", repair: true, attempts: 2 });
+      expect(started).toEqual({ skipped: false, runId: REPAIR_ID, reason: undefined, pipeline: undefined });
       expect(submits).toEqual([
-        { kind: "autopilot.run", ids: ["agent-a"], targetStage: "preview", repair: true, attempts: 2, runPreview: false, query: {} },
+        { kind: "repair.run", ids: ["agent-a"], targetStage: "preview", repair: true, attempts: 2, runPreview: false, query: {} },
       ]);
 
-      const { run, items } = await getAutopilot(AUTO_ID);
+      const { run, items } = await getRepair(REPAIR_ID);
       expect(run).toMatchObject({
-        id: AUTO_ID,
+        id: REPAIR_ID,
         targetStage: "preview",
         status: "done",
         options: { repair: true, attempts: 2, runPreview: false, daemonTask: true },
@@ -455,14 +455,14 @@ test("oracle: autopilot daemon path — start records the run, get syncs items, 
       });
       expect(run.endedAt).not.toBeNull();
       expect(items).toHaveLength(1);
-      expect(items[0]).toMatchObject({ runId: AUTO_ID, agentId: "agent-a", workspaceId: "ws-a", status: "passed", attempts: 1 });
+      expect(items[0]).toMatchObject({ runId: REPAIR_ID, agentId: "agent-a", workspaceId: "ws-a", status: "passed", attempts: 1 });
 
       // Daemon-task event reads proxy the daemon list and honor afterSeq.
-      expect(await getAutopilotEvents(AUTO_ID, {})).toEqual(taskEvents);
-      expect(await getAutopilotEvents(AUTO_ID, { afterSeq: 1 })).toEqual([taskEvents[1]]);
+      expect(await getRepairEvents(REPAIR_ID, {})).toEqual(taskEvents);
+      expect(await getRepairEvents(REPAIR_ID, { afterSeq: 1 })).toEqual([taskEvents[1]]);
 
-      const runs = await listAutopilots({ limit: 5 });
-      expect(runs.some((r) => r.id === AUTO_ID)).toBe(true);
+      const runs = await listRepairs({ limit: 5 });
+      expect(runs.some((r) => r.id === REPAIR_ID)).toBe(true);
     });
   } finally {
     server.stop(true);

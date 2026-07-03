@@ -132,10 +132,10 @@ export const ROUTES = [
       return { status: 200, json: { runs: await core.ledgerRuns({ limit: Number(req.query?.limit || 25) }) } };
     },
   },
-  // /api/ge/journey
+  // /api/ge/pipeline/plan
   {
     method: "GET",
-    match: (p) => p[2] === "journey" ? {} : null,
+    match: (p) => p[2] === "pipeline" && p[3] === "plan" ? {} : null,
     handle: async ({ req, core, cfg }) => {
       let tasks = [];
       let graph = null;
@@ -147,15 +147,15 @@ export const ROUTES = [
         if (response.ok) {
           const data = await response.json();
           tasks = data.tasks || [];
-          const missionTask = tasks.find((t) => t.kind === "mission.run");
-          if (missionTask?.output?.graph) graph = missionTask.output.graph;
+          const pipelineTask = tasks.find((t) => t.kind === "pipeline.run");
+          if (pipelineTask?.output?.graph) graph = pipelineTask.output.graph;
         }
       } catch {
-        // Graceful degrade: daemon down or unreachable → planned-only journey
+        // Graceful degrade: daemon down or unreachable → planned-only pipeline plan
       }
       return {
         status: 200,
-        json: await core.journeyPlan(cfg, {
+        json: await core.pipelinePlan(cfg, {
           scenario: req.query?.scenario || null,
           usecaseId: req.query?.usecaseId || req.query?.usecase || null,
           spec: req.query?.spec || null,
@@ -168,13 +168,13 @@ export const ROUTES = [
       };
     },
   },
-  // /api/ge/mission
+  // /api/ge/pipeline/graph
   {
     method: "GET",
-    match: (p) => p[2] === "mission" ? {} : null,
+    match: (p) => p[2] === "pipeline" && p[3] === "graph" ? {} : null,
     handle: async ({ req, core, cfg }) => ({
       status: 200,
-      json: await core.missionPlan(cfg, {
+      json: await core.pipelineGraphPlan(cfg, {
         ids: req.query?.ids || [],
         targetStage: req.query?.targetStage || req.query?.stage || "preview",
         repair: req.query?.repair !== "false",
@@ -265,23 +265,23 @@ export const ROUTES = [
     match: (p) => p[2] === "jobs" && p[3] && p[4] === "logs" ? {} : null,
     handle: ({ parts }) => ({ stream: "job", jobId: parts[3] }),
   },
-  // /api/ge/autopilot
+  // /api/ge/repair
   {
     method: "GET",
-    match: (p) => p[2] === "autopilot" && !p[3] ? {} : null,
-    handle: ({ req }) => ({ autopilotList: { limit: req.query?.limit } }),
+    match: (p) => p[2] === "repair" && !p[3] ? {} : null,
+    handle: ({ req }) => ({ repairList: { limit: req.query?.limit } }),
   },
-  // /api/ge/autopilot/:id
+  // /api/ge/repair/:id
   {
     method: "GET",
-    match: (p) => p[2] === "autopilot" && p[3] && !p[4] ? {} : null,
-    handle: ({ parts }) => ({ autopilotGet: parts[3] }),
+    match: (p) => p[2] === "repair" && p[3] && !p[4] ? {} : null,
+    handle: ({ parts }) => ({ repairGet: parts[3] }),
   },
-  // /api/ge/autopilot/:id/events
+  // /api/ge/repair/:id/events
   {
     method: "GET",
-    match: (p) => p[2] === "autopilot" && p[3] && p[4] === "events" ? {} : null,
-    handle: ({ req, parts }) => ({ autopilotEvents: { id: parts[3], afterSeq: req.query?.afterSeq } }),
+    match: (p) => p[2] === "repair" && p[3] && p[4] === "events" ? {} : null,
+    handle: ({ req, parts }) => ({ repairEvents: { id: parts[3], afterSeq: req.query?.afterSeq } }),
   },
   // /api/ge/mode — fast, runs synchronously and returns the new mode.
   {
@@ -317,12 +317,12 @@ export const ROUTES = [
       }),
     }),
   },
-  // /api/ge/autopilot
+  // /api/ge/repair
   {
     method: "POST",
-    match: (p) => p[2] === "autopilot" && !p[3] ? {} : null,
+    match: (p) => p[2] === "repair" && !p[3] ? {} : null,
     handle: ({ req, body }) => ({
-      autopilotStart: {
+      repairStart: {
         ids: body.ids || [],
         targetStage: body.targetStage || body.stage || "preview",
         repair: body.repair !== false,
@@ -332,11 +332,11 @@ export const ROUTES = [
       },
     }),
   },
-  // /api/ge/autopilot/:id/resume
+  // /api/ge/repair/:id/resume
   {
     method: "POST",
-    match: (p) => p[2] === "autopilot" && p[3] && p[4] === "resume" ? {} : null,
-    handle: ({ req, parts }) => ({ autopilotResume: { id: parts[3], query: req.query || {} } }),
+    match: (p) => p[2] === "repair" && p[3] && p[4] === "resume" ? {} : null,
+    handle: ({ req, parts }) => ({ repairResume: { id: parts[3], query: req.query || {} } }),
   },
   // The remaining mutating ops are long-running (terraform / gcloud deploy).
   // Return a `job` sentinel: the transport spawns `ge <argv>` async, returns a

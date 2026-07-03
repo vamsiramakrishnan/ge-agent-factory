@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, Boxes, Database, FileText, GitBranch, ListChecks, MessageSquareText, Play, RefreshCw, Search, User, Users } from "lucide-react";
 import { Button, CONTROL_CLASS, Field, PageHeader, Segmented, Select, Stat } from "@ge/ui";
-import { ge, startJob, type JourneyPlan, type JourneyStage, type RuntimeTaskSummary, type SpecCatalog, type SpecOption, type StatusBoard } from "../services/geClient";
+import { ge, startJob, type PipelinePlan, type PipelineStage, type RuntimeTaskSummary, type SpecCatalog, type SpecOption, type StatusBoard } from "../services/geClient";
 import { Lifecycle } from "../components/Lifecycle";
 import { CliEquivalent } from "../components/CliEquivalent";
 import { ErrorBanner } from "../components/ErrorBanner";
@@ -10,9 +10,9 @@ import { useToast } from "../lib/toast";
 import { slugify, splitCsv, startInterview } from "../lib/startInterview";
 import { SystemsField } from "../components/interview/SystemsField";
 import { useRunFollow } from "../state/runFollow";
-import { Stepper, type StepDef } from "../components/journey/Stepper";
+import { Stepper, type StepDef } from "../components/pipeline/Stepper";
 import { BulkSpecPicker, SpecSearchResults, SpecSummary } from "../components/pipeline/SpecPicker";
-import { ContractRow, JourneyOption, TargetSelect } from "../components/pipeline/WizardControls";
+import { ContractRow, SourceOption, TargetSelect } from "../components/pipeline/WizardControls";
 import { InterviewContextPanel, NextActionPanel } from "../components/pipeline/InterviewPanels";
 
 const WIZARD_STEPS: StepDef[] = [
@@ -75,7 +75,7 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
   const [selectedSpecSnapshot, setSelectedSpecSnapshot] = useState<SpecOption | null>(null);
   const [selectedBulkIds, setSelectedBulkIds] = useState<string[]>([]);
   const [targetStage, setTargetStage] = useState("preview");
-  const [journey, setJourney] = useState<JourneyPlan | null>(null);
+  const [plan, setPlan] = useState<PipelinePlan | null>(null);
   const [activeInterviewId, setActiveInterviewId] = useState(() => window.localStorage.getItem("ge.interview.activeTaskId") || "");
   const [activeInterviewTask, setActiveInterviewTask] = useState<RuntimeTaskSummary | null>(null);
   const [generatedSpecId, setGeneratedSpecId] = useState(initialGeneratedSpec.id || "");
@@ -110,7 +110,7 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
     const selected = new Set(selectedBulkIds);
     return (specCatalog?.specs || []).filter((spec) => selected.has(spec.id));
   }, [selectedBulkIds, specCatalog]);
-  const missionSpecPath = sourceMode === "new"
+  const pipelineSpecPath = sourceMode === "new"
     ? generatedSpecPath || (generatedSpecId ? `.ge/interviews/${generatedSpecId}/agent-spec.json` : "")
     : scopeMode === "single" && selectedSpec?.source === "interview" && selectedSpec.sourcePath
       ? selectedSpec.sourcePath
@@ -159,21 +159,21 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
     }
   };
 
-  const loadJourney = async () => {
+  const loadPipelinePlan = async () => {
     setBusy((current) => current || "load");
     try {
-      const next = await ge.journey({
+      const next = await ge.pipelinePlan({
         scenario: effectiveScenario,
-        spec: missionSpecPath || undefined,
+        spec: pipelineSpecPath || undefined,
         usecaseId: reviewUsecaseId,
         systems: systemList,
         ids: idList,
         targetStage,
       });
-      setJourney(next);
+      setPlan(next);
       setError(null);
     } catch (err: any) {
-      setError(err.message || "Failed to load journey");
+      setError(err.message || "Failed to load the pipeline plan");
     } finally {
       setBusy(null);
     }
@@ -192,7 +192,7 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
   };
 
   useEffect(() => {
-    loadJourney();
+    loadPipelinePlan();
   }, []);
 
   useEffect(() => {
@@ -208,28 +208,28 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
 
   useEffect(() => {
     const handle = window.setTimeout(() => {
-      loadJourney();
+      loadPipelinePlan();
     }, 250);
     return () => window.clearTimeout(handle);
-  }, [effectiveScenario, missionSpecPath, reviewUsecaseId, systems, idList.join(","), targetStage]);
+  }, [effectiveScenario, pipelineSpecPath, reviewUsecaseId, systems, idList.join(","), targetStage]);
 
-  const startJourney = async () => {
+  const startPipeline = async () => {
     setBusy("run");
     try {
-      const task = await ge.missionRun({
+      const task = await ge.pipelineRun({
         scenario: effectiveScenario,
-        spec: missionSpecPath || undefined,
+        spec: pipelineSpecPath || undefined,
         systems: systemList,
         ids: idList,
         targetStage,
         attempts: 3,
         runPreview: true,
       });
-      notify(`Started journey run ${task.id}`);
-      followRun(task.id, { kind: task.kind || "mission.run", source: effectiveScenario });
-      await Promise.all([loadJourney(), refresh()]);
+      notify(`Started pipeline run ${task.id}`);
+      followRun(task.id, { kind: task.kind || "pipeline.run", source: effectiveScenario });
+      await Promise.all([loadPipelinePlan(), refresh()]);
     } catch (err: any) {
-      setError(err.message || "Failed to start journey");
+      setError(err.message || "Failed to start the pipeline run");
     } finally {
       setBusy(null);
     }
@@ -254,7 +254,7 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
     }
   };
 
-  const runStageAction = async (stage: JourneyStage) => {
+  const runStageAction = async (stage: PipelineStage) => {
     const plan = stage.actionPlan;
     if (!plan) return;
     const command = actionCommand(plan);
@@ -265,12 +265,12 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
       location.hash = nav;
       return;
     }
-    if ((plan.kind === "resume_harness" || plan.kind === "resume_mission" || plan.kind === "resume_autopilot" || command.startsWith("ge runs resume") || command.startsWith("ge runtime resume")) && plan.taskId) {
+    if ((plan.kind === "resume_harness" || plan.kind === "resume_pipeline" || plan.kind === "resume_repair" || command.startsWith("ge runs resume") || command.startsWith("ge runtime resume")) && plan.taskId) {
       setBusy("run");
       try {
         await ge.runtimeResume(plan.taskId);
         notify(`Resumed ${plan.taskId}`);
-        await Promise.all([loadJourney(), refresh()]);
+        await Promise.all([loadPipelinePlan(), refresh()]);
         location.hash = stage.id === "interview" ? "#/interview" : "#/activity";
       } catch (err: any) {
         setError(err.detail || err.message || "Failed to resume task");
@@ -279,8 +279,8 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
       }
       return;
     }
-    if (plan.kind === "run_mission" || plan.kind === "run_preview" || command.startsWith("ge pipeline run") || command.startsWith("ge mission run")) {
-      await startJourney();
+    if (plan.kind === "run_pipeline" || plan.kind === "run_preview" || command.startsWith("ge pipeline run")) {
+      await startPipeline();
       return;
     }
     if (plan.kind === "build_agents" || command.startsWith("ge agents build")) {
@@ -295,14 +295,14 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
       location.hash = "#/activity";
       return;
     }
-    if (plan.kind === "ship_agents" || command.startsWith("ge agents ship")) {
+    if (plan.kind === "handoff_agents" || command.startsWith("ge handoff")) {
       const ids = plan.workspaceIds?.length ? plan.workspaceIds.join(",") : idList.join(",");
       if (!ids) {
-        setError("Select at least one spec before shipping agents.");
+        setError("Select at least one spec before handing off agents.");
         return;
       }
-      await startJob("Ship selected agents", ge.ship({ ids }));
-      notify("Started agent shipment");
+      await startJob("Hand off selected agents", ge.handoff({ ids }));
+      notify("Started agent handoff");
       await refresh();
       location.hash = "#/activity";
       return;
@@ -315,10 +315,10 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
       }
       setBusy("run");
       try {
-        const started = await ge.startAutopilot({ ids, targetStage: "preview", repair: true, attempts: 3, runPreview: true });
+        const started = await ge.startRepair({ ids, targetStage: "preview", repair: true, attempts: 3, runPreview: true });
         notify("Started repair");
-        if (started.runId) followRun(started.runId, { kind: "autopilot.run", source: "repair" });
-        await Promise.all([loadJourney(), refresh()]);
+        if (started.runId) followRun(started.runId, { kind: "repair.run", source: "repair" });
+        await Promise.all([loadPipelinePlan(), refresh()]);
         if (!started.runId) location.hash = "#/activity";
       } catch (err: any) {
         setError(err.detail || err.message || "Failed to start repair");
@@ -339,7 +339,7 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
       : `No console executor is registered for action kind: ${plan.kind}`);
   };
 
-  const next = journey?.next;
+  const next = plan?.next;
   const selectedCount = sourceMode === "existing"
     ? (scopeMode === "single" ? (selectedSpecId ? 1 : 0) : selectedBulkIds.length)
     : 1;
@@ -371,7 +371,7 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
         }
         meta={
           <>
-            <Stat size="sm" label="Mode" value={status?.mode || journey?.mode || "local"} />
+            <Stat size="sm" label="Mode" value={status?.mode || plan?.mode || "local"} />
             <Stat size="sm" label="Specs" value={specCatalog ? String(specCatalog.total) : "…"} />
             <Stat size="sm" label="GCP Project" value={status?.project || "local"} />
           </>
@@ -389,7 +389,7 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
                 Continue Interview
               </Button>
             )}
-            <Button variant="outline" size="sm" onClick={loadJourney} disabled={busy !== null}>
+            <Button variant="outline" size="sm" onClick={loadPipelinePlan} disabled={busy !== null}>
               <RefreshCw className="h-4 w-4" />
               Refresh
             </Button>
@@ -402,7 +402,7 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
           <Stepper steps={WIZARD_STEPS} current={step} onStep={(id) => setStep(id as 1 | 2 | 3)} />
         </div>
 
-        {error && <ErrorBanner tone="amber" message={error} onRetry={loadJourney} className="mx-6 mt-5" />}
+        {error && <ErrorBanner tone="amber" message={error} onRetry={loadPipelinePlan} className="mx-6 mt-5" />}
 
         {/* Step 1 — Source */}
         {step === 1 && (
@@ -416,14 +416,14 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
               <p className="mt-1 text-sm text-secondary">Begin with discovery, or move directly from a registered specification.</p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              <JourneyOption
+              <SourceOption
                 active={sourceMode === "existing"}
                 Icon={FileText}
                 title="Deploy from registered specs"
                 detail={`${specCatalog ? `${specCatalog.total} factory-grade specs are` : "The registered spec catalog is"} available for single-agent or fleet runs.`}
                 onClick={() => setSourceMode("existing")}
               />
-              <JourneyOption
+              <SourceOption
                 active={sourceMode === "new"}
                 Icon={MessageSquareText}
                 title="Interview to registered spec"
@@ -600,7 +600,7 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
                   <ContractRow Icon={Database} label="Systems" value={systemList.length ? systemList.join(", ") : "Not set"} />
                   <ContractRow Icon={Boxes} label="Target" value={`${targetLabel} ready`} />
                   <ContractRow Icon={Users} label="Scope" value={scopeMode === "single" ? "Single agent" : `Fleet · ${selectedCount} spec${selectedCount === 1 ? "" : "s"}`} />
-                  <ContractRow Icon={GitBranch} label="Runtime" value={`${status?.mode || "local"} · ${journey?.implementation?.missionGraph ? "typed run graph" : "journey planner"}`} />
+                  <ContractRow Icon={GitBranch} label="Runtime" value={`${status?.mode || "local"} · ${plan?.implementation?.pipelineGraph ? "typed run graph" : "pipeline planner"}`} />
                 </div>
               </div>
 
@@ -609,7 +609,7 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
                   variant="primary"
                   size="md"
                   className="w-full"
-                  onClick={sourceMode === "new" ? handleStartInterview : startJourney}
+                  onClick={sourceMode === "new" ? handleStartInterview : startPipeline}
                   disabled={launchDisabled}
                 >
                   <Play className="h-4 w-4" />
@@ -617,7 +617,7 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
                 </Button>
                 {/* Registry-derived CLI equivalent of this launch: interview
                     capture vs the resumable pipeline run. */}
-                <CliEquivalent commandId={sourceMode === "new" ? "capture" : "mission.run"} />
+                <CliEquivalent commandId={sourceMode === "new" ? "capture" : "pipeline.run"} />
                 {sourceMode === "existing" && selectedCount === 0 && (
                   <p className="text-xs text-secondary">Select at least one spec before running.</p>
                 )}
@@ -645,7 +645,7 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
         )}
       </section>
 
-      {(journey?.stages?.length || 0) > 0 && (
+      {(plan?.stages?.length || 0) > 0 && (
         <section className="overflow-hidden rounded-lg border border-outline-variant/40 bg-surface">
           <div className="grid gap-3 border-b border-outline-variant/30 px-5 py-4 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
@@ -663,8 +663,8 @@ export default function Pipeline({ status, refresh }: PipelineProps) {
           </div>
           <div className="p-6">
             <Lifecycle
-              stages={journey?.stages || []}
-              nextId={journey?.next?.id}
+              stages={plan?.stages || []}
+              nextId={plan?.next?.id}
               onAction={(plan, stage) => runStageAction(stage)}
               orientation="vertical"
             />

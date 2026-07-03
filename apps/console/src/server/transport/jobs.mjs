@@ -2,7 +2,7 @@
 // traced local-execution fallback), persist job records/events, and stream job
 // progress over SSE. Verbatim move from transport.mjs.
 //
-// Long mutating ops (up, mcp deploy, build, ship, sync) must NOT run in-process —
+// Long mutating ops (up, mcp deploy, build, handoff, sync) must NOT run in-process —
 // factory-core shells out synchronously and would block the server's event loop.
 // We spawn the `ge` CLI as an async child, return a jobId immediately, and stream
 // its NDJSON-shaped output over SSE so the console stays responsive.

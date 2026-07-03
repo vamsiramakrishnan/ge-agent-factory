@@ -1,9 +1,9 @@
 import { FileText, MessageSquareText, Radio } from "lucide-react";
 import { CommandChip } from "@ge/ui";
 import { StatusPill } from "../StatusPill";
-import type { JourneyStage, RuntimeTaskSummary } from "../../services/geClient";
+import type { PipelineStage, RuntimeTaskSummary } from "../../services/geClient";
 
-export function NextActionPanel({ next }: { next: JourneyStage }) {
+export function NextActionPanel({ next }: { next: PipelineStage }) {
   return (
     <div className="mt-5 border-t border-outline-variant/30 pt-4">
       <div className="mb-2 flex flex-wrap items-center gap-2">

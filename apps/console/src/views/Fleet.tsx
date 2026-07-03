@@ -29,7 +29,7 @@ export default function Fleet({ status, refresh }: FleetProps) {
   const [filterStage, setFilterStage] = useUrlParam("stage", "all");
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [busyAction, setBusyAction] = useState<"build" | "ship" | "sync" | "repair" | "regenerate" | null>(null);
+  const [busyAction, setBusyAction] = useState<"build" | "handoff" | "sync" | "repair" | "regenerate" | null>(null);
   const notify = useToast();
   const [syncRemote, setSyncRemote] = useState(() => window.localStorage.getItem("ge.sync.remote") || "");
   const [syncPush, setSyncPush] = useState(() => window.localStorage.getItem("ge.sync.push") !== "false");
@@ -140,20 +140,20 @@ export default function Fleet({ status, refresh }: FleetProps) {
     }
   };
 
-  const handleShip = async () => {
+  const handleHandoff = async () => {
     if (selected.size === 0) return;
-    setBusyAction("ship");
+    setBusyAction("handoff");
     try {
       const selectedAgents = (fleet?.agents || []).filter((agent) => selected.has(agent.id));
       const ids = selectedAgents
         .map((agent) => agent.actionPlan?.workspaceIds?.[0] || agent.workspaceId || agent.id)
         .join(",");
-      await startJob(`ge agents ship (${selected.size})`, ge.ship({ ids }));
-      showToast(`Ship started for ${selected.size} agent(s)`);
+      await startJob(`ge handoff (${selected.size})`, ge.handoff({ ids }));
+      showToast(`Handoff started for ${selected.size} agent(s)`);
       setSelected(new Set());
       await fetchFleet();
     } catch (err: any) {
-      showToast(`Ship failed: ${err.message}`, 5000);
+      showToast(`Handoff failed: ${err.message}`, 5000);
     } finally {
       setBusyAction(null);
     }
@@ -204,7 +204,7 @@ export default function Fleet({ status, refresh }: FleetProps) {
       for (const agent of selectedAgents) {
         const kind = agent.actionPlan?.kind;
         const taskId = agent.actionPlan?.taskId;
-        if ((kind === "resume_mission" || kind === "resume_autopilot") && typeof taskId === "string" && !resumeTaskIds.includes(taskId)) {
+        if ((kind === "resume_pipeline" || kind === "resume_repair") && typeof taskId === "string" && !resumeTaskIds.includes(taskId)) {
           resumeTaskIds.push(taskId);
         }
       }
@@ -221,10 +221,10 @@ export default function Fleet({ status, refresh }: FleetProps) {
         actions.push(`resume ${taskId}`);
       }
       if (repairIds.length) {
-        // Route through the canonical autopilot path (not raw runtimeStart) so the run is
-        // recorded in autopilot_runs and shows up in the Repair Queue — otherwise daemon
-        // autopilot.run tasks were invisible there (data-integrity gap).
-        const started = await ge.startAutopilot({
+        // Route through the canonical repair path (not raw runtimeStart) so the run is
+        // recorded in repair_runs and shows up in the Repair Queue — otherwise daemon
+        // repair.run tasks were invisible there (data-integrity gap).
+        const started = await ge.startRepair({
           ids: repairIds,
           targetStage: "preview",
           repair: true,
@@ -453,11 +453,11 @@ export default function Fleet({ status, refresh }: FleetProps) {
             <Button
               variant="primary"
               size="md"
-              loading={busyAction === "ship"}
+              loading={busyAction === "handoff"}
               disabled={busyAction !== null}
-              onClick={handleShip}
+              onClick={handleHandoff}
             >
-              {busyAction === "ship" ? "Shipping..." : "Ship"}
+              {busyAction === "handoff" ? "Handing off..." : "Hand off"}
             </Button>
             <Button
               variant="primary"
@@ -470,11 +470,11 @@ export default function Fleet({ status, refresh }: FleetProps) {
             </Button>
             </div>
           </div>
-          {/* The console teaches the CLI: what Build / Ship / Sync run,
+          {/* The console teaches the CLI: what Build / Hand off / Sync run,
               derived from the command registry (never hardcoded here). */}
           <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
             <CliEquivalent commandId={status?.mode === "remote" ? "agents.build" : "agents.build.local"} />
-            <CliEquivalent commandId="agents.ship" />
+            <CliEquivalent commandId="handoff" />
             <CliEquivalent commandId="agents.sync" />
           </div>
           {/* Progressive disclosure: sync destination/push are advanced options

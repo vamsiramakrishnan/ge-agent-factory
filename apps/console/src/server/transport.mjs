@@ -4,7 +4,7 @@
 // and siblings already use:
 //
 //   transport/jobs.mjs      — daemon job submit/stream + traced local fallback
-//   transport/autopilot.mjs — autopilot orchestration (daemon task or local)
+//   transport/repair.mjs    — repair orchestration (daemon task or local)
 //   transport/doctor.mjs    — doctor daemon proxy + subprocess report replay
 //   transport/ledger.mjs    — durable run-ledger SSE (local SQLite / Firestore)
 //   transport/logs.mjs      — raw NDJSON log tailing
@@ -16,12 +16,12 @@ import * as core from "../../../../tools/lib/factory-core.mjs";
 
 export { startGeJob, getJob, listJobs, streamJob } from "./transport/jobs.mjs";
 export {
-  startAutopilotRun,
-  resumeAutopilotRun,
-  getAutopilot,
-  listAutopilots,
-  getAutopilotEvents,
-} from "./transport/autopilot.mjs";
+  startRepairRun,
+  resumeRepairRun,
+  getRepair,
+  listRepairs,
+  getRepairEvents,
+} from "./transport/repair.mjs";
 export { streamDoctor } from "./transport/doctor.mjs";
 export { streamLedger, __setFirestoreLedgerReaderForTest } from "./transport/ledger.mjs";
 export { streamLogs } from "./transport/logs.mjs";

@@ -1,6 +1,6 @@
-import { ArrowRight, Check, MessageSquareText, Rocket, Ship, Stethoscope, X } from "lucide-react";
+import { ArrowRight, Check, MessageSquareText, Rocket, Send, Stethoscope, X } from "lucide-react";
 
-// First-run guided journey. Rendered only while the product is genuinely empty
+// First-run guided walkthrough. Rendered only while the product is genuinely empty
 // (no agents, no runs) — the moment there's real state, the live dashboards
 // take over. Each step says what it is, how much effort it takes, and derives
 // its done-state from live data, so the card doubles as a resume point if the
@@ -46,13 +46,13 @@ export function GetStartedCard({ hasAgents, hasRuns, hasDeployed, mode, onDismis
       Icon: Rocket,
     },
     {
-      key: "ship",
-      title: "Ship it to the cloud",
+      key: "handoff",
+      title: "Hand it off to the cloud",
       effort: "one click · deploy → register → publish",
-      detail: "When the local build reaches the boundary, ship hands it to the cloud factory, which deploys and publishes it end to end.",
+      detail: "When the local build reaches the boundary, the handoff sends it to the cloud factory, which deploys and publishes it end to end.",
       done: hasDeployed,
       cta: { label: "Open Fleet", hash: "#/fleet" },
-      Icon: Ship,
+      Icon: Send,
     },
   ];
   const firstOpen = steps.findIndex((step) => !step.done);

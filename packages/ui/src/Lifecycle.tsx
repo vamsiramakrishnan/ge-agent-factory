@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Check, Loader2, AlertTriangle, X, Circle, Play, ArrowUpRight, RotateCcw, Copy, ChevronDown } from "lucide-react";
-import type { JourneyStage, FleetActionPlan } from "@ge/contracts";
+import type { PipelineStage, FleetActionPlan } from "@ge/contracts";
 import { ACTION_DISPATCH_MODE, EXECUTABLE_ACTION_KINDS } from "@ge/contracts";
 import { statusLabel, statusToneClasses, type StatusTone } from "./status";
 
 // The ONE lifecycle renderer, shared across every GE surface (console views + the deck) —
 // the signature proof-pipeline instrument. A real stepper over the canonical
-// ge.journey.plan (@ge/contracts JourneyStage): connectors show progress (the segment
+// ge.pipeline.plan (@ge/contracts PipelineStage): connectors show progress (the segment
 // feeding a running stage carries a moving trace), each stage renders one of the seven
 // status-ramp tones with a distinct icon (never color alone), an expandable detail
 // (owner · task · artifacts · blocker), and an action affordance derived from the typed
@@ -55,15 +55,15 @@ const TONE_ICON: Record<StatusTone, typeof Check> = {
 };
 
 export interface LifecycleProps {
-  stages: JourneyStage[];
+  stages: PipelineStage[];
   /** id of the next actionable stage (plan.next?.id) — emphasized + auto-expanded. */
   nextId?: string | null;
   /** externally-selected stage id (drill-down); expands its detail. */
   selectedId?: string | null;
   /** called when a stage is selected/toggled. */
-  onSelectStage?: (stage: JourneyStage) => void;
+  onSelectStage?: (stage: PipelineStage) => void;
   /** called when a stage's action is clicked. Omit for a read-only lifecycle. */
-  onAction?: (plan: FleetActionPlan, stage: JourneyStage) => void;
+  onAction?: (plan: FleetActionPlan, stage: PipelineStage) => void;
   orientation?: "horizontal" | "vertical";
   className?: string;
 }
@@ -89,7 +89,7 @@ export function Lifecycle({
   }
 
   const expanded = selectedId ?? openId;
-  const toggle = (stage: JourneyStage) => {
+  const toggle = (stage: PipelineStage) => {
     setOpenId((cur) => (cur === stage.id ? null : stage.id));
     onSelectStage?.(stage);
   };
@@ -99,7 +99,7 @@ export function Lifecycle({
     window.setTimeout(() => setCopied((c) => (c === id ? null : c)), 1400);
   };
 
-  const detail = (stage: JourneyStage, phase: Phase) => {
+  const detail = (stage: PipelineStage, phase: Phase) => {
     const plan = stage.actionPlan || null;
     const dispatch = plan ? ACTION_DISPATCH_MODE[plan.kind] : undefined;
     const canRun = Boolean(onAction && plan && (EXECUTABLE.has(plan.kind) || dispatch === "navigate"));

@@ -73,7 +73,7 @@ function migrate() {
     CREATE INDEX IF NOT EXISTS idx_jobs_updated ON jobs(updated_at DESC);
     CREATE INDEX IF NOT EXISTS idx_job_events_job_seq ON job_events(job_id, seq);
 
-    CREATE TABLE IF NOT EXISTS autopilot_runs (
+    CREATE TABLE IF NOT EXISTS repair_runs (
       id TEXT PRIMARY KEY,
       target_stage TEXT NOT NULL,
       status TEXT NOT NULL,
@@ -86,7 +86,7 @@ function migrate() {
       updated_at TEXT NOT NULL,
       ended_at TEXT
     );
-    CREATE TABLE IF NOT EXISTS autopilot_items (
+    CREATE TABLE IF NOT EXISTS repair_items (
       run_id TEXT NOT NULL,
       agent_id TEXT NOT NULL,
       workspace_id TEXT NOT NULL,
@@ -98,9 +98,9 @@ function migrate() {
       repair_json TEXT,
       updated_at TEXT NOT NULL,
       PRIMARY KEY(run_id, agent_id),
-      FOREIGN KEY(run_id) REFERENCES autopilot_runs(id) ON DELETE CASCADE
+      FOREIGN KEY(run_id) REFERENCES repair_runs(id) ON DELETE CASCADE
     );
-    CREATE TABLE IF NOT EXISTS autopilot_events (
+    CREATE TABLE IF NOT EXISTS repair_events (
       seq INTEGER PRIMARY KEY AUTOINCREMENT,
       run_id TEXT NOT NULL,
       event_json TEXT NOT NULL,
@@ -108,11 +108,11 @@ function migrate() {
       agent_id TEXT,
       line TEXT,
       created_at INTEGER NOT NULL,
-      FOREIGN KEY(run_id) REFERENCES autopilot_runs(id) ON DELETE CASCADE
+      FOREIGN KEY(run_id) REFERENCES repair_runs(id) ON DELETE CASCADE
     );
-    CREATE INDEX IF NOT EXISTS idx_autopilot_runs_updated ON autopilot_runs(updated_at DESC);
-    CREATE INDEX IF NOT EXISTS idx_autopilot_items_run_status ON autopilot_items(run_id, status);
-    CREATE INDEX IF NOT EXISTS idx_autopilot_events_run_seq ON autopilot_events(run_id, seq);
+    CREATE INDEX IF NOT EXISTS idx_repair_runs_updated ON repair_runs(updated_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_repair_items_run_status ON repair_items(run_id, status);
+    CREATE INDEX IF NOT EXISTS idx_repair_events_run_seq ON repair_events(run_id, seq);
   `);
   // Only swallow the expected "already migrated" case; surface real failures.
   try {
@@ -122,38 +122,38 @@ function migrate() {
   }
 }
 
-export async function createAutopilotRun({ id, targetStage, options = {}, items = [], status = "running" }) {
+export async function createRepairRun({ id, targetStage, options = {}, items = [], status = "running" }) {
   await ensureDb();
   const now = new Date().toISOString();
   db.prepare(`
-    INSERT INTO autopilot_runs (id, target_stage, status, options_json, total, created_at, updated_at)
+    INSERT INTO repair_runs (id, target_stage, status, options_json, total, created_at, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `).run(id, targetStage, status, JSON.stringify(options), items.length, now, now);
   const insert = db.prepare(`
-    INSERT INTO autopilot_items (run_id, agent_id, workspace_id, target_stage, status, updated_at)
+    INSERT INTO repair_items (run_id, agent_id, workspace_id, target_stage, status, updated_at)
     VALUES (?, ?, ?, ?, 'pending', ?)
   `);
   for (const item of items) insert.run(id, item.agentId, item.workspaceId, targetStage, now);
-  return await getAutopilotRun(id);
+  return await getRepairRun(id);
 }
 
-export async function appendAutopilotEvent(runId, ev) {
+export async function appendRepairEvent(runId, ev) {
   await ensureDb();
   const line = typeof ev.line === "string" ? ev.line.trimEnd() : null;
   db.prepare(`
-    INSERT INTO autopilot_events (run_id, event_json, type, agent_id, line, created_at)
+    INSERT INTO repair_events (run_id, event_json, type, agent_id, line, created_at)
     VALUES (?, ?, ?, ?, ?, ?)
   `).run(runId, JSON.stringify(ev), ev.type || null, ev.agentId || null, line, Date.now());
-  db.prepare("UPDATE autopilot_runs SET updated_at = ? WHERE id = ?").run(new Date().toISOString(), runId);
+  db.prepare("UPDATE repair_runs SET updated_at = ? WHERE id = ?").run(new Date().toISOString(), runId);
 }
 
-export async function updateAutopilotItem(runId, agentId, patch = {}) {
+export async function updateRepairItem(runId, agentId, patch = {}) {
   await ensureDb();
-  const current = db.prepare("SELECT * FROM autopilot_items WHERE run_id = ? AND agent_id = ?").get(runId, agentId);
+  const current = db.prepare("SELECT * FROM repair_items WHERE run_id = ? AND agent_id = ?").get(runId, agentId);
   if (!current) return null;
   const now = new Date().toISOString();
   db.prepare(`
-    UPDATE autopilot_items
+    UPDATE repair_items
     SET status = ?, attempts = ?, blocker_json = ?, doctor_json = ?, repair_json = ?, updated_at = ?
     WHERE run_id = ? AND agent_id = ?
   `).run(
@@ -166,45 +166,45 @@ export async function updateAutopilotItem(runId, agentId, patch = {}) {
     runId,
     agentId,
   );
-  await refreshAutopilotRunCounts(runId);
-  return await getAutopilotItem(runId, agentId);
+  await refreshRepairRunCounts(runId);
+  return await getRepairItem(runId, agentId);
 }
 
-export async function finishAutopilotRun(id, status = "done") {
+export async function finishRepairRun(id, status = "done") {
   await ensureDb();
   const now = new Date().toISOString();
-  db.prepare("UPDATE autopilot_runs SET status = ?, updated_at = ?, ended_at = ? WHERE id = ?").run(status, now, now, id);
-  await refreshAutopilotRunCounts(id);
-  return await getAutopilotRun(id);
+  db.prepare("UPDATE repair_runs SET status = ?, updated_at = ?, ended_at = ? WHERE id = ?").run(status, now, now, id);
+  await refreshRepairRunCounts(id);
+  return await getRepairRun(id);
 }
 
-export async function getAutopilotRun(id) {
+export async function getRepairRun(id) {
   await ensureDb();
-  const row = db.prepare("SELECT * FROM autopilot_runs WHERE id = ?").get(id);
-  return row ? normalizeAutopilotRun(row) : null;
+  const row = db.prepare("SELECT * FROM repair_runs WHERE id = ?").get(id);
+  return row ? normalizeRepairRun(row) : null;
 }
 
-export async function listAutopilotRuns({ limit = 50 } = {}) {
+export async function listRepairRuns({ limit = 50 } = {}) {
   await ensureDb();
   const safeLimit = Math.max(1, Math.min(Number(limit) || 50, 200));
-  return db.prepare("SELECT * FROM autopilot_runs ORDER BY updated_at DESC LIMIT ?").all(safeLimit).map(normalizeAutopilotRun);
+  return db.prepare("SELECT * FROM repair_runs ORDER BY updated_at DESC LIMIT ?").all(safeLimit).map(normalizeRepairRun);
 }
 
-export async function getAutopilotItem(runId, agentId) {
+export async function getRepairItem(runId, agentId) {
   await ensureDb();
-  const row = db.prepare("SELECT * FROM autopilot_items WHERE run_id = ? AND agent_id = ?").get(runId, agentId);
-  return row ? normalizeAutopilotItem(row) : null;
+  const row = db.prepare("SELECT * FROM repair_items WHERE run_id = ? AND agent_id = ?").get(runId, agentId);
+  return row ? normalizeRepairItem(row) : null;
 }
 
-export async function listAutopilotItems(runId) {
+export async function listRepairItems(runId) {
   await ensureDb();
-  return db.prepare("SELECT * FROM autopilot_items WHERE run_id = ? ORDER BY updated_at DESC, agent_id ASC").all(runId).map(normalizeAutopilotItem);
+  return db.prepare("SELECT * FROM repair_items WHERE run_id = ? ORDER BY updated_at DESC, agent_id ASC").all(runId).map(normalizeRepairItem);
 }
 
-export async function listAutopilotEvents(runId, { afterSeq = 0, limit = 5000 } = {}) {
+export async function listRepairEvents(runId, { afterSeq = 0, limit = 5000 } = {}) {
   await ensureDb();
   const rows = db.prepare(`
-    SELECT seq, event_json FROM autopilot_events
+    SELECT seq, event_json FROM repair_events
     WHERE run_id = ? AND seq > ?
     ORDER BY seq ASC
     LIMIT ?
@@ -212,14 +212,14 @@ export async function listAutopilotEvents(runId, { afterSeq = 0, limit = 5000 } 
   return rows.map((row) => ({ seq: row.seq, event: JSON.parse(row.event_json) }));
 }
 
-async function refreshAutopilotRunCounts(runId) {
-  const rows = db.prepare("SELECT status, COUNT(*) AS count FROM autopilot_items WHERE run_id = ? GROUP BY status").all(runId);
+async function refreshRepairRunCounts(runId) {
+  const rows = db.prepare("SELECT status, COUNT(*) AS count FROM repair_items WHERE run_id = ? GROUP BY status").all(runId);
   const counts = Object.fromEntries(rows.map((row) => [row.status, row.count]));
   const passed = Number(counts.passed || 0);
   const repaired = Number(counts.repaired || 0);
   const blocked = Number(counts.blocked || 0);
   db.prepare(`
-    UPDATE autopilot_runs
+    UPDATE repair_runs
     SET passed = ?, repaired = ?, blocked = ?, updated_at = ?
     WHERE id = ?
   `).run(passed, repaired, blocked, new Date().toISOString(), runId);
@@ -298,7 +298,7 @@ function normalizeJob(row) {
   };
 }
 
-function normalizeAutopilotRun(row) {
+function normalizeRepairRun(row) {
   return {
     id: row.id,
     targetStage: row.target_stage,
@@ -314,7 +314,7 @@ function normalizeAutopilotRun(row) {
   };
 }
 
-function normalizeAutopilotItem(row) {
+function normalizeRepairItem(row) {
   return {
     runId: row.run_id,
     agentId: row.agent_id,

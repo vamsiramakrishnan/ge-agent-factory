@@ -3,8 +3,8 @@
 // input types declare only the fields the normalizers read.
 
 // The normalized artifact reference every normalizer emits.
-// Same shape as @ge/contracts' MissionArtifactRef (journey.ts
-// MissionArtifactRefSchema) modulo required-ness (this side guarantees
+// Same shape as @ge/contracts' PipelineArtifactRef (pipeline.ts
+// PipelineArtifactRefSchema) modulo required-ness (this side guarantees
 // name/type/status and a nullable path after normalization; the schema keeps
 // everything optional pre-normalization) — merge tracked by the action-kinds
 // reconciliation spec (docs/design-specs/specs/2026-06-14-console-presentation-unification.md).

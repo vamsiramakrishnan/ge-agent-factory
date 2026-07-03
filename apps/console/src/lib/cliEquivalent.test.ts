@@ -12,10 +12,9 @@ test("cliForCommand resolves a command id to its registry cli string", () => {
   expect(cliForCommand(GE_COMMAND_LIST, "handoff")).toBe("ge handoff");
   expect(cliForCommand(GE_COMMAND_LIST, "agents.build")).toBe("ge agents build");
   expect(cliForCommand(GE_COMMAND_LIST, "agents.build.local")).toBe("ge agents build --local");
-  expect(cliForCommand(GE_COMMAND_LIST, "agents.ship")).toBe("ge agents ship");
   expect(cliForCommand(GE_COMMAND_LIST, "agents.sync")).toBe("ge agents sync");
   expect(cliForCommand(GE_COMMAND_LIST, "mcp.deploy")).toBe("ge mcp deploy");
-  expect(cliForCommand(GE_COMMAND_LIST, "mission.run")).toBe("ge pipeline run");
+  expect(cliForCommand(GE_COMMAND_LIST, "pipeline.run")).toBe("ge pipeline run");
 });
 
 test("every registry command's id resolves to its own cli string", () => {
@@ -27,6 +26,8 @@ test("every registry command's id resolves to its own cli string", () => {
 
 test("unknown ids and missing payloads resolve to null (affordance hides)", () => {
   expect(cliForCommand(GE_COMMAND_LIST, "not.a.command")).toBeNull();
+  // agents.ship is gone from the registry outright — the handoff verb replaced it.
+  expect(cliForCommand(GE_COMMAND_LIST, "agents.ship")).toBeNull();
   expect(cliForCommand(undefined, "prove")).toBeNull();
   expect(cliForCommand(null, "prove")).toBeNull();
   expect(cliForCommand([], "prove")).toBeNull();
