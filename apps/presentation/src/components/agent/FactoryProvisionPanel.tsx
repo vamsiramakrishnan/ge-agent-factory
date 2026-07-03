@@ -3,7 +3,7 @@ import { CheckCircle2, Cpu, Database, Loader2, Rocket, ChevronDown, ChevronUp, S
 import { startFactoryRun, startPreflight, getGeminiAgents, FactoryRun, FactoryRunStatus, FactoryStage, PreflightCheck } from "../../services/factoryClient";
 import { authEnabled, getToken } from "../../auth/firebase";
 import { UseCaseGenerationSpec } from "../../types/architecture";
-import type { JourneyStage, MissionArtifactRef, FleetBlocker } from "@ge/contracts";
+import type { PipelineStage, PipelineArtifactRef, FleetBlocker } from "@ge/contracts";
 import { Lifecycle } from "@ge/ui";
 import { PreflightChecklist } from "./PreflightChecklist";
 import { GenerationSpecView } from "./GenerationSpecView";
@@ -45,21 +45,21 @@ function getStageStatus(status: FactoryRunStatus | null, stage: FactoryStage): s
  * Pulls artifact references off a stage result so the <Lifecycle> detail panel can
  * link/show them per stage rather than collapsing everything to a last-error string.
  */
-function stageArtifacts(artifact: FactoryRunStatus["artifacts"][FactoryStage]): MissionArtifactRef[] {
+function stageArtifacts(artifact: FactoryRunStatus["artifacts"][FactoryStage]): PipelineArtifactRef[] {
   if (!artifact) return [];
-  const refs: MissionArtifactRef[] = [];
+  const refs: PipelineArtifactRef[] = [];
   if (artifact.operation) refs.push({ name: "operation", path: artifact.operation });
   if (artifact.buildStatus) refs.push({ name: "build", path: artifact.buildStatus });
   return refs;
 }
 
 /**
- * Maps factory run status to JourneyStage[] for the shared <Lifecycle> component.
+ * Maps factory run status to PipelineStage[] for the shared <Lifecycle> component.
  * Each stage carries its own status, blocker (on failure), and artifact refs so the
  * Lifecycle's expandable detail surfaces per-stage error/operation/build info instead
  * of one terse label + a panel-level last-error string.
  */
-function factoryStagesToJourney(status: FactoryRunStatus | null): JourneyStage[] {
+function factoryStagesToPipeline(status: FactoryRunStatus | null): PipelineStage[] {
   return STAGES.map((stage) => {
     const artifact = status?.artifacts?.[stage.id];
     let stageStatus: string = "pending";
@@ -634,7 +634,7 @@ export function FactoryProvisionPanel({ title, department, systems = [], generat
 
       {/* Progress Stages Row — per-stage detail/blocker/artifacts via <Lifecycle> */}
       <div className="mt-4">
-        <Lifecycle stages={factoryStagesToJourney(status)} nextId={nextStageId(status)} orientation="horizontal" />
+        <Lifecycle stages={factoryStagesToPipeline(status)} nextId={nextStageId(status)} orientation="horizontal" />
       </div>
 
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-[9px] font-medium text-secondary/70">
