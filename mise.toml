@@ -235,9 +235,9 @@ run = "bun run docs:gate"
 description = "Run the docs website locally (Astro/Starlight; content synced from docs/ on start)"
 run = "bun run docs:site:dev"
 
-[tasks.devex-smoke]
-description = "One-command local proof: doctor → local mode → one validated canary workspace (a single agent that proves the pipeline; ID=<usecase> TARGET=validated|previewed)"
-run = 'bun tools/ge.mjs devex smoke ${ID:+--id "$ID"} ${TARGET:+--target "$TARGET"}'
+[tasks.prove]
+description = "One-command proof: health check → one validated agent workspace (ID=<usecase> TARGET=validated|previewed)"
+run = 'bun tools/ge.mjs prove ${ID:+--id "$ID"} ${TARGET:+--target "$TARGET"}'
 
 [tasks.up]
 description = "Terraform apply → build → re-apply → init → doctor (fresh project)"
@@ -344,7 +344,7 @@ printf "\\n\\033[1mRecommended next steps\\033[0m\\n"
 printf "  Fresh clone or broken deps:       \\033[36mmise run setup\\033[0m\\n"
 printf "  Local health check:               \\033[36mmise run doctor-local\\033[0m\\n"
 printf "  Fast DevEx gate:                  \\033[36mmise run devex-check\\033[0m\\n"
-printf "  One-command local proof:          \\033[36mmise run devex-smoke\\033[0m\\n"
+printf "  One-command local proof:          \\033[36mmise run prove\\033[0m  (or: ge prove)\\n"
 printf "  Open the main UI:                 \\033[36mmise run console\\033[0m  (http://localhost:18260)\\n"
 printf "  Build one agent locally:          \\033[36mmise run mode-local && CANARY=1 mise run provision-local\\033[0m\\n"
 printf "  Watch runs and blockers:          \\033[36mmise run console\\033[0m  then open Activity, or run \\033[36mge agents status --watch\\033[0m\\n"
@@ -378,7 +378,7 @@ printf "\\n\\033[1mStart here (local development, no cloud deploy required)\\033
 printf "  \\033[36mmise run setup\\033[0m                 Install deps, sync catalog/skills, install the ge command, start the daemon\\n"
 printf "  \\033[36mmise run doctor-local\\033[0m          Check local tools: Bun, uv, Python, agents-cli, cache, harness wiring\\n"
 printf "  \\033[36mmise run devex-check\\033[0m           Fast gate: local doctor, docs links, workspace manifest contracts\\n"
-printf "  \\033[36mmise run devex-smoke\\033[0m           Prove the local path: doctor → local mode → one validated canary workspace\\n"
+printf "  \\033[36mmise run prove\\033[0m                Prove the local path: health check → one validated agent workspace\\n"
 printf "  \\033[36mmise run console\\033[0m               Open the operator UI for Pipeline, Fleet, Activity, Doctor, and generated specs\\n"
 printf "  \\033[36mCANARY=1 mise run provision-local\\033[0m Build one generated agent locally up to the preview/build boundary\\n"
 printf "\\n\\033[1mWhich local app should I run?\\033[0m\\n"

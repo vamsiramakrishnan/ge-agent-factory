@@ -9,19 +9,19 @@ import { test, expect } from "bun:test";
 import { GE_COMMANDS } from "./lib/ge-command-registry.mjs";
 
 const EXPECTED_TOOLS = {
-  // Golden-path verbs (added 2026-07-03, Language & DX refactor): additive
-  // widening — capture/prove/handoff delegate to the same core functions as
-  // the CLI verbs; every pre-existing tool below is untouched.
+  // Golden-path verbs (Language & DX refactor, 2026-07-03): capture/prove/
+  // handoff delegate to the same core functions as the CLI verbs. The
+  // factory_ship tool was folded into factory_handoff in the full-rename
+  // sweep (unreleased surface — no alias kept).
   factory_capture: ["from?"],
   factory_prove: ["id?", "target?", "force?"],
-  factory_handoff: ["target?", "ids?"],
+  factory_handoff: ["target?", "ids?", "startStage?", "targetStage?", "noProxy?"],
   factory_list_usecases: ["department?", "search?", "limit?"],
   factory_doctor: [],
   factory_status: ["noProxy?"],
   factory_logs: ["runId", "stage?", "item?"],
   factory_provision: ["scope?", "dept?", "ids?", "concurrency?", "force?", "noProxy?", "local?", "vertex?", "target?", "limit?"],
   factory_sync: ["force?", "push?", "commit?", "local?", "remote?", "create?"],
-  factory_ship: ["ids?", "startStage?", "targetStage?", "noProxy?"],
   factory_mcp_deploy: [],
   factory_mcp_doctor: [],
 };

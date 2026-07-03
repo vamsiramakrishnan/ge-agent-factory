@@ -113,7 +113,7 @@ function buildWorkspaceCommands(project) {
     doctor: `ge-harness workspace doctor ${id} --stage preview`,
     repair: `ge-harness workspace repair ${id} --stage preview`,
     sync: `ge agents sync --ids ${useCaseId} --local`,
-    ship: `ge agents ship --ids ${id}`,
+    ship: `ge handoff agents-cli --ids ${id}`,
   };
 }
 

@@ -17,7 +17,7 @@ test("region renders one heading per command path, including nested leaves", asy
     "### `ge`",
     "### `ge up`",
     "### `ge agents build`",
-    "### `ge runtime start autopilot`",
+    "### `ge fleet repair`",
     "### `ge apply`",
   ]) {
     expect(region).toContain(`${heading}\n`);

@@ -1,10 +1,10 @@
-// tools/ge/agents.mjs — `ge agents build|ship|status|fleet|logs|sync|resume`.
+// tools/ge/agents.mjs — `ge agents build|resume|status|logs|sync`.
 // Moved verbatim out of tools/ge.mjs; `resume` added later (ADR 0001's
-// pipeline state machine surfaced as a recovery verb).
+// pipeline state machine surfaced as a recovery verb). The release verb is
+// `ge handoff` (tools/ge/handoff.mjs).
 import { defineCommand } from "citty";
 import { groupResumeActions } from "../lib/agents-resume.mjs";
-import { guarded, common, cfgFrom, emit, out, pc, elog, core, modeOf, LOCAL_BUILD_BOUNDARY, deprecatedAlias } from "./shared.mjs";
-import { fleetStatusCmd } from "./fleet.mjs";
+import { guarded, common, cfgFrom, emit, out, pc, elog, core, modeOf, LOCAL_BUILD_BOUNDARY } from "./shared.mjs";
 
 // One render + poll loop shared by `ge agents status --watch` and
 // `ge agents build --watch`, so kicking off a remote build and watching it
@@ -45,7 +45,7 @@ const agentsBuild = defineCommand({
         if (r.plan) out(pc.dim(`  plan: ${r.plan}`));
         if (r.run) out(pc.dim(`  run: ${r.run}`));
         if (r.events) out(pc.dim(`  events: ${r.events}`));
-        out(pc.dim("  next: ge agents ship   (cloud: load_data→deploy→register→publish)   ·   ge agents sync --push   (push code)"));
+        out(pc.dim("  next: ge handoff agents-cli   (cloud: load_data→deploy→register→publish)   ·   ge agents sync --push   (push code)"));
       });
       return;
     }
@@ -76,10 +76,6 @@ const agentsStatus = defineCommand({
     });
   }),
 });
-
-// Fleet health moved to its canonical home, `ge fleet status` (tools/ge/
-// fleet.mjs); this spelling stays as a working alias.
-const agentsFleet = deprecatedAlias({ name: "fleet", hint: "ge fleet status", command: fleetStatusCmd });
 
 const agentsLogs = defineCommand({
   meta: { name: "logs", description: "Pretty-print a stage's result + errors" },
@@ -118,7 +114,7 @@ const agentsSync = defineCommand({
 });
 
 const agentsResume = defineCommand({
-  meta: { name: "resume", description: "Resume interrupted/failed builds from the ledger: retry failed stages, finish local work, ship past the boundary" },
+  meta: { name: "resume", description: "Resume interrupted/failed builds from the ledger: retry failed stages, finish local work, hand off past the boundary" },
   args: {
     ...common,
     ids: { type: "string", description: "Only resume these comma-separated use-case/workspace ids" },
@@ -163,8 +159,8 @@ const agentsResume = defineCommand({
       elog(`${group.label}: ${group.detail}`);
       if (group.action === "build_local") {
         executed.push({ action: group.action, result: await core.provisionLocal(cfg, { ids: group.useCaseIds.join(","), target, log: elog }) });
-      } else if (group.action === "ship") {
-        executed.push({ action: group.action, result: await core.ship(cfg, { ids: group.workspaceIds.join(","), startStage: "load_data", targetStage: "publish_enterprise", concurrency: "2", log: elog }) });
+      } else if (group.action === "handoff") {
+        executed.push({ action: group.action, result: await core.handoff(cfg, { ids: group.workspaceIds.join(","), startStage: "load_data", targetStage: "publish_enterprise", concurrency: "2", log: elog }) });
       } else if (group.action === "advance_remote") {
         executed.push({ action: group.action, result: await core.provision(cfg, { ids: group.useCaseIds.join(","), concurrency: "2", log: elog }) });
       }
@@ -177,13 +173,4 @@ const agentsResume = defineCommand({
   }),
 });
 
-const agentsShip = defineCommand({
-  meta: { name: "ship", description: "Hand off locally-built agents to the cloud: upload + run deploy→register→publish remotely" },
-  args: { ...common, ids: { type: "string", description: "Comma-separated local workspace ids (default: all built locally)" }, "start-stage": { type: "string", description: "Stage to start at remotely (default load_data)" }, "target-stage": { type: "string", description: "Stage to stop at (default publish_enterprise)" }, concurrency: { type: "string", description: "Parallel remote submissions (default 2)" }, "no-proxy": { type: "boolean", description: "Call the gateway directly over HTTPS instead of the gcloud run proxy tunnel" } },
-  run: guarded(async ({ args }) => {
-    const res = await core.ship(cfgFrom(args), { ids: args.ids, startStage: args["start-stage"] || "load_data", targetStage: args["target-stage"] || "publish_enterprise", concurrency: args.concurrency || "2", noProxy: args["no-proxy"], log: elog });
-    emit(args, res, (r) => out(`\nShipped ${pc.green(r.submitted)}  failed ${r.failed ? pc.red(r.failed) : "0"}  ${pc.dim(`(${r.startStage} → ${r.targetStage}, remote)`)}`));
-  }),
-});
-
-export const agents = defineCommand({ meta: { name: "agents", description: "Agent lifecycle: build · resume · ship · status · fleet · logs · sync" }, subCommands: { build: agentsBuild, resume: agentsResume, ship: agentsShip, status: agentsStatus, fleet: agentsFleet, logs: agentsLogs, sync: agentsSync } });
+export const agents = defineCommand({ meta: { name: "agents", description: "Agent lifecycle: build · resume · status · logs · sync (release proven agents with `ge handoff`)" }, subCommands: { build: agentsBuild, resume: agentsResume, status: agentsStatus, logs: agentsLogs, sync: agentsSync } });

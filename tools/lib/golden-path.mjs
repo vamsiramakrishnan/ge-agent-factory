@@ -7,10 +7,11 @@
 //
 //   capture  → the console Interview (starts it if needed, deep-links it);
 //              `--from <spec.json>` wires the existing registerSpec path
-//   prove    → fresh machine (no local workspaces): devexSmoke
-//              workspaces present: provisionLocal (local mode) / provision
-//              (remote mode) — exactly what `ge agents build` runs
-//   handoff  → ship() (`ge agents ship`), gated on a known target so an
+//   prove    → fresh machine (no agents built yet): firstProof (health check
+//              → first validated workspace); agents present: provisionLocal /
+//              provision — exactly what `ge agents build` runs
+//   handoff  → the release op (upload proven workspaces, run the
+//              post-boundary stages remotely), gated on a known target so an
 //              unsupported target is a four-field DxError, not a stack trace
 //
 // House pattern: createGoldenPathOps takes its cross-cutting dependencies
@@ -73,7 +74,7 @@ function listBuiltWorkspaces() {
 // `listWorkspaces` / `probeConsole` default to the real file/port probes and
 // exist as injection points so the dispatch rules are unit-testable without a
 // workspace store or a live console.
-export function createGoldenPathOps({ repoRoot, devexSmoke, provisionLocal, provision, ship, registerSpec, listWorkspaces = listBuiltWorkspaces, probeConsole = consoleAlive }) {
+export function createGoldenPathOps({ repoRoot, firstProof, provisionLocal, provision, handoffRun, registerSpec, listWorkspaces = listBuiltWorkspaces, probeConsole = consoleAlive }) {
   // ── capture ────────────────────────────────────────────────────────────────
   // Start the console if it isn't running, deep-link the Interview, and say
   // exactly what happened. With --from <agent-spec.json>, also register the
@@ -125,38 +126,38 @@ export function createGoldenPathOps({ repoRoot, devexSmoke, provisionLocal, prov
   }
 
   // ── prove ──────────────────────────────────────────────────────────────────
-  // One verb, one dispatch rule: nothing built yet → the fresh-machine proof
-  // (doctor → canary build, i.e. devex smoke); workspaces present → build them
-  // (agents build), honoring the active mode. Harness verdicts stream through
-  // `log` exactly as the underlying implementations already emit them.
-  async function prove(cfg, { id = null, target = null, force = false, vertex = false, warm = false, log = noop } = {}) {
+  // One verb, one dispatch rule: nothing built yet → the fresh-machine first
+  // proof (health check → first validated workspace); workspaces present →
+  // build them (agents build), honoring the active mode. Verify verdicts
+  // stream through `log` exactly as the underlying implementations emit them.
+  async function prove(cfg, { id = null, target = null, force = false, vertex = false, warm = false, preview = false, log = noop } = {}) {
     const workspaces = listWorkspaces();
     if (!workspaces.length && !id) {
-      log("no local workspaces yet — proving the pipeline from scratch (doctor → canary build)");
-      const result = await devexSmoke(cfg, { target: target || "validated", vertex, warm, force, log });
-      return { ...result, kind: "ge.prove", path: "smoke", implementedBy: result.kind || "ge.devex.smoke" };
+      log("no agents built yet — proving from scratch (health check → first agent build)");
+      const result = await firstProof(cfg, { target: target || "validated", preview, vertex, warm, force, log });
+      return { ...result, kind: "ge.prove", path: "fresh" };
     }
     const mode = cfg.mode || "local";
     log(`${workspaces.length || "requested"} workspace(s) → rebuilding proof (${mode} mode)`);
     const result = mode === "remote"
       ? await provision(cfg, { ids: id || undefined, force, log })
       : await provisionLocal(cfg, { ids: id || undefined, target: target || undefined, vertex: vertex || undefined, warm, force, log });
-    return { ...result, kind: "ge.prove", path: "build", ok: result.ok !== false, mode, implementedBy: mode === "remote" ? "ge.agents.build" : "ge.agents.build.local" };
+    return { ...result, kind: "ge.prove", path: "build", ok: result.ok !== false, mode };
   }
 
   // ── handoff ────────────────────────────────────────────────────────────────
-  // `agents-cli` is the supported target today (ship → agents-cli deploy →
+  // `agents-cli` is the supported target today (agents-cli deploy →
   // Agent Engine → Gemini Enterprise). Anything else gets the error contract.
   const HANDOFF_TARGETS = ["agents-cli"];
-  async function handoff(cfg, { target = "agents-cli", ids = undefined, log = noop } = {}) {
+  async function handoff(cfg, { target = "agents-cli", ids = undefined, startStage = undefined, targetStage = undefined, concurrency = undefined, noProxy = undefined, log = noop } = {}) {
     if (!HANDOFF_TARGETS.includes(target)) {
       throw new DxError(`unsupported handoff target '${target}'.`, {
         where: "handoff target",
-        why: `supported today: ${HANDOFF_TARGETS.join(", ")} (ships local builds through agents-cli deploy to Agent Engine / Gemini Enterprise); more targets are roadmap`,
+        why: `supported today: ${HANDOFF_TARGETS.join(", ")} (releases local builds through agents-cli deploy to Agent Engine / Gemini Enterprise); more targets are roadmap`,
         fix: "ge handoff agents-cli",
       });
     }
-    const result = await ship(cfg, { ids, log });
+    const result = await handoffRun(cfg, { ids, startStage, targetStage, concurrency, noProxy, log });
     return { kind: "ge.handoff", target, ...result };
   }
 
@@ -179,7 +180,7 @@ export async function goldenPathPosition(cfg = {}, { haveConfig = true, operateN
   let lastFailure = null;
   try {
     const runs = await ledgerRuns({ limit: 25 });
-    shipped = runs.filter((run) => run.kind === "ship").length;
+    shipped = runs.filter((run) => run.kind === "handoff").length;
     const latest = runs[0];
     if (latest && latest.status === "failed") lastFailure = { runId: latest.id, kind: latest.kind || "build" };
   } catch { /* ledger unavailable (no sqlite driver) — position still renders from file state */ }

@@ -1,9 +1,6 @@
-// tools/ge/daemon.mjs — `ge daemon start|status|tasks|task|events|stop` and
-// `ge runtime status|tasks|task|events|resume|start` (the `runtime` group
-// reuses several of the same leaf commands as `daemon` — that's true of the
-// original tools/ge.mjs too; see the "leaf commands defined once; reused by
-// noun groups + aliases" comment it carried). Moved verbatim out of
-// tools/ge.mjs.
+// tools/ge/daemon.mjs — `ge daemon start|status|tasks|task|events|stop`.
+// Leaf commands are defined once and re-used by the `ge runs` group
+// (tools/ge/runs.mjs) via runtimeLeaves. Moved verbatim out of tools/ge.mjs.
 //
 // GE_CLI_PATH must resolve to tools/ge.mjs itself (the daemon re-spawns
 // itself as `node <GE_CLI_PATH> daemon start --foreground ...`), NOT to this
@@ -190,35 +187,6 @@ const daemonEvents = defineCommand({
   }),
 });
 
-const runtimeStartAutopilot = defineCommand({
-  meta: { name: "autopilot", description: "Start an Autopilot runtime task" },
-  args: { ids: { type: "string", description: "Comma-separated agent/workspace ids" }, stage: { type: "string", description: "Target convergence stage (default preview)" }, repair: { type: "boolean", description: "Run repair on blockers (default true; --no-repair to observe only)" }, attempts: { type: "string", description: "Repair attempts per item (default 3)" }, runPreview: { type: "boolean", description: "Run preview after repair when supported" }, json: { type: "boolean", description: "Machine-readable JSON result on stdout" }, port: { type: "string", description: "Daemon port (default 17654)" } },
-  run: guarded(async ({ args }) => {
-    const port = Number(args.port || process.env.GE_DAEMON_PORT || daemonPaths().defaultPort);
-    const body = {
-      kind: "autopilot.run",
-      ids: args.ids ? parseList(args.ids) : [],
-      targetStage: args.stage || "preview",
-      repair: args.repair !== false,
-      attempts: Number(args.attempts || 3),
-      runPreview: args.runPreview === true,
-      query: {},
-    };
-    const response = await fetch(`http://127.0.0.1:${port}/api/tasks`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!response.ok) throw new Error(`daemon autopilot start failed: ${response.status}`);
-    const task = await response.json();
-    emit(args, task, (t) => {
-      out(pc.green(`✓ started autopilot task ${t.id}`));
-      out(pc.dim(`  next: ge runs events ${t.id} --follow`));
-    });
-  }),
-});
-
 const runtimeStartJob = defineCommand({
   meta: { name: "job", description: "Start a GE command runtime task; pass command args after --" },
   args: { json: { type: "boolean", description: "Machine-readable JSON result on stdout" }, port: { type: "string", description: "Daemon port (default 17654)" } },
@@ -241,13 +209,6 @@ const runtimeStartJob = defineCommand({
       out(pc.dim(`  next: ge runs events ${t.id} --follow`));
     });
   }),
-});
-
-const runtimeStart = defineCommand({
-  meta: { name: "start", description: "Start runtime tasks: repair (canonical) · autopilot (deprecated) · job" },
-  // `autopilot` stays for compatibility; `repair` is the same command under
-  // the canonical noun (blocker convergence = a fleet repair run).
-  subCommands: { autopilot: runtimeStartAutopilot, repair: runtimeStartAutopilot, job: runtimeStartJob },
 });
 
 // Leaf commands re-used by the canonical `ge runs` group (tools/ge/runs.mjs).
@@ -289,9 +250,4 @@ const daemonStop = defineCommand({
 export const daemon = defineCommand({
   meta: { name: "daemon", description: "Local GE runtime daemon: start · status · tasks · task · stop" },
   subCommands: { start: daemonStart, status: daemonStatus, tasks: daemonTasks, task: daemonTask, events: daemonEvents, stop: daemonStop },
-});
-
-export const runtime = defineCommand({
-  meta: { name: "runtime", description: "(deprecated → ge runs · ge fleet repair) runtime task plumbing: status · tasks · task · events · resume · start" },
-  subCommands: { status: daemonStatus, tasks: daemonTasks, task: daemonTask, events: daemonEvents, resume: runtimeResume, start: runtimeStart },
 });

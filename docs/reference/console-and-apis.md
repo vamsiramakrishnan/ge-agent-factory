@@ -80,7 +80,6 @@ returns `202 { jobId, command }`; stream progress via
 | `POST /api/ge/data/up` | `ge data up` | Apply Terraform for shared stores and merge coordinates into .ge.json | `mutates-cloud` | `gcloud`, `terraform` on PATH · `.ge.json`: project, geAppId · cloud auth · Terraform root · writable `.ge.json` · BigQuery API (hard) |
 | `POST /api/ge/mcp/deploy` | `ge mcp deploy` | Deploy per-department MCP services | `mutates-cloud` | `gcloud` on PATH · `.ge.json`: project, serviceAccount, dataBucket · cloud auth · writable `.ge.json` |
 | `POST /api/ge/agents/build` | `ge agents build` | Build selected agents through the cloud factory | `starts-workloads` | `gcloud` on PATH · `.ge.json`: project, geAppId, gatewayUrl · cloud auth · tool plane deployed |
-| `POST /api/ge/agents/ship` | `ge agents ship` | Upload locally built agents and continue cloud deployment | `mutates-cloud` | `gcloud` on PATH · `.ge.json`: project, gatewayUrl, dataBucket · cloud auth · tool plane deployed · BigQuery API (hard) · ship handoff wiring |
 | `POST /api/ge/agents/sync` | `ge agents sync` | Copy generated agent code into the repository | `writes-repo` | `git` on PATH |
 | `POST /api/ge/daemon/start` | `ge daemon start` | Start the local GE runtime daemon (idempotent — no-op if already running) | `starts-local-workloads` | `node` on PATH |
 <!-- END GENERATED: ge-console-commands -->

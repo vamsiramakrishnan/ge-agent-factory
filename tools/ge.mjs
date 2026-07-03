@@ -38,10 +38,7 @@ import { agents } from "./ge/agents.mjs";
 import { pipeline } from "./ge/pipeline.mjs";
 import { fleet } from "./ge/fleet.mjs";
 import { runs } from "./ge/runs.mjs";
-import { autopilot } from "./ge/autopilot.mjs";
-import { mission } from "./ge/mission.mjs";
-import { journey } from "./ge/journey.mjs";
-import { daemon, runtime } from "./ge/daemon.mjs";
+import { daemon } from "./ge/daemon.mjs";
 import { state } from "./ge/state.mjs";
 import { ledger } from "./ge/ledger.mjs";
 import { apply } from "./ge/apply.mjs";
@@ -50,7 +47,7 @@ import { shouldPromptForInitProject, GE_INIT_NO_PROJECT_MESSAGE } from "./ge/ini
 // ── root: bare `ge` → the three-question board + next step ───────────────────
 // citty invokes the root `run` even when a subcommand matches, so only render the
 // board when the first positional is NOT one of our subcommands.
-const SUBCOMMANDS = new Set(["capture", "prove", "handoff", "status", "up", "doctor", "init", "cutover", "mode", "devex", "config", "infra", "images", "data", "mcp", "agents", "pipeline", "fleet", "runs", "autopilot", "mission", "journey", "daemon", "runtime", "state", "ledger", "apply"]);
+const SUBCOMMANDS = new Set(["capture", "prove", "handoff", "status", "up", "doctor", "init", "cutover", "mode", "devex", "config", "infra", "images", "data", "mcp", "agents", "pipeline", "fleet", "runs", "daemon", "state", "ledger", "apply"]);
 
 // The board answers three questions before anything else: where am I on
 // capture → prove → handoff, what blocks me, and the exact next command.
@@ -80,7 +77,7 @@ function renderStatusBoard(r) {
     out(pc.bold("\n  First run — three steps, all local, no cloud credentials:"));
     out(`  1. ${pc.cyan("mise run setup")}      ${pc.dim("toolchain + daemon (one time, ~5-10m)")}`);
     out(`  2. ${pc.cyan("ge init")}             ${pc.dim("discover config, write .ge.json (~30s)")}`);
-    out(`  3. ${pc.cyan("ge prove")}            ${pc.dim("first proof: doctor → canary agent build (ge devex smoke is the operator spelling)")}`);
+    out(`  3. ${pc.cyan("ge prove")}            ${pc.dim("first proof: health check → first agent built and validated")}`);
     out(pc.dim("\n  then: ge capture   (capture your own agent contract in the console)"));
     out(pc.dim("  docs: docs/start/getting-started.md · ge --help for all commands"));
     return;
@@ -123,16 +120,14 @@ const root = defineCommand({
     pipeline, fleet, runs,
     // noun groups
     infra, images, data, mcp, agents, daemon, state, ledger,
-    // deprecated aliases (journey/mission → pipeline · autopilot → fleet repair · runtime → runs)
-    autopilot, mission, journey, runtime,
     // declarative reconcile
     apply,
   },
 });
 
-// Root `--help` renders grouped (Golden path first, Operate after, aliases
-// last) — progressive disclosure without hiding a single command. Subcommand
-// help stays citty's own renderer.
+// Root `--help` renders grouped (Golden path first, Operate after) —
+// progressive disclosure without hiding a single command. Subcommand help
+// stays citty's own renderer.
 async function showGroupedUsage(cmd, parent) {
   if (cmd !== root) return cittyShowUsage(cmd, parent);
   out(renderRootUsage(root));

@@ -11,7 +11,7 @@ export const FleetBlockerSchema = z.object({
 });
 export type FleetBlocker = z.infer<typeof FleetBlockerSchema>;
 
-export const MissionArtifactRefSchema = z
+export const PipelineArtifactRefSchema = z
   .object({
     name: z.string().optional(),
     type: z.string().optional(),
@@ -32,7 +32,7 @@ export const MissionArtifactRefSchema = z
       .optional(),
   })
   .catchall(z.any());
-export type MissionArtifactRef = z.infer<typeof MissionArtifactRefSchema>;
+export type PipelineArtifactRef = z.infer<typeof PipelineArtifactRefSchema>;
 
 export const FleetActionPlanSchema = z.object({
   kind: z.string(),
@@ -99,7 +99,7 @@ export const FleetSchema = z.object({
 });
 export type Fleet = z.infer<typeof FleetSchema>;
 
-export const JourneyStageSchema = z.object({
+export const PipelineStageSchema = z.object({
   id: z.string(),
   label: z.string(),
   owner: z.string(),
@@ -107,13 +107,13 @@ export const JourneyStageSchema = z.object({
   blocker: FleetBlockerSchema.nullable().optional(),
   taskId: z.string().nullable().optional(),
   nodeIds: z.array(z.string()).optional(),
-  artifacts: z.array(MissionArtifactRefSchema).optional(),
+  artifacts: z.array(PipelineArtifactRefSchema).optional(),
   actionPlan: FleetActionPlanSchema.nullable().optional(),
 });
-export type JourneyStage = z.infer<typeof JourneyStageSchema>;
+export type PipelineStage = z.infer<typeof PipelineStageSchema>;
 
-export const JourneyPlanSchema = z.object({
-  kind: z.literal("ge.journey.plan"),
+export const PipelinePlanSchema = z.object({
+  kind: z.literal("ge.pipeline.plan"),
   version: z.number(),
   id: z.string(),
   mode: z.string(),
@@ -126,9 +126,9 @@ export const JourneyPlanSchema = z.object({
     ids: z.array(z.string()),
   }),
   status: z.string(),
-  next: JourneyStageSchema.nullable().optional(),
+  next: PipelineStageSchema.nullable().optional(),
   counts: z.record(z.string(), z.number()),
-  stages: z.array(JourneyStageSchema),
+  stages: z.array(PipelineStageSchema),
   implementation: z.record(z.string(), z.any()).optional(),
 });
-export type JourneyPlan = z.infer<typeof JourneyPlanSchema>;
+export type PipelinePlan = z.infer<typeof PipelinePlanSchema>;
