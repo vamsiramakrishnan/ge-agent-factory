@@ -100,6 +100,7 @@ async function runLiveProve(args) {
     strictResponder: args.strictResponder,
     updateBaseline: args.updateBaseline,
     targetAgent: args.targetAgent,
+    assistant: args.assistant,
     log: elog,
   });
   const gate = evaluateLiveGate(result, { ...liveGatePolicy(), strictResponder: !!args.strictResponder });
@@ -126,6 +127,7 @@ export const prove = defineCommand({
     strictResponder: { type: "boolean", description: "Fail cases whose responder identity cannot be verified" },
     updateBaseline: { type: "boolean", description: "Accept the current live behavior as the new conformance baseline" },
     targetAgent: { type: "string", description: "Expected responding agent id (asserted against the stream)" },
+    assistant: { type: "string", description: "Assistant id on the engine (default default_assistant) — prove any deployed agent, factory-built or not" },
   },
   run: guarded(async ({ args }) => {
     if (args.live) return runLiveProve(args);
