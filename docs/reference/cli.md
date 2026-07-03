@@ -156,6 +156,8 @@ Compile an agent contract into executable behavior: graph, coverage, selected ca
 | `--spec` | string | A GenerationSpecEnvelope JSON file to compile (bring your own spec) |
 | `--id` | string | Registered/captured spec id (default: the only one, when exactly one exists) |
 | `--maxCases` | string | Case budget for the set-cover selection (default 40) |
+| `--perturb` | string | Linguistic perturbation variants per selected case (default 0 — off; variants mirror selected cases) |
+| `--adversarial` | boolean | Add adversarial/safety cases (prompt injection, spoofing, exfiltration, …) to the pool and require adversarial coverage |
 | `--out` | string | Output directory (default .ge/behavioral) |
 
 ### `ge evals applicability`
