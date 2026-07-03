@@ -11,10 +11,10 @@ function ops(overrides = {}) {
   const record = (name, ret = {}) => async (cfg, opts) => { calls.push({ name, opts }); return ret; };
   const built = createGoldenPathOps({
     repoRoot: "/nonexistent",
-    devexSmoke: record("devexSmoke", { ok: true, target: "validated" }),
+    firstProof: record("firstProof", { ok: true, target: "validated" }),
     provisionLocal: record("provisionLocal", { target: "previewed", projectsDir: "x" }),
     provision: record("provision", { submitted: 1, failed: 0 }),
-    ship: record("ship", { submitted: 2, failed: 0, startStage: "load_data", targetStage: "publish_enterprise" }),
+    handoffRun: record("handoffRun", { submitted: 2, failed: 0, startStage: "load_data", targetStage: "publish_enterprise" }),
     registerSpec: (opts) => { calls.push({ name: "registerSpec", opts }); return { registered: true }; },
     listWorkspaces: () => [],
     probeConsole: async () => true,
@@ -23,11 +23,11 @@ function ops(overrides = {}) {
   return { ...built, calls };
 }
 
-test("prove on a fresh machine dispatches to the smoke path", async () => {
+test("prove on a fresh machine dispatches to the first-proof path", async () => {
   const o = ops({ listWorkspaces: () => [] });
   const res = await o.prove({ mode: "local" }, {});
-  expect(res.path).toBe("smoke");
-  expect(o.calls.map((c) => c.name)).toEqual(["devexSmoke"]);
+  expect(res.path).toBe("fresh");
+  expect(o.calls.map((c) => c.name)).toEqual(["firstProof"]);
 });
 
 test("prove with workspaces present dispatches to the local build", async () => {
@@ -52,13 +52,13 @@ test("prove --id forces the build path even without stored workspaces", async ()
   expect(o.calls[0].opts.ids).toBe("asc-606");
 });
 
-test("handoff delegates the supported target to ship", async () => {
+test("handoff delegates the supported target to the release op", async () => {
   const o = ops();
   const res = await o.handoff({}, { target: "agents-cli" });
   expect(res.kind).toBe("ge.handoff");
   expect(res.target).toBe("agents-cli");
   expect(res.submitted).toBe(2);
-  expect(o.calls.map((c) => c.name)).toEqual(["ship"]);
+  expect(o.calls.map((c) => c.name)).toEqual(["handoffRun"]);
 });
 
 test("handoff rejects an unsupported target with the four-field error, and ships nothing", async () => {

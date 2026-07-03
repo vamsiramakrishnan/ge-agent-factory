@@ -314,7 +314,7 @@ const doctorPlane = createDoctorPlane({
 export const { commandDoctor, preflightCommand, doctorAll } = doctorPlane;
 export const { localPreflight, ensureHarnessVenv, ensureLocalUv } = doctorPlane;
 
-// provision/provisionLocal/ship/syncLocal/devexCheck/devexSmoke + setMode now live
+// provision/provisionLocal/handoff/syncLocal/devexCheck/firstProof + setMode now live
 // in provision.mjs; wired here for the same reason (live run/gcloud/gateway/ledger
 // access, which only exist once factory-core.mjs composes them).
 const provisionOps = createProvisionOps({
@@ -337,7 +337,7 @@ const provisionOps = createProvisionOps({
   factoryDataRoot: FACTORY_DATA_ROOT,
   genDir: GEN_DIR,
 });
-export const { provision, provisionLocal, setMode, devexSmoke, devexCheck, syncLocal, ship } = provisionOps;
+export const { provision, provisionLocal, setMode, firstProof, devexCheck, syncLocal } = provisionOps;
 
 // The golden-path verbs (capture/prove/handoff + the board's position report)
 // live in golden-path.mjs; wired here — after the provisionOps composition they
@@ -345,10 +345,10 @@ export const { provision, provisionLocal, setMode, devexSmoke, devexCheck, syncL
 // three functions.
 const goldenPathOps = createGoldenPathOps({
   repoRoot: REPO_ROOT,
-  devexSmoke: provisionOps.devexSmoke,
+  firstProof: provisionOps.firstProof,
   provisionLocal: provisionOps.provisionLocal,
   provision: provisionOps.provision,
-  ship: provisionOps.ship,
+  handoffRun: provisionOps.handoff,
   registerSpec,
 });
 export const { capture, prove, handoff, goldenPathPosition } = goldenPathOps;

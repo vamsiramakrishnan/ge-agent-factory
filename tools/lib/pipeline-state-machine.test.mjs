@@ -32,7 +32,7 @@ describe("planWorkItem — local mode", () => {
   });
   test("ships once the next stage is past the build boundary", () => {
     expect(planWorkItem({ stage: "previewed", status: "done" }, { targetStage: "published", mode: "local" }))
-      .toMatchObject({ action: "ship", nextStage: "deploy_planned", owner: "cloud" });
+      .toMatchObject({ action: "handoff", nextStage: "deploy_planned", owner: "cloud" });
   });
   test("retry on a failed stage", () => {
     expect(planWorkItem({ stage: "validated", status: "failed" }, { targetStage: "previewed", mode: "local" }))

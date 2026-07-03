@@ -19,9 +19,6 @@ export const GOLDEN_PATH_COMMANDS = ["capture", "prove", "handoff", "status"];
 // Operate commands, in lifecycle order (machine → platform → agents → observe).
 const OPERATE_COMMANDS = ["init", "up", "mode", "doctor", "devex", "agents", "pipeline", "fleet", "runs", "infra", "images", "data", "mcp", "daemon", "state", "ledger", "apply", "config", "cutover"];
 
-// Deprecated spellings that keep working forever.
-const ALIAS_COMMANDS = ["autopilot", "mission", "journey", "runtime"];
-
 function commandLine(name, sub, width) {
   const description = sub?.meta?.description || "";
   return `  ${pc.cyan(name.padEnd(width))} ${pc.dim(description)}`;
@@ -43,7 +40,7 @@ export function renderGoldenPathSection(root, { colors = true } = {}) {
 
 export function renderRootUsage(root) {
   const allNames = Object.keys(root.subCommands || {});
-  const grouped = new Set([...GOLDEN_PATH_COMMANDS, ...OPERATE_COMMANDS, ...ALIAS_COMMANDS]);
+  const grouped = new Set([...GOLDEN_PATH_COMMANDS, ...OPERATE_COMMANDS]);
   // Anything new that hasn't been assigned a group yet still renders — under
   // Operate, never dropped.
   const ungrouped = allNames.filter((name) => !grouped.has(name));
@@ -63,7 +60,6 @@ export function renderRootUsage(root) {
     "",
     ...section("Golden path", GOLDEN_PATH_COMMANDS),
     ...section("Operate", [...OPERATE_COMMANDS, ...ungrouped]),
-    ...section("Deprecated spellings (kept working)", ALIAS_COMMANDS),
     pc.dim("Every command supports --json. `ge <command> --help` for flags; docs/reference/cli.md for the full reference."),
   ].join("\n");
 }

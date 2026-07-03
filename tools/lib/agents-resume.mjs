@@ -2,7 +2,7 @@
 //
 // The pipeline state machine already computes one next action per work item
 // (`ge ledger plan`), but until now the operator had to hand-translate those
-// rows into commands (`--force`? `ship --start-stage`? rebuild?). This folds
+// rows into commands (`--force`? `handoff --start-stage`? rebuild?). This folds
 // the rows into at most three executable groups — one command each — so an
 // interrupted or failed fleet can be recovered with a single verb.
 //
@@ -13,8 +13,8 @@ const GROUP_META = {
     label: "Build locally",
     describe: (n) => `${n} item(s) retry or advance on this machine`,
   },
-  ship: {
-    label: "Ship to the cloud",
+  handoff: {
+    label: "Hand off to the cloud",
     describe: (n) => `${n} item(s) are past the build boundary — hand off for deploy/register/publish`,
   },
   advance_remote: {
@@ -25,7 +25,7 @@ const GROUP_META = {
 
 // Deterministic execution order: finish local work, then hand off, then let
 // the cloud advance. Mirrors the pipeline's own stage ordering.
-const GROUP_ORDER = ["build_local", "ship", "advance_remote"];
+const GROUP_ORDER = ["build_local", "handoff", "advance_remote"];
 
 function groupKeyFor(row) {
   if (row.action === "retry") {
@@ -38,7 +38,7 @@ function groupKeyFor(row) {
 
 export function resumeCommandFor(action, { useCaseIds = [], workspaceIds = [] } = {}) {
   if (action === "build_local") return `ge agents build --local --ids ${useCaseIds.join(",")}`;
-  if (action === "ship") return `ge agents ship --ids ${workspaceIds.join(",")}`;
+  if (action === "handoff") return `ge handoff agents-cli --ids ${workspaceIds.join(",")}`;
   if (action === "advance_remote") return `ge agents build --ids ${useCaseIds.join(",")}`;
   return null;
 }
