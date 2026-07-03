@@ -1,0 +1,6 @@
+{
+  "_comment": "Body for POST /api/interviews/<usecaseId>/documents (console on :18260 via `ge capture`). Base64 JSON on purpose — no multipart — so it works identically under Bun (prod server.js) and Vite (dev). Fill contentBase64 with e.g. $(base64 -w0 file.md). Limits enforced server-side: decoded size ≤ 25MB (413), contentBase64 required (400), supported kinds: text/markdown/csv natively, pdf via pdftotext, docx/pptx/xlsx via jszip (both degrade to a note when absent), anything else 415. Response echoes the stored record plus extracted `text` and `sections`.",
+  "filename": "benefits-brd.md",
+  "mimeType": "text/markdown",
+  "contentBase64": "<base64 of the file bytes>"
+}
