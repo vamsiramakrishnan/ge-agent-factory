@@ -18,6 +18,8 @@
  *   node scripts/generate-simulator-data.mjs --pack simulator-systems/servicenow [--seed 42]
  *   node scripts/generate-simulator-data.mjs --system servicenow --no-snowfakery   # force offline tier
  *   node scripts/generate-simulator-data.mjs --system servicenow --stdout          # print seed, don't write
+ *   node scripts/generate-simulator-data.mjs --system servicenow --profile realistic [--edge-case-rate 0.06]
+ *                                                                # statistical realism tier (lib/realism-profiles.mjs)
  */
 import { readFileSync, writeFileSync, mkdirSync, existsSync, mkdtempSync, rmSync } from "node:fs";
 import { parseFlagArgs } from "@ge/std/cli-args";
@@ -36,6 +38,7 @@ import {
   checkFkClosure,
   snakeCase,
 } from "./lib/data-recipe.mjs";
+import { generateRealistic, REALISM_PROFILES } from "./lib/realism-profiles.mjs";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const SYSTEMS_DIR = resolve(SCRIPT_DIR, "../simulator-systems");
@@ -110,12 +113,24 @@ function trySnowfakery(recipe, { systemId }) {
 }
 
 // ── assemble ───────────────────────────────────────────────────────────────────
-function buildSeed(contract, { seed, preferSnowfakery }) {
+function buildSeed(contract, { seed, preferSnowfakery, profile = "baseline", edgeCaseRate }) {
   const recipe = buildRecipe(contract, { seed });
 
   let tier = "faker";
   let rowsByCollection;
-  if (preferSnowfakery) {
+  let realism = null;
+  if (profile !== "baseline") {
+    // Realistic tier is in-process by design (statistical post-processing on the
+    // offline generator); Snowfakery is skipped so the profile fully governs values.
+    const result = generateRealistic(recipe, contract, {
+      seed,
+      profile,
+      ...(edgeCaseRate === undefined ? {} : { edgeCaseRate }),
+    });
+    rowsByCollection = result.data;
+    realism = result.report;
+    tier = "realistic";
+  } else if (preferSnowfakery) {
     const sf = trySnowfakery(recipe, { systemId: contract.id });
     if (sf.ok) {
       tier = "snowfakery";
@@ -155,13 +170,20 @@ function buildSeed(contract, { seed, preferSnowfakery }) {
   if (!Array.isArray(materialized.audit_events)) materialized.audit_events = [];
 
   const fk = checkFkClosure(recipe, materialized);
-  return { recipe, tier, data: materialized, fk };
+  return { recipe, tier, data: materialized, fk, realism };
 }
 
 async function main() {
   const flags = parseArgs(process.argv.slice(2));
   const seed = Number(flags.seed) || 42;
   const preferSnowfakery = flags["no-snowfakery"] ? false : flags.snowfakery !== "false";
+  const profile = flags.profile || "baseline";
+  if (profile !== "baseline" && !REALISM_PROFILES[profile]) {
+    console.error(`Unknown --profile "${profile}". Available: baseline, ${Object.keys(REALISM_PROFILES).join(", ")}`);
+    process.exit(2);
+    return;
+  }
+  const edgeCaseRate = flags["edge-case-rate"] === undefined ? undefined : Number(flags["edge-case-rate"]);
 
   let contract;
   if (flags.pack) {
@@ -170,13 +192,13 @@ async function main() {
     contract = loadContractFromDir(resolveSystemDir(flags.system));
   } else {
     console.error(`Usage:
-  node scripts/generate-simulator-data.mjs --system <id> [--seed N] [--out <seed.json>] [--no-snowfakery] [--stdout]
+  node scripts/generate-simulator-data.mjs --system <id> [--seed N] [--out <seed.json>] [--no-snowfakery] [--stdout] [--profile baseline|realistic] [--edge-case-rate 0.06]
   node scripts/generate-simulator-data.mjs --pack <dir> [--seed N] [--out <seed.json>]`);
     process.exit(2);
     return;
   }
 
-  const { recipe, tier, data, fk } = buildSeed(contract, { seed, preferSnowfakery });
+  const { recipe, tier, data, fk, realism } = buildSeed(contract, { seed, preferSnowfakery, profile, edgeCaseRate });
 
   const summary = {
     ok: true,
@@ -189,6 +211,15 @@ async function main() {
     fkClosureOk: fk.ok,
     fkViolations: fk.violations.length,
   };
+  if (realism) {
+    // Realism-report highlights; the baseline summary shape is untouched so
+    // default runs stay byte-identical.
+    summary.profile = profile;
+    summary.personas = realism.personas;
+    summary.edgeCases = realism.edgeCases.length;
+    summary.edgeCaseKinds = [...new Set(realism.edgeCases.map((e) => e.kind))].sort();
+    summary.distributionFields = Object.keys(realism.distributions).length;
+  }
 
   if (flags.stdout) {
     // stdout carries the seed JSON only; the summary goes to stderr so callers can
