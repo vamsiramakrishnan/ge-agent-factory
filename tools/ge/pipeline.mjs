@@ -10,7 +10,7 @@ import { defineCommand } from "citty";
 import { buildPipelinePlan } from "../lib/pipeline-plan.mjs";
 import { buildPipelineGraph } from "../lib/pipeline/pipeline-graph-plan.mjs";
 import {
-  guarded, common, cfgFrom, emit, out, pc, core,
+  guarded, common, cfgFrom, emit, out, pc, ui, core,
   daemonPort, daemonStatusSnapshot, daemonRequest, parseIds,
   renderPipelineGraph, renderPipelinePlan, renderResumePlan, statusText,
   followTaskEvents,
@@ -120,16 +120,21 @@ export const pipelineRunsCmd = defineCommand({
     const body = await daemonRequest(port, `/api/tasks?limit=${encodeURIComponent(args.limit || "50")}`, { timeoutMs: 3000 });
     const tasks = (body.tasks || []).filter((task) => task.kind === "pipeline.run");
     emit(args, { tasks }, (r) => {
-      out(pc.bold("\nPipeline Runs"));
+      out(ui.title("Pipeline Runs"));
       if (!r.tasks.length) {
-        out(pc.dim("  no recent pipeline runs — start one: ge pipeline run --scenario <scenario>"));
+        out(pc.dim("  no recent pipeline runs — start one:"));
+        out(ui.nextList(["ge pipeline run --scenario <scenario>"]));
         return;
       }
-      for (const task of r.tasks.slice(0, Math.max(1, Math.min(Number(args.limit) || 20, 200)))) {
-        const counts = task.counts || {};
-        out(`  ${statusText(task.status).padEnd(14)} ${String(task.id).padEnd(30)} ${counts.done || 0}/${counts.blocked || 0}/${counts.pending || 0}/${counts.total || 0}`);
-      }
-      out(pc.dim("\n  detail: ge pipeline status <id>   ·   events: ge runs events <id> --follow"));
+      out(ui.columns(r.tasks.slice(0, Math.max(1, Math.min(Number(args.limit) || 20, 200))), [
+        { header: "status", value: (task) => statusText(task.status) },
+        { header: "id", value: (task) => String(task.id) },
+        { header: "done/blocked/pending/total", value: (task) => { const counts = task.counts || {}; return `${counts.done || 0}/${counts.blocked || 0}/${counts.pending || 0}/${counts.total || 0}`; } },
+      ]));
+      out("\n" + ui.nextList([
+        { command: "ge pipeline status <id>", note: "detail" },
+        { command: "ge runs events <id> --follow", note: "live events" },
+      ]));
     });
   }),
 });
@@ -168,12 +173,14 @@ export const pipelineRunCmd = defineCommand({
       },
     });
     emit(args, task, (t) => {
-      out(pc.green(`✓ started pipeline run ${t.id}`));
+      out(`${ui.glyph("passed")} ${pc.green(`started pipeline run ${t.id}`)}`);
       if (t.output?.graph) renderPipelineGraph(t.output.graph);
       if (!args.follow) {
-        out(pc.dim(`\n  status: ge pipeline status ${t.id}`));
-        out(pc.dim(`  events: ge runs events ${t.id} --follow`));
-        out(pc.dim(`  (or start with --follow to stream events inline)`));
+        out("\n" + ui.nextList([
+          { command: `ge pipeline status ${t.id}`, note: "status" },
+          { command: `ge runs events ${t.id} --follow`, note: "live events" },
+        ]));
+        out(pc.dim("  (or start with --follow to stream events inline)"));
       }
     });
     if (args.follow && !args.json) await followTaskEvents(port, task.id);
@@ -188,10 +195,10 @@ export const pipelineResumeCmd = defineCommand({
     const port = await requireDaemon(args);
     const task = await daemonRequest(port, `/api/tasks/${encodeURIComponent(args.id)}/resume`, { method: "POST", timeoutMs: 5000 });
     emit(args, task, (t) => {
-      out(pc.bold(`\nPipeline Resume ${t.id}`));
-      out(`  status    ${statusText(t.status)}`);
+      out(ui.title(`Pipeline Resume ${t.id}`));
+      out(ui.kv([["status", statusText(t.status)]]));
       renderResumePlan(t.summary?.resumePlan);
-      out(pc.dim(`\n  events: ge runs events ${t.id} --follow`));
+      out(ui.next(`ge runs events ${t.id} --follow`, "stream live events"));
     });
   }),
 });

@@ -1,7 +1,7 @@
 // tools/ge/init.mjs — `ge init` (discover config → .ge.json), including the
 // interactive project-resolution prompt. Moved verbatim out of tools/ge.mjs.
 import { defineCommand } from "citty";
-import { guarded, common, cfgFrom, emit, out, pc, elog, core } from "./shared.mjs";
+import { guarded, common, cfgFrom, emit, out, pc, ui, elog, core } from "./shared.mjs";
 
 // The one error core.init() throws when discovery finds nothing to work with
 // (no terraform outputs, no active gcloud project, no --project flag). This is
@@ -67,9 +67,9 @@ export const init = defineCommand({
       res = await core.init(cfgFrom({ ...args, project }), { log: elog });
     }
     emit(args, res, (cfg) => {
-      out(pc.bold(`Wrote .ge.json — ${pc.cyan(cfg.project)}`));
-      for (const [k, v] of Object.entries(cfg)) out(`  ${k.padEnd(16)} ${v ? pc.green(typeof v === "object" ? JSON.stringify(v) : v) : pc.yellow("<unset>")}`);
-      if (!cfg.geAppId) out(pc.yellow("\n⚠ geAppId unset — set GEMINI_ENTERPRISE_APP_ID before provisioning."));
+      out(ui.title("Wrote .ge.json", cfg.project));
+      out(ui.kv(Object.entries(cfg).map(([k, v]) => [k, v ? pc.green(typeof v === "object" ? JSON.stringify(v) : v) : pc.yellow("<unset>")])));
+      if (!cfg.geAppId) out(`\n${ui.glyph("warning")} ${pc.yellow("geAppId unset — set GEMINI_ENTERPRISE_APP_ID before provisioning.")}`);
     });
   }),
 });

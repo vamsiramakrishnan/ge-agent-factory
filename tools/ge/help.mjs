@@ -11,6 +11,7 @@
 // operator-register terms must not appear in it. Keep its copy in the golden
 // register (agent, contract, proof, handoff) — the gate fails CI otherwise.
 import pc from "picocolors";
+import { cmd, padVisible } from "./ui.mjs";
 
 // Order is the message: the four verbs a stranger needs, in the order they
 // need them.
@@ -19,9 +20,12 @@ export const GOLDEN_PATH_COMMANDS = ["capture", "prove", "handoff", "status"];
 // Operate commands, in lifecycle order (machine → platform → agents → observe).
 const OPERATE_COMMANDS = ["init", "up", "mode", "doctor", "devex", "agents", "pipeline", "fleet", "runs", "infra", "images", "data", "mcp", "daemon", "state", "ledger", "apply", "config", "cutover"];
 
+// Kit conventions (tools/ge/ui.mjs): command names are typeable → cmd() cyan;
+// descriptions are metadata → dim; the name column is computed from the
+// longest command in the tree (renderRootUsage) so both sections align.
 function commandLine(name, sub, width) {
   const description = sub?.meta?.description || "";
-  return `  ${pc.cyan(name.padEnd(width))} ${pc.dim(description)}`;
+  return `  ${padVisible(cmd(name), width)} ${pc.dim(description)}`;
 }
 
 // Render ONLY the golden-path section body (exported separately so the

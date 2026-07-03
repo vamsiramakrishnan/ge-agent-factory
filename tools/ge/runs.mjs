@@ -16,7 +16,7 @@
 import { defineCommand } from "citty";
 import { runtimeLeaves } from "./daemon.mjs";
 import {
-  guarded, emit, out, pc, core, statusText,
+  guarded, emit, out, pc, ui, core, statusText,
   daemonPort, daemonStatusSnapshot, daemonRequest,
 } from "./shared.mjs";
 
@@ -60,16 +60,26 @@ const runsListCmd = defineCommand({
       .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)))
       .slice(0, limit);
     emit(args, { runs: rows, daemon: { ok: daemon.ok, status: daemon.status || "healthy", port } }, (r) => {
-      out(pc.bold("\nRuns"));
-      out(`  daemon    ${r.daemon.ok ? pc.green("healthy") : pc.yellow(r.daemon.status)}  ${pc.dim(`http://127.0.0.1:${port}`)}`);
+      out(ui.title("Runs"));
+      out(ui.kv([{ key: "daemon", value: r.daemon.ok ? pc.green("healthy") : pc.yellow(r.daemon.status), note: `http://127.0.0.1:${port}` }]));
       if (!r.runs.length) {
-        out(pc.dim("  no runs recorded yet — start one: ge pipeline run · ge agents build · ge fleet repair"));
+        out(pc.dim("  no runs recorded yet — start one:"));
+        out(ui.nextList(["ge pipeline run", "ge agents build", "ge fleet repair"]));
         return;
       }
-      for (const row of r.runs) {
-        out(`  ${statusText(row.status).padEnd(14)} ${pc.dim(row.source.padEnd(8))} ${String(row.kind).padEnd(16)} ${String(row.id).padEnd(32)} ${pc.dim(row.detail || row.updatedAt)}`);
-      }
-      out(pc.dim("\n  detail: ge runs show <id>   ·   follow: ge runs events <id> --follow   ·   replay: ge runs replay <id>"));
+      out("");
+      out(ui.columns(r.runs, [
+        { header: "status", value: (row) => statusText(row.status) },
+        { header: "source", value: (row) => pc.dim(row.source) },
+        { header: "kind", value: (row) => String(row.kind) },
+        { header: "id", value: (row) => String(row.id) },
+        { header: "detail", value: (row) => pc.dim(row.detail || row.updatedAt) },
+      ]));
+      out("\n" + ui.nextList([
+        { command: "ge runs show <id>", note: "detail" },
+        { command: "ge runs events <id> --follow", note: "follow" },
+        { command: "ge runs replay <id>", note: "replay" },
+      ]));
     });
   }),
 });
@@ -106,7 +116,9 @@ const runsReplayCmd = defineCommand({
     const events = body.events || [];
     if (!events.length) throw new Error(`no recorded events for ${args.id} — is the id right? (ge runs list)`);
     const delays = args.instant ? null : replayDelays(events, Number(args.speed || 10));
-    if (!args.json) out(pc.bold(`\nReplay ${args.id}`) + pc.dim(`  ${events.length} events${args.instant ? "" : ` · ${Number(args.speed || 10)}× speed`}`));
+    if (!args.json) out(ui.title(`Replay ${args.id}`, `${events.length} events${args.instant ? "" : ` · ${Number(args.speed || 10)}× speed`}`));
+    const seqW = Math.max(...events.map(({ seq }) => String(seq).length), 4);
+    const typeW = Math.max(...events.map(({ event }) => String(event.type || "").length), 0);
     for (let i = 0; i < events.length; i += 1) {
       if (delays && delays[i]) await new Promise((resolve) => setTimeout(resolve, delays[i]));
       const { seq, event } = events[i];
@@ -115,9 +127,9 @@ const runsReplayCmd = defineCommand({
         continue;
       }
       const tone = event.level === "error" ? pc.red(event.type) : event.level === "warn" ? pc.yellow(event.type) : pc.cyan(event.type);
-      out(`  ${String(seq).padStart(4)} ${pc.dim(event.ts || "")} ${tone.padEnd(24)} ${event.line || ""}`);
+      out(`  ${String(seq).padStart(seqW)} ${pc.dim(event.ts || "")} ${ui.padVisible(tone, typeW)} ${event.line || ""}`);
     }
-    if (!args.json) out(pc.dim(`\n  live view: ge runs show ${args.id}`));
+    if (!args.json) out(ui.next(`ge runs show ${args.id}`, "live view"));
   }),
 });
 

@@ -5,7 +5,7 @@
 // trace. The core handoff op uploads proven workspaces and runs the
 // post-boundary stages (load_data → deploy → register → publish) remotely.
 import { defineCommand } from "citty";
-import { guarded, common, cfgFrom, emit, out, pc, elog, core } from "./shared.mjs";
+import { guarded, common, cfgFrom, emit, out, pc, ui, elog, core } from "./shared.mjs";
 
 export const handoff = defineCommand({
   meta: { name: "handoff", description: "Hand off proven agents to a deploy target (supported today: agents-cli → Agent Engine → Gemini Enterprise)" },
@@ -21,10 +21,12 @@ export const handoff = defineCommand({
   run: guarded(async ({ args }) => {
     const res = await core.handoff(cfgFrom(args), { target: args.target || "agents-cli", ids: args.ids, startStage: args["start-stage"], targetStage: args["target-stage"], concurrency: args.concurrency, noProxy: args["no-proxy"], log: elog });
     emit(args, res, (r) => {
-      out(pc.bold("\nHandoff"));
-      out(`  target    ${pc.cyan(r.target)}  ${pc.dim("(agents-cli deploy → Agent Engine → Gemini Enterprise)")}`);
-      out(`  shipped   ${pc.green(r.submitted)}  failed ${r.failed ? pc.red(r.failed) : "0"}  ${pc.dim(`(${r.startStage || "load_data"} → ${r.targetStage || "publish_enterprise"}, remote)`)}`);
-      out(pc.dim("\n  next: ge agents status --watch   (follow the handoff to done)"));
+      out(ui.title("Handoff"));
+      out(ui.kv([
+        { key: "target", value: ui.cmd(r.target), note: "agents-cli deploy → Agent Engine → Gemini Enterprise" },
+        { key: "shipped", value: `${pc.green(r.submitted)}  failed ${r.failed ? pc.red(r.failed) : "0"}`, note: `${r.startStage || "load_data"} → ${r.targetStage || "publish_enterprise"}, remote` },
+      ]));
+      out(ui.next("ge agents status --watch", "follow the handoff to done"));
     });
   }),
 });

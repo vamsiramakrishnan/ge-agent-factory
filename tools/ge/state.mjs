@@ -3,7 +3,7 @@
 import { defineCommand } from "citty";
 import { existsSync, rmSync } from "node:fs";
 import { LEGACY_STATE_PATHS, STATE_PATHS, ensureStateLayout, displayStatePath } from "../lib/state-paths.mjs";
-import { guarded, emit, out, pc, readPidFile, processAlive, processLooksLikeDaemon } from "./shared.mjs";
+import { guarded, emit, out, pc, ui, readPidFile, processAlive, processLooksLikeDaemon } from "./shared.mjs";
 import { daemonPaths } from "../lib/runtime-daemon.mjs";
 
 const stateReset = defineCommand({
@@ -53,10 +53,10 @@ const stateReset = defineCommand({
       ],
     };
     emit(args, result, (r) => {
-      out(pc.green(`✓ reset local GE state under ${r.canonicalRoot}`));
+      out(`${ui.glyph("passed")} ${pc.green(`reset local GE state under ${r.canonicalRoot}`)}`);
       if (r.stoppedDaemon) out(pc.dim(`  stopped daemon pid=${r.stoppedDaemon}`));
       if (r.removed.length) out(pc.dim(`  removed ${r.removed.length} state path(s)`));
-      out(pc.dim("  next: mise run setup && ge daemon start"));
+      out(ui.next("mise run setup && ge daemon start"));
     });
   }),
 });
@@ -79,11 +79,9 @@ const statePaths = defineCommand({
       cache: { path: displayStatePath(STATE_PATHS.cache.root), means: "tool caches such as uv/Snowfakery" },
     };
     emit(args, { kind: "ge.state.paths", paths }, (result) => {
-      out(pc.bold("\nGE Local State"));
-      for (const [name, entry] of Object.entries(result.paths)) {
-        out(`  ${pc.cyan(name.padEnd(10))} ${entry.path.padEnd(28)} ${pc.dim(entry.means)}`);
-      }
-      out(pc.dim("\n  reset: ge state reset --yes"));
+      out(ui.title("GE Local State"));
+      out(ui.kv(Object.entries(result.paths).map(([name, entry]) => ({ key: name, value: entry.path, note: entry.means }))));
+      out(ui.next("ge state reset --yes", "destructive: reset all local state"));
     });
   }),
 });
