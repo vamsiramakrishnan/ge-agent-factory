@@ -5,8 +5,8 @@ import { ge, startJob, type RuntimeStatus } from "../services/geClient";
 
 function tone(status: RuntimeStatus | null, loading: boolean) {
   if (loading && !status) return { dot: "bg-secondary/40", text: "text-secondary", label: "daemon…" };
-  if (status?.ok) return { dot: "bg-emerald-500", text: "text-emerald-600", label: "daemon up" };
-  return { dot: "bg-rose-500", text: "text-rose-600", label: "daemon down" };
+  if (status?.ok) return { dot: "bg-status-passed", text: "text-status-passed-ink", label: "daemon up" };
+  return { dot: "bg-status-failed", text: "text-status-failed-ink", label: "daemon down" };
 }
 
 // Starts the local daemon via the same `ge daemon start` path the CLI uses
@@ -86,7 +86,7 @@ export function RuntimeStatusBadge() {
             </>
           ) : (
             <>
-              <div className="text-sm font-semibold text-rose-700">
+              <div className="text-sm font-semibold text-status-failed-ink">
                 Runtime daemon {status?.status || "down"}
               </div>
               <p className="mt-1 text-xs text-secondary">
@@ -103,7 +103,7 @@ export function RuntimeStatusBadge() {
             </>
           )}
           <div className="mt-3 flex items-center justify-between border-t border-outline-variant/30 pt-2">
-            <code className="truncate text-[11px] text-secondary">{restart}</code>
+            <code className="truncate text-3xs text-secondary">{restart}</code>
             <Button variant="ghost" size="sm" className="shrink-0" onClick={() => refresh()}>
               Re-check
             </Button>
@@ -137,7 +137,7 @@ export function RuntimeStatusCard() {
         <div className="flex items-center gap-3">
           <span
             className={`w-2.5 h-2.5 rounded-full ${
-              loading && !status ? "bg-secondary/40" : ok ? "bg-emerald-500" : "bg-rose-500"
+              loading && !status ? "bg-secondary/40" : ok ? "bg-status-passed" : "bg-status-failed"
             } ${down ? "animate-pulse" : ""}`}
           />
           <div>
@@ -167,14 +167,14 @@ export function RuntimeStatusCard() {
         </div>
       </div>
       {down && (
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded border border-rose-400/20 bg-rose-500/5 px-3 py-2 text-xs text-rose-700">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded border border-status-failed/20 bg-status-failed/5 px-3 py-2 text-xs text-status-failed-ink">
           <span>
             Interviews and local runs need the daemon. If "Start daemon" doesn't stick, restart it with{" "}
-            <code className="font-mono text-rose-800">{restart}</code>
+            <code className="font-mono text-status-failed-ink">{restart}</code>
           </span>
           <button
             onClick={handleCopy}
-            className="shrink-0 rounded-md border border-rose-400/30 px-2 py-1 font-medium text-rose-700 transition-colors hover:bg-rose-500/10"
+            className="shrink-0 rounded-md border border-status-failed/30 px-2 py-1 font-medium text-status-failed-ink transition-colors hover:bg-status-failed/10"
           >
             {copied ? "Copied" : "Copy"}
           </button>

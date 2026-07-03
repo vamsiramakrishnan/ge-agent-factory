@@ -13,10 +13,10 @@ test("normalizeStatus is re-exported from @ge/run-ledger and wired", () => {
 });
 
 test("statusStyle exposes one source of truth per status", () => {
-  expect(statusStyle("done").dotClass).toContain("emerald");
-  expect(statusStyle("failed").dotClass).toContain("rose");
-  expect(statusStyle("blocked").dotClass).toContain("amber");
-  expect(statusStyle("running").dotClass).toContain("blue");
-  expect(statusStyle("pending").dotClass).toContain("slate");
+  expect(statusStyle("done").dotClass).toContain("status-passed");
+  expect(statusStyle("failed").dotClass).toContain("status-failed");
+  expect(statusStyle("blocked").dotClass).toContain("status-blocked");
+  expect(statusStyle("running").dotClass).toContain("status-running");
+  expect(statusStyle("pending").dotClass).toContain("status-queued");
   expect(statusStyle("running").icon).toBe("◐");
 });

@@ -56,7 +56,7 @@ export function InterviewTranscript({ events }: { events: GeEvent[] }) {
 
   return (
     <div className="space-y-3">
-      <h3 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-secondary">
+      <h3 className="flex items-center gap-2 text-3xs font-semibold uppercase tracking-wider text-secondary">
         <Radio className="h-4 w-4" aria-hidden />
         Agent
       </h3>
@@ -72,7 +72,7 @@ export function InterviewTranscript({ events }: { events: GeEvent[] }) {
             {!settled && (
               <span
                 aria-hidden
-                className="ml-1 inline-block h-3.5 w-[7px] translate-y-0.5 rounded-[1px] bg-primary/70 animate-pulse motion-reduce:animate-none"
+                className="ml-1 inline-block h-3.5 w-2 translate-y-0.5 rounded-sm bg-primary/70 animate-pulse motion-reduce:animate-none"
               />
             )}
           </p>
@@ -116,12 +116,12 @@ function ProgressRow({ event }: { event: GeEvent }) {
   const failed = event.level === "error" || /failed|error/.test(event.type);
   const done = /done|result/.test(event.type);
   const Icon = failed ? TriangleAlert : done ? CheckCircle2 : Circle;
-  const tone = failed ? "text-amber-700" : done ? "text-emerald-700" : "text-secondary";
+  const tone = failed ? "text-status-warning-ink" : done ? "text-status-passed-ink" : "text-secondary";
   return (
     <div className="flex items-center gap-2 border-b border-outline-variant/20 px-3 py-1.5 last:border-b-0">
       <Icon className={`h-3.5 w-3.5 shrink-0 ${tone}`} />
-      <span className={`truncate text-[11px] font-medium ${tone}`}>{label(event)}</span>
-      <span className="ml-auto shrink-0 text-[10px] text-secondary">{event.ts ? new Date(event.ts).toLocaleTimeString() : ""}</span>
+      <span className={`truncate text-3xs font-medium ${tone}`}>{label(event)}</span>
+      <span className="ml-auto shrink-0 text-4xs text-secondary">{event.ts ? new Date(event.ts).toLocaleTimeString() : ""}</span>
     </div>
   );
 }

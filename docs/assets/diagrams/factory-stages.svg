@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2422.807 116.9" width="2422.807" height="116.9" style="--bg:#ffffff;--fg:#202124;--line:#5f6368;--accent:#1a73e8;--muted:#80868b;--surface:#eef3f9;--border:#dadce0;background:var(--bg)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2422.807 116.9" width="2422.807" height="116.9" style="--bg:#ffffff;--fg:#14171c;--line:#565e6c;--accent:#2953ff;--muted:#80868b;--surface:#eceef2;--border:#dfe2e8;background:var(--bg)">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
   text { font-family: 'Inter', system-ui, sans-serif; }
@@ -40,59 +40,59 @@
 <polyline class="edge" data-from="register_tools" data-to="publish_enterprise" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="2028.031,58.45 2076.031,58.45" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
 <polyline class="edge" data-from="publish_enterprise" data-to="verify_live" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="2228.39,58.45 2276.39,58.45" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
 <g class="node" data-id="plan" data-label="Plan" data-shape="rectangle">
-  <rect x="40" y="40" width="68.626" height="36.900000000000006" rx="0" ry="0" fill="#e8f0fe" stroke="#1a73e8" stroke-width="0.75" />
-  <text x="74.313" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#202124" dy="4.55">Plan</text>
+  <rect x="40" y="40" width="68.626" height="36.900000000000006" rx="0" ry="0" fill="#e6ebff" stroke="#2953ff" stroke-width="0.75" />
+  <text x="74.313" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">Plan</text>
 </g>
 <g class="node" data-id="generate_workspace" data-label="Generate Workspace" data-shape="rectangle">
-  <rect x="156.626" y="40" width="167.92" height="36.900000000000006" rx="0" ry="0" fill="#eef3f9" stroke="#5f6368" stroke-width="0.75" />
-  <text x="240.586" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#202124" dy="4.55">Generate Workspace</text>
+  <rect x="156.626" y="40" width="167.92" height="36.900000000000006" rx="0" ry="0" fill="#eceef2" stroke="#565e6c" stroke-width="0.75" />
+  <text x="240.586" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">Generate Workspace</text>
 </g>
 <g class="node" data-id="generate_data" data-label="Generate Data" data-shape="rectangle">
-  <rect x="372.546" y="40" width="125.68299999999999" height="36.900000000000006" rx="0" ry="0" fill="#eef3f9" stroke="#5f6368" stroke-width="0.75" />
-  <text x="435.3875" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#202124" dy="4.55">Generate Data</text>
+  <rect x="372.546" y="40" width="125.68299999999999" height="36.900000000000006" rx="0" ry="0" fill="#eceef2" stroke="#565e6c" stroke-width="0.75" />
+  <text x="435.3875" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">Generate Data</text>
 </g>
 <g class="node" data-id="package_data" data-label="Package Data" data-shape="rectangle">
-  <rect x="546.229" y="40" width="124.20099999999998" height="36.900000000000006" rx="0" ry="0" fill="#eef3f9" stroke="#5f6368" stroke-width="0.75" />
-  <text x="608.3295" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#202124" dy="4.55">Package Data</text>
+  <rect x="546.229" y="40" width="124.20099999999998" height="36.900000000000006" rx="0" ry="0" fill="#eceef2" stroke="#565e6c" stroke-width="0.75" />
+  <text x="608.3295" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">Package Data</text>
 </g>
 <g class="node" data-id="harness_refine" data-label="Harness Refine (Antigravity)" data-shape="rectangle">
-  <rect x="718.43" y="40" width="206.45199999999994" height="36.900000000000006" rx="0" ry="0" fill="#eef3f9" stroke="#5f6368" stroke-width="0.75" />
-  <text x="821.656" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#202124" dy="4.55">Harness Refine (Antigravity)</text>
+  <rect x="718.43" y="40" width="206.45199999999994" height="36.900000000000006" rx="0" ry="0" fill="#eceef2" stroke="#565e6c" stroke-width="0.75" />
+  <text x="821.656" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">Harness Refine (Antigravity)</text>
 </g>
 <g class="node" data-id="validate" data-label="Validate" data-shape="rectangle">
-  <rect x="972.882" y="40" width="89.374" height="36.900000000000006" rx="0" ry="0" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
-  <text x="1017.569" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#202124" dy="4.55">Validate</text>
+  <rect x="972.882" y="40" width="89.374" height="36.900000000000006" rx="0" ry="0" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
+  <text x="1017.569" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">Validate</text>
 </g>
 <g class="node" data-id="preview" data-label="Preview" data-shape="rectangle">
-  <rect x="1110.2559999999999" y="40" width="90.856" height="36.900000000000006" rx="0" ry="0" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
-  <text x="1155.6839999999997" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#202124" dy="4.55">Preview</text>
+  <rect x="1110.2559999999999" y="40" width="90.856" height="36.900000000000006" rx="0" ry="0" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
+  <text x="1155.6839999999997" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">Preview</text>
 </g>
 <g class="node" data-id="plan_deploy" data-label="Plan Deploy" data-shape="rectangle">
-  <rect x="1249.112" y="40" width="112.345" height="36.900000000000006" rx="0" ry="0" fill="#e8f0fe" stroke="#1a73e8" stroke-width="0.75" />
-  <text x="1305.2845" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#202124" dy="4.55">Plan Deploy</text>
+  <rect x="1249.112" y="40" width="112.345" height="36.900000000000006" rx="0" ry="0" fill="#e6ebff" stroke="#2953ff" stroke-width="0.75" />
+  <text x="1305.2845" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">Plan Deploy</text>
 </g>
 <g class="node" data-id="load_data" data-label="Load Data" data-shape="rectangle">
-  <rect x="1409.4569999999999" y="40" width="101.971" height="36.900000000000006" rx="0" ry="0" fill="#eef3f9" stroke="#5f6368" stroke-width="0.75" />
-  <text x="1460.4424999999999" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#202124" dy="4.55">Load Data</text>
+  <rect x="1409.4569999999999" y="40" width="101.971" height="36.900000000000006" rx="0" ry="0" fill="#eceef2" stroke="#565e6c" stroke-width="0.75" />
+  <text x="1460.4424999999999" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">Load Data</text>
 </g>
 <g class="node" data-id="deploy_runtime" data-label="Deploy Runtime" data-shape="rectangle">
-  <rect x="1559.4279999999999" y="40" width="131.611" height="36.900000000000006" rx="0" ry="0" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
-  <text x="1625.2334999999998" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#202124" dy="4.55">Deploy Runtime</text>
+  <rect x="1559.4279999999999" y="40" width="131.611" height="36.900000000000006" rx="0" ry="0" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
+  <text x="1625.2334999999998" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">Deploy Runtime</text>
 </g>
 <g class="node" data-id="poll_runtime" data-label="Poll Runtime" data-shape="rectangle">
-  <rect x="1739.0390000000002" y="40" width="112.345" height="36.900000000000006" rx="0" ry="0" fill="#e8eef7" stroke="#1558b0" stroke-width="0.75" />
-  <text x="1795.2115000000001" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#202124" dy="4.55">Poll Runtime</text>
+  <rect x="1739.0390000000002" y="40" width="112.345" height="36.900000000000006" rx="0" ry="0" fill="#e4e7ec" stroke="#17339e" stroke-width="0.75" />
+  <text x="1795.2115000000001" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">Poll Runtime</text>
 </g>
 <g class="node" data-id="register_tools" data-label="Register Tools" data-shape="rectangle">
-  <rect x="1899.384" y="40" width="128.647" height="36.900000000000006" rx="0" ry="0" fill="#eef3f9" stroke="#5f6368" stroke-width="0.75" />
-  <text x="1963.7075" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#202124" dy="4.55">Register Tools</text>
+  <rect x="1899.384" y="40" width="128.647" height="36.900000000000006" rx="0" ry="0" fill="#eceef2" stroke="#565e6c" stroke-width="0.75" />
+  <text x="1963.7075" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">Register Tools</text>
 </g>
 <g class="node" data-id="publish_enterprise" data-label="Publish Enterprise" data-shape="rectangle">
-  <rect x="2076.031" y="40" width="152.359" height="36.900000000000006" rx="0" ry="0" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
-  <text x="2152.2105" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#202124" dy="4.55">Publish Enterprise</text>
+  <rect x="2076.031" y="40" width="152.359" height="36.900000000000006" rx="0" ry="0" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
+  <text x="2152.2105" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">Publish Enterprise</text>
 </g>
 <g class="node" data-id="verify_live" data-label="Verify Live" data-shape="rectangle">
-  <rect x="2276.39" y="40" width="106.41699999999999" height="36.900000000000006" rx="0" ry="0" fill="#eef3f9" stroke="#5f6368" stroke-width="0.75" />
-  <text x="2329.5985" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#202124" dy="4.55">Verify Live</text>
+  <rect x="2276.39" y="40" width="106.41699999999999" height="36.900000000000006" rx="0" ry="0" fill="#eceef2" stroke="#565e6c" stroke-width="0.75" />
+  <text x="2329.5985" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">Verify Live</text>
 </g>
 </svg>

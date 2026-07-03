@@ -91,12 +91,12 @@ export function RunDrawer() {
           />
         )}
         {scrubView?.lastEvent && (
-          <div className="mt-3 truncate font-mono text-[10px] text-secondary" title={describeEvent(scrubView.lastEvent)}>
+          <div className="mt-3 truncate font-mono text-4xs text-secondary" title={describeEvent(scrubView.lastEvent)}>
             {describeEvent(scrubView.lastEvent)}
           </div>
         )}
         {!scrubView && blocked && stream.blockedReason && (
-          <div className="mt-4 rounded-md border border-amber-400/25 bg-amber-500/10 px-3 py-2 text-xs leading-5 text-amber-800">
+          <div className="mt-4 rounded-md border border-status-blocked/25 bg-status-blocked/10 px-3 py-2 text-xs leading-5 text-status-blocked-ink">
             {stream.blockedReason}
           </div>
         )}
@@ -144,7 +144,7 @@ function Header({
         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-secondary">
           Live run
           {reconnecting && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium normal-case text-amber-700" title="Stream dropped; reconnecting">
+            <span className="inline-flex items-center gap-1 rounded-full bg-status-warning/10 px-1.5 py-0.5 text-4xs font-medium normal-case text-status-warning-ink" title="Stream dropped; reconnecting">
               <Wifi className="h-3 w-3 animate-pulse motion-reduce:animate-none" /> reconnecting…
             </span>
           )}
@@ -176,12 +176,12 @@ function Header({
         >
           <span className="truncate">{runId}</span>
           <Copy className="h-3 w-3 shrink-0 text-secondary group-hover:text-on-surface" />
-          {copied && <span className="text-[10px] text-emerald-600">copied</span>}
+          {copied && <span className="text-4xs text-status-passed-ink">copied</span>}
         </button>
         <StatusChip status={status} className="ml-auto shrink-0" />
       </div>
       {(meta?.kind || meta?.source) && (
-        <div className="mt-1 truncate text-[11px] text-secondary">
+        <div className="mt-1 truncate text-3xs text-secondary">
           {[meta?.kind, meta?.source].filter(Boolean).join(" · ")}
         </div>
       )}
@@ -211,7 +211,7 @@ function StageTimeline({ stages, activeStage, logTail }: { stages: RunStageView[
             <StageRow stage={stage} active={active} />
             {active && logTail.length > 0 && (
               <div className="ml-[1.05rem] mt-1 border-l border-outline-variant/40 pl-3">
-                <div className="space-y-0.5 font-mono text-[10px] leading-snug text-secondary/80">
+                <div className="space-y-0.5 font-mono text-4xs leading-snug text-secondary/80">
                   {logTail.slice(-6).map((line, i) => (
                     <div key={i} className="truncate" title={line}>
                       <span className="mr-1 select-none text-secondary/50">▏</span>{line}
@@ -240,9 +240,9 @@ function StageRow({ stage, active }: { stage: RunStageView; active: boolean }) {
       <span className={`flex-1 truncate text-sm ${active ? "font-semibold text-on-surface" : "text-on-surface"}`}>
         {stage.name.replace(/_/g, " ")}
       </span>
-      <span className={`shrink-0 text-[11px] ${style.textClass}`}>{style.label.toLowerCase()}</span>
+      <span className={`shrink-0 text-3xs ${style.textClass}`}>{style.label.toLowerCase()}</span>
       {stage.startedAt && (
-        <span className="w-12 shrink-0 text-right font-mono text-[11px] text-secondary tabular-nums">
+        <span className="w-12 shrink-0 text-right font-mono text-3xs text-secondary tabular-nums">
           {formatElapsed(stage.elapsedMs)}
         </span>
       )}
@@ -273,7 +273,7 @@ function Footer({ runId, blocked, blockedReason, onClose }: { runId: string; blo
 
   return (
     <div className="border-t border-outline-variant/30 px-4 py-3">
-      {error && <div className="mb-2 text-xs text-rose-600">{error}</div>}
+      {error && <div className="mb-2 text-xs text-status-failed-ink">{error}</div>}
       <div className="flex items-center gap-2">
         {blocked && (
           <Button size="sm" onClick={resume} loading={resuming} title={blockedReason || "Resume this run"}>
@@ -337,7 +337,7 @@ function ReplayControls({
           className="w-full accent-primary"
           aria-label="Replay position"
         />
-        <span className="w-16 shrink-0 text-right font-mono text-[10px] text-secondary tabular-nums">
+        <span className="w-16 shrink-0 text-right font-mono text-4xs text-secondary tabular-nums">
           {position == null ? "latest" : `${value}/${total}`}
         </span>
       </div>

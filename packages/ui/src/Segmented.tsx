@@ -37,7 +37,7 @@ export function Segmented<V extends string = string>({ options, value, onChange,
           >
             {option.label}
             {option.count != null && (
-              <span className={cx("rounded-full px-1.5 text-[10px] font-semibold", active ? "bg-white/20" : "bg-surface-container text-secondary")}>
+              <span className={cx("rounded-full px-1.5 text-4xs font-semibold tabular-nums", active ? "bg-white/20" : "bg-surface-container text-secondary")}>
                 {option.count}
               </span>
             )}

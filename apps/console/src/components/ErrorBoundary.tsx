@@ -43,15 +43,15 @@ export class ErrorBoundary extends Component<Props, State> {
 
     return (
       <div className="flex h-full items-center justify-center p-8">
-        <div className="max-w-md rounded-xl border border-rose-400/30 bg-rose-500/[0.04] p-6 text-center">
-          <AlertTriangle className="mx-auto h-8 w-8 text-rose-500" />
+        <div className="max-w-md rounded-xl border border-status-failed/30 bg-status-failed/[0.04] p-6 text-center">
+          <AlertTriangle className="mx-auto h-8 w-8 text-status-failed" />
           <h2 className="mt-3 text-base font-semibold text-on-surface">
             {this.props.label ? `The ${this.props.label} view hit an error` : "Something went wrong"}
           </h2>
           <p className="mt-1 text-sm text-secondary">
             The rest of the console is still working — your running jobs are unaffected.
           </p>
-          <pre className="mt-3 max-h-32 overflow-auto rounded-md bg-on-surface/[0.03] px-3 py-2 text-left text-[11px] font-mono text-rose-700/80 whitespace-pre-wrap">
+          <pre className="mt-3 max-h-32 overflow-auto rounded-md bg-on-surface/[0.03] px-3 py-2 text-left text-3xs font-mono text-status-failed-ink/80 whitespace-pre-wrap">
             {error.message}
           </pre>
           <div className="mt-4 flex items-center justify-center gap-2">

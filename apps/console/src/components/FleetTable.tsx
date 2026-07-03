@@ -32,7 +32,7 @@ const SORT_VALUE: Record<SortKey, (a: FleetAgent) => string> = {
 function SortCaret({ active, dir }: { active: boolean; dir: SortDir }) {
   return (
     <span
-      className={`ml-1 inline-block text-[10px] leading-none ${
+      className={`ml-1 inline-block text-4xs leading-none ${
         active ? "text-primary" : "text-secondary/30"
       }`}
       aria-hidden="true"
@@ -249,7 +249,7 @@ export function FleetTable({
                 </td>
                 <td className="px-4 py-3 max-w-xs">
                   {agent.blocker ? (
-                    <div className="truncate text-xs text-amber-700" title={agent.blocker.message}>
+                    <div className="truncate text-xs text-status-blocked-ink" title={agent.blocker.message}>
                       <span className="font-mono">{agent.blocker.id}</span>: {agent.blocker.message}
                     </div>
                   ) : (

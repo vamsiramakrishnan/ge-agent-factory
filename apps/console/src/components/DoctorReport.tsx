@@ -25,9 +25,9 @@ function tally(section: DoctorSection) {
 }
 
 function sectionGlyph(fail: number, warn: number) {
-  if (fail > 0) return { glyph: "✕", className: "text-rose-600" }; // ✕
-  if (warn > 0) return { glyph: "!", className: "text-amber-600" };
-  return { glyph: "✓", className: "text-emerald-600" }; // ✓
+  if (fail > 0) return { glyph: "✕", className: "text-status-failed-ink" }; // ✕
+  if (warn > 0) return { glyph: "!", className: "text-status-warning-ink" };
+  return { glyph: "✓", className: "text-status-passed-ink" }; // ✓
 }
 
 export function DoctorReport({ report, loading, failuresOnly = false }: DoctorReportProps) {
@@ -57,12 +57,12 @@ export function DoctorReport({ report, loading, failuresOnly = false }: DoctorRe
     return (
       <div className="editorial-micro-card rounded-lg p-6">
         <div className="space-y-4">
-          <div className="h-12 bg-slate-200/60 rounded-lg animate-pulse motion-reduce:animate-none" />
+          <div className="h-12 bg-surface-container rounded-lg animate-pulse motion-reduce:animate-none" />
           <div className="space-y-2">
-            <div className="h-8 bg-slate-200/60 rounded w-1/3 animate-pulse motion-reduce:animate-none" />
-            <div className="h-6 bg-slate-200/60 rounded w-full animate-pulse motion-reduce:animate-none" />
-            <div className="h-6 bg-slate-200/60 rounded w-full animate-pulse motion-reduce:animate-none" />
-            <div className="h-6 bg-slate-200/60 rounded w-5/6 animate-pulse motion-reduce:animate-none" />
+            <div className="h-8 bg-surface-container rounded w-1/3 animate-pulse motion-reduce:animate-none" />
+            <div className="h-6 bg-surface-container rounded w-full animate-pulse motion-reduce:animate-none" />
+            <div className="h-6 bg-surface-container rounded w-full animate-pulse motion-reduce:animate-none" />
+            <div className="h-6 bg-surface-container rounded w-5/6 animate-pulse motion-reduce:animate-none" />
           </div>
         </div>
         <div className="mt-4 text-sm text-secondary text-center">Running checks...</div>
@@ -153,9 +153,9 @@ export function DoctorReport({ report, loading, failuresOnly = false }: DoctorRe
                 <h3 className="text-base font-semibold text-on-surface">{section.name}</h3>
               </div>
               <div className="flex items-center gap-1.5 text-xs font-medium">
-                {counts.pass > 0 && <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-emerald-700">{counts.pass} pass</span>}
-                {counts.warn > 0 && <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-amber-700">{counts.warn} warn</span>}
-                {counts.fail > 0 && <span className="rounded-full bg-rose-500/10 px-2 py-0.5 text-rose-700">{counts.fail} fail</span>}
+                {counts.pass > 0 && <span className="rounded-full bg-status-passed/10 px-2 py-0.5 text-status-passed-ink">{counts.pass} pass</span>}
+                {counts.warn > 0 && <span className="rounded-full bg-status-warning/10 px-2 py-0.5 text-status-warning-ink">{counts.warn} warn</span>}
+                {counts.fail > 0 && <span className="rounded-full bg-status-failed/10 px-2 py-0.5 text-status-failed-ink">{counts.fail} fail</span>}
               </div>
             </div>
 
@@ -168,7 +168,7 @@ export function DoctorReport({ report, loading, failuresOnly = false }: DoctorRe
                       <StatusPill status={check.status} />
                       <span className="text-sm font-medium text-on-surface">{check.name}</span>
                       {check.category && check.status !== "pass" && (
-                        <span className="rounded bg-surface-container-low px-2 py-0.5 text-[11px] font-medium text-secondary">
+                        <span className="rounded bg-surface-container-low px-2 py-0.5 text-3xs font-medium text-secondary">
                           {check.category}
                         </span>
                       )}

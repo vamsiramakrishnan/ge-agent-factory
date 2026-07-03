@@ -287,7 +287,7 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
   if (error || !agent) {
     return (
       <div className="mx-auto flex h-full max-w-xl flex-col items-center justify-center px-6 text-center">
-        <TriangleAlert className="mb-3 h-7 w-7 text-amber-600" />
+        <TriangleAlert className="mb-3 h-7 w-7 text-status-warning-ink" />
         <h1 className="text-lg font-semibold text-on-surface">{error || "Agent not found"}</h1>
         <p className="mt-2 text-sm text-secondary">Fleet could not resolve this agent detail record.</p>
         <button
@@ -380,13 +380,13 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
       <div
         className={`mb-6 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border px-4 py-3 ${
           triageState === "failed"
-            ? "border-rose-500/30 bg-rose-500/10"
+            ? "border-status-failed/30 bg-status-failed/10"
             : triageState === "blocked"
-              ? "border-amber-500/30 bg-amber-500/10"
+              ? "border-status-blocked/30 bg-status-blocked/10"
               : triageState === "running"
-                ? "border-blue-500/30 bg-blue-500/10"
+                ? "border-status-running/30 bg-status-running/10"
                 : triageState === "done"
-                  ? "border-emerald-500/30 bg-emerald-500/10"
+                  ? "border-status-passed/30 bg-status-passed/10"
                   : "border-outline-variant/40 bg-surface-container-low"
         }`}
       >
@@ -529,13 +529,13 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
                 {doctor?.blockers?.length ? (
                   <div className="grid gap-2">
                     {doctor.blockers.map((blocker) => (
-                      <div key={blocker.id} className="rounded-md border border-amber-400/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-800">
+                      <div key={blocker.id} className="rounded-md border border-status-blocked/20 bg-status-blocked/10 px-3 py-2 text-xs text-status-blocked-ink">
                         <span className="font-mono">{blocker.id}</span>: {blocker.message}
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="rounded-md border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-800">
+                  <div className="rounded-md border border-status-passed/20 bg-status-passed/10 px-3 py-2 text-xs text-status-passed-ink">
                     {workspaceId ? "No workspace blockers reported." : "No workspace exists yet."}
                   </div>
                 )}
@@ -557,7 +557,7 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
               {agent.blocker?.message || nextStage?.blocker?.message || actionSummary(primaryPlan) || "This agent is currently waiting for the next pipeline transition."}
             </p>
             {primaryCommand && (
-              <div className="mt-3 overflow-hidden rounded-md bg-surface-container px-3 py-2 font-mono text-[11px] text-secondary">
+              <div className="mt-3 overflow-hidden rounded-md bg-surface-container px-3 py-2 font-mono text-3xs text-secondary">
                 <div className="truncate" title={primaryCommand}>{primaryCommand}</div>
               </div>
             )}
@@ -656,11 +656,11 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
 function ArtifactLine({ name, value }: { key?: string; name: string; value: string }) {
   return (
     <div className="rounded-md border border-outline-variant/30 bg-surface-container-low px-3 py-2">
-      <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-wide text-secondary">
+      <div className="flex items-center gap-2 text-3xs font-medium uppercase tracking-wide text-secondary">
         <FileText className="h-3.5 w-3.5" />
         {name.replace(/_/g, " ")}
       </div>
-      <div className="mt-1 truncate font-mono text-[11px] text-on-surface" title={value}>
+      <div className="mt-1 truncate font-mono text-3xs text-on-surface" title={value}>
         {value}
       </div>
     </div>
@@ -670,7 +670,7 @@ function ArtifactLine({ name, value }: { key?: string; name: string; value: stri
 function InfoRow({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <div className="text-[11px] font-medium uppercase tracking-wide text-secondary">{label}</div>
+      <div className="text-3xs font-medium uppercase tracking-wide text-secondary">{label}</div>
       <div className={`mt-1 truncate text-sm text-on-surface ${mono ? "font-mono text-xs" : ""}`} title={value}>{value}</div>
     </div>
   );

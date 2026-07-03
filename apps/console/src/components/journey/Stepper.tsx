@@ -46,11 +46,11 @@ export function Stepper({
             >
               <span
                 className={
-                  "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold transition-colors " +
+                  "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-3xs font-semibold transition-colors " +
                   (active
                     ? "bg-primary text-white"
                     : completed
-                      ? "bg-emerald-500/15 text-emerald-700"
+                      ? "bg-status-passed/15 text-status-passed-ink"
                       : "bg-surface-container text-secondary")
                 }
               >
@@ -61,7 +61,7 @@ export function Stepper({
             {index < steps.length - 1 && (
               <span
                 className={
-                  "h-px w-6 sm:w-10 " + (step.id < current ? "bg-emerald-500/40" : "bg-outline-variant/50")
+                  "h-px w-6 sm:w-10 " + (step.id < current ? "bg-status-passed/40" : "bg-outline-variant/50")
                 }
                 aria-hidden
               />
