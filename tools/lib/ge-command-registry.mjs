@@ -70,6 +70,10 @@ export const GE_COMMANDS = {
     cli: "ge capture",
     label: "Capture a contract",
     summary: "Open the console Interview to capture an agent contract (starts the console if needed); --from registers an existing contract file",
+    guide: {
+      when: "no contract exists yet for the use case, or an already-written agent-spec.json needs registering (--from)",
+      next: ["ge prove", "ge evals compile"],
+    },
     risk: "starts-local-workloads",
     expectedDuration: "under 30s",
     observability: { mode: "command-output", events: false },
@@ -90,6 +94,10 @@ export const GE_COMMANDS = {
     cli: "ge prove",
     label: "Prove the contracts",
     summary: "Prove contracts end to end: fresh machine → health check + first agent build; agents built already → rebuild their proof",
+    guide: {
+      when: "a contract exists and needs proving — fresh machine gets the first proof; built agents get re-proven after any contract change",
+      next: ["ge handoff agents-cli", "ge prove --live --evalset <evalset> --max-cases 1"],
+    },
     risk: "starts-local-workloads",
     expectedDuration: "varies",
     observability: {
@@ -126,6 +134,10 @@ export const GE_COMMANDS = {
     cli: "ge handoff",
     label: "Hand off to deploy",
     summary: "Hand proven agents to a deploy target (agents-cli → Agent Engine → Gemini Enterprise)",
+    guide: {
+      when: "local proof passed and the agent should ship — runs only the post-boundary release stages, costs real cloud resources",
+      next: ["ge agents status --watch", "ge drive"],
+    },
     risk: "mutates-cloud",
     expectedDuration: "varies",
     observability: {
@@ -157,6 +169,162 @@ export const GE_COMMANDS = {
       if (body.ids) argv.push("--ids", String(body.ids));
       if (body.startStage) argv.push("--start-stage", String(body.startStage));
       if (body.targetStage) argv.push("--target-stage", String(body.targetStage));
+      return argv;
+    },
+  },
+  // ── live surfaces (drive / verify / load the shipped agent) ───────────────
+  // The behavioral layer over the deployed assist surface. Every command here
+  // accepts a cassette (recorded stream) so consoles/CI can run it with zero
+  // cloud calls; live runs are explicit and cost-guarded.
+  "drive": {
+    id: "drive",
+    method: "POST",
+    path: "/api/ge/drive",
+    cli: "ge drive",
+    label: "Drive the shipped agent",
+    summary: "Talk to the deployed agent over its live assist surface with per-turn timing/responder instrumentation; record conversations as eval cases or cassettes",
+    guide: {
+      when: "a deployed agent should be exercised by hand or script — first live contact, reproducing a failure, or recording eval cases/cassettes",
+      next: ["ge prove --live --evalset evals/recorded.evalset.json --max-cases 1", "ge bench --cassette <recording>"],
+    },
+    risk: "starts-workloads",
+    expectedDuration: "varies",
+    observability: { mode: "command-output", events: false },
+    requirements: { bins: ["bun"], config: [] },
+    mcp: {
+      tool: "factory_drive",
+      description: "Drive the deployed agent through its live assist surface (or replay a recorded cassette with zero cloud calls). Sends the given user turns as one threaded conversation and returns the LiveTranscript: per-turn answers, timings (time-to-first-text, full response, stalls), session threading, responder-identity assertion, tool invocations, citations. Optionally records the conversation as an ADK eval case (record=<evalset path>) and/or a replayable cassette (recordCassette=<path>). Live turns burn real tokens; pass cassette=<path> for deterministic replay.",
+      params: {
+        turns: { type: "string", description: "User turns, one per line" },
+        cassette: { type: "string", optional: true, description: "Replay this recorded cassette instead of live traffic" },
+        record: { type: "string", optional: true, description: "Append the conversation to this evalset as an eval case" },
+        recordId: { type: "string", optional: true, description: "Eval case id to record under" },
+        recordCassette: { type: "string", optional: true, description: "Record the live stream to this cassette path" },
+        targetAgent: { type: "string", optional: true, description: "Expected responding agent id (asserted against the stream)" },
+        assistant: { type: "string", optional: true, description: "Assistant id on the engine (default default_assistant)" },
+        strictResponder: { type: "boolean", optional: true },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["drive", "--json"];
+      // Inline turns (the documented `turns` body field, one user turn per
+      // line) transport as a first-class `--turns` flag — the CLI splits it
+      // into the conversation. This keeps the registry a pure data leaf (no
+      // fs/temp files) while giving the console's generic dispatch a real
+      // path for `{turns: "..."}`.
+      if (body.turns) argv.push("--turns", String(body.turns));
+      if (body.script) argv.push("--script", String(body.script));
+      if (body.cassette) argv.push("--cassette", String(body.cassette));
+      if (body.record) argv.push("--record", String(body.record));
+      if (body.recordId) argv.push("--record-id", String(body.recordId));
+      if (body.recordCassette) argv.push("--record-cassette", String(body.recordCassette));
+      if (body.targetAgent) argv.push("--target-agent", String(body.targetAgent));
+      if (body.assistant) argv.push("--assistant", String(body.assistant));
+      if (body.strictResponder) argv.push("--strict-responder");
+      return argv;
+    },
+  },
+  "prove.live": {
+    id: "prove.live",
+    method: "POST",
+    path: "/api/ge/prove/live",
+    cli: "ge prove --live",
+    label: "Prove live",
+    summary: "Release verification: run evalset cases through the deployed agent's assist surface — metric grid, conformance baselines, live gate verdict",
+    risk: "starts-workloads",
+    expectedDuration: "varies",
+    observability: { mode: "command-output", events: false },
+    requirements: { bins: ["bun"], config: [] },
+    mcp: {
+      tool: "factory_prove_live",
+      description: "Release verification: run an evalset's conversations through the deployed agent's live assist surface (or a recorded cassette — deterministic, zero cloud) and return the LiveProofResult: per-case transcripts, the GE-owned metric grid (transport, session threading, responder identity, structural response match, tool trajectory where the stream exposes tools, grounding citations), conformance vs stored baselines (drift blocks), and the live gate verdict. Cost-guard live runs with maxCases/maxTurns. updateBaseline accepts current behavior as the new baseline.",
+      params: {
+        evalset: { type: "string", description: "Path to the ADK-compatible evalset to prove" },
+        cassette: { type: "string", optional: true, description: "Replay this cassette instead of live traffic" },
+        maxCases: { type: "number", optional: true },
+        maxTurns: { type: "number", optional: true },
+        strictResponder: { type: "boolean", optional: true },
+        updateBaseline: { type: "boolean", optional: true },
+        targetAgent: { type: "string", optional: true },
+        assistant: { type: "string", optional: true },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["prove", "--live", "--json"];
+      if (body.evalset) argv.push("--evalset", String(body.evalset));
+      if (body.cassette) argv.push("--cassette", String(body.cassette));
+      if (body.maxCases) argv.push("--max-cases", String(body.maxCases));
+      if (body.maxTurns) argv.push("--max-turns", String(body.maxTurns));
+      if (body.strictResponder) argv.push("--strict-responder");
+      if (body.updateBaseline) argv.push("--update-baseline");
+      if (body.targetAgent) argv.push("--target-agent", String(body.targetAgent));
+      if (body.assistant) argv.push("--assistant", String(body.assistant));
+      return argv;
+    },
+  },
+  "bench": {
+    id: "bench",
+    method: "POST",
+    path: "/api/ge/bench",
+    cli: "ge bench",
+    label: "Bench against budgets",
+    summary: "Load the assist surface within hard cost guards and verdict the latency/error budgets (ttft, full response, stalls, errors, responder rates)",
+    guide: {
+      when: "behavior is proven and latency/error budgets need a pass/fail verdict — replay a cassette first; live runs need --yes",
+      next: ["ge prove --live --evalset <evalset>", "ge drive"],
+    },
+    risk: "starts-workloads",
+    expectedDuration: "varies",
+    observability: { mode: "command-output", events: false },
+    requirements: { bins: ["bun"], config: [] },
+    mcp: {
+      tool: "factory_bench",
+      description: "Run N sessions × M turns at swept concurrency against the deployed assist surface and return the LiveBenchResult: nearest-rank percentiles (time-to-first-text, full response, inter-chunk stalls), error taxonomy, responder identity rates, and a pass/fail verdict against the budgets in .ge.json live.budgets. Hard guard rails (live.bench) cap sessions/turns/concurrency/duration before anything runs. A LIVE run costs real money and requires confirm=true; cassette replay (cassette=<path>) is deterministic and free.",
+      params: {
+        cassette: { type: "string", optional: true, description: "Replay this cassette (deterministic, no cloud, no confirm needed)" },
+        sessions: { type: "number", optional: true },
+        turns: { type: "number", optional: true },
+        concurrency: { type: "string", optional: true, description: "Sweep, e.g. '1,2,4'" },
+        targetAgent: { type: "string", optional: true },
+        confirm: { type: "boolean", optional: true, description: "Required for live runs (real traffic, real cost)" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["bench", "--json"];
+      if (body.cassette) argv.push("--cassette", String(body.cassette));
+      if (body.sessions) argv.push("--sessions", String(body.sessions));
+      if (body.turns) argv.push("--turns", String(body.turns));
+      if (body.concurrency) argv.push("--concurrency", String(body.concurrency));
+      if (body.targetAgent) argv.push("--target-agent", String(body.targetAgent));
+      if (body.confirm) argv.push("--yes");
+      return argv;
+    },
+  },
+  "evals.compile": {
+    id: "evals.compile",
+    method: "POST",
+    path: "/api/ge/evals/compile",
+    cli: "ge evals compile",
+    label: "Compile behavioral evals",
+    summary: "Compile a captured agent contract (or any spec envelope) into the executable behavior suite: graph, coverage, selected cases, ADK evalset, dataset, load profile",
+    risk: "starts-local-workloads",
+    expectedDuration: "under 30s",
+    observability: { mode: "command-output", events: false },
+    requirements: { bins: ["bun"], config: [] },
+    mcp: {
+      tool: "factory_evals_compile",
+      description: "Local, deterministic: compile an agent contract into executable behavior. Reads a registered/captured spec (id=<spec-id>, or the only one when exactly one exists) or any GenerationSpecEnvelope JSON (spec=<path>), derives the capability/authority/tool-behavior graphs, over-generates conversation cases (happy paths, missing/conflicting evidence, refusals, escalations, write-tool confirmation/duplicate/cancellation/permission cases), and set-cover-selects a minimal suite. Emits graph, coverage report, selected cases, ADK evalset, agents-cli dataset, bench profile, and the metric-applicability matrix under .ge/behavioral. Feed the evalset to factory_prove_live.",
+      params: {
+        spec: { type: "string", optional: true, description: "Path to a GenerationSpecEnvelope JSON (bring your own)" },
+        id: { type: "string", optional: true, description: "Registered spec id" },
+        maxCases: { type: "number", optional: true, description: "Case budget for set-cover selection (default 40)" },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["evals", "compile", "--json"];
+      if (body.spec) argv.push("--spec", String(body.spec));
+      if (body.id) argv.push("--id", String(body.id));
+      if (body.maxCases) argv.push("--max-cases", String(body.maxCases));
       return argv;
     },
   },
@@ -408,6 +576,10 @@ export const GE_COMMANDS = {
     cli: "ge doctor",
     label: "Factory doctor",
     summary: "Preflight the factory/cloud plane health with suggested fixes",
+    guide: {
+      when: "anything is failing or before starting work in an unfamiliar checkout — every failed check names its fix command",
+      next: ["ge", "ge prove"],
+    },
     risk: "read-only",
     expectedDuration: "under 1m",
     requirements: { bins: [], config: [] },

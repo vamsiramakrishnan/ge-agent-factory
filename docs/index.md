@@ -28,6 +28,30 @@ auditor.
   <img src="assets/diagrams/signature-pipeline.svg" alt="capture flows into the Enterprise Agent Contract; the contract generates code, tools, and source-system twins under authority-graph control; twins and generated code feed prove (evals, verify-stage review, promotion gate); prove produces a passport and proof pack; the passport hands off across the build boundary to agents-cli, ADK, and Gemini Enterprise" width="900">
 </p>
 
+## Works with your coding agent
+
+<p align="center">
+  <img src="assets/icons/claude-code.svg" alt="Claude Code" height="44">&nbsp;
+  <img src="assets/icons/antigravity.svg" alt="Antigravity" height="44">&nbsp;
+  <img src="assets/icons/codex.svg" alt="Codex" height="44">&nbsp;
+  <img src="assets/icons/gemini-cli.svg" alt="Gemini CLI" height="44">&nbsp;
+  <img src="assets/icons/mcp.svg" alt="MCP" height="44">
+</p>
+
+The factory ships as agent skills — including the install itself — so a
+coding agent can set up a bare machine and then run the whole line:
+
+```bash
+bunx create-ge-agent-factory        # any machine: clone + guided, verified install
+```
+
+| Agent | Install |
+| --- | --- |
+| **Claude Code** | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory` then `/plugin install factory-bootstrap@ge-agent-factory` |
+| **Gemini CLI** | `gemini extensions install https://github.com/vamsiramakrishnan/ge-agent-factory` |
+| **Antigravity · Codex · agents-cli** | `bunx create-ge-agent-factory --skills agents` |
+| **Any MCP client** | `bun tools/mcp-server.mjs` from a checkout |
+
 ## The problem it solves
 
 Enterprise agent programs rarely fail at the model. They fail at the seams:

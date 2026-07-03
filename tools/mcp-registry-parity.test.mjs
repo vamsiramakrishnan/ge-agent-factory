@@ -24,6 +24,14 @@ const EXPECTED_TOOLS = {
   factory_sync: ["force?", "push?", "commit?", "local?", "remote?", "create?"],
   factory_mcp_deploy: [],
   factory_mcp_doctor: [],
+  // Live-surface widening (Behavioral Compiler / Live Proof feature set,
+  // 2026-07-03): drive/prove-live/bench/evals-compile expose the same core
+  // functions as their CLI verbs; cassette params keep every tool runnable
+  // with zero cloud calls.
+  factory_drive: ["turns", "cassette?", "record?", "recordId?", "recordCassette?", "targetAgent?", "assistant?", "strictResponder?"],
+  factory_prove_live: ["evalset", "cassette?", "maxCases?", "maxTurns?", "strictResponder?", "updateBaseline?", "targetAgent?", "assistant?"],
+  factory_bench: ["cassette?", "sessions?", "turns?", "concurrency?", "targetAgent?", "confirm?"],
+  factory_evals_compile: ["spec?", "id?", "maxCases?"],
 };
 
 const KNOWN_RISKS = ["mutates-cloud", "starts-workloads", "starts-local-workloads", "writes-repo", "read-only"];

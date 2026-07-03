@@ -158,6 +158,13 @@
         "zod": "^4.4.3",
       },
     },
+    "packages/create-ge-agent-factory": {
+      "name": "create-ge-agent-factory",
+      "version": "0.1.0",
+      "bin": {
+        "create-ge-agent-factory": "./bin/create-ge-agent-factory.mjs",
+      },
+    },
     "packages/design": {
       "name": "@ge/design",
       "version": "0.1.0",
@@ -1035,6 +1042,8 @@
     "core-util-is": ["core-util-is@1.0.3", "", {}, "sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ=="],
 
     "cors": ["cors@2.8.6", "", { "dependencies": { "object-assign": "^4", "vary": "^1" } }, "sha512-tJtZBBHA6vjIAaF6EnIaq6laBBP9aq/Y3ouVJjEfoHbRBcHBAHYcMh/w8LDrk2PvIMMq8gmopa5D4V8RmbrxGw=="],
+
+    "create-ge-agent-factory": ["create-ge-agent-factory@workspace:packages/create-ge-agent-factory"],
 
     "cross-spawn": ["cross-spawn@7.0.6", "", { "dependencies": { "path-key": "^3.1.0", "shebang-command": "^2.0.0", "which": "^2.0.1" } }, "sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA=="],
 

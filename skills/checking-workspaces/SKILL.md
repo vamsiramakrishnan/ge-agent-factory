@@ -47,7 +47,7 @@ node apps/factory/src/cli.js workspace repair <workspace-id> --stage <stage> --a
 
 ## Key Artifacts
 
-- `artifacts/checking-workspaces.json`
+- `artifacts/workspace-doctor.json` (+ `artifacts/WORKSPACE_DOCTOR.md`)
 - `artifacts/workspace-repair.json`
 - `artifacts/validation-report.json`
 - `artifacts/spec-code-trace.json`
@@ -65,7 +65,7 @@ node apps/factory/src/cli.js workspace repair <workspace-id> --stage <stage> --a
 - Contract: `apps/factory/src/workspace-contract.js`
 - Validation pipeline: `apps/factory/src/agent-workspace-pipeline.js`
 - Spec-code trace: `apps/factory/src/spec-code-trace.js`
-- Doctor: `apps/factory/src/checking-workspaces.js`
+- Doctor: `apps/factory/src/workspace-doctor.js`
 - Repair: `apps/factory/src/workspace-repair.js`
 - CLI routing: `apps/factory/src/cli.js`
 
@@ -74,7 +74,7 @@ node apps/factory/src/cli.js workspace repair <workspace-id> --stage <stage> --a
 Summarize a workspace gate artifact set:
 
 ```bash
-node skills/checking-workspaces/scripts/summarize-gate.mjs .ge/factory/projects/<workspace>
+node skills/checking-workspaces/scripts/summarize-gate.mjs .ge/factory/workspaces/<workspace>
 ```
 
 ## Repair Discipline
@@ -96,12 +96,14 @@ node apps/factory/src/cli.js validate <workspace-id>
 For source changes:
 
 ```bash
-node --check apps/factory/src/checking-workspaces.js
+node --check apps/factory/src/workspace-doctor.js
 node --check apps/factory/src/workspace-repair.js
 ```
 
 ## References
 
+- Read `references/example-session.md` first if this is your first gate run — a worked session (doctor → deterministic repair → re-check → report), with real output and the repair-blocked/escalate-upstream variant.
 - Read `references/assembly-line-role.md` to understand where this skill fits in the Agent Factory assembly line.
 - Read `references/gate-artifacts.md` before adding or changing gate artifacts.
 - Read `references/blocker-taxonomy.md` before adding new blocker ids or repair behavior.
+- Copy `assets/blocker-signature-example.json` as the starting Evidence Ledger event when recording a repeated blocker signature for upstream follow-up.

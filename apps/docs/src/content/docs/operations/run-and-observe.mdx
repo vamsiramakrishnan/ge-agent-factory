@@ -12,7 +12,7 @@ Google Cloud project.
 
 ## Goal
 
-Run an agent build through the pipeline — local on your machine or remote in the
+Run an agent build through the <a href="/ge-agent-factory/reference/glossary/#pipeline" title="The user-facing, end-to-end path from business intent to a deployed agent — interview → spec → data → simulator → build → eval → preview → deploy — rendered as a plan you can read (ge pipeline plan) and watch (ge pipeline status).">pipeline</a> — local on your machine or remote in the
 cloud factory — watch it live in the console (Run Drawer / Activity), and resume a
 run that has blocked.
 
@@ -66,7 +66,7 @@ run that has blocked.
 
    ```bash
    ge agents status --watch       # loops every 15s until runs are terminal
-   ge agents fleet                # fleet-wide run/work-item view
+   ge fleet status                # fleet-wide run/work-item view
    ge agents logs <runId>         # logs for a specific run
    ```
 
@@ -85,7 +85,7 @@ run that has blocked.
    ```
 
    This POSTs `/api/tasks/<id>/resume` with a deterministic resume plan.
-   (`ge pipeline resume <id>` does the same for pipeline runs.)
+   (`ge pipeline resume <id>` does the same for <a href="/ge-agent-factory/reference/glossary/#pipeline-run" title="One orchestrated, resumable run of the pipeline for a use case, executed as a DAG of daemon child tasks — data readiness, simulator checks, optionally the factory build itself, the Antigravity review node, and convergence to a target stage.">pipeline runs</a>.)
 
 6. **Inspect the durable run ledger** (remote runs, history):
 

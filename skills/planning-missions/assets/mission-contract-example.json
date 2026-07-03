@@ -1,0 +1,35 @@
+{
+  "_comment": "Legacy mission-contract example (kind ge.factory_autopilot.mission) — the older console-compat shape checked by scripts/validate-mission.mjs. Passes the validator as-is; copy it when exercising or extending the contract fields. Invariants the validator enforces: mode local ⇒ modeContract.autopilotCapability local_doctor_repair, mode remote ⇒ remote_observe_only. The pipeline graph (ge pipeline plan/graph) is the current shared intent object — see references/mission-contract.md.",
+  "kind": "ge.factory_autopilot.mission",
+  "version": 1,
+  "mode": "local",
+  "modeContract": {
+    "factorySurface": "local_harness",
+    "autopilotCapability": "local_doctor_repair",
+    "effectiveFactoryTarget": "previewed"
+  },
+  "target": {
+    "requested": "preview",
+    "workspaceGate": "preview",
+    "effectiveFactoryTarget": "previewed",
+    "requiredArtifacts": ["mock_systems/usecase-spec.json"]
+  },
+  "summary": {
+    "selected": 1,
+    "factory": 1,
+    "autopilot": 0,
+    "remoteObserve": 0,
+    "autopilotAfterFactory": 1
+  },
+  "phases": [
+    { "id": "factory_build", "owner": "factory", "items": ["hr-onboarding-agent"] },
+    { "id": "autopilot_converge", "owner": "autopilot", "items": ["hr-onboarding-agent"] }
+  ],
+  "roster": [
+    {
+      "id": "hr-onboarding-agent",
+      "action": "build_local",
+      "reason": "no local workspace exists yet; Factory owns production"
+    }
+  ]
+}

@@ -28,7 +28,9 @@ function readJson(rel) {
 
 const artifacts = {
   workspace: readJson("workspace.json"),
-  doctor: readJson("artifacts/checking-workspaces.json"),
+  // Canonical doctor artifact (ARTIFACT_PATHS.workspaceDoctor); the second
+  // name is a legacy alias kept for older workspaces.
+  doctor: readJson("artifacts/workspace-doctor.json") ?? readJson("artifacts/checking-workspaces.json"),
   repair: readJson("artifacts/workspace-repair.json"),
   validation: readJson("artifacts/validation-report.json"),
   specCodeTrace: readJson("artifacts/spec-code-trace.json"),

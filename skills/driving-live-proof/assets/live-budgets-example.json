@@ -1,0 +1,29 @@
+{
+  "_comment": "Copy the `live` block into .ge.json to set budgets (ge bench) and hard guard rails; copy `promotion` to make the live gate required. Values shown are the defaults.",
+  "live": {
+    "budgets": {
+      "ttftMsP95": 2500,
+      "fullResponseMsP95": 15000,
+      "interChunkGapMsP99": 3000,
+      "errorRateMax": 0.01,
+      "responderUnknownRateMax": 0,
+      "responderMismatchRateMax": 0
+    },
+    "bench": {
+      "maxSessions": 25,
+      "maxTurnsPerSession": 5,
+      "maxConcurrency": 8,
+      "maxDurationSeconds": 120
+    }
+  },
+  "promotion": {
+    "gates": {
+      "live": {
+        "required": false,
+        "minPassRate": 1.0,
+        "strictResponder": true,
+        "allowBaselineDrift": false
+      }
+    }
+  }
+}

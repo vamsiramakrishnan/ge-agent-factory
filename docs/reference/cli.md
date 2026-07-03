@@ -71,7 +71,7 @@ Capture an agent contract: opens the console Interview (starts the console if ne
 
 ### `ge prove`
 
-Prove the current contracts end to end: fresh machine → health check + first agent build; agents built already → rebuild their proof. --watch re-proves on contract change
+Prove the current contracts end to end: fresh machine → health check + first agent build; agents built already → rebuild their proof. --live verifies the shipped agent through its assist surface; --watch re-proves on contract change
 
 | Flag | Type | Description |
 |---|---|---|
@@ -82,6 +82,15 @@ Prove the current contracts end to end: fresh machine → health check + first a
 | `--vertex` | boolean | Use Vertex-backed stages when the target reaches them |
 | `--warm` | boolean | Pre-warm the shared uv cache before running |
 | `--watch` | boolean | Watch contract sources and re-prove on change (local, pure computation — safe to loop) |
+| `--live` | boolean | Release verification: run evalset cases through the deployed agent's live assist surface (explicit, cost-guarded — never the default) |
+| `--evalset` | string | Evalset to prove live (ADK-compatible; record one with ge drive --record) |
+| `--cassette` | string | Replay a recorded cassette instead of live traffic (deterministic, no cloud) |
+| `--maxCases` | string | Cap the number of eval cases run live (cost guard) |
+| `--maxTurns` | string | Cap turns per case (cost guard) |
+| `--strictResponder` | boolean | Fail cases whose responder identity cannot be verified |
+| `--updateBaseline` | boolean | Accept the current live behavior as the new conformance baseline |
+| `--targetAgent` | string | Expected responding agent id (asserted against the stream) |
+| `--assistant` | string | Assistant id on the engine (default default_assistant) — prove any deployed agent, factory-built or not |
 
 ### `ge handoff`
 
@@ -99,6 +108,63 @@ Hand off proven agents to a deploy target (supported today: agents-cli → Agent
 ### `ge status`
 
 Where am I? Position on capture → prove → handoff, the current blocker, and the exact next command
+
+### `ge drive`
+
+Talk to the shipped agent over its live assist surface — per-turn timing/responder footer; --record saves the conversation as an eval case
+
+| Flag | Type | Description |
+|---|---|---|
+| `--turns` | string | Drive non-interactively from inline turns (one user turn per line/newline) instead of --script — the transport for programmatic callers |
+| `--script` | string | Drive non-interactively: file with one user turn per line (# comments allowed) |
+| `--cassette` | string | Replay a recorded cassette instead of calling the live surface (no cloud, deterministic) |
+| `--record` | string | Append the driven conversation to this evalset as a new eval case |
+| `--recordId` | string | Case id to record under (default: derived from the transcript id) |
+| `--recordCassette` | string | Record the live stream to this cassette file for later replay |
+| `--targetAgent` | string | Expected responding agent id — responder identity is asserted against the stream |
+| `--assistant` | string | Assistant id on the engine (default default_assistant) — plug any deployed agent, factory-built or not |
+| `--strictResponder` | boolean | Fail when responder identity cannot be verified (default: warn) |
+| `--geApp` | string | Gemini Enterprise engine (full resource name or bare id; default from .ge.json geAppId) |
+
+### `ge bench`
+
+Load the live assist surface within hard cost guards and verdict the latency/error budgets (ttft, full response, stalls, errors, responder identity)
+
+| Flag | Type | Description |
+|---|---|---|
+| `--sessions` | string | Number of independent conversations (default 5; hard-capped by live.bench guards) |
+| `--turns` | string | Turns per conversation (default 2) |
+| `--concurrency` | string | Concurrency sweep, e.g. 1,2,4 (default 1) |
+| `--cassette` | string | Replay a recorded cassette — deterministic timings, zero cloud (the CI path) |
+| `--profile` | string | Bench profile JSON (e.g. .ge/behavioral/bench-profile.json from ge evals compile) |
+| `--targetAgent` | string | Expected responding agent id — responder rates then count against budgets |
+| `--strictResponder` | boolean | Treat unverifiable responder identity as failure |
+| `--export` | string | Export a load script instead of running: k6 |
+| `--yes` | boolean | Confirm a LIVE bench run (real traffic, real cost) — refused without it |
+| `--geApp` | string | Gemini Enterprise engine (full resource name or bare id; default from .ge.json geAppId) |
+
+### `ge evals`
+
+Behavioral compiler: turn agent contracts into executable eval suites, datasets, and load profiles
+
+### `ge evals compile`
+
+Compile an agent contract into executable behavior: graph, coverage, selected cases, ADK evalset, grading dataset, load profile
+
+| Flag | Type | Description |
+|---|---|---|
+| `--spec` | string | A GenerationSpecEnvelope JSON file to compile (bring your own spec) |
+| `--id` | string | Registered/captured spec id (default: the only one, when exactly one exists) |
+| `--maxCases` | string | Case budget for the set-cover selection (default 40) |
+| `--out` | string | Output directory (default .ge/behavioral) |
+
+### `ge evals applicability`
+
+Which metric families apply locally vs through the live assist surface (and why)
+
+| Flag | Type | Description |
+|---|---|---|
+| `--markdown` | boolean | Print the markdown table instead of the human view |
 
 ### `ge up`
 
@@ -306,7 +372,7 @@ Show one repair run, or list recent repair runs
 
 ### `ge runs`
 
-Run activity across every kind: list · show · events · replay · resume · job
+Run activity across every kind: list · show · events · replay · resume · respond · job
 
 ### `ge runs list`
 
@@ -354,6 +420,21 @@ Resume a runtime task using its deterministic resumePlan
 | Flag | Type | Description |
 |---|---|---|
 | `<id>` | positional (required) | Runtime task id |
+| `--port` | string | Daemon port (default 17654) |
+
+### `ge runs respond`
+
+Answer a running task's pending question (interaction): --answers JSON, --freeform text, or --cancel
+
+| Flag | Type | Description |
+|---|---|---|
+| `<task>` | positional (required) | Task id (from ge runs list / the event stream) |
+| `<interaction>` | positional (required) | Interaction id (from the ge.interaction.request event) |
+| `--answers` | string | Full responses JSON: [{"questionId":"q1","selectedOptionIds":["a"],"freeformResponse":"..."}] |
+| `--question` | string | Question id for --freeform/--select (single-question shorthand) |
+| `--freeform` | string | Freeform answer text (with --question) |
+| `--select` | string | Comma-separated option ids to select (with --question) |
+| `--cancel` | boolean | Cancel the interaction instead of answering |
 | `--port` | string | Daemon port (default 17654) |
 
 ### `ge runs job`

@@ -26,9 +26,12 @@ import * as core from "./lib/factory-core.mjs";
 import { init } from "./ge/init.mjs";
 import { cutover, mode, doctor, up, config } from "./ge/orientation.mjs";
 import { capture } from "./ge/capture.mjs";
+import { drive } from "./ge/drive.mjs";
+import { bench } from "./ge/bench.mjs";
+import { evals } from "./ge/evals.mjs";
 import { prove } from "./ge/prove.mjs";
 import { handoff } from "./ge/handoff.mjs";
-import { renderRootUsage } from "./ge/help.mjs";
+import { renderRootUsage, renderCommandOrientation } from "./ge/help.mjs";
 import { devex } from "./ge/devex.mjs";
 import { infra } from "./ge/infra.mjs";
 import { images } from "./ge/images.mjs";
@@ -47,7 +50,7 @@ import { shouldPromptForInitProject, GE_INIT_NO_PROJECT_MESSAGE } from "./ge/ini
 // ── root: bare `ge` → the three-question board + next step ───────────────────
 // citty invokes the root `run` even when a subcommand matches, so only render the
 // board when the first positional is NOT one of our subcommands.
-const SUBCOMMANDS = new Set(["capture", "prove", "handoff", "status", "up", "doctor", "init", "cutover", "mode", "devex", "config", "infra", "images", "data", "mcp", "agents", "pipeline", "fleet", "runs", "daemon", "state", "ledger", "apply"]);
+const SUBCOMMANDS = new Set(["capture", "prove", "handoff", "status", "drive", "bench", "evals", "up", "doctor", "init", "cutover", "mode", "devex", "config", "infra", "images", "data", "mcp", "agents", "pipeline", "fleet", "runs", "daemon", "state", "ledger", "apply"]);
 
 // The board answers three questions before anything else: where am I on
 // capture → prove → handoff, what blocks me, and the exact next command.
@@ -124,6 +127,8 @@ const root = defineCommand({
   subCommands: {
     // the golden path
     capture, prove, handoff, status,
+    // live surfaces (drive/verify/load the shipped agent)
+    drive, bench, evals,
     // lifecycle
     up, doctor, init, cutover, mode, devex, config,
     // the consolidated orchestration surface
@@ -137,9 +142,16 @@ const root = defineCommand({
 
 // Root `--help` renders grouped (Golden path first, Operate after) —
 // progressive disclosure without hiding a single command. Subcommand help
-// stays citty's own renderer.
+// stays citty's renderer, followed by the registry-sourced ORIENTATION
+// section (use-when, duration, risk, literal next commands) so a --help
+// screen positions the reader instead of only listing flags.
 async function showGroupedUsage(cmd, parent) {
-  if (cmd !== root) return cittyShowUsage(cmd, parent);
+  if (cmd !== root) {
+    await cittyShowUsage(cmd, parent);
+    const orientation = renderCommandOrientation(cmd.meta?.name);
+    if (orientation) out(orientation);
+    return;
+  }
   out(renderRootUsage(root));
 }
 

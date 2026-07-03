@@ -1,0 +1,15 @@
+{
+  "_comment": "Copy these keys into .ge.json before running release stages. `ge handoff` refuses to start without project, bucket, and geAppId (remote builds need project + geAppId too); the rest scope where load_data/deploy_runtime/register_tools/publish_enterprise land. Precedence is CLI flag → env → .ge.json → default (`ge config explain` shows where each value resolved from). Env alternates: GCP_PROJECT_ID, GE_AGENT_FACTORY_BUCKET, GE_AGENT_DATA_BUCKET, GEMINI_ENTERPRISE_APP_ID, GEMINI_ENTERPRISE_LOCATION. bucket/dataBucket/serviceAccount shown are the project-derived defaults — omit them to accept those. mcpServices maps department → custom MCP service URL; a non-empty entry triggers register_tools MCP registration for that department's agents.",
+  "project": "my-gcp-project",
+  "projectNumber": "123456789012",
+  "region": "us-central1",
+  "bucket": "my-gcp-project-ge-agent-factory",
+  "dataBucket": "my-gcp-project-ge-agent-data",
+  "geAppId": "my-gemini-enterprise-app-id",
+  "geLocation": "global",
+  "serviceAccount": "ge-agent-factory-runner@my-gcp-project.iam.gserviceaccount.com",
+  "mcpServices": {
+    "finance": "https://finance-mcp-xxxxxxxx-uc.a.run.app"
+  },
+  "agentIdentityOrgId": "123456789012"
+}

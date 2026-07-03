@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "ge-agent-factory",
+  "description": "GE Agent Factory skills for Claude Code: bootstrap the factory from a bare machine, then operate it — capture contracts, compile behavioral evals, build, prove locally and live, hand off, drive, and bench.",
+  "owner": {
+    "name": "vamsiramakrishnan",
+    "url": "https://github.com/vamsiramakrishnan/ge-agent-factory"
+  },
+  "plugins": [
+    {
+      "name": "factory-bootstrap",
+      "source": "./",
+      "strict": false,
+      "description": "Install the GE Agent Factory from nothing: clone, mise toolchain (Bun/Python/uv/Terraform), dependencies, the ge command, and a verified first proof — with a phase-by-phase check so re-runs are safe. Start here on a machine that does not have the factory yet.",
+      "category": "devops",
+      "tags": ["bootstrap", "install", "setup"],
+      "skills": ["./skills/installing-the-factory"]
+    },
+    {
+      "name": "factory-operator",
+      "source": "./",
+      "strict": false,
+      "description": "The full operator skill set for a machine that has the factory installed: run the assembly line end to end (contracts, builds, simulators, releases), verify the shipped agent over its live assist surface (drive, live proof, latency budgets), and triage runs — with the guarding safety rail composed in.",
+      "category": "devops",
+      "tags": ["agents", "evals", "operations"],
+      "skills": [
+        "./skills/installing-the-factory",
+        "./skills/operating-the-factory",
+        "./skills/interviewing-specs",
+        "./skills/authoring-okf-specs",
+        "./skills/grounding-interviews-with-documents",
+        "./skills/planning-missions",
+        "./skills/running-factory",
+        "./skills/building-simulators",
+        "./skills/checking-workspaces",
+        "./skills/running-release",
+        "./skills/driving-live-proof",
+        "./skills/operating-console",
+        "./skills/recording-evidence",
+        "./skills/navigating-factory-line",
+        "./skills/standing-up-the-platform",
+        "./skills/deploying-the-control-plane",
+        "./skills/managing-access",
+        "./skills/triaging-runs",
+        "./skills/guarding-the-factory"
+      ]
+    }
+  ]
+}

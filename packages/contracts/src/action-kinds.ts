@@ -70,6 +70,11 @@ export const GeCommandIdSchema = z.enum([
   "status",
   "logs",
   "mcp.doctor",
+  // Live surfaces (Behavioral Compiler / Live Proof feature set):
+  "drive",
+  "prove.live",
+  "bench",
+  "evals.compile",
 ]);
 export type GeCommandId = z.infer<typeof GeCommandIdSchema>;
 

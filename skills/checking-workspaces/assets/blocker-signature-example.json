@@ -1,0 +1,72 @@
+{
+  "id": "evt_replace-me",
+  "type": "workspace.doctor.blocked",
+  "ts": "2026-07-03T00:00:00.000Z",
+  "subject": {
+    "kind": "workspace",
+    "id": "ws-benefits-agent"
+  },
+  "run": {
+    "missionId": null,
+    "factoryRunId": null,
+    "autopilotRunId": null,
+    "stage": "preview"
+  },
+  "mode": {
+    "name": "local",
+    "capability": "local_doctor_repair"
+  },
+  "actor": {
+    "kind": "harness",
+    "id": "checking-workspaces"
+  },
+  "evidence": [
+    {
+      "kind": "artifact",
+      "path": "artifacts/workspace-doctor.json",
+      "uri": null,
+      "sha256": null
+    },
+    {
+      "kind": "artifact",
+      "path": "artifacts/workspace-repair.json",
+      "uri": null,
+      "sha256": null
+    }
+  ],
+  "outcome": {
+    "status": "blocked",
+    "blockers": [
+      {
+        "id": "trace:passing",
+        "message": "spec-to-code trace is passing",
+        "detail": {
+          "blockers": [
+            "intent not fully implemented: query_workday_employees"
+          ]
+        }
+      }
+    ],
+    "repairActions": [
+      {
+        "taskId": "repair-spec-code",
+        "ok": false,
+        "skipped": true,
+        "summary": "harness repair disabled by --agent none"
+      }
+    ]
+  },
+  "causality": {
+    "parentEventIds": [],
+    "correlationId": "ws-benefits-agent:preview"
+  },
+  "labels": {
+    "department": "hr",
+    "targetStage": "preview",
+    "blockerSignature": "trace:passing|intent not fully implemented",
+    "seenOnWorkspaces": [
+      "ws-benefits-agent"
+    ],
+    "suspectedOwner": "generator"
+  }
+}
