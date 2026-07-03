@@ -1,0 +1,28 @@
+---
+title: The Periodic Table of Agents
+description: All 363 enterprise agents across 46 domains and five departments, laid out as a periodic table — one tile per agent, click to open its spec.
+sidebar:
+  order: 4
+  label: Agent catalog
+---
+
+import PeriodicTable from '../../components/PeriodicTable.astro';
+
+The factory's enterprise catalog — **363 agents across five departments** — laid
+out as a periodic table. Each tile is one agent, positioned in its **domain
+group** and colored by domain. The **layer dot** marks how it is built (OOTB →
+Agent Designer → Custom ADK → Data Agent), the **corner icon** marks its trigger
+(event · chat · scheduled), and a **shield** marks a human-in-the-loop
+checkpoint. Switch departments with the tabs; hover or focus a tile for a quick
+read, or click through to that agent's spec — its systems, integration
+protocols, governance, and factory build status.
+
+<PeriodicTable />
+
+:::note[Where this comes from]
+This grid is generated from the same source of truth the factory itself
+consumes — the use-case catalog and the drift-gated agent-spec registry
+(`apps/factory/src/agent-spec-registry.generated.json`). Nothing here is
+hand-maintained: `apps/docs/scripts/gen-catalog.mjs` rebuilds it on every docs
+build, so the catalog can never drift from the specs.
+:::

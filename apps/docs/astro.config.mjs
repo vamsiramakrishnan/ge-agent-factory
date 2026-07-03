@@ -35,6 +35,7 @@ export default defineConfig({
       },
       sidebar: [
         { label: "Start Here", autogenerate: { directory: "start" } },
+        { label: "Agent catalog", link: "/catalog/" },
         { label: "Core Concepts", autogenerate: { directory: "concepts" } },
         { label: "Guides", autogenerate: { directory: "cookbooks" } },
         { label: "Console", autogenerate: { directory: "console" } },
