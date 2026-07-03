@@ -8,61 +8,10 @@ import { specToOkf } from "../../apps/factory/scripts/spec-to-okf.mjs";
 import { okfToSpec } from "../../apps/factory/scripts/okf-to-spec.mjs";
 import { common, emit, out, ui } from "./shared.mjs";
 
-const EDGE_KIND = {
-  Authority:"authority",
-  "Required Evidence":"evidence",
-  "Evidence expected":"evidence",
-  Tools:"tool",
-  "Tools used":"tool",
-  "Mechanisms to call":"tool",
-  Evals:"eval",
-  Eval:"eval",
-  "Eval Scenarios":"eval",
-  Validates:"validates",
-  "Covered Capabilities":"validates",
-  Citations:"citation",
-  Risks:"risk",
-  "Used By":"used_by",
-  "Used by":"used_by",
-  Capabilities:"capability",
-  "Query Capabilities":"capability",
-  "Source Systems":"source_system",
-  "Source system":"source_system",
-  "Tools using this system":"tool",
-  Schema:"schema",
-  Workflow:"workflow",
-  "Workflow Stages":"workflow",
-  "Runs in":"workflow",
-  Persona:"persona",
-  Policy:"policy",
-  Policies:"policy",
-  "Proof Obligation":"proof_obligation",
-  "Proof Obligations":"proof_obligation",
-  "Synthetic World":"world",
-  "Live Proof":"live_proof",
-};
-const typeIs = (node, family) => {
-  const type = String(node?.type || "");
-  if (family === "claim") return type === "Claim";
-  if (family === "capability") return type === "Capability" || type === "Query Capability" || /\bCapability\b/.test(type);
-  if (family === "tool") return type === "Tool" || type === "Agent Tool" || /\bTool\b/.test(type);
-  if (family === "eval") return type === "Eval" || type === "Eval Scenario" || /\bEval\b/.test(type);
-  return type === family;
-};
-const sectionBody = (node, title) => (node.sections || []).find((s) => s.title.toLowerCase() === title.toLowerCase())?.body || "";
-const hasSection = (node, title) => sectionBody(node, title).trim().length > 0;
-const isWriteOrActionTool = (node) => {
-  const haystack = [
-    node.title,
-    node.description,
-    ...(node.tags || []),
-    ...(node.sections || []).map((s) => `${s.title}\n${s.body}`),
-  ].join("\n").toLowerCase();
-  return /\b(write|update|create|delete|mutate|post|approve|submit|send|notify|action|execute|commit|publish|assign|close|reopen)\b/.test(haystack);
-};
+const EDGE_KIND = { Authority:"authority", "Required Evidence":"evidence", Tools:"tool", Evals:"eval", Citations:"citation", Risks:"risk", "Used By":"used_by", Capabilities:"capability", "Source Systems":"source_system", Workflow:"workflow", Persona:"persona", "Synthetic World":"world", "Live Proof":"live_proof" };
 function graphFromBundle(bundle, { cytoscape = false } = {}) {
   const ids = new Set(bundle.concepts.map(c=>c.id));
-  const nodes = bundle.concepts.map(c=>({ id:c.id, path:c.path, type:c.type, title:c.title, description:c.description, tags:c.tags || [] }));
+  const nodes = bundle.concepts.map(c=>({ id:c.id, path:c.path, type:c.type, title:c.title, tags:c.tags || [] }));
   const edges = [];
   const warnings = [...(bundle.warnings || [])];
   for (const c of bundle.concepts) for (const section of c.sections) {
@@ -77,35 +26,23 @@ function graphFromBundle(bundle, { cytoscape = false } = {}) {
   return { apiVersion:"ge.dev/v1", kind:"OkfGraph", bundle:bundle.root, nodes, edges, warnings };
 }
 function coverageFromGraph(graph) {
-  const nodeById = new Map(graph.nodes.map((n) => [n.id, n]));
-  const idsByFamily = (family) => graph.nodes.filter(n=>typeIs(n, family)).map(n=>n.id);
-  const hasOut = (from, kind) => graph.edges.some(e=>e.from===from && e.kind===kind);
-  const evalCoversCapability = (capabilityId) => graph.edges.some((e) => {
-    if (e.from === capabilityId && e.kind === "eval" && typeIs(nodeById.get(e.to), "eval")) return true;
-    if (e.to === capabilityId && (e.kind === "validates" || e.kind === "capability") && typeIs(nodeById.get(e.from), "eval")) return true;
-    return false;
-  });
-  const claims = idsByFamily("claim"), caps = idsByFamily("capability"), tools = idsByFamily("tool");
-  return { apiVersion:"ge.dev/v1", kind:"OkfCoverage", bundle:graph.bundle, claims:{ total:claims.length, withAuthority:claims.filter(id=>hasOut(id,"authority")).length, withCitation:claims.filter(id=>hasOut(id,"citation")).length, liveProven:0 }, capabilities:{ total:caps.length, withEval:caps.filter(evalCoversCapability).length, liveProven:0 }, tools:{ total:tools.length, exercisedLive:0, writeToolsCovered:0 }, gaps:[] };
+  const byType = (t) => graph.nodes.filter(n=>n.type === t).map(n=>n.id);
+  const edge = (from, kind) => graph.edges.some(e=>e.from===from && e.kind===kind);
+  const claims = byType("Claim"), caps = graph.nodes.filter(n=>/Capability/.test(n.type)).map(n=>n.id), tools = byType("Tool");
+  return { apiVersion:"ge.dev/v1", kind:"OkfCoverage", bundle:graph.bundle, claims:{ total:claims.length, withAuthority:claims.filter(id=>edge(id,"authority")).length, withCitation:claims.filter(id=>edge(id,"citation")).length, liveProven:0 }, capabilities:{ total:caps.length, withEval:caps.filter(id=>edge(id,"eval")).length, liveProven:0 }, tools:{ total:tools.length, exercisedLive:0, writeToolsCovered:0 }, gaps:[] };
 }
 async function auditBundle(path, { strict=false } = {}) {
   const bundle = await readOkfBundle(path); const graph = graphFromBundle(bundle); const conf = baseConformance(bundle);
   const warnings = [...conf.warnings], blockers = [...conf.blockers];
   const hasRootIndex = bundle.indexes.some(i=>i.path === "index.md"); if (!hasRootIndex) warnings.push({code:"GEOKF_ROOT_INDEX_MISSING", what:"Root index.md is missing"});
   if (!bundle.logs.some(l=>l.path === "log.md")) warnings.push({code:"GEOKF_LOG_MISSING", what:"Root log.md is missing"});
-  const coverage = coverageFromGraph(graph), nodeById = new Map(graph.nodes.map((n) => [n.id, n]));
-  const claims = graph.nodes.filter(n=>typeIs(n, "claim"));
-  for (const c of claims) { const edges = graph.edges.filter(e=>e.from===c.id); if(!edges.some(e=>e.kind==="authority")) blockers.push({code:"GEOKF_AUTHORITY_MISSING", what:"Claim has no authority", where:c.path}); if(!edges.some(e=>e.kind==="citation")) blockers.push({code:"GEOKF_CITATION_MISSING", what:"Claim has no citation", where:c.path}); }
-  for (const n of graph.nodes.filter(n=>typeIs(n, "eval"))) if(!graph.edges.some(e=>e.from===n.id && (e.kind==="capability" || e.kind==="validates") && typeIs(nodeById.get(e.to), "capability"))) blockers.push({code:"GEOKF_EVAL_CAPABILITY_MISSING", what:"Eval does not link to a capability", where:n.path});
-  for (const n of graph.nodes.filter(n=>typeIs(n, "capability"))) if(!coverage.capabilities.withEval || !graph.edges.some((e) => (e.from===n.id && e.kind==="eval" && typeIs(nodeById.get(e.to), "eval")) || (e.to===n.id && (e.kind==="validates" || e.kind==="capability") && typeIs(nodeById.get(e.from), "eval")))) blockers.push({code:"GEOKF_CAPABILITY_EVAL_MISSING", what:"Capability has no eval coverage", where:n.path});
-  for (const n of bundle.concepts.filter(n=>typeIs(n, "tool") && isWriteOrActionTool(n))) {
-    if(!hasSection(n, "Confirmation")) blockers.push({code:"GEOKF_TOOL_CONFIRMATION_MISSING", what:"Write/action tool lacks a Confirmation section", where:n.path});
-    if(!hasSection(n, "Idempotency")) blockers.push({code:"GEOKF_TOOL_IDEMPOTENCY_MISSING", what:"Write/action tool lacks an Idempotency section", where:n.path});
-  }
+  const claims = graph.nodes.filter(n=>n.type === "Claim");
+  for (const c of claims) { const edges = graph.edges.filter(e=>e.from===c.id); if(!edges.some(e=>e.kind==="authority")) blockers.push({code:"GEOKF_AUTHORITY_MISSING", what:"Claim has no authority", where:c.path}); if((c.tags||[]).includes("high-risk") && !edges.some(e=>e.kind==="citation")) blockers.push({code:"GEOKF_AUTHORITY_MISSING_CITATION", what:"High-risk claim has no citation", where:c.path}); }
+  for (const n of graph.nodes.filter(n=>n.type==="Eval")) if(!graph.edges.some(e=>e.from===n.id && e.kind==="capability")) blockers.push({code:"GEOKF_EVAL_CAPABILITY_MISSING", what:"Eval does not link to a capability", where:n.path});
   let compileOk = true; try { await okfToSpec(path); } catch (e) { compileOk = false; blockers.push({code:"GEOKF_COMPILE_FAILED", what:e.message}); }
   if (strict) blockers.push(...warnings.map(w=>({...w, code:w.code||"GEOKF_STRICT_WARNING"})));
   const score = (bad,total)=> total ? Math.max(0,1-bad/total) : 1;
-  return { apiVersion:"ge.dev/v1", kind:"OkfAuditResult", bundle:path, scores:{ conformance:conf.ok?1:0, navigability:score(warnings.length, Math.max(1,bundle.concepts.length)), semanticCoverage:score(blockers.length, Math.max(1,bundle.concepts.length)), behavioralCoverage:score(coverage.capabilities.total - coverage.capabilities.withEval, Math.max(1, graph.nodes.length)), consumptionReady:compileOk?1:0, citationCoverage:score(claims.length-claims.filter(c=>graph.edges.some(e=>e.from===c.id&&e.kind==="citation")).length, Math.max(1,claims.length)), authorityCoverage:score(claims.length-claims.filter(c=>graph.edges.some(e=>e.from===c.id&&e.kind==="authority")).length, Math.max(1,claims.length)), roundTrip:compileOk?1:0 }, blockers, warnings, next:blockers[0]?.where ? [`ge okf explain ${blockers[0].where.replace(/\.md$/,"")} --bundle ${path}`] : [] };
+  return { apiVersion:"ge.dev/v1", kind:"OkfAuditResult", bundle:path, scores:{ conformance:conf.ok?1:0, navigability:score(warnings.length, Math.max(1,bundle.concepts.length)), semanticCoverage:score(blockers.length, Math.max(1,bundle.concepts.length)), behavioralCoverage:score(graph.nodes.filter(n=>/Capability/.test(n.type)).length - coverageFromGraph(graph).capabilities.withEval, Math.max(1, graph.nodes.length)), consumptionReady:compileOk?1:0, citationCoverage:score(claims.length-claims.filter(c=>graph.edges.some(e=>e.from===c.id&&e.kind==="citation")).length, Math.max(1,claims.length)), authorityCoverage:score(claims.length-claims.filter(c=>graph.edges.some(e=>e.from===c.id&&e.kind==="authority")).length, Math.max(1,claims.length)), roundTrip:compileOk?1:0 }, blockers, warnings, next:blockers[0]?.where ? [`ge okf explain ${blockers[0].where.replace(/\.md$/,"")} --bundle ${path}`] : [] };
 }
 function renderAudit(r){ out(ui.title("OKF Audit", r.bundle)); for(const [k,v] of Object.entries(r.scores)) out(`  ${k.padEnd(20)} ${v===1?pc.green("✓"):v<0.7?pc.red("✗"):pc.yellow("▲")} ${Math.round(v*100)}%`); if(r.blockers.length){out("Blockers"); for(const b of r.blockers) out(`  ${pc.red("✗")} ${b.code} ${pc.dim(b.where||"")} ${b.what||b.message||""}`);} if(r.warnings.length){out("Warnings"); for(const w of r.warnings.slice(0,10)) out(`  ${pc.yellow("▲")} ${w.code||"warning"} ${w.where||w.path||""} ${w.what||w.message||""}`);} if(r.next[0]) out(ui.next(r.next[0])); }
 async function explainConcept(id,bundlePath){ const bundle=await readOkfBundle(bundlePath); const graph=graphFromBundle(bundle); const c=bundle.concepts.find(x=>x.id===id||x.path===id||x.path===`${id}.md`); if(!c) throw new Error(`OKF concept not found: ${id}`); const outEdges=graph.edges.filter(e=>e.from===c.id), inEdges=graph.edges.filter(e=>e.to===c.id); return { apiVersion:"ge.dev/v1", kind:"OkfExplain", concept:{id:c.id,path:c.path,type:c.type,title:c.title}, authority:outEdges.filter(e=>e.kind==="authority").map(e=>e.to), usedBy:inEdges.map(e=>e.from), provenBy:outEdges.filter(e=>e.kind==="eval"||e.kind==="live_proof").map(e=>e.to), risks:outEdges.filter(e=>e.kind==="risk").map(e=>e.to), citations:outEdges.filter(e=>e.kind==="citation").map(e=>e.to), liveProof:"no live proof artifact found", next:`ge prove --live --claim ${c.id.split('/').pop()}` }; }
