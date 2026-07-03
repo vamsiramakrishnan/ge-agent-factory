@@ -100,6 +100,21 @@ Hand off proven agents to a deploy target (supported today: agents-cli → Agent
 
 Where am I? Position on capture → prove → handoff, the current blocker, and the exact next command
 
+### `ge drive`
+
+Talk to the shipped agent over its live assist surface — per-turn timing/responder footer; --record saves the conversation as an eval case
+
+| Flag | Type | Description |
+|---|---|---|
+| `--script` | string | Drive non-interactively: file with one user turn per line (# comments allowed) |
+| `--cassette` | string | Replay a recorded cassette instead of calling the live surface (no cloud, deterministic) |
+| `--record` | string | Append the driven conversation to this evalset as a new eval case |
+| `--recordId` | string | Case id to record under (default: derived from the transcript id) |
+| `--recordCassette` | string | Record the live stream to this cassette file for later replay |
+| `--targetAgent` | string | Expected responding agent id — responder identity is asserted against the stream |
+| `--strictResponder` | boolean | Fail when responder identity cannot be verified (default: warn) |
+| `--geApp` | string | Gemini Enterprise engine (full resource name or bare id; default from .ge.json geAppId) |
+
 ### `ge up`
 
 Stand up the platform: infra + data + tool planes → unified doctor (--infra/--data/--mcp for one)
