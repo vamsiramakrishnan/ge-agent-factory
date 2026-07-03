@@ -2,7 +2,7 @@
 title: Set up locally
 nav_order: 3
 layout: default
-description: Local setup, the local/remote mode switch, and the fast checks that prove the repo works on your machine — no cloud project required.
+description: Local setup, choosing whether this machine or the cloud does the building, and the fast checks that prove the repo works on your machine — no cloud project required.
 ---
 
 # Set up locally
@@ -11,12 +11,13 @@ description: Local setup, the local/remote mode switch, and the fast checks that
 
 ## Goal
 
-Get a working local factory: understand the difference between **local** and
-**remote** mode, and see how the fast DevEx gate and one-command smoke proof
-fit into the loop — all without touching a cloud project.
+Get a working local factory: understand the difference between building
+**on this machine** and building **in the cloud**, and see how the fast
+checks and the one-command first proof (`ge prove`) fit into the loop — all
+without touching a cloud project.
 
 Unfamiliar term? See the [Glossary](../GLOSSARY.html) — plain-language
-translations of the jargon (harness, OKF, canary, planes, pipeline runs, …).
+translations of every internal term, the operator vocabulary included.
 
 ## Prerequisites + install
 
@@ -25,80 +26,116 @@ translations of the jargon (harness, OKF, canary, planes, pipeline runs, …).
 [`SETUP.md`](../../SETUP.md) at the repo root.** The short version:
 
 ```bash
-mise run setup          # install deps, sync catalog/skills, install the `ge` command, start the daemon
-mise run doctor-local    # check local tools: Bun, uv, Python, agents-cli, cache, harness wiring
+mise run setup          # install deps, sync catalog/skills, install the `ge` command, start the local background runtime
+mise run doctor-local    # check local tools: Bun, uv, Python, agents-cli, cache, build-engine wiring
 mise run console         # open the operator UI → http://localhost:18260
 ```
 
 ## Steps
 
-1. **Run the fast DevEx gate.**
+1. **Prove one agent end to end.**
 
    ```bash
-   mise run devex-check
+   ge prove
    ```
 
-   This is `ge devex check`: local doctor, GitHub Pages link check, and generated
+   On a fresh machine this runs local readiness checks, then builds one
+   starter agent to the `validated` stage and prints the workspace path,
+   `workspace.json`, eval config, and next commands. It is the fastest proof
+   that the repo is usable on this machine — and it is pure local
+   computation, so it is safe to re-run any time (`ge prove --watch`
+   re-proves whenever a contract changes).
+
+   <details>
+   <summary>Operator spelling / under the hood</summary>
+
+   On a fresh machine, `ge prove` dispatches to `ge devex smoke` (also
+   exposed as `mise run devex-smoke`): it runs local readiness, sets local
+   mode, and builds one **[canary](../GLOSSARY.html#canary)** workspace (a
+   single throwaway agent used to prove the pipeline works, as opposed to
+   building the whole catalog) to the `validated` stage. Once workspaces
+   exist, `ge prove` rebuilds their proof via `ge agents build`.
+
+   The fast pre-check on its own is `mise run devex-check` (=
+   `ge devex check`): local doctor, GitHub Pages link check, and generated
    workspace manifest contract validation in one fast command.
 
-2. **Prove one local workspace end to end.**
+   </details>
 
-   ```bash
-   mise run devex-smoke
-   ```
-
-   This runs local readiness, sets local mode, builds one
-   **[canary](../GLOSSARY.html#canary)** workspace
-   (a single throwaway agent used to prove the pipeline works, as opposed to
-   building the whole catalog) to the `validated` stage, and prints the
-   workspace path, `workspace.json`, eval config, and next commands. It is the
-   fastest proof that the repo is usable on this machine.
-
-3. **Understand which mode you're in.**
+2. **Understand which side of the build boundary you're on.**
 
    <p align="center">
      <img src="../assets/diagrams/factory-line.svg" alt="The factory line's three phases: Author and Build, then Validate and Refine (ending at preview, the build boundary), then Release — only the Release phase touches your GCP project" width="700">
    </p>
 
-   ```bash
-   ge mode
-   ```
+   By default, this machine runs *generate → validate* up to the **build
+   boundary** (the `previewed` stage — the last stage that runs with no
+   cloud credentials; everything after it touches your Google Cloud
+   project). Deploy/register/publish are cloud-only steps that happen at
+   handoff. You can instead have the cloud factory do the building while
+   this machine submits and observes.
+
+   <details>
+   <summary>Operator spelling / under the hood</summary>
+
+   The switch is the **mode**, persisted in `.ge.json`:
 
    - `ge mode` with no argument **reports** the active mode (defaults to
      `local` when unset — remote, billable work is opt-in).
-   - `ge mode local` — this machine runs *generate → validate* up to the
-     **build boundary** (the `previewed` stage — the last stage that runs with
-     no cloud credentials; everything after it touches your Google Cloud
-     project); deploy/register/publish are cloud-only steps.
+   - `ge mode local` — this machine builds up to the `previewed` build
+     boundary; deploy/register/publish are cloud-only steps.
    - `ge mode remote` — this machine submits + observes; the cloud factory
      builds, deploys, and publishes.
 
-   `mise.toml` also exposes `mise run mode-local` and `mise run mode-remote` as
-   thin wrappers.
+   `mise.toml` also exposes `mise run mode-local` and `mise run mode-remote`
+   as thin wrappers.
 
-   > The mode defaults to `local` when unset, so a fresh clone with no cloud
-   > project never reaches Google Cloud by accident. Run `ge mode` anytime to
-   > confirm which mode you're in.
+   </details>
+
+   > The default when unset is to build on this machine, so a fresh clone
+   > with no cloud project never reaches Google Cloud by accident. Bare `ge`
+   > reports which side you're on anytime (the operator spelling above shows
+   > the underlying switch).
    {: .note }
 
-4. **(Optional) Build one agent locally to the preview boundary.**
+3. **(Optional) Build one specific agent locally to the preview boundary.**
 
    ```bash
-   mise run mode-local && CANARY=1 mise run provision-local
+   ge prove --id <use-case-id> --target previewed
    ```
 
-   `CANARY=1 mise run provision-local` is `ge agents build --local --canary` — it
-   builds a single agent on this machine up to the `previewed` build boundary.
+   This builds a single agent on this machine up to the `previewed` build
+   boundary.
+
+   <details>
+   <summary>Operator spelling / under the hood</summary>
+
+   The task-runner spelling is `mise run mode-local && CANARY=1 mise run
+   provision-local`, which is `ge agents build --local --canary` — it
+   builds a single agent on this machine up to the `previewed` build
+   boundary.
+
+   </details>
 
 ## Verify
 
 ```bash
-mise run doctor-local      # local toolchain section is all green
-mise run devex-check       # local doctor + docs links + workspace manifest contracts
-mise run devex-smoke       # validates one canary workspace and prints workspace.json
-ge mode                # prints: mode: local (or remote)
+mise run doctor-local  # local toolchain section is all green
+ge prove               # rebuilds the proof; green means this machine works
+ge                     # status board: where you are, any blocker, the next command
 ge state paths         # shows where state lands (.ge/...)
 ```
+
+<details>
+<summary>Operator spelling / under the hood</summary>
+
+```bash
+mise run devex-check       # local doctor + docs links + workspace manifest contracts
+mise run devex-smoke       # validates one canary workspace and prints workspace.json
+ge mode                    # prints: mode: local (or remote)
+```
+
+</details>
 
 The console should load at http://localhost:18260 and show the Readiness view.
 
@@ -114,9 +151,12 @@ See [`SETUP.md`](../../SETUP.md#troubleshoot) for install-time issues (missing
 Bun, `~/.local/bin` not on PATH, `google.antigravity` not importable). Specific
 to this cookbook's loop:
 
-Real output from running the DevEx gate on a clean clone, before `mise run
+Real output from running the fast check on a clean clone, before `mise run
 setup` has installed `agents-cli`/Antigravity/skills — this is what "not
 ready yet" looks like, and every line names its own fix:
+
+<details open>
+<summary>Fast-check output on a clean clone (operator spelling: bun tools/ge.mjs devex check)</summary>
 
 ```text title="bun tools/ge.mjs devex check" {3,6,9}
 DevEx Check
@@ -141,6 +181,7 @@ DevEx Check
   Next
   $ mise run setup
 ```
+</details>
 
 `mise run setup` runs exactly the three fixes above in order — this is why
 step 1 of "Prerequisites + install" is a single command instead of three.

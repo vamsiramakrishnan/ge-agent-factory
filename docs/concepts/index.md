@@ -19,7 +19,7 @@ result is handed off to agents-cli, ADK, and Gemini Enterprise. Each concept
 page covers one link in that chain.
 
 <p align="center">
-  <img src="../assets/diagrams/signature-pipeline.svg" alt="capture flows into the Enterprise Agent Contract; the contract generates code, tools, and source-system twins under authority-graph control; twins and generated code feed prove (evals, harness, promotion gate); prove produces a passport and proof pack; the passport hands off across the build boundary to agents-cli, ADK, and Gemini Enterprise" width="900">
+  <img src="../assets/diagrams/signature-pipeline.svg" alt="capture flows into the Enterprise Agent Contract; the contract generates code, tools, and source-system twins under authority-graph control; twins and generated code feed prove (evals, verify-stage review, promotion gate); prove produces a passport and proof pack; the passport hands off across the build boundary to agents-cli, ADK, and Gemini Enterprise" width="900">
 </p>
 
 Six concepts, one map. Each page below opens with the same diagram, zoomed to
@@ -33,7 +33,7 @@ chain.
 | Enterprise Agent Contract | The versioned, machine-readable statement of what an agent may do and what world it operates in | [The Enterprise Agent Contract](./enterprise-agent-contract.html) |
 | Authority Graph | How the contract's scope, tools, evidence, and escalation rules become *enforced* authority — at generation time and at runtime | [The Authority Graph](./authority-graph.html) |
 | Source-system Twins | Simulated enterprise backends with realistic data, so agents are exercised before real integrations exist | [Source-system Twins](./source-system-twins.html) |
-| Evals as Proof | Generated evals, the spec-to-code trace, and harness verdicts — evidence, not vibes, gated before release | [Evals as Proof](./evals-as-proof.html) |
+| Evals as Proof | Generated evals, the spec-to-code trace, and verify-stage verdicts — evidence, not vibes, gated before release | [Evals as Proof](./evals-as-proof.html) |
 | Agent Passport & Proof Pack | The artifacts that identify a shipped agent and prove it honored its contract | [Agent Passport & Proof Pack](./agent-passport-and-proof-pack.html) |
 | Handoff Targets | agents-cli, ADK Agent Engine, and Gemini Enterprise — the layer below, and exactly what crosses the line | [Handoff Targets](./handoff-targets.html) |
 
@@ -60,6 +60,9 @@ chain.
 
 ## Concept to source map
 
+<details open>
+<summary>Where each concept lives in the source (for contributors)</summary>
+
 | Concept | Source anchor | Why it matters |
 |---|---|---|
 | Contract schema | `packages/agent-spec/src/schema.ts` | The zod source of truth the docs tables are generated from |
@@ -69,6 +72,7 @@ chain.
 | Tool plane | `apps/factory/mcp-service/` | Runtime facade generated agents call tools through |
 | Cloud platform | `installer/terraform/` | Owns infra, IAM, data stores, MCP, and runtime services |
 
+</details>
+
 Unfamiliar term? See the [Glossary](../GLOSSARY.html) — plain-language
-translations of the internal jargon (harness, OKF, canary, planes, pipeline
-runs, …).
+translations of every internal term, the operator vocabulary included.
