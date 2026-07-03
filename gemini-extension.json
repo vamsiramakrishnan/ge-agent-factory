@@ -1,0 +1,12 @@
+{
+  "name": "ge-agent-factory",
+  "version": "0.1.0",
+  "description": "GE Agent Factory: compile enterprise workflows into governed agent contracts, generated agents, eval suites, and live proof. Ships the factory skills (bootstrap → operate → live verification) and the factory MCP tools.",
+  "contextFileName": "GEMINI.md",
+  "mcpServers": {
+    "ge-agent-factory": {
+      "command": "bun",
+      "args": ["tools/mcp-server.mjs"]
+    }
+  }
+}

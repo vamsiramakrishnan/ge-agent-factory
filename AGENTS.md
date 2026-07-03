@@ -39,6 +39,14 @@ mise run skills-install                                      # → ~/.agents/ski
 AGENTS_SKILLS_DIR=~/.claude/skills mise run skills-install   # → Claude Code's skill directory
 ```
 
+Distribution surfaces (no checkout needed): `bunx create-ge-agent-factory`
+(npm bootstrap — clones, installs, verifies, links skills); Claude Code
+plugin marketplace (`/plugin marketplace add vamsiramakrishnan/ge-agent-factory`,
+then `factory-bootstrap` or `factory-operator` — manifest in
+`.claude-plugin/marketplace.json`); Gemini CLI extension
+(`gemini extensions install <repo url>` — `gemini-extension.json` +
+`GEMINI.md` ship the skills and the MCP server).
+
 The catalog + trigger routing lives in `skills/skill-routing.json`; the
 `factory_*` MCP tools (`bun tools/mcp-server.mjs`, registry-derived) are the
 matching action surface for MCP-capable assistants.
