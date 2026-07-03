@@ -31,6 +31,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PALETTE } from "../src/palette.mjs";
+import { STATUS_RAMP, STATUS_ACCENTS } from "../src/status-ramp.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..", "..");
@@ -92,6 +93,25 @@ export const TOKEN_TABLE = [
 
 const CSS_BEGIN = "  /* BEGIN GENERATED: palette — do not edit; run `bun run docs:tokens` */";
 const CSS_END = "  /* END GENERATED: palette */";
+const STATUS_CSS_BEGIN = "  /* BEGIN GENERATED: status-ramp — do not edit; run `bun run docs:tokens` */";
+const STATUS_CSS_END = "  /* END GENERATED: status-ramp */";
+
+// The status-ramp region rows come from status-ramp.mjs (the CLI colorizer
+// reads the same table — see its header), not TOKEN_TABLE: statuses carry an
+// ansi column and a base/-ink pair per name, which TOKEN_TABLE's flat
+// name→palette-key shape has no room for.
+function statusRampRows() {
+  const rows = [];
+  for (const [tone, entry] of Object.entries(STATUS_RAMP)) {
+    rows.push({ name: `--color-status-${tone}`, value: entry.cssValue || entry.hex });
+    rows.push({ name: `--color-status-${tone}-ink`, value: entry.ink });
+  }
+  for (const [accent, entry] of Object.entries(STATUS_ACCENTS)) {
+    rows.push({ name: `--color-accent-${accent}`, value: entry.hex });
+    rows.push({ name: `--color-accent-${accent}-ink`, value: entry.ink });
+  }
+  return rows;
+}
 // NB: the SCSS markers are ASCII-only on purpose — Jekyll's Ruby Sass
 // converter (jekyll-sass-converter 1.5.x) parses _sass files as US-ASCII and
 // dies on multibyte characters like an em-dash.
@@ -105,6 +125,14 @@ export const TARGETS = [
     begin: CSS_BEGIN,
     end: CSS_END,
     renderLine: (row) => `  ${row.name}: ${valueOf(row)};`,
+  },
+  {
+    id: "status-ramp.css",
+    relPath: "packages/design/src/tokens.css",
+    begin: STATUS_CSS_BEGIN,
+    end: STATUS_CSS_END,
+    rows: statusRampRows,
+    renderLine: (row) => `  ${row.name}: ${row.value};`,
   },
   {
     id: "ge.scss",
@@ -136,7 +164,8 @@ function valueOf(row) {
 export function renderRegion(targetId) {
   const target = TARGETS.find((t) => t.id === targetId);
   if (!target) throw new Error(`unknown target id: ${targetId}`);
-  return TOKEN_TABLE.filter((row) => row.file === targetId)
+  const rows = target.rows ? target.rows() : TOKEN_TABLE.filter((row) => row.file === targetId);
+  return rows
     .map((row) => (row.blank ? "" : target.renderLine(row)))
     .join("\n");
 }

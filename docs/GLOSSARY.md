@@ -23,6 +23,13 @@ list is deliberately focused, not exhaustive.
 
 ---
 
+## The golden register
+
+The words a stranger meets first — they name **what you have** (a contract, a
+proof, a passport), not how the machinery produces it. These terms are the
+product's public vocabulary (see [`LANGUAGE.md`](LANGUAGE.md) for the policy
+and the CI gate that keeps them in front).
+
 ### Enterprise Agent Contract
 
 **What it is:** The versioned, machine-readable statement of what an agent
@@ -37,6 +44,22 @@ Review canvas.
 
 ---
 
+### Behavior Contract
+
+**What it is:** The half of a use-case spec that defines what the agent is
+*allowed and expected to do* — its role, its primary objective, what's in
+and out of scope, the tools it may call, the evidence it must gather before
+acting, and hard guardrails (escalation/refusal rules). It's the field
+literally named `behaviorContract` in `usecase-spec.json`. The other half,
+`generationSpec`, describes the *world* the agent operates in (source
+systems, entities) — behavior vs. world are the "two halves of a spec."
+
+**Where you'll meet it:** `docs/concepts/enterprise-agent-contract.md` ("The two halves
+of a spec"); `docs/reference/spec-schema.md` for the full field list; the
+console's spec editor renders this as the agent's role/scope/rules section.
+
+---
+
 ### Source-system Twin
 
 **What it is:** The docs' name for a simulated enterprise backend — a
@@ -47,6 +70,72 @@ integration exists.
 
 **Where you'll meet it:** `docs/concepts/source-system-twins.md`;
 `simulator-systems/<id>/` packs; the console's BYO system flow.
+
+---
+
+### Capture
+
+**What it is:** The golden path's first verb — turning business intent into an
+[Enterprise Agent Contract](#enterprise-agent-contract). `ge capture` opens
+(and if needed starts) the console [Interview](#interview) for conversational
+capture with document grounding; `ge capture --from <agent-spec.json>`
+registers an already-captured contract with the catalog. Capture is
+console-first today; CLI-native capture is roadmap.
+
+**Where you'll meet it:** `ge capture`; the console Interview
+(`#/interview`); `docs/cookbooks/capture-from-interview.md`.
+
+---
+
+### Interview
+
+**What it is:** The guided, conversational flow where a business user (or
+agent) describes a use case and the factory turns it into a formal spec.
+It's the very first box in the [pipeline](#pipeline-formerly-journey).
+
+**Where you'll meet it:** `apps/console/src/views/Interview.tsx`; the
+"Author a spec via the interview" cookbook.
+
+---
+
+### Prove
+
+**What it is:** The golden path's middle verb — compiling contracts into
+working agents and running their evidence: evals, the
+[spec-to-code trace](#spec-to-code-trace), and verify verdicts, all up to the
+[build boundary](#build-boundary) (pure local computation). On a fresh
+machine `ge prove` runs the health check and builds a first validated
+workspace (the operator spelling is `ge devex smoke`); once agents exist it
+rebuilds their proof (`ge agents build`). `ge prove --watch` re-proves on
+contract change.
+
+**Where you'll meet it:** `ge prove`; `docs/cookbooks/prove-an-agent.md`; the
+[Promotion Gate](#promotion-gate) consumes what it produces.
+
+---
+
+### Evalset
+
+**What it is:** The generated evaluation suite for one agent — prompts plus
+expected behavior in `agents-cli`'s eval format — that scores whether the
+agent actually behaves as the spec's behavior contract says. It's generated
+into the [workspace](#workspace) alongside the code and run with
+`agents-cli eval run --all` inside the workspace (or the eval commands
+`workspace.json` lists).
+
+**Where you'll meet it:** `docs/cookbooks/prove-an-agent.md`; the eval config
+path `ge devex smoke` prints; [`agents-cli`](#agents-cli)'s eval surface.
+
+---
+
+### Spec-to-Code Trace
+
+**What it is:** The automated check that verifies the code the
+factory generated actually matches what the spec asked for; one of the
+inputs the [Promotion Gate](#promotion-gate) reads.
+
+**Where you'll meet it:** `apps/factory/src/spec-code-trace.js`; the trace
+artifact listed in `workspace.json`.
 
 ---
 
@@ -77,6 +166,41 @@ the `register_tools` stage; Agent detail in the console.
 
 ---
 
+### Promotion Gate
+
+**What it is:** An automated pass/fail check that runs right before deploy
+and refuses to ship a [workspace](#workspace) whose validation report,
+[spec-to-code trace](#spec-to-code-trace), or harness verdicts
+(review/refine) haven't cleared their bar. If it
+fails, you get a list of specific blockers instead of a deploy — you can
+override with `--force` or `GE_ALLOW_UNPROMOTED=1`, but the gate exists so a
+broken or unreviewed agent can't reach the cloud by accident.
+
+**Where you'll meet it:** Run `factory promotion-gate` (implemented in
+`apps/factory/src/promotion-packet.js`); it's also section `## Promotion
+Gate` inside the generated promotion packet artifact, and the quickstart doc
+(`apps/docs/src/content/docs/start/quickstart.mdx`) mentions it as the check
+that "blocks a ship that hasn't passed validation and the harness verdicts."
+
+---
+
+### Build Boundary
+
+**What it is:** The cutoff point between "building and previewing an agent
+on your own machine" and "actually deploying it to your Google Cloud
+project." In local mode, everything up to and including the `preview`
+stage runs offline with no cloud credentials; anything past that boundary
+(deploy, publish, register) touches real cloud infrastructure and is
+dispatched to Cloud Build. In code this shows up as the constant
+`LOCAL_BUILD_BOUNDARY = "previewed"`.
+
+**Where you'll meet it:** The "AUTHOR & BUILD / VALIDATE & REFINE / RELEASE"
+diagram and "The build boundary: local build vs remote release" section in
+`docs/start/mental-model.md`; the `buildBoundary` field on
+[pipeline-run](#pipeline-run-formerly-mission) plans (`tools/lib/factory-autopilot-mission.mjs`).
+
+---
+
 ### Handoff
 
 **What it is:** The factory's release act: giving a locally proven workspace
@@ -87,7 +211,15 @@ via `ge agents ship`, which runs only the post-boundary stages
 **Where you'll meet it:** `docs/concepts/handoff-targets.md`;
 `docs/cookbooks/handoff-adk-gemini-enterprise.md`; `ge agents ship`.
 
+
 ---
+
+## The operator register
+
+The machinery's own names, for people running the factory in anger. Every
+term below is real, supported, and documented — this register just doesn't
+lead: it lives in `Operate` sections, reference pages, and under-the-hood
+disclosures rather than front doors.
 
 ### Harness
 
@@ -139,57 +271,6 @@ of the same object.
 **Where you'll meet it:** `docs/concepts/enterprise-agent-contract.md` for the concept;
 in the console, the spec editor's "Export OKF" button and the "OKF
 Knowledge Bundle" preview modal (`apps/console/src/components/interview/SpecCanvas.tsx`).
-
----
-
-### Behavior Contract
-
-**What it is:** The half of a use-case spec that defines what the agent is
-*allowed and expected to do* — its role, its primary objective, what's in
-and out of scope, the tools it may call, the evidence it must gather before
-acting, and hard guardrails (escalation/refusal rules). It's the field
-literally named `behaviorContract` in `usecase-spec.json`. The other half,
-`generationSpec`, describes the *world* the agent operates in (source
-systems, entities) — behavior vs. world are the "two halves of a spec."
-
-**Where you'll meet it:** `docs/concepts/enterprise-agent-contract.md` ("The two halves
-of a spec"); `docs/reference/spec-schema.md` for the full field list; the
-console's spec editor renders this as the agent's role/scope/rules section.
-
----
-
-### Promotion Gate
-
-**What it is:** An automated pass/fail check that runs right before deploy
-and refuses to ship a [workspace](#workspace) whose validation report,
-[spec-to-code trace](#spec-to-code-trace), or harness verdicts
-(review/refine) haven't cleared their bar. If it
-fails, you get a list of specific blockers instead of a deploy — you can
-override with `--force` or `GE_ALLOW_UNPROMOTED=1`, but the gate exists so a
-broken or unreviewed agent can't reach the cloud by accident.
-
-**Where you'll meet it:** Run `factory promotion-gate` (implemented in
-`apps/factory/src/promotion-packet.js`); it's also section `## Promotion
-Gate` inside the generated promotion packet artifact, and the quickstart doc
-(`apps/docs/src/content/docs/start/quickstart.mdx`) mentions it as the check
-that "blocks a ship that hasn't passed validation and the harness verdicts."
-
----
-
-### Build Boundary
-
-**What it is:** The cutoff point between "building and previewing an agent
-on your own machine" and "actually deploying it to your Google Cloud
-project." In local mode, everything up to and including the `preview`
-stage runs offline with no cloud credentials; anything past that boundary
-(deploy, publish, register) touches real cloud infrastructure and is
-dispatched to Cloud Build. In code this shows up as the constant
-`LOCAL_BUILD_BOUNDARY = "previewed"`.
-
-**Where you'll meet it:** The "AUTHOR & BUILD / VALIDATE & REFINE / RELEASE"
-diagram and "The build boundary: local build vs remote release" section in
-`docs/start/mental-model.md`; the `buildBoundary` field on
-[pipeline-run](#pipeline-run-formerly-mission) plans (`tools/lib/factory-autopilot-mission.mjs`).
 
 ---
 
@@ -437,42 +518,6 @@ calls go through the second.
 
 ---
 
-### Interview
-
-**What it is:** The guided, conversational flow where a business user (or
-agent) describes a use case and the factory turns it into a formal spec.
-It's the very first box in the [pipeline](#pipeline-formerly-journey).
-
-**Where you'll meet it:** `apps/console/src/views/Interview.tsx`; the
-"Author a spec via the interview" cookbook.
-
----
-
-### Evalset
-
-**What it is:** The generated evaluation suite for one agent — prompts plus
-expected behavior in `agents-cli`'s eval format — that scores whether the
-agent actually behaves as the spec's behavior contract says. It's generated
-into the [workspace](#workspace) alongside the code and run with
-`agents-cli eval run --all` inside the workspace (or the eval commands
-`workspace.json` lists).
-
-**Where you'll meet it:** `docs/cookbooks/prove-an-agent.md`; the eval config
-path `ge devex smoke` prints; [`agents-cli`](#agents-cli)'s eval surface.
-
----
-
-### Spec-to-Code Trace
-
-**What it is:** The automated check that verifies the code the
-factory generated actually matches what the spec asked for; one of the
-inputs the [Promotion Gate](#promotion-gate) reads.
-
-**Where you'll meet it:** `apps/factory/src/spec-code-trace.js`; the trace
-artifact listed in `workspace.json`.
-
----
-
 ### Review vs. Refine
 
 **What it is:** Two distinct sub-steps of the [harness](#harness). "Review"
@@ -483,3 +528,4 @@ but only Refine changes code.
 
 **Where you'll meet it:** The `harness_reviewed` and `harness_refined`
 pipeline stages; `factory harness-review` vs. `factory harness-refine`.
+

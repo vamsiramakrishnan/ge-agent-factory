@@ -20,6 +20,7 @@ import { readJson, writeJson } from "@ge/std/json-io";
 import { pool } from "./gcp.mjs";
 import { getJson } from "./gateway-client.mjs";
 import { STATE_PATHS } from "./state-paths.mjs";
+import { DxError } from "./errors/dx-error.mjs";
 
 const noop = () => {};
 
@@ -45,7 +46,13 @@ export function createRemoteRunOps({ run, gcloud, ensureGcloud, withGateway }) {
     ensureGcloud();
     const state = readJson(STATE_PATH, { completed: {} });
     const runs = Object.entries(state.completed).map(([id, e]) => ({ id, ...e }));
-    if (!runs.length) throw new Error("No submitted runs in .ge-state.json. Run `ge provision` first.");
+    if (!runs.length) {
+      throw new DxError("No submitted runs in .ge-state.json. Run `ge provision` first.", {
+        where: "state: .ge-state.json (completed runs)",
+        why: "status polls the runs this machine has submitted, and it has submitted none yet",
+        fix: "ge agents build",
+      });
+    }
     return withGateway(cfg, async (url, ctx = {}) => {
       const tally = { done: 0, running: 0, queued: 0, failed: 0, unknown: 0 };
       const stages = {};

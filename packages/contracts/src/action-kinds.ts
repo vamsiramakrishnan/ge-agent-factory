@@ -54,6 +54,9 @@ export type DaemonNextAction = z.infer<typeof DaemonNextActionSchema>;
 //     Completeness is enforced structurally — tools/contracts-registry-parity.test.mjs
 //     fails when a GE_COMMANDS entry is added without extending this enum.
 export const GeCommandIdSchema = z.enum([
+  "capture",
+  "prove",
+  "handoff",
   "up",
   "data.up",
   "mcp.deploy",

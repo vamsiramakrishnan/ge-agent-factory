@@ -219,6 +219,14 @@ run = "bun tools/ge.mjs doctor --local"
 description = "Fast DevEx gate: local doctor + docs links + workspace manifest contracts (ID=<workspace-or-usecase>)"
 run = 'bun tools/ge.mjs devex check ${ID:+--id "$ID"}'
 
+[tasks.ttfp]
+description = "TTFP benchmark: time-to-first-proof + decision count on the golden path (PATH_ARG=legacy for the operator path)"
+run = 'bun tools/bench-ttfp.mjs ${PATH_ARG:+--path "$PATH_ARG"}'
+
+[tasks.lang-gate]
+description = "Language gate: golden-register zones must not lead with operator jargon (docs/LANGUAGE.md)"
+run = "node tools/lang-gate.mjs"
+
 [tasks.docs-gate]
 description = "Docs-specific gate: link/image/blockquote check, diagram freshness, design-token drift"
 run = "bun run docs:gate"

@@ -5,6 +5,7 @@
 import pc from "picocolors";
 import { defineCommand } from "citty";
 import { parseList } from "@ge/std/list";
+import { STATUS_RAMP, statusAnsi } from "@ge/design/status-ramp";
 import { existsSync, readFileSync } from "node:fs";
 import * as core from "../lib/factory-core.mjs";
 import { daemonPaths, getDaemonStatus, displayTaskKind } from "../lib/runtime-daemon.mjs";
@@ -17,6 +18,7 @@ export { displayTaskKind };
 // here is the sanctioned alternative to hand-mirroring the code table.
 import { docsUrlFor, resolveErrorCode } from "../../apps/factory/scripts/factory/core/error-codes.mjs";
 import { GE_COMMANDS } from "../lib/ge-command-registry.mjs";
+import { isDxError, dxErrorShape } from "../lib/errors/dx-error.mjs";
 
 export { core, pc };
 
@@ -52,7 +54,14 @@ export function emit(args, result, human) {
   human(result);
 }
 
-export const ICON = { pass: pc.green("✓"), warn: pc.yellow("▲"), fail: pc.red("✗") };
+// Status color is one identity from TTY to UI: these resolve through the
+// shared ramp (packages/design/src/status-ramp.mjs) that also generates the
+// console's --color-status-* tokens — same semantics, nearest-ANSI rendering.
+export const ICON = {
+  pass: pc[STATUS_RAMP.passed.ansi]("✓"),
+  warn: pc[STATUS_RAMP.warning.ansi]("▲"),
+  fail: pc[STATUS_RAMP.failed.ansi]("✗"),
+};
 
 // ── Deprecated aliases ──────────────────────────────────────────────────────
 // The orchestration surface collapsed (journey/mission → pipeline,
@@ -132,9 +141,21 @@ export function guarded(run) {
       } else {
         process.stderr.write(pc.red(`✗ ${e?.message || e}`) + "\n");
       }
-      // Errors can carry a machine-attached recovery hint (err.hint) — render it
-      // as the same "next:" affordance every successful command already prints.
-      if (e?.hint) process.stderr.write(pc.dim(`  next: ${e.hint}`) + "\n");
+      if (isDxError(e)) {
+        // The four-field error contract (tools/lib/errors/dx-error.mjs):
+        // what already rendered as the ✗ line above; where/why explain it and
+        // fix is a literal command. --json callers additionally get the shape
+        // on stdout — structure where a plain Error leaves silence.
+        const shape = dxErrorShape(e);
+        if (shape.where) process.stderr.write(pc.dim(`  where: ${shape.where}`) + "\n");
+        if (shape.why) process.stderr.write(pc.dim(`  why:   ${shape.why}`) + "\n");
+        if (shape.fix) process.stderr.write(`  ${pc.dim("fix:")}   ${pc.cyan(shape.fix)}` + "\n");
+        if (ctx?.args?.json) out(JSON.stringify({ ok: false, error: shape }, null, 2));
+      } else if (e?.hint) {
+        // Errors can carry a machine-attached recovery hint (err.hint) — render it
+        // as the same "next:" affordance every successful command already prints.
+        process.stderr.write(pc.dim(`  next: ${e.hint}`) + "\n");
+      }
       process.exitCode = 1;
     }
   };
@@ -273,10 +294,10 @@ export async function followTaskEvents(port, id, { json = false } = {}) {
 }
 
 export function statusText(status) {
-  if (status === "done" || status === "passed" || status === "repaired") return pc.green(status);
-  if (status === "running" || status === "queued" || status === "doctor_running" || status === "repairing") return pc.cyan(status);
-  if (status === "failed" || status === "blocked") return pc.red(status);
-  return pc.yellow(status || "unknown");
+  // Same output bytes as the old hardcoded green/cyan/red/yellow branches —
+  // the mapping now lives in the shared status ramp so TTY and console can't
+  // disagree about what color a status is.
+  return pc[statusAnsi(status)](status || "unknown");
 }
 
 export function parseIds(ids) {
