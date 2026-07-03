@@ -86,10 +86,17 @@ if (flag("yes")) {
     say("→ installing mise (https://mise.run)");
     run(`curl -fsSL https://mise.run | sh`);
   }
+  // Resolve the mise invocation ONCE, after any install: prefer whatever is
+  // actually on PATH (Homebrew/asdf installs live elsewhere than ~/.local/bin),
+  // and only fall back to the canonical install path when PATH has none. Using
+  // the same resolved command for trust/install/setup avoids the
+  // command-not-found the earlier hardcoded ~/.local/bin/mise caused.
+  const localMise = join(homedir(), ".local", "bin", "mise");
+  const mise = can("mise") ? "mise" : existsSync(localMise) ? localMise : "mise";
   say("→ provisioning toolchain + installing the factory (mise trust/install, mise run setup)");
-  run(`${JSON.stringify(misePath === "mise" ? join(homedir(), ".local", "bin", "mise") : misePath)} trust`, { cwd: repo });
-  run(`${JSON.stringify(join(homedir(), ".local", "bin", "mise"))} install`, { cwd: repo });
-  run(`${JSON.stringify(join(homedir(), ".local", "bin", "mise"))} run setup`, { cwd: repo });
+  run(`${JSON.stringify(mise)} trust`, { cwd: repo });
+  run(`${JSON.stringify(mise)} install`, { cwd: repo });
+  run(`${JSON.stringify(mise)} run setup`, { cwd: repo });
   say("→ verifying");
   run(`node skills/installing-the-factory/scripts/verify-install.mjs`, { cwd: repo });
 } else {

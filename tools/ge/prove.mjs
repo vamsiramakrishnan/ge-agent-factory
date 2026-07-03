@@ -16,7 +16,7 @@ import { watch } from "node:fs";
 import { defineCommand } from "citty";
 import { contractWatchRoots } from "../lib/golden-path.mjs";
 import { proveLive } from "../lib/live/prove-live.mjs";
-import { evaluateLiveGate, liveGatePolicy } from "../lib/gates/live-gate.mjs";
+import { evaluateLiveGate, resolveLiveGatePolicy } from "../lib/gates/live-gate.mjs";
 import { DxError } from "../lib/errors/dx-error.mjs";
 import { guarded, common, cfgFrom, emit, out, pc, ui, elog, core, renderChecks } from "./shared.mjs";
 
@@ -103,7 +103,7 @@ async function runLiveProve(args) {
     assistant: args.assistant,
     log: elog,
   });
-  const gate = evaluateLiveGate(result, { ...liveGatePolicy(), strictResponder: !!args.strictResponder });
+  const gate = evaluateLiveGate(result, resolveLiveGatePolicy({ strictResponderFlag: !!args.strictResponder }));
   emit(args, { ...result, gate }, renderLiveProof);
   if (!result.verdict.passed || !gate.passed) process.exitCode = 1;
 }

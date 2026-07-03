@@ -20,6 +20,15 @@ export function liveGatePolicy(configFile = STATE_PATHS.config) {
   return { ...DEFAULT_LIVE_GATE_POLICY, ...(file.promotion?.gates?.live || {}) };
 }
 
+// The CLI flag can only TIGHTEN the configured policy: --strict-responder
+// forces strictness on, but omitting it never relaxes a gate that .ge.json
+// (or the default) configured strict — a flag default must not bypass a
+// configured release gate.
+export function resolveLiveGatePolicy({ configFile, strictResponderFlag = false } = {}) {
+  const policy = liveGatePolicy(configFile);
+  return strictResponderFlag ? { ...policy, strictResponder: true } : policy;
+}
+
 // Returns a GateResult: { gate, required, passed, blockers, artifacts, next }.
 export function evaluateLiveGate(proofResult, policy = DEFAULT_LIVE_GATE_POLICY) {
   const blockers = [];
