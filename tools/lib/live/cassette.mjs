@@ -88,14 +88,18 @@ export function readCassette(path) {
 // crashed run still leaves a usable prefix on disk.
 export function createCassetteRecorder(path, { target, recordedAt } = {}) {
   mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, JSON.stringify({ type: "meta", version: CASSETTE_VERSION, target: target || null, recordedAt: recordedAt || new Date().toISOString() }) + "\n");
+  // A cassette is an append-only NDJSON stream (one record per line), not a
+  // JSON state file — truncate, then append every record including the meta.
+  writeFileSync(path, "");
+  const append = (record) => appendFileSync(path, JSON.stringify(record) + "\n");
+  append({ type: "meta", version: CASSETTE_VERSION, target: target || null, recordedAt: recordedAt || new Date().toISOString() });
   return {
     path,
     request(turn, session, body) {
-      appendFileSync(path, JSON.stringify({ type: "request", turn, session: session ?? null, body }) + "\n");
+      append({ type: "request", turn, session: session ?? null, body });
     },
     chunk(turn, atMs, json) {
-      appendFileSync(path, JSON.stringify({ type: "chunk", turn, atMs, json }) + "\n");
+      append({ type: "chunk", turn, atMs, json });
     },
   };
 }
