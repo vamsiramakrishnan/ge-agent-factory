@@ -115,6 +115,7 @@ Talk to the shipped agent over its live assist surface — per-turn timing/respo
 
 | Flag | Type | Description |
 |---|---|---|
+| `--turns` | string | Drive non-interactively from inline turns (one user turn per line/newline) instead of --script — the transport for programmatic callers |
 | `--script` | string | Drive non-interactively: file with one user turn per line (# comments allowed) |
 | `--cassette` | string | Replay a recorded cassette instead of calling the live surface (no cloud, deterministic) |
 | `--record` | string | Append the driven conversation to this evalset as a new eval case |

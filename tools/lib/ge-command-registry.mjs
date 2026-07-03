@@ -207,6 +207,12 @@ export const GE_COMMANDS = {
     },
     argv: (body = {}) => {
       const argv = ["drive", "--json"];
+      // Inline turns (the documented `turns` body field, one user turn per
+      // line) transport as a first-class `--turns` flag — the CLI splits it
+      // into the conversation. This keeps the registry a pure data leaf (no
+      // fs/temp files) while giving the console's generic dispatch a real
+      // path for `{turns: "..."}`.
+      if (body.turns) argv.push("--turns", String(body.turns));
       if (body.script) argv.push("--script", String(body.script));
       if (body.cassette) argv.push("--cassette", String(body.cassette));
       if (body.record) argv.push("--record", String(body.record));

@@ -152,6 +152,7 @@ export const drive = defineCommand({
   meta: { name: "drive", description: "Talk to the shipped agent over its live assist surface — per-turn timing/responder footer; --record saves the conversation as an eval case" },
   args: {
     ...common,
+    turns: { type: "string", description: "Drive non-interactively from inline turns (one user turn per line/newline) instead of --script — the transport for programmatic callers" },
     script: { type: "string", description: "Drive non-interactively: file with one user turn per line (# comments allowed)" },
     cassette: { type: "string", description: "Replay a recorded cassette instead of calling the live surface (no cloud, deterministic)" },
     record: { type: "string", description: "Append the driven conversation to this evalset as a new eval case" },
@@ -166,8 +167,10 @@ export const drive = defineCommand({
     const cfg = cfgFrom(args);
     const scripted = args.script || args.json || (args.cassette && !process.stdin.isTTY) || !process.stdin.isTTY;
     try {
-      if (!scripted) return await interactiveDrive(cfg, args);
-      const turns = args.script ? readScriptTurns(args.script) : [];
+      if (!scripted && !args.turns) return await interactiveDrive(cfg, args);
+      const turns = args.turns
+        ? String(args.turns).split("\n").map((line) => line.trim()).filter((line) => line && !line.startsWith("#"))
+        : args.script ? readScriptTurns(args.script) : [];
       const result = await runDrive(cfg, {
         turns,
         cassette: args.cassette,

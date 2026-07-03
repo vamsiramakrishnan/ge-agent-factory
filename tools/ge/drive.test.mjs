@@ -93,6 +93,23 @@ test("responder mismatch fails the drive with GELIVE006", async () => {
   expect(result.transcript.verdict.blockers.map((blocker) => blocker.code)).toContain("GELIVE006");
 }, 30000);
 
+test("ge drive --turns drives inline turns (the programmatic transport)", async () => {
+  const { stdout, exitCode } = await runGe(["drive", "--cassette", SUCCESS, "--turns", "Can I change my plan after having a child?\nHow many days do I have?", "--json"]);
+  expect(exitCode).toBe(0);
+  const result = JSON.parse(stdout);
+  expect(result.transcript.turns.map((turn) => turn.user.text)).toEqual([
+    "Can I change my plan after having a child?",
+    "How many days do I have?",
+  ]);
+}, 30000);
+
+test("the registry argv serializes body.turns so the console dispatch transports them", async () => {
+  const { GE_COMMANDS } = await import("../lib/ge-command-registry.mjs");
+  const argv = GE_COMMANDS.drive.argv({ turns: "hello\nworld" });
+  expect(argv).toContain("--turns");
+  expect(argv[argv.indexOf("--turns") + 1]).toBe("hello\nworld");
+});
+
 test("missing live target renders the position screen with the next command", async () => {
   const dir = mkdtempSync(join(tmpdir(), "ge-drive-empty-"));
   // No script, no cassette, stdin not a TTY → the scripted path with zero
