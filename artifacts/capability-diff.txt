@@ -1,0 +1,62 @@
+109a110,115
+> help ge capture | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+> help ge capture | arg from | type=string required=false | Path to a captured contract (agent-spec.json) to register with the catalog
+> help ge capture | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+> help ge capture | arg project | type=string required=false alias=gcp-project | GCP project id
+> help ge capture | arg region | type=string required=false | Region (default us-central1)
+> help ge capture | description | Capture an agent contract: opens the console Interview (starts the console if needed); --from registers an existing contract file
+217a224,230
+> help ge handoff | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+> help ge handoff | arg ids | type=string required=false | Comma-separated local workspace ids (default: all built locally)
+> help ge handoff | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+> help ge handoff | arg project | type=string required=false alias=gcp-project | GCP project id
+> help ge handoff | arg region | type=string required=false | Region (default us-central1)
+> help ge handoff | arg target | type=positional required=false | Deploy target (default agents-cli)
+> help ge handoff | description | Hand off proven agents to a deploy target (supported today: agents-cli → Agent Engine → Gemini Enterprise)
+459a473,483
+> help ge prove | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+> help ge prove | arg force | type=boolean required=false | Re-prove from scratch (wipes matching local workspaces first)
+> help ge prove | arg id | type=string required=false | Prove one use-case/workspace id (default: everything built, or the catalog canary when fresh)
+> help ge prove | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+> help ge prove | arg project | type=string required=false alias=gcp-project | GCP project id
+> help ge prove | arg region | type=string required=false | Region (default us-central1)
+> help ge prove | arg target | type=string required=false | Stop at this stage (default: validated when fresh, the build boundary otherwise)
+> help ge prove | arg vertex | type=boolean required=false | Use Vertex-backed stages when the target reaches them
+> help ge prove | arg warm | type=boolean required=false | Pre-warm the shared uv cache before running
+> help ge prove | arg watch | type=boolean required=false | Watch contract sources and re-prove on change (local, pure computation — safe to loop)
+> help ge prove | description | Prove the current contracts end to end: fresh machine → health check + first agent build; agents built already → rebuild their proof. --watch re-proves on contract change
+533a558,562
+> help ge status | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+> help ge status | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+> help ge status | arg project | type=string required=false alias=gcp-project | GCP project id
+> help ge status | arg region | type=string required=false | Region (default us-central1)
+> help ge status | description | Where am I? Position on capture → prove → handoff, the current blocker, and the exact next command
+546a576,577
+> mcp factory_capture | description | Start the golden path: ensures the console is running and returns the Interview deep link for conversational contract capture (document grounding, contract editing). Optional from=<path> registers an already-captured agent-spec.json with the catalog. Read-mostly: starts a local dev server if one is not already up.
+> mcp factory_capture | param from | type=string optional=true
+547a579,581
+> mcp factory_handoff | description | Mutating: hand proven, locally-built agents to a deploy target. 'agents-cli' is the supported target today (uploads the prebuilt workspaces, then runs deploy→register→publish remotely — same path as factory_ship). An unsupported target returns a structured what/where/why/fix error, never a stack trace.
+> mcp factory_handoff | param ids | type=string optional=true
+> mcp factory_handoff | param target | type=string enum=agents-cli optional=true
+557a592,595
+> mcp factory_prove | description | Mutating (local): prove the current contracts. Dispatch rule: no local workspaces yet → the fresh-machine proof (doctor → validated canary workspace, i.e. devex smoke); workspaces present → rebuild them through the harness to the build boundary (agents build). Returns the proof verdicts; hand off with factory_handoff afterwards.
+> mcp factory_prove | param force | type=boolean optional=true
+> mcp factory_prove | param id | type=string optional=true
+> mcp factory_prove | param target | type=string optional=true
+601a640,642
+> registry capture | requires bins=["bun"]
+> registry capture | requires config=[]
+> registry capture | route none | cli ge capture | risk starts-local-workloads | duration under 30s
+614a656,662
+> registry handoff | requires bigQueryHard=true
+> registry handoff | requires bins=["gcloud"]
+> registry handoff | requires cloudAuth=true
+> registry handoff | requires config=["project","gatewayUrl","dataBucket"]
+> registry handoff | requires shipHandoff=true
+> registry handoff | requires toolPlane=true
+> registry handoff | route POST /api/ge/handoff | cli ge handoff | risk mutates-cloud | duration varies
+630a679,682
+> registry prove | requires bins=["node","uv"]
+> registry prove | requires config=[]
+> registry prove | requires localToolchain=true
+> registry prove | route POST /api/ge/prove | cli ge prove | risk starts-local-workloads | duration varies

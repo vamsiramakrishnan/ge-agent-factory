@@ -6,7 +6,7 @@ sidebar:
   order: 4
 ---
 One sentence to keep: **the factory turns enterprise intent into a contract,
-turns the contract into artifacts, proves the artifacts, and hands them off.**
+turns the contract into artifacts, <a href="/ge-agent-factory/reference/glossary/#prove" title="The golden path's middle verb — compiling contracts into working agents and running their evidence: evals, the spec-to-code trace, and verify verdicts, all up to the build boundary (pure local computation).">proves</a> the artifacts, and hands them off.**
 Everything in this repo — every command, console view, and generated file —
 serves one of those five verbs.
 
@@ -14,18 +14,19 @@ serves one of those five verbs.
 
 | Verb | What it means | Where it happens today |
 |---|---|---|
-| **Capture** | Turn business intent (an <a href="/ge-agent-factory/reference/glossary/#interview" title="The guided, conversational flow where a business user (or agent) describes a use case and the factory turns it into a formal spec.">interview</a>, a document, an API surface) into structured input | Console **Interview** view; document upload; simulator synthesis from OpenAPI |
-| **Compile** | Materialize an **<a href="/ge-agent-factory/reference/glossary/#enterprise-agent-contract" title="The versioned, machine-readable statement of what an agent may do and what world it operates in — materialized today as the use-case spec (usecase-spec.json: behaviorContract + generationSpec) with a portable Markdown twin (the OKF bundle).">Enterprise Agent Contract</a>**: the machine-readable statement of role, scope, tools, evidence rules, escalation and refusal rules, plus the world the agent operates in | The use-case spec (`generationSpec` + `behaviorContract`) and its portable <a href="/ge-agent-factory/reference/glossary/#okf--knowledge-bundle" title="OKF (Open Knowledge Format) is a portable, human-readable version of an agent's spec — a folder of plain Markdown files (called &quot;concepts&quot;) instead of one big JSON blob.">OKF</a> twin |
-| **Generate** | Emit everything the contract implies: ADK agent code, tools, fixture data, source-system simulations, smoke tests, eval suites | `ge agents build` (one <a href="/ge-agent-factory/reference/glossary/#workspace" title="The on-disk folder for one generated agent (.ge/factory/workspaces/workspace-id/), with a workspace.json manifest describing what's in it.">workspace</a> per contract) |
-| **Prove** | Show — not claim — that the generated agent honors the contract | Evals, the <a href="/ge-agent-factory/reference/glossary/#spec-to-code-trace" title="The automated check that verifies the code the factory generated actually matches what the spec asked for; one of the inputs the Promotion Gate reads.">spec-to-code trace</a>, <a href="/ge-agent-factory/reference/glossary/#harness" title="The local, LLM-driven &quot;does this generated agent actually match the spec?&quot;">harness</a> review/refine verdicts, the <a href="/ge-agent-factory/reference/glossary/#promotion-gate" title="An automated pass/fail check that runs right before deploy and refuses to ship a workspace whose validation report, spec-to-code trace, or harness verdicts (review/refine) haven't cleared their bar.">promotion gate</a> |
-| **Hand off** | Give the proven agent to the layer below: <a href="/ge-agent-factory/reference/glossary/#agents-cli" title="A lower-level command-line tool (from the google-agents-cli Python package) that actually scaffolds and builds real Google ADK (Agent Development Kit) Python projects — the pyproject.toml, the agent code skeleton, and the eval harness format.">agents-cli</a> → ADK Agent Engine → Gemini Enterprise, in your own Google Cloud project | `ge agents ship` |
+| **<a href="/ge-agent-factory/reference/glossary/#capture" title="The golden path's first verb — turning business intent into an Enterprise Agent Contract.">Capture</a>** | Turn business intent (an <a href="/ge-agent-factory/reference/glossary/#interview" title="The guided, conversational flow where a business user (or agent) describes a use case and the factory turns it into a formal spec.">interview</a>, a document, an API surface) into structured input | `ge capture` (opens the console **Interview**; `--from` registers an existing contract file); document upload; simulator synthesis from OpenAPI |
+| **Compile** | Materialize an **<a href="/ge-agent-factory/reference/glossary/#enterprise-agent-contract" title="The versioned, machine-readable statement of what an agent may do and what world it operates in — materialized today as the use-case spec (usecase-spec.json: behaviorContract + generationSpec) with a portable Markdown twin (the OKF bundle).">Enterprise Agent Contract</a>**: the machine-readable statement of role, scope, tools, evidence rules, escalation and refusal rules, plus the world the agent operates in | The use-case spec (`generationSpec` + `behaviorContract`) and its [portable Markdown twin](/ge-agent-factory/concepts/enterprise-agent-contract/#the-contracts-portable-form) |
+| **Generate** | Emit everything the contract implies: ADK agent code, tools, fixture data, source-system simulations, smoke tests, eval suites | `ge prove` / `ge agents build` (one <a href="/ge-agent-factory/reference/glossary/#workspace" title="The on-disk folder for one generated agent (.ge/factory/workspaces/workspace-id/), with a workspace.json manifest describing what's in it.">workspace</a> per contract) |
+| **Prove** | Show — not claim — that the generated agent honors the contract | `ge prove`: evals, the <a href="/ge-agent-factory/reference/glossary/#spec-to-code-trace" title="The automated check that verifies the code the factory generated actually matches what the spec asked for; one of the inputs the Promotion Gate reads.">spec-to-code trace</a>, verify-stage review/refine verdicts, the <a href="/ge-agent-factory/reference/glossary/#promotion-gate" title="An automated pass/fail check that runs right before deploy and refuses to ship a workspace whose validation report, spec-to-code trace, or harness verdicts (review/refine) haven't cleared their bar.">promotion gate</a> |
+| **Hand off** | Give the proven agent to the layer below: <a href="/ge-agent-factory/reference/glossary/#agents-cli" title="A lower-level command-line tool (from the google-agents-cli Python package) that actually scaffolds and builds real Google ADK (Agent Development Kit) Python projects — the pyproject.toml, the agent code skeleton, and the eval harness format.">agents-cli</a> → ADK Agent Engine → Gemini Enterprise, in your own Google Cloud project | `ge handoff agents-cli` (operator spelling: `ge agents ship`) |
 
 :::note
-`capture`, `prove`, and `handoff` are the *concepts*. The commands that
-implement them today are the ones named in the table — there is no
-`ge capture` or `ge prove` command yet. The [Roadmap section of the
-README](https://github.com/vamsiramakrishnan/ge-agent-factory#roadmap-the-golden-path)
-tracks the plan to surface the verbs directly.
+`capture`, `prove`, and `handoff` are first-class commands as well as
+concepts: `ge capture` → `ge prove` → `ge handoff agents-cli` is the
+golden path, and bare `ge` reports where you are on it. What remains on
+the [Roadmap section of the
+README](https://github.com/vamsiramakrishnan/ge-agent-factory#roadmap-the-golden-path):
+capture that lives entirely in the terminal, and more <a href="/ge-agent-factory/reference/glossary/#handoff" title="The factory's release act: giving a locally proven workspace to the layer below — agents-cli → ADK Agent Engine → Gemini Enterprise — via ge agents ship, which runs only the post-boundary stages (load_data → deploy_runtime → register_tools → publish_enterprise).">handoff</a> targets.
 :::
 
 
@@ -64,11 +65,20 @@ The line has a hard cut in the middle — the **<a href="/ge-agent-factory/refer
   per-agent data is loaded, the Agent Runtime is deployed, tools are
   registered, and the agent is published to Gemini Enterprise.
 
+Building on this machine is the default (billable cloud work is opt-in),
+and `ge handoff` is the bridge: it takes a workspace that was built and
+proven locally and runs only the post-boundary stages in the cloud. The
+same workspace crosses the boundary unchanged — simulated backends simply
+give way to governed cloud services.
+
+<details>
+<summary>Operator spelling / under the hood</summary>
+
 The two sides are selected by **mode** (`ge mode local` / `ge mode remote`,
-persisted in `.ge.json`), and `ge agents ship` is the bridge: it takes a
-workspace that was built and proven locally and runs only the post-boundary
-stages in the cloud. The same workspace crosses the boundary unchanged —
-simulated backends simply give way to governed cloud services.
+persisted in `.ge.json`), and `ge handoff agents-cli` delegates to
+`ge agents ship`.
+
+</details>
 
 ## What a run looks like
 
@@ -85,12 +95,21 @@ planned → created → validated → harness_reviewed → harness_refined
 
 Three things are worth knowing up front, and each has a plain-language
 glossary entry: runs are recorded durably (the *<a href="/ge-agent-factory/reference/glossary/#ledger" title="The durable, event-sourced record of every run — one entry per run, item, and stage — that ge agents status, the Fleet view, and the console's Activity feed all read.">ledger</a>*), long-running work
-is supervised by a local background process (the *<a href="/ge-agent-factory/reference/glossary/#daemon" title="The local background process (ge daemon start, HTTP on port 17654 / GE_DAEMON_PORT) that runs long factory work — pipeline runs, repair runs, generic jobs — as durable runtime tasks, so a run survives your terminal closing and can be resumed.">daemon</a>*), and the LLM
-review-and-fix step between generation and validation is the *harness*. You
+is supervised by a local background runtime, and the LLM review-and-fix
+step between generation and validation is the build-and-verify engine. You
 can operate the factory for a long time knowing only that much about them.
 
+<details>
+<summary>Operator names for those three</summary>
+
+The local background runtime is the *<a href="/ge-agent-factory/reference/glossary/#daemon" title="The local background process (ge daemon start, HTTP on port 17654 / GE_DAEMON_PORT) that runs long factory work — pipeline runs, repair runs, generic jobs — as durable runtime tasks, so a run survives your terminal closing and can be resumed.">daemon</a>*; the build-and-verify engine
+is the *<a href="/ge-agent-factory/reference/glossary/#harness" title="The local, LLM-driven &quot;does this generated agent actually match the spec?&quot;">harness</a>* — both defined in the [Glossary](/ge-agent-factory/reference/glossary/),
+alongside the *ledger*.
+
+</details>
+
 The full machinery — stage graph source of truth, the stations-vs-milestones
-vocabulary, the durable control <a href="/ge-agent-factory/reference/glossary/#planes" title="The three infrastructure layers the platform stands up in your cloud project — the factory plane (gateway, worker, Cloud Tasks queue, Cloud Build: the machinery that runs builds), the data plane (GCS, BigQuery, Bigtable, Firestore, AlloyDB, per-agent data + IAM), and the tool plane (the per-department MCP services, Agent Registry entries, and the Agent Gateway that agents call tools through).">plane</a> — is in
+vocabulary, the durable control layer — is in
 [Architecture](/ge-agent-factory/reference/architecture/).
 
 ## Two surfaces: beginner and operator
@@ -100,10 +119,10 @@ the shallow end for weeks:
 
 | | Beginner surface | Operator surface |
 |---|---|---|
-| **Entry point** | `mise run <task>` (`setup`, `console`, `next`, `devex-smoke`) — guided, status-driven | the full `ge` command tree, plus the lower-level `factory` generator CLI |
+| **Entry point** | the three golden verbs (`ge capture` / `ge prove` / `ge handoff`) and `mise run <task>` (`setup`, `console`, `next`) — guided, status-driven | the full `ge` command tree, plus the lower-level `factory` generator CLI |
 | **Feedback** | the console: live runs, readiness verdicts, runnable fixes | `--json` on every command, streamed events (`ge runs events --follow`), the durable run record |
-| **Scale** | one <a href="/ge-agent-factory/reference/glossary/#canary" title="A build of exactly one agent, used to prove the pipeline works end to end before committing to the whole catalog.">canary</a> agent at a time | the whole catalog: bulk build, bulk repair, <a href="/ge-agent-factory/reference/glossary/#fleet" title="The whole set of generated agents/workspaces, treated as one unit — the opposite end of the scale from a canary.">fleet</a> convergence |
-| **Typical day** | capture in the Interview, compile a canary, watch it in Runs | script the pipeline in CI, drive repairs, ship in batches, wire MCP callers |
+| **Scale** | one starter agent at a time | the whole catalog: bulk build, bulk repair, convergence across all agents |
+| **Typical day** | capture in the Interview, prove a first agent, watch it in Runs | script the stages in CI, drive repairs, ship in batches, wire MCP callers |
 
 Three facts make the deep end safe to grow into: bare `ge` always prints the
 next step; every mutating command declares a risk level; and one registry
