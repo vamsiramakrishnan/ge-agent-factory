@@ -30,6 +30,32 @@ command.
 Not sure this is the layer you need? Read
 [GE Agent Factory vs agents-cli](https://vamsiramakrishnan.github.io/ge-agent-factory/start/vs-agents-cli/).
 
+## Works with your coding agent
+
+<p align="center">
+  <img src="docs/assets/icons/claude-code.svg" alt="Claude Code" height="44">&nbsp;
+  <img src="docs/assets/icons/antigravity.svg" alt="Antigravity" height="44">&nbsp;
+  <img src="docs/assets/icons/codex.svg" alt="Codex" height="44">&nbsp;
+  <img src="docs/assets/icons/gemini-cli.svg" alt="Gemini CLI" height="44">&nbsp;
+  <img src="docs/assets/icons/mcp.svg" alt="MCP" height="44">
+</p>
+
+The whole factory is packaged as agent skills — including the install itself
+([`installing-the-factory`](skills/installing-the-factory/SKILL.md)), so your
+coding agent can bootstrap a bare machine and then operate the factory end to
+end:
+
+```bash
+bunx create-ge-agent-factory        # any machine: clone + guided, verified install
+```
+
+| Agent | Install |
+| --- | --- |
+| **Claude Code** | `/plugin marketplace add vamsiramakrishnan/ge-agent-factory` then `/plugin install factory-bootstrap@ge-agent-factory` |
+| **Gemini CLI** | `gemini extensions install https://github.com/vamsiramakrishnan/ge-agent-factory` |
+| **Antigravity · Codex · agents-cli** | `bunx create-ge-agent-factory --skills agents` (in a checkout: `mise run skills-install`) |
+| **Any MCP client** | `bun tools/mcp-server.mjs` — the `factory_*` tools, same functions as the CLI verbs |
+
 ## See it
 
 <table>
