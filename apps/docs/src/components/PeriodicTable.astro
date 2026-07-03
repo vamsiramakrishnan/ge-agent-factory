@@ -15,7 +15,9 @@
  */
 import catalog from "../data/agent-catalog.json";
 
-const base = import.meta.env.BASE_URL; // "/ge-agent-factory/"
+// BASE_URL may or may not carry a trailing slash depending on the `base`
+// config — normalize so the join never drops the separator.
+const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 const agentHref = (slug: string) => `${base}catalog/agents/${slug}/`;
 
 const { departments, domains, legend, agents, meta } = catalog as any;
