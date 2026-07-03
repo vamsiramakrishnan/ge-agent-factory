@@ -163,6 +163,7 @@ export async function proveLive(cfg, {
   strictResponder = false,
   updateBaseline = false,
   targetAgent,
+  assistant,
   minResponseMatch,
   // Injectable state root: tests (and any caller with its own layout) pass a
   // temp dir instead of relying on GE_STATE_ROOT being read at module load.
@@ -174,7 +175,7 @@ export async function proveLive(cfg, {
   const skipped = suite.cases.length - selected.length;
   if (skipped > 0) log(`case cap: running ${selected.length} of ${suite.cases.length} case(s) (--max-cases)`);
 
-  const { runner, target } = await prepareDrive(cfg, { cassette, targetAgent });
+  const { runner, target } = await prepareDrive(cfg, { cassette, targetAgent, assistant });
   const baselineDir = baselineDirFor(suite.id, outRoot ? { root: `${outRoot}/live-baselines` } : {});
   const transcriptsDir = outRoot ? `${outRoot}/transcripts` : undefined;
   const proofDir = outRoot ? `${outRoot}/proof` : statePath("proof");

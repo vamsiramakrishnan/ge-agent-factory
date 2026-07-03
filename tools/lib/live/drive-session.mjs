@@ -18,7 +18,7 @@ import { liveError } from "./errors.mjs";
 // Resolve the execution side of a drive: runner + target (+ the recorded
 // user turns when replaying, so a bare `ge drive --cassette f` can replay the
 // original conversation without a script).
-export async function prepareDrive(cfg, { cassette, recordCassette, targetAgent, loop = false } = {}) {
+export async function prepareDrive(cfg, { cassette, recordCassette, targetAgent, assistant, loop = false } = {}) {
   if (cassette) {
     const parsed = readCassette(cassette);
     const runner = createCassetteRunner(parsed, { loop });
@@ -27,13 +27,16 @@ export async function prepareDrive(cfg, { cassette, recordCassette, targetAgent,
       project: metaTarget.project || cfg?.project,
       location: metaTarget.location || cfg?.geLocation || "global",
       engine: metaTarget.engine || cfg?.geAppId || "<recorded>",
-      assistant: metaTarget.assistant || "default_assistant",
+      assistant: metaTarget.assistant || assistant || "default_assistant",
       expectedAgentId: targetAgent ?? null,
     };
     const recordedTurns = parsed.turns.map((turn) => turn.request?.body?.query?.text).filter(Boolean);
     return { runner, target, recordedTurns };
   }
-  const target = resolveLiveTarget(cfg, { expectedAgentId: targetAgent ?? null });
+  // BYO agent: any deployed engine/assistant is drivable — the engine comes
+  // from config or the --ge-app override (full resource name or bare id) and
+  // --assistant picks a non-default assistant. No factory involvement needed.
+  const target = resolveLiveTarget(cfg, { expectedAgentId: targetAgent ?? null, ...(assistant ? { assistant } : {}) });
   const recorder = recordCassette ? createCassetteRecorder(recordCassette, { target: { project: target.project, location: target.location, engine: target.engine, assistant: target.assistant } }) : null;
   const runner = await createLiveRunner(target, { recorder });
   return { runner, target, recordedTurns: [] };
@@ -79,10 +82,11 @@ export async function runDrive(cfg, {
   record,
   recordId,
   targetAgent,
+  assistant,
   strictResponder = false,
   onTurn = () => {},
 } = {}) {
-  const { runner, target, recordedTurns } = await prepareDrive(cfg, { cassette, recordCassette, targetAgent });
+  const { runner, target, recordedTurns } = await prepareDrive(cfg, { cassette, recordCassette, targetAgent, assistant });
   const scriptTurns = (turns && turns.length ? turns : recordedTurns).map((text) => ({ text }));
   if (!scriptTurns.length) {
     throw liveError("GELIVE004", "nothing to drive: no script turns and the cassette recorded none", {

@@ -104,6 +104,7 @@ async function interactiveDrive(cfg, args) {
     cassette: args.cassette,
     recordCassette: args.recordCassette,
     targetAgent: args.targetAgent,
+    assistant: args.assistant,
   });
   out(ui.title("GE Drive", target.engine.split("/").at(-1)));
   out(pc.dim(`  target ${target.engine}`));
@@ -157,6 +158,7 @@ export const drive = defineCommand({
     recordId: { type: "string", description: "Case id to record under (default: derived from the transcript id)" },
     recordCassette: { type: "string", description: "Record the live stream to this cassette file for later replay" },
     targetAgent: { type: "string", description: "Expected responding agent id — responder identity is asserted against the stream" },
+    assistant: { type: "string", description: "Assistant id on the engine (default default_assistant) — plug any deployed agent, factory-built or not" },
     strictResponder: { type: "boolean", description: "Fail when responder identity cannot be verified (default: warn)" },
     geApp: { type: "string", description: "Gemini Enterprise engine (full resource name or bare id; default from .ge.json geAppId)" },
   },
@@ -173,6 +175,7 @@ export const drive = defineCommand({
         record: args.record,
         recordId: args.recordId,
         targetAgent: args.targetAgent,
+        assistant: args.assistant,
         strictResponder: args.strictResponder,
         onTurn: args.json ? () => {} : (turn) => renderTurnBlock(turn),
       });

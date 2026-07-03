@@ -90,6 +90,7 @@ Prove the current contracts end to end: fresh machine → health check + first a
 | `--strictResponder` | boolean | Fail cases whose responder identity cannot be verified |
 | `--updateBaseline` | boolean | Accept the current live behavior as the new conformance baseline |
 | `--targetAgent` | string | Expected responding agent id (asserted against the stream) |
+| `--assistant` | string | Assistant id on the engine (default default_assistant) — prove any deployed agent, factory-built or not |
 
 ### `ge handoff`
 
@@ -120,6 +121,7 @@ Talk to the shipped agent over its live assist surface — per-turn timing/respo
 | `--recordId` | string | Case id to record under (default: derived from the transcript id) |
 | `--recordCassette` | string | Record the live stream to this cassette file for later replay |
 | `--targetAgent` | string | Expected responding agent id — responder identity is asserted against the stream |
+| `--assistant` | string | Assistant id on the engine (default default_assistant) — plug any deployed agent, factory-built or not |
 | `--strictResponder` | boolean | Fail when responder identity cannot be verified (default: warn) |
 | `--geApp` | string | Gemini Enterprise engine (full resource name or bare id; default from .ge.json geAppId) |
 
@@ -139,6 +141,29 @@ Load the live assist surface within hard cost guards and verdict the latency/err
 | `--export` | string | Export a load script instead of running: k6 |
 | `--yes` | boolean | Confirm a LIVE bench run (real traffic, real cost) — refused without it |
 | `--geApp` | string | Gemini Enterprise engine (full resource name or bare id; default from .ge.json geAppId) |
+
+### `ge evals`
+
+Behavioral compiler: turn agent contracts into executable eval suites, datasets, and load profiles
+
+### `ge evals compile`
+
+Compile an agent contract into executable behavior: graph, coverage, selected cases, ADK evalset, grading dataset, load profile
+
+| Flag | Type | Description |
+|---|---|---|
+| `--spec` | string | A GenerationSpecEnvelope JSON file to compile (bring your own spec) |
+| `--id` | string | Registered/captured spec id (default: the only one, when exactly one exists) |
+| `--maxCases` | string | Case budget for the set-cover selection (default 40) |
+| `--out` | string | Output directory (default .ge/behavioral) |
+
+### `ge evals applicability`
+
+Which metric families apply locally vs through the live assist surface (and why)
+
+| Flag | Type | Description |
+|---|---|---|
+| `--markdown` | boolean | Print the markdown table instead of the human view |
 
 ### `ge up`
 
