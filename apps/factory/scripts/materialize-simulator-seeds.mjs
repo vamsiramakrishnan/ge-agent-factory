@@ -6,6 +6,7 @@ import { parseCsv } from "@ge/std/csv-io";
 import { existsSync } from "node:fs";
 import { basename, extname, join, resolve } from "node:path";
 import { loadSimulatorRegistry } from "./factory/simulators/registry.mjs";
+import { sourceTimestamp } from "../src/source-clock.js";
 import { normalizeForCollection as sharedNormalizeForCollection, mergeByKey as sharedMergeByKey } from "./lib/data-recipe.mjs";
 import { snakeCase } from "@ge/std/naming";
 
@@ -62,7 +63,7 @@ function normalizeForCollection(contract, collection, objectName, row, index) {
 
 const mergeByKey = sharedMergeByKey;
 
-async function materializeSimulator({ workspace, simulatorIndex, snowfakeryOutputRoot, simulator, contract }) {
+async function materializeSimulator({ workspace, simulatorIndex, snowfakeryOutputRoot, simulator, contract, generatedAt }) {
   const simulatorDir = join(workspace, "mock_data", "simulators", simulator.simulatorId);
   const seedPath = join(simulatorDir, "seed.json");
   const seedPlanPath = join(simulatorDir, "seed-plan.json");
@@ -85,7 +86,7 @@ async function materializeSimulator({ workspace, simulatorIndex, snowfakeryOutpu
     ...seed,
     _meta: {
       ...(seed._meta || {}),
-      materializedAt: new Date().toISOString(),
+      materializedAt: generatedAt,
       materializedFrom: "mock_data/snowfakery/output",
       simulatorIndex,
     },
@@ -109,6 +110,9 @@ async function main() {
   if (!index) throw new Error(`Simulator index not found: ${indexPath}. Run plan-mock-data first.`);
   const registry = loadSimulatorRegistry();
   const contractsById = new Map((registry.simulators || []).map((simulator) => [simulator.id, simulator]));
+  // Injectable clock, captured ONCE so every artifact in this run agrees;
+  // GE_SOURCE_DATE pins it for byte-reproducible builds (source-clock.js).
+  const generatedAt = sourceTimestamp();
   const results = [];
   for (const simulator of index.simulators || []) {
     results.push(await materializeSimulator({
@@ -117,11 +121,12 @@ async function main() {
       snowfakeryOutputRoot,
       simulator,
       contract: contractsById.get(simulator.simulatorId),
+      generatedAt,
     }));
   }
   const report = {
     ok: true,
-    generatedAt: new Date().toISOString(),
+    generatedAt,
     workspace,
     snowfakeryOutputRoot,
     simulatorIndex: indexPath,
