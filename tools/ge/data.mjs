@@ -1,7 +1,7 @@
 // tools/ge/data.mjs — `ge data up|doctor` (shared data plane). Moved
 // verbatim out of tools/ge.mjs.
 import { defineCommand } from "citty";
-import { guarded, common, cfgFrom, emit, out, pc, blog, core, renderChecks, announceExpectedDuration } from "./shared.mjs";
+import { guarded, common, cfgFrom, emit, out, pc, ui, blog, core, renderChecks, announceExpectedDuration } from "./shared.mjs";
 
 const dataUp = defineCommand({
   meta: { name: "up", description: "Provision the shared data stores (terraform apply) → merge coords into .ge.json" },
@@ -10,8 +10,8 @@ const dataUp = defineCommand({
     announceExpectedDuration("data.up");
     const res = await core.dataUp(cfgFrom(args), { log: blog });
     emit(args, res, (r) => {
-      out(pc.green("\n✓ data plane applied. Coordinates written to .ge.json:"));
-      for (const [k, v] of Object.entries(r.data)) out(`  ${k.padEnd(18)} ${v ? pc.green(v) : pc.yellow("<unset>")}`);
+      out(`\n${ui.glyph("passed")} ${pc.green("data plane applied. Coordinates written to .ge.json:")}`);
+      out(ui.kv(Object.entries(r.data).map(([k, v]) => [k, v ? pc.green(v) : pc.yellow("<unset>")])));
     });
   }),
 });
@@ -21,7 +21,13 @@ const dataDoctorCmd = defineCommand({
   args: { ...common },
   run: guarded(({ args }) => {
     const res = core.dataDoctor(cfgFrom(args));
-    emit(args, res, (r) => { out(pc.bold(`\nData doctor — ${r.project} (${r.region})\n`)); renderChecks(r.checks); out(r.fails === 0 ? pc.green("\nAll hard checks passed.") : pc.red(`\n${r.fails} hard failure(s).`)); });
+    emit(args, res, (r) => {
+      out(ui.title("Data doctor", `${r.project} (${r.region})`) + "\n");
+      renderChecks(r.checks);
+      out(r.fails === 0
+        ? `\n${ui.glyph("passed")} ${pc.green("All hard checks passed.")}`
+        : `\n${ui.glyph("failed")} ${pc.red(`${r.fails} hard failure(s).`)}`);
+    });
   }),
 });
 

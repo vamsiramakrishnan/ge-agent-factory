@@ -11,40 +11,41 @@
 import { watch } from "node:fs";
 import { defineCommand } from "citty";
 import { contractWatchRoots } from "../lib/golden-path.mjs";
-import { guarded, common, cfgFrom, emit, out, pc, elog, core, ICON } from "./shared.mjs";
+import { guarded, common, cfgFrom, emit, out, pc, ui, elog, core, renderChecks } from "./shared.mjs";
 
 function renderProve(r) {
-  out(pc.bold("\nProve"));
+  out(ui.title("Prove"));
   if (r.path === "fresh") {
     out(pc.dim("  fresh machine — proving from scratch (health check → first agent build)"));
     if (!r.ok) {
-      out(pc.red(`  blocked at ${r.stage || "unknown"}`));
-      for (const check of r.doctor?.checks || []) {
-        if (check.status === "pass") continue;
-        out(`  ${ICON[check.status]} ${check.name.padEnd(30)} ${pc.dim(check.detail)}`);
-        if (check.fix) out(`      ${pc.dim("fix:")} ${check.fix}`);
-      }
-      out(pc.dim(`\n  next: ${typeof r.next === "string" ? r.next : "mise run setup"}`));
+      out(`  ${ui.glyph("blocked")} ${pc.red(`blocked at ${r.stage || "unknown"}`)}`);
+      renderChecks((r.doctor?.checks || []).filter((check) => check.status !== "pass"));
+      out(ui.next(typeof r.next === "string" ? r.next : "mise run setup"));
       return;
     }
-    out(pc.green(`  proof passed → ${r.target}`));
+    out(`  ${ui.glyph("passed")} ${pc.green(`proof passed → ${r.target}`)}`);
     if (r.workspace) {
-      out(`  workspace ${pc.cyan(r.workspace.id)} ${pc.dim(r.workspace.path)}`);
-      if (r.workspace.manifest) out(`  manifest  ${pc.dim(r.workspace.manifest)}`);
-      if (r.workspace.evalConfig) out(`  eval      ${pc.dim(r.workspace.evalConfig)}`);
+      out(ui.kv([
+        { key: "workspace", value: ui.cmd(r.workspace.id), note: r.workspace.path },
+        r.workspace.manifest && ["manifest", pc.dim(r.workspace.manifest)],
+        r.workspace.evalConfig && ["eval", pc.dim(r.workspace.evalConfig)],
+      ]));
     }
-    out(`\n  next: ${pc.cyan("ge handoff agents-cli")}   ${pc.dim("(hand the proven agent to the cloud)")}`);
+    out(ui.next("ge handoff agents-cli", "hand the proven agent to the cloud"));
     return;
   }
   if (r.mode === "remote") {
     out(`  submitted ${pc.green(r.submitted)}  failed ${r.failed ? pc.red(r.failed) : "0"}  ${pc.dim("(cloud factory)")}`);
-    out(pc.dim("\n  next: ge agents status --watch"));
+    out(ui.next("ge agents status --watch"));
     return;
   }
-  out(pc.green(`  ✓ proof rebuilt → ${r.target} (build boundary). Workspaces in ${r.projectsDir}.`));
-  if (r.selected) out(pc.dim(`  selected: ${r.selected}`));
-  if (r.run) out(pc.dim(`  run: ${r.run}`));
-  out(`\n  next: ${pc.cyan("ge handoff agents-cli")}   ${pc.dim("(hand the proven agents to the cloud)")}`);
+  out(`  ${ui.glyph("passed")} ${pc.green(`proof rebuilt → ${r.target} (build boundary)`)}`);
+  out(ui.kv([
+    ["workspaces", pc.dim(r.projectsDir)],
+    r.selected && ["selected", pc.dim(String(r.selected))],
+    r.run && ["run", pc.dim(r.run)],
+  ]));
+  out(ui.next("ge handoff agents-cli", "hand the proven agents to the cloud"));
 }
 
 export const prove = defineCommand({
@@ -79,12 +80,12 @@ export const prove = defineCommand({
         emit(args, res, renderProve);
       } catch (e) {
         process.stderr.write(pc.red(`✗ ${e?.message || e}`) + "\n");
-        if (e?.fix || e?.hint) process.stderr.write(`  ${pc.dim("fix:")}   ${pc.cyan(e.fix || e.hint)}` + "\n");
+        if (e?.fix || e?.hint) process.stderr.write(ui.fixLine(e.fix || e.hint, 2) + "\n");
       }
     };
     await runOnce();
     if (!roots.length) {
-      out(pc.yellow("\n  nothing to watch: no contract sources found (capture one first: ge capture)"));
+      out(`\n  ${ui.glyph("warning")} ${pc.yellow("nothing to watch: no contract sources found (capture one first: ge capture)")}`);
       return;
     }
     out(pc.dim(`\n  watching ${roots.length} contract root(s) — save a contract to re-prove (ctrl-c to stop)`));

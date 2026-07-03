@@ -21,7 +21,7 @@
 
 import { defineCommand, runMain, showUsage as cittyShowUsage } from "citty";
 import { resolve } from "node:path";
-import { cfgFrom, common, emit, out, pc } from "./ge/shared.mjs";
+import { cfgFrom, common, emit, out, pc, ui } from "./ge/shared.mjs";
 import * as core from "./lib/factory-core.mjs";
 import { init } from "./ge/init.mjs";
 import { cutover, mode, doctor, up, config } from "./ge/orientation.mjs";
@@ -60,36 +60,46 @@ async function statusBoardResult(args) {
 }
 
 function renderStatusBoard(r) {
-  out(pc.bold("\nGE Agent Factory"));
+  // Contract (tools/ge/status-board.test.mjs): the first four non-blank lines
+  // are title → "capture → prove → handoff…" → "blocker …" → "next ge …".
+  out(ui.title("GE Agent Factory"));
   const gp = r.goldenPath;
   if (gp) {
-    const stageWord = (stage) => stage.done ? pc.green(stage.id) : stage.id === gp.current ? pc.bold(pc.cyan(stage.id)) : pc.dim(stage.id);
+    const stageWord = (stage) => stage.done ? pc.green(stage.id) : stage.id === gp.current ? ui.cmd(stage.id) : pc.dim(stage.id);
     const currentDetail = gp.stages.find((stage) => stage.id === gp.current)?.detail;
     out(`  ${gp.stages.map(stageWord).join(pc.dim(" → "))}${currentDetail ? pc.dim(`   (${currentDetail})`) : ""}`);
-    out(`  blocker   ${gp.blocker ? pc.red(gp.blocker) : pc.dim("none")}`);
-    out(`  next      ${pc.bold(pc.cyan(gp.next))}`);
+    out(ui.kv([
+      ["blocker", gp.blocker ? pc.red(gp.blocker) : pc.dim("none")],
+      ["next", ui.cmd(gp.next)],
+    ]));
   }
   // First run (no project configured): orient before reporting. Three
   // steps, each with an honest effort estimate — the status board's plane
   // detail only makes sense once there is a project to report on.
   if (!r.project) {
     out(pc.dim("\n  Turn an enterprise use case into a generated, tested, deployable agent."));
-    out(pc.bold("\n  First run — three steps, all local, no cloud credentials:"));
-    out(`  1. ${pc.cyan("mise run setup")}      ${pc.dim("toolchain + daemon (one time, ~5-10m)")}`);
-    out(`  2. ${pc.cyan("ge init")}             ${pc.dim("discover config, write .ge.json (~30s)")}`);
-    out(`  3. ${pc.cyan("ge prove")}            ${pc.dim("first proof: health check → first agent built and validated")}`);
-    out(pc.dim("\n  then: ge capture   (capture your own agent contract in the console)"));
+    out(ui.section("First run — three steps, all local, no cloud credentials:"));
+    const steps = [
+      ["mise run setup", "toolchain + daemon (one time, ~5-10m)"],
+      ["ge init", "discover config, write .ge.json (~30s)"],
+      ["ge prove", "first proof: health check → first agent built and validated"],
+    ];
+    const stepWidth = Math.max(...steps.map(([command]) => command.length));
+    steps.forEach(([command, note], i) => out(`  ${i + 1}. ${ui.padVisible(ui.cmd(command), stepWidth)}   ${pc.dim(note)}`));
+    out(`\n  ${pc.dim("then:")} ${ui.cmd("ge capture")}   ${pc.dim("(capture your own agent contract in the console)")}`);
     out(pc.dim("  docs: docs/start/getting-started.md · ge --help for all commands"));
     return;
   }
-  out(pc.dim("\n  ── Operate ─────────────────────────────────────────────"));
-  out(`  mode      ${pc.cyan(r.mode)}  ${pc.dim(r.clientDoes)}`);
-  out(`  project   ${pc.cyan(r.project)}`);
-  out(`  app       ${r.app ? pc.dim(r.app) : pc.yellow("<unset>")}`);
+  out(ui.divider("Operate"));
+  out(ui.kv([
+    { key: "mode", value: ui.cmd(r.mode), note: r.clientDoes },
+    ["project", ui.cmd(r.project)],
+    ["app", r.app ? pc.dim(r.app) : pc.yellow("<unset>")],
+  ]));
   out("");
-  for (const p of r.planes) out(`  ${p.up ? pc.green("✓") : pc.yellow("○")} ${p.name.padEnd(12)} ${pc.dim(p.detail)}`);
-  out(`\n  next: ${pc.bold(pc.cyan(r.next))}`);
-  out(pc.dim("  (ge --help for all commands · ge mode to switch local/remote · ge pipeline status for the pipeline)"));
+  out(ui.kv(r.planes.map((p) => ({ glyph: p.up ? "passed" : "queued", key: p.name, value: pc.dim(p.detail) }))));
+  out(pc.dim("\n  (ge --help for all commands · ge mode to switch local/remote · ge pipeline status for the pipeline)"));
+  out(ui.next(r.next));
 }
 
 // `ge status` — the board as a first-class verb (the bare spelling stays).

@@ -120,7 +120,7 @@ Unified health: toolchain · factory · data plane · tool plane (--local/--clou
 | `--cloud` | boolean | Only the factory section |
 | `--data` | boolean | Only the data plane section |
 | `--mcp` | boolean | Only the tool plane section |
-| `--command` | string | Check readiness for a mutating command (up\|data.up\|mcp.deploy\|agents.build\|agents.build.local\|agents.ship\|agents.sync) |
+| `--command` | string | Check readiness for a mutating command (up\|data.up\|mcp.deploy\|agents.build\|agents.build.local\|handoff\|agents.sync\|prove) |
 
 ### `ge init`
 
@@ -204,7 +204,7 @@ Start a pipeline run: the durable orchestration graph on the daemon
 | `--systems` | string | Comma-separated source-system simulator ids |
 | `--target-stage` | string | Target stage (default preview) |
 | `--port` | string | Daemon port (default 17654) |
-| `--workspace` | string | Scenario workspace path (default .ge/missions/<scenario>) |
+| `--workspace` | string | Scenario workspace path (default .ge/pipelines/<scenario>) |
 | `--attempts` | string | Repair attempts per item (default 3) |
 | `--run-preview` | boolean | Run preview after repair when supported |
 | `--with-factory` | boolean | Actually schedule the factory build node |
@@ -249,7 +249,7 @@ Build the pipeline's orchestration DAG without running it
 | `--systems` | string | Comma-separated source-system simulator ids |
 | `--target-stage` | string | Target stage (default preview) |
 | `--port` | string | Daemon port (default 17654) |
-| `--workspace` | string | Scenario workspace path (default .ge/missions/<scenario>) |
+| `--workspace` | string | Scenario workspace path (default .ge/pipelines/<scenario>) |
 | `--attempts` | string | Repair attempts per item (default 3) |
 | `--run-preview` | boolean | Run preview after repair when supported |
 | `--with-factory` | boolean | Actually schedule the factory build node |
@@ -559,7 +559,7 @@ Show the canonical local GE state layout
 
 ### `ge state reset`
 
-Clear local GE runtime/factory/mission/interview state
+Clear local GE runtime/factory/pipeline/interview state
 
 | Flag | Type | Description |
 |---|---|---|
