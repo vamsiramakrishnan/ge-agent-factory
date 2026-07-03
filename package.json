@@ -48,7 +48,7 @@
     "docs:site:dev": "bun run --filter ./apps/docs dev",
     "docs:site:build": "bun run --filter ./apps/docs build",
     "docs:site:sync": "node apps/docs/scripts/sync-content.mjs",
-    "readme:tapes": "for f in docs/tapes/*.tape; do vhs \"$f\"; done",
+    "readme:tapes": "set -e; for f in docs/tapes/*.tape; do vhs \"$f\"; done",
     "readme:assets": "bun run docs:diagrams && bun run readme:tapes && bun run docs:shots",
     "config:schema": "node tools/gen-config-schema.mjs",
     "config:schema:check": "node tools/gen-config-schema.mjs --check",
