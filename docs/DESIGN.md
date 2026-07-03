@@ -242,6 +242,16 @@ a manually-taken image.
   same on every run, disables CSS animations/reduced-motion, and waits for
   each view's own "settled" marker (not just network-idle) before shooting.
 - Output lands in `docs/assets/screenshots/<view-name>.png`.
+- **The presentation deck** (`apps/presentation`) gets a sibling script,
+  `tools/docs-shots/capture-presentation.mjs`, instead of a view added to
+  `capture.mjs` — it's a separate Vite app with no seeded server state (its
+  catalog data is static, bundled at build time), so it needs its own
+  build/serve step. Same Playwright conventions (fixed viewport, disabled
+  animations), with one deliberate difference: it does **not** freeze
+  `page.clock` — doing so was found to stall the deck's `AnimatePresence`
+  slide transition indefinitely, because the transition's own completion
+  depends on a timer a frozen clock never advances. The deck has no
+  wall-clock-derived text, so nothing is lost by leaving the clock live.
 
 ### Regenerating
 

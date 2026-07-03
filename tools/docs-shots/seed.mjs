@@ -24,6 +24,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, cpSync } from "node
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
+import { writeJson as writeJsonAtomic } from "@ge/std/json-io";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(HERE, "..", "..");
@@ -89,9 +90,7 @@ const workspace = await createWorkspace({
 const wsDir = join(STATE_PATHS.factory.workspaces, workspace.id);
 
 function writeJson(relPath, value) {
-  const full = join(wsDir, relPath);
-  mkdirSync(dirname(full), { recursive: true });
-  writeFileSync(full, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+  writeJsonAtomic(join(wsDir, relPath), value);
 }
 function writeText(relPath, value) {
   const full = join(wsDir, relPath);
@@ -197,7 +196,6 @@ await ensureWorkspaceManifest(STATE_PATHS.factory.workspaces, {
 // fleetStatus() falls back to this file when the ledger has no entry for a
 // use case (docs-shots never touches the ledger, so this is always the path
 // taken here) — see tools/lib/fleet-ops.mjs.
-const { writeJson: writeJsonAtomic } = await import("@ge/std/json-io");
 writeJsonAtomic(STATE_PATHS.envState, {
   completed: {
     [PASSED_ID]: { runId: workspace.id, workspaceId: workspace.id, at: T.passedEnd },
