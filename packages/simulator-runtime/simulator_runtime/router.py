@@ -41,10 +41,23 @@ def execute_simulator_tool(agent_id: str, tool: dict[str, Any], args: dict[str, 
     if not handlers or tool_name not in handlers:
         raise KeyError(f"simulator {system_id} does not define tool {tool_name}")
     # Cassette replay (opt-in via GE_SIMULATOR_REPLAY_DIR, see replay.py): a
-    # recorded envelope for this call short-circuits dispatch; a miss falls
-    # through to live execution. Env unset (the default) ⇒ None with no file IO.
+    # recorded envelope for this call is returned instead of the live result;
+    # a miss falls through to live execution. Env unset (the default) ⇒ None
+    # with no file IO. On a hit the handler STILL runs so simulator state
+    # (rows, approvals, audit trail, clocks) advances exactly as it did while
+    # recording — otherwise a later cassette miss would execute against the
+    # untouched seed instead of the state the replayed calls implied. The live
+    # result is discarded; the cassette is authoritative for the response.
     replayed = replay_lookup(agent_id, system_id, ctx.scenario_id, tool_name, args)
     if replayed is not None:
+        try:
+            handlers[tool_name](ctx, args)
+        except SimulatorError:
+            # Expected when the recorded envelope was itself an error (or a
+            # deterministic injected failure re-fires): the state semantics of
+            # an errored call are "no mutation", which re-raising would not
+            # change, and the recorded envelope already carries the error.
+            pass
         return replayed
     try:
         result = handlers[tool_name](ctx, args)

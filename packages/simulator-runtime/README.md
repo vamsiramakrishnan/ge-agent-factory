@@ -110,7 +110,11 @@ sequence reproduces exactly across processes and machines).
   `GE_SIMULATOR_RECORD_DIR=<dir>` to append every router call (ok and error
   envelopes alike) to a human-readable `<dir>/<agent>__<system>.jsonl` cassette;
   set `GE_SIMULATOR_REPLAY_DIR=<dir>` to serve recorded envelopes (flagged
-  `"replayed": true`) instead of executing. Calls are matched by a BLAKE2b
+  `"replayed": true`) as the response. A replay hit still drives the live
+  handler (its result is discarded) so simulator state — rows, approvals, the
+  audit trail — advances exactly as it did while recording, keeping mixed
+  hit/miss runs state-coherent; replay assumes the recording run's pack corpus
+  and seeds. Calls are matched by a BLAKE2b
   fingerprint of the tool plus canonicalized args (volatile client tokens such as
   `idempotency_key`/`request_id`/`nonce` are excluded); repeated identical calls
   replay their responses in recorded order, and a miss **falls through to live

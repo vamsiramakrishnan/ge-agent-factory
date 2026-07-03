@@ -36,7 +36,7 @@ import { renderToolsPy } from "./factory/tools/render-tools-py.mjs";
 import { renderAgentPy } from "./factory/agents/render-agent-py.mjs";
 import { writeOkfArtifacts } from "./factory/agents/okf-artifacts.mjs";
 import { renderAgentsCliEvalSet, renderEvalConfig, renderGoldenEvals, renderOptimizationConfig } from "./factory/evals/render-eval-artifacts.mjs";
-import { renderHoldoutSplit, renderOptimizationConfigV2, renderJudgePanelConfig } from "./factory/evals/render-eval-artifacts-v2.mjs";
+import { renderHoldoutSplit, renderOptimizationConfigV2, renderJudgePanelConfig, renderSplitEvalSets } from "./factory/evals/render-eval-artifacts-v2.mjs";
 import { ensureAgentsCliPyprojectMetadata } from "./factory/runtime/agents-cli-metadata.mjs";
 import { bigQueryNumericType, bigQuerySafeName, bigQueryType } from "./factory/data/bigquery-types.mjs";
 import { buildCloudDataArtifacts } from "./factory/data/build-cloud-data-artifacts.mjs";
@@ -711,6 +711,11 @@ async function cmdTools(dir, flags) {
     if (process.env.GE_EVAL_V2 === "1") {
       const split = renderHoldoutSplit(agentsCliEvalSet.eval_cases);
       await writeJson(join(dir, "tests", "eval", "holdout_split.json"), split);
+      // The split evalsets must exist on disk or optimization_config_v2's
+      // train/validation paths would dangle — materialize them together.
+      const splitSets = renderSplitEvalSets(agentsCliEvalSet, split);
+      await writeJson(join(dir, "tests", "eval", "evalsets", "ge_behavior_contract.train.evalset.json"), splitSets.train);
+      await writeJson(join(dir, "tests", "eval", "evalsets", "ge_behavior_contract.validation.evalset.json"), splitSets.validation);
       await writeJson(join(dir, "tests", "eval", "optimization_config_v2.json"), renderOptimizationConfigV2(behaviorContract, split));
       await writeJson(join(dir, "tests", "eval", "judge_panel.json"), renderJudgePanelConfig(behaviorContract));
     }

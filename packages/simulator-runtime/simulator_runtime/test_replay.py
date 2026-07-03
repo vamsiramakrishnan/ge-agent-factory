@@ -8,7 +8,8 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from simulator_runtime import replay  # noqa: E402
+from simulator_runtime import replay, simulators  # noqa: E402
+from simulator_runtime.context import build_context  # noqa: E402
 from simulator_runtime.replay import RECORD_DIR_ENV, REPLAY_DIR_ENV, args_fingerprint  # noqa: E402
 from simulator_runtime.router import execute_simulator_tool  # noqa: E402
 
@@ -133,6 +134,43 @@ def test_replay_miss_falls_through_to_live_execution(tmp_path, monkeypatch):
     live_again = execute_simulator_tool(agent, _tool("search_workers"), {"query": "avery"})
     assert live_again["status"] == "ok"
     assert "replayed" not in live_again
+
+
+def test_replay_hit_still_advances_simulator_state(tmp_path, monkeypatch):
+    """A replay hit must leave the same state a live call would.
+
+    The router executes the handler even on a hit (discarding its result), so a
+    later cassette miss runs against the state the replayed calls implied — not
+    the untouched seed. Regression test for the PR #33 review finding.
+    """
+    agent = "agent-replay-state"
+    monkeypatch.setenv(RECORD_DIR_ENV, str(tmp_path))
+    recorded = execute_simulator_tool(
+        agent, _tool("submit_worker_change"), {"worker_id": "W-1001", "change_type": "location_change"}
+    )
+    process_id = recorded["data"]["business_process_id"]
+
+    # A fresh run of the same (agent, system, scenario): wipe the state the
+    # recording built up, as a new process would start from the seed.
+    ctx = build_context(agent, "workday", {})
+    simulators.STATE.pop(simulators._state_key(ctx), None)
+
+    monkeypatch.delenv(RECORD_DIR_ENV)
+    monkeypatch.setenv(REPLAY_DIR_ENV, str(tmp_path))
+    replay.reset()
+
+    replayed = execute_simulator_tool(
+        agent, _tool("submit_worker_change"), {"worker_id": "W-1001", "change_type": "location_change"}
+    )
+    assert replayed.get("replayed") is True
+    assert replayed["data"]["business_process_id"] == process_id
+
+    # Unrecorded follow-up (cassette miss ⇒ live) must see the replayed write:
+    # without handler execution on hits this would 404 against the seed.
+    live = execute_simulator_tool(agent, _tool("get_business_process"), {"business_process_id": process_id})
+    assert "replayed" not in live
+    assert live["status"] == "ok"
+    assert live["data"]["business_process"]["business_process_id"] == process_id
 
 
 def test_replay_exhausted_matches_fall_through_live(tmp_path, monkeypatch):

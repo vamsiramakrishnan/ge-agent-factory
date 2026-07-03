@@ -24,10 +24,13 @@ logger = logging.getLogger(__name__)
 # fingerprint is looked up in its cassette. Repeated identical calls consume
 # matches in recorded order (the n-th identical call replays the n-th recorded
 # envelope). A hit returns a deep copy of the recorded envelope with
-# ``"replayed": true`` added. A **miss falls through to live execution — it never
-# errors** (missing cassette file, missing directory, exhausted matches, and
-# unrecorded calls all behave the same way), so a partial cassette degrades to a
-# partial replay instead of breaking a run.
+# ``"replayed": true`` added — but the router still executes the live handler
+# (discarding its result) so simulator state advances exactly as it did while
+# recording; mixed hit/miss runs therefore stay state-coherent. Replay assumes
+# the same pack corpus and seeds as the recording run. A **miss falls through
+# to live execution — it never errors** (missing cassette file, missing
+# directory, exhausted matches, and unrecorded calls all behave the same way),
+# so a partial cassette degrades to a partial replay instead of breaking a run.
 #
 # Fingerprint: BLAKE2b over canonical JSON of ``(tool, sorted args)`` with
 # *volatile* keys removed — client-generated tokens that legitimately differ

@@ -4,7 +4,7 @@
 // (snapshot strings captured from the pre-v2 code).
 import { test, expect } from "bun:test";
 import { renderEvalConfig, renderOptimizationConfig } from "./render-eval-artifacts.mjs";
-import { renderHoldoutSplit, renderOptimizationConfigV2, renderJudgePanelConfig } from "./render-eval-artifacts-v2.mjs";
+import { renderHoldoutSplit, renderOptimizationConfigV2, renderJudgePanelConfig, renderSplitEvalSets } from "./render-eval-artifacts-v2.mjs";
 
 const CONTRACT = { evalEnrichment: { packHints: [{ packId: "pack one", successCriteria: ["a", "b"] }] } };
 
@@ -38,6 +38,53 @@ test("holdout membership is per-id: adding cases never reshuffles existing ones"
   // Id strings and ADK-camelCase cases resolve the same way as eval_id.
   expect(renderHoldoutSplit(EVAL_CASES.map((c) => c.eval_id))).toEqual(before);
   expect(renderHoldoutSplit(EVAL_CASES.map((c) => ({ evalId: c.eval_id })))).toEqual(before);
+});
+
+test("holdout split never leaves a side empty once there are two cases", () => {
+  // Small evalsets are the real risk: two ids land all-train with p≈0.49 and
+  // all-validation with p≈0.09 under hash-only bucketing, so sweeping 60 pairs
+  // exercises the repair in both directions.
+  for (let i = 0; i < 60; i++) {
+    const split = renderHoldoutSplit([`sweep-${i}-a`, `sweep-${i}-b`]);
+    expect(split.train.length).toBe(1);
+    expect(split.validation.length).toBe(1);
+  }
+  for (const size of [3, 4, 5]) {
+    for (let i = 0; i < 20; i++) {
+      const ids = Array.from({ length: size }, (_, j) => `sweep-${size}-${i}-${j}`);
+      const split = renderHoldoutSplit(ids);
+      expect(split.train.length).toBeGreaterThan(0);
+      expect(split.validation.length).toBeGreaterThan(0);
+      expect(split.train.length + split.validation.length).toBe(size);
+    }
+  }
+  // Repair is deterministic too.
+  const once = renderHoldoutSplit(["pair-a", "pair-b"]);
+  expect(renderHoldoutSplit(["pair-a", "pair-b"])).toEqual(once);
+  // A single case cannot be balanced; it stays wherever it hashes.
+  const single = renderHoldoutSplit(["only-case"]);
+  expect(single.train.length + single.validation.length).toBe(1);
+});
+
+test("split evalsets materialize both partitions with the split's cases verbatim", () => {
+  const evalSet = {
+    eval_set_id: "ge_behavior_contract",
+    name: "GE Behavior Contract",
+    description: "full set",
+    eval_cases: EVAL_CASES.map((c) => ({ eval_id: c.eval_id, conversation: [{ invocation_id: `${c.eval_id}_turn_1` }] })),
+  };
+  const split = renderHoldoutSplit(evalSet.eval_cases);
+  const sets = renderSplitEvalSets(evalSet, split);
+  expect(sets.train.eval_set_id).toBe("ge_behavior_contract_train");
+  expect(sets.validation.eval_set_id).toBe("ge_behavior_contract_validation");
+  expect(sets.train.eval_cases.map((c) => c.eval_id)).toEqual(split.train);
+  expect(sets.validation.eval_cases.map((c) => c.eval_id)).toEqual(split.validation);
+  expect(sets.train.eval_cases.length + sets.validation.eval_cases.length).toBe(evalSet.eval_cases.length);
+  // Case objects pass through untouched (ADK's EvalCase schema forbids extras).
+  const original = new Map(evalSet.eval_cases.map((c) => [c.eval_id, c]));
+  for (const c of [...sets.train.eval_cases, ...sets.validation.eval_cases]) {
+    expect(c).toEqual(original.get(c.eval_id));
+  }
 });
 
 test("optimization config v2 trains and validates on different datasets, pointing at the split", () => {
