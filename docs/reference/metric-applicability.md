@@ -20,7 +20,7 @@ Two rails run a compiled eval suite:
 
 Not every metric can grade both rails. This matrix is the single answer to
 "can metric X grade rail Y" — kept as data
-(`tools/lib/behavioral-compiler/metric-applicability.mjs`) so docs, the CLI,
+(`packages/evalkit/src/metric-applicability.mjs`) so docs, the CLI,
 and gating code all read the same source. `ge evals compile` also writes it
 to `.ge/proof/metric-applicability.json` alongside every compiled suite.
 

@@ -1,7 +1,7 @@
 // Lexical-similarity contract: known values at the extremes, order
 // sensitivity ROUGE-L adds over bag-of-words, and empty-string safety.
 import { test, expect } from "bun:test";
-import { lexicalSimilarity, rougeL, trigramCosine } from "./similarity.mjs";
+import { lexicalSimilarity, rougeL, trigramCosine } from "./metrics.mjs";
 
 test("identical strings score 1.0 on every component", () => {
   const result = lexicalSimilarity("thirty days to submit the change", "thirty days to submit the change");

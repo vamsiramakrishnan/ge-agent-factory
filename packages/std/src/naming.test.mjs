@@ -7,6 +7,7 @@ import {
   validPythonIdentifierName,
   titleCase,
   slug,
+  bigQuerySafeName,
 } from "./naming.mjs";
 
 const MAX = 26;
@@ -152,5 +153,22 @@ describe("slug", () => {
     expect(slug("scenario.one_two-three", { allow: "._-" })).toBe("scenario.one_two-three");
     // Default charset turns dots/underscores into dashes.
     expect(slug("scenario.one_two-three")).toBe("scenario-one-two-three");
+  });
+});
+
+describe("bigQuerySafeName", () => {
+  test("snake_cases and passes through already-legal names (bigquery-types.mjs)", () => {
+    expect(bigQuerySafeName("Sales Orders")).toBe("sales_orders");
+    expect(bigQuerySafeName("contracts")).toBe("contracts");
+  });
+
+  test("prefixes an underscore when the snake form starts with a non-letter", () => {
+    expect(bigQuerySafeName("2024 revenue")).toBe("_2024_revenue");
+  });
+
+  test("falls back to 'table' for empty input and caps at 1024 chars", () => {
+    expect(bigQuerySafeName("")).toBe("table");
+    expect(bigQuerySafeName(null)).toBe("table");
+    expect(bigQuerySafeName("a".repeat(3000)).length).toBe(1024);
   });
 });

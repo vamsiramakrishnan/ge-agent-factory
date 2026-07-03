@@ -18,18 +18,11 @@
 // All pure functions: no clock, no randomness (the split hashes ids).
 
 import { renderEvalConfig } from "./render-eval-artifacts.mjs";
-
-// 32-bit FNV-1a, local on purpose: this app-side renderer must not grow a new
-// import into tools/lib (the apps→tools import surface is frozen).
-function fnv1a(text) {
-  let hash = 0x811c9dc5;
-  const value = String(text);
-  for (let i = 0; i < value.length; i++) {
-    hash ^= value.charCodeAt(i);
-    hash = Math.imul(hash, 0x01000193);
-  }
-  return hash >>> 0;
-}
+// The compiler's one 32-bit FNV-1a. This renderer used to carry a local copy
+// (as an app-side module it could not import tools/lib — that surface is
+// frozen); inside the package the perturbation engine's hash is importable,
+// and it is the identical function, so the split bytes cannot change.
+import { fnv1a } from "../perturbations.mjs";
 
 function evalIdOf(evalCase) {
   if (typeof evalCase === "string") return evalCase;

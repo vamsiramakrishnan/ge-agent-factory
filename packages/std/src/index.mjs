@@ -7,6 +7,7 @@ export * from "./cli-args.mjs";
 export * from "./json-io.mjs";
 export * from "./json-repair.mjs";
 export * from "./csv-io.mjs";
+export * from "./dx-error.mjs";
 export * from "./list.mjs";
 export * from "./gcp-config.mjs";
 export * from "./merge.mjs";

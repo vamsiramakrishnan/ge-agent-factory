@@ -2,7 +2,7 @@
 // Snowfakery recipe renderer. Extracted from factory.mjs verbatim — pure
 // functions, byte output identical to the former inline helpers.
 
-import { snakeCase } from "@ge/std/naming";
+import { bigQuerySafeName } from "@ge/std/naming";
 
 // Field names that conceptually carry decimals even if a small sample happens
 // to be whole numbers (e.g. an `amount` whose first few rows are round). Used
@@ -47,9 +47,10 @@ export function bigQueryType(col, sampledValues = []) {
   return "STRING";
 }
 
-export function bigQuerySafeName(name) {
-  return snakeCase(name || "table").replace(/^([^a-zA-Z_])/, "_$1").slice(0, 1024);
-}
+// Canonical implementation lives in @ge/std/naming (shared with
+// @ge/synthkit/snowfakery's contract-dialect renderer); re-exported here so
+// this module keeps its historical surface for the packager call sites.
+export { bigQuerySafeName };
 
 export function rowsToNdjson(rows) {
   return rows.map((row) => JSON.stringify(row)).join("\n") + (rows.length ? "\n" : "");

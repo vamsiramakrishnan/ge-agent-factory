@@ -30,7 +30,7 @@ const BINDINGS = {
   liveTarget: "tools/lib/live/target.mjs",
   liveErrors: "tools/lib/live/errors.mjs",
   evalsetSchema: "tools/lib/evals/evalset.mjs",
-  behavioralGraph: "tools/lib/behavioral-compiler/graph.mjs",
+  behavioralGraph: "packages/evalkit/src/graph.mjs",
 };
 
 export function discover(root = ROOT) {

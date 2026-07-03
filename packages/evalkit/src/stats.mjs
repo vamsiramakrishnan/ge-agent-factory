@@ -8,7 +8,7 @@
 // Determinism contract: the bootstrap uses a locally-implemented mulberry32
 // PRNG seeded by the caller — same seed, byte-identical intervals. Nothing
 // here reads a clock or global randomness.
-import { DxError } from "../errors/dx-error.mjs";
+import { DxError } from "@ge/std/dx-error";
 
 /**
  * Wilson score interval for a binomial proportion. Returns { low, high,
@@ -26,8 +26,8 @@ export function wilsonInterval(passes, n, z = 1.96) {
 }
 
 /**
- * mulberry32 — tiny seeded PRNG (implemented locally: tools/lib must not
- * import from apps/*). Returns a () => float in [0, 1).
+ * mulberry32 — tiny seeded PRNG (implemented locally: this leaf package
+ * depends on nothing but @ge/std). Returns a () => float in [0, 1).
  */
 export function mulberry32(seed) {
   let a = seed >>> 0;

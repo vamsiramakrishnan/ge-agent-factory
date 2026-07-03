@@ -7,7 +7,7 @@ import { existsSync } from "node:fs";
 import { basename, extname, join, resolve } from "node:path";
 import { loadSimulatorRegistry } from "./factory/simulators/registry.mjs";
 import { sourceTimestamp } from "../src/source-clock.js";
-import { normalizeForCollection as sharedNormalizeForCollection, mergeByKey as sharedMergeByKey } from "./lib/data-recipe.mjs";
+import { normalizeForCollection as sharedNormalizeForCollection, mergeByKey as sharedMergeByKey } from "@ge/synthkit/recipe";
 import { snakeCase } from "@ge/std/naming";
 
 const parseArgs = (argv) => parseFlagArgs(argv).flags;

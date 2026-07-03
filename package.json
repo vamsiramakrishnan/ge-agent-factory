@@ -81,6 +81,7 @@
     "@ge/agent-spec": "workspace:*",
     "@ge/contracts": "workspace:*",
     "@ge/design": "workspace:*",
+    "@ge/evalkit": "workspace:*",
     "@ge/run-ledger": "workspace:*",
     "@ge/runtime": "workspace:*",
     "@ge/std": "workspace:*",

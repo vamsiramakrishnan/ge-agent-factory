@@ -11,6 +11,7 @@
     "./json-io": "./src/json-io.mjs",
     "./json-repair": "./src/json-repair.mjs",
     "./csv-io": "./src/csv-io.mjs",
+    "./dx-error": "./src/dx-error.mjs",
     "./list": "./src/list.mjs",
     "./gcp-config": "./src/gcp-config.mjs",
     "./merge": "./src/merge.mjs",

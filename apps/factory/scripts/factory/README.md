@@ -99,8 +99,10 @@ entry."
 The largest and most heterogeneous directory: cloud-data and mock-data
 planning. `bigquery-types.mjs` (value→BigQuery type inference),
 `lakehouse-targets.mjs` (source-system → lakehouse-target classification),
-`yaml-render.mjs` (hand-rolled-layout YAML + Snowfakery-expression rendering,
-byte-compatible with the legacy planner output), `render-cloud-data-plan.mjs`
+(the hand-rolled-layout YAML + Snowfakery-expression rendering that used to
+live here as `yaml-render.mjs`/`snowfakery-recipe-render.mjs` now ships from
+`@ge/synthkit/snowfakery`, byte-compatible with the legacy planner output),
+`render-cloud-data-plan.mjs`
 (BigQuery schema + manifest derivation for the cloud-data packager),
 `build-cloud-data-artifacts.mjs` (the file-writing orchestration around that
 derivation — resolves project/dataset/bucket/prefix, walks the fixture
@@ -183,12 +185,13 @@ itself.
 
 ## `evals/`
 
-Just `render-eval-artifacts.mjs` — renders the four deterministic eval
-artifacts for a generated workspace (`evals/golden.json`, the agents-cli
-evalset, `eval_config.json`, `optimization_config.json`) from the behavior
-contract's golden evals. Split out because eval-artifact rendering is a
-self-contained, purely-derived output separate from the agent/tool rendering
-that produces the thing being evaluated.
+Just `render-eval-artifacts.mjs` — the factory-side binding of
+`@ge/evalkit`'s eval-artifact renderers (the four deterministic workspace
+artifacts: `evals/golden.json`, the agents-cli evalset, `eval_config.json`,
+`optimization_config.json`). The renderers themselves live in
+`packages/evalkit/src/emitters/`; this module injects the factory's canonical
+tool-naming and OKF test-mechanism derivation (which a leaf package must not
+import) and re-exports the rest untouched.
 
 ## `core/`
 

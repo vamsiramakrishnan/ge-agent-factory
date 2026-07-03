@@ -10,6 +10,7 @@
         "@ge/agent-spec": "workspace:*",
         "@ge/contracts": "workspace:*",
         "@ge/design": "workspace:*",
+        "@ge/evalkit": "workspace:*",
         "@ge/run-ledger": "workspace:*",
         "@ge/runtime": "workspace:*",
         "@ge/std": "workspace:*",
@@ -94,10 +95,12 @@
       "dependencies": {
         "@faker-js/faker": "^10.4.0",
         "@ge/agent-workspace": "workspace:*",
+        "@ge/evalkit": "workspace:*",
         "@ge/okf": "workspace:*",
         "@ge/run-ledger": "workspace:*",
         "@ge/runtime": "workspace:*",
         "@ge/std": "workspace:*",
+        "@ge/synthkit": "workspace:*",
         "better-sqlite3": "^12.9.0",
         "yaml": "^2.9.0",
       },
@@ -172,6 +175,14 @@
         "lucide-react": "^0.546.0",
       },
     },
+    "packages/evalkit": {
+      "name": "@ge/evalkit",
+      "version": "0.1.0",
+      "dependencies": {
+        "@ge/std": "workspace:*",
+        "zod": "^4.4.3",
+      },
+    },
     "packages/okf": {
       "name": "@ge/okf",
       "version": "0.1.0",
@@ -190,6 +201,15 @@
       "dependencies": {
         "change-case": "^5.4.4",
         "jsonrepair": "^3.14.1",
+      },
+    },
+    "packages/synthkit": {
+      "name": "@ge/synthkit",
+      "version": "0.1.0",
+      "dependencies": {
+        "@faker-js/faker": "^10.4.0",
+        "@ge/std": "workspace:*",
+        "yaml": "^2.9.0",
       },
     },
     "packages/ui": {
@@ -445,6 +465,8 @@
 
     "@ge/docs": ["@ge/docs@workspace:apps/docs"],
 
+    "@ge/evalkit": ["@ge/evalkit@workspace:packages/evalkit"],
+
     "@ge/factory": ["@ge/factory@workspace:apps/factory"],
 
     "@ge/okf": ["@ge/okf@workspace:packages/okf"],
@@ -454,6 +476,8 @@
     "@ge/runtime": ["@ge/runtime@workspace:packages/runtime"],
 
     "@ge/std": ["@ge/std@workspace:packages/std"],
+
+    "@ge/synthkit": ["@ge/synthkit@workspace:packages/synthkit"],
 
     "@ge/ui": ["@ge/ui@workspace:packages/ui"],
 

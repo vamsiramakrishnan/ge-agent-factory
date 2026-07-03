@@ -13,8 +13,8 @@ import { statePath, relativeToRepo } from "../state-paths.mjs";
 import { loadEvalset } from "../evals/evalset.mjs";
 import { prepareDrive, saveTranscript } from "./drive-session.mjs";
 import { runConversation } from "./conversation.mjs";
-import { lexicalSimilarity } from "./similarity.mjs";
-import { wilsonInterval } from "./eval-stats.mjs";
+import { lexicalSimilarity } from "@ge/evalkit/metrics";
+import { wilsonInterval } from "@ge/evalkit/stats";
 
 export const LIVE_PROOF_API_VERSION = "ge.dev/v1";
 export const LIVE_PROOF_KIND = "LiveProofResult";

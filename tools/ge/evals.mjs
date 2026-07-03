@@ -6,8 +6,8 @@
 // the same contract, so compiled suites cannot drift from what gets built.
 import { defineCommand } from "citty";
 import { guarded, common, emit, out, pc, ui } from "./shared.mjs";
-import { compileEvals } from "../lib/behavioral-compiler/compile-command.mjs";
-import { METRIC_APPLICABILITY, renderMetricApplicabilityMarkdown } from "../lib/behavioral-compiler/metric-applicability.mjs";
+import { compileEvals } from "../lib/evals/compile-command.mjs";
+import { METRIC_APPLICABILITY, renderMetricApplicabilityMarkdown } from "@ge/evalkit/metric-applicability";
 
 function renderCompile(r) {
   out(ui.title("Evals — compiled", r.subject.agentId));

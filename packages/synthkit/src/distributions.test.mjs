@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { makeRng } from "./data-recipe.mjs";
+import { makeRng } from "./recipe.mjs";
 import {
   rngFor,
   normal,
@@ -13,7 +13,7 @@ import {
   weightedChoice,
   businessHoursTimestamp,
   eventSequence,
-} from "./synth-distributions.mjs";
+} from "./distributions.mjs";
 
 function samples(n, fn) {
   const out = [];
@@ -30,7 +30,7 @@ function median(values) {
   return sorted[Math.floor(sorted.length / 2)];
 }
 
-describe("synth-distributions: determinism", () => {
+describe("distributions: determinism", () => {
   test("same seed produces identical sample streams for every sampler", () => {
     const draw = (seed) => {
       const rng = makeRng(seed);
@@ -59,7 +59,7 @@ describe("synth-distributions: determinism", () => {
   });
 });
 
-describe("synth-distributions: statistical sanity", () => {
+describe("distributions: statistical sanity", () => {
   test("logNormal median lands near the configured median", () => {
     const rng = makeRng(7);
     const values = samples(2000, () => logNormal(rng, { median: 2500, sigma: 1.1 }));
@@ -122,7 +122,7 @@ describe("synth-distributions: statistical sanity", () => {
   });
 });
 
-describe("synth-distributions: temporal helpers", () => {
+describe("distributions: temporal helpers", () => {
   test("eventSequence is strictly increasing and starts inside the window", () => {
     const rng = makeRng(31);
     const seq = eventSequence(rng, { startIso: "2025-03-01T00:00:00Z", endIso: "2025-09-01T00:00:00Z", steps: 6 });

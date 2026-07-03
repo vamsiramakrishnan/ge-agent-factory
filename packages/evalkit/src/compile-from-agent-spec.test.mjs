@@ -7,7 +7,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { compileBehavioralGraph } from "./compile-from-agent-spec.mjs";
 import { validateBehavioralGraph } from "./graph.mjs";
-import { isDxError } from "../errors/dx-error.mjs";
+import { isDxError } from "@ge/std/dx-error";
 
 const FIXTURE = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "benefits-enrollment.spec.json");
 const envelope = () => JSON.parse(readFileSync(FIXTURE, "utf8"));

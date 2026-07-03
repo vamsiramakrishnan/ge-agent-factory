@@ -13,10 +13,9 @@ import { DxError } from "../errors/dx-error.mjs";
 import { join } from "node:path";
 import { REPO_ROOT, statePath } from "../state-paths.mjs";
 import { loadInterviewSpecEntries } from "../factory-catalog.mjs";
-import { compileBehavioralSuite } from "./compile.mjs";
-import { emitAdkEvalset } from "./emit-adk-evalset.mjs";
-import { emitAgentsCliDataset } from "./emit-agents-cli-dataset.mjs";
-import { writeMetricApplicability } from "./metric-applicability.mjs";
+import { compileBehavioralSuite } from "@ge/evalkit/compiler";
+import { emitAdkEvalset, emitAgentsCliDataset } from "@ge/evalkit/emitters";
+import { writeMetricApplicability } from "@ge/evalkit/metric-applicability";
 
 async function resolveSpecEnvelope({ spec, id, repoRoot = REPO_ROOT }) {
   if (spec) {

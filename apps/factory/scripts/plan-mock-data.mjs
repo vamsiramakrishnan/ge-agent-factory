@@ -6,7 +6,7 @@ import { readJson, writeJson } from "@ge/std/json-io";
 import { buildScenarioGraph } from "./factory/scenario-graph.mjs";
 import { buildSimulatorProjections } from "./factory/projections/simulator-projections.mjs";
 import { snakeCase } from "@ge/std/naming";
-import { renderYaml, snowExpression } from "./factory/data/yaml-render.mjs";
+import { planRecipeYaml, renderYaml } from "@ge/synthkit/snowfakery";
 import { columnSet, entitiesFor, lakehouseClass, referenceTargetFor, targetFor } from "./factory/data/lakehouse-targets.mjs";
 import { resolveUseCase, useCaseFromSpec, useCaseNotFoundMessage } from "./factory/data/use-case-resolve.mjs";
 import { attachPackBridgesToUseCase, packBridgesForUseCase } from "./factory/data/pack-bridges.mjs";
@@ -89,52 +89,6 @@ function graphDatastoreSummary(graph) {
     summary[datastore].systems = Array.from(new Set(summary[datastore].systems));
   }
   return Object.values(summary);
-}
-
-function snowfakeryRecipe(realizationPlan) {
-  const lines = [
-    "# Canonical Snowfakery recipe for structured mock rows.",
-    "# Controlled by mock_data/snowfakery/realization-plan.json, which is derived from mock_data/scenario/scenario-graph.json.",
-    "- snowfakery_version: 3",
-  ];
-  const availableObjects = new Set((realizationPlan.objects || []).map((object) => object.object).filter(Boolean));
-  for (const object of realizationPlan.objects || []) {
-      lines.push(`# source_systems: ${JSON.stringify(object.sourceSystems || [])}`);
-      lines.push(`# graph_node_ids: ${JSON.stringify(object.graphNodeIds || [])}`);
-      lines.push(`# pack_bridge_ids: ${JSON.stringify(object.packBridgeIds || [])}`);
-      lines.push(`# simulator_collections: ${JSON.stringify(object.simulatorCollections || [])}`);
-      lines.push(`- object: ${object.object}`);
-      lines.push(`  count: ${Math.max(1, Number(object.count || 20))}`);
-      lines.push("  fields:");
-      for (const column of object.fields || []) {
-        const referenceTarget = referenceTargetFor(column, { availableObjects, currentObject: object.object });
-        if (referenceTarget) lines.push(`    ${column}: "${snowExpression(`reference('${referenceTarget}')`)}"`);
-        else if (column.endsWith("_id") && column !== "id") lines.push(`    ${column}: "${snowExpression("unique_id")}"`);
-        else if (column === "id" || column === "source_record_id") lines.push(`    ${column}: "${snowExpression("unique_id")}"`);
-        else if (column.includes("email")) {
-          lines.push(`    ${column}:`);
-          lines.push("      fake: Email");
-        } else if (column.includes("name") || column === "carrier") {
-          lines.push(`    ${column}:`);
-          lines.push("      fake: Company");
-        }
-        else if (column.includes("date") || column.includes("_at")) {
-          lines.push(`    ${column}:`);
-          lines.push("      date_between:");
-          lines.push('        start_date: "2025-01-01"');
-          lines.push('        end_date: "2026-12-31"');
-        } else if (column.includes("premium") || column.includes("deductible") || column.includes("days") || column === "dependents") {
-          lines.push(`    ${column}:`);
-          lines.push("      random_number:");
-          lines.push("        min: 1");
-          lines.push("        max: 5000");
-        } else {
-          lines.push(`    ${column}:`);
-          lines.push("      fake: Word");
-        }
-      }
-  }
-  return lines.join("\n") + "\n";
 }
 
 function packageManifestFor(datastore) {
@@ -905,7 +859,9 @@ async function main() {
   await writeJson(join(workspace, "mock_data", "snowfakery", "realization-plan.json"), snowfakeryRealization);
   await writeJson(join(workspace, "mock_data", "plan", "data-plan.json"), plan);
   await writeText(join(workspace, "mock_data", "plan", "data-plan.yaml"), renderYaml(plan) + "\n");
-  await writeText(join(workspace, "mock_data", "snowfakery", "structured.recipe.yml"), snowfakeryRecipe(snowfakeryRealization));
+  // The plan-dialect renderer lives in @ge/synthkit/snowfakery; the FK-target
+  // heuristics (lakehouse-targets) stay app-side and are injected.
+  await writeText(join(workspace, "mock_data", "snowfakery", "structured.recipe.yml"), planRecipeYaml(snowfakeryRealization, { referenceTargetFor }));
   await writeSimulatorSeedPlans(workspace, plan, scenarioGraph);
   await writeApiContracts(workspace, plan);
   await writePackageManifests(workspace, plan);
