@@ -10,8 +10,8 @@
 // evalCases, userContent…), but snake_case spellings exist in the wild from
 // hand-authored files; both are accepted on read. Writes preserve whatever
 // the file already used and default to camelCase for new files.
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
-import { dirname } from "node:path";
+import { readFileSync, existsSync } from "node:fs";
+import { writeJson } from "@ge/std/json-io";
 import { DxError } from "../errors/dx-error.mjs";
 
 const pick = (obj, ...keys) => {
@@ -131,7 +131,6 @@ export function appendRecordedCase(path, { caseId, turns, metadata = {} }) {
     })),
     ...(Object.keys(metadata).length ? { geMetadata: metadata } : {}),
   });
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, JSON.stringify(json, null, 2) + "\n");
+  writeJson(path, json);
   return { evalsetPath: path, caseId };
 }
