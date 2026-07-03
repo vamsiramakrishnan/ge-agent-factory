@@ -32,6 +32,7 @@ use [Core Concepts](../concepts/).
 | [Live budgets and gates](live-budgets.html) | Every `live.budgets` key, the `live.bench` hard guard rails, and the `promotion.gates.live` policy. |
 | [Metric applicability](metric-applicability.html) | Which eval metric families grade the local rail vs the live assist surface, and the honest-status policy. |
 | [Atomic capabilities](atomic-capabilities.html) | The end-to-end system as composable capabilities — CLI verb, console route, MCP tool, and skill for each. |
+| [Agent operability](agent-operability.html) | The contract that makes the factory drivable by an AI agent — position/next guidance, background runs, event streams, resume plans, mid-run questions, skill loading. |
 | [MCP tools](../MCP.html) | The factory's MCP server for model callers, and the MCP tool plane generated agents call through. |
 | [Glossary](../GLOSSARY.html) | Plain-language translations of every internal noun. |
 

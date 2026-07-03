@@ -31,7 +31,7 @@ import { bench } from "./ge/bench.mjs";
 import { evals } from "./ge/evals.mjs";
 import { prove } from "./ge/prove.mjs";
 import { handoff } from "./ge/handoff.mjs";
-import { renderRootUsage } from "./ge/help.mjs";
+import { renderRootUsage, renderCommandOrientation } from "./ge/help.mjs";
 import { devex } from "./ge/devex.mjs";
 import { infra } from "./ge/infra.mjs";
 import { images } from "./ge/images.mjs";
@@ -142,9 +142,16 @@ const root = defineCommand({
 
 // Root `--help` renders grouped (Golden path first, Operate after) —
 // progressive disclosure without hiding a single command. Subcommand help
-// stays citty's own renderer.
+// stays citty's renderer, followed by the registry-sourced ORIENTATION
+// section (use-when, duration, risk, literal next commands) so a --help
+// screen positions the reader instead of only listing flags.
 async function showGroupedUsage(cmd, parent) {
-  if (cmd !== root) return cittyShowUsage(cmd, parent);
+  if (cmd !== root) {
+    await cittyShowUsage(cmd, parent);
+    const orientation = renderCommandOrientation(cmd.meta?.name);
+    if (orientation) out(orientation);
+    return;
+  }
   out(renderRootUsage(root));
 }
 

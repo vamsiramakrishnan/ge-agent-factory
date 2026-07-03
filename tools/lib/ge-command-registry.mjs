@@ -70,6 +70,10 @@ export const GE_COMMANDS = {
     cli: "ge capture",
     label: "Capture a contract",
     summary: "Open the console Interview to capture an agent contract (starts the console if needed); --from registers an existing contract file",
+    guide: {
+      when: "no contract exists yet for the use case, or an already-written agent-spec.json needs registering (--from)",
+      next: ["ge prove", "ge evals compile"],
+    },
     risk: "starts-local-workloads",
     expectedDuration: "under 30s",
     observability: { mode: "command-output", events: false },
@@ -90,6 +94,10 @@ export const GE_COMMANDS = {
     cli: "ge prove",
     label: "Prove the contracts",
     summary: "Prove contracts end to end: fresh machine → health check + first agent build; agents built already → rebuild their proof",
+    guide: {
+      when: "a contract exists and needs proving — fresh machine gets the first proof; built agents get re-proven after any contract change",
+      next: ["ge handoff agents-cli", "ge prove --live --evalset <evalset> --max-cases 1"],
+    },
     risk: "starts-local-workloads",
     expectedDuration: "varies",
     observability: {
@@ -126,6 +134,10 @@ export const GE_COMMANDS = {
     cli: "ge handoff",
     label: "Hand off to deploy",
     summary: "Hand proven agents to a deploy target (agents-cli → Agent Engine → Gemini Enterprise)",
+    guide: {
+      when: "local proof passed and the agent should ship — runs only the post-boundary release stages, costs real cloud resources",
+      next: ["ge agents status --watch", "ge drive"],
+    },
     risk: "mutates-cloud",
     expectedDuration: "varies",
     observability: {
@@ -171,6 +183,10 @@ export const GE_COMMANDS = {
     cli: "ge drive",
     label: "Drive the shipped agent",
     summary: "Talk to the deployed agent over its live assist surface with per-turn timing/responder instrumentation; record conversations as eval cases or cassettes",
+    guide: {
+      when: "a deployed agent should be exercised by hand or script — first live contact, reproducing a failure, or recording eval cases/cassettes",
+      next: ["ge prove --live --evalset evals/recorded.evalset.json --max-cases 1", "ge bench --cassette <recording>"],
+    },
     risk: "starts-workloads",
     expectedDuration: "varies",
     observability: { mode: "command-output", events: false },
@@ -247,6 +263,10 @@ export const GE_COMMANDS = {
     cli: "ge bench",
     label: "Bench against budgets",
     summary: "Load the assist surface within hard cost guards and verdict the latency/error budgets (ttft, full response, stalls, errors, responder rates)",
+    guide: {
+      when: "behavior is proven and latency/error budgets need a pass/fail verdict — replay a cassette first; live runs need --yes",
+      next: ["ge prove --live --evalset <evalset>", "ge drive"],
+    },
     risk: "starts-workloads",
     expectedDuration: "varies",
     observability: { mode: "command-output", events: false },
@@ -550,6 +570,10 @@ export const GE_COMMANDS = {
     cli: "ge doctor",
     label: "Factory doctor",
     summary: "Preflight the factory/cloud plane health with suggested fixes",
+    guide: {
+      when: "anything is failing or before starting work in an unfamiliar checkout — every failed check names its fix command",
+      next: ["ge", "ge prove"],
+    },
     risk: "read-only",
     expectedDuration: "under 1m",
     requirements: { bins: [], config: [] },
