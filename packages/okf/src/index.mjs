@@ -177,7 +177,7 @@ export function joinBundle(outDir, ...segments) {
 // GE OKF substrate helpers. Base conformance follows the permissive OKF spec:
 // https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md
 export const GE_OKF_CONCEPT_TYPES = [
-  "Agent","Enterprise Agent Contract","Playbook","Capability","Query Capability","Workflow","Workflow Stage","Source System","Tool","Agent Tool","Entity","Data Entity","Field","Document","Source Document","Policy","Claim","Evidence","Eval","Evals","Eval Scenario","Synthetic World","Persona","Risk","Reference","Bench Profile","Proof Obligation","Promotion Gate","KPIs",
+  "Agent","Enterprise Agent Contract","Capability","Query Capability","Workflow","Source System","Tool","Entity","Field","Document","Policy","Claim","Evidence","Eval","Synthetic World","Persona","Risk","Reference","Bench Profile","Proof Obligation","Promotion Gate",
 ];
 
 export function conceptIdFromPath(relPath) {
@@ -248,4 +248,4 @@ export function baseConformance(bundle) {
   const blockers = (bundle.warnings || []).filter(w=>w.level === "error");
   return { ok: blockers.length === 0, blockers, warnings: (bundle.warnings || []).filter(w=>w.level !== "error") };
 }
-export function geOkfProfile() { return { conceptTypes: GE_OKF_CONCEPT_TYPES, requiredSectionsByType: {}, recommendedSectionsByType: { Claim:["Claim","Authority","Citations"], Capability:["Capability","Tools","Evals"], "Query Capability":["Tools used","Evals","Citations"], Tool:["Tool","Source Systems","Confirmation","Idempotency"], "Agent Tool":["Inputs","Outputs","Evidence emitted","Confirmation","Idempotency"], Eval:["Eval","Covered Capabilities"], "Eval Scenario":["Validates","Mechanisms to call","Success rubric"] }, semanticRules: [] }; }
+export function geOkfProfile() { return { conceptTypes: GE_OKF_CONCEPT_TYPES, requiredSectionsByType: {}, recommendedSectionsByType: { Claim:["Claim","Authority","Citations"], Capability:["Capability","Tools","Evals"], Tool:["Tool","Source Systems","Confirmation","Idempotency"], Eval:["Eval","Covered Capabilities"] }, semanticRules: [] }; }
