@@ -78,13 +78,13 @@ test("normalizeRuntimeTask handles historical output-only artifacts and string b
   });
 });
 
-test("normalizeRuntimeTask preserves mixed task and mission graph artifacts", () => {
+test("normalizeRuntimeTask preserves mixed task and pipeline graph artifacts", () => {
   const task = normalizeRuntimeTask({
-    id: "mission-1",
-    kind: "mission.run",
+    id: "pipeline-1",
+    kind: "pipeline.run",
     status: "blocked",
     output: {
-      artifactRefs: [{ name: "task_log", path: "logs/mission.json" }],
+      artifactRefs: [{ name: "task_log", path: "logs/pipeline.json" }],
       graph: {
         nodes: [
           {

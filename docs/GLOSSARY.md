@@ -23,6 +23,13 @@ list is deliberately focused, not exhaustive.
 
 ---
 
+## The golden register
+
+The words a stranger meets first — they name **what you have** (a contract, a
+proof, a passport), not how the machinery produces it. These terms are the
+product's public vocabulary (see [`LANGUAGE.md`](LANGUAGE.md) for the policy
+and the CI gate that keeps them in front).
+
 ### Enterprise Agent Contract
 
 **What it is:** The versioned, machine-readable statement of what an agent
@@ -37,6 +44,22 @@ Review canvas.
 
 ---
 
+### Behavior Contract
+
+**What it is:** The half of a use-case spec that defines what the agent is
+*allowed and expected to do* — its role, its primary objective, what's in
+and out of scope, the tools it may call, the evidence it must gather before
+acting, and hard guardrails (escalation/refusal rules). It's the field
+literally named `behaviorContract` in `usecase-spec.json`. The other half,
+`generationSpec`, describes the *world* the agent operates in (source
+systems, entities) — behavior vs. world are the "two halves of a spec."
+
+**Where you'll meet it:** `docs/concepts/enterprise-agent-contract.md` ("The two halves
+of a spec"); `docs/reference/spec-schema.md` for the full field list; the
+console's spec editor renders this as the agent's role/scope/rules section.
+
+---
+
 ### Source-system Twin
 
 **What it is:** The docs' name for a simulated enterprise backend — a
@@ -47,6 +70,71 @@ integration exists.
 
 **Where you'll meet it:** `docs/concepts/source-system-twins.md`;
 `simulator-systems/<id>/` packs; the console's BYO system flow.
+
+---
+
+### Capture
+
+**What it is:** The golden path's first verb — turning business intent into an
+[Enterprise Agent Contract](#enterprise-agent-contract). `ge capture` opens
+(and if needed starts) the console [Interview](#interview) for conversational
+capture with document grounding; `ge capture --from <agent-spec.json>`
+registers an already-captured contract with the catalog. Capture is
+console-first today; CLI-native capture is roadmap.
+
+**Where you'll meet it:** `ge capture`; the console Interview
+(`#/interview`); `docs/cookbooks/capture-from-interview.md`.
+
+---
+
+### Interview
+
+**What it is:** The guided, conversational flow where a business user (or
+agent) describes a use case and the factory turns it into a formal spec.
+It's the very first box in the [pipeline](#pipeline).
+
+**Where you'll meet it:** `apps/console/src/views/Interview.tsx`; the
+"Author a spec via the interview" cookbook.
+
+---
+
+### Prove
+
+**What it is:** The golden path's middle verb — compiling contracts into
+working agents and running their evidence: evals, the
+[spec-to-code trace](#spec-to-code-trace), and verify verdicts, all up to the
+[build boundary](#build-boundary) (pure local computation). On a fresh
+machine `ge prove` runs the health check and builds a first validated
+workspace; once agents exist it rebuilds their proof (`ge agents build`).
+`ge prove --watch` re-proves on contract change.
+
+**Where you'll meet it:** `ge prove`; `docs/cookbooks/prove-an-agent.md`; the
+[Promotion Gate](#promotion-gate) consumes what it produces.
+
+---
+
+### Evalset
+
+**What it is:** The generated evaluation suite for one agent — prompts plus
+expected behavior in `agents-cli`'s eval format — that scores whether the
+agent actually behaves as the spec's behavior contract says. It's generated
+into the [workspace](#workspace) alongside the code and run with
+`agents-cli eval run --all` inside the workspace (or the eval commands
+`workspace.json` lists).
+
+**Where you'll meet it:** `docs/cookbooks/prove-an-agent.md`; the eval config
+path `ge prove` prints; [`agents-cli`](#agents-cli)'s eval surface.
+
+---
+
+### Spec-to-Code Trace
+
+**What it is:** The automated check that verifies the code the
+factory generated actually matches what the spec asked for; one of the
+inputs the [Promotion Gate](#promotion-gate) reads.
+
+**Where you'll meet it:** `apps/factory/src/spec-code-trace.js`; the trace
+artifact listed in `workspace.json`.
 
 ---
 
@@ -77,17 +165,60 @@ the `register_tools` stage; Agent detail in the console.
 
 ---
 
+### Promotion Gate
+
+**What it is:** An automated pass/fail check that runs right before deploy
+and refuses to ship a [workspace](#workspace) whose validation report,
+[spec-to-code trace](#spec-to-code-trace), or harness verdicts
+(review/refine) haven't cleared their bar. If it
+fails, you get a list of specific blockers instead of a deploy — you can
+override with `--force` or `GE_ALLOW_UNPROMOTED=1`, but the gate exists so a
+broken or unreviewed agent can't reach the cloud by accident.
+
+**Where you'll meet it:** Run `factory promotion-gate` (implemented in
+`apps/factory/src/promotion-packet.js`); it's also section `## Promotion
+Gate` inside the generated promotion packet artifact, and the quickstart doc
+(`apps/docs/src/content/docs/start/quickstart.mdx`) mentions it as the check
+that "blocks a ship that hasn't passed validation and the harness verdicts."
+
+---
+
+### Build Boundary
+
+**What it is:** The cutoff point between "building and previewing an agent
+on your own machine" and "actually deploying it to your Google Cloud
+project." In local mode, everything up to and including the `preview`
+stage runs offline with no cloud credentials; anything past that boundary
+(deploy, publish, register) touches real cloud infrastructure and is
+dispatched to Cloud Build. In code this shows up as the constant
+`LOCAL_BUILD_BOUNDARY = "previewed"`.
+
+**Where you'll meet it:** The "AUTHOR & BUILD / VALIDATE & REFINE / RELEASE"
+diagram and "The build boundary: local build vs remote release" section in
+`docs/start/mental-model.md`; the `buildBoundary` field on
+[pipeline-run](#pipeline-run) plans (`tools/lib/factory-autopilot-mission.mjs`).
+
+---
+
 ### Handoff
 
 **What it is:** The factory's release act: giving a locally proven workspace
 to the layer below — `agents-cli` → ADK Agent Engine → Gemini Enterprise —
-via `ge agents ship`, which runs only the post-boundary stages
+via `ge handoff agents-cli`, which runs only the post-boundary stages
 (`load_data → deploy_runtime → register_tools → publish_enterprise`).
 
 **Where you'll meet it:** `docs/concepts/handoff-targets.md`;
-`docs/cookbooks/handoff-adk-gemini-enterprise.md`; `ge agents ship`.
+`docs/cookbooks/handoff-adk-gemini-enterprise.md`; `ge handoff agents-cli`.
+
 
 ---
+
+## The operator register
+
+The machinery's own names, for people running the factory in anger. Every
+term below is real, supported, and documented — this register just doesn't
+lead: it lives in `Operate` sections, reference pages, and under-the-hood
+disclosures rather than front doors.
 
 ### Harness
 
@@ -139,57 +270,6 @@ of the same object.
 **Where you'll meet it:** `docs/concepts/enterprise-agent-contract.md` for the concept;
 in the console, the spec editor's "Export OKF" button and the "OKF
 Knowledge Bundle" preview modal (`apps/console/src/components/interview/SpecCanvas.tsx`).
-
----
-
-### Behavior Contract
-
-**What it is:** The half of a use-case spec that defines what the agent is
-*allowed and expected to do* — its role, its primary objective, what's in
-and out of scope, the tools it may call, the evidence it must gather before
-acting, and hard guardrails (escalation/refusal rules). It's the field
-literally named `behaviorContract` in `usecase-spec.json`. The other half,
-`generationSpec`, describes the *world* the agent operates in (source
-systems, entities) — behavior vs. world are the "two halves of a spec."
-
-**Where you'll meet it:** `docs/concepts/enterprise-agent-contract.md` ("The two halves
-of a spec"); `docs/reference/spec-schema.md` for the full field list; the
-console's spec editor renders this as the agent's role/scope/rules section.
-
----
-
-### Promotion Gate
-
-**What it is:** An automated pass/fail check that runs right before deploy
-and refuses to ship a [workspace](#workspace) whose validation report,
-[spec-to-code trace](#spec-to-code-trace), or harness verdicts
-(review/refine) haven't cleared their bar. If it
-fails, you get a list of specific blockers instead of a deploy — you can
-override with `--force` or `GE_ALLOW_UNPROMOTED=1`, but the gate exists so a
-broken or unreviewed agent can't reach the cloud by accident.
-
-**Where you'll meet it:** Run `factory promotion-gate` (implemented in
-`apps/factory/src/promotion-packet.js`); it's also section `## Promotion
-Gate` inside the generated promotion packet artifact, and the quickstart doc
-(`apps/docs/src/content/docs/start/quickstart.mdx`) mentions it as the check
-that "blocks a ship that hasn't passed validation and the harness verdicts."
-
----
-
-### Build Boundary
-
-**What it is:** The cutoff point between "building and previewing an agent
-on your own machine" and "actually deploying it to your Google Cloud
-project." In local mode, everything up to and including the `preview`
-stage runs offline with no cloud credentials; anything past that boundary
-(deploy, publish, register) touches real cloud infrastructure and is
-dispatched to Cloud Build. In code this shows up as the constant
-`LOCAL_BUILD_BOUNDARY = "previewed"`.
-
-**Where you'll meet it:** The "AUTHOR & BUILD / VALIDATE & REFINE / RELEASE"
-diagram and "The build boundary: local build vs remote release" section in
-`docs/start/mental-model.md`; the `buildBoundary` field on
-[pipeline-run](#pipeline-run-formerly-mission) plans (`tools/lib/factory-autopilot-mission.mjs`).
 
 ---
 
@@ -250,14 +330,14 @@ three-planes diagram in `docs/developers.md`; `tools/lib/planes/` in code.
 
 **What it is:** The local background process (`ge daemon start`, HTTP on
 port `17654` / `GE_DAEMON_PORT`) that runs long factory work —
-[pipeline runs](#pipeline-run-formerly-mission), [repair runs](#repair-run-formerly-autopilot), generic jobs — as durable
+[pipeline runs](#pipeline-run), [repair runs](#repair-run), generic jobs — as durable
 runtime *tasks*, so a run survives your terminal closing and can be
 resumed. `mise run setup` starts it for you; the console and CLI both talk
 to it.
 
 **Where you'll meet it:** `ge daemon status` / `ge daemon tasks`;
 `tools/lib/runtime-daemon.mjs` in code; every `--port` flag on
-`ge mission|journey|autopilot` commands is this daemon's port.
+`ge pipeline|fleet|runs` commands is this daemon's port.
 
 ---
 
@@ -296,16 +376,16 @@ console's Doctor tab; `tools/lib/doctor/` in code.
 
 ---
 
-### DevEx gate and smoke
+### DevEx gate
 
-**What it is:** Two developer-experience commands that prove the repo works
-on your machine. `ge devex check` (the *gate*) is the fast read-only pass:
-local [doctor](#doctor) + docs link check + generated workspace manifest
-contracts. `ge devex smoke` (the *smoke*) is the one-command proof: doctor →
-local mode → build one validated [canary](#canary) workspace, then print its
-paths and next commands.
+**What it is:** The fast read-only developer-experience pass that checks the
+repo works on your machine: `ge devex check` runs the local
+[doctor](#doctor), the docs link check, and the generated workspace manifest
+contracts. It only checks — the one-command *proof* (doctor → local mode →
+one validated [canary](#canary) workspace) lives at `ge prove`; see
+[Prove](#prove).
 
-**Where you'll meet it:** `mise run devex-check` / `mise run devex-smoke`;
+**Where you'll meet it:** `mise run devex-check`;
 `docs/start/getting-started.md` steps 1–2.
 
 ---
@@ -318,7 +398,7 @@ works end to end before committing to the whole catalog. `--canary` on
 opposite of `--all`. Nothing to do with feature-flag canary releases — it's
 just "one [workspace](#workspace), all the way through."
 
-**Where you'll meet it:** `mise run devex-smoke` builds one;
+**Where you'll meet it:** `mise run prove` builds one;
 `CANARY=1 mise run provision-local`; the bootstrap task's optional canary
 step.
 
@@ -344,74 +424,67 @@ describing what's in it. This is the unit that flows down the factory
 line from stage to stage — and the thing the [Promotion Gate](#promotion-gate)
 inspects before a deploy.
 
-**Where you'll meet it:** `ge devex smoke` prints the primary workspace
+**Where you'll meet it:** `ge prove` prints the primary workspace
 path; "Workspace manifest" in `docs/developers.md`; `ge state paths` shows
 where they land.
 
 ---
 
-### Pipeline run (formerly "mission")
+### Pipeline run
 
 **What it is:** One orchestrated, resumable run of the pipeline for a use
 case, executed as a DAG of [daemon](#daemon) child tasks — data readiness,
 simulator checks, optionally the factory build itself, the
 [Antigravity](#antigravity) review node, and convergence to a target stage.
 Preview the DAG without running (`ge pipeline graph`), run it
-(`ge pipeline run`), resume it after a failure (`ge pipeline resume`).
-The old `ge mission …` spellings still work as deprecated aliases, and the
-persisted daemon task kind stays `mission.run` (wire identifiers never
-rename; `pipeline.run` is accepted and normalized at the boundary).
+(`ge pipeline run`), resume it after a failure (`ge pipeline resume`). The
+persisted daemon task kind is `pipeline.run`.
 
 **Where you'll meet it:** `ge pipeline run|status|resume|graph|runs`;
-scenario state under `.ge/missions/<scenario>`;
+scenario state under `.ge/pipelines/<scenario>`;
 `skills/planning-missions/references/mission-contract.md` for the contract.
 
 ---
 
-### Pipeline (formerly "journey")
+### Pipeline
 
 **What it is:** The user-facing, end-to-end path from business intent to a
 deployed agent — interview → spec → data → simulator → build → eval →
 preview → deploy — rendered as a plan you can read (`ge pipeline plan`) and
 watch (`ge pipeline status`). The stage view and the executable DAG behind
-it (see [Pipeline run](#pipeline-run-formerly-mission)) are one noun now:
-`ge pipeline status` shows where you are, `ge pipeline run` executes. The
-old `ge journey …` spellings remain as deprecated aliases.
+it (see [Pipeline run](#pipeline-run)) are one noun:
+`ge pipeline status` shows where you are, `ge pipeline run` executes.
 
 **Where you'll meet it:** `ge pipeline plan --usecase <id>`;
-`tools/lib/journey-plan.mjs` in code (the module keeps its historical name).
+`tools/lib/journey-plan.mjs` in code.
 
 ---
 
-### Repair run (formerly "autopilot")
+### Repair run
 
 **What it is:** The [daemon](#daemon)-native convergence loop for *many*
 workspaces at once: given a set of ids (or the current queue), it observes
 each workspace's blockers, runs repair up to `--attempts` times, and keeps
 going until every item reaches the target stage (default `preview`). Think
-"keep the [fleet](#fleet) converged" rather than "run one pipeline."
-The old `ge autopilot …` spellings remain as deprecated aliases, and the
-persisted daemon task kind stays `autopilot.run` (`repair.run` is accepted
-and normalized at the boundary).
+"keep the [fleet](#fleet) converged" rather than "run one pipeline." The
+persisted daemon task kind is `repair.run`.
 
 **Where you'll meet it:** `ge fleet repair|repairs`; the Repair Queue in the
 console; `tools/ge/fleet.mjs` in code.
 
 ---
 
-### The consolidated orchestration vocabulary
+### The orchestration vocabulary
 
-**What it is:** Four historical nouns (mission, journey, autopilot, factory
-run) collapsed into two, plus a build. The old spellings all still work as
-deprecated aliases, and *persisted identifiers* (daemon task kinds, ledger
-tables) keep their historical names — only the operator surface renamed:
+**What it is:** The three orchestration nouns and the build, side by side —
+what each one drives and which command family owns it:
 
-| Today | What it orchestrates | Formerly |
-|---|---|---|
-| **A build** (`ge agents build`) | One agent workspace through the stage pipeline (generate → validate → … → publish); recorded in the run [ledger](#ledger) | "factory run" |
-| **[Pipeline](#pipeline-formerly-journey)** (`ge pipeline plan\|run\|status\|resume\|graph`) | The end-to-end path AND its executable DAG — one noun for the view and the engine | "journey" (the view) + "mission" (the DAG) |
-| **[Repair run](#repair-run-formerly-autopilot)** (`ge fleet repair\|repairs`) | Convergence across many workspaces: observe blockers → repair → retry to a target stage | "autopilot" |
-| **Runs** (`ge runs list\|show\|events\|resume`) | Observability over every daemon-backed run of any kind | `ge runtime tasks\|task\|events\|resume` |
+| Term | What it orchestrates |
+|---|---|
+| **A build** (`ge agents build`) | One agent workspace through the stage pipeline (generate → validate → … → publish); recorded in the run [ledger](#ledger) |
+| **[Pipeline](#pipeline)** (`ge pipeline plan\|run\|status\|resume\|graph`) | The end-to-end path AND its executable DAG — one noun for the view and the engine |
+| **[Repair run](#repair-run)** (`ge fleet repair\|repairs`) | Convergence across many workspaces: observe blockers → repair → retry to a target stage |
+| **Runs** (`ge runs list\|show\|events\|resume`) | Observability over every daemon-backed run of any kind |
 
 **Where you'll meet it:** The `ge` CLI reference (`docs/reference/cli.md`);
 the console's Pipeline / Fleet / Repair Queue / Runs views; the daemon's task
@@ -437,42 +510,6 @@ calls go through the second.
 
 ---
 
-### Interview
-
-**What it is:** The guided, conversational flow where a business user (or
-agent) describes a use case and the factory turns it into a formal spec.
-It's the very first box in the [pipeline](#pipeline-formerly-journey).
-
-**Where you'll meet it:** `apps/console/src/views/Interview.tsx`; the
-"Author a spec via the interview" cookbook.
-
----
-
-### Evalset
-
-**What it is:** The generated evaluation suite for one agent — prompts plus
-expected behavior in `agents-cli`'s eval format — that scores whether the
-agent actually behaves as the spec's behavior contract says. It's generated
-into the [workspace](#workspace) alongside the code and run with
-`agents-cli eval run --all` inside the workspace (or the eval commands
-`workspace.json` lists).
-
-**Where you'll meet it:** `docs/cookbooks/prove-an-agent.md`; the eval config
-path `ge devex smoke` prints; [`agents-cli`](#agents-cli)'s eval surface.
-
----
-
-### Spec-to-Code Trace
-
-**What it is:** The automated check that verifies the code the
-factory generated actually matches what the spec asked for; one of the
-inputs the [Promotion Gate](#promotion-gate) reads.
-
-**Where you'll meet it:** `apps/factory/src/spec-code-trace.js`; the trace
-artifact listed in `workspace.json`.
-
----
-
 ### Review vs. Refine
 
 **What it is:** Two distinct sub-steps of the [harness](#harness). "Review"
@@ -483,3 +520,4 @@ but only Refine changes code.
 
 **Where you'll meet it:** The `harness_reviewed` and `harness_refined`
 pipeline stages; `factory harness-review` vs. `factory harness-refine`.
+

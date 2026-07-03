@@ -61,6 +61,45 @@ Every `ge` command accepts these shared flags (omitted from the per-command tabl
 
 GE Agent Factory — set up · stand up · run agents. Bare `ge` shows status + next step.
 
+### `ge capture`
+
+Capture an agent contract: opens the console Interview (starts the console if needed); --from registers an existing contract file
+
+| Flag | Type | Description |
+|---|---|---|
+| `--from` | string | Path to a captured contract (agent-spec.json) to register with the catalog |
+
+### `ge prove`
+
+Prove the current contracts end to end: fresh machine → health check + first agent build; agents built already → rebuild their proof. --watch re-proves on contract change
+
+| Flag | Type | Description |
+|---|---|---|
+| `--id` | string | Prove one use-case/workspace id (default: everything built, or the catalog canary when fresh) |
+| `--target` | string | Stop at this stage (default: validated when fresh, the build boundary otherwise) |
+| `--force` | boolean | Re-prove from scratch (wipes matching local workspaces first) |
+| `--preview` | boolean | Shortcut for --target previewed (may require project/Vertex auth) |
+| `--vertex` | boolean | Use Vertex-backed stages when the target reaches them |
+| `--warm` | boolean | Pre-warm the shared uv cache before running |
+| `--watch` | boolean | Watch contract sources and re-prove on change (local, pure computation — safe to loop) |
+
+### `ge handoff`
+
+Hand off proven agents to a deploy target (supported today: agents-cli → Agent Engine → Gemini Enterprise)
+
+| Flag | Type | Description |
+|---|---|---|
+| `<target>` | positional | Deploy target (default agents-cli) |
+| `--ids` | string | Comma-separated local workspace ids (default: all built locally) |
+| `--start-stage` | string | Stage to start at remotely (default load_data) |
+| `--target-stage` | string | Stage to stop at (default publish_enterprise) |
+| `--concurrency` | string | Parallel remote submissions (default 2) |
+| `--no-proxy` | boolean | Call the gateway directly over HTTPS instead of the gcloud run proxy tunnel |
+
+### `ge status`
+
+Where am I? Position on capture → prove → handoff, the current blocker, and the exact next command
+
 ### `ge up`
 
 Stand up the platform: infra + data + tool planes → unified doctor (--infra/--data/--mcp for one)
@@ -81,7 +120,7 @@ Unified health: toolchain · factory · data plane · tool plane (--local/--clou
 | `--cloud` | boolean | Only the factory section |
 | `--data` | boolean | Only the data plane section |
 | `--mcp` | boolean | Only the tool plane section |
-| `--command` | string | Check readiness for a mutating command (up\|data.up\|mcp.deploy\|agents.build\|agents.build.local\|agents.ship\|agents.sync) |
+| `--command` | string | Check readiness for a mutating command (up\|data.up\|mcp.deploy\|agents.build\|agents.build.local\|handoff\|agents.sync\|prove) |
 
 ### `ge init`
 
@@ -105,7 +144,7 @@ Show or set the operating mode: local (build on this machine) | remote (cloud fa
 
 ### `ge devex`
 
-Developer-experience checks and one-command local smoke paths
+Developer-experience checks (fast read-only gate: doctor + docs + workspace contracts)
 
 ### `ge devex check`
 
@@ -118,20 +157,6 @@ Fast DevEx gate: local doctor, docs links, and workspace manifest contracts
 | `--no-docs` | boolean | Skip local docs link checks |
 | `--no-local` | boolean | Skip local toolchain doctor checks |
 | `--no-strict-workspaces` | boolean | Warn instead of fail on missing generated workspace files |
-
-### `ge devex smoke`
-
-One-command local DevEx proof: doctor → local mode → canary workspace manifest
-
-| Flag | Type | Description |
-|---|---|---|
-| `--id` | string | Use-case id to build (default: catalog canary) |
-| `--target` | string | Local harness target (default validated; use previewed for full build boundary) |
-| `--preview` | boolean | Shortcut for --target previewed (may require project/Vertex auth) |
-| `--vertex` | boolean | Use Vertex-backed harness stages when target reaches them |
-| `--no-vertex` | boolean | Disable Vertex-backed harness stages |
-| `--warm` | boolean | Pre-warm the shared uv cache before running |
-| `--force` | boolean | Regenerate matching local workspace(s) from scratch |
 
 ### `ge config`
 
@@ -179,7 +204,7 @@ Start a pipeline run: the durable orchestration graph on the daemon
 | `--systems` | string | Comma-separated source-system simulator ids |
 | `--target-stage` | string | Target stage (default preview) |
 | `--port` | string | Daemon port (default 17654) |
-| `--workspace` | string | Scenario workspace path (default .ge/missions/<scenario>) |
+| `--workspace` | string | Scenario workspace path (default .ge/pipelines/<scenario>) |
 | `--attempts` | string | Repair attempts per item (default 3) |
 | `--run-preview` | boolean | Run preview after repair when supported |
 | `--with-factory` | boolean | Actually schedule the factory build node |
@@ -224,7 +249,7 @@ Build the pipeline's orchestration DAG without running it
 | `--systems` | string | Comma-separated source-system simulator ids |
 | `--target-stage` | string | Target stage (default preview) |
 | `--port` | string | Daemon port (default 17654) |
-| `--workspace` | string | Scenario workspace path (default .ge/missions/<scenario>) |
+| `--workspace` | string | Scenario workspace path (default .ge/pipelines/<scenario>) |
 | `--attempts` | string | Repair attempts per item (default 3) |
 | `--run-preview` | boolean | Run preview after repair when supported |
 | `--with-factory` | boolean | Actually schedule the factory build node |
@@ -396,7 +421,7 @@ Check the per-department MCP services + Agent Registry readiness
 
 ### `ge agents`
 
-Agent lifecycle: build · resume · ship · status · fleet · logs · sync
+Agent lifecycle: build · resume · status · logs · sync (release proven agents with `ge handoff`)
 
 ### `ge agents build`
 
@@ -426,7 +451,7 @@ Build agents. Uses the active mode (ge mode); --local/--remote override
 
 ### `ge agents resume`
 
-Resume interrupted/failed builds from the ledger: retry failed stages, finish local work, ship past the boundary
+Resume interrupted/failed builds from the ledger: retry failed stages, finish local work, hand off past the boundary
 
 | Flag | Type | Description |
 |---|---|---|
@@ -436,18 +461,6 @@ Resume interrupted/failed builds from the ledger: retry failed stages, finish lo
 | `--remote` | boolean | Override: plan against remote mode |
 | `--run` | boolean | Execute the resume plan (default: print it) |
 
-### `ge agents ship`
-
-Hand off locally-built agents to the cloud: upload + run deploy→register→publish remotely
-
-| Flag | Type | Description |
-|---|---|---|
-| `--ids` | string | Comma-separated local workspace ids (default: all built locally) |
-| `--start-stage` | string | Stage to start at remotely (default load_data) |
-| `--target-stage` | string | Stage to stop at (default publish_enterprise) |
-| `--concurrency` | string | Parallel remote submissions (default 2) |
-| `--no-proxy` | boolean | Call the gateway directly over HTTPS instead of the gcloud run proxy tunnel |
-
 ### `ge agents status`
 
 Poll submitted runs (stage tally)
@@ -456,14 +469,6 @@ Poll submitted runs (stage tally)
 |---|---|---|
 | `--watch` | boolean | Re-poll every 15s until all runs are terminal |
 | `--no-proxy` | boolean | Call the gateway directly over HTTPS instead of the gcloud run proxy tunnel |
-
-### `ge agents fleet`
-
-(deprecated → ge fleet status) Fleet pipeline health, bottlenecks, and repair owners
-
-| Flag | Type | Description |
-|---|---|---|
-| `--limit` | string | Max bottlenecks to list (default 8) |
 
 ### `ge agents logs`
 
@@ -554,7 +559,7 @@ Show the canonical local GE state layout
 
 ### `ge state reset`
 
-Clear local GE runtime/factory/mission/interview state
+Clear local GE runtime/factory/pipeline/interview state
 
 | Flag | Type | Description |
 |---|---|---|
@@ -593,255 +598,6 @@ Next action per work item from the ledger + pipeline state machine
 | `--target` | string | Target stage (default previewed) |
 | `--mode` | string | local\|remote (default local) |
 
-### `ge autopilot`
-
-(deprecated → ge fleet repair) autopilot is a fleet repair run
-
-### `ge autopilot run`
-
-(deprecated → ge fleet repair) Converge blocked agents to a target stage: observe blockers → repair → retry
-
-| Flag | Type | Description |
-|---|---|---|
-| `--ids` | string | Comma-separated agent/workspace ids (default: current repair queue) |
-| `--target-stage` | string | Gate to converge to (default preview) |
-| `--no-repair` | boolean | Observe blockers without running repair |
-| `--attempts` | string | Repair attempts per item (default 3) |
-| `--run-preview` | boolean | Run preview after repair when supported |
-| `--follow` | boolean | Stay attached and stream the run's live events |
-| `--port` | string | Daemon port (default 17654) |
-
-### `ge autopilot status`
-
-(deprecated → ge fleet repairs [id]) Show one repair run, or list recent repair runs
-
-| Flag | Type | Description |
-|---|---|---|
-| `<id>` | positional | Repair run id (omit to list recent runs) |
-| `--port` | string | Daemon port (default 17654) |
-| `--limit` | string | Recent repair run count when no id is provided |
-
-### `ge autopilot events`
-
-(deprecated → ge runs events <id>) Show or follow one local GE runtime task event stream
-
-| Flag | Type | Description |
-|---|---|---|
-| `<id>` | positional (required) | Runtime task id |
-| `--port` | string | Daemon port (default 17654) |
-| `--follow` | boolean | Follow the live event stream (SSE) |
-
-### `ge mission`
-
-(deprecated → ge pipeline) a mission is a pipeline run
-
-### `ge mission plan`
-
-(deprecated → ge pipeline graph) Build the pipeline's orchestration DAG without running it
-
-| Flag | Type | Description |
-|---|---|---|
-| `--ids` | string | Comma-separated agent/workspace ids |
-| `--scenario` | string | Scenario/use-case id |
-| `--usecase` | string | Use case id from interview/spec registry |
-| `--systems` | string | Comma-separated source-system simulator ids |
-| `--target-stage` | string | Target stage (default preview) |
-| `--port` | string | Daemon port (default 17654) |
-| `--workspace` | string | Scenario workspace path (default .ge/missions/<scenario>) |
-| `--attempts` | string | Repair attempts per item (default 3) |
-| `--run-preview` | boolean | Run preview after repair when supported |
-| `--with-factory` | boolean | Actually schedule the factory build node |
-| `--no-antigravity` | boolean | Do not include the Antigravity spec/data review node |
-| `--harness-agent` | string | Harness agent for the review node (default antigravity-sdk) |
-| `--model` | string | Model for the Antigravity review node |
-| `--location` | string | Location for the Antigravity review node |
-| `--follow` | boolean | Stay attached and stream the run's live events |
-
-### `ge mission run`
-
-(deprecated → ge pipeline run) Start a pipeline run: the durable orchestration graph on the daemon
-
-| Flag | Type | Description |
-|---|---|---|
-| `--ids` | string | Comma-separated agent/workspace ids |
-| `--scenario` | string | Scenario/use-case id |
-| `--usecase` | string | Use case id from interview/spec registry |
-| `--systems` | string | Comma-separated source-system simulator ids |
-| `--target-stage` | string | Target stage (default preview) |
-| `--port` | string | Daemon port (default 17654) |
-| `--workspace` | string | Scenario workspace path (default .ge/missions/<scenario>) |
-| `--attempts` | string | Repair attempts per item (default 3) |
-| `--run-preview` | boolean | Run preview after repair when supported |
-| `--with-factory` | boolean | Actually schedule the factory build node |
-| `--no-antigravity` | boolean | Do not include the Antigravity spec/data review node |
-| `--harness-agent` | string | Harness agent for the review node (default antigravity-sdk) |
-| `--model` | string | Model for the Antigravity review node |
-| `--location` | string | Location for the Antigravity review node |
-| `--follow` | boolean | Stay attached and stream the run's live events |
-
-### `ge mission status`
-
-(deprecated → ge pipeline status <id> · ge pipeline runs) Pipeline status: bare → the live stage view; with an id → that run's graph + resume plan
-
-| Flag | Type | Description |
-|---|---|---|
-| `<id>` | positional | Pipeline run id (omit for the stage view) |
-| `--ids` | string | Comma-separated agent/workspace ids |
-| `--scenario` | string | Scenario/use-case id |
-| `--usecase` | string | Use case id from interview/spec registry |
-| `--systems` | string | Comma-separated source-system simulator ids |
-| `--target-stage` | string | Target stage (default preview) |
-| `--port` | string | Daemon port (default 17654) |
-
-### `ge mission resume`
-
-(deprecated → ge pipeline resume) Resume a pipeline run via its deterministic resume plan
-
-| Flag | Type | Description |
-|---|---|---|
-| `<id>` | positional (required) | Pipeline run id |
-| `--port` | string | Daemon port (default 17654) |
-
-### `ge journey`
-
-(deprecated → ge pipeline) the user journey is the pipeline
-
-### `ge journey plan`
-
-(deprecated → ge pipeline plan) Show the pipeline plan for a spec/scenario (stages, owners, first commands)
-
-| Flag | Type | Description |
-|---|---|---|
-| `--ids` | string | Comma-separated agent/workspace ids |
-| `--scenario` | string | Scenario/use-case id |
-| `--usecase` | string | Use case id from interview/spec registry |
-| `--systems` | string | Comma-separated source-system simulator ids |
-| `--target-stage` | string | Target stage (default preview) |
-| `--port` | string | Daemon port (default 17654) |
-
-### `ge journey status`
-
-(deprecated → ge pipeline status) Pipeline status: bare → the live stage view; with an id → that run's graph + resume plan
-
-| Flag | Type | Description |
-|---|---|---|
-| `<id>` | positional | Pipeline run id (omit for the stage view) |
-| `--ids` | string | Comma-separated agent/workspace ids |
-| `--scenario` | string | Scenario/use-case id |
-| `--usecase` | string | Use case id from interview/spec registry |
-| `--systems` | string | Comma-separated source-system simulator ids |
-| `--target-stage` | string | Target stage (default preview) |
-| `--port` | string | Daemon port (default 17654) |
-
-### `ge journey run`
-
-(deprecated → ge pipeline run) Start a pipeline run: the durable orchestration graph on the daemon
-
-| Flag | Type | Description |
-|---|---|---|
-| `--ids` | string | Comma-separated agent/workspace ids |
-| `--scenario` | string | Scenario/use-case id |
-| `--usecase` | string | Use case id from interview/spec registry |
-| `--systems` | string | Comma-separated source-system simulator ids |
-| `--target-stage` | string | Target stage (default preview) |
-| `--port` | string | Daemon port (default 17654) |
-| `--workspace` | string | Scenario workspace path (default .ge/missions/<scenario>) |
-| `--attempts` | string | Repair attempts per item (default 3) |
-| `--run-preview` | boolean | Run preview after repair when supported |
-| `--with-factory` | boolean | Actually schedule the factory build node |
-| `--no-antigravity` | boolean | Do not include the Antigravity spec/data review node |
-| `--harness-agent` | string | Harness agent for the review node (default antigravity-sdk) |
-| `--model` | string | Model for the Antigravity review node |
-| `--location` | string | Location for the Antigravity review node |
-| `--follow` | boolean | Stay attached and stream the run's live events |
-
-### `ge runtime`
-
-(deprecated → ge runs · ge fleet repair) runtime task plumbing: status · tasks · task · events · resume · start
-
-### `ge runtime status`
-
-Show local GE runtime daemon status
-
-| Flag | Type | Description |
-|---|---|---|
-| `--port` | string | Daemon port (default 17654) |
-
-### `ge runtime tasks`
-
-List recent local GE runtime daemon tasks
-
-| Flag | Type | Description |
-|---|---|---|
-| `--port` | string | Daemon port (default 17654) |
-| `--limit` | string | Max tasks to list (default 20) |
-
-### `ge runtime task`
-
-Show one local GE runtime daemon task
-
-| Flag | Type | Description |
-|---|---|---|
-| `<id>` | positional (required) | Runtime task id |
-| `--port` | string | Daemon port (default 17654) |
-
-### `ge runtime events`
-
-Show or follow one local GE runtime task event stream
-
-| Flag | Type | Description |
-|---|---|---|
-| `<id>` | positional (required) | Runtime task id |
-| `--port` | string | Daemon port (default 17654) |
-| `--follow` | boolean | Follow the live event stream (SSE) |
-
-### `ge runtime resume`
-
-Resume a runtime task using its deterministic resumePlan
-
-| Flag | Type | Description |
-|---|---|---|
-| `<id>` | positional (required) | Runtime task id |
-| `--port` | string | Daemon port (default 17654) |
-
-### `ge runtime start`
-
-Start runtime tasks: repair (canonical) · autopilot (deprecated) · job
-
-### `ge runtime start autopilot`
-
-Start an Autopilot runtime task
-
-| Flag | Type | Description |
-|---|---|---|
-| `--ids` | string | Comma-separated agent/workspace ids |
-| `--stage` | string | Target convergence stage (default preview) |
-| `--repair` | boolean | Run repair on blockers (default true; --no-repair to observe only) |
-| `--attempts` | string | Repair attempts per item (default 3) |
-| `--runPreview` | boolean | Run preview after repair when supported |
-| `--port` | string | Daemon port (default 17654) |
-
-### `ge runtime start repair`
-
-Start an Autopilot runtime task
-
-| Flag | Type | Description |
-|---|---|---|
-| `--ids` | string | Comma-separated agent/workspace ids |
-| `--stage` | string | Target convergence stage (default preview) |
-| `--repair` | boolean | Run repair on blockers (default true; --no-repair to observe only) |
-| `--attempts` | string | Repair attempts per item (default 3) |
-| `--runPreview` | boolean | Run preview after repair when supported |
-| `--port` | string | Daemon port (default 17654) |
-
-### `ge runtime start job`
-
-Start a GE command runtime task; pass command args after --
-
-| Flag | Type | Description |
-|---|---|---|
-| `--port` | string | Daemon port (default 17654) |
-
 ### `ge apply`
 
 Reconcile actual → desired platform + fleet from a manifest (ge.manifest.json). Plans by default; --yes executes.
@@ -859,10 +615,10 @@ ge                                        # status board: planes ✓/○ + next 
 ge agents build --canary --local          # build one agent on this machine
 ge agents build --all --remote            # submit the whole fleet to the cloud
 ge agents build --ids account-reconciliation-agent --no-refine
-ge journey plan --usecase account-reconciliation-agent
-ge mission run --scenario leave-planning --systems workday,docusign_clm --target-stage preview
-ge autopilot run --ids agent-a,agent-b --target-stage preview
-ge runtime start job -- ge <args>         # run a ge command as a runtime task
+ge pipeline plan --usecase account-reconciliation-agent
+ge pipeline run --scenario leave-planning --systems workday,docusign_clm --target-stage preview
+ge fleet repair --ids agent-a,agent-b --target-stage preview
+ge runs job -- ge <args>                  # run a ge command as a background run
 ge state reset --yes                      # destructive: clear local GE state
 ge ledger backfill                        # import legacy run state into the ledger
 ge apply --yes                            # reconcile actual → desired from ge.manifest.json
@@ -955,7 +711,7 @@ the handful that collide with a built-in mise command name (`doctor`, `install`,
 |---|---|
 | `mise run setup` | Install JS + Python/uv deps, sync catalog/skills, put `ge` on PATH, start the daemon |
 | `mise run devex-check` | Run `ge devex check`: local doctor + docs links + workspace manifest contracts |
-| `mise run devex-smoke` | Run `ge devex smoke`: local doctor → local mode → one validated canary workspace |
+| `mise run prove` | Run `ge prove`: local doctor → local mode → one validated canary workspace |
 | `mise run bootstrap [CANARY=1]` | End-to-end: toolchain + `ge init` + `ge up`. `CANARY=1` also builds one agent. Needs `GEMINI_ENTERPRISE_APP_ID` + gcloud auth |
 | `mise run all` | Alias for `bootstrap` |
 | `mise run deps` / `mise run data-runtime` / `mise run deps-terraform` | Toolchain pieces: uv + agents-cli + `.venv` (google-antigravity); Snowfakery runtime; terraform |

@@ -7,7 +7,7 @@
 
 ## Context
 
-`ge agents build` (remote) and `ge agents ship` work, but the orchestrator lives on
+`ge agents build` (remote) and `ge handoff agents-cli` work, but the orchestrator lives on
 the operator's machine. Tracing the current path:
 
 - **Laptop is in the critical path.** Remote build spawns `gcloud run services proxy`

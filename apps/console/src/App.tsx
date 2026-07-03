@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/query";
 import { Sidebar } from "./components/shell/Sidebar";
 import { TopBar } from "./components/shell/TopBar";
+import { PositionBand } from "./components/shell/PositionBand";
 import { CommandPalette } from "./components/shell/CommandPalette";
 import { Breadcrumbs } from "./components/shell/Breadcrumbs";
 import { JobToast } from "./components/JobToast";
@@ -39,10 +40,6 @@ interface ParsedRoute {
   params: Record<string, string>;
 }
 
-// Pre-consolidation hashes keep working: old bookmarks and deep links land on
-// the canonical route (journey → pipeline, autopilot → repair).
-const LEGACY_ROUTES: Record<string, Route> = { journey: "pipeline", autopilot: "repair" };
-
 function parseHash(hash: string): ParsedRoute {
   // Strip "#/" and any "?query" — filters live in the query (see useUrlState) and
   // must not affect route matching.
@@ -55,7 +52,7 @@ function parseHash(hash: string): ParsedRoute {
     const usecaseId = decodeURIComponent(path.slice("spec-review/".length));
     return { route: "spec-review", params: { usecaseId } };
   }
-  return { route: LEGACY_ROUTES[path] ?? (path as Route), params: {} };
+  return { route: path as Route, params: {} };
 }
 
 export default function App() {
@@ -134,6 +131,10 @@ export default function App() {
         onModeChange={handleModeChange}
         onOpenPalette={() => setPaletteOpen(true)}
       />
+
+      {/* Golden-path position: capture → prove → handoff, server-derived
+          (GET /api/ge/position). Hides itself when the API is unavailable. */}
+      <PositionBand />
 
       {error && (
         <div className="px-6 py-2 bg-status-warning/10 border-b border-status-warning/20 text-status-warning-ink text-xs">

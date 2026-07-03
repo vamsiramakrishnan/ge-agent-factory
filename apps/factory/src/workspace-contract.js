@@ -103,7 +103,7 @@ export function validateWorkspaceManifest(manifest, { workspaceDir = null, stric
     manifest?.schemaVersion === WORKSPACE_SCHEMA_VERSION
       ? `v${WORKSPACE_SCHEMA_VERSION}`
       : `expected v${WORKSPACE_SCHEMA_VERSION}, found ${manifest?.schemaVersion ?? "missing"}`,
-    "regenerate or refresh workspace.json with ge devex smoke --force",
+    "regenerate or refresh workspace.json with ge prove --force",
   ));
   checks.push(check(
     "manifest:purpose",

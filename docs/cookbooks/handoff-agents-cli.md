@@ -35,7 +35,7 @@ run, eval, and deploy with tools they already know.
 
 A compiled, [proven](prove-an-agent.html) workspace. Find its path:
 
-- `ge devex smoke` builds/verifies a canary and prints the workspace id,
+- `ge prove` builds/verifies a canary and prints the workspace id,
   path, manifest, and eval config;
 - `ge state paths` shows the state layout — workspaces live under
   `.ge/factory/workspaces/<id>/`;
@@ -105,7 +105,7 @@ A compiled, [proven](prove-an-agent.html) workspace. Find its path:
    but then the factory's promotion gate and passport artifacts are on you
    to enforce.
 
-   > Prefer `ge agents ship` over a by-hand deploy: it runs the same
+   > Prefer `ge handoff agents-cli` over a by-hand deploy: it runs the same
    > `agents-cli` deploy underneath, plus the promotion gate, tool
    > registration, and Gemini Enterprise publishing.
    {: .note }

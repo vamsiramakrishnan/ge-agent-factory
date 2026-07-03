@@ -42,7 +42,7 @@
  *       `statusCommand`.
  *     - "local-factory-events" — local harness emits a JSONL event log
  *       (`eventLog`) plus generated `artifacts`.
- *     - "runtime-events" — mission-graph runtime events, polled via
+ *     - "runtime-events" — pipeline-graph runtime events, polled via
  *       `statusCommand`.
  *   - `events` (boolean) — whether the command streams structured events.
  *   - `statusCommand` (string, optional) — CLI command to poll status.
@@ -58,6 +58,108 @@
  *       description?: string }
  */
 export const GE_COMMANDS = {
+  // ── the golden path (capture → prove → handoff) ────────────────────────────
+  // Front-door verbs; each delegates to the same core function on every
+  // surface (tools/lib/golden-path.mjs via factory-core). Listed first so
+  // every registry consumer (console command list, generated API reference,
+  // MCP tool listing) leads with them.
+  "capture": {
+    id: "capture",
+    method: null, // no console route: capture IS the console (the Interview)
+    path: null,
+    cli: "ge capture",
+    label: "Capture a contract",
+    summary: "Open the console Interview to capture an agent contract (starts the console if needed); --from registers an existing contract file",
+    risk: "starts-local-workloads",
+    expectedDuration: "under 30s",
+    observability: { mode: "command-output", events: false },
+    requirements: { bins: ["bun"], config: [] },
+    mcp: {
+      tool: "factory_capture",
+      description: "Start the golden path: ensures the console is running and returns the Interview deep link for conversational contract capture (document grounding, contract editing). Optional from=<path> registers an already-captured agent-spec.json with the catalog. Read-mostly: starts a local dev server if one is not already up.",
+      params: {
+        from: { type: "string", optional: true, description: "Path to an agent-spec.json to register" },
+      },
+    },
+    argv: (body = {}) => ["capture", ...(body.from ? ["--from", String(body.from)] : [])],
+  },
+  "prove": {
+    id: "prove",
+    method: "POST",
+    path: "/api/ge/prove",
+    cli: "ge prove",
+    label: "Prove the contracts",
+    summary: "Prove contracts end to end: fresh machine → health check + first agent build; agents built already → rebuild their proof",
+    risk: "starts-local-workloads",
+    expectedDuration: "varies",
+    observability: {
+      mode: "local-factory-events",
+      events: true,
+      eventLog: ".ge/factory/factory-events.jsonl",
+    },
+    requirements: {
+      bins: ["node", "uv"],
+      config: [],
+      localToolchain: true,
+    },
+    mcp: {
+      tool: "factory_prove",
+      description: "Mutating (local): prove the current contracts. Dispatch rule: no local workspaces yet → the fresh-machine proof (health check → one validated workspace from the catalog); workspaces present → rebuild them through the harness to the build boundary (agents build). Returns the proof verdicts; hand off with factory_handoff afterwards.",
+      params: {
+        id: { type: "string", optional: true, description: "Prove one use-case/workspace id" },
+        target: { type: "string", optional: true, description: "Stop at this stage" },
+        force: { type: "boolean", optional: true },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["prove"];
+      if (body.id) argv.push("--id", String(body.id));
+      if (body.target) argv.push("--target", String(body.target));
+      if (body.force) argv.push("--force");
+      return argv;
+    },
+  },
+  "handoff": {
+    id: "handoff",
+    method: "POST",
+    path: "/api/ge/handoff",
+    cli: "ge handoff",
+    label: "Hand off to deploy",
+    summary: "Hand proven agents to a deploy target (agents-cli → Agent Engine → Gemini Enterprise)",
+    risk: "mutates-cloud",
+    expectedDuration: "varies",
+    observability: {
+      mode: "remote-stage-logs",
+      statusCommand: "ge agents status --watch",
+      events: false,
+    },
+    requirements: {
+      bins: ["gcloud"],
+      config: ["project", "gatewayUrl", "dataBucket"],
+      cloudAuth: true,
+      toolPlane: true,
+      shipHandoff: true,
+      bigQueryHard: true,
+    },
+    mcp: {
+      tool: "factory_handoff",
+      description: "Mutating: hand proven, locally-built agents to a deploy target. 'agents-cli' is the supported target today (uploads the prebuilt workspaces, then runs deploy→register→publish remotely). An unsupported target returns a structured what/where/why/fix error, never a stack trace. Poll the resulting cloud run(s) with factory_status.",
+      params: {
+        target: { type: "string", enum: ["agents-cli"], optional: true, description: "Deploy target (default agents-cli)" },
+        ids: { type: "string", optional: true, description: "Comma-separated local workspace ids" },
+        startStage: { type: "string", optional: true },
+        targetStage: { type: "string", optional: true },
+        noProxy: { type: "boolean", optional: true },
+      },
+    },
+    argv: (body = {}) => {
+      const argv = ["handoff", body.target ? String(body.target) : "agents-cli"];
+      if (body.ids) argv.push("--ids", String(body.ids));
+      if (body.startStage) argv.push("--start-stage", String(body.startStage));
+      if (body.targetStage) argv.push("--target-stage", String(body.targetStage));
+      return argv;
+    },
+  },
   "up": {
     id: "up",
     method: "POST",
@@ -140,7 +242,7 @@ export const GE_COMMANDS = {
     },
     mcp: {
       tool: "factory_provision",
-      description: "Mutating: build agents. local=true runs on-machine via the Antigravity harness (stops at the local build boundary; use factory_ship to hand off to the cloud afterwards); otherwise submits directly to the cloud gateway end-to-end. scope: 'canary' | 'all'; or dept/ids. Poll cloud submissions with factory_status.",
+      description: "Mutating: build agents. local=true runs on-machine via the Antigravity harness (stops at the local build boundary; use factory_handoff to hand off to the cloud afterwards); otherwise submits directly to the cloud gateway end-to-end. scope: 'canary' | 'all'; or dept/ids. Poll cloud submissions with factory_status.",
       params: {
         scope: { type: "string", enum: ["canary", "all"], optional: true },
         dept: { type: "string", optional: true },
@@ -195,10 +297,8 @@ export const GE_COMMANDS = {
       return argv.includes("--local") ? argv : [...argv, "--local"];
     },
   },
-  // Registry id stays "mission.run" (a persisted identifier, like the daemon's
-  // wire task kind) — the operator-facing spelling is `ge pipeline run`.
-  "mission.run": {
-    id: "mission.run",
+  "pipeline.run": {
+    id: "pipeline.run",
     method: null,
     path: null,
     cli: "ge pipeline run",
@@ -219,49 +319,6 @@ export const GE_COMMANDS = {
     },
     argv: () => ["pipeline", "run"],
   },
-  "agents.ship": {
-    id: "agents.ship",
-    method: "POST",
-    path: "/api/ge/agents/ship",
-    cli: "ge agents ship",
-    label: "Ship agents",
-    summary: "Upload locally built agents and continue cloud deployment",
-    risk: "mutates-cloud",
-    expectedDuration: "varies",
-    observability: {
-      mode: "remote-stage-logs",
-      statusCommand: "ge agents status --watch",
-      events: false,
-    },
-    requirements: {
-      bins: ["gcloud"],
-      config: ["project", "gatewayUrl", "dataBucket"],
-      cloudAuth: true,
-      toolPlane: true,
-      // Ship-handoff blockers caught live mid-run: the cloud-run-proxy gcloud
-      // component (ship's gateway proxy) + GE_ENABLE_AGENT_PROVISION=true on the
-      // gateway. load_data also needs the BigQuery API (hard, not a soft warn).
-      shipHandoff: true,
-      bigQueryHard: true,
-    },
-    mcp: {
-      tool: "factory_ship",
-      description: "Mutating: hand off agents already built LOCALLY (via factory_provision with local=true) to the cloud: uploads the prebuilt workspaces, then runs deploy→register→publish remotely. Use factory_status afterwards to poll the resulting cloud run(s). Not for agents built directly in the cloud — those go straight through factory_provision.",
-      params: {
-        ids: { type: "string", optional: true },
-        startStage: { type: "string", optional: true },
-        targetStage: { type: "string", optional: true },
-        noProxy: { type: "boolean", optional: true },
-      },
-    },
-    argv: (body = {}) => {
-      const argv = ["agents", "ship"];
-      if (body.ids) argv.push("--ids", String(body.ids));
-      if (body.startStage) argv.push("--start-stage", String(body.startStage));
-      if (body.targetStage) argv.push("--target-stage", String(body.targetStage));
-      return argv;
-    },
-  },
   "agents.sync": {
     id: "agents.sync",
     method: "POST",
@@ -281,7 +338,7 @@ export const GE_COMMANDS = {
     },
     mcp: {
       tool: "factory_sync",
-      description: "Mutating: sync generated agent CODE (not deploy state) to/from git. local=true pushes on-machine harness workspaces (to agentsRepo/remote); otherwise pulls the cloud-built output from GCS into generated-agents/. Distinct from factory_ship, which hands off local builds into the cloud deploy pipeline rather than syncing source.",
+      description: "Mutating: sync generated agent CODE (not deploy state) to/from git. local=true pushes on-machine harness workspaces (to agentsRepo/remote); otherwise pulls the cloud-built output from GCS into generated-agents/. Distinct from factory_handoff, which releases local builds into the cloud deploy pipeline rather than syncing source.",
       params: {
         force: { type: "boolean", optional: true },
         push: { type: "boolean", optional: true },

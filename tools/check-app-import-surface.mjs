@@ -24,8 +24,8 @@ const ROOT = dirname(TOOLS);
 const ALLOWED_PAIRS = new Set([
   "apps/console/src/server/transport-oracle.test.mjs -> tools/lib/state-paths.mjs",
   "apps/console/src/server/transport.mjs -> tools/lib/factory-core.mjs",
-  "apps/console/src/server/transport/autopilot.mjs -> tools/lib/autopilot-runner.mjs",
-  "apps/console/src/server/transport/autopilot.mjs -> tools/lib/factory-core.mjs",
+  "apps/console/src/server/transport/repair.mjs -> tools/lib/repair-runner.mjs",
+  "apps/console/src/server/transport/repair.mjs -> tools/lib/factory-core.mjs",
   "apps/console/src/server/transport/doctor.mjs -> tools/lib/factory-core.mjs",
   "apps/console/src/server/transport/jobs.mjs -> tools/lib/exec-stream.mjs",
   "apps/console/src/server/transport/jobs.mjs -> tools/lib/factory-core.mjs",

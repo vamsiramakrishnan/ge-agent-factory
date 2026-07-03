@@ -1,7 +1,7 @@
 // Pipeline state machine (ADR 0001, phase 4).
 //
 // One authoritative answer to "what should happen next for this work item?",
-// derived purely from (current stage, status, target stage, mode). build / ship /
+// derived purely from (current stage, status, target stage, mode). build / handoff /
 // regenerate stop being bespoke code paths and become transitions over this
 // machine; the local harness, the remote worker, and the planners all agree on
 // the same ordering and the same next action. Pure and exhaustively testable.
@@ -45,7 +45,7 @@ export function isTerminal({ stage, status } = {}, target) {
 //   none           — at/over target, nothing to do (terminal)
 //   retry          — current stage failed; re-run it
 //   build_local    — advance one local stage on this machine
-//   ship           — local is done to the boundary; hand off to the cloud
+//   handoff        — local is done to the boundary; hand off to the cloud
 //   advance_remote — let the cloud worker advance the next stage (remote mode)
 export function planWorkItem({ stage = "planned", status = "pending" } = {}, { targetStage = "published", mode = "local" } = {}) {
   const current = stage || "planned";
@@ -69,7 +69,7 @@ export function planWorkItem({ stage = "planned", status = "pending" } = {}, { t
     return { ...base, action: "build_local", nextStage: next, owner, terminal: false, reason: `build → ${next} on this machine` };
   }
   // local mode, next stage is past the build boundary → must ship to the cloud
-  return { ...base, action: "ship", nextStage: next, owner, terminal: false, reason: `past build boundary — ship to cloud for ${next}` };
+  return { ...base, action: "handoff", nextStage: next, owner, terminal: false, reason: `past build boundary — hand off to the cloud for ${next}` };
 }
 
 // A reset (regenerate) transition: wind a work item back to `created` so the

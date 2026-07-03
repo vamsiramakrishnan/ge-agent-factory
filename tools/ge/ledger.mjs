@@ -1,7 +1,7 @@
 // tools/ge/ledger.mjs — `ge ledger backfill|runs|fleet|plan` (durable run
 // ledger, ADR 0001). Moved verbatim out of tools/ge.mjs.
 import { defineCommand } from "citty";
-import { guarded, common, emit, out, pc, core } from "./shared.mjs";
+import { guarded, common, emit, out, pc, ui, core, statusText } from "./shared.mjs";
 
 const ledgerBackfill = defineCommand({
   meta: { name: "backfill", description: "Import legacy run state (.ge-state.json + factory-run-*.json) into the durable ledger" },
@@ -9,8 +9,8 @@ const ledgerBackfill = defineCommand({
   run: guarded(async ({ args }) => {
     const res = await core.ledgerBackfillFromDisk();
     emit(args, res, (r) => {
-      if (r.note) { out(pc.yellow(`▲ ${r.note}`)); return; }
-      out(pc.green(`✓ ledger backfill: ${r.runs} run(s), ${r.items} work item(s) imported`));
+      if (r.note) { out(`${ui.glyph("warning")} ${pc.yellow(r.note)}`); return; }
+      out(`${ui.glyph("passed")} ${pc.green(`ledger backfill: ${r.runs} run(s), ${r.items} work item(s) imported`)}`);
     });
   }),
 });
@@ -21,9 +21,14 @@ const ledgerRunsCmd = defineCommand({
     const res = await core.ledgerRuns({ limit: Number(args.limit || 25) });
     emit(args, res, (runs) => {
       if (!runs.length) { out(pc.dim("no runs in the ledger yet — run a build, or `ge ledger backfill`")); return; }
-      for (const run of runs) {
-        out(`${pc.cyan(run.id)}  ${String(run.mode).padEnd(6)} ${String(run.status).padEnd(8)} ${run.selected} item(s)${run.failed ? pc.red(` · ${run.failed} failed`) : ""}  ${pc.dim(run.updatedAt || "")}`);
-      }
+      out(ui.title("Ledger Runs"));
+      out(ui.columns(runs, [
+        { header: "id", value: (run) => ui.cmd(run.id) },
+        { header: "mode", value: (run) => String(run.mode) },
+        { header: "status", value: (run) => statusText(run.status) },
+        { header: "items", value: (run) => `${run.selected} item(s)${run.failed ? pc.red(` · ${run.failed} failed`) : ""}` },
+        { header: "updated", value: (run) => pc.dim(run.updatedAt || "") },
+      ]));
     });
   }),
 });
@@ -34,9 +39,13 @@ const ledgerFleetCmd = defineCommand({
     const res = await core.ledgerFleet();
     emit(args, res, (rows) => {
       if (!rows.length) { out(pc.dim("ledger fleet is empty — run a build, or `ge ledger backfill`")); return; }
-      for (const r of rows.slice(0, Number(args.limit || 50))) {
-        out(`${String(r.status).padEnd(10)} ${pc.cyan(String(r.useCaseId).padEnd(28))} ${pc.dim(r.workspaceId || "")} ${r.stage || ""}`);
-      }
+      out(ui.title("Ledger Fleet"));
+      out(ui.columns(rows.slice(0, Number(args.limit || 50)), [
+        { header: "status", value: (r) => statusText(r.status) },
+        { header: "use case", value: (r) => ui.cmd(String(r.useCaseId)) },
+        { header: "workspace", value: (r) => pc.dim(r.workspaceId || "") },
+        { header: "stage", value: (r) => r.stage || "" },
+      ]));
     });
   }),
 });
@@ -47,11 +56,14 @@ const ledgerPlanCmd = defineCommand({
     const res = await core.ledgerPlan({ targetStage: args.target || "previewed", mode: args.mode || null });
     emit(args, res, (rows) => {
       if (!rows.length) { out(pc.dim("nothing in the ledger to plan — run a build, or `ge ledger backfill`")); return; }
-      for (const r of rows) {
-        const tag = r.action === "none" ? pc.green("none") : r.action === "retry" ? pc.red(r.action) : pc.cyan(r.action);
-        out(`${tag.padEnd(22)} ${pc.dim(String(r.useCaseId).padEnd(28))} ${r.currentStage} → ${r.nextStage || "—"}  ${pc.dim(r.reason)}`);
-      }
-      if (rows.some((r) => r.action !== "none")) out(pc.dim("\n  next: ge agents resume   (fold this plan into executable commands; --run to execute)"));
+      out(ui.title("Ledger Plan"));
+      out(ui.columns(rows, [
+        { header: "action", value: (r) => (r.action === "none" ? pc.green("none") : r.action === "retry" ? pc.red(r.action) : ui.cmd(r.action)) },
+        { header: "use case", value: (r) => pc.dim(String(r.useCaseId)) },
+        { header: "stage", value: (r) => `${r.currentStage} → ${r.nextStage || "—"}` },
+        { header: "reason", value: (r) => pc.dim(r.reason) },
+      ]));
+      if (rows.some((r) => r.action !== "none")) out(ui.next("ge agents resume", "fold this plan into executable commands; --run to execute"));
     });
   }),
 });

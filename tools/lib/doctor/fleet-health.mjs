@@ -35,13 +35,13 @@ function firstBlocker(blockers = []) {
   };
 }
 
-function stageFromMissionNode(node = {}) {
+function stageFromPipelineNode(node = {}) {
   const kind = node.kind || node.runtimeKind || "";
   if (kind === "harness.run") return "spec";
   if (kind === "mock.generate" || kind === "snowfakery.generate") return "data";
   if (kind === "simulator.seed" || kind === "simulator.validate") return "simulator";
   if (kind === "agent.build" || node.id === "factory.build") return "build";
-  if (kind === "autopilot.run" || node.id === "autopilot.converge") return "preview";
+  if (kind === "repair.run" || node.id === "repair.converge") return "preview";
   if (kind === "doctor" || kind === "doctor.gate") return "eval";
   return "build";
 }
@@ -63,9 +63,9 @@ function statusForAgent(agent = {}) {
 function ownerFor({ healthStatus, nextAction, blocker } = {}) {
   const action = String(nextAction || "");
   const blockerId = String(blocker?.id || "");
-  if (action === "ship" || action === "deploy" || action.includes("ship")) return "factory";
+  if (action === "handoff" || action === "deploy" || action.includes("handoff")) return "factory";
   if (healthStatus === "ready") return "none";
-  if (action.includes("resume") || action.includes("rerun") || action.includes("repair")) return "autopilot";
+  if (action.includes("resume") || action.includes("rerun") || action.includes("repair")) return "repair";
   if (/schema|spec|eval|code|simulator|mapping/.test(blockerId)) return "antigravity";
   if (/auth|project|credential|iam|gateway|secret|terraform/.test(blockerId)) return "user";
   if (healthStatus === "missing") return "factory";
@@ -75,33 +75,33 @@ function ownerFor({ healthStatus, nextAction, blocker } = {}) {
 function actionPlanFor(agent = {}) {
   if (agent.healthStatus === "ready" && agent.stage === "deploy" && agent.workspaceId) {
     return {
-      kind: "ship_agents",
-      label: "Ship",
+      kind: "handoff_agents",
+      label: "Handoff",
       owner: "factory",
       safeToRun: true,
       agentIds: [agent.id],
       workspaceIds: [agent.workspaceId],
-      commands: [`ge agents ship --ids ${agent.workspaceId}`],
+      commands: [`ge handoff agents-cli --ids ${agent.workspaceId}`],
     };
   }
   if (agent.healthStatus === "ready") {
     return { kind: "none", label: "No action", owner: "none", safeToRun: false, commands: [] };
   }
-  if (agent.source === "mission" && agent.runtimeTaskId) {
+  if (agent.source === "pipeline" && agent.runtimeTaskId) {
     return {
-      kind: "resume_mission",
-      label: "Resume Mission",
+      kind: "resume_pipeline",
+      label: "Resume Pipeline",
       owner: agent.owner || "runtime",
       safeToRun: true,
       taskId: agent.runtimeTaskId,
       commands: [`ge runs resume ${agent.runtimeTaskId}`],
     };
   }
-  if (agent.source === "autopilot" && agent.runtimeTaskId) {
+  if (agent.source === "repair" && agent.runtimeTaskId) {
     return {
-      kind: "resume_autopilot",
+      kind: "resume_repair",
       label: "Resume Repair",
-      owner: "autopilot",
+      owner: "repair",
       safeToRun: true,
       taskId: agent.runtimeTaskId,
       commands: [`ge runs resume ${agent.runtimeTaskId}`],
@@ -129,7 +129,7 @@ function actionPlanFor(agent = {}) {
   return {
     kind: "repair_agent",
     label: agent.owner === "antigravity" ? "Repair with Antigravity" : "Repair",
-    owner: agent.owner || "autopilot",
+    owner: agent.owner || "repair",
     safeToRun: true,
     agentIds: [agent.id],
     commands: [`ge fleet repair --ids ${agent.id} --target-stage preview`],
@@ -143,7 +143,7 @@ function baseHealth(agent) {
     ? "repair"
     : agent.status === "none"
       ? "build"
-      : agent.workspaceId ? "ship" : "none";
+      : agent.workspaceId ? "handoff" : "none";
   const healthStatus = statusForAgent(agent);
   const projected = {
     ...agent,
@@ -157,9 +157,9 @@ function baseHealth(agent) {
   return { ...projected, actionPlan: actionPlanFor(projected) };
 }
 
-function applyAutopilotRuns(byAgent, runs) {
+function applyRepairRuns(byAgent, runs) {
   for (const run of runs) {
-    if (run.kind !== "autopilot.run") continue;
+    if (run.kind !== "repair.run") continue;
     const items = run.output?.items || [];
     for (const item of items) {
       const current = byAgent.get(item.agentId);
@@ -177,7 +177,7 @@ function applyAutopilotRuns(byAgent, runs) {
         runId: item.runId || current.runId,
         runtimeTaskId: run.id,
         runtimeUpdatedAt: run.updatedAt,
-        source: "autopilot",
+        source: "repair",
       };
       byAgent.set(item.agentId, { ...projected, actionPlan: actionPlanFor(projected) });
     }
@@ -202,10 +202,10 @@ function staleBlockedParent(run = {}, runsById = new Map()) {
   return !BLOCKED.has(child.status);
 }
 
-function applyMissionRuns(byAgent, runs) {
+function applyPipelineRuns(byAgent, runs) {
   const runsById = new Map(runs.map((run) => [run.id, run]));
   for (const run of runs) {
-    if (run.kind !== "mission.run") continue;
+    if (run.kind !== "pipeline.run") continue;
     if (staleBlockedParent(run, runsById)) continue;
     const graph = run.output?.graph || run.graph;
     const blockedNode = (graph?.nodes || []).find((node) => BLOCKED.has(node.status));
@@ -215,18 +215,18 @@ function applyMissionRuns(byAgent, runs) {
     for (const id of ids) {
       const current = byAgent.get(id);
       if (!current) continue;
-      if (current.source === "autopilot" && current.runtimeUpdatedAt && current.runtimeUpdatedAt >= run.updatedAt) continue;
+      if (current.source === "repair" && current.runtimeUpdatedAt && current.runtimeUpdatedAt >= run.updatedAt) continue;
       if (current.workspaceId && current.localWorkspaceUpdatedAt && String(current.localWorkspaceUpdatedAt) >= String(run.updatedAt || "")) continue;
       const projected = {
         ...current,
-        stage: stageFromMissionNode(blockedNode),
+        stage: stageFromPipelineNode(blockedNode),
         healthStatus: "blocked",
         blocker,
-        nextAction: blockedNode.resumePlan?.nextAction || "resume_mission",
+        nextAction: blockedNode.resumePlan?.nextAction || "resume_pipeline",
         owner: ownerFor({ healthStatus: "blocked", nextAction: blockedNode.resumePlan?.nextAction, blocker }),
         runtimeTaskId: run.id,
         runtimeUpdatedAt: run.updatedAt,
-        source: "mission",
+        source: "pipeline",
       };
       byAgent.set(id, { ...projected, actionPlan: actionPlanFor(projected) });
     }
@@ -267,8 +267,8 @@ function bottlenecks(agents) {
 export function buildFleetHealth(fleet, { repoRoot = resolve(".", ".") } = {}) {
   const runs = runtimeRuns(repoRoot);
   const byAgent = new Map((fleet.agents || []).map((agent) => [agent.id, baseHealth(agent)]));
-  applyAutopilotRuns(byAgent, runs);
-  applyMissionRuns(byAgent, runs);
+  applyRepairRuns(byAgent, runs);
+  applyPipelineRuns(byAgent, runs);
   const agents = [...byAgent.values()].map((agent) => ({ ...agent, actionPlan: actionPlanFor(agent) }));
   const byStage = Object.fromEntries(STAGES.map((stage) => [stage, 0]));
   for (const agent of agents) byStage[agent.stage || "spec"] = (byStage[agent.stage || "spec"] || 0) + 1;

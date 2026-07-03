@@ -4,9 +4,7 @@ import { validateTaskCreate } from "./task-schemas.mjs";
 
 // The daemon's HTTP contract, tested hermetically: createDaemonApp is a pure
 // route table over injected deps, so app.fetch() exercises routing, zod
-// validation, kind normalization, and SSE framing without a port or a store.
-
-const WIRE_ALIASES = { "pipeline.run": "mission.run", "repair.run": "autopilot.run" };
+// validation, and SSE framing without a port or a store.
 
 function makeApp({ events = [], run = { id: "t-1", status: "done" } } = {}) {
   const calls = [];
@@ -18,12 +16,11 @@ function makeApp({ events = [], run = { id: "t-1", status: "done" } } = {}) {
     normalizedTaskDetail: (r) => r,
     readRun: (id) => (id === run.id ? run : null),
     listSequencedEvents: () => events,
-    wireTaskKind: (kind) => WIRE_ALIASES[kind] || kind,
     startGeCommandTask: (input) => { calls.push(["ge.command", input]); return { id: "job-1", kind: "ge.command" }; },
     startProcessCommandTask: (input) => { calls.push(["process.command", input]); return { id: "p-1" }; },
     startHarnessRunTask: (input) => { calls.push(["harness.run", input]); return { id: "h-1" }; },
-    startMissionTask: async (input) => { calls.push(["mission.run", input]); return { id: "m-1", kind: "mission.run" }; },
-    startAutopilotTask: async (input) => { calls.push(["autopilot.run", input]); return { id: "a-1", kind: "autopilot.run" }; },
+    startPipelineTask: async (input) => { calls.push(["pipeline.run", input]); return { id: "m-1", kind: "pipeline.run" }; },
+    startRepairTask: async (input) => { calls.push(["repair.run", input]); return { id: "a-1", kind: "repair.run" }; },
     startDoctorTask: (input) => ({ id: "d-1", ...input }),
     submitInteractionResponse: () => ({ status: 200, body: { ok: true } }),
     resumeTask: async (id) => ({ status: 202, body: { id, resumed: true } }),
@@ -59,17 +56,21 @@ describe("daemon http app", () => {
     expect((await res.json()).error).toContain("unsupported task kind");
   });
 
-  test("canonical kinds normalize to wire kinds (pipeline.run → mission.run, repair.run → autopilot.run)", async () => {
+  test("pipeline.run and repair.run dispatch to their start functions", async () => {
     const { app, calls } = makeApp();
     expect((await post(app, "/api/tasks", { kind: "pipeline.run", scenario: "s" })).status).toBe(202);
     expect((await post(app, "/api/tasks", { kind: "repair.run", ids: ["a"] })).status).toBe(202);
-    expect(calls.map(([kind]) => kind)).toEqual(["mission.run", "autopilot.run"]);
+    expect(calls.map(([kind]) => kind)).toEqual(["pipeline.run", "repair.run"]);
   });
 
-  test("legacy kinds keep working verbatim", async () => {
+  test("retired legacy kinds are rejected, not aliased", async () => {
     const { app, calls } = makeApp();
-    expect((await post(app, "/api/tasks", { kind: "mission.run", scenario: "s" })).status).toBe(202);
-    expect(calls[0][0]).toBe("mission.run");
+    for (const kind of ["mission.run", "autopilot.run"]) {
+      const res = await post(app, "/api/tasks", { kind, scenario: "s" });
+      expect(res.status).toBe(400);
+      expect((await res.json()).error).toContain("unsupported task kind");
+    }
+    expect(calls).toHaveLength(0);
   });
 
   test("unknown task id is a 404", async () => {
@@ -111,12 +112,12 @@ describe("task schemas", () => {
     expect(validateTaskCreate("ge.command", { argv: ["doctor"] }).ok).toBe(true);
   });
   test("extra fields pass through (newer client, older daemon)", () => {
-    const checked = validateTaskCreate("autopilot.run", { ids: ["a"], futureField: 1 });
+    const checked = validateTaskCreate("repair.run", { ids: ["a"], futureField: 1 });
     expect(checked.ok).toBe(true);
     expect(checked.value.futureField).toBe(1);
   });
   test("wrong types produce readable field errors", () => {
-    const checked = validateTaskCreate("mission.run", { attempts: "three" });
+    const checked = validateTaskCreate("pipeline.run", { attempts: "three" });
     expect(checked.ok).toBe(false);
     expect(checked.error).toContain("attempts");
   });

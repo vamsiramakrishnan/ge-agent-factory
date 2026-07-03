@@ -14,7 +14,7 @@ scope, through generated guardrails, through least-privilege cloud identity,
 to the policy-enforced Agent Gateway.
 
 <p align="center">
-  <img src="../assets/diagrams/signature-pipeline-authority-graph.svg" alt="signature pipeline zoomed to the authority graph, lit; its dashed control edges run from the Enterprise Agent Contract into generate and into handoff, with the rest of the pipeline shown dimmed for context" width="700">
+  <img src="../assets/diagrams/signature-pipeline-authority-graph.svg" alt="the signature capture-to-handoff diagram zoomed to the authority graph, lit; its dashed control edges run from the Enterprise Agent Contract into generate and into handoff, with the rest of the flow shown dimmed for context" width="700">
 </p>
 
 ## Why it exists
@@ -37,7 +37,7 @@ previous one asserted.
 
 Read down the table and you have the whole story: the business writes layer
 1, the factory compiles layers 1→2, Terraform and the installer stand up
-layer 3, and layer 4 governs the fleet as a whole.
+layer 3, and layer 4 governs all your deployed agents as a whole.
 
 ## Layer 2 in one picture: governance is wired in, not bolted on
 
@@ -76,9 +76,10 @@ runs on the default compute service account:
 
 ## Layer 4: the governed front door
 
-Deployed agents call their tools through the MCP tool plane, and that plane
-can be put behind the **managed Agent Gateway** — one mTLS-fronted,
-policy-enforced endpoint governing tool egress for the whole fleet.
+Deployed agents call their tools through the platform's MCP tool services,
+and those can be put behind the **managed Agent Gateway** — one
+mTLS-fronted, policy-enforced endpoint governing tool egress for every
+deployed agent at once.
 *Resolving* a toolset (from the Agent Registry) and *invoking* it are
 separate grants:
 
@@ -93,7 +94,7 @@ operator procedure, not a concept — see
 [Deploy the Agent Gateway](../operations/agent-gateway.html).
 
 <p align="center">
-  <img src="../assets/diagrams/security-mental-model.svg" alt="Three authenticated paths: operator to gateway, Cloud Tasks to worker, and generated agent through the governed Agent Gateway to the MCP plane and per-agent store" width="700">
+  <img src="../assets/diagrams/security-mental-model.svg" alt="Three authenticated paths: operator to gateway, Cloud Tasks to worker, and generated agent through the governed Agent Gateway to the MCP tool services and per-agent store" width="700">
 </p>
 
 ## Where it appears
@@ -103,9 +104,10 @@ operator procedure, not a concept — see
   level (`read-only` → `mutates-cloud`) surfaced in `--json` output and the
   console.
 - **Console:** the contract's scope and rules render in **Spec Review**; the
-  **Readiness** view rolls identity/plane checks into a verdict.
+  **Readiness** view rolls identity and platform-layer checks into a
+  verdict.
 - **Generated artifacts:** `app/agent.py` (callback wiring), `app/tools.py`
-  (tool bindings), `mcp-tools.json` (tool plane bindings), the Agent
+  (tool bindings), `mcp-tools.json` (tool-service bindings), the Agent
   Registry entry after handoff.
 
 ## Related concepts

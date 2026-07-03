@@ -10,8 +10,8 @@ const core = {
   listSpecs: (opts) => ({ kind: "ge.agent_spec.catalog", specs: [{ id: "a1", title: "A1" }], opts }),
   reviewSpec: (opts) => ({ kind: "ge.spec.review", found: true, path: ".ge/interviews/new/agent-spec.json", opts }),
   registerSpec: (opts) => ({ ok: true, id: "new-spec", path: "catalog/interview-specs/new-spec.json", opts }),
-  journeyPlan: (_c, opts) => ({ kind: "ge.journey.plan", input: opts, stages: [] }),
-  missionPlan: (_c, opts) => ({ kind: "ge.factory_autopilot.mission", target: { requested: opts.targetStage }, summary: { selected: 1 } }),
+  pipelinePlan: (_c, opts) => ({ kind: "ge.pipeline.plan", input: opts, stages: [] }),
+  pipelineGraphPlan: (_c, opts) => ({ kind: "ge.factory_repair.pipeline", target: { requested: opts.targetStage }, summary: { selected: 1 } }),
   listFactoryRuns: (_c, opts) => ({ kind: "ge.factory.runs", runs: [{ id: "factory-run-1" }], opts }),
   ledgerRuns: async () => [{ id: "local-1" }],
   ledgerRun: async (id) => (id === "local-1" ? { id: "local-1", status: "done" } : null),
@@ -19,11 +19,22 @@ const core = {
   workspaceRepair: (_c, opts) => ({ ok: true, workspace: opts.id, stage: opts.stage, attempts: [], finalDoctor: { ok: true, blockers: [], repairTasks: [] } }),
   fleetStatus: async () => ({ total: 2, byDept: {}, byStatus: {}, agents: [{ id: "a1" }, { id: "a2" }] }),
   setMode: (m) => ({ mode: m }),
-  ship: async () => ({ submitted: 1 }),
   applyPlan: async () => ({ kind: "ge.apply.plan", drift: [] }),
   tailLog: (_c, opts) => ({ found: true, runId: opts.runId, lines: [] }),
   readArtifact: (_c, opts) => ({ found: true, name: opts.name, content: "" }),
   resolveCatalogId: async () => null,
+  // Same contract as tools/lib/golden-path.mjs's goldenPathPosition (re-exported
+  // by factory-core): three fixed stages + current/blocker/next.
+  goldenPathPosition: async (_cfg, { haveConfig = true, operateNext = null } = {}) => ({
+    stages: [
+      { id: "capture", done: true, detail: "1 contract(s) captured" },
+      { id: "prove", done: false, detail: "no proof built yet" },
+      { id: "handoff", done: false, detail: "nothing handed off yet" },
+    ],
+    current: "prove",
+    blocker: haveConfig ? null : "no project configured",
+    next: haveConfig ? (operateNext || "ge prove") : "ge init",
+  }),
 };
 
 test("GET status", async () => {
@@ -92,7 +103,7 @@ test("runtime node middleware proxies task starts to daemon", async () => {
   process.env.GE_DAEMON_PORT = "18764";
   globalThis.fetch = async (_url, init) => {
     received = JSON.parse(String(init?.body || "{}"));
-    return new Response(JSON.stringify({ id: "mission-1", kind: received.kind, status: "running" }), {
+    return new Response(JSON.stringify({ id: "pipeline-1", kind: received.kind, status: "running" }), {
       status: 202,
       headers: { "content-type": "application/json" },
     });
@@ -103,7 +114,7 @@ test("runtime node middleware proxies task starts to daemon", async () => {
     url: "/api/runtime/tasks",
     on() {},
     async *[Symbol.asyncIterator]() {
-      yield Buffer.from(JSON.stringify({ kind: "mission.run", scenario: "benefits-enrollment", systems: ["workday"] }));
+      yield Buffer.from(JSON.stringify({ kind: "pipeline.run", scenario: "benefits-enrollment", systems: ["workday"] }));
     },
   };
   const chunks = [];
@@ -128,9 +139,9 @@ test("runtime node middleware proxies task starts to daemon", async () => {
   };
   try {
     await handleGeNodeRequest(req, res, () => { throw new Error("should not fall through"); });
-    expect(received).toEqual({ kind: "mission.run", scenario: "benefits-enrollment", systems: ["workday"] });
+    expect(received).toEqual({ kind: "pipeline.run", scenario: "benefits-enrollment", systems: ["workday"] });
     expect(res.statusCode).toBe(202);
-    expect(JSON.parse(chunks[0]).id).toBe("mission-1");
+    expect(JSON.parse(chunks[0]).id).toBe("pipeline-1");
   } finally {
     if (previousPort === undefined) delete process.env.GE_DAEMON_PORT;
     else process.env.GE_DAEMON_PORT = previousPort;
@@ -187,6 +198,48 @@ test("runtime node middleware proxies daemon status", async () => {
     globalThis.fetch = previousFetch;
   }
 });
+test("GET position returns the golden-path position contract", async () => {
+  const r = await handleGeApi({ method: "GET", path: "/api/ge/position", query: {}, body: null }, core);
+  expect(r.status).toBe(200);
+  expect(r.json.stages.map((s) => s.id)).toEqual(["capture", "prove", "handoff"]);
+  for (const stage of r.json.stages) {
+    expect(typeof stage.done).toBe("boolean");
+    expect(typeof stage.detail).toBe("string");
+  }
+  expect(["capture", "prove", "handoff"]).toContain(r.json.current);
+  // The mock statusBoard has no project → the route mirrors bare `ge`:
+  // haveConfig=false means the next command is `ge init` and a blocker is set.
+  expect(r.json.next).toBe("ge init");
+  expect(r.json.blocker).toBe("no project configured");
+});
+
+test("GET position derives haveConfig/operateNext from the status board (tools/ge.mjs parity)", async () => {
+  const seen = [];
+  const positionCore = {
+    ...core,
+    statusBoard: () => ({ mode: "remote", planes: [], next: "ge up", project: "p" }),
+    goldenPathPosition: async (_cfg, opts) => {
+      seen.push(opts);
+      return { stages: [], current: "handoff", blocker: null, next: opts.operateNext };
+    },
+  };
+  const r = await handleGeApi({ method: "GET", path: "/api/ge/position", query: {}, body: null }, positionCore);
+  expect(r.status).toBe(200);
+  expect(seen).toEqual([{ haveConfig: true, operateNext: "ge up" }]);
+  expect(r.json.next).toBe("ge up");
+});
+
+test("POST prove and handoff flow through the registry commandForRoute handler", async () => {
+  const prove = await handleGeApi({ method: "POST", path: "/api/ge/prove", query: {}, body: { id: "a1", force: true } }, core);
+  expect(prove.job).toEqual(["prove", "--id", "a1", "--force"]);
+  expect(prove.command.id).toBe("prove");
+  expect(prove.command.cli).toBe("ge prove");
+  const handoff = await handleGeApi({ method: "POST", path: "/api/ge/handoff", query: {}, body: {} }, core);
+  expect(handoff.job).toEqual(["handoff", "agents-cli"]);
+  expect(handoff.command.id).toBe("handoff");
+  expect(handoff.command.cli).toBe("ge handoff");
+});
+
 test("GET commands returns mutating command registry metadata", async () => {
   const r = await handleGeApi({ method: "GET", path: "/api/ge/commands", query: {}, body: null }, core);
   expect(r.status).toBe(200);
@@ -249,16 +302,16 @@ test("GET workspaces/:id/doctor returns workspace gate report", async () => {
   expect(r.json.workspace).toBe("ws-1");
   expect(r.json.stage).toBe("preview");
 });
-test("GET mission returns factory/autopilot contract", async () => {
-  const r = await handleGeApi({ method: "GET", path: "/api/ge/mission", query: { ids: "a1", targetStage: "deploy:plan" }, body: null }, core);
+test("GET pipeline/graph returns the factory/repair pipeline contract", async () => {
+  const r = await handleGeApi({ method: "GET", path: "/api/ge/pipeline/graph", query: { ids: "a1", targetStage: "deploy:plan" }, body: null }, core);
   expect(r.status).toBe(200);
-  expect(r.json.kind).toBe("ge.factory_autopilot.mission");
+  expect(r.json.kind).toBe("ge.factory_repair.pipeline");
   expect(r.json.target.requested).toBe("deploy:plan");
 });
-test("GET journey returns the user-facing pipeline contract", async () => {
-  const r = await handleGeApi({ method: "GET", path: "/api/ge/journey", query: { scenario: "benefits", spec: ".ge/interviews/benefits/agent-spec.json", systems: "workday,sap", ids: "a1" }, body: null }, core);
+test("GET pipeline/plan returns the user-facing pipeline contract", async () => {
+  const r = await handleGeApi({ method: "GET", path: "/api/ge/pipeline/plan", query: { scenario: "benefits", spec: ".ge/interviews/benefits/agent-spec.json", systems: "workday,sap", ids: "a1" }, body: null }, core);
   expect(r.status).toBe(200);
-  expect(r.json.kind).toBe("ge.journey.plan");
+  expect(r.json.kind).toBe("ge.pipeline.plan");
   expect(r.json.input).toMatchObject({ scenario: "benefits", spec: ".ge/interviews/benefits/agent-spec.json", systems: ["workday", "sap"], ids: ["a1"] });
 });
 test("POST workspaces/:id/repair runs workspace repair", async () => {
@@ -267,18 +320,18 @@ test("POST workspaces/:id/repair runs workspace repair", async () => {
   expect(r.json.ok).toBe(true);
   expect(r.json.workspace).toBe("ws-1");
 });
-test("GET autopilot list and detail return sentinels", async () => {
-  const list = await handleGeApi({ method: "GET", path: "/api/ge/autopilot", query: { limit: "5" }, body: null }, core);
-  expect(list.autopilotList.limit).toBe("5");
-  const detail = await handleGeApi({ method: "GET", path: "/api/ge/autopilot/auto-1", query: {}, body: null }, core);
-  expect(detail.autopilotGet).toBe("auto-1");
+test("GET repair list and detail return sentinels", async () => {
+  const list = await handleGeApi({ method: "GET", path: "/api/ge/repair", query: { limit: "5" }, body: null }, core);
+  expect(list.repairList.limit).toBe("5");
+  const detail = await handleGeApi({ method: "GET", path: "/api/ge/repair/repair-1", query: {}, body: null }, core);
+  expect(detail.repairGet).toBe("repair-1");
 });
-test("POST autopilot start and resume return sentinels", async () => {
-  const start = await handleGeApi({ method: "POST", path: "/api/ge/autopilot", query: {}, body: { ids: ["a1"], targetStage: "preview", repair: true } }, core);
-  expect(start.autopilotStart.ids).toEqual(["a1"]);
-  expect(start.autopilotStart.targetStage).toBe("preview");
-  const resume = await handleGeApi({ method: "POST", path: "/api/ge/autopilot/auto-1/resume", query: {}, body: {} }, core);
-  expect(resume.autopilotResume.id).toBe("auto-1");
+test("POST repair start and resume return sentinels", async () => {
+  const start = await handleGeApi({ method: "POST", path: "/api/ge/repair", query: {}, body: { ids: ["a1"], targetStage: "preview", repair: true } }, core);
+  expect(start.repairStart.ids).toEqual(["a1"]);
+  expect(start.repairStart.targetStage).toBe("preview");
+  const resume = await handleGeApi({ method: "POST", path: "/api/ge/repair/repair-1/resume", query: {}, body: {} }, core);
+  expect(resume.repairResume.id).toBe("repair-1");
 });
 test("GET jobs returns job list sentinel", async () => {
   const r = await handleGeApi({ method: "GET", path: "/api/ge/jobs", query: { limit: "10" }, body: null }, core);
@@ -350,7 +403,7 @@ test("POST agents/sync passes selected ids and target repo to CLI job", async ()
 });
 test("readonly gate blocks POST", async () => {
   process.env.GE_CONSOLE_READONLY = "1";
-  const r = await handleGeApi({ method: "POST", path: "/api/ge/agents/ship", query: {}, body: { ids: "x" } }, core);
+  const r = await handleGeApi({ method: "POST", path: "/api/ge/handoff", query: {}, body: { ids: "x" } }, core);
   delete process.env.GE_CONSOLE_READONLY;
   expect(r.status).toBe(403);
 });
@@ -374,6 +427,7 @@ const ROUTE_MATRIX = [
   // the old dispatch matched parts[2] only — deeper paths still hit statusBoard
   { method: "GET", path: "/api/ge/status/extra", known: true },
   { method: "GET", path: "/api/ge/commands", known: true },
+  { method: "GET", path: "/api/ge/position", known: true },
   { method: "GET", path: "/api/ge/specs", known: true },
   { method: "GET", path: "/api/ge/specs/review", known: true },
   { method: "GET", path: "/api/ge/doctor", known: true },
@@ -384,8 +438,8 @@ const ROUTE_MATRIX = [
   { method: "GET", path: "/api/ge/ledger/runs", known: true },
   { method: "GET", path: "/api/ge/ledger/runs/local-1", known: true },
   { method: "GET", path: "/api/ge/ledger/runs/local-1/events", known: true },
-  { method: "GET", path: "/api/ge/journey", known: true },
-  { method: "GET", path: "/api/ge/mission", known: true },
+  { method: "GET", path: "/api/ge/pipeline/plan", known: true },
+  { method: "GET", path: "/api/ge/pipeline/graph", known: true },
   { method: "GET", path: "/api/ge/agents/a2", known: true },
   { method: "GET", path: "/api/ge/workspaces/ws-1/doctor", known: true },
   { method: "GET", path: "/api/ge/logs/run-1", known: true },
@@ -395,21 +449,24 @@ const ROUTE_MATRIX = [
   { method: "GET", path: "/api/ge/jobs", known: true },
   { method: "GET", path: "/api/ge/jobs/j1", known: true },
   { method: "GET", path: "/api/ge/jobs/j1/logs", known: true },
-  { method: "GET", path: "/api/ge/autopilot", known: true },
-  { method: "GET", path: "/api/ge/autopilot/auto-1", known: true },
-  { method: "GET", path: "/api/ge/autopilot/auto-1/events", known: true },
+  { method: "GET", path: "/api/ge/repair", known: true },
+  { method: "GET", path: "/api/ge/repair/repair-1", known: true },
+  { method: "GET", path: "/api/ge/repair/repair-1/events", known: true },
   { method: "POST", path: "/api/ge/mode", known: true },
   { method: "POST", path: "/api/ge/specs/register", known: true },
   { method: "POST", path: "/api/ge/workspaces/ws-1/repair", known: true },
-  { method: "POST", path: "/api/ge/autopilot", known: true },
-  { method: "POST", path: "/api/ge/autopilot/auto-1/resume", known: true },
+  { method: "POST", path: "/api/ge/repair", known: true },
+  { method: "POST", path: "/api/ge/repair/repair-1/resume", known: true },
   { method: "POST", path: "/api/ge/up", known: true },
   { method: "POST", path: "/api/ge/data/up", known: true },
   { method: "POST", path: "/api/ge/mcp/deploy", known: true },
   { method: "POST", path: "/api/ge/agents/build", known: true },
-  { method: "POST", path: "/api/ge/agents/ship", known: true },
   { method: "POST", path: "/api/ge/agents/sync", known: true },
   { method: "POST", path: "/api/ge/daemon/start", known: true },
+  // Golden-path verbs (registry-driven POST routes via commandForRoute).
+  { method: "POST", path: "/api/ge/prove", known: true },
+  { method: "POST", path: "/api/ge/handoff", known: true },
+  { method: "POST", path: "/api/ge/position", known: false },
   // unknown — 404, exactly as the old if-chain + isKnownRoute pair behaved
   { method: "GET", path: "/api/ge/nope", known: false },
   { method: "GET", path: "/api/ge/mode", known: false },
@@ -417,12 +474,14 @@ const ROUTE_MATRIX = [
   { method: "GET", path: "/api/ge/agents", known: false },
   { method: "GET", path: "/api/ge/workspaces/ws-1", known: false },
   { method: "GET", path: "/api/ge/jobs/j1/nope", known: false },
-  { method: "GET", path: "/api/ge/autopilot/auto-1/nope", known: false },
-  { method: "POST", path: "/api/ge/autopilot/auto-1", known: false },
+  { method: "GET", path: "/api/ge/repair/repair-1/nope", known: false },
+  { method: "POST", path: "/api/ge/repair/repair-1", known: false },
   { method: "GET", path: "/api/ge/artifacts/run-1/item-1", known: false },
   { method: "GET", path: "/api/ge/runs/run-1", known: false },
   { method: "POST", path: "/api/ge/agents/nope", known: false },
-  { method: "POST", path: "/api/ge/journey", known: false },
+  { method: "POST", path: "/api/ge/agents/ship", known: false },
+  { method: "POST", path: "/api/ge/pipeline/plan", known: false },
+  { method: "GET", path: "/api/ge/pipeline", known: false },
 ];
 
 test("route matrix: known/unknown 404 parity with the pre-table dispatch", async () => {

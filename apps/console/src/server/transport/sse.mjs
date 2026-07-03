@@ -1,4 +1,4 @@
-// Shared SSE-writer plumbing for the five console transports (jobs, autopilot,
+// Shared SSE-writer plumbing for the five console transports (jobs, repair,
 // doctor, ledger, logs). Verbatim move from transport.mjs.
 
 // SSE reconnect support.

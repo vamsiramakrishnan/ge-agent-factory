@@ -114,7 +114,7 @@ async function main() {
     // dots, aurora background blobs) *after* the slide transition has
     // already completed — added only now because doing this before the
     // transition interferes with the transition itself. Verified by running
-    // this script twice and diffing checksums (see mission notes).
+    // this script twice and diffing checksums (see the capture notes).
     await page.addStyleTag({
       content: "*, *::before, *::after { animation: none !important; transition: none !important; }",
     });

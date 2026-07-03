@@ -43,6 +43,8 @@ import { createWorkspaceDoctorOps } from "./doctor/workspace.mjs";
 import { createFleetOps } from "./fleet-ops.mjs";
 import { createApplyOps } from "./apply-ops.mjs";
 import { createRemoteRunOps } from "./remote-run-ops.mjs";
+import { DxError } from "./errors/dx-error.mjs";
+import { createGoldenPathOps } from "./golden-path.mjs";
 
 export {
   selectionDepartments,
@@ -93,7 +95,11 @@ const gcloud = (args, opts) => run("gcloud", args, opts);
 export function ensureBin(bin, hint) {
   try { execFileSync(bin, ["--version"], { stdio: "ignore" }); return; } catch { /* best-effort: probe; fall through to -version then the not-found error */ }
   try { execFileSync(bin, ["-version"], { stdio: "ignore" }); return; } catch { /* best-effort: probe; fall through to the not-found error below */ }
-  throw new Error(`${bin} not found on PATH.${hint ? " " + hint : ""}`);
+  throw new DxError(`${bin} not found on PATH.${hint ? " " + hint : ""}`, {
+    where: `toolchain: ${bin}`,
+    why: `this command shells out to ${bin}, which is not installed or not on PATH`,
+    fix: hint || "mise run setup",
+  });
 }
 const ensureGcloud = () => ensureBin("gcloud", "Install the Google Cloud CLI: https://cloud.google.com/sdk/docs/install");
 const ensureTerraform = () => ensureBin("terraform", "Install it: `mise install` (terraform is provisioned via mise.toml's pinned [tools] block; or https://developer.hashicorp.com/terraform/install).");
@@ -161,7 +167,13 @@ export function registerSpec(opts) {
 export async function init(cfg, { log = noop } = {}) {
   ensureGcloud();
   if (!cfg.project) { const r = gcloud(["config", "get-value", "project"], { allowFail: true }); cfg.project = r.ok ? r.out : undefined; }
-  if (!cfg.project) throw new Error("No project. Pass --project or run `gcloud config set project …`.");
+  if (!cfg.project) {
+    throw new DxError("No project. Pass --project or run `gcloud config set project …`.", {
+      where: "config: project (.ge.json / GCP_PROJECT_ID / --project)",
+      why: "init discovers everything else from the project, so it cannot start without one",
+      fix: "ge init --project <your-gcp-project-id>",
+    });
+  }
 
   const tfo = tfOutputs();
   if (Object.keys(tfo).length) log("sourcing config from terraform outputs");
@@ -217,13 +229,13 @@ export function deploy(cfg, { target = "all", log = noop } = {}) {
 // it needs live run/gcloud plus the composed withGateway client.
 export const { status, logs, sync } = createRemoteRunOps({ run, gcloud, ensureGcloud, withGateway });
 
-// Fleet/mission/journey planning + run-log/artifact reads (fleetStatus/
-// missionPlan/journeyPlan/tailLog/readArtifact) now live in fleet-ops.mjs;
+// Fleet/pipeline planning + run-log/artifact reads (fleetStatus/
+// pipelineGraphPlan/pipelinePlan/tailLog/readArtifact) now live in fleet-ops.mjs;
 // wired here the same way as the plane modules below, since they need live
 // `gcloud` plus `statusBoard` (which closes over the composed factoryPlane).
 // `statusBoard` is a hoisted function declaration, so referencing it here is
 // safe — it only runs at call time, after the planes below are composed.
-export const { fleetStatus, missionPlan, journeyPlan, tailLog, readArtifact } = createFleetOps({ gcloud, statusBoard });
+export const { fleetStatus, pipelineGraphPlan, pipelinePlan, tailLog, readArtifact } = createFleetOps({ gcloud, statusBoard });
 
 const GEN_DIR = join(REPO_ROOT, "apps/factory");
 const FACTORY_DATA_ROOT = STATE_PATHS.factory.root;
@@ -302,7 +314,7 @@ const doctorPlane = createDoctorPlane({
 export const { commandDoctor, preflightCommand, doctorAll } = doctorPlane;
 export const { localPreflight, ensureHarnessVenv, ensureLocalUv } = doctorPlane;
 
-// provision/provisionLocal/ship/syncLocal/devexCheck/devexSmoke + setMode now live
+// provision/provisionLocal/handoff/syncLocal/devexCheck/firstProof + setMode now live
 // in provision.mjs; wired here for the same reason (live run/gcloud/gateway/ledger
 // access, which only exist once factory-core.mjs composes them).
 const provisionOps = createProvisionOps({
@@ -325,7 +337,21 @@ const provisionOps = createProvisionOps({
   factoryDataRoot: FACTORY_DATA_ROOT,
   genDir: GEN_DIR,
 });
-export const { provision, provisionLocal, setMode, devexSmoke, devexCheck, syncLocal, ship } = provisionOps;
+export const { provision, provisionLocal, setMode, firstProof, devexCheck, syncLocal } = provisionOps;
+
+// The golden-path verbs (capture/prove/handoff + the board's position report)
+// live in golden-path.mjs; wired here — after the provisionOps composition they
+// dispatch through — so the CLI, console, and MCP server all drive the same
+// three functions.
+const goldenPathOps = createGoldenPathOps({
+  repoRoot: REPO_ROOT,
+  firstProof: provisionOps.firstProof,
+  provisionLocal: provisionOps.provisionLocal,
+  provision: provisionOps.provision,
+  handoffRun: provisionOps.handoff,
+  registerSpec,
+});
+export const { capture, prove, handoff, goldenPathPosition } = goldenPathOps;
 
 // Declarative reconcile (applyPlan/applyApply) now lives in apply-ops.mjs; wired
 // here — after the provisionOps composition it executes fleet steps through —
@@ -345,9 +371,21 @@ export function build(cfg, { target, log = noop } = {}) {
 // two-phase image build + doctor (via `up`).
 export async function cutover(cfg, { apply = false, log = noop } = {}) {
   ensureTerraform(); ensureGcloud();
-  if (!cfg.project) throw new Error("No project. Run `ge init`.");
+  if (!cfg.project) {
+    throw new DxError("No project. Run `ge init`.", {
+      where: "config: project (.ge.json)",
+      why: "cutover adopts an existing project into Terraform, so it needs to know which one",
+      fix: "ge init",
+    });
+  }
   if (!cfg.projectNumber) { const r = gcloud(["projects", "describe", cfg.project, "--format=value(projectNumber)"], { allowFail: true }); if (r.ok) cfg.projectNumber = r.out; }
-  if (!cfg.geAppId) throw new Error("geAppId required. Set GEMINI_ENTERPRISE_APP_ID.");
+  if (!cfg.geAppId) {
+    throw new DxError("geAppId required. Set GEMINI_ENTERPRISE_APP_ID.", {
+      where: "config: geAppId (.ge.json / GEMINI_ENTERPRISE_APP_ID)",
+      why: "publishing registers agents into a Gemini Enterprise app, so the platform needs its id up front",
+      fix: "GEMINI_ENTERPRISE_APP_ID=<app-id> ge init",
+    });
+  }
   const p = cfg.project, region = cfg.region;
   cfg.bucket = cfg.bucket || `${p}-ge-agent-factory`;
   const sa = (id) => `projects/${p}/serviceAccounts/${id}@${p}.iam.gserviceaccount.com`;
@@ -389,13 +427,25 @@ export async function cutover(cfg, { apply = false, log = noop } = {}) {
 // coordinates into .ge.json, and `mcp` deploys the per-department Cloud Run services.
 export async function up(cfg, { planes = ["infra", "data", "mcp"], log = noop } = {}) {
   ensureGcloud();
-  if (!cfg.project) throw new Error("No project. Run `ge init`.");
+  if (!cfg.project) {
+    throw new DxError("No project. Run `ge init`.", {
+      where: "config: project (.ge.json)",
+      why: "standing up the platform provisions cloud resources, which need a target project",
+      fix: "ge init",
+    });
+  }
   if (!cfg.projectNumber) { const r = gcloud(["projects", "describe", cfg.project, "--format=value(projectNumber)"], { allowFail: true }); if (r.ok) cfg.projectNumber = r.out; }
   const did = [];
 
   if (planes.includes("infra")) {
     ensureTerraform();
-    if (!cfg.geAppId) throw new Error("geAppId required (set GEMINI_ENTERPRISE_APP_ID or run `ge init`).");
+    if (!cfg.geAppId) {
+      throw new DxError("geAppId required (set GEMINI_ENTERPRISE_APP_ID or run `ge init`).", {
+        where: "config: geAppId (.ge.json / GEMINI_ENTERPRISE_APP_ID)",
+        why: "the infra plane wires the gateway to a Gemini Enterprise app, so it needs the app id before terraform apply",
+        fix: "GEMINI_ENTERPRISE_APP_ID=<app-id> ge up",
+      });
+    }
     log("infra: terraform apply (factory + data stores + MCP/agent-identity IAM)"); infra(cfg, { sub: "apply", log });
     log("infra: build + push gateway/worker images"); const { gatewayImage, workerImage } = build(cfg, { log });
     log("infra: terraform apply (bind real images)"); infra(cfg, { sub: "apply", gatewayImage, workerImage, log });

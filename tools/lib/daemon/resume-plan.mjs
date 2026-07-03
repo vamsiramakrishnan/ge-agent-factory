@@ -6,12 +6,12 @@
 // Moved verbatim out of tools/lib/runtime-daemon.mjs.
 //
 // This sits one layer above the individual run-kind modules (it imports
-// their safe* classifiers) but below the mission-graph cluster (which needs
+// their safe* classifiers) but below the pipeline-graph cluster (which needs
 // taskSummary/taskDetail to summarize child tasks) and the daemon
 // orchestrator (which still owns resumeTask's cross-kind resume dispatch,
 // since that also needs to call each kind's start/resume function, not just
 // classify it).
-import { isDataMissionNodeKind, safeMissionNodeCommand } from "../mission/mission-node-registry.mjs";
+import { isDataPipelineNodeKind, safePipelineNodeCommand } from "../pipeline/pipeline-node-registry.mjs";
 import { normalizeRuntimeTask } from "../runtime-contract.mjs";
 import { safeGeCommand, safeProcessCommand } from "./command-run.mjs";
 import { safeHarnessRunInput } from "./harness-run.mjs";
@@ -19,7 +19,7 @@ import { listEvents, listRuns, taskStatusState } from "./run-store.mjs";
 
 function commandList(id, safeToRun) {
   return [
-    `ge runtime task ${id} --json`,
+    `ge runs show ${id} --json`,
     ...(safeToRun ? [`ge runs resume ${id}`] : []),
     `ge runs events ${id} --follow`,
   ];
@@ -49,11 +49,11 @@ export function resumePlanFor(run) {
     return { ...base, state: "running", nextAction: "wait", reason: "task is already running; watch events" };
   }
 
-  if (run.kind === "autopilot.run") {
+  if (run.kind === "repair.run") {
     if (["blocked", "paused", "failed"].includes(run.status) && output.run && items.length) {
       const blocked = items.find((item) => item.status === "blocked");
       const pending = items.find((item) => ["pending", "doctor_running", "repairing"].includes(item.status));
-      const nextAction = pending ? "resume_autopilot" : blocked ? "resume_autopilot" : "resume_autopilot";
+      const nextAction = pending ? "resume_repair" : blocked ? "resume_repair" : "resume_repair";
       return {
         ...base,
         state: run.status === "paused" ? "paused" : "blocked",
@@ -62,10 +62,10 @@ export function resumePlanFor(run) {
         commands: commandList(run.id, true),
         reason: blocked
           ? `${blocked.agentId}: ${blocked.blockers?.[0]?.message || blocked.blockers?.[0]?.id || "blocked"}`
-          : "start a child Autopilot run from original input",
+          : "start a child Repair run from original input",
       };
     }
-    return { ...base, state: "blocked", nextAction: "inspect_blocker", reason: run.error || "Autopilot task has no resumable item state" };
+    return { ...base, state: "blocked", nextAction: "inspect_blocker", reason: run.error || "Repair task has no resumable item state" };
   }
 
   if (run.kind === "doctor") {
@@ -128,9 +128,9 @@ export function resumePlanFor(run) {
     return base;
   }
 
-  if (isDataMissionNodeKind(run.kind)) {
+  if (isDataPipelineNodeKind(run.kind)) {
     if (run.status === "failed") {
-      const safe = safeMissionNodeCommand(run.kind, run.input || {});
+      const safe = safePipelineNodeCommand(run.kind, run.input || {});
       return {
         ...base,
         state: "blocked",
@@ -143,17 +143,17 @@ export function resumePlanFor(run) {
     return base;
   }
 
-  if (run.kind === "mission.run") {
+  if (run.kind === "pipeline.run") {
     const graph = output.graph || {};
     const blockedNode = (graph.nodes || []).find((node) => ["blocked", "failed"].includes(node.status));
     if (["blocked", "paused", "failed"].includes(run.status)) {
       return {
         ...base,
         state: run.status === "paused" ? "paused" : "blocked",
-        nextAction: "resume_mission",
+        nextAction: "resume_pipeline",
         safeToRun: true,
         commands: [`ge pipeline resume ${run.id}`, `ge runs events ${run.id} --follow`],
-        reason: blockedNode ? `${blockedNode.id}: ${blockedNode.resumePlan?.reason || "blocked"}` : "resume mission graph by scheduling a child mission run",
+        reason: blockedNode ? `${blockedNode.id}: ${blockedNode.resumePlan?.reason || "blocked"}` : "resume pipeline graph by scheduling a child pipeline run",
         blockers: blockedNode?.resumePlan?.blockers || blockers,
         artifacts: graph.nodes?.flatMap((node) => node.artifacts || []) || artifacts,
       };

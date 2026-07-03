@@ -243,7 +243,7 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_jobs_updated ON jobs(updated_at DESC);
   CREATE INDEX IF NOT EXISTS idx_job_events_job_seq ON job_events(job_id, seq);
 
-  CREATE TABLE IF NOT EXISTS autopilot_runs (
+  CREATE TABLE IF NOT EXISTS repair_runs (
     id TEXT PRIMARY KEY,
     target_stage TEXT NOT NULL,
     status TEXT NOT NULL,
@@ -256,7 +256,7 @@ db.exec(`
     updated_at TEXT NOT NULL,
     ended_at TEXT
   );
-  CREATE TABLE IF NOT EXISTS autopilot_items (
+  CREATE TABLE IF NOT EXISTS repair_items (
     run_id TEXT NOT NULL,
     agent_id TEXT NOT NULL,
     workspace_id TEXT NOT NULL,
@@ -268,9 +268,9 @@ db.exec(`
     repair_json TEXT,
     updated_at TEXT NOT NULL,
     PRIMARY KEY(run_id, agent_id),
-    FOREIGN KEY(run_id) REFERENCES autopilot_runs(id) ON DELETE CASCADE
+    FOREIGN KEY(run_id) REFERENCES repair_runs(id) ON DELETE CASCADE
   );
-  CREATE TABLE IF NOT EXISTS autopilot_events (
+  CREATE TABLE IF NOT EXISTS repair_events (
     seq INTEGER PRIMARY KEY AUTOINCREMENT,
     run_id TEXT NOT NULL,
     event_json TEXT NOT NULL,
@@ -278,11 +278,11 @@ db.exec(`
     agent_id TEXT,
     line TEXT,
     created_at INTEGER NOT NULL,
-    FOREIGN KEY(run_id) REFERENCES autopilot_runs(id) ON DELETE CASCADE
+    FOREIGN KEY(run_id) REFERENCES repair_runs(id) ON DELETE CASCADE
   );
-  CREATE INDEX IF NOT EXISTS idx_autopilot_runs_updated ON autopilot_runs(updated_at DESC);
-  CREATE INDEX IF NOT EXISTS idx_autopilot_items_run_status ON autopilot_items(run_id, status);
-  CREATE INDEX IF NOT EXISTS idx_autopilot_events_run_seq ON autopilot_events(run_id, seq);
+  CREATE INDEX IF NOT EXISTS idx_repair_runs_updated ON repair_runs(updated_at DESC);
+  CREATE INDEX IF NOT EXISTS idx_repair_items_run_status ON repair_items(run_id, status);
+  CREATE INDEX IF NOT EXISTS idx_repair_events_run_seq ON repair_events(run_id, seq);
 `);
 
 const insertJob = db.prepare(`
@@ -353,11 +353,11 @@ insertEvent.run(
 );
 
 // ── 4. One repair run for the failed agent (Repair Queue) ────────────────────
-const insertAutopilotRun = db.prepare(`
-  INSERT INTO autopilot_runs (id, target_stage, status, options_json, total, passed, repaired, blocked, created_at, updated_at, ended_at)
+const insertRepairRun = db.prepare(`
+  INSERT INTO repair_runs (id, target_stage, status, options_json, total, passed, repaired, blocked, created_at, updated_at, ended_at)
   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `);
-insertAutopilotRun.run(
+insertRepairRun.run(
   "demo-repair-001",
   "preview",
   "blocked",
@@ -367,11 +367,11 @@ insertAutopilotRun.run(
   T.repairEnded,
   T.repairEnded,
 );
-const insertAutopilotItem = db.prepare(`
-  INSERT INTO autopilot_items (run_id, agent_id, workspace_id, target_stage, status, attempts, blocker_json, doctor_json, repair_json, updated_at)
+const insertRepairItem = db.prepare(`
+  INSERT INTO repair_items (run_id, agent_id, workspace_id, target_stage, status, attempts, blocker_json, doctor_json, repair_json, updated_at)
   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `);
-insertAutopilotItem.run(
+insertRepairItem.run(
   "demo-repair-001",
   FAILED_ID,
   FAILED_ID,

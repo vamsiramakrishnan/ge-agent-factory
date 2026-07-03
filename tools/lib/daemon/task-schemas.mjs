@@ -26,7 +26,7 @@ export const TASK_CREATE_SCHEMAS = {
   "harness.run": z.object({
     input: looseObject,
   }).catchall(z.unknown()),
-  "mission.run": z.object({
+  "pipeline.run": z.object({
     ids: stringList,
     scenario: z.string().nullish(),
     spec: z.string().nullish(),
@@ -42,7 +42,7 @@ export const TASK_CREATE_SCHEMAS = {
     harnessLocation: z.string().optional(),
     query: looseObject,
   }).catchall(z.unknown()),
-  "autopilot.run": z.object({
+  "repair.run": z.object({
     ids: stringList,
     targetStage: z.string().optional(),
     repair: z.boolean().optional(),

@@ -1,7 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { GE_COMMANDS } from "./lib/ge-command-registry.mjs";
 import { GeCommandIdSchema, RiskLevelSchema } from "@ge/contracts";
-import { TASK_KIND_ALIASES } from "./lib/runtime-daemon.mjs";
 import { TASK_CREATE_SCHEMAS } from "./lib/daemon/task-schemas.mjs";
 
 // Structural replacement for the "keep X in sync with Y" comments that used to
@@ -22,13 +21,13 @@ describe("contracts ↔ registry parity", () => {
 });
 
 describe("daemon task-kind vocabulary", () => {
-  test("every canonical alias maps onto a wire kind with a create schema", () => {
-    for (const [canonical, wire] of Object.entries(TASK_KIND_ALIASES)) {
-      expect(TASK_CREATE_SCHEMAS[wire], `${canonical} → ${wire} needs a schema`).toBeDefined();
-    }
+  test("the collapsed nouns are the wire kinds — pipeline.run and repair.run have create schemas", () => {
+    expect(TASK_CREATE_SCHEMAS["pipeline.run"]).toBeDefined();
+    expect(TASK_CREATE_SCHEMAS["repair.run"]).toBeDefined();
   });
 
-  test("the collapsed nouns are exactly pipeline and repair", () => {
-    expect(Object.keys(TASK_KIND_ALIASES).sort()).toEqual(["pipeline.run", "repair.run"]);
+  test("retired legacy kinds have no schema (no alias layer — unreleased wire)", () => {
+    expect(TASK_CREATE_SCHEMAS["mission.run"]).toBeUndefined();
+    expect(TASK_CREATE_SCHEMAS["autopilot.run"]).toBeUndefined();
   });
 });

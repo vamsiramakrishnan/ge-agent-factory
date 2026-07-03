@@ -3,13 +3,12 @@
 // behavior change). See tools/ge.mjs for the composition root that wires
 // these command groups into the citty command tree.
 import pc from "picocolors";
-import { defineCommand } from "citty";
 import { parseList } from "@ge/std/list";
 import { existsSync, readFileSync } from "node:fs";
+import * as ui from "./ui.mjs";
 import * as core from "../lib/factory-core.mjs";
-import { daemonPaths, getDaemonStatus, displayTaskKind } from "../lib/runtime-daemon.mjs";
+import { daemonPaths, getDaemonStatus } from "../lib/runtime-daemon.mjs";
 
-export { displayTaskKind };
 // Stable-error-code registry — a dependency-free data leaf that lives beside
 // FactoryCommandError (whose fail(msg, code) mints the codes). This is a
 // CLI-boundary file, not tools/lib/*, so the tools/lib → apps/factory layering
@@ -17,8 +16,9 @@ export { displayTaskKind };
 // here is the sanctioned alternative to hand-mirroring the code table.
 import { docsUrlFor, resolveErrorCode } from "../../apps/factory/scripts/factory/core/error-codes.mjs";
 import { GE_COMMANDS } from "../lib/ge-command-registry.mjs";
+import { isDxError, dxErrorShape } from "../lib/errors/dx-error.mjs";
 
-export { core, pc };
+export { core, pc, ui };
 
 export const elog = (m) => process.stderr.write(pc.dim(`  ${m}`) + "\n");
 export const blog = (m) => process.stderr.write(pc.bold(m) + "\n");
@@ -52,23 +52,17 @@ export function emit(args, result, human) {
   human(result);
 }
 
-export const ICON = { pass: pc.green("✓"), warn: pc.yellow("▲"), fail: pc.red("✗") };
-
-// ── Deprecated aliases ──────────────────────────────────────────────────────
-// The orchestration surface collapsed (journey/mission → pipeline,
-// autopilot → fleet repair, runtime observability → runs). Old verbs keep
-// working forever as aliases: identical args and behavior, plus one dim
-// stderr pointer at the canonical spelling — no breakage, no mystery.
-export function deprecatedAlias({ name, hint, command, run }) {
-  return defineCommand({
-    meta: { name, description: `(deprecated → ${hint}) ${command.meta.description}` },
-    args: command.args,
-    run: async (ctx) => {
-      process.stderr.write(pc.dim(`▲ deprecated spelling — canonical: ${hint}`) + "\n");
-      return (run || command.run)(ctx);
-    },
-  });
-}
+// Status color is one identity from TTY to UI: these resolve through the
+// shared ramp (packages/design/src/status-ramp.mjs) that also generates the
+// console's --color-status-* tokens — same semantics, nearest-ANSI rendering.
+// ICON is a compatibility alias into the kit's glyph set (tools/ge/ui.mjs) —
+// same bytes as the historical green ✓ / yellow ▲ / red ✗ triple. New code
+// should call ui.glyph(tone) directly.
+export const ICON = {
+  pass: ui.glyph("passed"),
+  warn: ui.glyph("warning"),
+  fail: ui.glyph("failed"),
+};
 
 // ── Duration feedback ───────────────────────────────────────────────────────
 // Long operations should say up front how long they usually take, and say at
@@ -132,9 +126,22 @@ export function guarded(run) {
       } else {
         process.stderr.write(pc.red(`✗ ${e?.message || e}`) + "\n");
       }
-      // Errors can carry a machine-attached recovery hint (err.hint) — render it
-      // as the same "next:" affordance every successful command already prints.
-      if (e?.hint) process.stderr.write(pc.dim(`  next: ${e.hint}`) + "\n");
+      if (isDxError(e)) {
+        // The four-field error contract (tools/lib/errors/dx-error.mjs):
+        // what already rendered as the ✗ line above; where/why explain it and
+        // fix is a literal command. --json callers additionally get the shape
+        // on stdout — structure where a plain Error leaves silence.
+        const shape = dxErrorShape(e);
+        if (shape.where) process.stderr.write(pc.dim(`  where: ${shape.where}`) + "\n");
+        if (shape.why) process.stderr.write(pc.dim(`  why:   ${shape.why}`) + "\n");
+        if (shape.fix) process.stderr.write(`  ${pc.dim("fix:")}   ${pc.cyan(shape.fix)}` + "\n");
+        if (ctx?.args?.json) out(JSON.stringify({ ok: false, error: shape }, null, 2));
+      } else if (e?.hint) {
+        // Errors can carry a machine-attached recovery hint (err.hint) — render it
+        // as the same next-step affordance every successful command prints
+        // (ui.next), minus the leading blank line so it hugs the ✗ line above.
+        process.stderr.write(ui.next(e.hint).slice(1) + "\n");
+      }
       process.exitCode = 1;
     }
   };
@@ -219,8 +226,8 @@ export async function daemonRequest(port, path, { method = "GET", body, timeoutM
 
 // Follow one daemon task's live SSE event stream, printing each event as a
 // human line (or NDJSON with json=true). Returns when the stream ends. Shared
-// by `ge runs events --follow` and the `--follow` flags on pipeline/fleet-repair/
-// autopilot run, so "start it" and "watch it" can be one command.
+// by `ge runs events --follow` and the `--follow` flags on pipeline run and
+// fleet repair, so "start it" and "watch it" can be one command.
 export async function followTaskEvents(port, id, { json = false } = {}) {
   // The daemon's SSE frames carry `id:` (the event seq) and support
   // Last-Event-ID resume (protocol v3) — so a dropped connection reconnects
@@ -273,10 +280,10 @@ export async function followTaskEvents(port, id, { json = false } = {}) {
 }
 
 export function statusText(status) {
-  if (status === "done" || status === "passed" || status === "repaired") return pc.green(status);
-  if (status === "running" || status === "queued" || status === "doctor_running" || status === "repairing") return pc.cyan(status);
-  if (status === "failed" || status === "blocked") return pc.red(status);
-  return pc.yellow(status || "unknown");
+  // Same output bytes as the old hardcoded green/cyan/red/yellow branches —
+  // the mapping lives in the shared status ramp (via the kit) so TTY and
+  // console can't disagree about what color a status is.
+  return ui.statusWord(status);
 }
 
 export function parseIds(ids) {
@@ -287,35 +294,40 @@ export function renderRepairSummary(task) {
   const run = task.output?.run || {};
   const summary = task.summary || {};
   const counts = task.output?.counts || summary.counts || run;
-  out(pc.bold(`\nRepair run ${task.id}`));
-  out(`  status    ${statusText(run.status || task.status)}`);
-  out(`  target    ${pc.cyan(run.targetStage || task.input?.targetStage || summary.input?.targetStage || "preview")}`);
-  out(`  mode      ${pc.dim(run.options?.mode || "<unknown>")}`);
-  out(`  repair    ${run.options?.repair === false ? pc.yellow("off") : pc.green("on")}  ${pc.dim(`${run.options?.attempts ?? task.input?.attempts ?? 3} attempt(s)`)}`);
-  out(`  results   ${counts.passed || 0} passed · ${counts.repaired || 0} repaired · ${counts.blocked || 0} blocked · ${counts.total || 0} total`);
-  if (task.output?.reason || summary.summary) out(`  reason    ${pc.dim(task.output?.reason || summary.summary)}`);
-  if (task.error) out(`  error     ${pc.red(task.error)}`);
+  out(ui.title(`Repair run ${task.id}`));
+  out(ui.kv([
+    ["status", statusText(run.status || task.status)],
+    ["target", ui.cmd(run.targetStage || task.input?.targetStage || summary.input?.targetStage || "preview")],
+    ["mode", pc.dim(run.options?.mode || "<unknown>")],
+    { key: "repair", value: run.options?.repair === false ? pc.yellow("off") : pc.green("on"), note: `${run.options?.attempts ?? task.input?.attempts ?? 3} attempt(s)` },
+    ["results", `${counts.passed || 0} passed · ${counts.repaired || 0} repaired · ${counts.blocked || 0} blocked · ${counts.total || 0} total`],
+    (task.output?.reason || summary.summary) && ["reason", pc.dim(task.output?.reason || summary.summary)],
+    task.error && ["error", pc.red(task.error)],
+  ]));
   if ((task.output?.items || []).length) {
-    out(pc.bold("\n  Items"));
-    for (const item of task.output.items) {
-      const blocker = item.blockers?.[0]?.id || item.blockers?.[0]?.message || "";
-      out(`  ${statusText(item.status).padEnd(16)} ${String(item.agentId || item.workspaceId).padEnd(28)} ${pc.dim(blocker)}`);
-    }
+    out(ui.section("Items"));
+    out(ui.columns(task.output.items, [
+      { header: "", value: (item) => statusText(item.status) },
+      { header: "", value: (item) => String(item.agentId || item.workspaceId) },
+      { header: "", value: (item) => pc.dim(item.blockers?.[0]?.id || item.blockers?.[0]?.message || "") },
+    ]));
   }
 }
 
 export function renderResumePlan(plan) {
   if (!plan) return;
   const safeToRun = plan.safeToRun ?? plan.canResume;
-  out(`  resume    ${safeToRun ? pc.green(plan.nextAction) : pc.dim(plan.nextAction || "none")}`);
-  if (plan.reason) out(`  reason    ${pc.dim(plan.reason)}`);
+  out(ui.kv([
+    ["resume", safeToRun ? pc.green(plan.nextAction) : pc.dim(plan.nextAction || "none")],
+    plan.reason && ["reason", pc.dim(plan.reason)],
+  ]));
   if (plan.commands?.length) {
-    out(pc.bold("\n  Resume Plan"));
-    for (const command of plan.commands) out(`  ${pc.dim("$")} ${command}`);
+    out(ui.section("Resume Plan"));
+    out(ui.nextList(plan.commands));
   }
 }
 
-export function missionNodeDetail(node) {
+export function pipelineNodeDetail(node) {
   const summary = node.summary || {};
   const artifacts = node.artifactCheck?.counts || {};
   const parts = [];
@@ -349,7 +361,7 @@ export function missionNodeDetail(node) {
   return parts.join(pc.dim(" | "));
 }
 
-export function renderMissionBrief(graph) {
+export function renderPipelineBrief(graph) {
   const nodes = graph.nodes || [];
   const rows = nodes.find((node) => node.id === "snowfakery.generate")?.summary?.output?.rowCount;
   const generatedObjects = nodes.find((node) => node.id === "mock.generate")?.summary?.snowfakery?.objects;
@@ -357,62 +369,82 @@ export function renderMissionBrief(graph) {
   const validated = nodes.find((node) => node.id === "simulator.validate")?.summary?.totals;
   const blockers = nodes.flatMap((node) => (node.blockers || []).map((blocker) => ({ node: node.id, blocker })));
   if (rows === undefined && generatedObjects === undefined && seeded === undefined && !validated && !blockers.length) return;
-  out(pc.bold("\n  Brief"));
-  if (generatedObjects !== undefined) out(`  objects   ${generatedObjects}`);
-  if (rows !== undefined) out(`  rows      ${rows}`);
-  if (seeded !== undefined) out(`  seeded    ${seeded} simulator${seeded === 1 ? "" : "s"}`);
-  if (validated) out(`  validate  ${validated.simulators || 0} simulators · ${validated.errors || 0} errors · ${validated.warnings || 0} warnings`);
-  if (blockers.length) {
-    out(`  blockers  ${blockers.length}`);
-    for (const item of blockers.slice(0, 3)) out(`    ${pc.red(item.node)} ${pc.dim(item.blocker.message || item.blocker.id || "blocked")}`);
-  }
+  out(ui.section("Brief"));
+  out(ui.kv([
+    generatedObjects !== undefined && ["objects", String(generatedObjects)],
+    rows !== undefined && ["rows", String(rows)],
+    seeded !== undefined && ["seeded", `${seeded} simulator${seeded === 1 ? "" : "s"}`],
+    validated && ["validate", `${validated.simulators || 0} simulators · ${validated.errors || 0} errors · ${validated.warnings || 0} warnings`],
+    blockers.length && ["blockers", String(blockers.length)],
+  ]));
+  for (const item of blockers.slice(0, 3)) out(`    ${pc.red(item.node)} ${pc.dim(item.blocker.message || item.blocker.id || "blocked")}`);
 }
 
-export function renderMissionGraph(graph) {
-  out(pc.bold(`\nPipeline run ${graph.id}`));
-  out(`  status    ${statusText(graph.status)}`);
-  out(`  target    ${pc.cyan(graph.input?.targetStage || "preview")}`);
-  out(`  nodes     ${graph.counts?.done || 0} done · ${graph.counts?.blocked || 0} blocked · ${graph.counts?.pending || 0} pending · ${graph.counts?.total || 0} total`);
-  if (graph.input?.executeFactory === false) out(pc.dim("  factory   represented, not auto-run"));
-  renderMissionBrief(graph);
-  out(pc.bold("\n  Graph"));
-  for (const node of graph.nodes || []) {
+export function renderPipelineGraph(graph) {
+  out(ui.title(`Pipeline run ${graph.id}`));
+  out(ui.kv([
+    ["status", statusText(graph.status)],
+    ["target", ui.cmd(graph.input?.targetStage || "preview")],
+    ["nodes", `${graph.counts?.done || 0} done · ${graph.counts?.blocked || 0} blocked · ${graph.counts?.pending || 0} pending · ${graph.counts?.total || 0} total`],
+    graph.input?.executeFactory === false && ["factory", pc.dim("represented, not auto-run")],
+  ]));
+  renderPipelineBrief(graph);
+  out(ui.section("Graph"));
+  const nodes = graph.nodes || [];
+  // Two-line rows (status/id/kind, then a hanging detail line) — computed
+  // widths so the detail line's hanging indent always lands under the kind.
+  const statusW = Math.max(...nodes.map((node) => ui.visibleWidth(statusText(node.status))), 0);
+  const idW = Math.max(...nodes.map((node) => String(node.id).length), 0);
+  for (const node of nodes) {
     const deps = node.dependsOn?.length ? pc.dim(` ← ${node.dependsOn.join(",")}`) : "";
     const child = node.childTaskId ? pc.dim(` child=${node.childTaskId}`) : "";
-    const detail = missionNodeDetail(node);
-    out(`  ${statusText(node.status).padEnd(14)} ${String(node.id).padEnd(22)} ${pc.dim(node.kind || node.runtimeKind)}${deps}${child}`);
-    if (detail) out(`  ${"".padEnd(14)} ${"".padEnd(22)} ${pc.dim(detail)}`);
+    const detail = pipelineNodeDetail(node);
+    out(`  ${ui.padVisible(statusText(node.status), statusW)}  ${String(node.id).padEnd(idW)}  ${pc.dim(node.kind || node.runtimeKind)}${deps}${child}`);
+    if (detail) out(`  ${" ".repeat(statusW)}  ${" ".repeat(idW)}  ${pc.dim(detail)}`);
   }
 }
 
-export function renderJourneyPlan(journey) {
-  out(pc.bold(`\nPipeline ${journey.id}`));
-  out(`  status    ${statusText(journey.status)}`);
-  out(`  target    ${pc.cyan(journey.targetStage || "preview")}`);
-  if (journey.input?.scenario) out(`  scenario  ${pc.cyan(journey.input.scenario)}`);
-  if (journey.input?.systems?.length) out(`  systems   ${journey.input.systems.join(", ")}`);
-  if (journey.input?.ids?.length) out(`  agents    ${journey.input.ids.join(", ")}`);
-  if (journey.next) {
-    out(pc.bold("\n  Next"));
-    out(`  ${statusText(journey.next.status).padEnd(14)} ${String(journey.next.label).padEnd(18)} ${pc.dim(journey.next.owner || "runtime")}`);
-    if (journey.next.blocker?.message) out(`  blocker   ${pc.red(journey.next.blocker.message)}`);
-    if (journey.next.actionPlan?.label) out(`  action    ${journey.next.actionPlan.label}`);
-    for (const command of journey.next.actionPlan?.commands || []) out(`  ${pc.dim("$")} ${command}`);
+export function renderPipelinePlan(pipeline) {
+  out(ui.title(`Pipeline ${pipeline.id}`));
+  out(ui.kv([
+    ["status", statusText(pipeline.status)],
+    ["target", ui.cmd(pipeline.targetStage || "preview")],
+    pipeline.input?.scenario && ["scenario", ui.cmd(pipeline.input.scenario)],
+    pipeline.input?.systems?.length && ["systems", pipeline.input.systems.join(", ")],
+    pipeline.input?.ids?.length && ["agents", pipeline.input.ids.join(", ")],
+  ]));
+  if (pipeline.next) {
+    out(ui.section("Next"));
+    out(`  ${statusText(pipeline.next.status)}  ${String(pipeline.next.label)}  ${pc.dim(pipeline.next.owner || "runtime")}`);
+    const nextRows = ui.kv([
+      pipeline.next.blocker?.message && ["blocker", pc.red(pipeline.next.blocker.message)],
+      pipeline.next.actionPlan?.label && ["action", pipeline.next.actionPlan.label],
+    ]);
+    if (nextRows) out(nextRows);
+    if (pipeline.next.actionPlan?.commands?.length) out(ui.nextList(pipeline.next.actionPlan.commands));
   }
-  out(pc.bold("\n  Pipeline"));
-  for (const stage of journey.stages || []) {
+  out(ui.section("Pipeline"));
+  const stages = pipeline.stages || [];
+  const statusW = Math.max(...stages.map((stage) => ui.visibleWidth(statusText(stage.status))), 0);
+  const labelW = Math.max(...stages.map((stage) => String(stage.label).length), 0);
+  for (const stage of stages) {
     const command = stage.actionPlan?.commands?.[0] ? pc.dim(` · ${stage.actionPlan.commands[0]}`) : "";
     const blocker = stage.blocker?.message ? pc.red(` · ${stage.blocker.message}`) : "";
     const task = stage.taskId ? pc.dim(` · ${stage.taskId}`) : "";
-    out(`  ${statusText(stage.status).padEnd(14)} ${String(stage.label).padEnd(18)} ${pc.dim(stage.owner || "")}${task}${blocker}${command}`);
+    out(`  ${ui.padVisible(statusText(stage.status), statusW)}  ${String(stage.label).padEnd(labelW)}  ${pc.dim(stage.owner || "")}${task}${blocker}${command}`);
   }
 }
 
-// Render one checks[] section (shared by data/mcp/section doctors).
-export function renderChecks(checks, pad = 22) {
+// Render one checks[] section (shared by data/mcp/section doctors, ge doctor,
+// prove's blocked-at-doctor screen, and devex). One shape everywhere: ramp
+// glyph, name in a computed column, dim detail, and the standard fix
+// affordance (ui.fixLine) under anything that isn't passing.
+export function renderChecks(checks, { indent = 2 } = {}) {
+  const pad = " ".repeat(indent);
+  const width = Math.max(...checks.map((ch) => ch.name.length), 0);
   for (const ch of checks) {
-    out(`${ICON[ch.status]} ${ch.name.padEnd(pad)} ${pc.dim(ch.detail)}`);
-    if (ch.status !== "pass" && ch.fix) out(`    ${pc.dim("fix:")} ${ch.fix}`);
+    out(`${pad}${ui.glyph(ch.status)} ${ch.name.padEnd(width)}  ${pc.dim(ch.detail)}`);
+    if (ch.status !== "pass" && ch.fix) out(ui.fixLine(ch.fix, indent + 4));
   }
 }
 
