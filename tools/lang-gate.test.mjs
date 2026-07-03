@@ -23,6 +23,15 @@ test("<details> blocks are exempt — collapsing IS the sanctioned disclosure", 
   expect(scanZoneText("ge devex smoke builds one canary via the harness").length).toBeGreaterThan(0);
 });
 
+test("URLs and paths are addresses, not register — but their visible text is policed", () => {
+  // Link/image targets and src/href values are exempt…
+  expect(scanZoneText('See [the flow](docs/assets/signature-pipeline.svg) here.')).toEqual([]);
+  expect(scanZoneText('<img src="assets/signature-pipeline.svg" alt="from capture to handoff">')).toEqual([]);
+  // …but alt text and link text still count.
+  expect(scanZoneText('<img src="a.svg" alt="the pipeline stages">').map((f) => f.term)).toEqual(["pipeline"]);
+  expect(scanZoneText('[the pipeline view](docs/a.md)').map((f) => f.term)).toEqual(["pipeline"]);
+});
+
 test("every operator term in the policy list is actually detected", () => {
   for (const term of OPERATOR_TERMS) {
     expect(scanZoneText(`leading with ${term} here`).map((f) => f.term)).toEqual([term]);

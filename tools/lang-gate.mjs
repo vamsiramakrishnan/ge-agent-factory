@@ -35,13 +35,19 @@ const TERM_RE = new RegExp(`\\b(${OPERATOR_TERMS.join("|")})\\b`, "gi");
 // Strip the content this gate deliberately does not police:
 //   - <details>…</details> blocks (the sanctioned under-the-hood escape)
 //   - HTML comments (markers, generator pragmas)
-// Stripped spans are replaced with equivalent newlines so line numbers in
+//   - URL/path values: markdown link/image targets `](…)` and HTML
+//     src/href attribute values — a filename like signature-pipeline.svg is
+//     an address, not register; alt text and link TEXT stay policed
+// Stripped spans are replaced with equivalent whitespace so line numbers in
 // findings stay true.
 function stripExemptSpans(text) {
   const preserveLines = (match) => match.replace(/[^\n]/g, " ");
   return text
     .replace(/<details[\s\S]*?<\/details>/gi, preserveLines)
-    .replace(/<!--[\s\S]*?-->/g, preserveLines);
+    .replace(/<!--[\s\S]*?-->/g, preserveLines)
+    .replace(/\]\([^)\s]+\)/g, (m) => "]" + " ".repeat(m.length - 1))
+    .replace(/\b(?:src|href)\s*=\s*"[^"]*"/gi, preserveLines)
+    .replace(/\b(?:src|href)\s*=\s*'[^']*'/gi, preserveLines);
 }
 
 // Scan one zone's text; returns { line, term, excerpt } findings.
