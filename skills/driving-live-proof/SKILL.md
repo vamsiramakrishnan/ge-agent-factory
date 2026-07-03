@@ -84,5 +84,7 @@ node skills/driving-live-proof/scripts/replay-smoke.mjs
 
 ## References
 
+- Read `references/example-session.md` first if this is your first run of the loop — a worked session (compile → drive → capped live proof → bench → report), with real output and the drift-handling variant.
 - Read `references/cassettes.md` before recording, editing, or replaying cassettes.
+- Copy `assets/turns-example.txt` as the starting `--script` file, and `assets/live-budgets-example.json` for the `.ge.json` budget/guard/gate blocks (defaults, annotated).
 - Docs: `docs/cookbooks/drive-a-shipped-agent.md`, `docs/cookbooks/prove-live.md`, `docs/cookbooks/bench-live-budgets.md`, `docs/cookbooks/compile-behavioral-evals.md`, `docs/reference/live-transcript.md`, `docs/reference/live-budgets.md`, `docs/reference/metric-applicability.md`.

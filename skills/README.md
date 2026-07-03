@@ -66,6 +66,30 @@ curl -s localhost:17654/api/tasks -X POST -H 'content-type: application/json' -d
 target. Note: this repo's own registry loads operator/station skills from `skills/`
 directly — `~/.agents/skills/` matters only when a *non-factory* harness is the driver.
 
+## Progressive disclosure — the four levels
+
+A skill is read lazily; structure it so each level costs context only when it
+earns it. The quality auditor
+(`skills/navigating-factory-line/scripts/audit-skill-quality.mjs`, run by
+`skills-sync`) enforces the shape.
+
+- **L0 — frontmatter `description`.** The only text a router/agent sees before
+  choosing the skill. Third person, with concrete "Use when …" triggers.
+- **L1 — `SKILL.md` body (≤ 250 lines).** The decision layer: slot, workflow,
+  the handful of commands you almost always need, common mistakes, done-when.
+  Anything an agent needs *only sometimes* moves down a level and is linked.
+- **L2 — `references/*.md` (composed detail).** Deep material loaded on
+  demand: command/flag matrices, failure catalogs, schema notes — and at
+  least one **`references/example-session.md`**: a realistic operator↔agent
+  interaction (ask → decisions → commands → trimmed real output → verdict →
+  next step) so an agent can pattern-match a whole session, not just a
+  command. Every reference file must be linked from `SKILL.md` with a
+  one-line "read this when …" cue — an unlinked file is unreachable context.
+- **L3 — `scripts/*.mjs` + `assets/`.** Executables an agent runs instead of
+  reasoning (preflights, smoke loops — thin wrappers over the `ge` CLI, never
+  reimplementations), and copyable starting artifacts (templates, example
+  configs) under `assets/`, each mentioned from `SKILL.md`.
+
 ## Authoring a new skill
 
 1. Create `skills/<verb-phrase>/SKILL.md` with spec-portable frontmatter `name` and
