@@ -16,5 +16,8 @@
     "@fontsource/space-grotesk": "^5",
     "astro": "^5",
     "sharp": "^0.33"
+  },
+  "devDependencies": {
+    "marked": "^14"
   }
 }
