@@ -19,7 +19,7 @@ import { GE_COMMANDS } from "../lib/ge-command-registry.mjs";
 export const GOLDEN_PATH_COMMANDS = ["capture", "prove", "handoff", "status"];
 
 // Operate commands, in lifecycle order (machine → platform → agents → observe).
-const OPERATE_COMMANDS = ["init", "up", "mode", "doctor", "devex", "agents", "drive", "bench", "evals", "pipeline", "fleet", "runs", "infra", "images", "data", "mcp", "daemon", "state", "ledger", "apply", "config", "cutover"];
+const OPERATE_COMMANDS = ["init", "up", "mode", "doctor", "devex", "agents", "drive", "bench", "evals", "pipeline", "fleet", "runs", "infra", "images", "data", "mcp", "daemon", "state", "ledger", "okf", "apply", "config", "cutover"];
 
 // Kit conventions (tools/ge/ui.mjs): command names are typeable → cmd() cyan;
 // descriptions are metadata → dim; the name column is computed from the

@@ -11,6 +11,7 @@ import {
   OKF_VERSION,
   emitFrontmatter,
   extractLinks,
+  geOkfProfile,
   link,
   parseConcept,
   renderConcept,
@@ -99,4 +100,16 @@ test("extractLinks pulls bundle-absolute concept ids out of a blob", () => {
 test("link produces a bundle-absolute target regardless of leading slashes", () => {
   expect(link("systems/x", "X")).toBe("[X](/systems/x.md)");
   expect(link("/systems/x")).toBe("[/systems/x](/systems/x.md)");
+});
+
+test("GE OKF profile includes strengthened generation concept types", () => {
+  const profile = geOkfProfile();
+  expect(profile.conceptTypes).toContain("Claim");
+  expect(profile.conceptTypes).toContain("Policy");
+  expect(profile.conceptTypes).toContain("Proof Obligation");
+  expect(profile.conceptTypes).toContain("Agent Tool");
+  expect(profile.recommendedSectionsByType.Claim).toContain("Citations");
+  expect(profile.recommendedSectionsByType.Tool).toEqual(
+    expect.arrayContaining(["Source Systems", "Confirmation", "Idempotency"]),
+  );
 });
