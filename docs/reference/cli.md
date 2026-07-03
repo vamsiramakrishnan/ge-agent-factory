@@ -123,6 +123,23 @@ Talk to the shipped agent over its live assist surface — per-turn timing/respo
 | `--strictResponder` | boolean | Fail when responder identity cannot be verified (default: warn) |
 | `--geApp` | string | Gemini Enterprise engine (full resource name or bare id; default from .ge.json geAppId) |
 
+### `ge bench`
+
+Load the live assist surface within hard cost guards and verdict the latency/error budgets (ttft, full response, stalls, errors, responder identity)
+
+| Flag | Type | Description |
+|---|---|---|
+| `--sessions` | string | Number of independent conversations (default 5; hard-capped by live.bench guards) |
+| `--turns` | string | Turns per conversation (default 2) |
+| `--concurrency` | string | Concurrency sweep, e.g. 1,2,4 (default 1) |
+| `--cassette` | string | Replay a recorded cassette — deterministic timings, zero cloud (the CI path) |
+| `--profile` | string | Bench profile JSON (e.g. .ge/behavioral/bench-profile.json from ge evals compile) |
+| `--targetAgent` | string | Expected responding agent id — responder rates then count against budgets |
+| `--strictResponder` | boolean | Treat unverifiable responder identity as failure |
+| `--export` | string | Export a load script instead of running: k6 |
+| `--yes` | boolean | Confirm a LIVE bench run (real traffic, real cost) — refused without it |
+| `--geApp` | string | Gemini Enterprise engine (full resource name or bare id; default from .ge.json geAppId) |
+
 ### `ge up`
 
 Stand up the platform: infra + data + tool planes → unified doctor (--infra/--data/--mcp for one)
