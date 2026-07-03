@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1831.682 256.5" width="1831.682" height="256.5" style="--bg:#ffffff;--fg:#14171c;--line:#565e6c;--accent:#2953ff;--muted:#80868b;--surface:#eceef2;--border:#dfe2e8;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<polyline class="edge" data-from="O" data-to="I" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="167.165,107.80000000000001 215.165,107.80000000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="I" data-to="S" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="429.02699999999993,107.80000000000001 477.02699999999993,107.80000000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="S" data-to="K" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="699.04,107.80000000000001 723.04,107.80000000000001 723.04,66.9 937.7660000000001,66.9" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="S" data-to="P" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="699.04,107.80000000000001 723.04,107.80000000000001 723.04,148.70000000000002 747.04,148.70000000000002" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="P" data-to="R" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="952.01,148.70000000000002 1000.01,148.7" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="R" data-to="A" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1206.462,148.7 1230.462,148.7 1230.462,107.80000000000001 1254.462,107.80000000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="R" data-to="G" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1206.462,148.7 1230.462,148.7 1230.462,189.60000000000002 1254.462,189.60000000000002" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="G" data-to="H" data-style="thick" data-arrow-start="false" data-arrow-end="true" points="1489.806,189.60000000000002 1537.806,189.60000000000002" fill="none" stroke="var(--_line)" stroke-width="2" marker-end="url(#arrowhead)" />
+<g class="node" data-id="O" data-label="operator intent" data-shape="stadium">
+  <rect x="40" y="89.35000000000001" width="127.16499999999999" height="36.900000000000006" rx="18.450000000000003" ry="18.450000000000003" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="103.5825" y="107.80000000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">operator intent</text>
+</g>
+<g class="node" data-id="I" data-label="Interview view
+brief · documents · questions" data-shape="rectangle">
+  <rect x="215.165" y="80.9" width="213.86199999999997" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="322.096" y="107.80000000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="322.096" dy="-3.9000000000000012">Interview view</tspan><tspan x="322.096" dy="16.900000000000002">brief · documents · questions</tspan></text>
+</g>
+<g class="node" data-id="S" data-label="Spec Review
+contract fields · diffs · approve" data-shape="rectangle">
+  <rect x="477.02699999999993" y="80.9" width="222.013" height="53.800000000000004" rx="0" ry="0" fill="#e8f0fe" stroke="#1a73e8" stroke-width="0.75" />
+  <text x="588.0334999999999" y="107.80000000000001" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="588.0334999999999" dy="-3.9000000000000012">Spec Review</tspan><tspan x="588.0334999999999" dy="16.900000000000002">contract fields · diffs · approve</tspan></text>
+</g>
+<g class="node" data-id="K" data-label="OKF export
+knowledge bundle · concept map · files" data-shape="rectangle">
+  <rect x="937.7660000000001" y="40" width="268.69599999999997" height="53.800000000000004" rx="0" ry="0" fill="#e8f0fe" stroke="#1a73e8" stroke-width="0.75" />
+  <text x="1072.114" y="66.9" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="1072.114" dy="-3.9000000000000012">OKF export</tspan><tspan x="1072.114" dy="16.900000000000002">knowledge bundle · concept map · files</tspan></text>
+</g>
+<g class="node" data-id="P" data-label="Pipeline view
+source · configure · review" data-shape="rectangle">
+  <rect x="747.04" y="121.80000000000001" width="204.96999999999997" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="849.525" y="148.70000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="849.525" dy="-3.9000000000000012">Pipeline view</tspan><tspan x="849.525" dy="16.900000000000002">source · configure · review</tspan></text>
+</g>
+<g class="node" data-id="R" data-label="Runs ledger
+stages · artifacts · blockers" data-shape="cylinder">
+  <rect x="1000.01" y="121.8" width="206.452" height="53.80000000000001" fill="#e8eef7" stroke="none" />
+  <line x1="1000.01" y1="121.8" x2="1000.01" y2="175.60000000000002" stroke="#5f6368" stroke-width="0.75" />
+  <line x1="1206.462" y1="121.8" x2="1206.462" y2="175.60000000000002" stroke="#5f6368" stroke-width="0.75" />
+  <ellipse cx="1103.2359999999999" cy="175.60000000000002" rx="103.226" ry="7" fill="#e8eef7" stroke="#5f6368" stroke-width="0.75" />
+  <ellipse cx="1103.2359999999999" cy="121.8" rx="103.226" ry="7" fill="#e8eef7" stroke="#5f6368" stroke-width="0.75" />
+  <text x="1103.2359999999999" y="148.7" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="1103.2359999999999" dy="-3.9000000000000012">Runs ledger</tspan><tspan x="1103.2359999999999" dy="16.900000000000002">stages · artifacts · blockers</tspan></text>
+</g>
+<g class="node" data-id="A" data-label="Agent detail
+files · ADK preview · proof pack" data-shape="rectangle">
+  <rect x="1254.462" y="80.9" width="228.682" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="1368.8029999999999" y="107.80000000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="1368.8029999999999" dy="-3.9000000000000012">Agent detail</tspan><tspan x="1368.8029999999999" dy="16.900000000000002">files · ADK preview · proof pack</tspan></text>
+</g>
+<g class="node" data-id="G" data-label="promotion gate
+evals · validation · readiness" data-shape="hexagon">
+  <polygon points="1267.912,162.70000000000002 1476.356,162.70000000000002 1489.806,189.60000000000002 1476.356,216.50000000000003 1267.912,216.50000000000003 1254.462,189.60000000000002" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <text x="1372.134" y="189.60000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="1372.134" dy="-3.9000000000000012">promotion gate</tspan><tspan x="1372.134" dy="16.900000000000002">evals · validation · readiness</tspan></text>
+</g>
+<g class="node" data-id="H" data-label="handoff
+agents-cli · ADK · Gemini Enterprise" data-shape="stadium">
+  <rect x="1537.806" y="162.70000000000002" width="253.87599999999995" height="53.800000000000004" rx="26.900000000000002" ry="26.900000000000002" fill="#e6f4ea" stroke="#34a853" stroke-width="0.75" />
+  <text x="1664.744" y="189.60000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="#202124"><tspan x="1664.744" dy="-3.9000000000000012">handoff</tspan><tspan x="1664.744" dy="16.900000000000002">agents-cli · ADK · Gemini Enterprise</tspan></text>
+</g>
+</svg>

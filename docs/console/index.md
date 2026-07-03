@@ -13,7 +13,7 @@ surface over the factory. Its server exposes the same JSON the `ge` CLI
 emits, dispatched through the same command registry — so the console and the
 CLI are two views of one engine and can never disagree about state.
 
-The left sidebar has seven entries; two detail surfaces open from them:
+The left sidebar has seven entries; three detail surfaces open from them. Recent OKF work is represented as export and review affordances inside the existing Spec Review flow, while run-driving remains in the existing Pipeline, Runs, and agent detail surfaces:
 
 | View | What it's for | Page |
 |---|---|---|
@@ -26,6 +26,7 @@ The left sidebar has seven entries; two detail surfaces open from them:
 | **Readiness** | A preflight verdict with runnable fixes, before anything mutating | [Readiness](./readiness.html) |
 | *Agent detail* | Deep view of one agent: stages, artifacts, per-stage actions | [Fleet & repair](./fleet-and-repair.html) |
 | *Spec Review* | The contract rendered half-by-half for editing and OKF export | [Contract editor](./contract-editor.html) |
+| *OKF export* | The OKF knowledge bundle, concept coverage, source files, and export status for the current contract | [OKF export & run controls](./okf-and-drive.html) |
 
 ## Overview — the home base
 
