@@ -26,8 +26,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { marked } from "marked";
-import { buildBundle, stableTimestamp } from "../../factory/scripts/spec-to-okf.mjs";
+import { deriveAnswerableQueries } from "../../factory/scripts/lib/okf-capabilities.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const APP = resolve(HERE, "..");
@@ -233,42 +232,19 @@ mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, JSON.stringify(payload, null, 2) + "\n");
 console.log(`→ ${OUT.replace(REPO + "/", "")}`);
 
-// ── OKF: the canonical spec bundle per agent ─────────────────────────────────
-// Each agent's full spec (behaviorContract + generationSpec) is converted into
-// its Open Knowledge Format bundle by the factory's own `buildBundle` — the
-// same deterministic, LLM-free converter behind `spec-to-okf.mjs`. We render
-// each concept's markdown body to HTML at build time so the docs per-agent page
-// can present the real OKF, not a re-derivation. Written to its own file so the
-// (large) bodies never load on the periodic-table page.
+// ── OKF spec projection: the full structured knowledge bundle per agent ──────
+// Each agent's Open Knowledge Format bundle is a projection of its full spec —
+// the `behaviorContract` (governance, tools, workflow, evidence, evals) and the
+// `generationSpec` (source systems, typed data entities, relationships,
+// anomalies, documents, data-generation policy). We emit the structured data
+// (not flattened markdown) so the docs can render a dense, navigable explorer.
+// Written to its own file so the (large) bodies never load on the grid page.
 const UC_PATH = p("apps/factory/generated/use-cases.generated.json");
 if (!existsSync(UC_PATH)) {
   console.log("catalog: materializing use-cases.generated.json (bun run catalog)…");
   execFileSync("bun", [p("apps/factory/scripts/sync-use-cases-from-slides.mjs")], { stdio: "inherit" });
 }
 const specById = new Map(JSON.parse(readFileSync(UC_PATH, "utf8")).map((s) => [s.id, s]));
-
-// Sections in reading order; each pulls the leaf concepts under its bundle dir
-// (the `<dir>/index` link-lists and the root index/log are skipped).
-const OKF_SECTIONS = [
-  { key: "playbook", label: "Playbook", match: (r) => r === "playbook" },
-  { key: "workflow", label: "Workflow stages", match: (r) => r.startsWith("workflow/") && r !== "workflow/index" },
-  { key: "tools", label: "Agent tools", match: (r) => r.startsWith("tools/") && r !== "tools/index" },
-  { key: "systems", label: "Source systems", match: (r) => r.startsWith("systems/") && r !== "systems/index" },
-  { key: "tables", label: "Data entities", match: (r) => r.startsWith("tables/") && r !== "tables/index" },
-  { key: "queries", label: "Answerable queries", match: (r) => r.startsWith("queries/") && r !== "queries/index" },
-  { key: "tests", label: "Eval scenarios", match: (r) => r.startsWith("tests/") && r !== "tests/index" },
-  { key: "documents", label: "Source documents", match: (r) => r.startsWith("documents/") && r !== "documents/index" },
-  { key: "kpis", label: "KPIs", match: (r) => r === "kpis" },
-  { key: "evals", label: "Golden evals", match: (r) => r === "evals" },
-];
-
-const renderBody = (md) => {
-  const stripped = String(md || "").replace(/^#\s.*\n+/, ""); // drop the leading H1 (dup of title)
-  const html = marked.parse(stripped, { async: false });
-  // Neutralize bundle-absolute cross-links (/tools/foo.md) — there is no
-  // per-concept route in the docs; keep the link text as a plain reference.
-  return html.replace(/<a href="\/[^"]*">([\s\S]*?)<\/a>/g, '<span class="okf-xref">$1</span>');
-};
 
 const okfMisses = [];
 const okfBySlug = {};
@@ -278,28 +254,56 @@ for (const a of agents) {
     okfMisses.push(a.slug);
     continue;
   }
-  const bundle = buildBundle(spec, { timestamp: stableTimestamp(spec) });
-  const sections = OKF_SECTIONS.map((sec) => ({
-    key: sec.key,
-    label: sec.label,
-    concepts: bundle
-      .filter((c) => sec.match(c.relPath))
-      .map((c) => ({
-        title: c.fields?.title || sec.label,
-        type: c.fields?.type || "",
-        html: renderBody(c.body),
-      })),
-  })).filter((sec) => sec.concepts.length);
+  const gs = spec.generationSpec || {};
+  const bc = gs.behaviorContract || {};
+  let queries = [];
+  try {
+    queries = deriveAnswerableQueries(bc) || [];
+  } catch {
+    queries = [];
+  }
+  const entities = gs.entities || [];
   okfBySlug[a.slug] = {
-    conceptCount: bundle.filter((c) => !["index", "log"].includes(c.relPath) && !c.relPath.endsWith("/index")).length,
-    sections,
+    role: bc.role || null,
+    objective: bc.primaryObjective || null,
+    governance: {
+      inScope: bc.inScope || [],
+      outOfScope: bc.outOfScope || [],
+      escalationRules: bc.escalationRules || [],
+      refusalRules: bc.refusalRules || [],
+      evidenceRequirements: bc.evidenceRequirements || [],
+    },
+    workflow: bc.workflow || { steps: [] },
+    tools: bc.toolIntents || [],
+    systems: gs.sourceSystems || [],
+    entities,
+    relationships: gs.relationships || [],
+    anomalies: gs.anomalies || [],
+    documents: gs.documents || [],
+    evals: bc.goldenEvals || [],
+    queries,
+    rowPolicy: gs.rowPolicy || null,
+    datastorePackaging: gs.datastorePackaging || null,
+    validation: gs.validation || null,
+    counts: {
+      systems: (gs.sourceSystems || []).length,
+      entities: entities.length,
+      columns: entities.reduce((n, e) => n + (e.columns?.length || 0), 0),
+      tools: (bc.toolIntents || []).length,
+      steps: (bc.workflow?.steps || []).length,
+      evidence: (bc.evidenceRequirements || []).length,
+      evals: (bc.goldenEvals || []).length,
+      anomalies: (gs.anomalies || []).length,
+      relationships: (gs.relationships || []).length,
+      documents: (gs.documents || []).length,
+    },
   };
 }
 
 const OKF_OUT = resolve(APP, "src/data/agent-okf.json");
 writeFileSync(OKF_OUT, JSON.stringify(okfBySlug) + "\n");
 console.log(
-  `okf: ${Object.keys(okfBySlug).length} bundles${okfMisses.length ? ` · ${okfMisses.length} without a spec` : ""} → ${OKF_OUT.replace(REPO + "/", "")}`,
+  `okf: ${Object.keys(okfBySlug).length} spec bundles${okfMisses.length ? ` · ${okfMisses.length} without a spec` : ""} → ${OKF_OUT.replace(REPO + "/", "")}`,
 );
 if (okfMisses.length > 10) {
   console.error(`✖ ${okfMisses.length} agents have no spec in the catalog:`, okfMisses.slice(0, 10));

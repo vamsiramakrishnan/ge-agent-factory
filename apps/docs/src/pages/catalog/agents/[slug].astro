@@ -25,16 +25,34 @@ export async function getStaticPaths() {
 }
 
 const { agent, okf: agentOkf } = Astro.props;
-const description = `${agent.title} — ${agent.department?.toUpperCase()} · ${agent.domainTitle}. Systems, integration protocols, governance, and factory build status.`;
+const description = `${agent.title} — ${agent.department?.toUpperCase()} · ${agent.domainTitle}. Governance, workflow, tools, source systems, data model, and evals.`;
+
+// Section headings for the OKF explorer — passed explicitly because Starlight
+// can't auto-detect headings rendered inside an Astro component.
+const o = agentOkf;
+const headings = o
+  ? [
+      { depth: 2, slug: "governance", text: "Playbook & governance" },
+      o.workflow?.steps?.length && { depth: 2, slug: "workflow", text: "Workflow" },
+      o.tools?.length && { depth: 2, slug: "tools", text: "Agent tools" },
+      o.systems?.length && { depth: 2, slug: "systems", text: "Source systems" },
+      o.entities?.length && { depth: 2, slug: "data-model", text: "Data model" },
+      (o.evals?.length || o.queries?.length || o.documents?.length) && {
+        depth: 2,
+        slug: "evals",
+        text: "Evals & proof",
+      },
+    ].filter(Boolean)
+  : [];
 ---
 
 <StarlightPage
   frontmatter={{
     title: agent.title,
     description,
-    tableOfContents: false,
     pagefind: false,
   }}
+  headings={headings}
 >
   <AgentDetail agent={agent} okf={agentOkf} />
 </StarlightPage>

@@ -1,10 +1,13 @@
 ---
 /**
- * AgentDetail.astro — the per-agent spec page body, rendered inside a
- * StarlightPage by src/pages/catalog/agents/[slug].astro. Fed one agent record
- * from the generated catalog (src/data/agent-catalog.json). Read-only view of
- * the factory's use-case source-map + agent-spec registry projections.
+ * AgentDetail.astro — the per-agent spec page, rendered inside a StarlightPage
+ * by src/pages/catalog/agents/[slug].astro. A dense header (identity, layer /
+ * trigger / governance tags, objective, spec stat-strip, factory status) over
+ * the structured OKF explorer (OkfSpec.astro). Fed the light record from the
+ * catalog plus the full OKF spec projection; both come from gen-catalog.mjs.
  */
+import OkfSpec from "./OkfSpec.astro";
+
 interface Props {
   agent: any;
   okf?: any;
@@ -13,17 +16,20 @@ const { agent, okf } = Astro.props;
 const d = agent.detail;
 const base = import.meta.env.BASE_URL;
 
-const categoryLabel: Record<string, string> = {
-  erp: "ERP / operational",
-  analytics: "Analytics warehouse",
-  ai: "AI / model",
-  clm: "Contract lifecycle",
-  "market-data": "Market data",
-  collaboration: "Collaboration",
-  declared: "Declared",
-};
 const stageLabel = (s: string | null) =>
   s ? s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : null;
+
+const c = okf?.counts || {};
+const stats = [
+  { n: c.systems, label: "systems" },
+  { n: c.entities, label: "entities" },
+  { n: c.columns, label: "fields" },
+  { n: c.tools, label: "tools" },
+  { n: c.steps, label: "workflow steps" },
+  { n: c.evidence, label: "evidence rules" },
+  { n: c.evals, label: "evals" },
+  { n: c.anomalies, label: "anomalies" },
+].filter((s) => s.n > 0);
 ---
 
 <div class="agent">
@@ -31,13 +37,13 @@ const stageLabel = (s: string | null) =>
 
   <div class="agent-hero">
     <span class="agent-badge" style={`background:${agent.domainColor}`}>{agent.num}</span>
-    <div>
-      <div class="agent-crumb">
-        {agent.department?.toUpperCase()} · {agent.domainTitle} ·
-        <span class="agent-code">{agent.agentId}</span>
-      </div>
+    <div class="agent-crumb">
+      {agent.department?.toUpperCase()} · {agent.domainTitle} ·
+      <span class="agent-code">{agent.agentId}</span>
     </div>
   </div>
+
+  {okf?.objective && <p class="agent-objective">{okf.objective}</p>}
 
   <div class="agent-tags">
     <span class="agent-tag" style={`--c:${agent.layerColor}`}>
@@ -52,7 +58,16 @@ const stageLabel = (s: string | null) =>
     )}
     {d.hasBehaviorContract && <span class="agent-tag">Behavior contract</span>}
     {d.buildable && <span class="agent-tag agent-tag-ok">Buildable</span>}
+    {stageLabel(d.targetStage) && <span class="agent-tag">→ {stageLabel(d.targetStage)}</span>}
   </div>
+
+  {stats.length > 0 && (
+    <div class="agent-stats">
+      {stats.map((s) => (
+        <div class="agent-stat"><span class="agent-stat-n">{s.n}</span><span class="agent-stat-l">{s.label}</span></div>
+      ))}
+    </div>
+  )}
 
   {agent.hitl && agent.hitlAction && (
     <p class="agent-hitl-note">
@@ -60,86 +75,19 @@ const stageLabel = (s: string | null) =>
     </p>
   )}
 
-  <h2>Systems &amp; integration</h2>
-  {d.sources?.length ? (
-    <div class="agent-table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>System</th>
-            <th>Flow</th>
-            <th>Protocol</th>
-            <th>Kind</th>
-            <th>What it provides</th>
-          </tr>
-        </thead>
-        <tbody>
-          {d.sources.map((s: any) => (
-            <tr>
-              <td><strong>{s.system}</strong></td>
-              <td>{s.direction}</td>
-              <td>{s.protocol}</td>
-              <td>{categoryLabel[s.category] ?? s.category}</td>
-              <td>{s.description}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+  {okf ? (
+    <OkfSpec spec={okf} sources={d.sources} />
   ) : (
-    <ul>{d.systems.map((s: string) => <li>{s}</li>)}</ul>
-  )}
-
-  <h2>Factory status</h2>
-  <dl class="agent-facts">
-    {stageLabel(d.targetStage) && (
-      <div><dt>Target stage</dt><dd>{stageLabel(d.targetStage)}</dd></div>
-    )}
-    {d.maturity && (
-      <div><dt>Spec maturity</dt><dd>{d.maturity.replace(/_/g, " ")}</dd></div>
-    )}
-    {d.rows && (
-      <div><dt>Mock data rows</dt><dd>{d.rows} per entity</dd></div>
-    )}
-    <div><dt>Behavior contract</dt><dd>{d.hasBehaviorContract ? "Present" : "—"}</dd></div>
-    <div><dt>Buildable</dt><dd>{d.buildable ? "Yes" : "—"}</dd></div>
-  </dl>
-  {d.buildReason && <p class="agent-note">{d.buildReason}.</p>}
-
-  {okf?.sections?.length && (
     <>
-      <h2>Explore the spec — Open Knowledge Format</h2>
-      <p class="agent-note">
-        This agent's full spec, compiled into its <strong>OKF</strong> knowledge
-        bundle ({okf.conceptCount} concepts) by the factory's own converter —
-        the operating playbook, tools, source systems, data entities, and evals
-        the agent is generated from. Expand a section to read it.
-      </p>
-      <div class="okf">
-        {okf.sections.map((section: any) => (
-          <details class="okf-section">
-            <summary>
-              <span class="okf-section-label">{section.label}</span>
-              <span class="okf-section-count">{section.concepts.length}</span>
-            </summary>
-            <div class="okf-section-body">
-              {section.concepts.map((c: any) => (
-                <article class="okf-concept">
-                  {section.concepts.length > 1 || c.title !== section.label ? (
-                    <h3 class="okf-concept-title">{c.title}</h3>
-                  ) : null}
-                  <div class="okf-concept-body" set:html={c.html} />
-                </article>
-              ))}
-            </div>
-          </details>
-        ))}
-      </div>
+      <h2>Systems &amp; integration</h2>
+      <ul>{(d.systems || []).map((s: string) => <li>{s}</li>)}</ul>
     </>
   )}
 
   <p class="agent-source">
     Spec source: <code>{d.sourcePath?.replace(/^(\.\.\/)+/, "apps/presentation/")}</code>
+    {d.maturity ? <> · {d.maturity.replace(/_/g, " ")}</> : null}
+    {d.rows ? <> · {d.rows} mock rows / entity</> : null}
   </p>
 </div>
 
@@ -152,7 +100,7 @@ const stageLabel = (s: string | null) =>
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
   }
   .agent-badge {
     width: 2.4rem;
@@ -175,6 +123,12 @@ const stageLabel = (s: string | null) =>
   }
   .agent-code {
     color: var(--sl-color-text-accent);
+  }
+  .agent-objective {
+    font-size: var(--sl-text-base);
+    color: var(--sl-color-gray-2);
+    max-width: 46rem;
+    margin: 0.5rem 0 0.9rem;
   }
   .agent-tags {
     display: flex;
@@ -206,135 +160,53 @@ const stageLabel = (s: string | null) =>
     color: #059669;
     border-color: color-mix(in srgb, #059669 35%, var(--sl-color-gray-5));
   }
+
+  /* Spec stat-strip */
+  .agent-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+    gap: 0.5rem;
+    margin: 0 0 1.25rem;
+  }
+  .agent-stat {
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.6rem;
+    text-align: center;
+  }
+  .agent-stat-n {
+    display: block;
+    font-family: var(--ge-display-font);
+    font-weight: 700;
+    font-size: 1.15rem;
+    line-height: 1;
+    color: var(--sl-color-white);
+  }
+  .agent-stat-l {
+    display: block;
+    margin-top: 0.2rem;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--sl-color-gray-3);
+  }
+
   .agent-hitl-note {
     border-left: 3px solid #e11d48;
     padding-left: 0.75rem;
     font-size: var(--sl-text-sm);
   }
-  .agent-table-wrap {
-    overflow-x: auto;
-  }
-  .agent-facts {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-    gap: 0.5rem 1.5rem;
-    margin: 0.5rem 0;
-  }
-  .agent-facts > div {
-    border-top: 1px solid var(--sl-color-gray-5);
-    padding-top: 0.4rem;
-  }
-  .agent-facts dt {
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--sl-color-gray-3);
-  }
-  .agent-facts dd {
-    margin: 0.1rem 0 0;
-    font-weight: 600;
-    text-transform: capitalize;
-  }
-  .agent-note {
-    font-size: var(--sl-text-sm);
-    color: var(--sl-color-gray-3);
-  }
   .agent-source {
     font-size: var(--sl-text-xs);
     color: var(--sl-color-gray-3);
-    margin-top: 2rem;
+    margin-top: 2.5rem;
   }
+</style>
 
-  /* ── OKF explorer ── */
-  .okf {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    margin: 0.75rem 0 1.5rem;
-  }
-  .okf-section {
-    border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.5rem;
-    overflow: hidden;
-    background: var(--sl-color-gray-6);
-  }
-  .okf-section > summary {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.55rem 0.85rem;
-    cursor: pointer;
-    font-family: var(--ge-display-font);
-    font-weight: 600;
-    list-style: none;
-    user-select: none;
-  }
-  .okf-section > summary::-webkit-details-marker {
-    display: none;
-  }
-  .okf-section > summary::before {
-    content: "▸";
-    color: var(--sl-color-gray-3);
-    transition: transform 120ms ease;
-  }
-  .okf-section[open] > summary::before {
-    transform: rotate(90deg);
-  }
-  .okf-section-count {
-    margin-left: auto;
-    font-family: var(--sl-font-mono);
-    font-size: 0.7rem;
-    color: var(--sl-color-gray-3);
-    border: 1px solid var(--sl-color-gray-5);
-    border-radius: 999px;
-    padding: 0 0.45rem;
-  }
-  .okf-section-body {
-    padding: 0.25rem 0.85rem 0.5rem;
-    background: var(--sl-color-black);
-  }
-  .okf-concept {
-    padding: 0.75rem 0;
-    border-top: 1px solid var(--sl-color-gray-5);
-  }
-  .okf-concept:first-child {
-    border-top: none;
-  }
-  .okf-concept-title {
-    font-size: 0.9rem;
-    margin: 0 0 0.35rem;
-    border: none;
-    padding: 0;
-  }
-  /* Concept bodies are rendered markdown — keep their headings modest so they
-     read as sub-content, not page structure. */
-  .okf-concept-body :global(h1),
-  .okf-concept-body :global(h2),
-  .okf-concept-body :global(h3) {
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--sl-color-gray-3);
-    margin: 0.75rem 0 0.25rem;
-    border: none;
-    padding: 0;
-  }
-  .okf-concept-body :global(p),
-  .okf-concept-body :global(li) {
-    font-size: var(--sl-text-sm);
-  }
-  .okf-concept-body :global(ul) {
-    margin: 0.25rem 0;
-  }
-  .okf-concept-body :global(table) {
-    font-size: var(--sl-text-xs);
-    margin: 0.5rem 0;
-  }
-  .okf-concept-body :global(.okf-xref) {
-    color: var(--sl-color-gray-2);
-    font-weight: 600;
-  }
-  .okf-concept-body :global(code) {
-    font-size: 0.85em;
+<!-- Widen the reading measure on agent spec pages only (dense schema tables) —
+     shipped with this component, so it loads solely on pages that render it. -->
+<style is:global>
+  :root {
+    --sl-content-width: 58rem;
   }
 </style>
