@@ -107,7 +107,7 @@ function buildWorkspaceCommands(project) {
     install: "uv sync",
     run: "uv run adk web",
     test: "uv run pytest",
-    eval: "uv run agents-cli eval run tests/eval/eval_config.json --all",
+    eval: "uv run agents-cli eval run --dataset tests/eval/datasets/ge_behavior_contract.json --config tests/eval/eval_config.yaml",
     validate: `ge-harness validate ${id}`,
     preview: `ge-harness preview ${id}`,
     doctor: `ge-harness workspace doctor ${id} --stage preview`,

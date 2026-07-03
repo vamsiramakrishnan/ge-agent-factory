@@ -1,7 +1,7 @@
 ---
 title: Atomic capabilities
 parent: Reference
-nav_order: 13
+nav_order: 14
 layout: default
 description: The end-to-end system as composable atomic capabilities — every capability with its CLI verb, console route, MCP tool, and skill, each independently drivable by a human, a CI job, the console, or an AI assistant.
 ---
@@ -36,6 +36,7 @@ the others.
 | Compile evals | `ge evals compile` | yes | `POST /api/ge/evals/compile` | `factory_evals_compile` | `driving-live-proof` |
 | Build the agent | `ge agents build` (`--local` for on-machine) | yes | `POST /api/ge/agents/build` | `factory_provision` | `running-factory` |
 | Generate dependency data | `ge pipeline run` | yes | — (observed via `/api/runtime/*`) | — | `building-simulators` |
+| Synthesize seed data | `ge data synth` | yes | `POST /api/ge/data/synth` | `factory_data_synth` | `building-simulators` |
 | Prove locally | `ge prove` | yes | `POST /api/ge/prove` | `factory_prove` | `checking-workspaces` |
 | Hand off & ship | `ge handoff` | yes | `POST /api/ge/handoff` | `factory_handoff` | `running-release` |
 | Drive live | `ge drive` | yes | `POST /api/ge/drive` | `factory_drive` | `driving-live-proof` |
@@ -76,6 +77,13 @@ stages are how a workspace gets deterministic source-system data. Standalone:
 run it against a single use case and stop at the stage you need; poll with
 `ge pipeline status <run-id>`. See
 [Generate simulations](../cookbooks/generate-simulations.html).
+
+**Synthesize seed data** (`ge data synth`). Realizes one simulator pack's
+deterministic `seed.json` from its contract — no capture, build, or pipeline
+run required. Standalone: `--pack <dir>` takes any directory of pack JSON,
+`--stdout` pipes the seed to your own tooling, and `--profile realistic`
+switches on the statistical realism tier. See
+[Synthetic data](synthetic-data.html).
 
 **Prove locally** (`ge prove`). The dispatch rule needs no flags: fresh
 machine → health check plus first validated workspace; workspaces present →

@@ -480,7 +480,7 @@ Build gateway/worker images + bind via terraform (Terraform owns Cloud Run confi
 
 ### `ge data`
 
-Data plane (GCS/BigQuery/AlloyDB/Bigtable/Firestore): up · doctor
+Data: provision the shared cloud stores (up · doctor) · synthesize deterministic simulator seeds (synth)
 
 ### `ge data up`
 
@@ -489,6 +489,21 @@ Provision the shared data stores (terraform apply) → merge coords into .ge.jso
 ### `ge data doctor`
 
 Check the shared data stores (bucket, AlloyDB DSN secret, Bigtable, BigQuery)
+
+### `ge data synth`
+
+Synthesize deterministic seed data for a simulator system twin: pack contract → recipe → seeded rows → seed.json
+
+| Flag | Type | Description |
+|---|---|---|
+| `--system` | string | Simulator system id under apps/factory/simulator-systems/ (e.g. servicenow) |
+| `--pack` | string | Explicit pack directory (schema/projection/materialization/workflows JSON) instead of --system |
+| `--seed` | string | Deterministic seed — the same contract and seed always produce identical bytes (default 42) |
+| `--profile` | string | Realization profile: baseline (default) or realistic (skewed distributions, shared personas, seeded edge cases) |
+| `--edge-case-rate` | string | Fraction of rows given realistic edge cases with --profile realistic, 0..1 (default 0.06) |
+| `--out` | string | Seed output path (default: the pack's own seed.json) |
+| `--stdout` | boolean | Print the seed JSON to stdout instead of writing a file; the summary goes to stderr |
+| `--no-snowfakery` | boolean | Skip the Snowfakery tier and force the offline in-process tier |
 
 ### `ge mcp`
 

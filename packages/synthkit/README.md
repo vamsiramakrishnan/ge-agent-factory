@@ -21,6 +21,10 @@ was the realism tier's persona pool (see below).
 seeded PRNG, a skewed distribution, a fake-person pool, a business-hours
 timestamp, or a Snowfakery emitter — it very likely already exists here.
 
+Operator-facing documentation — the recipe model, the tiers, the realism
+profile, and the `ge data synth` verb — lives at
+[`docs/reference/synthetic-data.md`](../../docs/reference/synthetic-data.md).
+
 ## The model: one recipe, two tiers, plus a realism profile
 
 A simulator pack's contract (`schema.json` + `projection` / `materialization` /

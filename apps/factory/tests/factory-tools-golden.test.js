@@ -25,6 +25,8 @@ import { runGoldenOracle } from "./golden-test-helpers.mjs";
 //   cp <tmp>/evals/golden.json apps/factory/tests/fixtures/tools-golden/golden.json.golden
 //   cp <tmp>/tests/eval/evalsets/ge_behavior_contract.evalset.json apps/factory/tests/fixtures/tools-golden/evalset.json.golden
 //   cp <tmp>/tests/eval/{eval_config,optimization_config}.json apps/factory/tests/fixtures/tools-golden/
+//   cp <tmp>/tests/eval/datasets/ge_behavior_contract.json apps/factory/tests/fixtures/tools-golden/eval_dataset.json.golden
+//   cp <tmp>/tests/eval/eval_config.yaml apps/factory/tests/fixtures/tools-golden/eval_config.yaml.golden
 //   cp <tmp>/pyproject.toml apps/factory/tests/fixtures/tools-golden/pyproject.toml.golden
 //   cp <tmp>/agents-cli-manifest.yaml apps/factory/tests/fixtures/tools-golden/agents-cli-manifest.yaml.golden
 //   cp <tmp>/.agent_engine_config.json apps/factory/tests/fixtures/tools-golden/agent_engine_config.json.golden
@@ -62,6 +64,12 @@ function generate() {
       evalSet: readFileSync(join(ws, "tests", "eval", "evalsets", "ge_behavior_contract.evalset.json"), "utf8"),
       evalConfig: readFileSync(join(ws, "tests", "eval", "eval_config.json"), "utf8"),
       optimizationConfig: readFileSync(join(ws, "tests", "eval", "optimization_config.json"), "utf8"),
+      // The modern agents-cli (>= 1.0) family, emitted by default alongside the
+      // legacy artifacts above. (The fixture contract has one golden eval, so
+      // the holdout split datasets are deliberately absent — see
+      // writeAgentsCliEvalArtifacts.)
+      evalDataset: readFileSync(join(ws, "tests", "eval", "datasets", "ge_behavior_contract.json"), "utf8"),
+      evalConfigYaml: readFileSync(join(ws, "tests", "eval", "eval_config.yaml"), "utf8"),
       pyproject: readFileSync(join(ws, "pyproject.toml"), "utf8"),
       agentsCliManifest: readFileSync(join(ws, "agents-cli-manifest.yaml"), "utf8"),
       agentEngineConfig: readFileSync(join(ws, ".agent_engine_config.json"), "utf8"),
@@ -89,6 +97,8 @@ test.each([
   ["tests/eval/evalsets/ge_behavior_contract.evalset.json", "evalSet", "evalset.json.golden"],
   ["tests/eval/eval_config.json", "evalConfig", "eval_config.json.golden"],
   ["tests/eval/optimization_config.json", "optimizationConfig", "optimization_config.json.golden"],
+  ["tests/eval/datasets/ge_behavior_contract.json", "evalDataset", "eval_dataset.json.golden"],
+  ["tests/eval/eval_config.yaml", "evalConfigYaml", "eval_config.yaml.golden"],
   ["pyproject.toml", "pyproject", "pyproject.toml.golden"],
   ["agents-cli-manifest.yaml", "agentsCliManifest", "agents-cli-manifest.yaml.golden"],
   [".agent_engine_config.json", "agentEngineConfig", "agent_engine_config.json.golden"],

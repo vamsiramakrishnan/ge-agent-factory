@@ -30,7 +30,7 @@ export function buildGoogleCloudCommandGroups({
       `cd ${workspaceDir} && agents-cli info --json > artifacts/agents-cli-info.json`,
       `cd ${workspaceDir} && agents-cli lint --fix --skip-codespell --skip-ty`,
       `cd ${workspaceDir} && agents-cli run "hello" --start-server`,
-      `cd ${workspaceDir} && agents-cli eval run --all`,
+      `cd ${workspaceDir} && agents-cli eval run --dataset tests/eval/datasets/ge_behavior_contract.json --config tests/eval/eval_config.yaml`,
       `cd ${workspaceDir} && factory quality-gate --dir . --prompt "hello"`,
       `ge promote:packet ${projectId}`,
     ], "Use agents-cli for the canonical local agent smoke path and behavior evals; ge commands remain harness wrappers."),

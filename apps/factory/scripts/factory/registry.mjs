@@ -257,7 +257,7 @@ export function buildFactoryCommandTree({ resolveDir, parseLegacy, handlers }) {
     init: dirCmd("init", "Initialize a workspace", { name: str("Agent name"), domain: str("Domain") }, handlers.init),
     schema: dirCmd("schema", "Derive / edit the schema", { "add-table": str("Add a table (JSON)"), "from-file": str("Import schema JSON") }, handlers.schema),
     generate: dirCmd("generate", "Generate mock data", { seed: str("Faker seed"), rows: str("Default rows per table") }, handlers.generate),
-    eval: dirCmd("eval", "Run evals", { run: str("Set to 'false' to skip running"), "eval-timeout": str("Eval timeout in SECONDS (s)"), "timeout-ms": str("Command timeout in MILLISECONDS (ms) — note: --eval-timeout above is in seconds, not ms") }, handlers.eval),
+    eval: dirCmd("eval", "Run evals", { run: str("Set to 'false' to skip running"), "timeout-ms": str("Command timeout in MILLISECONDS (ms)") }, handlers.eval),
     serve: dirCmd("serve", "Serve the agent locally (adk web)", { port: str("Port (default 8080)") }, handlers.serve),
     "data-plan": dirCmd("data-plan", "Build the cloud data plan", {}, handlers.dataPlan),
     "source-integration-plan": dirCmd("source-integration-plan", "Plan source-system integration", {}, handlers.sourceIntegrationPlan),

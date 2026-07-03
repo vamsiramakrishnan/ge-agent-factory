@@ -15,25 +15,42 @@
 //                              form wrapped as { cases }. Pinned by the same
 //                              compile pass.
 //
-//   render-eval-artifacts.mjs  The generated-workspace v1 family: golden.json,
-//                              ge_behavior_contract.evalset.json, eval_config,
-//                              optimization_config. Byte output is golden for
-//                              the factory's generate pipeline (parity-oracle/
-//                              golden workspace tests) — renderAgentsCliEvalSet
-//                              takes the factory's naming/derivation helpers as
-//                              an injected parameter (see its header for the
-//                              seam rationale).
+//   render-eval-artifacts.mjs  The generated-workspace legacy (v1) family:
+//                              golden.json, ge_behavior_contract.evalset.json,
+//                              eval_config, optimization_config. Byte output is
+//                              golden for the factory's generate pipeline
+//                              (parity-oracle/golden workspace tests) —
+//                              renderAgentsCliEvalSet takes the factory's
+//                              naming/derivation helpers as an injected
+//                              parameter (see its header for the seam rationale).
 //
-//   render-eval-artifacts-v2.mjs  Opt-in judge-rigor artifacts (holdout split,
-//                              split evalsets, optimizer config v2, judge
-//                              panel), env-gated behind GE_EVAL_V2=1 so the
-//                              default workspace stays byte-identical to v1.
-//                              Rubrics come from v1's renderEvalConfig — one
-//                              source of truth, no drift.
+//   agents-cli-eval-dataset.mjs  The modern (agents-cli >= 1.0) generated-
+//                              workspace family, emitted by default alongside
+//                              v1: the EvaluationDataset for `eval generate`
+//                              (tests/eval/datasets/*.json) plus its holdout
+//                              train/validation partitions, derived from the
+//                              rendered v1 evalset so the two can never drift.
+//
+//   agents-cli-eval-config.mjs   tests/eval/eval_config.yaml for `eval grade`:
+//                              built-in metrics mapped from the v1 criteria, a
+//                              behavior-contract LLM-judge metric with native
+//                              self-consistency sampling, and the ge_thresholds
+//                              CI-gate extension.
+//
+//   holdout.mjs                Deterministic train/validation split by id
+//                              (feeds the split datasets; written as
+//                              tests/eval/holdout_split.json provenance).
+//
+// Retired (the GE_EVAL_V2 gate and render-eval-artifacts-v2.mjs): the split
+// *evalsets*, optimization_config_v2.json (superseded by `eval optimize`
+// consuming EvaluationDatasets directly), and judge_panel.json (superseded by
+// judge_model_sampling_count in eval_config.yaml).
 //
 // Everything here is a pure function of its inputs: no clock (timestamps are
 // passed in), no randomness (the holdout split hashes ids with FNV-1a).
 export { emitAdkEvalset, writeAdkEvalset } from "./adk-evalset.mjs";
 export { emitAgentsCliDataset, writeAgentsCliDataset } from "./agents-cli-dataset.mjs";
 export { renderGoldenEvals, renderAgentsCliEvalSet, renderEvalConfig, renderOptimizationConfig } from "./render-eval-artifacts.mjs";
-export { renderHoldoutSplit, renderSplitEvalSets, renderOptimizationConfigV2, renderJudgePanelConfig } from "./render-eval-artifacts-v2.mjs";
+export { renderEvalDataset, renderSplitEvalDatasets } from "./agents-cli-eval-dataset.mjs";
+export { renderEvalConfigYaml, BEHAVIOR_CONTRACT_JUDGE_METRIC } from "./agents-cli-eval-config.mjs";
+export { renderHoldoutSplit } from "./holdout.mjs";
