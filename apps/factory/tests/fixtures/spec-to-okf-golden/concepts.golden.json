@@ -13,7 +13,7 @@
       ],
       "timestamp": "2026-01-01T00:00:00.000Z"
     },
-    "body": "# OKF Golden Agent\n\n> A representative spec for byte-parity testing.\n\n## Overview\n\n- **Persona:** Operations Analyst\n- **Department:** Finance\n- **Objective:** Close the books accurately and on time.\n\n## KPI summary\n\n- **Cycle time**: 5 days → 1 day\n- **Manual touches**: 12 → 2\n\n## Contents\n\n- [Playbook — role, scope, guardrails](/playbook.md)\n- [Source Systems](/systems/index.md)\n- [Data Entities](/tables/index.md)\n- [Agent Tools](/tools/index.md)\n- [Workflow Stages](/workflow/index.md)\n- [Query Capabilities](/queries/index.md)\n- [Eval Scenarios](/tests/index.md)\n- [Source Documents](/documents/index.md)\n- [KPIs](/kpis.md)\n- [Golden Evals](/evals.md)"
+    "body": "# OKF Golden Agent\n\n> A representative spec for byte-parity testing.\n\n## Overview\n\n- **Persona:** Operations Analyst\n- **Department:** Finance\n- **Objective:** Close the books accurately and on time.\n\n## KPI summary\n\n- **Cycle time**: 5 days → 1 day\n- **Manual touches**: 12 → 2\n\n## Contents\n\n- [Playbook — role, scope, guardrails](/playbook.md)\n- [Source Systems](/systems/index.md)\n- [Data Entities](/tables/index.md)\n- [Agent Tools](/tools/index.md)\n- [Workflow Stages](/workflow/index.md)\n- [Query Capabilities](/queries/index.md)\n- [Eval Scenarios](/tests/index.md)\n- [Source Documents](/documents/index.md)\n- [Claims](/claims/index.md)\n- [Policies](/policies/index.md)\n- [Proof Obligations](/proof-obligations/index.md)\n- [KPIs](/kpis.md)\n- [Golden Evals](/evals.md)"
   },
   {
     "relPath": "log",
@@ -138,9 +138,13 @@
         "okf",
         "brd"
       ],
-      "timestamp": "2026-01-01T00:00:00.000Z"
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "source_kind": "generationSpec",
+      "source_path": "behaviorContract.toolIntents",
+      "generation_status": "generated",
+      "ge_status": "generated"
     },
-    "body": "# query_core_ledger_gl\n\nRead GL entries.\n\n- **Kind:** query\n- **Source system:** [Core Ledger](/systems/core-ledger.md)\n\n## Required inputs\n\n- period\n\n## Produces\n\n- balances\n\n## Evidence emitted\n\n- gl_entry\n\n# Examples\n\n```\nquery_core_ledger_gl(period=<period>)\n```\n\n## Used by\n\n- [balance_pull](/workflow/balance-pull.md)"
+    "body": "# query_core_ledger_gl\n\nRead GL entries.\n\n- **Kind:** query\n- **Source system:** [Core Ledger](/systems/core-ledger.md)\n\n## Inputs\n\n- period\n\n## Outputs\n\n- balances\n\n## Side Effects\n\n- No mutation is declared by the spec for this tool.\n\n## Idempotency\n\nNo idempotency key declared; no mutation is declared by the spec for this tool.\n\n## Confirmation\n\nNo write confirmation policy is derivable from the spec.\n\n## Permissions\n\nNo explicit permission scopes declared; source-system access is tied to [Core Ledger](/systems/core-ledger.md).\n\n## Failure Modes\n\nNo explicit failure modes are declared in the spec; rely on refusal/escalation policies for unsafe or incomplete evidence.\n\n## Used By\n\n- [balance_pull](/workflow/balance-pull.md)\n\n## Evals\n\n- [Close the current period end-to-end.](/tests/e2e-close.md)\n\n## Evidence emitted\n\n- gl_entry\n\n## Required inputs\n\n- period\n\n## Produces\n\n- balances\n\n# Examples\n\n```\nquery_core_ledger_gl(period=<period>)\n```\n\n# Citations\n\n- [Core Ledger](/systems/core-ledger.md)"
   },
   {
     "relPath": "tools/notify-manager",
@@ -153,9 +157,13 @@
         "okf",
         "brd"
       ],
-      "timestamp": "2026-01-01T00:00:00.000Z"
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "source_kind": "generationSpec",
+      "source_path": "behaviorContract.toolIntents",
+      "generation_status": "generated",
+      "ge_status": "generated"
     },
-    "body": "# notify_manager\n\nunderscore variant\n\n- **Kind:** action\n- **Source system:** [Notification Service](/systems/notify-svc.md)\n\n## Required inputs\n\n_None specified._\n\n## Produces\n\n_None specified._\n\n## Evidence emitted\n\n_None specified._\n\n# Examples\n\n```\nnotify_manager()\n```\n\n## Used by\n\n- [reconcile](/workflow/reconcile.md)"
+    "body": "# notify_manager\n\nunderscore variant\n\n- **Kind:** action\n- **Source system:** [Notification Service](/systems/notify-svc.md)\n\n## Inputs\n\n_None specified._\n\n## Outputs\n\n_None specified._\n\n## Side Effects\n\n- May change Notification Service state because the spec classifies it as action.\n\n## Idempotency\n\nNo idempotency key is declared in the spec or matched API; require one before production writes.\n\n## Confirmation\n\n- [Confirmation policy — notify_manager](/policies/confirmation-notify-manager.md)\n\n## Permissions\n\nNo explicit permission scopes declared; source-system access is tied to [Notification Service](/systems/notify-svc.md).\n\n## Failure Modes\n\nNo explicit failure modes are declared in the spec; rely on refusal/escalation policies for unsafe or incomplete evidence.\n\n## Used By\n\n- [reconcile](/workflow/reconcile.md)\n\n## Evals\n\n_No eval scenario explicitly exercises this tool._\n\n## Evidence emitted\n\n_None specified._\n\n## Required inputs\n\n_None specified._\n\n## Produces\n\n_None specified._\n\n# Examples\n\n```\nnotify_manager()\n```\n\n# Citations\n\n- [Notification Service](/systems/notify-svc.md)\n- [Confirmation policy — notify_manager](/policies/confirmation-notify-manager.md)"
   },
   {
     "relPath": "tools/notify-manager-2",
@@ -168,9 +176,13 @@
         "okf",
         "brd"
       ],
-      "timestamp": "2026-01-01T00:00:00.000Z"
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "source_kind": "generationSpec",
+      "source_path": "behaviorContract.toolIntents",
+      "generation_status": "generated",
+      "ge_status": "generated"
     },
-    "body": "# notify-manager\n\nhyphen variant\n\n- **Kind:** action\n- **Source system:** [Notification Service](/systems/notify-svc.md)\n\n## Required inputs\n\n_None specified._\n\n## Produces\n\n_None specified._\n\n## Evidence emitted\n\n_None specified._\n\n# Examples\n\n```\nnotify-manager()\n```\n\n## Used by\n\n- [reconcile](/workflow/reconcile.md)"
+    "body": "# notify-manager\n\nhyphen variant\n\n- **Kind:** action\n- **Source system:** [Notification Service](/systems/notify-svc.md)\n\n## Inputs\n\n_None specified._\n\n## Outputs\n\n_None specified._\n\n## Side Effects\n\n- May change Notification Service state because the spec classifies it as action.\n\n## Idempotency\n\nNo idempotency key is declared in the spec or matched API; require one before production writes.\n\n## Confirmation\n\n- [Confirmation policy — notify-manager](/policies/confirmation-notify-manager-2.md)\n\n## Permissions\n\nNo explicit permission scopes declared; source-system access is tied to [Notification Service](/systems/notify-svc.md).\n\n## Failure Modes\n\nNo explicit failure modes are declared in the spec; rely on refusal/escalation policies for unsafe or incomplete evidence.\n\n## Used By\n\n- [reconcile](/workflow/reconcile.md)\n\n## Evals\n\n_No eval scenario explicitly exercises this tool._\n\n## Evidence emitted\n\n_None specified._\n\n## Required inputs\n\n_None specified._\n\n## Produces\n\n_None specified._\n\n# Examples\n\n```\nnotify-manager()\n```\n\n# Citations\n\n- [Notification Service](/systems/notify-svc.md)\n- [Confirmation policy — notify-manager](/policies/confirmation-notify-manager-2.md)"
   },
   {
     "relPath": "workflow/index",
@@ -240,6 +252,196 @@
     "body": "# Controls Playbook\n\nInternal controls reference.\n\n- **Type:** policy\n\n## Citation anchors\n\n- section-3\n- section-4"
   },
   {
+    "relPath": "claims/index",
+    "fields": {
+      "type": "Index",
+      "title": "Claims",
+      "description": "Claims that require source-system evidence.",
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Claims\n\n- [Cite the GL entry id](/claims/cite-the-gl-entry-id.md)"
+  },
+  {
+    "relPath": "claims/cite-the-gl-entry-id",
+    "fields": {
+      "type": "Claim",
+      "title": "Cite the GL entry id",
+      "description": "Evidence-backed claim: Cite the GL entry id",
+      "source_id": "cite-the-gl-entry-id",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "source_kind": "generationSpec",
+      "source_path": "behaviorContract.evidenceRequirements.0",
+      "generation_status": "generated",
+      "ge_status": "generated"
+    },
+    "body": "# Cite the GL entry id\n\n## Authority\n\n_No source systems listed on this evidence requirement._\n\n## Required Evidence\n\n_None specified._\n\n## Citation Requirements\n\nMust cite linked source-system evidence before answering.\n\n## Proof obligations\n\n- [Evidence obligation — Cite the GL entry id](/proof-obligations/evidence-cite-the-gl-entry-id.md)\n\n# Citations\n\n- [Controls Playbook](/documents/controls-playbook.md)"
+  },
+  {
+    "relPath": "policies/index",
+    "fields": {
+      "type": "Index",
+      "title": "Policies",
+      "description": "Refusal, escalation, confirmation, and idempotency policies derivable from the spec.",
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Policies\n\n- [Refusal policy 1](/policies/refusal-1.md)\n- [Escalation policy 1](/policies/escalation-1.md)\n- [Confirmation policy — notify_manager](/policies/confirmation-notify-manager.md)\n- [Confirmation policy — notify-manager](/policies/confirmation-notify-manager-2.md)"
+  },
+  {
+    "relPath": "policies/refusal-1",
+    "fields": {
+      "type": "Policy",
+      "title": "Refusal policy 1",
+      "description": "Never post without approval",
+      "source_id": "refusal-1",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "source_kind": "generationSpec",
+      "source_path": "behaviorContract.refusalRules.0",
+      "generation_status": "generated",
+      "ge_status": "generated"
+    },
+    "body": "# Refusal policy 1\n\n- **Policy kind:** refusal\n- **Spec source:** behaviorContract.refusalRules.0\n\n## Rule\n\nNever post without approval\n\n## Used by\n\n- [Playbook](/playbook.md)\n\n# Citations\n\n- [Playbook](/playbook.md)"
+  },
+  {
+    "relPath": "policies/escalation-1",
+    "fields": {
+      "type": "Policy",
+      "title": "Escalation policy 1",
+      "description": "When Variance > 1%; action: Notify manager",
+      "source_id": "escalation-1",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "source_kind": "generationSpec",
+      "source_path": "behaviorContract.escalationRules.0",
+      "generation_status": "generated",
+      "ge_status": "generated"
+    },
+    "body": "# Escalation policy 1\n\n- **Policy kind:** escalation\n- **Spec source:** behaviorContract.escalationRules.0\n\n## Rule\n\n| Trigger | Action | Handoff | Rationale |\n| --- | --- | --- | --- |\n| Variance > 1% | Notify manager |  | Material threshold |\n\n## Used by\n\n- [Playbook](/playbook.md)\n\n# Citations\n\n- [Playbook](/playbook.md)"
+  },
+  {
+    "relPath": "policies/confirmation-notify-manager",
+    "fields": {
+      "type": "Policy",
+      "title": "Confirmation policy — notify_manager",
+      "description": "Confirm before invoking write-like tool notify_manager.",
+      "source_id": "confirmation-notify-manager",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "source_kind": "generationSpec",
+      "source_path": "behaviorContract.toolIntents.notify_manager",
+      "generation_status": "inferred",
+      "ge_status": "inferred"
+    },
+    "body": "# Confirmation policy — notify_manager\n\n- **Policy kind:** tool confirmation\n- **Spec source:** behaviorContract.toolIntents.notify_manager\n- **Tool:** [notify_manager](/tools/notify-manager.md)\n\n## Rule\n\nConfirm before invoking write-like tool notify_manager.\n\n# Citations\n\n- [notify_manager](/tools/notify-manager.md)"
+  },
+  {
+    "relPath": "policies/confirmation-notify-manager-2",
+    "fields": {
+      "type": "Policy",
+      "title": "Confirmation policy — notify-manager",
+      "description": "Confirm before invoking write-like tool notify-manager.",
+      "source_id": "confirmation-notify-manager-2",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "source_kind": "generationSpec",
+      "source_path": "behaviorContract.toolIntents.notify-manager",
+      "generation_status": "inferred",
+      "ge_status": "inferred"
+    },
+    "body": "# Confirmation policy — notify-manager\n\n- **Policy kind:** tool confirmation\n- **Spec source:** behaviorContract.toolIntents.notify-manager\n- **Tool:** [notify-manager](/tools/notify-manager-2.md)\n\n## Rule\n\nConfirm before invoking write-like tool notify-manager.\n\n# Citations\n\n- [notify-manager](/tools/notify-manager-2.md)"
+  },
+  {
+    "relPath": "proof-obligations/index",
+    "fields": {
+      "type": "Index",
+      "title": "Proof Obligations",
+      "description": "Assertions the bundle must prove through evidence requirements and golden evals.",
+      "timestamp": "2026-01-01T00:00:00.000Z"
+    },
+    "body": "# Proof Obligations\n\n- [Evidence obligation — Cite the GL entry id](/proof-obligations/evidence-cite-the-gl-entry-id.md)\n- [Golden eval obligation — Close the current period end-to-end.](/proof-obligations/eval-e2e-close.md)\n- [Golden eval obligation — Plain string eval prompt.](/proof-obligations/eval-plain-string-eval-prompt.md)"
+  },
+  {
+    "relPath": "proof-obligations/evidence-cite-the-gl-entry-id",
+    "fields": {
+      "type": "Proof Obligation",
+      "title": "Evidence obligation — Cite the GL entry id",
+      "description": "evidence requirement proof obligation",
+      "source_id": "evidence-cite-the-gl-entry-id",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "source_kind": "generationSpec",
+      "source_path": "behaviorContract.evidenceRequirements.0",
+      "generation_status": "generated",
+      "ge_status": "generated"
+    },
+    "body": "# Evidence obligation — Cite the GL entry id\n\n- **Kind:** evidence requirement\n- **Spec source:** behaviorContract.evidenceRequirements.0\n- **Claim:** [Cite the GL entry id](/claims/cite-the-gl-entry-id.md)\n"
+  },
+  {
+    "relPath": "proof-obligations/eval-e2e-close",
+    "fields": {
+      "type": "Proof Obligation",
+      "title": "Golden eval obligation — Close the current period end-to-end.",
+      "description": "golden eval proof obligation",
+      "source_id": "eval-e2e-close",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "source_kind": "generationSpec",
+      "source_path": "behaviorContract.goldenEvals.0",
+      "generation_status": "generated",
+      "ge_status": "generated"
+    },
+    "body": "# Golden eval obligation — Close the current period end-to-end.\n\n- **Kind:** golden eval\n- **Spec source:** behaviorContract.goldenEvals.0\n- **Eval:** [e2e-close](/tests/e2e-close.md)\n\n\n## Mechanisms\n\n- [query_core_ledger_gl](/tools/query-core-ledger-gl.md)\n\n# Citations\n\n- [controls-playbook](/documents/controls-playbook.md)"
+  },
+  {
+    "relPath": "proof-obligations/eval-plain-string-eval-prompt",
+    "fields": {
+      "type": "Proof Obligation",
+      "title": "Golden eval obligation — Plain string eval prompt.",
+      "description": "golden eval proof obligation",
+      "source_id": "eval-plain-string-eval-prompt",
+      "tags": [
+        "Finance",
+        "okf",
+        "brd"
+      ],
+      "timestamp": "2026-01-01T00:00:00.000Z",
+      "source_kind": "generationSpec",
+      "source_path": "behaviorContract.goldenEvals.1",
+      "generation_status": "generated",
+      "ge_status": "generated"
+    },
+    "body": "# Golden eval obligation — Plain string eval prompt.\n\n- **Kind:** golden eval\n- **Spec source:** behaviorContract.goldenEvals.1\n- **Eval:** [plain-string-eval-prompt](/tests/plain-string-eval-prompt.md)\n"
+  },
+  {
     "relPath": "queries/index",
     "fields": {
       "type": "Index",
@@ -256,6 +458,7 @@
       "title": "Pull period balances.",
       "description": "Pull period balances.",
       "source_id": "balance-pull",
+      "generation_status": "inferred",
       "tags": [
         "Finance",
         "okf",
@@ -263,7 +466,7 @@
       ],
       "timestamp": "2026-01-01T00:00:00.000Z"
     },
-    "body": "# Pull period balances.\n\n## Tools used\n\n- [query_core_ledger_gl](/tools/query-core-ledger-gl.md)\n\n## Runs in\n\n- [balance_pull](/workflow/balance-pull.md)\n\n## Evidence expected\n\n- gl_entry\n\n# Citations\n\n- [Controls Playbook](/documents/controls-playbook.md)"
+    "body": "# Pull period balances.\n\n## Tools used\n\n- [query_core_ledger_gl](/tools/query-core-ledger-gl.md)\n\n## Runs in\n\n- [balance_pull](/workflow/balance-pull.md)\n\n## Evidence expected\n\n- gl_entry\n\n## Evals\n\n- [Close the current period end-to-end.](/tests/e2e-close.md)\n\n# Citations\n\n- [Controls Playbook](/documents/controls-playbook.md)"
   },
   {
     "relPath": "queries/reconcile",
@@ -272,6 +475,7 @@
       "title": "Reconcile",
       "description": "Reconcile",
       "source_id": "reconcile",
+      "generation_status": "inferred",
       "tags": [
         "Finance",
         "okf",
@@ -279,7 +483,7 @@
       ],
       "timestamp": "2026-01-01T00:00:00.000Z"
     },
-    "body": "# Reconcile\n\n## Tools used\n\n- [notify_manager](/tools/notify-manager.md)\n- [notify-manager](/tools/notify-manager-2.md)\n\n## Runs in\n\n- [reconcile](/workflow/reconcile.md)\n\n## Evidence expected\n\n_None specified._\n\n# Citations\n\n- [Controls Playbook](/documents/controls-playbook.md)"
+    "body": "# Reconcile\n\n## Tools used\n\n- [notify_manager](/tools/notify-manager.md)\n- [notify-manager](/tools/notify-manager-2.md)\n\n## Runs in\n\n- [reconcile](/workflow/reconcile.md)\n\n## Evidence expected\n\n_None specified._\n\n## Evals\n\n- [Close the current period end-to-end.](/tests/e2e-close.md)\n\n# Citations\n\n- [Controls Playbook](/documents/controls-playbook.md)"
   },
   {
     "relPath": "tests/index",
@@ -298,6 +502,7 @@
       "title": "Close the current period end-to-end.",
       "description": "Close the current period end-to-end.",
       "source_id": "e2e-close",
+      "generation_status": "generated",
       "tags": [
         "Finance",
         "okf",
@@ -314,6 +519,7 @@
       "title": "Plain string eval prompt.",
       "description": "Plain string eval prompt.",
       "source_id": "plain-string-eval-prompt",
+      "generation_status": "generated",
       "tags": [
         "Finance",
         "okf",
