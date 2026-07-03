@@ -17,7 +17,7 @@ export function resolveFix(command: string): ResolvedFix | null {
   if (!command || typeof command !== "string") return null;
   const raw = command.trim();
   // Doctor emits the dotted command vocabulary (`agents.build.local`,
-  // `agents.ship`) while check fixes are the spaced CLI form (`ge agents build
+  // `handoff`) while check fixes are the spaced CLI form (`ge agents build
   // --local`). Normalize dots to spaces so the same matcher handles both — but
   // detect the local target on the *raw* string so `.local` is recognized too.
   const lower = raw.toLowerCase();
@@ -37,8 +37,8 @@ export function resolveFix(command: string): ResolvedFix | null {
       run: () => ge.build({ local }),
     };
   }
-  if (normalized.includes("agents ship")) {
-    return { label: "ge agents ship", run: () => ge.ship({}) };
+  if (normalized.includes("handoff")) {
+    return { label: "ge handoff", run: () => ge.handoff({}) };
   }
   if (normalized.includes("agents sync")) {
     return { label: "ge agents sync", run: () => ge.sync({}) };

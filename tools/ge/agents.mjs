@@ -1,28 +1,33 @@
-// tools/ge/agents.mjs — `ge agents build|ship|status|fleet|logs|sync|resume`.
+// tools/ge/agents.mjs — `ge agents build|resume|status|logs|sync`.
 // Moved verbatim out of tools/ge.mjs; `resume` added later (ADR 0001's
-// pipeline state machine surfaced as a recovery verb).
+// pipeline state machine surfaced as a recovery verb). The release verb is
+// `ge handoff` (tools/ge/handoff.mjs).
 import { defineCommand } from "citty";
 import { groupResumeActions } from "../lib/agents-resume.mjs";
-import { guarded, common, cfgFrom, emit, out, pc, elog, core, modeOf, LOCAL_BUILD_BOUNDARY, deprecatedAlias } from "./shared.mjs";
-import { fleetStatusCmd } from "./fleet.mjs";
+import { guarded, common, cfgFrom, emit, out, pc, ui, elog, core, modeOf, LOCAL_BUILD_BOUNDARY } from "./shared.mjs";
 
 // One render + poll loop shared by `ge agents status --watch` and
 // `ge agents build --watch`, so kicking off a remote build and watching it
 // land is a single command instead of a remembered two-step.
-function renderStatusBoard(r) {
-  process.stdout.write("\x1bc");
-  out(pc.bold(`Status — ${r.total} runs  ${new Date().toISOString()}`));
-  out(`  ${pc.green("done")} ${r.tally.done}   ${pc.cyan("running")} ${r.tally.running}   ${pc.yellow("queued")} ${r.tally.queued}   ${pc.red("failed")} ${r.tally.failed}   unknown ${r.tally.unknown}`);
+// Live redraws (the \x1bc screen clear) only happen at a real TTY; when the
+// output is piped, snapshots append (separated by a blank line) so logs stay
+// readable instead of being littered with escape codes.
+function renderStatusBoard(r, { live = false } = {}) {
+  if (live && ui.isInteractive()) process.stdout.write("\x1bc");
+  else if (live) out("");
+  out(pc.bold(`Status — ${r.total} runs`) + pc.dim(`  ${new Date().toISOString()}`));
+  const t = r.tally;
+  out(`  ${ui.glyph("passed")} ${pc.green("done")} ${t.done}   ${ui.glyph("running")} ${pc.cyan("running")} ${t.running}   ${ui.glyph("queued")} ${pc.cyan("queued")} ${t.queued}   ${ui.glyph("failed")} ${pc.red("failed")} ${t.failed}   unknown ${t.unknown}`);
   out(pc.dim("  by stage: " + Object.entries(r.stages).map(([k, v]) => `${k}:${v}`).join("  ")));
 }
 
 async function watchStatusUntilTerminal(cfg, { noProxy } = {}) {
   for (;;) {
     const r = await core.status(cfg, { noProxy });
-    renderStatusBoard(r);
+    renderStatusBoard(r, { live: true });
     if (r.terminal) {
-      out(pc.green("\nAll runs terminal."));
-      if (r.tally.failed) out(pc.dim("  next: ge agents resume   (retry failed stages from the ledger)"));
+      out(`\n${ui.glyph("passed")} ${pc.green("All runs terminal.")}`);
+      if (r.tally.failed) out(ui.next("ge agents resume", "retry failed stages from the ledger"));
       return r;
     }
     await new Promise((s) => setTimeout(s, 15000));
@@ -40,20 +45,26 @@ const agentsBuild = defineCommand({
       const vertex = args.vertex === false || args["no-vertex"] === true ? false : true;
       const res = await core.provisionLocal(cfg, { scope, ids: args.ids, dept: args.dept, limit: args.limit, target, vertex, location: args.location, model: args.model, maxOutputTokens: args["max-output-tokens"], warm: args.warm, force: args.force, log: elog });
       emit(args, res, (r) => {
-        out(pc.green(`\n✓ local build → ${r.target} (build boundary). Workspaces in ${r.projectsDir}.`));
-        if (r.selected) out(pc.dim(`  selected: ${r.selected}`));
-        if (r.plan) out(pc.dim(`  plan: ${r.plan}`));
-        if (r.run) out(pc.dim(`  run: ${r.run}`));
-        if (r.events) out(pc.dim(`  events: ${r.events}`));
-        out(pc.dim("  next: ge agents ship   (cloud: load_data→deploy→register→publish)   ·   ge agents sync --push   (push code)"));
+        out(`\n${ui.glyph("passed")} ${pc.green(`local build → ${r.target} (build boundary)`)}`);
+        out(ui.kv([
+          ["workspaces", pc.dim(r.projectsDir)],
+          r.selected && ["selected", pc.dim(String(r.selected))],
+          r.plan && ["plan", pc.dim(r.plan)],
+          r.run && ["run", pc.dim(r.run)],
+          r.events && ["events", pc.dim(r.events)],
+        ]));
+        out("\n" + ui.nextList([
+          { command: "ge handoff agents-cli", note: "cloud: load_data→deploy→register→publish" },
+          { command: "ge agents sync --push", note: "push code" },
+        ]));
       });
       return;
     }
     const refine = !args["no-refine"] && process.env.REFINE !== "0";
     const res = await core.provision(cfg, { scope, ids: args.ids, dept: args.dept, concurrency: args.concurrency || "2", force: args.force, noProxy: args["no-proxy"], refine, model: args.model, maxOutputTokens: args["max-output-tokens"], log: elog });
     emit(args, res, (r) => {
-      out(`\nSubmitted ${pc.green(r.submitted)}  failed ${r.failed ? pc.red(r.failed) : "0"}${r.note ? pc.dim("  " + r.note) : ""}`);
-      if (r.submitted && !args.watch) out(pc.dim("  next: ge agents status --watch   (track the submitted runs to completion)"));
+      out(`\n  submitted ${pc.green(r.submitted)}  failed ${r.failed ? pc.red(r.failed) : "0"}${r.note ? pc.dim("  " + r.note) : ""}`);
+      if (r.submitted && !args.watch) out(ui.next("ge agents status --watch", "track the submitted runs to completion"));
     });
     if (args.watch && !args.json && res.submitted) {
       await watchStatusUntilTerminal(cfg, { noProxy: args["no-proxy"] });
@@ -72,14 +83,15 @@ const agentsStatus = defineCommand({
     const res = await core.status(cfgFrom(args), { noProxy: args["no-proxy"] });
     emit(args, res, (r) => {
       renderStatusBoard(r);
-      if (r.tally.failed) out(pc.dim("\n  next: ge agents resume   (retry failed stages from the ledger)   ·   ge agents logs <runId> --stage <stage>"));
+      if (r.tally.failed) {
+        out("\n" + ui.nextList([
+          { command: "ge agents resume", note: "retry failed stages from the ledger" },
+          { command: "ge agents logs <runId> --stage <stage>", note: "inspect one failure" },
+        ]));
+      }
     });
   }),
 });
-
-// Fleet health moved to its canonical home, `ge fleet status` (tools/ge/
-// fleet.mjs); this spelling stays as a working alias.
-const agentsFleet = deprecatedAlias({ name: "fleet", hint: "ge fleet status", command: fleetStatusCmd });
 
 const agentsLogs = defineCommand({
   meta: { name: "logs", description: "Pretty-print a stage's result + errors" },
@@ -87,16 +99,19 @@ const agentsLogs = defineCommand({
   run: guarded(({ args }) => {
     const res = core.logs(cfgFrom(args), { runId: args.runId, stage: args.stage || "validate", item: args.item });
     emit(args, res, (r) => {
-      if (!r.found) { out(pc.yellow(`no result at ${r.uri}`)); r.available?.forEach((l) => out(pc.dim("  " + l))); return; }
+      if (!r.found) { out(`${ui.glyph("warning")} ${pc.yellow(`no result at ${r.uri}`)}`); r.available?.forEach((l) => out(pc.dim("  " + l))); return; }
       const x = r.result; if (!x) { out(r.raw || ""); return; }
-      out(`\nstage ${pc.cyan(x.stage)}  status ${x.status === "failed" ? pc.red(x.status) : pc.green(x.status)}`);
-      if (x.error) out(`error: ${pc.red(x.error)}`);
+      out("\n" + ui.kv([
+        ["stage", ui.cmd(x.stage)],
+        ["status", x.status === "failed" ? pc.red(x.status) : pc.green(x.status)],
+        x.error && ["error", pc.red(x.error)],
+      ]));
       for (const o of x.outputs || []) if (o.code !== 0 || (o.stderr || "").trim()) {
         out(pc.dim(`\n$ ${o.cmd} ${(o.args || []).join(" ")}  (exit ${o.code})`));
         if (o.stderr) out(o.stderr.slice(-3000));
         if (o.stdout && o.code !== 0) out(pc.dim(o.stdout.slice(-1500)));
       }
-      if (x.logUrl) out(`\nCloud Build log: ${pc.cyan(x.logUrl)}`);
+      if (x.logUrl) out(`\n  ${pc.dim("Cloud Build log:")} ${ui.cmd(x.logUrl)}`);
     });
   }),
 });
@@ -109,16 +124,16 @@ const agentsSync = defineCommand({
     const mode = args["remote-mode"] ? "remote" : args.local ? "local" : cfg.mode || "local";
     if (mode === "local") {
       const res = core.syncLocal(cfg, { ids: args.ids, remote: args.remote, commit: !args["no-commit"], push: args.push, create: args.create, log: elog });
-      emit(args, res, (r) => out(`\nSynced ${pc.green(r.synced)} local workspace(s)${r.repo ? pc.dim(" → " + r.repo) : ""}${r.pushed ? pc.dim(" (pushed)") : ""}`));
+      emit(args, res, (r) => out(`\n${ui.glyph("passed")} synced ${pc.green(r.synced)} local workspace(s)${r.repo ? pc.dim(" → " + r.repo) : ""}${r.pushed ? pc.dim(" (pushed)") : ""}`));
       return;
     }
     const res = await core.sync(cfgFrom(args), { ids: args.ids, force: args.force, commit: !args["no-commit"], push: args.push, log: elog });
-    emit(args, res, (r) => out(`\nSynced ${pc.green(r.synced)}  failed ${r.failed}${r.committed ? pc.dim("  (committed)") : ""}${r.pushed ? pc.dim(" (pushed)") : ""}`));
+    emit(args, res, (r) => out(`\n${ui.glyph("passed")} synced ${pc.green(r.synced)}  failed ${r.failed ? pc.red(r.failed) : "0"}${r.committed ? pc.dim("  (committed)") : ""}${r.pushed ? pc.dim(" (pushed)") : ""}`));
   }),
 });
 
 const agentsResume = defineCommand({
-  meta: { name: "resume", description: "Resume interrupted/failed builds from the ledger: retry failed stages, finish local work, ship past the boundary" },
+  meta: { name: "resume", description: "Resume interrupted/failed builds from the ledger: retry failed stages, finish local work, hand off past the boundary" },
   args: {
     ...common,
     ids: { type: "string", description: "Only resume these comma-separated use-case/workspace ids" },
@@ -141,19 +156,22 @@ const agentsResume = defineCommand({
 
     if (!args.run) {
       emit(args, result, (r) => {
-        out(pc.bold("\nResume Plan"));
-        out(`  mode      ${pc.cyan(r.mode)}   target ${pc.cyan(r.targetStage)}`);
-        out(`  items     ${pc.green(`${r.done} at target`)} · ${r.actionable ? pc.yellow(`${r.actionable} actionable`) : "0 actionable"}`);
+        out(ui.title("Resume Plan"));
+        out(ui.kv([
+          ["mode", ui.cmd(r.mode)],
+          ["target", ui.cmd(r.targetStage)],
+          ["items", `${pc.green(`${r.done} at target`)} · ${r.actionable ? pc.yellow(`${r.actionable} actionable`) : "0 actionable"}`],
+        ]));
         if (!r.groups.length) {
           out(pc.dim("\n  nothing to resume — every ledger item is at its target stage."));
           out(pc.dim("  (empty ledger? run a build first, or `ge ledger backfill`)"));
           return;
         }
         for (const group of r.groups) {
-          out(pc.bold(`\n  ${group.label}`) + pc.dim(`  — ${group.detail}`));
-          out(`  ${pc.dim("$")} ${group.command}`);
+          out(ui.section(group.label, pc.dim(`— ${group.detail}`)));
+          out(ui.nextList([group.command]));
         }
-        out(pc.dim("\n  next: ge agents resume --run   (execute this plan in order)"));
+        out(ui.next("ge agents resume --run", "execute this plan in order"));
       });
       return;
     }
@@ -163,27 +181,21 @@ const agentsResume = defineCommand({
       elog(`${group.label}: ${group.detail}`);
       if (group.action === "build_local") {
         executed.push({ action: group.action, result: await core.provisionLocal(cfg, { ids: group.useCaseIds.join(","), target, log: elog }) });
-      } else if (group.action === "ship") {
-        executed.push({ action: group.action, result: await core.ship(cfg, { ids: group.workspaceIds.join(","), startStage: "load_data", targetStage: "publish_enterprise", concurrency: "2", log: elog }) });
+      } else if (group.action === "handoff") {
+        executed.push({ action: group.action, result: await core.handoff(cfg, { ids: group.workspaceIds.join(","), startStage: "load_data", targetStage: "publish_enterprise", concurrency: "2", log: elog }) });
       } else if (group.action === "advance_remote") {
         executed.push({ action: group.action, result: await core.provision(cfg, { ids: group.useCaseIds.join(","), concurrency: "2", log: elog }) });
       }
     }
     emit(args, { ...result, executed: true, results: executed }, (r) => {
       if (!plan.groups.length) { out(pc.dim("\nnothing to resume — every ledger item is at its target stage.")); return; }
-      out(pc.green(`\n✓ resume executed: ${plan.groups.map((group) => `${group.label.toLowerCase()} (${group.items.length})`).join(" · ")}`));
-      out(pc.dim(`  next: ge agents status${mode === "remote" ? " --watch" : ""}   ·   ge ledger plan`));
+      out(`\n${ui.glyph("passed")} ${pc.green(`resume executed: ${plan.groups.map((group) => `${group.label.toLowerCase()} (${group.items.length})`).join(" · ")}`)}`);
+      out("\n" + ui.nextList([
+        { command: `ge agents status${mode === "remote" ? " --watch" : ""}`, note: "watch the resumed runs" },
+        { command: "ge ledger plan", note: "re-check the plan" },
+      ]));
     });
   }),
 });
 
-const agentsShip = defineCommand({
-  meta: { name: "ship", description: "Hand off locally-built agents to the cloud: upload + run deploy→register→publish remotely" },
-  args: { ...common, ids: { type: "string", description: "Comma-separated local workspace ids (default: all built locally)" }, "start-stage": { type: "string", description: "Stage to start at remotely (default load_data)" }, "target-stage": { type: "string", description: "Stage to stop at (default publish_enterprise)" }, concurrency: { type: "string", description: "Parallel remote submissions (default 2)" }, "no-proxy": { type: "boolean", description: "Call the gateway directly over HTTPS instead of the gcloud run proxy tunnel" } },
-  run: guarded(async ({ args }) => {
-    const res = await core.ship(cfgFrom(args), { ids: args.ids, startStage: args["start-stage"] || "load_data", targetStage: args["target-stage"] || "publish_enterprise", concurrency: args.concurrency || "2", noProxy: args["no-proxy"], log: elog });
-    emit(args, res, (r) => out(`\nShipped ${pc.green(r.submitted)}  failed ${r.failed ? pc.red(r.failed) : "0"}  ${pc.dim(`(${r.startStage} → ${r.targetStage}, remote)`)}`));
-  }),
-});
-
-export const agents = defineCommand({ meta: { name: "agents", description: "Agent lifecycle: build · resume · ship · status · fleet · logs · sync" }, subCommands: { build: agentsBuild, resume: agentsResume, ship: agentsShip, status: agentsStatus, fleet: agentsFleet, logs: agentsLogs, sync: agentsSync } });
+export const agents = defineCommand({ meta: { name: "agents", description: "Agent lifecycle: build · resume · status · logs · sync (release proven agents with `ge handoff`)" }, subCommands: { build: agentsBuild, resume: agentsResume, status: agentsStatus, logs: agentsLogs, sync: agentsSync } });

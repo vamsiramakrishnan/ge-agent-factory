@@ -22,8 +22,8 @@ one and use `agents-cli` directly.
 
 | Layer | Owned by | Artifacts |
 |---|---|---|
-| Enterprise intent → contract | **GE Agent Factory** | use-case spec (`behaviorContract` + `generationSpec`), OKF bundle |
-| Simulation, evals, proof | **GE Agent Factory** | source-system twins, fixtures, evalsets, spec-to-code trace, harness verdicts, promotion gate |
+| Enterprise intent → contract | **GE Agent Factory** | use-case spec (`behaviorContract` + `generationSpec`) and its [portable Markdown twin](../concepts/enterprise-agent-contract.html#the-contracts-portable-form) |
+| Simulation, evals, proof | **GE Agent Factory** | source-system twins, fixtures, evalsets, spec-to-code trace, verify-stage verdicts, promotion gate |
 | Agent project scaffold & code | **ADK / agents-cli** (generated and driven by the factory) | `app/agent.py`, `app/tools.py`, `pyproject.toml`, `agents-cli-manifest.yaml` |
 | Deploy & runtime | **agents-cli → Agent Engine** | deployed Agent Runtime, Agent Registry entry |
 | End-user surface | **Gemini Enterprise** | the published agent your business users talk to |
@@ -35,7 +35,7 @@ one and use `agents-cli` directly.
 | Where does the agent's definition of "correct behavior" live? | In code and prompts you write | In a versioned contract (`behaviorContract`): role, scope, tool intents, evidence requirements, escalation and refusal rules |
 | What do you test against before production data access exists? | Whatever you mock by hand | Generated source-system twins with realistic seeded data, per system |
 | Where do evals come from? | You author evalsets yourself | Generated from the contract's golden evals and answerable queries, in `agents-cli`'s own eval format |
-| What blocks a bad deploy? | Your judgment | The promotion gate: validation report, spec-to-code trace, and harness verdicts must pass |
+| What blocks a bad deploy? | Your judgment | The promotion gate: validation report, spec-to-code trace, and verify-stage verdicts must pass |
 | How do tools get defined? | Hand-written FunctionTools | Generated from the contract's `toolIntents`, with governance callbacks (write-guard, evidence capture) wired in |
 | How many agents does the workflow scale to? | One project at a time | A catalog: bulk build, bulk repair, and status across every generated agent |
 | What reaches your reviewers/auditors? | The code | The contract, the proof artifacts, and the code — one traceable chain |
@@ -66,10 +66,18 @@ The factory deliberately does **not** reimplement the layer below:
 ## See the seam yourself
 
 ```bash
-ge devex smoke                       # factory: compile + prove one canary workspace
+ge prove                             # factory: compile + prove one starter workspace
 cd .ge/factory/workspaces/<id>       # the output is an agents-cli project
 agents-cli eval run --all            # the layer below, used directly
 ```
+
+<details>
+<summary>Under the hood</summary>
+
+On a fresh machine, `ge prove` runs the health check, then compiles and
+proves one canary workspace.
+
+</details>
 
 Next: [Core mental model](./mental-model.html) ·
 [Handoff targets](../concepts/handoff-targets.html) ·

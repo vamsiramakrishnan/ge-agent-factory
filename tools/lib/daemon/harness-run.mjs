@@ -19,7 +19,7 @@ import { join, resolve } from "node:path";
 import { readJson, writeJson } from "@ge/std/json-io";
 import { resolveGcpProject } from "@ge/std/gcp-config";
 import * as core from "../factory-core.mjs";
-import { verifyMissionArtifacts } from "../mission/mission-artifacts.mjs";
+import { verifyPipelineArtifacts } from "../pipeline/pipeline-artifacts.mjs";
 import { REPO_ROOT } from "../state-paths.mjs";
 import { runStreamedTask } from "./task-runner.mjs";
 import {
@@ -155,7 +155,7 @@ export function expectedHarnessArtifacts(input = {}) {
 export function inspectHarnessArtifacts(run, result = null) {
   const expected = expectedHarnessArtifacts(run.input || {});
   if (!expected.length) return { artifactRefs: [], artifactCheck: null };
-  const artifactCheck = verifyMissionArtifacts(expected, {
+  const artifactCheck = verifyPipelineArtifacts(expected, {
     repoRoot: REPO_ROOT,
     childTask: result ? { output: result } : null,
   });

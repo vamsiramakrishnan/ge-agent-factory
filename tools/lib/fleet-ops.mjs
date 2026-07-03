@@ -1,5 +1,5 @@
-// fleet-ops — read-only fleet/mission/journey planning + run-log/artifact reads
-// (`ge agents status`, `ge mission plan`, `ge journey plan`, `ge logs --tail`,
+// fleet-ops — read-only fleet/pipeline planning + run-log/artifact reads
+// (`ge agents status`, `ge pipeline plan`, `ge pipeline graph`, `ge logs --tail`,
 // artifact reads). Verbatim extraction from factory-core.mjs (see AGENTS.md /
 // REFACTOR-HANDOFF.md §9 methodology: verbatim move, dependency injection where
 // needed, re-export from factory-core.mjs to preserve its public API contract).
@@ -11,15 +11,15 @@
 // the module that re-exports this file's functions, so this file must not import
 // factory-core.mjs back (that would be the cycle). Everything else here is a
 // stable leaf import (catalog search, ledger reads, local workspace index,
-// fleet-health/journey/mission plan builders).
+// fleet-health/pipeline-plan/fleet-repair-plan builders).
 
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readJson } from "@ge/std/json-io";
-import { buildFactoryAutopilotMission } from "./factory-autopilot-mission.mjs";
+import { buildFactoryRepairPipeline } from "./fleet-repair-plan.mjs";
 import { buildFleetHealth } from "./doctor/fleet-health.mjs";
-import { buildJourneyPlan } from "./journey-plan.mjs";
+import { buildPipelinePlan } from "./pipeline-plan.mjs";
 import { loadCatalog } from "./factory-catalog-search.mjs";
 import { runLedger, ledgerReadsEnabled } from "./ledger/factory-ledger.mjs";
 import { localWorkspaceIndexByUseCase } from "./local-workspaces.mjs";
@@ -91,12 +91,12 @@ export function createFleetOps({ gcloud, statusBoard }) {
     return { ...base, health, agents: health.agents };
   }
 
-  async function missionPlan(cfg, { ids = [], targetStage = "preview", repair = true, attempts = 3, runPreview = false } = {}) {
+  async function pipelineGraphPlan(cfg, { ids = [], targetStage = "preview", repair = true, attempts = 3, runPreview = false } = {}) {
     const fleet = await fleetStatus(cfg);
-    return buildFactoryAutopilotMission({ cfg, fleet, ids, targetStage, repair, attempts, runPreview });
+    return buildFactoryRepairPipeline({ cfg, fleet, ids, targetStage, repair, attempts, runPreview });
   }
 
-  async function journeyPlan(cfg, {
+  async function pipelinePlan(cfg, {
     scenario = null,
     usecaseId = null,
     spec = null,
@@ -110,7 +110,7 @@ export function createFleetOps({ gcloud, statusBoard }) {
       Promise.resolve(statusBoard(cfg)),
       fleetStatus(cfg),
     ]);
-    return buildJourneyPlan({
+    return buildPipelinePlan({
       scenario,
       spec,
       usecaseId,
@@ -149,5 +149,5 @@ export function createFleetOps({ gcloud, statusBoard }) {
     return { found: r.ok, source: uri, content: r.ok ? r.out : "" };
   }
 
-  return { fleetStatus, missionPlan, journeyPlan, tailLog, readArtifact };
+  return { fleetStatus, pipelineGraphPlan, pipelinePlan, tailLog, readArtifact };
 }

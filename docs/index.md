@@ -25,7 +25,7 @@ can read, a simulation you can test against, and proof you can show an
 auditor.
 
 <p align="center">
-  <img src="assets/diagrams/signature-pipeline.svg" alt="capture flows into the Enterprise Agent Contract; the contract generates code, tools, and source-system twins under authority-graph control; twins and generated code feed prove (evals, harness, promotion gate); prove produces a passport and proof pack; the passport hands off across the build boundary to agents-cli, ADK, and Gemini Enterprise" width="900">
+  <img src="assets/diagrams/signature-pipeline.svg" alt="capture flows into the Enterprise Agent Contract; the contract generates code, tools, and source-system twins under authority-graph control; twins and generated code feed prove (evals, verify-stage review, promotion gate); prove produces a passport and proof pack; the passport hands off across the build boundary to agents-cli, ADK, and Gemini Enterprise" width="900">
 </p>
 
 ## The problem it solves
@@ -66,8 +66,18 @@ All local, no cloud credentials — about ten minutes end to end:
 curl https://mise.run | sh   # once, if you don't have mise
 mise run setup               # toolchain + the ge CLI (~5-10 min, one time)
 ge init                      # discover config, write .ge.json (~30 s)
-ge devex smoke               # compile one contract into a validated agent workspace (~5 min)
+ge prove                     # compile one contract into a validated agent workspace (~5 min)
 ```
+
+<details>
+<summary>Under the hood</summary>
+
+On a fresh machine, `ge prove` runs the local doctor, then builds one
+canary workspace to the `validated` stage. Once workspaces exist,
+`ge prove` rebuilds their proof via `ge agents build`; `ge prove --watch`
+re-proves on contract change.
+
+</details>
 
 The result on disk is the whole layer in miniature: a contract
 (`usecase-spec.json` with its `behaviorContract`), generated ADK code and
@@ -77,7 +87,7 @@ the promotion gate reads. Continue with the
 or the fuller [local setup guide](./start/getting-started.html).
 
 <p align="center">
-  <img src="assets/screenshots/overview.png" alt="Console Overview view showing the build-to-deploy pipeline rail (362 in Build, 1 in Ship), a Next step card recommending ge init, and Pipeline / Fleet summary cards with 0 deployed, 1 submitted, 1 failed" width="820">
+  <img src="assets/screenshots/overview.png" alt="Console Overview view showing the build-to-deploy stage rail (362 in Build, 1 in Ship), a Next step card recommending ge init, and summary cards with 0 deployed, 1 submitted, 1 failed" width="820">
 </p>
 
 The console (`mise run console` → `http://localhost:18260`) shows the same
@@ -97,4 +107,4 @@ See [Console](./console/).
 | Work on the factory itself | [Contributor docs](./developers.html) |
 
 Unfamiliar term? The [Glossary](./GLOSSARY.html) translates every internal
-noun (harness, OKF, canary, planes, pipeline) into plain language.
+noun into plain language — the operator vocabulary included.

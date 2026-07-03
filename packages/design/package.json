@@ -11,7 +11,8 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./tokens.css": "./src/tokens.css"
+    "./tokens.css": "./src/tokens.css",
+    "./status-ramp": "./src/status-ramp.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.546.0"

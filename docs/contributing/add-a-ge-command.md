@@ -37,7 +37,7 @@ precedent AGENTS.md points at).
 > Before adding a new `/api/*` route for a console action, check whether the
 > underlying `ge`/`factory` command already exists and just needs a registry
 > entry. Bespoke route logic in the console server is the exception
-> (autopilot, interviews, systems), not the rule.
+> (repair runs, interviews, systems), not the rule.
 {: .important }
 
 ## How an entry flows through the system
@@ -138,11 +138,11 @@ One registry entry is consumed at five places. All paths are real and current:
    - `observability.mode` is `command-output` (raw stdout) unless the command
      emits structured events (`remote-stage-logs`, `local-factory-events`,
      `runtime-events` — see `agents.build`, `agents.build.local`,
-     `mission.run` for each shape). Omitting `observability` defaults to
+     `pipeline.run` for each shape). Omitting `observability` defaults to
      `{ mode: "command-output", events: false }`.
    - `argv(body)` maps the POST body to real CLI flags — see `agents.build`
      for a body-mapping example. CLI-only commands set
-     `method: null, path: null` (see `mission.run`) and are skipped by
+     `method: null, path: null` (see `pipeline.run`) and are skipped by
      `commandForRoute`.
 
 2. **No console route code.** `commandForRoute` picks the new `method` +

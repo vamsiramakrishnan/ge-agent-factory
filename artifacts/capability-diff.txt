@@ -1,0 +1,328 @@
+25,30d24
+< help ge agents fleet | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+< help ge agents fleet | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+< help ge agents fleet | arg limit | type=string required=false | Max bottlenecks to list (default 8)
+< help ge agents fleet | arg project | type=string required=false alias=gcp-project | GCP project id
+< help ge agents fleet | arg region | type=string required=false | Region (default us-central1)
+< help ge agents fleet | description | (deprecated → ge fleet status) Fleet pipeline health, bottlenecks, and repair owners
+48,58c42
+< help ge agents resume | description | Resume interrupted/failed builds from the ledger: retry failed stages, finish local work, ship past the boundary
+< help ge agents ship | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+< help ge agents ship | arg concurrency | type=string required=false | Parallel remote submissions (default 2)
+< help ge agents ship | arg ids | type=string required=false | Comma-separated local workspace ids (default: all built locally)
+< help ge agents ship | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+< help ge agents ship | arg no-proxy | type=boolean required=false | Call the gateway directly over HTTPS instead of the gcloud run proxy tunnel
+< help ge agents ship | arg project | type=string required=false alias=gcp-project | GCP project id
+< help ge agents ship | arg region | type=string required=false | Region (default us-central1)
+< help ge agents ship | arg start-stage | type=string required=false | Stage to start at remotely (default load_data)
+< help ge agents ship | arg target-stage | type=string required=false | Stage to stop at (default publish_enterprise)
+< help ge agents ship | description | Hand off locally-built agents to the cloud: upload + run deploy→register→publish remotely
+---
+> help ge agents resume | description | Resume interrupted/failed builds from the ledger: retry failed stages, finish local work, hand off past the boundary
+79c63
+< help ge agents | description | Agent lifecycle: build · resume · ship · status · fleet · logs · sync
+---
+> help ge agents | description | Agent lifecycle: build · resume · status · logs · sync (release proven agents with `ge handoff`)
+87,109c71,76
+< help ge autopilot events | arg follow | type=boolean required=false | Follow the live event stream (SSE)
+< help ge autopilot events | arg id | type=positional required=true | Runtime task id
+< help ge autopilot events | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+< help ge autopilot events | arg port | type=string required=false | Daemon port (default 17654)
+< help ge autopilot events | description | (deprecated → ge runs events <id>) Show or follow one local GE runtime task event stream
+< help ge autopilot run | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+< help ge autopilot run | arg attempts | type=string required=false | Repair attempts per item (default 3)
+< help ge autopilot run | arg follow | type=boolean required=false | Stay attached and stream the run's live events
+< help ge autopilot run | arg ids | type=string required=false | Comma-separated agent/workspace ids (default: current repair queue)
+< help ge autopilot run | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+< help ge autopilot run | arg no-repair | type=boolean required=false | Observe blockers without running repair
+< help ge autopilot run | arg port | type=string required=false | Daemon port (default 17654)
+< help ge autopilot run | arg project | type=string required=false alias=gcp-project | GCP project id
+< help ge autopilot run | arg region | type=string required=false | Region (default us-central1)
+< help ge autopilot run | arg run-preview | type=boolean required=false | Run preview after repair when supported
+< help ge autopilot run | arg target-stage | type=string required=false | Gate to converge to (default preview)
+< help ge autopilot run | description | (deprecated → ge fleet repair) Converge blocked agents to a target stage: observe blockers → repair → retry
+< help ge autopilot status | arg id | type=positional required=false | Repair run id (omit to list recent runs)
+< help ge autopilot status | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+< help ge autopilot status | arg limit | type=string required=false | Recent repair run count when no id is provided
+< help ge autopilot status | arg port | type=string required=false | Daemon port (default 17654)
+< help ge autopilot status | description | (deprecated → ge fleet repairs [id]) Show one repair run, or list recent repair runs
+< help ge autopilot | description | (deprecated → ge fleet repair) autopilot is a fleet repair run
+---
+> help ge capture | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+> help ge capture | arg from | type=string required=false | Path to a captured contract (agent-spec.json) to register with the catalog
+> help ge capture | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+> help ge capture | arg project | type=string required=false alias=gcp-project | GCP project id
+> help ge capture | arg region | type=string required=false | Region (default us-central1)
+> help ge capture | description | Capture an agent contract: opens the console Interview (starts the console if needed); --from registers an existing contract file
+171,183c138
+< help ge devex smoke | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+< help ge devex smoke | arg force | type=boolean required=false | Regenerate matching local workspace(s) from scratch
+< help ge devex smoke | arg id | type=string required=false | Use-case id to build (default: catalog canary)
+< help ge devex smoke | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+< help ge devex smoke | arg no-vertex | type=boolean required=false | Disable Vertex-backed harness stages
+< help ge devex smoke | arg preview | type=boolean required=false | Shortcut for --target previewed (may require project/Vertex auth)
+< help ge devex smoke | arg project | type=string required=false alias=gcp-project | GCP project id
+< help ge devex smoke | arg region | type=string required=false | Region (default us-central1)
+< help ge devex smoke | arg target | type=string required=false | Local harness target (default validated; use previewed for full build boundary)
+< help ge devex smoke | arg vertex | type=boolean required=false | Use Vertex-backed harness stages when target reaches them
+< help ge devex smoke | arg warm | type=boolean required=false | Pre-warm the shared uv cache before running
+< help ge devex smoke | description | One-command local DevEx proof: doctor → local mode → canary workspace manifest
+< help ge devex | description | Developer-experience checks and one-command local smoke paths
+---
+> help ge devex | description | Developer-experience checks (fast read-only gate: doctor + docs + workspace contracts)
+186c141
+< help ge doctor | arg command | type=string required=false | Check readiness for a mutating command (up|data.up|mcp.deploy|agents.build|agents.build.local|agents.ship|agents.sync)
+---
+> help ge doctor | arg command | type=string required=false | Check readiness for a mutating command (up|data.up|mcp.deploy|agents.build|agents.build.local|handoff|agents.sync|prove)
+217a173,183
+> help ge handoff | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+> help ge handoff | arg concurrency | type=string required=false | Parallel remote submissions (default 2)
+> help ge handoff | arg ids | type=string required=false | Comma-separated local workspace ids (default: all built locally)
+> help ge handoff | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+> help ge handoff | arg no-proxy | type=boolean required=false | Call the gateway directly over HTTPS instead of the gcloud run proxy tunnel
+> help ge handoff | arg project | type=string required=false alias=gcp-project | GCP project id
+> help ge handoff | arg region | type=string required=false | Region (default us-central1)
+> help ge handoff | arg start-stage | type=string required=false | Stage to start at remotely (default load_data)
+> help ge handoff | arg target | type=positional required=false | Deploy target (default agents-cli)
+> help ge handoff | arg target-stage | type=string required=false | Stage to stop at (default publish_enterprise)
+> help ge handoff | description | Hand off proven agents to a deploy target (supported today: agents-cli → Agent Engine → Gemini Enterprise)
+245,288d210
+< help ge journey plan | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+< help ge journey plan | arg ids | type=string required=false | Comma-separated agent/workspace ids
+< help ge journey plan | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+< help ge journey plan | arg port | type=string required=false | Daemon port (default 17654)
+< help ge journey plan | arg project | type=string required=false alias=gcp-project | GCP project id
+< help ge journey plan | arg region | type=string required=false | Region (default us-central1)
+< help ge journey plan | arg scenario | type=string required=false | Scenario/use-case id
+< help ge journey plan | arg systems | type=string required=false | Comma-separated source-system simulator ids
+< help ge journey plan | arg target-stage | type=string required=false | Target stage (default preview)
+< help ge journey plan | arg usecase | type=string required=false | Use case id from interview/spec registry
+< help ge journey plan | description | (deprecated → ge pipeline plan) Show the pipeline plan for a spec/scenario (stages, owners, first commands)
+< help ge journey run | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+< help ge journey run | arg attempts | type=string required=false | Repair attempts per item (default 3)
+< help ge journey run | arg follow | type=boolean required=false | Stay attached and stream the run's live events
+< help ge journey run | arg harness-agent | type=string required=false | Harness agent for the review node (default antigravity-sdk)
+< help ge journey run | arg ids | type=string required=false | Comma-separated agent/workspace ids
+< help ge journey run | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+< help ge journey run | arg location | type=string required=false | Location for the Antigravity review node
+< help ge journey run | arg model | type=string required=false | Model for the Antigravity review node
+< help ge journey run | arg no-antigravity | type=boolean required=false | Do not include the Antigravity spec/data review node
+< help ge journey run | arg port | type=string required=false | Daemon port (default 17654)
+< help ge journey run | arg project | type=string required=false alias=gcp-project | GCP project id
+< help ge journey run | arg region | type=string required=false | Region (default us-central1)
+< help ge journey run | arg run-preview | type=boolean required=false | Run preview after repair when supported
+< help ge journey run | arg scenario | type=string required=false | Scenario/use-case id
+< help ge journey run | arg systems | type=string required=false | Comma-separated source-system simulator ids
+< help ge journey run | arg target-stage | type=string required=false | Target stage (default preview)
+< help ge journey run | arg usecase | type=string required=false | Use case id from interview/spec registry
+< help ge journey run | arg with-factory | type=boolean required=false | Actually schedule the factory build node
+< help ge journey run | arg workspace | type=string required=false | Scenario workspace path (default .ge/missions/<scenario>)
+< help ge journey run | description | (deprecated → ge pipeline run) Start a pipeline run: the durable orchestration graph on the daemon
+< help ge journey status | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+< help ge journey status | arg id | type=positional required=false | Pipeline run id (omit for the stage view)
+< help ge journey status | arg ids | type=string required=false | Comma-separated agent/workspace ids
+< help ge journey status | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+< help ge journey status | arg port | type=string required=false | Daemon port (default 17654)
+< help ge journey status | arg project | type=string required=false alias=gcp-project | GCP project id
+< help ge journey status | arg region | type=string required=false | Region (default us-central1)
+< help ge journey status | arg scenario | type=string required=false | Scenario/use-case id
+< help ge journey status | arg systems | type=string required=false | Comma-separated source-system simulator ids
+< help ge journey status | arg target-stage | type=string required=false | Target stage (default preview)
+< help ge journey status | arg usecase | type=string required=false | Use case id from interview/spec registry
+< help ge journey status | description | (deprecated → ge pipeline status) Pipeline status: bare → the live stage view; with an id → that run's graph + resume plan
+< help ge journey | description | (deprecated → ge pipeline) the user journey is the pipeline
+325,381d246
+< help ge mission plan | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+< help ge mission plan | arg attempts | type=string required=false | Repair attempts per item (default 3)
+< help ge mission plan | arg follow | type=boolean required=false | Stay attached and stream the run's live events
+< help ge mission plan | arg harness-agent | type=string required=false | Harness agent for the review node (default antigravity-sdk)
+< help ge mission plan | arg ids | type=string required=false | Comma-separated agent/workspace ids
+< help ge mission plan | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+< help ge mission plan | arg location | type=string required=false | Location for the Antigravity review node
+< help ge mission plan | arg model | type=string required=false | Model for the Antigravity review node
+< help ge mission plan | arg no-antigravity | type=boolean required=false | Do not include the Antigravity spec/data review node
+< help ge mission plan | arg port | type=string required=false | Daemon port (default 17654)
+< help ge mission plan | arg project | type=string required=false alias=gcp-project | GCP project id
+< help ge mission plan | arg region | type=string required=false | Region (default us-central1)
+< help ge mission plan | arg run-preview | type=boolean required=false | Run preview after repair when supported
+< help ge mission plan | arg scenario | type=string required=false | Scenario/use-case id
+< help ge mission plan | arg systems | type=string required=false | Comma-separated source-system simulator ids
+< help ge mission plan | arg target-stage | type=string required=false | Target stage (default preview)
+< help ge mission plan | arg usecase | type=string required=false | Use case id from interview/spec registry
+< help ge mission plan | arg with-factory | type=boolean required=false | Actually schedule the factory build node
+< help ge mission plan | arg workspace | type=string required=false | Scenario workspace path (default .ge/missions/<scenario>)
+< help ge mission plan | description | (deprecated → ge pipeline graph) Build the pipeline's orchestration DAG without running it
+< help ge mission resume | arg id | type=positional required=true | Pipeline run id
+< help ge mission resume | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+< help ge mission resume | arg port | type=string required=false | Daemon port (default 17654)
+< help ge mission resume | description | (deprecated → ge pipeline resume) Resume a pipeline run via its deterministic resume plan
+< help ge mission run | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+< help ge mission run | arg attempts | type=string required=false | Repair attempts per item (default 3)
+< help ge mission run | arg follow | type=boolean required=false | Stay attached and stream the run's live events
+< help ge mission run | arg harness-agent | type=string required=false | Harness agent for the review node (default antigravity-sdk)
+< help ge mission run | arg ids | type=string required=false | Comma-separated agent/workspace ids
+< help ge mission run | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+< help ge mission run | arg location | type=string required=false | Location for the Antigravity review node
+< help ge mission run | arg model | type=string required=false | Model for the Antigravity review node
+< help ge mission run | arg no-antigravity | type=boolean required=false | Do not include the Antigravity spec/data review node
+< help ge mission run | arg port | type=string required=false | Daemon port (default 17654)
+< help ge mission run | arg project | type=string required=false alias=gcp-project | GCP project id
+< help ge mission run | arg region | type=string required=false | Region (default us-central1)
+< help ge mission run | arg run-preview | type=boolean required=false | Run preview after repair when supported
+< help ge mission run | arg scenario | type=string required=false | Scenario/use-case id
+< help ge mission run | arg systems | type=string required=false | Comma-separated source-system simulator ids
+< help ge mission run | arg target-stage | type=string required=false | Target stage (default preview)
+< help ge mission run | arg usecase | type=string required=false | Use case id from interview/spec registry
+< help ge mission run | arg with-factory | type=boolean required=false | Actually schedule the factory build node
+< help ge mission run | arg workspace | type=string required=false | Scenario workspace path (default .ge/missions/<scenario>)
+< help ge mission run | description | (deprecated → ge pipeline run) Start a pipeline run: the durable orchestration graph on the daemon
+< help ge mission status | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+< help ge mission status | arg id | type=positional required=false | Pipeline run id (omit for the stage view)
+< help ge mission status | arg ids | type=string required=false | Comma-separated agent/workspace ids
+< help ge mission status | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+< help ge mission status | arg port | type=string required=false | Daemon port (default 17654)
+< help ge mission status | arg project | type=string required=false alias=gcp-project | GCP project id
+< help ge mission status | arg region | type=string required=false | Region (default us-central1)
+< help ge mission status | arg scenario | type=string required=false | Scenario/use-case id
+< help ge mission status | arg systems | type=string required=false | Comma-separated source-system simulator ids
+< help ge mission status | arg target-stage | type=string required=false | Target stage (default preview)
+< help ge mission status | arg usecase | type=string required=false | Use case id from interview/spec registry
+< help ge mission status | description | (deprecated → ge pipeline status <id> · ge pipeline runs) Pipeline status: bare → the live stage view; with an id → that run's graph + resume plan
+< help ge mission | description | (deprecated → ge pipeline) a mission is a pipeline run
+406c271
+< help ge pipeline graph | arg workspace | type=string required=false | Scenario workspace path (default .ge/missions/<scenario>)
+---
+> help ge pipeline graph | arg workspace | type=string required=false | Scenario workspace path (default .ge/pipelines/<scenario>)
+441c306
+< help ge pipeline run | arg workspace | type=string required=false | Scenario workspace path (default .ge/missions/<scenario>)
+---
+> help ge pipeline run | arg workspace | type=string required=false | Scenario workspace path (default .ge/pipelines/<scenario>)
+459a325,336
+> help ge prove | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+> help ge prove | arg force | type=boolean required=false | Re-prove from scratch (wipes matching local workspaces first)
+> help ge prove | arg id | type=string required=false | Prove one use-case/workspace id (default: everything built, or the catalog canary when fresh)
+> help ge prove | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+> help ge prove | arg preview | type=boolean required=false | Shortcut for --target previewed (may require project/Vertex auth)
+> help ge prove | arg project | type=string required=false alias=gcp-project | GCP project id
+> help ge prove | arg region | type=string required=false | Region (default us-central1)
+> help ge prove | arg target | type=string required=false | Stop at this stage (default: validated when fresh, the build boundary otherwise)
+> help ge prove | arg vertex | type=boolean required=false | Use Vertex-backed stages when the target reaches them
+> help ge prove | arg warm | type=boolean required=false | Pre-warm the shared uv cache before running
+> help ge prove | arg watch | type=boolean required=false | Watch contract sources and re-prove on change (local, pure computation — safe to loop)
+> help ge prove | description | Prove the current contracts end to end: fresh machine → health check + first agent build; agents built already → rebuild their proof. --watch re-proves on contract change
+487,527d363
+< help ge runtime events | arg follow | type=boolean required=false | Follow the live event stream (SSE)
+< help ge runtime events | arg id | type=positional required=true | Runtime task id
+< help ge runtime events | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+< help ge runtime events | arg port | type=string required=false | Daemon port (default 17654)
+< help ge runtime events | description | Show or follow one local GE runtime task event stream
+< help ge runtime resume | arg id | type=positional required=true | Runtime task id
+< help ge runtime resume | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+< help ge runtime resume | arg port | type=string required=false | Daemon port (default 17654)
+< help ge runtime resume | description | Resume a runtime task using its deterministic resumePlan
+< help ge runtime start autopilot | arg attempts | type=string required=false | Repair attempts per item (default 3)
+< help ge runtime start autopilot | arg ids | type=string required=false | Comma-separated agent/workspace ids
+< help ge runtime start autopilot | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+< help ge runtime start autopilot | arg port | type=string required=false | Daemon port (default 17654)
+< help ge runtime start autopilot | arg repair | type=boolean required=false | Run repair on blockers (default true; --no-repair to observe only)
+< help ge runtime start autopilot | arg runPreview | type=boolean required=false | Run preview after repair when supported
+< help ge runtime start autopilot | arg stage | type=string required=false | Target convergence stage (default preview)
+< help ge runtime start autopilot | description | Start an Autopilot runtime task
+< help ge runtime start job | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+< help ge runtime start job | arg port | type=string required=false | Daemon port (default 17654)
+< help ge runtime start job | description | Start a GE command runtime task; pass command args after --
+< help ge runtime start repair | arg attempts | type=string required=false | Repair attempts per item (default 3)
+< help ge runtime start repair | arg ids | type=string required=false | Comma-separated agent/workspace ids
+< help ge runtime start repair | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+< help ge runtime start repair | arg port | type=string required=false | Daemon port (default 17654)
+< help ge runtime start repair | arg repair | type=boolean required=false | Run repair on blockers (default true; --no-repair to observe only)
+< help ge runtime start repair | arg runPreview | type=boolean required=false | Run preview after repair when supported
+< help ge runtime start repair | arg stage | type=string required=false | Target convergence stage (default preview)
+< help ge runtime start repair | description | Start an Autopilot runtime task
+< help ge runtime start | description | Start runtime tasks: repair (canonical) · autopilot (deprecated) · job
+< help ge runtime status | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+< help ge runtime status | arg port | type=string required=false | Daemon port (default 17654)
+< help ge runtime status | description | Show local GE runtime daemon status
+< help ge runtime task | arg id | type=positional required=true | Runtime task id
+< help ge runtime task | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+< help ge runtime task | arg port | type=string required=false | Daemon port (default 17654)
+< help ge runtime task | description | Show one local GE runtime daemon task
+< help ge runtime tasks | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+< help ge runtime tasks | arg limit | type=string required=false | Max tasks to list (default 20)
+< help ge runtime tasks | arg port | type=string required=false | Daemon port (default 17654)
+< help ge runtime tasks | description | List recent local GE runtime daemon tasks
+< help ge runtime | description | (deprecated → ge runs · ge fleet repair) runtime task plumbing: status · tasks · task · events · resume · start
+532c368
+< help ge state reset | description | Clear local GE runtime/factory/mission/interview state
+---
+> help ge state reset | description | Clear local GE runtime/factory/pipeline/interview state
+533a370,374
+> help ge status | arg agentIdentityOrgId | type=string required=false | Organization ID for Agent Identity principalSet trust domain
+> help ge status | arg json | type=boolean required=false | Machine-readable JSON result on stdout
+> help ge status | arg project | type=string required=false alias=gcp-project | GCP project id
+> help ge status | arg region | type=string required=false | Region (default us-central1)
+> help ge status | description | Where am I? Position on capture → prove → handoff, the current blocker, and the exact next command
+546a388,389
+> mcp factory_capture | description | Start the golden path: ensures the console is running and returns the Interview deep link for conversational contract capture (document grounding, contract editing). Optional from=<path> registers an already-captured agent-spec.json with the catalog. Read-mostly: starts a local dev server if one is not already up.
+> mcp factory_capture | param from | type=string optional=true
+547a391,396
+> mcp factory_handoff | description | Mutating: hand proven, locally-built agents to a deploy target. 'agents-cli' is the supported target today (uploads the prebuilt workspaces, then runs deploy→register→publish remotely). An unsupported target returns a structured what/where/why/fix error, never a stack trace. Poll the resulting cloud run(s) with factory_status.
+> mcp factory_handoff | param ids | type=string optional=true
+> mcp factory_handoff | param noProxy | type=boolean optional=true
+> mcp factory_handoff | param startStage | type=string optional=true
+> mcp factory_handoff | param target | type=string enum=agents-cli optional=true
+> mcp factory_handoff | param targetStage | type=string optional=true
+558c407,411
+< mcp factory_provision | description | Mutating: build agents. local=true runs on-machine via the Antigravity harness (stops at the local build boundary; use factory_ship to hand off to the cloud afterwards); otherwise submits directly to the cloud gateway end-to-end. scope: 'canary' | 'all'; or dept/ids. Poll cloud submissions with factory_status.
+---
+> mcp factory_prove | description | Mutating (local): prove the current contracts. Dispatch rule: no local workspaces yet → the fresh-machine proof (health check → one validated workspace from the catalog); workspaces present → rebuild them through the harness to the build boundary (agents build). Returns the proof verdicts; hand off with factory_handoff afterwards.
+> mcp factory_prove | param force | type=boolean optional=true
+> mcp factory_prove | param id | type=string optional=true
+> mcp factory_prove | param target | type=string optional=true
+> mcp factory_provision | description | Mutating: build agents. local=true runs on-machine via the Antigravity harness (stops at the local build boundary; use factory_handoff to hand off to the cloud afterwards); otherwise submits directly to the cloud gateway end-to-end. scope: 'canary' | 'all'; or dept/ids. Poll cloud submissions with factory_status.
+569,573d421
+< mcp factory_ship | description | Mutating: hand off agents already built LOCALLY (via factory_provision with local=true) to the cloud: uploads the prebuilt workspaces, then runs deploy→register→publish remotely. Use factory_status afterwards to poll the resulting cloud run(s). Not for agents built directly in the cloud — those go straight through factory_provision.
+< mcp factory_ship | param ids | type=string optional=true
+< mcp factory_ship | param noProxy | type=boolean optional=true
+< mcp factory_ship | param startStage | type=string optional=true
+< mcp factory_ship | param targetStage | type=string optional=true
+576c424
+< mcp factory_sync | description | Mutating: sync generated agent CODE (not deploy state) to/from git. local=true pushes on-machine harness workspaces (to agentsRepo/remote); otherwise pulls the cloud-built output from GCS into generated-agents/. Distinct from factory_ship, which hands off local builds into the cloud deploy pipeline rather than syncing source.
+---
+> mcp factory_sync | description | Mutating: sync generated agent CODE (not deploy state) to/from git. local=true pushes on-machine harness workspaces (to agentsRepo/remote); otherwise pulls the cloud-built output from GCS into generated-agents/. Distinct from factory_handoff, which releases local builds into the cloud deploy pipeline rather than syncing source.
+592,598d439
+< registry agents.ship | requires bigQueryHard=true
+< registry agents.ship | requires bins=["gcloud"]
+< registry agents.ship | requires cloudAuth=true
+< registry agents.ship | requires config=["project","gatewayUrl","dataBucket"]
+< registry agents.ship | requires shipHandoff=true
+< registry agents.ship | requires toolPlane=true
+< registry agents.ship | route POST /api/ge/agents/ship | cli ge agents ship | risk mutates-cloud | duration varies
+601a443,445
+> registry capture | requires bins=["bun"]
+> registry capture | requires config=[]
+> registry capture | route none | cli ge capture | risk starts-local-workloads | duration under 30s
+614a459,465
+> registry handoff | requires bigQueryHard=true
+> registry handoff | requires bins=["gcloud"]
+> registry handoff | requires cloudAuth=true
+> registry handoff | requires config=["project","gatewayUrl","dataBucket"]
+> registry handoff | requires shipHandoff=true
+> registry handoff | requires toolPlane=true
+> registry handoff | route POST /api/ge/handoff | cli ge handoff | risk mutates-cloud | duration varies
+626,630c477,485
+< registry mission.run | requires bins=["node","uv"]
+< registry mission.run | requires config=["project"]
+< registry mission.run | requires dataGenerationRuntime=true
+< registry mission.run | requires localToolchain=true
+< registry mission.run | route none | cli ge pipeline run | risk starts-local-workloads | duration varies
+---
+> registry pipeline.run | requires bins=["node","uv"]
+> registry pipeline.run | requires config=["project"]
+> registry pipeline.run | requires dataGenerationRuntime=true
+> registry pipeline.run | requires localToolchain=true
+> registry pipeline.run | route none | cli ge pipeline run | risk starts-local-workloads | duration varies
+> registry prove | requires bins=["node","uv"]
+> registry prove | requires config=[]
+> registry prove | requires localToolchain=true
+> registry prove | route POST /api/ge/prove | cli ge prove | risk starts-local-workloads | duration varies

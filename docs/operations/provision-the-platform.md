@@ -75,7 +75,7 @@ doctor. Or use the guided self-service installer for a turnkey deploy.
    ```bash
    ge doctor --data
    ge doctor --mcp
-   ge doctor --command up         # also: data.up | mcp.deploy | agents.build | agents.ship
+   ge doctor --command up         # also: data.up | mcp.deploy | agents.build | handoff
    ```
 
    `mise` task wrappers exist for each: `mise run up`, `mise run data`, `mise run mcp-deploy`,

@@ -9,10 +9,10 @@ import { useUrlParam } from "../lib/useUrlState";
 import { resolveFix, runFix } from "../lib/doctorFix";
 
 type ScopeValue = "all" | "local" | "cloud" | "data" | "mcp";
-type CommandValue = "" | "up" | "data.up" | "mcp.deploy" | "agents.build" | "agents.build.local" | "agents.ship" | "agents.sync";
+type CommandValue = "" | "up" | "data.up" | "mcp.deploy" | "agents.build" | "agents.build.local" | "handoff" | "agents.sync";
 
 const SCOPE_VALUES: ScopeValue[] = ["all", "local", "cloud", "data", "mcp"];
-const COMMAND_VALUES: CommandValue[] = ["", "up", "data.up", "mcp.deploy", "agents.build", "agents.build.local", "agents.ship", "agents.sync"];
+const COMMAND_VALUES: CommandValue[] = ["", "up", "data.up", "mcp.deploy", "agents.build", "agents.build.local", "handoff", "agents.sync"];
 
 const SCOPE_CAPTIONS: Record<ScopeValue, string> = {
   all: "every plane + toolchain",
@@ -201,7 +201,7 @@ export default function Doctor({ status }: DoctorProps) {
     { label: "ge mcp deploy", value: "mcp.deploy" },
     { label: "ge agents build", value: "agents.build" },
     { label: "ge agents build --local", value: "agents.build.local" },
-    { label: "ge agents ship", value: "agents.ship" },
+    { label: "ge handoff", value: "handoff" },
     { label: "ge agents sync", value: "agents.sync" },
   ];
 

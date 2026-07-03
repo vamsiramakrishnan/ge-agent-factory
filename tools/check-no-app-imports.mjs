@@ -20,7 +20,7 @@
 // package (packages/std) — a dependency-free leaf with no apps/* imports, so
 // importing it from tools/lib introduces no cycle. @ge/std specifiers never
 // contain "apps/factory" and so are already permitted by rule 1; this is the
-// sanctioned way to unify a former duplicate (e.g. mission-node-registry's
+// sanctioned way to unify a former duplicate (e.g. pipeline-node-registry's
 // snakeCase) without an edge.
 import { readFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";

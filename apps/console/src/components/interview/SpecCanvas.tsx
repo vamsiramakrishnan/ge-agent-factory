@@ -4,7 +4,7 @@ import { Button, ButtonLink, EmptyState, Stat, cx } from "@ge/ui";
 import {
   ge,
   type GeEvent,
-  type MissionArtifactRef,
+  type PipelineArtifactRef,
   type RuntimeTaskSummary,
   type SpecOkfBundle,
   type SpecRegisterResult,
@@ -765,7 +765,7 @@ function SectionSkeleton({ lines = 2 }: { lines?: number }) {
   );
 }
 
-function findAgentSpecArtifact(artifacts: MissionArtifactRef[]): MissionArtifactRef | null {
+function findAgentSpecArtifact(artifacts: PipelineArtifactRef[]): PipelineArtifactRef | null {
   return artifacts.find((artifact) => artifact.name === AGENT_SPEC_ARTIFACT_ID || /agent-spec\.json$/.test(artifact.path || "")) || null;
 }
 

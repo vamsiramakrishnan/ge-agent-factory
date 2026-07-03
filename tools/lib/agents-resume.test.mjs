@@ -45,19 +45,19 @@ describe("groupResumeActions", () => {
   test("groups render in pipeline order: local, ship, remote", () => {
     const { groups, actionable } = groupResumeActions([
       row({ action: "advance_remote", useCaseId: "uc-3" }),
-      row({ action: "ship", useCaseId: "uc-2", workspaceId: "ws-2" }),
+      row({ action: "handoff", useCaseId: "uc-2", workspaceId: "ws-2" }),
       row({ action: "build_local", useCaseId: "uc-1" }),
     ]);
-    expect(groups.map((g) => g.action)).toEqual(["build_local", "ship", "advance_remote"]);
+    expect(groups.map((g) => g.action)).toEqual(["build_local", "handoff", "advance_remote"]);
     expect(actionable).toBe(3);
   });
 
-  test("ship uses workspace ids, falling back to use-case id", () => {
+  test("handoff uses workspace ids, falling back to use-case id", () => {
     const { groups } = groupResumeActions([
-      row({ action: "ship", useCaseId: "uc-1", workspaceId: "ws-1" }),
-      row({ action: "ship", useCaseId: "uc-2", workspaceId: null }),
+      row({ action: "handoff", useCaseId: "uc-1", workspaceId: "ws-1" }),
+      row({ action: "handoff", useCaseId: "uc-2", workspaceId: null }),
     ]);
-    expect(groups[0].command).toBe("ge agents ship --ids ws-1,uc-2");
+    expect(groups[0].command).toBe("ge handoff agents-cli --ids ws-1,uc-2");
   });
 
   test("duplicate ids collapse", () => {

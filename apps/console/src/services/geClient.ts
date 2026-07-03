@@ -5,7 +5,7 @@ export interface Check { name: string; status: "pass" | "warn" | "fail"; detail:
 export interface DoctorRepairPlanItem { section?: string; check: string; category: string; command: string; status: string }
 export interface DoctorSection { name: string; checks: Check[]; fails: number; repairPlan?: DoctorRepairPlanItem[] }
 export interface DoctorReport { project: string | null; region: string; sections: DoctorSection[]; fails: number; repairPlan?: DoctorRepairPlanItem[] }
-// Fleet + journey + artifact shapes now live in @ge/contracts — the single shared shape
+// Fleet + pipeline + artifact shapes now live in @ge/contracts — the single shared shape
 // both apps (and the .mjs tools via JSDoc) agree on. Imported for local use by the runtime
 // types below and re-exported so existing `from "../services/geClient"` importers are unchanged.
 import type {
@@ -14,9 +14,9 @@ import type {
   FleetAgent,
   FleetBlocker,
   FleetHealth,
-  JourneyPlan,
-  JourneyStage,
-  MissionArtifactRef,
+  PipelinePlan,
+  PipelineStage,
+  PipelineArtifactRef,
   RiskLevel,
 } from "@ge/contracts";
 export type {
@@ -25,9 +25,9 @@ export type {
   FleetAgent,
   FleetBlocker,
   FleetHealth,
-  JourneyPlan,
-  JourneyStage,
-  MissionArtifactRef,
+  PipelinePlan,
+  PipelineStage,
+  PipelineArtifactRef,
 } from "@ge/contracts";
 // Opt-in Firebase auth. When disabled (the default / IAP deploy) authEnabled is
 // false and getToken() resolves null, so the request helpers add nothing and
@@ -208,7 +208,7 @@ export interface WorkspaceRepairReport {
   finalDoctor: WorkspaceDoctorReport;
   nextRepairTasks?: WorkspaceRepairTask[];
 }
-export interface AutopilotRun {
+export interface RepairRun {
   id: string;
   targetStage: string;
   status: string;
@@ -221,7 +221,7 @@ export interface AutopilotRun {
   updatedAt: string;
   endedAt: string | null;
 }
-export interface AutopilotItem {
+export interface RepairItem {
   runId: string;
   agentId: string;
   workspaceId: string;
@@ -233,14 +233,14 @@ export interface AutopilotItem {
   repair: WorkspaceRepairReport | null;
   updatedAt: string;
 }
-export interface AutopilotDetail { run: AutopilotRun; items: AutopilotItem[] }
-export interface AutopilotStartResult {
+export interface RepairDetail { run: RepairRun; items: RepairItem[] }
+export interface RepairStartResult {
   skipped?: boolean;
   runId: string;
   reason?: string;
-  mission?: MissionPlan;
+  pipeline?: FactoryRepairPipeline;
 }
-export interface MissionPlan {
+export interface FactoryRepairPipeline {
   kind: string;
   version: number;
   createdAt: string;
@@ -250,7 +250,7 @@ export interface MissionPlan {
     factorySurface: string;
     workspaceSource: string;
     artifactSource: string;
-    autopilotCapability: string;
+    repairCapability: string;
     effectiveFactoryTarget: string;
     buildBoundary: string | null;
     cloudContinuation: null | Record<string, any>;
@@ -269,9 +269,9 @@ export interface MissionPlan {
   summary: {
     selected: number;
     factory: number;
-    autopilot: number;
+    repair: number;
     remoteObserve: number;
-    autopilotAfterFactory: number;
+    repairAfterFactory: number;
     missingWorkspaces: number;
     existingWorkspaces: number;
   };
@@ -284,7 +284,7 @@ export interface MissionPlan {
     workspaceId: string;
     workspaceState: string;
     factoryAction: string;
-    autopilotAction: string;
+    repairAction: string;
   }>;
   disambiguation: string[];
 }
@@ -308,6 +308,22 @@ export interface GeCommand {
     configWritable?: boolean;
     localToolchain?: boolean;
   };
+}
+// Golden-path position (GET /api/ge/position) — the same contract
+// tools/lib/golden-path.mjs's goldenPathPosition() emits for the bare-`ge`
+// board: where am I on capture → prove → handoff, what blocks me, and the
+// exact next command to run.
+export type GoldenPathStageId = "capture" | "prove" | "handoff";
+export interface GoldenPathStage {
+  id: GoldenPathStageId;
+  done: boolean;
+  detail: string;
+}
+export interface GoldenPathPosition {
+  stages: GoldenPathStage[];
+  current: GoldenPathStageId;
+  blocker: string | null;
+  next: string;
 }
 export interface GeJob {
   id: string;
@@ -375,7 +391,7 @@ export interface RuntimeTaskSummary {
   endedAt: string | null;
   input?: Record<string, any> | null;
   output?: RuntimeTaskOutput | null;
-  graph?: MissionRuntimeGraph | null;
+  graph?: PipelineRuntimeGraph | null;
   counts?: { total: number; passed: number; repaired: number; blocked: number } | null;
   lastEvent?: GeEvent | null;
   nextAction?: string;
@@ -388,13 +404,13 @@ export interface RuntimeTaskSummary {
     blockers: unknown[];
     artifacts: unknown[];
   } | null;
-  artifactRefs?: MissionArtifactRef[];
+  artifactRefs?: PipelineArtifactRef[];
   summary?: string | Record<string, any> | null;
   presentation?: RuntimeTaskPresentation;
 }
 
 export interface RuntimeTaskStart {
-  kind: "mission.run" | "harness.run" | "autopilot.run" | "ge.command" | "process.command" | string;
+  kind: "pipeline.run" | "harness.run" | "repair.run" | "ge.command" | "process.command" | string;
   ids?: string[];
   scenario?: string | null;
   spec?: string | null;
@@ -416,20 +432,20 @@ export interface RuntimeTaskStart {
 }
 
 export interface RuntimeTaskOutput {
-  graph?: MissionRuntimeGraph | null;
-  artifactRefs?: MissionArtifactRef[];
+  graph?: PipelineRuntimeGraph | null;
+  artifactRefs?: PipelineArtifactRef[];
   counts?: Record<string, number> | null;
   reason?: string;
 }
 
-export interface MissionRuntimeGraph {
+export interface PipelineRuntimeGraph {
   id?: string;
   status?: string;
   counts?: Record<string, number>;
-  nodes?: MissionRuntimeNode[];
+  nodes?: PipelineRuntimeNode[];
 }
 
-export interface MissionRuntimeNode {
+export interface PipelineRuntimeNode {
   id: string;
   kind?: string;
   label?: string;
@@ -440,7 +456,7 @@ export interface MissionRuntimeNode {
   childTask?: RuntimeTaskSummary | Record<string, any> | null;
   warnings?: unknown[];
   blockers?: Array<{ id?: string; message?: string; error?: string } | string>;
-  artifacts?: MissionArtifactRef[];
+  artifacts?: PipelineArtifactRef[];
   summary?: string | Record<string, any> | null;
   resumePlan?: {
     state: string;
@@ -453,7 +469,7 @@ export interface MissionRuntimeNode {
   } | null;
 }
 
-// MissionArtifactRef moved to @ge/contracts (imported + re-exported near the top of this file).
+// PipelineArtifactRef moved to @ge/contracts (imported + re-exported near the top of this file).
 
 // EventSource can't set request headers, so when auth is on we pass the Firebase
 // ID token as a query param (?access_token=) — the server's bearerFrom() reads it.
@@ -497,6 +513,8 @@ const post = (url: string, body: unknown) => j(url, { method: "POST", body: JSON
 export const ge = {
   status: () => j<StatusBoard>("/api/ge/status"),
   commands: () => j<{ commands: GeCommand[] }>("/api/ge/commands"),
+  // Golden-path position for the shell's capture → prove → handoff band.
+  position: () => j<GoldenPathPosition>("/api/ge/position"),
   specs: (body: { q?: string; department?: string; ids?: string[]; limit?: number } = {}) => {
     const params = new URLSearchParams();
     if (body.q) params.set("q", body.q);
@@ -524,7 +542,7 @@ export const ge = {
   doctor: (scope = "all", command?: string) =>
     j<DoctorReport>(`/api/ge/doctor?scope=${encodeURIComponent(scope)}${command ? `&command=${encodeURIComponent(command)}` : ""}`),
   fleet: () => j<Fleet>("/api/ge/fleet"),
-  journey: (body: { scenario?: string; spec?: string; usecaseId?: string; systems?: string[]; ids?: string[]; targetStage?: string } = {}) => {
+  pipelinePlan: (body: { scenario?: string; spec?: string; usecaseId?: string; systems?: string[]; ids?: string[]; targetStage?: string } = {}) => {
     const params = new URLSearchParams();
     if (body.scenario) params.set("scenario", body.scenario);
     if (body.spec) params.set("spec", body.spec);
@@ -533,14 +551,14 @@ export const ge = {
     if (body.ids?.length) params.set("ids", body.ids.join(","));
     if (body.targetStage) params.set("targetStage", body.targetStage);
     const qs = params.toString();
-    return j<JourneyPlan>(`/api/ge/journey${qs ? `?${qs}` : ""}`);
+    return j<PipelinePlan>(`/api/ge/pipeline/plan${qs ? `?${qs}` : ""}`);
   },
   agent: (id: string) => j<{ agent: FleetAgent | null }>(`/api/ge/agents/${encodeURIComponent(id)}`),
   workspaceDoctor: (id: string, stage = "preview") =>
     j<WorkspaceDoctorReport>(`/api/ge/workspaces/${encodeURIComponent(id)}/doctor?stage=${encodeURIComponent(stage)}`),
   workspaceRepair: (id: string, body: { stage?: string; attempts?: number; agent?: string; runPreview?: boolean }) =>
     post(`/api/ge/workspaces/${encodeURIComponent(id)}/repair`, body) as Promise<WorkspaceRepairReport>,
-  mission: (body: { ids?: string[]; targetStage?: string; repair?: boolean; attempts?: number; runPreview?: boolean }) => {
+  pipelineGraphPlan: (body: { ids?: string[]; targetStage?: string; repair?: boolean; attempts?: number; runPreview?: boolean }) => {
     const params = new URLSearchParams();
     if (body.ids?.length) params.set("ids", body.ids.join(","));
     if (body.targetStage) params.set("targetStage", body.targetStage);
@@ -548,15 +566,15 @@ export const ge = {
     if (body.attempts !== undefined) params.set("attempts", String(body.attempts));
     if (body.runPreview !== undefined) params.set("runPreview", String(body.runPreview));
     const qs = params.toString();
-    return j<MissionPlan>(`/api/ge/mission${qs ? `?${qs}` : ""}`);
+    return j<FactoryRepairPipeline>(`/api/ge/pipeline/graph${qs ? `?${qs}` : ""}`);
   },
-  autopilots: (limit = 20) => j<{ runs: AutopilotRun[] }>(`/api/ge/autopilot?limit=${encodeURIComponent(String(limit))}`),
-  autopilot: (id: string) => j<AutopilotDetail>(`/api/ge/autopilot/${encodeURIComponent(id)}`),
-  autopilotEvents: (id: string, afterSeq = 0) =>
-    j<{ events: Array<{ seq: number; event: GeEvent }> }>(`/api/ge/autopilot/${encodeURIComponent(id)}/events?afterSeq=${encodeURIComponent(String(afterSeq))}`),
-  startAutopilot: (body: { ids?: string[]; targetStage?: string; repair?: boolean; attempts?: number; runPreview?: boolean }) =>
-    post("/api/ge/autopilot", body) as Promise<AutopilotStartResult>,
-  resumeAutopilot: (id: string) => post(`/api/ge/autopilot/${encodeURIComponent(id)}/resume`, {}) as Promise<{ run: AutopilotRun | null }>,
+  repairRuns: (limit = 20) => j<{ runs: RepairRun[] }>(`/api/ge/repair?limit=${encodeURIComponent(String(limit))}`),
+  repairRun: (id: string) => j<RepairDetail>(`/api/ge/repair/${encodeURIComponent(id)}`),
+  repairRunEvents: (id: string, afterSeq = 0) =>
+    j<{ events: Array<{ seq: number; event: GeEvent }> }>(`/api/ge/repair/${encodeURIComponent(id)}/events?afterSeq=${encodeURIComponent(String(afterSeq))}`),
+  startRepair: (body: { ids?: string[]; targetStage?: string; repair?: boolean; attempts?: number; runPreview?: boolean }) =>
+    post("/api/ge/repair", body) as Promise<RepairStartResult>,
+  resumeRepair: (id: string) => post(`/api/ge/repair/${encodeURIComponent(id)}/resume`, {}) as Promise<{ run: RepairRun | null }>,
   logs: (runId: string, stage: string, item?: string) =>
     j<{ found: boolean; source: string; ndjson: string }>(`/api/ge/logs/${encodeURIComponent(runId)}?stage=${encodeURIComponent(stage)}${item ? `&item=${encodeURIComponent(item)}` : ""}`),
   artifact: (runId: string, item: string, name: string) =>
@@ -569,7 +587,7 @@ export const ge = {
   // already up. Backs the header pill + Doctor's "Start daemon" action.
   daemonStart: () => post("/api/ge/daemon/start", {}),
   build: (b: { scope?: string; ids?: string; dept?: string; local?: boolean; force?: boolean }) => post("/api/ge/agents/build", b),
-  ship: (b: { ids?: string; startStage?: string; targetStage?: string }) => post("/api/ge/agents/ship", b),
+  handoff: (b: { target?: string; ids?: string; startStage?: string; targetStage?: string }) => post("/api/ge/handoff", b),
   sync: (b: { ids?: string | string[]; push?: boolean; local?: boolean; remoteMode?: boolean; remote?: string; create?: boolean; noCommit?: boolean }) => post("/api/ge/agents/sync", b),
   registerSpec: (body: { input: string; allowDraft?: boolean; syncCatalog?: boolean }) => post("/api/ge/specs/register", body) as Promise<SpecRegisterResult>,
   // Interview BRD/document grounding (sub-project 1). Upload uses base64 JSON so
@@ -602,7 +620,7 @@ export const ge = {
   runtimeEvents: (id: string, afterSeq = 0) =>
     j<{ events: Array<{ seq: number; event: GeEvent }> }>(`/api/runtime/tasks/${encodeURIComponent(id)}/events?format=json&afterSeq=${encodeURIComponent(String(afterSeq))}`),
   runtimeStart: (body: RuntimeTaskStart) => post("/api/runtime/tasks", body) as Promise<RuntimeTaskSummary>,
-  missionRun: (body: Omit<RuntimeTaskStart, "kind">) => post("/api/runtime/tasks", { kind: "mission.run", ...body }) as Promise<RuntimeTaskSummary>,
+  pipelineRun: (body: Omit<RuntimeTaskStart, "kind">) => post("/api/runtime/tasks", { kind: "pipeline.run", ...body }) as Promise<RuntimeTaskSummary>,
   runtimeResume: (id: string) => post(`/api/runtime/tasks/${encodeURIComponent(id)}/resume`, {}),
   runtimeInteraction: (taskId: string, interactionId: string, body: unknown) =>
     post(`/api/runtime/tasks/${encodeURIComponent(taskId)}/interactions/${encodeURIComponent(interactionId)}`, body) as Promise<{ ok: boolean; interactionId: string; responseCount: number }>,
@@ -690,7 +708,7 @@ export function streamDoctor(scope: string, command: string | undefined, onEvent
   });
 }
 
-// ── background jobs (long mutating ops: up / mcp deploy / build / ship / sync) ──
+// ── background jobs (long mutating ops: up / mcp deploy / build / handoff / sync) ──
 // These endpoints return { jobId } immediately; the op streams over SSE.
 export interface JobStart { jobId: string; command?: GeCommand }
 

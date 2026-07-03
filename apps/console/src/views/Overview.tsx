@@ -15,8 +15,6 @@ interface OverviewProps {
   refresh: () => Promise<void>;
 }
 
-type JourneyKey = "preview" | "console" | "platform";
-
 const DEFAULT_SCENARIO = "benefits-enrollment";
 const DEFAULT_SYSTEMS = "workday,sap_concur";
 
@@ -116,10 +114,10 @@ export default function Overview({ status, refresh }: OverviewProps) {
     }
   };
 
-  const handleStartMission = async () => {
+  const handleStartPipeline = async () => {
     setBusyPreview(true);
     try {
-      const task = await ge.missionRun({
+      const task = await ge.pipelineRun({
         scenario: DEFAULT_SCENARIO,
         systems: splitCsv(DEFAULT_SYSTEMS),
         targetStage: "preview",
@@ -136,7 +134,7 @@ export default function Overview({ status, refresh }: OverviewProps) {
     }
   };
 
-  const handleResumeMission = async (task: RuntimeTaskSummary) => {
+  const handleResumePipeline = async (task: RuntimeTaskSummary) => {
     setBusyPreview(true);
     try {
       await ge.runtimeResume(task.id);
@@ -212,10 +210,10 @@ export default function Overview({ status, refresh }: OverviewProps) {
     .filter((a) => a.status !== "none")
     .slice(0, 6) ?? [];
 
-  const missionTasks = runtimeTasks.filter((task) => task.kind === "mission.run");
-  const blockedMission = missionTasks.find((task) => isBlocked(task.status));
-  const activeMission = missionTasks.find((task) => isActive(task.status));
-  const latestMission = blockedMission || activeMission || missionTasks[0] || null;
+  const pipelineTasks = runtimeTasks.filter((task) => task.kind === "pipeline.run");
+  const blockedPipeline = pipelineTasks.find((task) => isBlocked(task.status));
+  const activePipeline = pipelineTasks.find((task) => isActive(task.status));
+  const latestPipeline = blockedPipeline || activePipeline || pipelineTasks[0] || null;
   const planes = status?.planes ?? [];
   const readyPlanes = planes.filter((plane) => plane.up).length;
   const allPlanesReady = planes.length > 0 && readyPlanes === planes.length;
@@ -231,12 +229,12 @@ export default function Overview({ status, refresh }: OverviewProps) {
   const toolPlaneReady = planes.find((p) => p.name.toLowerCase().includes("tool"))?.up ?? false;
 
   // The canonical pipeline, mode-aware. Local builds stop at the build boundary;
-  // ship hands the workspace to the cloud, which deploys and registers it. We mark
-  // the boundary so it's clear where "this machine" ends and "the cloud" begins.
+  // the handoff sends the workspace to the cloud, which deploys and registers it. We
+  // mark the boundary so it's clear where "this machine" ends and "the cloud" begins.
   const phases = [
     { key: "spec", label: "Spec", hint: "Interview → registered spec", done: total > 0, count: null as number | null },
     { key: "build", label: "Build", hint: mode === "remote" ? "Cloud factory" : "On this machine", done: totalSubmitted + totalDeployed > 0, count: totalNone || null },
-    { key: "ship", label: "Ship", hint: "Local → cloud handoff", boundary: true, done: totalDeployed > 0, count: null },
+    { key: "handoff", label: "Hand off", hint: "Local → cloud handoff", boundary: true, done: totalDeployed > 0, count: null },
     { key: "deploy", label: "Deploy", hint: "Cloud runtime + tools", done: totalDeployed > 0, count: totalSubmitted || null },
     { key: "running", label: "Running", hint: "Registered & serving", done: totalDeployed > 0, count: totalDeployed || null },
   ];
@@ -291,7 +289,7 @@ export default function Overview({ status, refresh }: OverviewProps) {
       {/* Self-service install — bring the whole factory up in your own project. */}
       <CloudShellCta />
 
-      {/* Guided first journey with honest effort estimates. Steps check off
+      {/* Guided first-run walkthrough with honest effort estimates. Steps check off
           from live state, so this is also the resume point if the user leaves
           halfway. Auto-retires on the first deployed agent; dismissable. */}
       {totalDeployed === 0 && !getStartedDismissed && (
@@ -304,13 +302,13 @@ export default function Overview({ status, refresh }: OverviewProps) {
         />
       )}
 
-      {/* Pipeline rail — the build→ship→deploy→run flow, mode-aware. */}
+      {/* Pipeline rail — the build→handoff→deploy→run flow, mode-aware. */}
       <Section
         className="mb-6"
         title="Pipeline"
         description={mode === "remote"
           ? "This machine submits; the cloud builds, deploys, and publishes."
-          : "This machine runs build → preview (the build boundary). Ship hands off to the cloud."}
+          : "This machine runs build → preview (the build boundary). Hand off sends it to the cloud."}
         actions={
           <Button variant="ghost" size="sm" onClick={() => { location.hash = "#/pipeline"; }}>
             Open Pipeline <ArrowRight className="w-4 h-4" />
@@ -355,30 +353,30 @@ export default function Overview({ status, refresh }: OverviewProps) {
           <div>
             <div className="text-xs font-semibold uppercase tracking-wide text-secondary mb-1">Next step</div>
             <h2 className="text-lg font-semibold text-on-surface">
-              {blockedMission ? "Resume the blocked run" : activeMission ? "Watch the active run" : allPlanesReady ? "Run a local preview" : "Prepare the missing services"}
+              {blockedPipeline ? "Resume the blocked run" : activePipeline ? "Watch the active run" : allPlanesReady ? "Run a local preview" : "Prepare the missing services"}
             </h2>
             <p className="text-sm text-secondary mt-1 max-w-2xl">
-              {blockedMission?.resumePlan?.reason || activeMission?.resumePlan?.reason || status?.clientDoes || status?.next || "Choose a path below."}
+              {blockedPipeline?.resumePlan?.reason || activePipeline?.resumePlan?.reason || status?.clientDoes || status?.next || "Choose a path below."}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {blockedMission ? (
-              <Button variant="primary" size="md" onClick={() => handleResumeMission(blockedMission)} disabled={busyPreview}>Resume Run</Button>
-            ) : activeMission ? (
+            {blockedPipeline ? (
+              <Button variant="primary" size="md" onClick={() => handleResumePipeline(blockedPipeline)} disabled={busyPreview}>Resume Run</Button>
+            ) : activePipeline ? (
               <Button variant="primary" size="md" onClick={() => { location.hash = "#/activity"; }}>Open Runs</Button>
             ) : allPlanesReady ? (
-              <Button variant="primary" size="md" onClick={handleStartMission} disabled={busyPreview}>Start Preview</Button>
+              <Button variant="primary" size="md" onClick={handleStartPipeline} disabled={busyPreview}>Start Preview</Button>
             ) : (
               <Button variant="primary" size="md" onClick={handleNextStep}>{status?.next || "Run Readiness"}</Button>
             )}
             <Button variant="outline" size="md" onClick={() => { location.hash = "#/doctor"; }}>Readiness</Button>
           </div>
         </div>
-        {latestMission && (
+        {latestPipeline && (
           <div className="mt-4 pt-4 border-t border-outline/10 flex flex-wrap items-center gap-3 text-xs text-secondary">
-            <span className="font-medium text-on-surface">{latestMission.id}</span>
-            <StatusChip status={latestMission.status} />
-            <span>{latestMission.resumePlan?.nextAction || latestMission.nextAction || "no next step"}</span>
+            <span className="font-medium text-on-surface">{latestPipeline.id}</span>
+            <StatusChip status={latestPipeline.status} />
+            <span>{latestPipeline.resumePlan?.nextAction || latestPipeline.nextAction || "no next step"}</span>
           </div>
         )}
       </div>
@@ -391,7 +389,7 @@ export default function Overview({ status, refresh }: OverviewProps) {
             <h2 className="text-sm font-semibold text-on-surface">Pipeline</h2>
             <ArrowRight className="w-4 h-4 text-secondary ml-auto" />
           </div>
-          <p className="text-xs text-secondary">The build &amp; deploy <span className="font-medium text-on-surface">flow</span> — take one spec (or a batch) from interview through build, ship, and deploy. Start and resume runs here.</p>
+          <p className="text-xs text-secondary">The build &amp; deploy <span className="font-medium text-on-surface">flow</span> — take one spec (or a batch) from interview through build, handoff, and deploy. Start and resume runs here.</p>
         </button>
         <button onClick={() => { location.hash = "#/fleet"; }} className="editorial-micro-card rounded-lg p-5 text-left hover:bg-surface-container-low transition-colors">
           <div className="flex items-center gap-2 mb-2">
@@ -399,7 +397,7 @@ export default function Overview({ status, refresh }: OverviewProps) {
             <h2 className="text-sm font-semibold text-on-surface">Fleet</h2>
             <ArrowRight className="w-4 h-4 text-secondary ml-auto" />
           </div>
-          <p className="text-xs text-secondary">Your <span className="font-medium text-on-surface">agents</span> — the persistent roster across every spec, with health, blockers, and per-agent build / regenerate / ship actions.</p>
+          <p className="text-xs text-secondary">Your <span className="font-medium text-on-surface">agents</span> — the persistent roster across every spec, with health, blockers, and per-agent build / regenerate / hand-off actions.</p>
           <div className="flex flex-wrap gap-3 mt-3 text-xs text-secondary">
             <span><span className="font-semibold text-on-surface">{totalDeployed}</span> deployed</span>
             <span><span className="font-semibold text-on-surface">{totalSubmitted}</span> submitted</span>
@@ -414,7 +412,7 @@ export default function Overview({ status, refresh }: OverviewProps) {
         title="Platform planes"
         description={mode === "remote"
           ? "Remote builds need the platform deployed from this machine first — the factory gateway, the tool plane (per-department MCP), and data stores. A remote build is blocked until the selected agents' tool plane is deployed."
-          : "Optional for local preview. Required before you ship or switch to remote: stand these up from this machine."}
+          : "Optional for local preview. Required before you hand off or switch to remote: stand these up from this machine."}
         actions={<span className="text-xs text-secondary">{readyPlanes}/{planes.length || 3} ready</span>}
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -429,6 +427,9 @@ export default function Overview({ status, refresh }: OverviewProps) {
                 onCheckReadiness={() => { location.hash = "#/doctor"; }}
                 onStandUp={() => handleStandUp(p.name, key)}
                 busy={busyPlanes.has(key)}
+                // Registry-derived CLI chip: the id each Stand Up POSTs to
+                // (data.up / mcp.deploy / up), never a hardcoded string.
+                cliCommandId={key === "data" ? "data.up" : key === "mcp" ? "mcp.deploy" : "up"}
               />
             );
           })}

@@ -11,11 +11,11 @@ description: The versioned, machine-readable statement of what an agent may do a
 **Definition:** the Enterprise Agent Contract is the versioned, machine-readable
 statement of *what an agent is allowed and expected to do* and *what world it
 operates in* — materialized in this repo as the use-case spec
-(`usecase-spec.json`), with a portable Markdown twin (the
-[OKF bundle](../reference/okf.html)).
+(`usecase-spec.json`), with a
+[portable Markdown twin](#the-contracts-portable-form).
 
 <p align="center">
-  <img src="../assets/diagrams/signature-pipeline-enterprise-agent-contract.svg" alt="signature pipeline zoomed to the Enterprise Agent Contract stage, lit; capture, generate, source-system twins, prove, passport, handoff, and authority graph shown dimmed for context" width="700">
+  <img src="../assets/diagrams/signature-pipeline-enterprise-agent-contract.svg" alt="the signature capture-to-handoff diagram zoomed to the Enterprise Agent Contract stage, lit; capture, generate, source-system twins, prove, passport, handoff, and authority graph shown dimmed for context" width="700">
 </p>
 
 ## Why it exists
@@ -121,7 +121,7 @@ factory builds. It is computed in exactly one place
 shared by authoring and build so the two can never drift:
 
 <p align="center">
-  <img src="../assets/diagrams/workflow-spine.svg" alt="architecture.pipeline feeds matchPipelineSteps(), which both spec generation and build consume" width="550">
+  <img src="../assets/diagrams/workflow-spine.svg" alt="the architecture's ordered stage list feeds matchPipelineSteps(), which both spec generation and build consume" width="550">
 </p>
 
 At authoring time, workflow steps carry tool-*intent* names. At build time
@@ -131,31 +131,48 @@ its workflow has enough tool-bearing stages and distinct tools (the
 thresholds live in the same module) — the factory never fabricates structure
 the contract did not justify.
 
-## OKF: the contract's portable form
+## The contract's portable form
 
 The JSON contract is precise but awkward for humans to author, diff, or
-exchange. **OKF (Open Knowledge Format — this repo's own spec-as-Markdown
-format)** is the same contract as a directory of plain Markdown concepts
-that a person, a reviewer, or another tool can read and edit. A contract and
-an OKF bundle are two forms of one object, and they round-trip:
-`spec-to-okf.mjs` exports, `okf-to-spec.mjs` ingests. A BRD authored outside
-the factory and a contract compiled inside it are the same kind of artifact.
+exchange. So the same contract also exists as a directory of plain Markdown
+concepts that a person, a reviewer, or another tool can read and edit. The
+two are two forms of one object, and they round-trip — a business
+requirements document authored outside the factory and a contract compiled
+inside it are the same kind of artifact.
 
-The full field-by-field mapping lives in the [OKF reference](../reference/okf.html);
-the conversion walkthrough is the [Contract ⇄ OKF guide](../cookbooks/spec-to-okf.html).
+<details>
+<summary>Operator spelling / under the hood</summary>
+
+The Markdown form is **OKF (Open Knowledge Format — this repo's own
+spec-as-Markdown format)**. `spec-to-okf.mjs` exports, `okf-to-spec.mjs`
+ingests. The full field-by-field mapping lives in the
+[OKF reference](../reference/okf.html); the conversion walkthrough is the
+[Contract ⇄ OKF guide](../cookbooks/spec-to-okf.html).
+
+</details>
 
 ## Where it appears
 
-- **CLI:** contracts are compiled into workspaces by `ge agents build`
-  (`ge pipeline run` orchestrates the surrounding path). `ge devex smoke`
-  builds one and prints where its artifacts landed. The schema-level
-  reference is [Contract schema](../reference/spec-schema.html).
+- **CLI:** contracts are captured with `ge capture` (`--from` registers an
+  existing contract file) and compiled into workspaces by `ge prove` /
+  `ge agents build`. `ge prove` on a fresh machine builds one and prints
+  where its artifacts landed. The schema-level reference is
+  [Contract schema](../reference/spec-schema.html).
 - **Console:** the **Interview** view captures intent into a contract; the
-  **Spec Review** canvas renders it half-by-half for editing and OKF export.
-  See [the contract editor](../console/contract-editor.html).
+  **Spec Review** canvas renders it half-by-half for editing and Markdown
+  export. See [the contract editor](../console/contract-editor.html).
 - **Generated artifacts:** `mock_systems/usecase-spec.json` in every
-  workspace; the OKF knowledge bundle under `app/knowledge/`; the catalog
-  entries under `apps/factory/catalog/interview-specs/`.
+  workspace; the portable Markdown knowledge bundle under `app/knowledge/`;
+  the catalog entries under `apps/factory/catalog/interview-specs/`.
+
+<details>
+<summary>Operator spellings</summary>
+
+`ge pipeline run` orchestrates the surrounding path around
+`ge agents build`; on a fresh machine `ge prove` runs the health check and
+one validated canary build; the Markdown knowledge bundle is the OKF bundle.
+
+</details>
 
 ## Related concepts
 

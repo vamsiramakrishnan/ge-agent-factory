@@ -25,8 +25,8 @@ export const STATE_PATHS = {
     meta: join(stateRoot, "runtime", "daemon.json"),
     log: join(stateRoot, "runtime", "daemon.log"),
   },
-  missions: {
-    root: join(stateRoot, "missions"),
+  pipelines: {
+    root: join(stateRoot, "pipelines"),
   },
   interviews: {
     root: join(stateRoot, "interviews"),
@@ -64,7 +64,9 @@ export const LEGACY_STATE_PATHS = {
     meta: join(REPO_ROOT, ".ge-daemon", "daemon.json"),
     log: join(REPO_ROOT, ".ge-daemon", "daemon.log"),
   },
-  missions: {
+  // Key renamed missions → pipelines with the vocabulary; the DIR string is the
+  // historical on-disk layout this entry exists to read, so it stays ".ge-missions".
+  pipelines: {
     root: join(REPO_ROOT, ".ge-missions"),
   },
   interviews: {
@@ -123,7 +125,7 @@ export function ensureStateLayout() {
   for (const dir of [
     STATE_PATHS.root,
     STATE_PATHS.runtime.runs,
-    STATE_PATHS.missions.root,
+    STATE_PATHS.pipelines.root,
     STATE_PATHS.interviews.root,
     STATE_PATHS.skills.root,
     STATE_PATHS.console.jobs,

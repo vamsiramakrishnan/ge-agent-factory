@@ -1,5 +1,5 @@
 // Cloud + local agent-build submission — `ge agents build` (remote and --local),
-// `ge agents ship`, `ge agents sync --local`, and the devex smoke/check wrappers
+// `ge handoff`, `ge agents sync --local`, and the first-proof/devex-check wrappers
 // around the local path. Split out of factory-core.mjs as the "submit/build a
 // fleet of agents" domain, distinct from the read-only fleet/run reporting that
 // stays in factory-core.mjs and the pure readiness checks in tool-plane-checks.mjs.
@@ -20,6 +20,7 @@ import { parseConcurrency } from "./concurrency.mjs";
 import { runDocsCheck } from "./docs-check.mjs";
 import { createFactoryPlan, runFactoryPlan, removeWorkspace } from "./factory-local-ops.mjs";
 import { STATE_PATHS, displayStatePath } from "./state-paths.mjs";
+import { DxError } from "./errors/dx-error.mjs";
 import {
   LOCAL_PROJECTS,
   LOCAL_PROJECT_STORE,
@@ -277,13 +278,19 @@ export function createProvisionOps({
 
   // `ge mode local|remote`: set the operating mode (persisted in .ge.json).
   function setMode(mode) {
-    if (!["local", "remote"].includes(mode)) throw new Error(`mode must be 'local' or 'remote' (got '${mode}')`);
+    if (!["local", "remote"].includes(mode)) {
+      throw new DxError(`mode must be 'local' or 'remote' (got '${mode}')`, {
+        where: "config: mode (.ge.json)",
+        why: "the operating mode decides whether builds run on this machine or in the cloud factory — only those two exist",
+        fix: "ge mode local",
+      });
+    }
     const existing = readJson(configPath, {});
     writeJson(configPath, { ...existing, mode });
     return { mode };
   }
 
-  async function devexSmoke(cfg, {
+  async function firstProof(cfg, {
     id = null,
     target = "validated",
     preview = false,
@@ -296,7 +303,7 @@ export function createProvisionOps({
     const doctor = localPreflight();
     if (doctor.fails > 0) {
       return {
-        kind: "ge.devex.smoke",
+        kind: "ge.prove.fresh",
         ok: false,
         blocked: true,
         stage: "doctor",
@@ -323,7 +330,7 @@ export function createProvisionOps({
     const contract = workspace?.contract || null;
     if (!workspace || !contract?.ok) {
       return {
-        kind: "ge.devex.smoke",
+        kind: "ge.prove.fresh",
         ok: false,
         blocked: true,
         stage: "workspace_contract",
@@ -339,7 +346,7 @@ export function createProvisionOps({
       };
     }
     return {
-      kind: "ge.devex.smoke",
+      kind: "ge.prove.fresh",
       ok: true,
       blocked: false,
       startedAt,
@@ -394,11 +401,11 @@ export function createProvisionOps({
         items: workspaceItems,
       },
       next: ok
-        ? ["ge devex smoke --target validated --force", "mise run console"]
+        ? ["ge prove --target validated --force", "mise run console"]
         : [
           doctor?.fails ? "mise run setup" : null,
           docsResult && !docsResult.ok ? "node tools/docs-check.mjs" : null,
-          workspaceFails ? "ge devex smoke --target validated --force" : null,
+          workspaceFails ? "ge prove --target validated --force" : null,
         ].filter(Boolean),
     };
   }
@@ -463,17 +470,23 @@ export function createProvisionOps({
     return { mode: "local", repo: displayStatePath(outDir), ids: syncIds, synced: n, pushed };
   }
 
-  // `ge agents ship` (local → remote handoff): upload each locally-built workspace to
+  // `ge handoff` (local → remote release): upload each locally-built workspace to
   // GCS and submit a deploy-only run to the cloud factory that starts past the build
   // boundary (default load_data → deploy_runtime → register_tools → publish_enterprise),
   // consuming the prebuilt workspace instead of regenerating. Pairs with `ge agents
   // build --local` (build + validate on this machine).
-  async function ship(cfg, { ids, startStage = "load_data", targetStage = "publish_enterprise", concurrency = "2", noProxy = false, log = noop } = {}) {
+  async function handoff(cfg, { ids, startStage = "load_data", targetStage = "publish_enterprise", concurrency = "2", noProxy = false, log = noop } = {}) {
     ensureGcloud();
     if (!cfg.project) throw new Error("No project. Run `ge init`.");
     if (!cfg.bucket) throw new Error("No artifact bucket in config.");
     if (!cfg.geAppId) throw new Error("geAppId unset. Add it to .ge.json or set GEMINI_ENTERPRISE_APP_ID.");
-    if (!existsSync(LOCAL_PROJECTS)) throw new Error(`no local workspaces at ${LOCAL_PROJECTS} — run \`ge agents build --local\` first.`);
+    if (!existsSync(LOCAL_PROJECTS)) {
+      throw new DxError(`no local workspaces at ${LOCAL_PROJECTS} — run \`ge prove\` first.`, {
+        where: `workspaces: ${LOCAL_PROJECTS}`,
+        why: "handoff releases locally-built agents, and nothing has been built on this machine yet",
+        fix: "ge prove",
+      });
+    }
     let dirs = readdirSync(LOCAL_PROJECTS).filter((d) => { try { return statSync(join(LOCAL_PROJECTS, d)).isDirectory(); } catch { return false; } });
     if (ids) {
       const requested = parseList(String(ids));
@@ -482,7 +495,13 @@ export function createProvisionOps({
       }));
       dirs = dirs.filter((d) => resolved.has(d));
     }
-    if (!dirs.length) throw new Error("no matching local workspaces to ship.");
+    if (!dirs.length) {
+      throw new DxError("no matching local workspaces to hand off.", {
+        where: "workspaces: local workspace registry",
+        why: "the ids requested do not match any locally-built workspace",
+        fix: "ge agents resume",
+      });
+    }
 
     const conc = parseConcurrency(concurrency);
     const results = [];
@@ -497,7 +516,7 @@ export function createProvisionOps({
           const domain = pipeline.domain || manifest.department || "hr";
 
           // tar (pruning heavy/generated dirs) → upload to the prebuilt staging path.
-          const tmp = join("/tmp", `ge-ship-${id}.tar.gz`);
+          const tmp = join("/tmp", `ge-handoff-${id}.tar.gz`);
           const tar = run("tar", ["-czf", tmp, "--exclude=.venv", "--exclude=node_modules", "--exclude=__pycache__", "--exclude=.pytest_cache", "--exclude=runs", "--exclude=versions", "--exclude=.ge-harness", "-C", wsDir, "."], { allowFail: true });
           if (!tar.ok) throw new Error(`tar failed: ${tar.err?.split("\n")[0] || "?"}`);
           const prebuiltArchive = `gs://${cfg.bucket}/prebuilt/${id}/workspace.tar.gz`;
@@ -516,16 +535,16 @@ export function createProvisionOps({
         } catch (e) { results.push({ id, ok: false, error: e.message }); log(`✗ ${id} ${e.message}`); }
       });
     }, { noProxy, log });
-    // Shadow the ship handoff into the durable ledger.
+    // Shadow the handoff into the durable ledger.
     await ledgerWrite((l) => l.recordRemoteSubmission({
-      runId: `ship-${new Date().toISOString().replace(/[:.]/g, "-")}`,
+      runId: `handoff-${new Date().toISOString().replace(/[:.]/g, "-")}`,
       mode: "remote",
-      kind: "ship",
+      kind: "handoff",
       targetStage,
       items: results.map((r) => ({ id: r.id, useCaseId: r.id, workspaceId: r.id, error: r.ok ? null : r.error })),
     }));
     return { submitted: results.filter((r) => r.ok).length, failed: results.filter((r) => !r.ok).length, total: dirs.length, startStage, targetStage, results };
   }
 
-  return { provision, provisionLocal, setMode, devexSmoke, devexCheck, syncLocal, ship };
+  return { provision, provisionLocal, setMode, firstProof, devexCheck, syncLocal, handoff };
 }

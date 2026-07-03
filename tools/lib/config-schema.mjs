@@ -7,6 +7,8 @@
 // where each final value came from. Keeping this in one place stops drift between
 // the CLI, MCP, console, and docs.
 
+import { DxError } from "./errors/dx-error.mjs";
+
 export const CONFIG_FIELDS = {
   project: {
     flag: "project",
@@ -185,7 +187,13 @@ export function validateConfigFor(command, inputs = {}) {
     if (!(def.requiredFor || []).includes(command)) continue;
     if (!has({ [name]: resolveConfigField(name, inputs).value }, name)) missing.push(name);
   }
-  if (missing.length) throw new Error(`missing required config for "${command}": ${missing.join(", ")} (set via flag, env, or .ge.json — see \`ge config explain\`)`);
+  if (missing.length) {
+    throw new DxError(`missing required config for "${command}": ${missing.join(", ")} (set via flag, env, or .ge.json — see \`ge config explain\`)`, {
+      where: `config: ${missing.join(", ")}`,
+      why: `\`${command}\` cannot run until these values resolve from a flag, an env var, or .ge.json`,
+      fix: "ge config explain",
+    });
+  }
   return true;
 }
 

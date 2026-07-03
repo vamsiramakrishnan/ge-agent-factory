@@ -3,7 +3,7 @@
 // tools/ge.mjs. (The bare zero-args status board stays in tools/ge.mjs
 // itself — it's the root command's own `run`, not a noun group.)
 import { defineCommand } from "citty";
-import { guarded, common, cfgFrom, emit, out, pc, core, ICON, blog, elog, announceExpectedDuration } from "./shared.mjs";
+import { guarded, common, cfgFrom, emit, out, pc, ui, core, blog, elog, announceExpectedDuration, renderChecks } from "./shared.mjs";
 
 export const cutover = defineCommand({
   meta: { name: "cutover", description: "Adopt a hand-managed project into Terraform (plan by default; --apply to run)" },
@@ -12,12 +12,12 @@ export const cutover = defineCommand({
     const res = await core.cutover(cfgFrom(args), { apply: args.apply, log: elog });
     emit(args, res, (r) => {
       if (r.mode === "plan") {
-        out(pc.bold(`\nCutover (Terraform adopt) — ${r.project}`));
+        out(ui.title("Cutover (Terraform adopt)", r.project));
         out(pc.dim("  import blocks written:"));
         for (const im of r.imports) out(`  ${pc.dim("•")} ${im.to} ${pc.dim("← " + im.id)}`);
-        out(pc.yellow("\n" + r.note));
+        out(`\n${ui.glyph("warning")} ${pc.yellow(r.note)}`);
       } else {
-        out(pc.green(`\n✓ cutover applied (terraform) — ${r.health.fails} doctor failure(s).`));
+        out(`\n${ui.glyph("passed")} ${pc.green(`cutover applied (terraform) — ${r.health.fails} doctor failure(s).`)}`);
       }
     });
   }),
@@ -29,7 +29,7 @@ export const mode = defineCommand({
   run: guarded(({ args }) => {
     if (args.set) {
       const res = core.setMode(args.set);
-      emit(args, res, (r) => out(pc.green(`✓ mode = ${pc.bold(r.mode)}`)));
+      emit(args, res, (r) => out(`${ui.glyph("passed")} ${pc.green("mode =")} ${ui.cmd(r.mode)}`));
       return;
     }
     const cfg = cfgFrom(args);
@@ -37,18 +37,18 @@ export const mode = defineCommand({
     // touches GCP) — see config-schema.mjs.
     const res = { mode: cfg.mode || "local" };
     emit(args, res, (r) => {
-      out(pc.bold(`\nmode: ${pc.cyan(r.mode)}`));
+      out(ui.title(`Mode: ${r.mode}`));
       out(r.mode === "local"
         ? pc.dim("  this machine runs generate → validate (build boundary); deploy/register/publish are cloud steps.")
         : pc.dim("  this machine submits + observes; the cloud factory builds, deploys, and publishes."));
-      out(pc.dim("  set with: ge mode local | ge mode remote"));
+      out(`  ${pc.dim("set with:")} ${ui.cmd("ge mode local")} ${pc.dim("|")} ${ui.cmd("ge mode remote")}`);
     });
   }),
 });
 
 export const doctor = defineCommand({
   meta: { name: "doctor", description: "Unified health: toolchain · factory · data plane · tool plane (--local/--cloud/--data/--mcp to filter). Narrower scoped checks: `ge data doctor` (data plane only), `ge mcp doctor` (tool plane / MCP services only)." },
-  args: { ...common, local: { type: "boolean", description: "Include the uv toolchain section" }, cloud: { type: "boolean", description: "Only the factory section" }, data: { type: "boolean", description: "Only the data plane section" }, mcp: { type: "boolean", description: "Only the tool plane section" }, command: { type: "string", description: "Check readiness for a mutating command (up|data.up|mcp.deploy|agents.build|agents.build.local|agents.ship|agents.sync)" } },
+  args: { ...common, local: { type: "boolean", description: "Include the uv toolchain section" }, cloud: { type: "boolean", description: "Only the factory section" }, data: { type: "boolean", description: "Only the data plane section" }, mcp: { type: "boolean", description: "Only the tool plane section" }, command: { type: "string", description: "Check readiness for a mutating command (up|data.up|mcp.deploy|agents.build|agents.build.local|handoff|agents.sync|prove)" } },
   run: guarded(({ args }) => {
     const cfg = cfgFrom(args);
     const anyFilter = args.local || args.cloud || args.data || args.mcp;
@@ -61,15 +61,14 @@ export const doctor = defineCommand({
           : { local: false, cloud: true, data: true, mcp: true, command: args.command });
     const res = core.doctorAll(cfg, opts);
     emit(args, res, (r) => {
-      out(pc.bold(`\nDoctor — ${r.project || "(no project)"} (${r.region})`));
+      out(ui.title("Doctor", `${r.project || "(no project)"} (${r.region})`));
       for (const s of r.sections) {
-        out(pc.bold(`\n  ${s.name}` + (s.fails ? pc.red(`  (${s.fails} fail)`) : pc.green("  ✓")) ));
-        for (const ch of s.checks) {
-          out(`  ${ICON[ch.status]} ${ch.name.padEnd(30)} ${pc.dim(ch.detail)}`);
-          if (ch.status !== "pass" && ch.fix) out(`      ${pc.dim("fix:")} ${ch.fix}`);
-        }
+        out(ui.section(s.name, s.fails ? pc.red(`(${s.fails} fail)`) : ui.glyph("passed")));
+        renderChecks(s.checks);
       }
-      out(r.fails === 0 ? pc.green("\nAll hard checks passed.") : pc.red(`\n${r.fails} hard failure(s).`));
+      out(r.fails === 0
+        ? `\n${ui.glyph("passed")} ${pc.green("All hard checks passed.")}`
+        : `\n${ui.glyph("failed")} ${pc.red(`${r.fails} hard failure(s).`)}`);
     });
   }),
 });
@@ -83,8 +82,8 @@ export const up = defineCommand({
     announceExpectedDuration("up");
     const res = await core.up(cfgFrom(args), { planes, log: blog });
     emit(args, res, (r) => {
-      out(pc.green(`\n✓ up: ${r.planes.join(" + ")} — ${r.health.fails} doctor failure(s).`));
-      out(pc.dim("Next: ge agents build --canary"));
+      out(`\n${ui.glyph("passed")} ${pc.green(`up: ${r.planes.join(" + ")} — ${r.health.fails} doctor failure(s).`)}`);
+      out(ui.next("ge agents build --canary"));
     });
   }),
 });
@@ -98,14 +97,15 @@ const configExplain = defineCommand({
       bucket: args.bucket, gatewayUrl: args.gatewayUrl, geApp: args.geApp, mode: args.mode, agentsRepo: args.agentsRepo,
     });
     emit(args, res, (r) => {
-      out(pc.bold("\nConfig (value ← source)"));
-      for (const [name, field] of Object.entries(r)) {
-        if (name === "_note") continue;
-        const { value, source } = field;
-        const v = value === undefined || value === "" ? pc.yellow("<unset>") : pc.cyan(String(value));
-        out(`  ${name.padEnd(16)} ${v}  ${pc.dim("← " + source)}`);
-      }
-      if (r._note) out(pc.yellow(`\n  ⚠ ${r._note}`));
+      out(ui.title("Config", "value ← source"));
+      out(ui.kv(Object.entries(r)
+        .filter(([name]) => name !== "_note")
+        .map(([name, { value, source }]) => ({
+          key: name,
+          value: value === undefined || value === "" ? pc.yellow("<unset>") : ui.cmd(String(value)),
+          note: "← " + source,
+        }))));
+      if (r._note) out(`\n  ${ui.glyph("warning")} ${pc.yellow(r._note)}`);
       out(pc.dim("\n  precedence: flag → env → .ge.json → default"));
     });
   }),

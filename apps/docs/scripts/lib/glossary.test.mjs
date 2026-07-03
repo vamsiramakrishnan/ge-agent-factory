@@ -62,7 +62,7 @@ describe("parseGlossary", () => {
       "agents-cli",
       "Canary",
       "Interview",
-      'Pipeline run (formerly "mission")',
+      "Pipeline run",
       "Workspace",
     ]) {
       expect(terms).toContain(expected);

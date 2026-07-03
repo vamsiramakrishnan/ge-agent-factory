@@ -2,7 +2,7 @@
  * Shared interview-start logic.
  *
  * The "fill brief → fire an Antigravity harness run → persist the active task +
- * seed" flow was duplicated verbatim in views/Interview.tsx and views/Journey.tsx.
+ * seed" flow was duplicated verbatim in views/Interview.tsx and views/Pipeline.tsx.
  * This module is the single source of truth: both views import `startInterview`,
  * `interviewArtifacts`, `buildInterviewPrompt`, and the small string helpers.
  *
@@ -10,7 +10,7 @@
  * and writes the same localStorage keys the views relied on before, plus an optional
  * grounding block (clamped via lib/groundingBudget) when the user uploaded BRDs.
  */
-import { ge, type MissionArtifactRef, type RuntimeTaskSummary, type StatusBoard } from "../services/geClient";
+import { ge, type PipelineArtifactRef, type RuntimeTaskSummary, type StatusBoard } from "../services/geClient";
 import { clampGrounding } from "./groundingBudget";
 
 export function splitCsv(value: string): string[] {
@@ -22,7 +22,7 @@ export function slugify(value: string): string {
 }
 
 /** The five artifacts the downstream pipeline consumes from an interview. */
-export function interviewArtifacts(usecaseId: string): MissionArtifactRef[] {
+export function interviewArtifacts(usecaseId: string): PipelineArtifactRef[] {
   const root = `.ge/interviews/${usecaseId}`;
   return [
     {
@@ -32,7 +32,7 @@ export function interviewArtifacts(usecaseId: string): MissionArtifactRef[] {
       ui: {
         title: "Spec",
         role: "spec",
-        action: "Run Mission",
+        action: "Run Pipeline",
         command: `ge pipeline run --spec ${root}/agent-spec.json`,
       },
     },

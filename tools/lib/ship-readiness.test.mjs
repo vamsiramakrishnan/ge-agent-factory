@@ -6,7 +6,7 @@ import {
 } from "./factory-core.mjs";
 import { commandRequirements } from "./ge-command-registry.mjs";
 
-// P0: the agents.ship readiness pre-flight must catch the three blockers that
+// P0: the handoff readiness pre-flight must catch the three blockers that
 // previously only fired mid-run, each with its exact fix command. The checks are
 // pure helpers (mirroring toolPlaneChecks) wired into commandDoctor; we test the
 // helpers with injected fakes and assert the requirement gating in the registry.
@@ -84,8 +84,8 @@ describe("BigQuery API readiness check", () => {
 });
 
 describe("readiness gating per command", () => {
-  test("agents.ship gates all three new blockers", () => {
-    const req = commandRequirements("agents.ship");
+  test("handoff gates all three new blockers", () => {
+    const req = commandRequirements("handoff");
     expect(req.shipHandoff).toBe(true);
     expect(req.bigQueryHard).toBe(true);
   });

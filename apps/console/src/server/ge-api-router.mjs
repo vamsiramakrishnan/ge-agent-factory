@@ -9,11 +9,11 @@ import {
   getJob,
   listJobs,
   streamJob,
-  startAutopilotRun,
-  resumeAutopilotRun,
-  getAutopilot,
-  listAutopilots,
-  getAutopilotEvents,
+  startRepairRun,
+  resumeRepairRun,
+  getRepair,
+  listRepairs,
+  getRepairEvents,
 } from "./transport.mjs";
 import {
   uploadInterviewDocument,
@@ -370,30 +370,30 @@ async function dispatchGeApiResult(result, responder) {
     return responder.json(200, { jobs: await listJobs(result.jobList) });
   }
 
-  if (result.autopilotStart) {
-    const started = await startAutopilotRun(result.autopilotStart);
+  if (result.repairStart) {
+    const started = await startRepairRun(result.repairStart);
     return responder.json(started.skipped ? 200 : 202, started);
   }
 
-  if (result.autopilotResume) {
+  if (result.repairResume) {
     return responder.json(202, {
-      run: await resumeAutopilotRun(result.autopilotResume.id, result.autopilotResume),
+      run: await resumeRepairRun(result.repairResume.id, result.repairResume),
     });
   }
 
-  if (result.autopilotList) {
-    return responder.json(200, { runs: await listAutopilots(result.autopilotList) });
+  if (result.repairList) {
+    return responder.json(200, { runs: await listRepairs(result.repairList) });
   }
 
-  if (result.autopilotGet) {
-    const run = await getAutopilot(result.autopilotGet);
-    return responder.json(run ? 200 : 404, run || { error: "unknown autopilot run" });
+  if (result.repairGet) {
+    const run = await getRepair(result.repairGet);
+    return responder.json(run ? 200 : 404, run || { error: "unknown repair run" });
   }
 
-  if (result.autopilotEvents) {
+  if (result.repairEvents) {
     return responder.json(200, {
-      events: await getAutopilotEvents(result.autopilotEvents.id, {
-        afterSeq: result.autopilotEvents.afterSeq,
+      events: await getRepairEvents(result.repairEvents.id, {
+        afterSeq: result.repairEvents.afterSeq,
       }),
     });
   }

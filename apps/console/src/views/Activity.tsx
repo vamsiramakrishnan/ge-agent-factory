@@ -17,17 +17,17 @@ import {
   type GeEvent,
   type GeJob,
   type LedgerEvent,
-  type MissionArtifactRef,
-  type MissionRuntimeGraph,
-  type MissionRuntimeNode,
+  type PipelineArtifactRef,
+  type PipelineRuntimeGraph,
+  type PipelineRuntimeNode,
   type RuntimeTaskSummary,
 } from "../services/geClient";
 
 // One chronological timeline over three run sources. Each row is normalized into
 // a TimelineRow so the list can be sorted, filtered, and rendered uniformly — the
-// `kind` tag (Mission / Build / Job) is the only visible cue to its origin, and a
+// `kind` tag (Pipeline / Build / Job) is the only visible cue to its origin, and a
 // normalized status drives the single status filter + StatusChip.
-type RowKind = "mission" | "build" | "job";
+type RowKind = "pipeline" | "build" | "job";
 
 interface TimelineRow {
   id: string;
@@ -47,7 +47,7 @@ interface TimelineRow {
   job?: GeJob;
 }
 
-// Rows from different sources can share an id (a mission and a build can both be
+// Rows from different sources can share an id (a pipeline run and a build can both be
 // "abc123"). The list key — and therefore the expand/stream identity — must be
 // the composite `${kind}:${id}`, never the bare id, or expanding one row expands
 // its id-twin and the live tail subscribes to the wrong source.
@@ -64,14 +64,14 @@ export function findExpandedRow<T extends { kind: RowKind; id: string }>(
 }
 
 const KIND_LABEL: Record<RowKind, string> = {
-  mission: "Mission",
+  pipeline: "Pipeline",
   build: "Build",
   job: "Job",
 };
 
 const KIND_FILTERS: Array<[string, string]> = [
   ["all", "All"],
-  ["mission", "Missions"],
+  ["pipeline", "Pipelines"],
   ["build", "Builds"],
   ["job", "Jobs"],
 ];
@@ -163,7 +163,7 @@ export default function Activity() {
           : summarizeRuntimeTask(task) || task.lastEvent?.line || "");
       rows.push({
         id: task.id,
-        kind: "mission",
+        kind: "pipeline",
         rawStatus: String(task.status || ""),
         status: normalizeStatus(task.status),
         updatedAt: task.updatedAt,
@@ -226,7 +226,7 @@ export default function Activity() {
     return rows;
   }, [runtimeTasks, factoryRuns, jobs]);
 
-  // The expanded row owns the live tail. A mission/job streams its own events; a
+  // The expanded row owns the live tail. A pipeline run/job streams its own events; a
   // build mounts FactoryRunDetails (its own stream). Reset tails whenever the
   // expanded target changes so we never show a previous row's lines.
   const expandedRow = useMemo(
@@ -244,11 +244,11 @@ export default function Activity() {
       });
       return unsub;
     }
-    if (expandedRow.kind === "mission") {
+    if (expandedRow.kind === "pipeline") {
       const unsub = streamRuntimeEvents(expandedRow.id, (ev) => {
         const line = formatRuntimeEvent(ev);
         if (line) setRuntimeLines((prev) => [...prev, line].slice(-120));
-        if (["stage_done", "stage_failed", "task_done", "task_failed", "task_blocked", "mission_node_done", "mission_node_blocked"].includes(ev.type)) {
+        if (["stage_done", "stage_failed", "task_done", "task_failed", "task_blocked", "pipeline_node_done", "pipeline_node_blocked"].includes(ev.type)) {
           refreshJobs();
         }
       });
@@ -276,7 +276,7 @@ export default function Activity() {
     <div className="p-6 max-w-5xl mx-auto">
       <PageHeader
         title="Runs"
-        subtitle="One timeline for every run — missions, factory builds, and console jobs, newest first."
+        subtitle="One timeline for every run — pipeline runs, factory builds, and console jobs, newest first."
         actions={
           <Button variant="ghost" size="sm" onClick={handleRefresh} disabled={loading && agents.length === 0}>
             Refresh
@@ -341,7 +341,7 @@ export default function Activity() {
               detail={
                 <>
                   <a href="#/pipeline" className="font-medium text-primary hover:underline">Open the Pipeline</a>{" "}
-                  to build an agent or start a mission — it'll show up here.
+                  to build an agent or start a pipeline run — it'll show up here.
                 </>
               }
             />
@@ -463,8 +463,8 @@ function TimelineRowCard({
   jobLines: string[];
   runtimeLines: string[];
 }) {
-  const canResume = row.kind === "mission" && Boolean(row.task?.resumePlan?.safeToRun);
-  const detailLabel = row.kind === "build" ? "Build" : row.kind === "mission" ? "Events" : "Output";
+  const canResume = row.kind === "pipeline" && Boolean(row.task?.resumePlan?.safeToRun);
+  const detailLabel = row.kind === "build" ? "Build" : row.kind === "pipeline" ? "Events" : "Output";
 
   return (
     <div id={`run-${row.id}`} className="editorial-micro-card rounded-lg p-4">
@@ -499,10 +499,10 @@ function TimelineRowCard({
         )}
       </div>
 
-      {row.kind === "mission" && row.task?.kind === "mission.run" && <MissionTaskDetails task={row.task} />}
+      {row.kind === "pipeline" && row.task?.kind === "pipeline.run" && <PipelineTaskDetails task={row.task} />}
 
       {expanded && row.kind === "build" && row.run && <FactoryRunDetails run={row.run} />}
-      {expanded && row.kind === "mission" && (
+      {expanded && row.kind === "pipeline" && (
         <div className="mt-3 border-t border-outline-variant/30 pt-3">
           <pre className="max-h-80 overflow-y-auto rounded-md bg-on-surface/[0.03] px-3 py-2 text-3xs leading-snug font-mono text-secondary whitespace-pre-wrap">
             {runtimeLines.join("\n") || "Waiting for runtime events..."}
@@ -650,8 +650,8 @@ function StageChip({ name, status }: { key?: string; name: string; status: strin
   );
 }
 
-function MissionTaskDetails({ task }: { task: RuntimeTaskSummary }) {
-  const graph = missionGraph(task);
+function PipelineTaskDetails({ task }: { task: RuntimeTaskSummary }) {
+  const graph = pipelineGraph(task);
   const artifacts = graph?.nodes?.flatMap((node) => node.artifacts || []) || task.artifactRefs || task.output?.artifactRefs || [];
   const blockers = graph?.nodes?.flatMap((node) => node.blockers || []) || task.resumePlan?.blockers || [];
   const artifactCounts = artifactStatusCounts(artifacts);
@@ -673,7 +673,7 @@ function MissionTaskDetails({ task }: { task: RuntimeTaskSummary }) {
       {graph?.nodes?.length ? (
         <div className="space-y-1.5">
           {graph.nodes.map((node) => (
-            <MissionNodeRow key={node.id} node={node} />
+            <PipelineNodeRow key={node.id} node={node} />
           ))}
         </div>
       ) : artifacts.length ? (
@@ -691,7 +691,7 @@ function MissionTaskDetails({ task }: { task: RuntimeTaskSummary }) {
   );
 }
 
-function MissionNodeRow({ node }: { key?: string; node: MissionRuntimeNode }) {
+function PipelineNodeRow({ node }: { key?: string; node: PipelineRuntimeNode }) {
   const blockers = node.blockers || [];
   const artifactCounts = artifactStatusCounts(node.artifacts || []);
   const summary = summarizeNode(node);
@@ -727,7 +727,7 @@ function MissionNodeRow({ node }: { key?: string; node: MissionRuntimeNode }) {
   );
 }
 
-function ArtifactLine({ artifact }: { key?: string; artifact: MissionArtifactRef }) {
+function ArtifactLine({ artifact }: { key?: string; artifact: PipelineArtifactRef }) {
   const status = artifact.status || "planned";
   const tone = status === "present"
     ? "text-status-passed-ink"
@@ -754,11 +754,11 @@ function MetricChip({ label, value, tone = "default" }: { label: string; value: 
   );
 }
 
-function missionGraph(task: RuntimeTaskSummary): MissionRuntimeGraph | null {
+function pipelineGraph(task: RuntimeTaskSummary): PipelineRuntimeGraph | null {
   return task.graph || task.output?.graph || null;
 }
 
-function nodeKindLabel(node: MissionRuntimeNode) {
+function nodeKindLabel(node: PipelineRuntimeNode) {
   const kind = node.kind || node.runtimeKind || "";
   if (kind === "harness.run" || node.runtimeKind === "harness.run") return "Antigravity";
   return kind;
@@ -796,7 +796,7 @@ function shortenRepoPath(path: string) {
 
 function summarizeRuntimeTask(task: RuntimeTaskSummary) {
   if (typeof task.summary === "string") return task.summary;
-  if (task.kind === "mission.run" && task.counts) return formatCounts(task.counts);
+  if (task.kind === "pipeline.run" && task.counts) return formatCounts(task.counts);
   if (task.summary && typeof task.summary === "object") {
     const summary = task.summary as Record<string, any>;
     if (summary.summary && typeof summary.summary === "string") return summary.summary;
@@ -806,7 +806,7 @@ function summarizeRuntimeTask(task: RuntimeTaskSummary) {
   return "";
 }
 
-function artifactStatusCounts(artifacts: MissionArtifactRef[]) {
+function artifactStatusCounts(artifacts: PipelineArtifactRef[]) {
   return artifacts.reduce((counts, artifact) => {
     const status = artifact.status || "planned";
     counts.total += 1;
@@ -838,7 +838,7 @@ function formatCounts(counts: Record<string, number>) {
   return Object.entries(counts).map(([key, value]) => `${key} ${value}`).join(", ");
 }
 
-function summarizeNode(node: MissionRuntimeNode) {
+function summarizeNode(node: PipelineRuntimeNode) {
   const rawSummary = node.summary || {};
   const summary = typeof rawSummary === "string" ? {} : rawSummary;
   if (node.kind === "harness.run" || node.runtimeKind === "harness.run") {
@@ -897,14 +897,14 @@ function formatRuntimeEvent(ev: GeEvent) {
 }
 
 function eventFallbackLine(ev: GeEvent) {
-  if (ev.type === "mission_child_log" && ev.data?.line) return String(ev.data.line);
-  if (ev.type === "mission_child_log" && ev.data?.event?.line) return String(ev.data.event.line);
+  if (ev.type === "pipeline_child_log" && ev.data?.line) return String(ev.data.line);
+  if (ev.type === "pipeline_child_log" && ev.data?.event?.line) return String(ev.data.event.line);
   if (ev.data?.summary && typeof ev.data.summary === "string") return ev.data.summary;
   if (ev.data?.code != null) return `${ev.type} exit ${ev.data.code}`;
   return ev.type;
 }
 
-function artifactDetail(artifact: MissionArtifactRef) {
+function artifactDetail(artifact: PipelineArtifactRef) {
   const meta = artifact.metadata || {};
   if (meta.rowCount != null) return `${meta.rowCount} rows`;
   if (meta.csvFiles != null) return `${meta.csvFiles} csv`;

@@ -1,14 +1,12 @@
 // tools/ge/fleet.mjs — `ge fleet status|repair|repairs`.
 //
 // THE canonical noun for many-agent state and convergence. `status` is the
-// roster health view (formerly `ge agents fleet`); `repair` converges blocked
-// agents to a target stage (formerly `ge autopilot run` — daemon task kind
-// `repair.run`, persisted wire kind `autopilot.run`); `repairs` lists/inspects
-// repair runs (formerly `ge autopilot status`). The old spellings remain as
-// deprecated aliases in tools/ge/autopilot.mjs and under `ge agents fleet`.
+// roster health view; `repair` converges blocked agents to a target stage
+// (daemon task kind `repair.run`, which is also the persisted wire kind);
+// `repairs` lists/inspects repair runs.
 import { defineCommand } from "citty";
 import {
-  guarded, common, cfgFrom, emit, out, pc, core,
+  guarded, common, cfgFrom, emit, out, pc, ui, core,
   daemonPort, daemonStatusSnapshot, daemonRequest, parseIds,
   renderRepairSummary, statusText, followTaskEvents,
 } from "./shared.mjs";
@@ -27,30 +25,28 @@ export const fleetStatusCmd = defineCommand({
     const res = await core.fleetStatus(cfgFrom(args));
     emit(args, res, (r) => {
       const health = r.health || {};
-      out(pc.bold(`\nFleet Health — ${r.total} agents`));
-      out(`  ${pc.red("blocked")} ${health.blocked || 0}   ${pc.yellow("repairable")} ${health.repairable || 0}`);
+      out(ui.title("Fleet Health", `${r.total} agents`));
+      out(`  ${ui.glyph("blocked")} ${pc.red("blocked")} ${health.blocked || 0}   ${ui.glyph("warning")} ${pc.yellow("repairable")} ${health.repairable || 0}`);
       if (health.byStage) {
-        out(pc.dim("\n  by stage"));
-        for (const stage of health.stages || Object.keys(health.byStage)) {
-          out(`  ${String(stage).padEnd(12)} ${health.byStage[stage] || 0}`);
-        }
+        out(ui.section("By stage"));
+        out(ui.kv((health.stages || Object.keys(health.byStage)).map((stage) => [String(stage), String(health.byStage[stage] || 0)])));
       }
       if (health.byOwner) {
-        out(pc.dim("\n  by owner"));
-        for (const [owner, count] of Object.entries(health.byOwner).sort((a, b) => b[1] - a[1])) {
-          out(`  ${String(owner).padEnd(12)} ${count}`);
-        }
+        out(ui.section("By owner"));
+        out(ui.kv(Object.entries(health.byOwner).sort((a, b) => b[1] - a[1]).map(([owner, count]) => [String(owner), String(count)])));
       }
       const bottlenecks = (health.bottlenecks || []).slice(0, Number(args.limit || 8));
       if (bottlenecks.length) {
-        out(pc.dim("\n  top bottlenecks"));
+        out(ui.section("Top bottlenecks"));
+        const countW = Math.max(...bottlenecks.map((item) => String(item.count).length), 0);
+        const stageW = Math.max(...bottlenecks.map((item) => String(item.stage).length), 0);
         for (const item of bottlenecks) {
-          out(`  ${pc.yellow(String(item.count).padStart(3))} ${String(item.stage).padEnd(10)} ${pc.cyan(item.blockerId)} ${pc.dim(item.message)}`);
+          out(`  ${pc.yellow(String(item.count).padStart(countW))}  ${String(item.stage).padEnd(stageW)}  ${ui.cmd(item.blockerId)} ${pc.dim(item.message)}`);
           if (item.actionPlan?.commands?.[0]) out(pc.dim(`      action: ${item.actionPlan.label} · ${item.actionPlan.commands[0]}`));
           if (item.agentIds?.length) out(pc.dim(`      ${item.agentIds.join(", ")}`));
         }
       }
-      out(pc.dim("\n  next: ge fleet repair --ids <comma-ids> --target-stage preview"));
+      out(ui.next("ge fleet repair --ids <comma-ids> --target-stage preview"));
     });
   }),
 });
@@ -91,9 +87,11 @@ export const fleetRepairCmd = defineCommand({
     emit(args, task, (t) => {
       renderRepairSummary(t);
       if (!args.follow) {
-        out(pc.dim(`\n  watch: ge fleet repairs ${t.id}`));
-        out(pc.dim(`  events: ge runs events ${t.id} --follow`));
-        out(pc.dim(`  (or start with --follow to stream events inline)`));
+        out("\n" + ui.nextList([
+          { command: `ge fleet repairs ${t.id}`, note: "watch" },
+          { command: `ge runs events ${t.id} --follow`, note: "live events" },
+        ]));
+        out(pc.dim("  (or start with --follow to stream events inline)"));
       }
     });
     if (args.follow && !args.json) await followTaskEvents(port, task.id);
@@ -116,19 +114,22 @@ export const fleetRepairsCmd = defineCommand({
       return;
     }
     const body = await daemonRequest(port, `/api/tasks?limit=${encodeURIComponent(args.limit || "50")}`, { timeoutMs: 3000 });
-    const tasks = (body.tasks || []).filter((task) => task.kind === "autopilot.run");
+    const tasks = (body.tasks || []).filter((task) => task.kind === "repair.run");
     emit(args, { tasks, daemon: { ok: true, port } }, (r) => {
-      out(pc.bold("\nRepair Runs"));
-      out(`  daemon    ${pc.green("healthy")}  ${pc.dim(`http://127.0.0.1:${port}`)}`);
+      out(ui.title("Repair Runs"));
+      out(ui.kv([{ key: "daemon", value: pc.green("healthy"), note: `http://127.0.0.1:${port}` }]));
       if (!r.tasks.length) {
-        out(pc.dim("  no recent repair runs — start one: ge fleet repair --ids <comma-ids>"));
+        out(pc.dim("  no recent repair runs — start one:"));
+        out(ui.nextList(["ge fleet repair --ids <comma-ids>"]));
         return;
       }
-      for (const task of r.tasks.slice(0, Math.max(1, Math.min(Number(args.limit) || 20, 200)))) {
-        const run = task.output?.run || {};
-        const counts = task.output?.counts || task.counts || run;
-        out(`  ${statusText(run.status || task.status).padEnd(14)} ${String(task.id).padEnd(30)} ${pc.dim(run.targetStage || task.input?.targetStage || "preview")} ${counts.passed || 0}/${counts.repaired || 0}/${counts.blocked || 0}/${counts.total || 0}`);
-      }
+      out("");
+      out(ui.columns(r.tasks.slice(0, Math.max(1, Math.min(Number(args.limit) || 20, 200))), [
+        { header: "status", value: (task) => statusText(task.output?.run?.status || task.status) },
+        { header: "id", value: (task) => String(task.id) },
+        { header: "target", value: (task) => pc.dim(task.output?.run?.targetStage || task.input?.targetStage || "preview") },
+        { header: "passed/repaired/blocked/total", value: (task) => { const counts = task.output?.counts || task.counts || task.output?.run || {}; return `${counts.passed || 0}/${counts.repaired || 0}/${counts.blocked || 0}/${counts.total || 0}`; } },
+      ]));
     });
   }),
 });
