@@ -40,10 +40,6 @@ interface ParsedRoute {
   params: Record<string, string>;
 }
 
-// Pre-consolidation hashes keep working: old bookmarks and deep links land on
-// the canonical route (journey → pipeline, autopilot → repair).
-const LEGACY_ROUTES: Record<string, Route> = { journey: "pipeline", autopilot: "repair" };
-
 function parseHash(hash: string): ParsedRoute {
   // Strip "#/" and any "?query" — filters live in the query (see useUrlState) and
   // must not affect route matching.
@@ -56,7 +52,7 @@ function parseHash(hash: string): ParsedRoute {
     const usecaseId = decodeURIComponent(path.slice("spec-review/".length));
     return { route: "spec-review", params: { usecaseId } };
   }
-  return { route: LEGACY_ROUTES[path] ?? (path as Route), params: {} };
+  return { route: path as Route, params: {} };
 }
 
 export default function App() {

@@ -11,7 +11,7 @@ test("navigate kinds resolve a route", () => {
 });
 
 test("execute kinds never navigate, even with a stray route", () => {
-  for (const kind of ["run_mission", "run_preview", "build_agents", "ship_agents", "resume_mission", "resume_harness", "resume_autopilot", "repair_agent"]) {
+  for (const kind of ["run_pipeline", "run_preview", "build_agents", "handoff_agents", "resume_pipeline", "resume_harness", "resume_repair", "repair_agent"]) {
     expect(planNavigates(plan({ kind, route: "#/somewhere" }))).toBeNull();
   }
 });

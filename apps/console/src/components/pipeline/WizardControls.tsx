@@ -1,6 +1,6 @@
 import { Select } from "@ge/ui";
 
-export function JourneyOption({ active, Icon, title, detail, onClick }: { active: boolean; Icon: any; title: string; detail: string; onClick: () => void }) {
+export function SourceOption({ active, Icon, title, detail, onClick }: { active: boolean; Icon: any; title: string; detail: string; onClick: () => void }) {
   return (
     <button
       type="button"

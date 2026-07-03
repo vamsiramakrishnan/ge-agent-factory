@@ -1,24 +1,24 @@
 import { test, expect } from "bun:test";
 import { rowKey, findExpandedRow } from "./Activity";
 
-// BUG 1 regression: a mission and a build can share an id. Expand/stream identity
+// BUG 1 regression: a pipeline run and a build can share an id. Expand/stream identity
 // must be the composite `${kind}:${id}`, never the bare id — otherwise both rows
 // render expanded and the live tail subscribes to the first match's stream.
 
 test("rowKey is the composite kind:id, not the bare id", () => {
-  expect(rowKey({ kind: "mission", id: "abc" })).toBe("mission:abc");
+  expect(rowKey({ kind: "pipeline", id: "abc" })).toBe("pipeline:abc");
   expect(rowKey({ kind: "build", id: "abc" })).toBe("build:abc");
 });
 
-test("findExpandedRow matches exactly one row when a mission and build share an id", () => {
+test("findExpandedRow matches exactly one row when a pipeline run and build share an id", () => {
   const rows = [
-    { kind: "mission" as const, id: "dup" },
+    { kind: "pipeline" as const, id: "dup" },
     { kind: "build" as const, id: "dup" },
   ];
 
-  const expandedMission = findExpandedRow(rows, "mission:dup");
-  expect(expandedMission).not.toBeNull();
-  expect(expandedMission?.kind).toBe("mission");
+  const expandedPipeline = findExpandedRow(rows, "pipeline:dup");
+  expect(expandedPipeline).not.toBeNull();
+  expect(expandedPipeline?.kind).toBe("pipeline");
 
   const expandedBuild = findExpandedRow(rows, "build:dup");
   expect(expandedBuild?.kind).toBe("build");
@@ -33,5 +33,5 @@ test("findExpandedRow matches exactly one row when a mission and build share an 
 test("findExpandedRow returns null when nothing is expanded", () => {
   const rows = [{ kind: "job" as const, id: "x" }];
   expect(findExpandedRow(rows, null)).toBeNull();
-  expect(findExpandedRow(rows, "mission:x")).toBeNull();
+  expect(findExpandedRow(rows, "pipeline:x")).toBeNull();
 });

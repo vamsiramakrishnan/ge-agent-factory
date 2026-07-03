@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Loader2, Play, RotateCw, Wrench } from "lucide-react";
 import { Button, EmptyState, PageHeader, Section, Select, Stat } from "@ge/ui";
 import { useGeQuery } from "../lib/query";
-import { ge, type AutopilotDetail, type AutopilotRun, type Fleet, type FleetAgent, type MissionPlan, type StatusBoard } from "../services/geClient";
+import { ge, type RepairDetail, type RepairRun, type Fleet, type FleetAgent, type FactoryRepairPipeline, type StatusBoard } from "../services/geClient";
 import { StatusPill } from "../components/StatusPill";
 import { ErrorBanner } from "../components/ErrorBanner";
 
@@ -15,7 +15,7 @@ const TARGETS = ["preview", "promote", "deploy:plan", "publish:plan"];
 
 export default function RepairQueue({ status }: RepairQueueProps) {
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
-  const [mission, setMission] = useState<MissionPlan | null>(null);
+  const [pipeline, setPipeline] = useState<FactoryRepairPipeline | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [department, setDepartment] = useState("all");
   const [agentStatus, setAgentStatus] = useState("all");
@@ -28,13 +28,13 @@ export default function RepairQueue({ status }: RepairQueueProps) {
   // fast-polls (2s) ONLY while the followed run is live — same semantics as
   // the old conditional setInterval, expressed as query options.
   const fleetQuery = useGeQuery<Fleet>(["fleet"], () => ge.fleet(), { intervalMs: 8000 });
-  const runsQuery = useGeQuery(["repairs", 20], () => ge.autopilots(20), { intervalMs: 8000 });
+  const runsQuery = useGeQuery(["repairs", 20], () => ge.repairRuns(20), { intervalMs: 8000 });
   const fleet = fleetQuery.data ?? null;
   const runs = runsQuery.data?.runs ?? [];
   const detailId = selectedRunId ?? runs[0]?.id ?? null;
-  const detailQuery = useGeQuery<AutopilotDetail | null>(
+  const detailQuery = useGeQuery<RepairDetail | null>(
     ["repair-detail", detailId],
-    () => (detailId ? ge.autopilot(detailId) : Promise.resolve(null)),
+    () => (detailId ? ge.repairRun(detailId) : Promise.resolve(null)),
     {
       enabled: !!detailId,
       // Fast-poll only while the followed run is live; terminal runs settle
@@ -66,22 +66,22 @@ export default function RepairQueue({ status }: RepairQueueProps) {
     () => selectedIds.length ? selectedIds : agents.map((agent) => agent.id),
     [agents, selectedIds],
   );
-  const actionableMissionItems = useMemo(
-    () => mission?.roster.filter((item) => ["doctor_repair", "observe_remote_run"].includes(item.autopilotAction)) || [],
-    [mission],
+  const actionableRepairItems = useMemo(
+    () => pipeline?.roster.filter((item) => ["doctor_repair", "observe_remote_run"].includes(item.repairAction)) || [],
+    [pipeline],
   );
-  const noActionableMission = Boolean(mission && queueIds.length > 0 && actionableMissionItems.length === 0);
+  const noActionableRepair = Boolean(pipeline && queueIds.length > 0 && actionableRepairItems.length === 0);
 
   useEffect(() => {
     if (!queueIds.length) {
-      setMission(null);
+      setPipeline(null);
       return;
     }
     let cancelled = false;
     const timer = setTimeout(async () => {
       try {
-        const plan = await ge.mission({ ids: queueIds, targetStage, repair, attempts: 3, runPreview: false });
-        if (!cancelled) setMission(plan);
+        const plan = await ge.pipelineGraphPlan({ ids: queueIds, targetStage, repair, attempts: 3, runPreview: false });
+        if (!cancelled) setPipeline(plan);
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : String(err));
       }
@@ -90,7 +90,7 @@ export default function RepairQueue({ status }: RepairQueueProps) {
   }, [queueIds.join(","), targetStage, repair]);
 
   const start = async () => {
-    if (noActionableMission) {
+    if (noActionableRepair) {
       setError("No selected agents need repair for this target. Missing workspaces need a build first; completed workspaces have nothing to fix.");
       return;
     }
@@ -101,7 +101,7 @@ export default function RepairQueue({ status }: RepairQueueProps) {
     }
     setBusy(true);
     try {
-      const started = await ge.startAutopilot({ ids: queueIds, targetStage, repair, attempts: 3, runPreview: false });
+      const started = await ge.startRepair({ ids: queueIds, targetStage, repair, attempts: 3, runPreview: false });
       if (started.reason) setError(started.reason);
       else setError(null);
       if (started.runId) setSelectedRunId(started.runId);
@@ -113,10 +113,10 @@ export default function RepairQueue({ status }: RepairQueueProps) {
     }
   };
 
-  const resume = async (run: AutopilotRun) => {
+  const resume = async (run: RepairRun) => {
     setBusy(true);
     try {
-      await ge.resumeAutopilot(run.id);
+      await ge.resumeRepair(run.id);
       setSelectedRunId(run.id);
       await load();
     } catch (err) {
@@ -185,7 +185,7 @@ export default function RepairQueue({ status }: RepairQueueProps) {
             <button onClick={selectVisible} className="text-xs text-primary hover:underline">Select visible</button>
             <span className="text-xs text-secondary">{selected.size || agents.length} queued</span>
           </div>
-          {noActionableMission && (
+          {noActionableRepair && (
             <div className="mb-3 rounded-lg border border-status-warning/20 bg-status-warning/5 px-3 py-2 text-xs text-status-warning-ink">
               No selected agents need repair for this target. Missing workspaces need a build first; already-ready workspaces have nothing to fix.
             </div>
@@ -206,7 +206,7 @@ export default function RepairQueue({ status }: RepairQueueProps) {
             variant="primary"
             className="mt-4 w-full"
             onClick={start}
-            disabled={busy || agents.length === 0 || noActionableMission}
+            disabled={busy || agents.length === 0 || noActionableRepair}
             loading={busy}
           >
             {!busy && <Play className="w-4 h-4" />}
@@ -215,28 +215,28 @@ export default function RepairQueue({ status }: RepairQueueProps) {
         </Section>
 
         <section className="space-y-4">
-          {mission && (
+          {pipeline && (
             <Section
               title="Run Plan"
-              actions={<span className="text-xs text-secondary">{mission.mode} · gate {mission.target.workspaceGate}</span>}
+              actions={<span className="text-xs text-secondary">{pipeline.mode} · gate {pipeline.target.workspaceGate}</span>}
             >
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                <Stat size="md" label="Selected" value={mission.summary.selected} />
-                <Stat size="md" label="Needs build" value={mission.summary.factory} />
-                <Stat size="md" label="Can fix" value={mission.summary.autopilot} />
-                <Stat size="md" label={mission.mode === "remote" ? "Observe" : "Missing"} value={mission.mode === "remote" ? mission.summary.remoteObserve : mission.summary.missingWorkspaces} />
+                <Stat size="md" label="Selected" value={pipeline.summary.selected} />
+                <Stat size="md" label="Needs build" value={pipeline.summary.factory} />
+                <Stat size="md" label="Can fix" value={pipeline.summary.repair} />
+                <Stat size="md" label={pipeline.mode === "remote" ? "Observe" : "Missing"} value={pipeline.mode === "remote" ? pipeline.summary.remoteObserve : pipeline.summary.missingWorkspaces} />
               </div>
               <div className="mb-4 border border-outline-variant/30 rounded-lg p-3 bg-surface">
                 <div className="text-xs font-semibold uppercase tracking-wide text-secondary">Where work will run</div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2 text-xs text-secondary">
-                  <div><span className="text-on-surface">Build:</span> {mission.modeContract.factorySurface.replaceAll("_", " ")}</div>
-                  <div><span className="text-on-surface">Artifacts:</span> {mission.modeContract.artifactSource.replaceAll("_", " ")}</div>
-                  <div><span className="text-on-surface">Repair:</span> {mission.modeContract.autopilotCapability.replaceAll("_", " ")}</div>
+                  <div><span className="text-on-surface">Build:</span> {pipeline.modeContract.factorySurface.replaceAll("_", " ")}</div>
+                  <div><span className="text-on-surface">Artifacts:</span> {pipeline.modeContract.artifactSource.replaceAll("_", " ")}</div>
+                  <div><span className="text-on-surface">Repair:</span> {pipeline.modeContract.repairCapability.replaceAll("_", " ")}</div>
                 </div>
-                <div className="mt-2 text-xs text-secondary">{mission.modeContract.constraints[0]}</div>
+                <div className="mt-2 text-xs text-secondary">{pipeline.modeContract.constraints[0]}</div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                {mission.phases.map((phase) => (
+                {pipeline.phases.map((phase) => (
                   <div key={phase.id} className="border border-outline-variant/30 rounded-lg p-3 bg-surface">
                     <div className="text-xs font-semibold uppercase tracking-wide text-secondary">{phase.owner}</div>
                     <div className="text-sm text-on-surface mt-1">{phase.id}</div>

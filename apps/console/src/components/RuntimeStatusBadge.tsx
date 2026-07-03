@@ -90,7 +90,7 @@ export function RuntimeStatusBadge() {
                 Runtime daemon {status?.status || "down"}
               </div>
               <p className="mt-1 text-xs text-secondary">
-                Interviews, missions, and local runs need it. {status?.error ? `(${status.error})` : ""}
+                Interviews, pipeline runs, and local runs need it. {status?.error ? `(${status.error})` : ""}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Button size="sm" onClick={start} loading={starting}>

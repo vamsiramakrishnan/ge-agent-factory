@@ -21,8 +21,8 @@ import {
   startJob,
   type FleetActionPlan,
   type FleetAgent,
-  type JourneyPlan,
-  type JourneyStage,
+  type PipelinePlan,
+  type PipelineStage,
   type StatusBoard,
   type WorkspaceDoctorReport,
   type WorkspaceRepairReport,
@@ -43,11 +43,11 @@ type StageFilter = "all" | "attention" | "active" | "done";
 
 export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
   const [agent, setAgent] = useState<FleetAgent | null>(null);
-  const [journey, setJourney] = useState<JourneyPlan | null>(null);
+  const [pipelinePlan, setPipelinePlan] = useState<PipelinePlan | null>(null);
   const [doctor, setDoctor] = useState<WorkspaceDoctorReport | null>(null);
   const [repairReport, setRepairReport] = useState<WorkspaceRepairReport | null>(null);
   const [loading, setLoading] = useState(true);
-  const [journeyLoading, setJourneyLoading] = useState(false);
+  const [planLoading, setPlanLoading] = useState(false);
   const [doctorLoading, setDoctorLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [codeSyncing, setCodeSyncing] = useState(false);
@@ -60,9 +60,9 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
   const [codeSyncPush, setCodeSyncPush] = useState(() => window.localStorage.getItem("ge.sync.push") !== "false");
 
   const workspaceId = agent?.workspaceId || agent?.actionPlan?.workspaceIds?.[0] || null;
-  const primaryPlan = agent?.actionPlan || journey?.next?.actionPlan || null;
+  const primaryPlan = agent?.actionPlan || pipelinePlan?.next?.actionPlan || null;
   const primaryCommand = actionCommand(primaryPlan);
-  const currentStage = agent?.stage || journey?.next?.id || "spec";
+  const currentStage = agent?.stage || pipelinePlan?.next?.id || "spec";
 
   const loadWorkspaceDoctor = async (nextWorkspaceId = workspaceId, stage = "preview") => {
     if (!nextWorkspaceId) {
@@ -88,22 +88,22 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
   };
 
   const loadSecondaryState = async (nextAgent: FleetAgent, wait: boolean) => {
-    setJourneyLoading(true);
+    setPlanLoading(true);
     const nextWorkspaceId = nextAgent.workspaceId || nextAgent.actionPlan?.workspaceIds?.[0] || null;
-    const journeyPromise = ge.journey({
+    const planPromise = ge.pipelinePlan({
       scenario: nextAgent.id,
       usecaseId: nextAgent.id,
       ids: [nextAgent.id],
       targetStage: "preview",
-    }).then((nextJourney) => {
-      setJourney(nextJourney);
+    }).then((nextPlan) => {
+      setPipelinePlan(nextPlan);
     }).catch((err) => {
       setError(err instanceof Error ? err.message : String(err));
     }).finally(() => {
-      setJourneyLoading(false);
+      setPlanLoading(false);
     });
     const doctorPromise = loadWorkspaceDoctor(nextWorkspaceId, "preview");
-    if (wait) await Promise.allSettled([journeyPromise, doctorPromise]);
+    if (wait) await Promise.allSettled([planPromise, doctorPromise]);
   };
 
   const load = async (options: { awaitSecondary?: boolean; silent?: boolean } = {}) => {
@@ -116,7 +116,7 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
       const nextAgent = result.agent;
       if (!nextAgent) {
         setAgent(null);
-        setJourney(null);
+        setPipelinePlan(null);
         setDoctor(null);
         setError("Agent not found");
         return;
@@ -130,7 +130,7 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       setAgent(null);
-      setJourney(null);
+      setPipelinePlan(null);
     } finally {
       if (initialLoad) setLoading(false);
       if (options.silent) setSyncing(false);
@@ -161,7 +161,7 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
     if (!plan || !agent) return;
     const command = actionCommand(plan);
     // reconcile-b: navigate only for navigate-mode kinds; execute kinds run below.
-    const nav = planNavigates(plan, journey?.next?.id || "");
+    const nav = planNavigates(plan, pipelinePlan?.next?.id || "");
     if (nav) {
       location.hash = nav;
       return;
@@ -176,23 +176,23 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
         return;
       }
 
-      if (plan.kind === "ship_agents" || command.startsWith("ge agents ship")) {
+      if (plan.kind === "handoff_agents" || command.startsWith("ge handoff")) {
         const ids = plan.workspaceIds?.length
           ? plan.workspaceIds.join(",")
           : workspaceId || agent.id;
-        await startJob(`Ship ${agent.title}`, ge.ship({ ids }));
+        await startJob(`Hand off ${agent.title}`, ge.handoff({ ids }));
         await Promise.all([load({ awaitSecondary: true, silent: true }), refresh()]);
         return;
       }
 
-      if ((plan.kind === "resume_mission" || plan.kind === "resume_autopilot" || plan.kind === "resume_harness") && plan.taskId) {
+      if ((plan.kind === "resume_pipeline" || plan.kind === "resume_repair" || plan.kind === "resume_harness") && plan.taskId) {
         await ge.runtimeResume(plan.taskId);
         await Promise.all([load({ awaitSecondary: true, silent: true }), refresh()]);
         return;
       }
 
-      if (plan.kind === "run_mission" || plan.kind === "run_preview" || command.startsWith("ge pipeline run") || command.startsWith("ge mission run")) {
-        await ge.missionRun({
+      if (plan.kind === "run_pipeline" || plan.kind === "run_preview" || command.startsWith("ge pipeline run")) {
+        await ge.pipelineRun({
           scenario: agent.id,
           ids: [agent.id],
           targetStage: "preview",
@@ -204,8 +204,8 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
       }
 
       if (plan.kind === "repair_agent") {
-        // Canonical autopilot path so the repair is recorded in the Repair Queue.
-        await ge.startAutopilot({
+        // Canonical repair path so the run is recorded in the Repair Queue.
+        await ge.startRepair({
           ids: [agent.id],
           targetStage: "preview",
           repair: true,
@@ -304,7 +304,7 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
 
   const health = agent.healthStatus || agent.status;
   const evidence = Object.entries(doctor?.evidence || {}).filter(([, value]) => Boolean(value)) as Array<[string, string]>;
-  const nextStage = journey?.next;
+  const nextStage = pipelinePlan?.next;
   // Triage at a glance: the single most useful "what's wrong / what to do" line,
   // derived from already-loaded state. Blocker reasons win (that's what's wrong);
   // otherwise fall back to the plan/next-stage label (that's what to do next).
@@ -318,8 +318,8 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
     "Waiting for the next pipeline transition.";
   const triageState = normalizeStatus(health);
   const triageActionLabel = primaryPlan?.label || nextStage?.label || null;
-  const hasPlannerStages = Boolean(journey?.stages?.length);
-  const displayedStages = hasPlannerStages ? journey!.stages : fallbackStages(agent, primaryPlan);
+  const hasPlannerStages = Boolean(pipelinePlan?.stages?.length);
+  const displayedStages = hasPlannerStages ? pipelinePlan!.stages : fallbackStages(agent, primaryPlan);
   const filteredStages = filterStages(displayedStages, stageFilter);
   const stageStats = countStages(displayedStages);
 
@@ -455,22 +455,22 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
               </div>
             </div>
             <div className="px-5 py-4">
-              {journeyLoading && !hasPlannerStages && (
+              {planLoading && !hasPlannerStages && (
                 <div className="mb-4 flex items-center gap-2 text-xs text-secondary">
                   <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-                  Planner is refreshing; showing Fleet-derived state until the typed journey returns.
+                  Planner is refreshing; showing Fleet-derived state until the typed pipeline plan returns.
                 </div>
               )}
               {displayedStages.length > 0 && filteredStages.length > 0 && (
                 <Lifecycle
                   stages={filteredStages}
-                  nextId={journey?.next?.id}
+                  nextId={pipelinePlan?.next?.id}
                   onAction={(plan, _stage) => runPlan(plan)}
                   orientation="vertical"
                 />
               )}
-              {!journeyLoading && displayedStages.length === 0 && (
-                <EmptyState title="No journey stages were returned for this agent." />
+              {!planLoading && displayedStages.length === 0 && (
+                <EmptyState title="No pipeline stages were returned for this agent." />
               )}
               {displayedStages.length > 0 && filteredStages.length === 0 && (
                 <EmptyState title="No stages match this filter." />
@@ -678,7 +678,7 @@ function InfoRow({ label, value, mono = false }: { label: string; value: string;
 
 function actionIcon(plan: FleetActionPlan | null) {
   if (!plan) return <Play className="h-4 w-4" />;
-  if (plan.kind.includes("ship")) return <Rocket className="h-4 w-4" />;
+  if (plan.kind.includes("handoff")) return <Rocket className="h-4 w-4" />;
   if (plan.kind.includes("build")) return <Hammer className="h-4 w-4" />;
   if (plan.kind.includes("repair")) return <Wrench className="h-4 w-4" />;
   if (plan.kind.includes("resume")) return <Play className="h-4 w-4" />;
@@ -687,14 +687,14 @@ function actionIcon(plan: FleetActionPlan | null) {
 
 function actionSummary(plan: FleetActionPlan | null) {
   if (!plan) return "";
-  if (plan.kind.includes("ship")) return "Preview-ready workspace is available; ship it through the cloud deployment boundary.";
+  if (plan.kind.includes("handoff")) return "Preview-ready workspace is available; hand it off through the cloud deployment boundary.";
   if (plan.kind.includes("build")) return "Generate the local workspace and package the agent artifacts.";
-  if (plan.kind.includes("repair")) return "Run Autopilot repair against the preview gate.";
+  if (plan.kind.includes("repair")) return "Run the repair loop against the preview gate.";
   if (plan.kind.includes("resume")) return "Resume the durable runtime task from its saved state.";
   return plan.label;
 }
 
-function filterStages(stages: JourneyStage[], filter: StageFilter) {
+function filterStages(stages: PipelineStage[], filter: StageFilter) {
   if (filter === "all") return stages;
   if (filter === "attention") {
     return stages.filter((stage) => stage.status === "blocked" || stage.status === "failed" || Boolean(stage.blocker));
@@ -705,7 +705,7 @@ function filterStages(stages: JourneyStage[], filter: StageFilter) {
   return stages.filter((stage) => stage.status === "done" || stage.status === "skipped");
 }
 
-function countStages(stages: JourneyStage[]): Record<StageFilter, number> {
+function countStages(stages: PipelineStage[]): Record<StageFilter, number> {
   return {
     all: stages.length,
     attention: filterStages(stages, "attention").length,
@@ -722,7 +722,7 @@ function formatTime(value: string) {
   }).format(new Date(value));
 }
 
-function fallbackStages(agent: FleetAgent, actionPlan: FleetActionPlan | null): JourneyStage[] {
+function fallbackStages(agent: FleetAgent, actionPlan: FleetActionPlan | null): PipelineStage[] {
   const order = [
     { id: "spec", label: "Spec", owner: "catalog" },
     { id: "data", label: "Data", owner: "runtime" },

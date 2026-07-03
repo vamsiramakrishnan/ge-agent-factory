@@ -22,9 +22,8 @@ export interface RouteDef {
   palette: boolean; // offer as a "Go to …" entry in the command palette
 }
 
-// Route ids now match their labels' vocabulary (pipeline/repair — the same
-// nouns the CLI uses); legacy #/journey and #/autopilot hashes redirect in
-// App.parseHash so old bookmarks keep working.
+// Route ids match their labels' vocabulary (pipeline/repair — the same
+// nouns the CLI uses).
 export const ROUTES: RouteDef[] = [
   { id: "overview", hash: "#/overview", label: "Overview", Icon: LayoutDashboard, nav: true, palette: true },
   { id: "pipeline", hash: "#/pipeline", label: "Pipeline", Icon: RouteIcon, nav: true, palette: true },
