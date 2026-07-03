@@ -371,7 +371,7 @@ Show one repair run, or list recent repair runs
 
 ### `ge runs`
 
-Run activity across every kind: list · show · events · replay · resume · job
+Run activity across every kind: list · show · events · replay · resume · respond · job
 
 ### `ge runs list`
 
@@ -419,6 +419,21 @@ Resume a runtime task using its deterministic resumePlan
 | Flag | Type | Description |
 |---|---|---|
 | `<id>` | positional (required) | Runtime task id |
+| `--port` | string | Daemon port (default 17654) |
+
+### `ge runs respond`
+
+Answer a running task's pending question (interaction): --answers JSON, --freeform text, or --cancel
+
+| Flag | Type | Description |
+|---|---|---|
+| `<task>` | positional (required) | Task id (from ge runs list / the event stream) |
+| `<interaction>` | positional (required) | Interaction id (from the ge.interaction.request event) |
+| `--answers` | string | Full responses JSON: [{"questionId":"q1","selectedOptionIds":["a"],"freeformResponse":"..."}] |
+| `--question` | string | Question id for --freeform/--select (single-question shorthand) |
+| `--freeform` | string | Freeform answer text (with --question) |
+| `--select` | string | Comma-separated option ids to select (with --question) |
+| `--cancel` | boolean | Cancel the interaction instead of answering |
 | `--port` | string | Daemon port (default 17654) |
 
 ### `ge runs job`
