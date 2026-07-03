@@ -12,13 +12,14 @@
 // register (agent, contract, proof, handoff) — the gate fails CI otherwise.
 import pc from "picocolors";
 import { cmd, padVisible } from "./ui.mjs";
+import { GE_COMMANDS } from "../lib/ge-command-registry.mjs";
 
 // Order is the message: the four verbs a stranger needs, in the order they
 // need them.
 export const GOLDEN_PATH_COMMANDS = ["capture", "prove", "handoff", "status"];
 
 // Operate commands, in lifecycle order (machine → platform → agents → observe).
-const OPERATE_COMMANDS = ["init", "up", "mode", "doctor", "devex", "agents", "pipeline", "fleet", "runs", "infra", "images", "data", "mcp", "daemon", "state", "ledger", "apply", "config", "cutover"];
+const OPERATE_COMMANDS = ["init", "up", "mode", "doctor", "devex", "agents", "drive", "bench", "evals", "pipeline", "fleet", "runs", "infra", "images", "data", "mcp", "daemon", "state", "ledger", "apply", "config", "cutover"];
 
 // Kit conventions (tools/ge/ui.mjs): command names are typeable → cmd() cyan;
 // descriptions are metadata → dim; the name column is computed from the
@@ -65,5 +66,35 @@ export function renderRootUsage(root) {
     ...section("Golden path", GOLDEN_PATH_COMMANDS),
     ...section("Operate", [...OPERATE_COMMANDS, ...ungrouped]),
     pc.dim("Every command supports --json. `ge <command> --help` for flags; docs/reference/cli.md for the full reference."),
+    pc.dim("Agent sessions: AGENTS.md orients you; skills/ packages every job (skills/installing-the-factory bootstraps a bare machine)."),
   ].join("\n");
+}
+
+// ── per-command orientation (the GPS layer of --help) ───────────────────────
+// Rendered under citty's own usage for any top-level command with a registry
+// entry: what the command is for, how long it usually takes, and the literal
+// next commands — so a --help screen orients an agent (or a human) instead of
+// only listing flags. Sourced from tools/lib/ge-command-registry.mjs (the
+// same table the console and MCP server read), so guidance can't drift per
+// surface.
+const registryByCliName = new Map(
+  Object.values(GE_COMMANDS)
+    .filter((entry) => entry.cli?.startsWith("ge ") && !entry.cli.slice(3).includes(" "))
+    .map((entry) => [entry.cli.slice(3), entry]),
+);
+
+export function renderCommandOrientation(name) {
+  const entry = registryByCliName.get(name);
+  const guide = entry?.guide;
+  if (!guide) return "";
+  const lines = ["", pc.bold("ORIENTATION"), ""];
+  if (guide.when) lines.push(`  ${pc.dim("use when:")} ${guide.when}`);
+  if (entry.expectedDuration && entry.expectedDuration !== "varies") lines.push(`  ${pc.dim("usually takes:")} ${entry.expectedDuration}`);
+  if (entry.risk && entry.risk !== "read-only") lines.push(`  ${pc.dim("risk:")} ${entry.risk}`);
+  if (guide.next?.length) {
+    lines.push(`  ${pc.dim("after this, usually:")}`);
+    for (const nextCommand of guide.next) lines.push(`    ${cmd(nextCommand)}`);
+  }
+  lines.push(`  ${pc.dim("lost?")} ${cmd("ge")} ${pc.dim("prints your position and the exact next command; every failure names its fix")}`);
+  return lines.join("\n") + "\n";
 }

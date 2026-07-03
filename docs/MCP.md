@@ -33,6 +33,17 @@ CLI twin (`ge capture` / `ge prove` / `ge handoff`):
 | `factory_prove` | `id?`, `target?`, `force?` | **Mutates (local)** — proves the current contracts: fresh machine → health check + first validated workspace; workspaces present → rebuild their proof to the build boundary. |
 | `factory_handoff` | `target?`, `ids?`, `startStage?`, `targetStage?`, `noProxy?` | **Mutates** — hands proven local builds to a deploy target (`agents-cli` today: uploads the prebuilt workspaces, then runs deploy → register → publish remotely). Unsupported targets return a structured what/where/why/fix error. |
 
+Live-behavior tools — the layer over the deployed assist surface. Every one
+accepts a `cassette` (recorded stream) so a model can run it with zero cloud
+calls; live runs are explicit and cost-guarded:
+
+| Tool | Args | Notes |
+|---|---|---|
+| `factory_drive` | `turns`, `cassette?`, `record?`, `recordId?`, `recordCassette?`, `targetAgent?`, `assistant?`, `strictResponder?` | Drive the deployed agent (or replay a cassette — zero cloud): sends the turns as one threaded conversation and returns the LiveTranscript (timings, session threading, responder identity, tools, citations). `record` appends the conversation to an evalset as an eval case; `recordCassette` records the live stream for replay. Live turns burn real tokens. |
+| `factory_prove_live` | `evalset`, `cassette?`, `maxCases?`, `maxTurns?`, `strictResponder?`, `updateBaseline?`, `targetAgent?`, `assistant?` | Release verification — runs the evalset's conversations through the live surface (or a cassette) and returns the LiveProofResult: per-case metric grid, conformance vs stored baselines (drift blocks), and the live gate verdict. Cost-guard live runs with `maxCases`/`maxTurns`. |
+| `factory_bench` | `cassette?`, `sessions?`, `turns?`, `concurrency?`, `targetAgent?`, `confirm?` | Load the assist surface within the hard guards in `.ge.json` `live.bench` and verdict the latency/error budgets (`live.budgets`). A LIVE run costs real money and **requires `confirm=true`**; cassette replay is deterministic and free. |
+| `factory_evals_compile` | `spec?`, `id?`, `maxCases?` | Local, deterministic — compiles an agent contract (registered spec or any GenerationSpecEnvelope via `spec`) into the executable behavior suite under `.ge/behavioral`: graph, coverage, selected cases, ADK evalset, agents-cli dataset, bench profile. Feed the evalset to `factory_prove_live`. |
+
 Operator tools — the same machinery under its operator names:
 
 | Tool | Args | Notes |
@@ -63,9 +74,12 @@ The tool surface (names, descriptions, schemas) is derived from the `mcp`
 blocks in `tools/lib/ge-command-registry.mjs` — the same registry the CLI and
 console read — and frozen by `tools/mcp-registry-parity.test.mjs`.
 Read-only tools (`list_usecases`, `doctor`, `status`, `logs`, `mcp_doctor`)
-are safe to call freely; `capture` starts a local dev server; `prove` runs
-local builds; `handoff`, `provision`, `sync`, and `mcp_deploy` mutate
-and should be gated by the calling harness.
+are safe to call freely; `capture` starts a local dev server; `prove` and
+`evals_compile` run local computation; `handoff`, `provision`, `sync`, and
+`mcp_deploy` mutate and should be gated by the calling harness. The live
+tools (`drive`, `prove_live`, `bench`) are free and deterministic with a
+`cassette`; without one they send real traffic at the deployed surface —
+`bench` additionally refuses a live run without `confirm=true`.
 
 `factory_mcp_deploy` / `factory_mcp_doctor` operate the **tool plane** below.
 

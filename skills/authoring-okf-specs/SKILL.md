@@ -54,3 +54,10 @@ Validate the converter and the round-trip:
 ```bash
 bun test apps/factory/scripts/spec-to-okf.test.mjs
 ```
+
+Two round-trip tests in that file are currently known-failing (an id-mangling bug tracked in `tools/known-test-failures.json`) — any *other* failure is a regression.
+
+## References
+
+- Read `references/example-session.md` before your first export or ingest — a worked round-trip (export → conformance inspection → hand-edit → ingest → hand back to `interviewing-specs`) with real converter output and the wrong-id / wrong-directory failure variants.
+- Copy `assets/okf-concept-example.md` as the starting point for a hand-authored concept — an annotated Agent Tool concept showing the frontmatter, headings, and bundle-absolute-link rules that keep a bundle conformant and round-trippable.

@@ -21,17 +21,17 @@ In plain language: this skill owns the part of the line where mistakes are expen
 
 1. Read mission mode and target.
 2. Confirm deploy/publish plan artifacts exist.
-3. For local builds, use explicit `ge agents ship`.
+3. For local builds, use explicit `ge handoff`.
 4. For remote builds, observe the cloud factory release stages.
 5. Inspect stage artifacts before claiming success.
 6. Record release facts through Evidence Ledger.
 
 ## Commands
 
-Local handoff:
+Local handoff (defaults are already `--start-stage load_data --target-stage publish_enterprise`; then follow with `ge agents status --watch`):
 
 ```bash
-bun tools/ge.mjs agents ship --ids <workspace-id> --start-stage load_data --target-stage publish_enterprise
+bun tools/ge.mjs handoff agents-cli --ids <workspace-id>
 ```
 
 Deploy plan:
@@ -54,5 +54,7 @@ node skills/running-release/scripts/summarize-release.mjs <workspace-dir>
 
 ## References
 
+- Read `references/example-session.md` first if this is your first release — a worked session (readiness check → plans → explicit handoff → watch → artifact-verified verdict), with real output and the gate-blocked variant.
 - Read `references/release-stages.md` before changing release flow.
 - Read `references/assembly-line-role.md` to understand where this skill fits in the line.
+- Copy `assets/release-target-example.json` for the `.ge.json` keys the release stages require (annotated; `ge handoff` refuses to start without project/bucket/geAppId).

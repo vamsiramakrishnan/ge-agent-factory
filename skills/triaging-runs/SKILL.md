@@ -44,3 +44,8 @@ In plain language: read the run's actual events and blockers, find the first rea
 ## Done when
 
 The run reaches its terminal artifact after recovery, or it's escalated with the first-failure evidence and a recommended fix.
+
+## References
+
+- Read `references/example-session.md` for a worked triage with real output (list → show → events → first-failure classification → recovery) — including why a `done` task can still be a failed run, and the unknown-id/ledger-id variant.
+- Copy `assets/triage-decision-table.md` into the triage note and mark the row that fired — the signal→classification→recovery table with the overriding rules.

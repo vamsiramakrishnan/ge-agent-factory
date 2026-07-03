@@ -1,0 +1,35 @@
+{
+  "evalSetId": "benefits-minimal",
+  "name": "Minimal ADK evalset fixture (round-trip contract)",
+  "creationTimestamp": 1767225600.0,
+  "evalCases": [
+    {
+      "evalId": "eligible-life-event-change",
+      "conversation": [
+        {
+          "invocationId": "e-1",
+          "userContent": {
+            "role": "user",
+            "parts": [{ "text": "Can I change my plan after having a child?" }]
+          },
+          "finalResponse": {
+            "role": "model",
+            "parts": [{ "text": "Yes — a qualifying life event opens a special enrollment window." }]
+          },
+          "intermediateData": {
+            "toolUses": [{ "name": "lookup_life_events", "args": { "event": "birth" } }]
+          },
+          "creationTimestamp": 1767225600.0
+        },
+        {
+          "invocationId": "e-2",
+          "userContent": {
+            "role": "user",
+            "parts": [{ "text": "How many days do I have?" }]
+          }
+        }
+      ],
+      "sessionInput": { "appName": "benefits", "userId": "u-1", "state": {} }
+    }
+  ]
+}

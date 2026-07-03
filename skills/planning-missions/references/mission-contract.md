@@ -43,10 +43,10 @@ Every node should expose:
 ## Mission Commands
 
 ```bash
-bun tools/ge.mjs mission plan --scenario <usecase_id> --ids <agent_ids> --target-stage preview --json
-bun tools/ge.mjs mission run --scenario <usecase_id> --ids <agent_ids> --target-stage preview
-bun tools/ge.mjs mission status <mission_task_id> --json
-bun tools/ge.mjs mission resume <mission_task_id>
+bun tools/ge.mjs pipeline plan --scenario <usecase_id> --ids <agent_ids> --target-stage preview --json
+bun tools/ge.mjs pipeline run --scenario <usecase_id> --ids <agent_ids> --target-stage preview
+bun tools/ge.mjs pipeline status <pipeline_run_id> --json
+bun tools/ge.mjs pipeline resume <pipeline_run_id>
 ```
 
 ## Legacy Contract Shape
@@ -101,6 +101,6 @@ Do not merge these counts. The distinction prevents broad reruns and fake repair
 
 Any change to stage names, mode semantics, ownership counts, or roster actions must update:
 
-- `tools/lib/planning-missions.test.mjs`
+- `tools/lib/pipeline-plan.test.mjs`
 - `apps/console/src/services/geClient.ts`
-- `apps/console/src/views/Autopilot.tsx`
+- `apps/console/src/views/Pipeline.tsx`

@@ -28,6 +28,11 @@ use [Core Concepts](../concepts/).
 | [Console & APIs](console-and-apis.html) | The server API endpoints under `/api/ge/*`, `/api/runtime/*`, `/api/systems/*`, and `/api/interviews/:id/*` — the mutating route table is generated from the command registry. |
 | [Config](config.html) | `.ge.json`, the flag → env → file → default precedence, and `ge config explain`. |
 | [Architecture](architecture.html) | The three planes, local vs remote mode, the durable control plane (ADR 0001), the run ledger, and the request/auth flow. |
+| [Live transcript](live-transcript.html) | The LiveTranscript artifact every live surface produces and consumes — fields, where it is written, who reads it. |
+| [Live budgets and gates](live-budgets.html) | Every `live.budgets` key, the `live.bench` hard guard rails, and the `promotion.gates.live` policy. |
+| [Metric applicability](metric-applicability.html) | Which eval metric families grade the local rail vs the live assist surface, and the honest-status policy. |
+| [Atomic capabilities](atomic-capabilities.html) | The end-to-end system as composable capabilities — CLI verb, console route, MCP tool, and skill for each. |
+| [Agent operability](agent-operability.html) | The contract that makes the factory drivable by an AI agent — position/next guidance, background runs, event streams, resume plans, mid-run questions, skill loading. |
 | [MCP tools](../MCP.html) | The factory's MCP server for model callers, and the MCP tool plane generated agents call through. |
 | [Glossary](../GLOSSARY.html) | Plain-language translations of every internal noun. |
 

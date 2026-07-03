@@ -81,9 +81,11 @@ Add new event types only when these cannot represent the fact cleanly.
 
 ## References
 
+- Read `references/example-session.md` first if this is your first time evidencing a run — a worked session (run ledger → artifacts → validated typed events → repeated-signature upstream fix → report), with real output and a validator-rejection variant.
 - Read `references/assembly-line-role.md` to understand where this skill fits in the Agent Factory assembly line.
 - Read `references/ledger-contract.md` when adding events, schemas, or query behavior.
 - Read `references/harness-playbook.md` when a harness must operate the ledger during Factory/Autopilot work.
+- Copy `assets/ledger-event-example.json` as the starting shape for a new event — a complete `blocker.detected` that passes the validator, annotated with which blocks are required vs. rollup-enabling.
 
 ## Validation
 

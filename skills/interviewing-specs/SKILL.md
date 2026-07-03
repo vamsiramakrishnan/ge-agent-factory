@@ -93,6 +93,8 @@ node apps/factory/scripts/spec-workbench.mjs golden-evals apply --spec <normaliz
 
 ## References
 
+- Read `references/example-session.md` first if this is your first interview→register loop — a worked session (elicit → validate → golden evals → register → sync) with real validator/workbench output and the gates-refused failure variant.
+- Copy `assets/normalized-spec-skeleton.json` as the starting file when authoring a new normalized spec — the minimum buildable contract shape, annotated with what the quality gates will demand.
 - Read `references/spec-shape.md` before creating or changing a use-case spec.
 - Read `references/harness-interview.md` before asking Antigravity or another harness to author a spec.
 - Read `references/interaction-forms.md` when the harness needs user choices, dropdowns, text fields, or approval before continuing.

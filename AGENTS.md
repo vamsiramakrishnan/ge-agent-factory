@@ -20,6 +20,37 @@ wholesale). `ge` is the operator CLI mise installs onto `PATH`. `factory` is
 the lower-level generator engine `ge`/the console drive per-stage — you rarely
 invoke it directly.
 
+For a guided, verified bootstrap (phase checks, structured failure fixes,
+first proof), follow the skill at
+[`skills/installing-the-factory/SKILL.md`](skills/installing-the-factory/SKILL.md)
+— it's self-contained, so it also works copied alone into an assistant's
+skill directory on a machine that doesn't have this repo yet.
+
+## Skills — how an assistant learns to run this factory
+
+Every operator job is packaged as a skill under [`skills/`](skills/README.md):
+install (`installing-the-factory`), operate end to end
+(`operating-the-factory`), stand up cloud planes, build, check, release,
+drive/verify the live agent (`driving-live-proof`), triage. Factory-run
+harnesses load them automatically. To expose them to an external assistant:
+
+```bash
+mise run skills-install                                      # → ~/.agents/skills (Antigravity, agents-cli, Codex)
+AGENTS_SKILLS_DIR=~/.claude/skills mise run skills-install   # → Claude Code's skill directory
+```
+
+Distribution surfaces (no checkout needed): `bunx create-ge-agent-factory`
+(npm bootstrap — clones, installs, verifies, links skills); Claude Code
+plugin marketplace (`/plugin marketplace add vamsiramakrishnan/ge-agent-factory`,
+then `factory-bootstrap` or `factory-operator` — manifest in
+`.claude-plugin/marketplace.json`); Gemini CLI extension
+(`gemini extensions install <repo url>` — `gemini-extension.json` +
+`GEMINI.md` ship the skills and the MCP server).
+
+The catalog + trigger routing lives in `skills/skill-routing.json`; the
+`factory_*` MCP tools (`bun tools/mcp-server.mjs`, registry-derived) are the
+matching action surface for MCP-capable assistants.
+
 ## Before you commit — the gate
 
 Run this before every commit; it's cheap (seconds) and CI enforces it:

@@ -33,8 +33,9 @@ for (const dir of dirs) {
   const text = readFileSync(skillPath, "utf8");
   const fm = parseFrontmatter(text);
   const name = dir.split("/").pop();
-  const references = [...text.matchAll(/(?:^|\s)(references\/[A-Za-z0-9._-]+\.(?:md|json))/g)].map((m) => m[1]);
-  const scripts = [...text.matchAll(/(?:^|\s)(scripts\/[A-Za-z0-9._-]+\.mjs)/g)].map((m) => m[1]);
+  // Paths may appear bare, backticked, or parenthesized in SKILL.md prose.
+  const references = [...text.matchAll(/(?:^|[\s`(])(references\/[A-Za-z0-9._-]+\.(?:md|json))/g)].map((m) => m[1]);
+  const scripts = [...text.matchAll(/(?:^|[\s`(])(scripts\/[A-Za-z0-9._-]+\.mjs)/g)].map((m) => m[1]);
   const issues = [];
   if (!fm) issues.push("missing frontmatter");
   if (fm?.name !== name) issues.push(`frontmatter name must match directory (${name})`);
@@ -44,9 +45,22 @@ for (const dir of dirs) {
   if ((fm?.description || "").length > 1024) issues.push("description too long");
   if (firstOrSecondPersonPattern.test(fm?.description || "")) issues.push("description must be third person");
   if (!/\bUse when\b/.test(fm?.description || "")) issues.push("description should include a clear Use when trigger");
-  if (text.split("\n").length > 500) issues.push("SKILL.md over 500 lines");
+  // Progressive disclosure (skills/README.md "the four levels"): SKILL.md is
+  // the L1 decision layer — deep detail belongs in linked references, every
+  // on-disk reference/script must be reachable from SKILL.md, and each skill
+  // carries at least one worked example session an agent can pattern-match.
+  if (text.split("\n").length > 250) issues.push("SKILL.md over 250 lines — move detail into linked references/ (progressive disclosure L1)");
   for (const ref of references) if (!existsSync(join(dir, ref))) issues.push(`missing ${ref}`);
   for (const script of scripts) if (!existsSync(join(dir, script))) issues.push(`missing ${script}`);
+  if (!existsSync(join(dir, "references", "example-session.md"))) issues.push("missing references/example-session.md (worked example interaction — progressive disclosure L2)");
+  else if (!references.includes("references/example-session.md")) issues.push("references/example-session.md exists but is not linked from SKILL.md");
+  for (const subdir of ["references", "scripts"]) {
+    const subdirPath = join(dir, subdir);
+    if (!existsSync(subdirPath)) continue;
+    for (const entry of readdirSync(subdirPath)) {
+      if (!text.includes(`${subdir}/${entry}`)) issues.push(`${subdir}/${entry} is on disk but never mentioned in SKILL.md — unlinked context is unreachable`);
+    }
+  }
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
     if (!standardDirs.has(entry.name)) issues.push(`nonstandard directory ${entry.name}`);

@@ -5,7 +5,7 @@ editUrl: "https://github.com/vamsiramakrishnan/ge-agent-factory/edit/main/docs/c
 sidebar:
   order: 2
 ---
-Compilation and observation are two views: **Pipeline** starts work,
+Compilation and observation are two views: **<a href="/ge-agent-factory/reference/glossary/#pipeline" title="The user-facing, end-to-end path from business intent to a deployed agent — interview → spec → data → simulator → build → eval → preview → deploy — rendered as a plan you can read (ge pipeline plan) and watch (ge pipeline status).">Pipeline</a>** starts work,
 **Runs** watches it.
 
 ## Pipeline — from contract to agent
@@ -31,7 +31,7 @@ validated <a href="/ge-agent-factory/reference/glossary/#workspace" title="The o
 
 ## Runs — everything, chronologically
 
-One timeline over all three run sources — pipeline runs, builds, and jobs —
+One timeline over all three run sources — <a href="/ge-agent-factory/reference/glossary/#pipeline-run" title="One orchestrated, resumable run of the pipeline for a use case, executed as a DAG of daemon child tasks — data readiness, simulator checks, optionally the factory build itself, the Antigravity review node, and convergence to a target stage.">pipeline runs</a>, builds, and jobs —
 normalized into a single list with a unified status filter. Each row is
 tagged by origin, expands to detail, and **Follow** opens the live Run
 Drawer on it. CLI equivalents: `ge runs list`, `ge runs show <id>`,

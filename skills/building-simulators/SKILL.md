@@ -30,7 +30,7 @@ Use this skill when the question is “what does this enterprise system look lik
 ## Workflow
 
 1. Confirm the spec scope: source systems, entities, documents, tools, and eval evidence refs.
-2. Plan the scenario through `ge mission plan`.
+2. Plan the scenario through `ge pipeline plan`.
 3. Confirm the data nodes: `mock.generate`, `snowfakery.generate`, `simulator.seed`, `simulator.validate`.
 4. Ask only the next missing question.
 5. Invoke deterministic CLI commands for the current node.
@@ -62,21 +62,21 @@ If the user only names a system, infer the archetype from `references/archetypes
 Plan the data/simulator graph:
 
 ```bash
-bun tools/ge.mjs mission plan --scenario <usecase_id> --systems <system_ids> --target-stage preview --json
+bun tools/ge.mjs pipeline plan --scenario <usecase_id> --systems <system_ids> --target-stage preview --json
 ```
 
 Run the data/simulator graph:
 
 ```bash
 bun tools/ge.mjs daemon start
-bun tools/ge.mjs mission run --scenario <usecase_id> --systems <system_ids> --target-stage preview
+bun tools/ge.mjs pipeline run --scenario <usecase_id> --systems <system_ids> --target-stage preview
 ```
 
 Inspect or resume:
 
 ```bash
-bun tools/ge.mjs mission status <mission_task_id> --json
-bun tools/ge.mjs mission resume <mission_task_id>
+bun tools/ge.mjs pipeline status <run_id> --json
+bun tools/ge.mjs pipeline resume <run_id>
 ```
 
 List available archetypes:
@@ -168,6 +168,8 @@ Check `simulatorInterop.unbridgedScenarioPackCounts`; active scenario packs shou
 
 ## References
 
+- Read `references/example-session.md` first if this is your first simulator build — a worked session (plan → archetype → scaffold → validate → report), with real output and the conformance-failure variant.
+- Copy `assets/decision-record-example.json` as the starting downstream handoff record; its shape is defined by `references/decision-record.schema.json`.
 - For where this skill fits in the Agent Factory assembly line, read `references/assembly-line-role.md`.
 - For the Antigravity mock-data and simulator workflow, read `references/mock-data-and-simulators.md`.
 - For archetype selection and starter objects, read `references/archetypes.md`.

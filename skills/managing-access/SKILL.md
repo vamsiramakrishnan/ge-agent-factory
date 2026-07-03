@@ -52,3 +52,8 @@ gcloud run services describe <service> --region <region> \
 ## Done when
 
 The intended audience can reach the surface, unintended callers get 401/403, and no cross-project grant was made.
+
+## References
+
+- Read `references/example-session.md` when a surface 403s or someone asks for access — a worked session (diagnose the gate → narrowest grant → verify both ways → report), plus the IAP-fronted variant where `run.invoker` alone can't fix a user's 403.
+- Copy `assets/access-grant-record.md` for every grant you apply — the who/what/scope/approver/rollback record that makes access changes auditable.

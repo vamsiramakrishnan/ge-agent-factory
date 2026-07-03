@@ -57,9 +57,17 @@ Audit skill authoring quality:
 node skills/navigating-factory-line/scripts/audit-skill-quality.mjs
 ```
 
+Audit Agent Skills spec portability (frontmatter, layout, routing file; `--strict` fails on warnings, `--all` includes mirrored skill roots):
+
+```bash
+node skills/navigating-factory-line/scripts/audit-agent-skills-spec.mjs
+```
+
 ## References
 
+- Read `references/example-session.md` first if this is your first pass over the skill map — a worked session (coverage → quality → spec audit → manifest sync), with real output and a red-audit failure variant.
 - Read `references/stage-skill-map.md` for the stage-to-skill coverage matrix.
 - Read `references/harness-cli-loop.md` for how a harness should operate CLI/console surfaces.
 - Read `references/skill-quality-rules.md` before changing skill names, descriptions, references, or scripts.
 - Read `references/evaluation-scenarios.md` when testing whether a fresh harness can choose the right skill.
+- Copy `assets/skill-template.md` as the starting `SKILL.md` when authoring a new station skill — a skeleton that passes the quality auditor, with the routing/binding checklist inline.

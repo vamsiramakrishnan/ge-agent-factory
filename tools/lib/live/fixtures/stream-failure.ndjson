@@ -1,0 +1,4 @@
+{"type":"meta","version":1,"target":{"project":"demo","location":"global","engine":"projects/demo/locations/global/collections/default_collection/engines/benefits-engine","assistant":"default_assistant"},"recordedAt":"2026-01-01T00:00:00.000Z"}
+{"type":"request","turn":0,"session":null,"body":{"query":{"text":"Can I change my plan after having a child?"}}}
+{"type":"chunk","turn":0,"atMs":0,"json":{"answer":{"state":"IN_PROGRESS","replies":[]}}}
+{"type":"chunk","turn":0,"atMs":800,"json":{"answer":{"state":"FAILED"}}}
