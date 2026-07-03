@@ -429,6 +429,9 @@ export default function Overview({ status, refresh }: OverviewProps) {
                 onCheckReadiness={() => { location.hash = "#/doctor"; }}
                 onStandUp={() => handleStandUp(p.name, key)}
                 busy={busyPlanes.has(key)}
+                // Registry-derived CLI chip: the id each Stand Up POSTs to
+                // (data.up / mcp.deploy / up), never a hardcoded string.
+                cliCommandId={key === "data" ? "data.up" : key === "mcp" ? "mcp.deploy" : "up"}
               />
             );
           })}

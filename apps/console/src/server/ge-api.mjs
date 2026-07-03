@@ -28,6 +28,31 @@ export const ROUTES = [
     match: (p) => p[2] === "commands" ? {} : null,
     handle: () => ({ status: 200, json: { commands: GE_COMMAND_LIST } }),
   },
+  // /api/ge/position — golden-path position (capture → prove → handoff): which
+  // stage is lit, what blocks it, and the exact next command. Calls the same
+  // goldenPathPosition() that renders the bare-`ge` board — through the
+  // injected core (factory-core re-exports it), the same seam every other
+  // route uses — so the console's position band and the terminal can never
+  // disagree about where you are.
+  {
+    method: "GET",
+    match: (p) => p[2] === "position" ? {} : null,
+    handle: async ({ core, cfg }) => {
+      // Mirror tools/ge.mjs's board wiring: haveConfig/operateNext come from
+      // the same status board when it's available.
+      let haveConfig = !!cfg.project;
+      let operateNext = null;
+      try {
+        const board = core.statusBoard(cfg);
+        haveConfig = !!board.project;
+        operateNext = board.next || null;
+      } catch {
+        // best-effort: the board is decoration here — position still renders
+        // from cfg + file state when statusBoard is unavailable.
+      }
+      return { status: 200, json: await core.goldenPathPosition(cfg, { haveConfig, operateNext }) };
+    },
+  },
   // /api/ge/specs/review — inspect a generated interview spec artifact.
   {
     method: "GET",

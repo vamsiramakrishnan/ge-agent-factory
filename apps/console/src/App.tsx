@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/query";
 import { Sidebar } from "./components/shell/Sidebar";
 import { TopBar } from "./components/shell/TopBar";
+import { PositionBand } from "./components/shell/PositionBand";
 import { CommandPalette } from "./components/shell/CommandPalette";
 import { Breadcrumbs } from "./components/shell/Breadcrumbs";
 import { JobToast } from "./components/JobToast";
@@ -134,6 +135,10 @@ export default function App() {
         onModeChange={handleModeChange}
         onOpenPalette={() => setPaletteOpen(true)}
       />
+
+      {/* Golden-path position: capture → prove → handoff, server-derived
+          (GET /api/ge/position). Hides itself when the API is unavailable. */}
+      <PositionBand />
 
       {error && (
         <div className="px-6 py-2 bg-status-warning/10 border-b border-status-warning/20 text-status-warning-ink text-xs">

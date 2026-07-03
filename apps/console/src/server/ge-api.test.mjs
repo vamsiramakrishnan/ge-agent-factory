@@ -24,6 +24,18 @@ const core = {
   tailLog: (_c, opts) => ({ found: true, runId: opts.runId, lines: [] }),
   readArtifact: (_c, opts) => ({ found: true, name: opts.name, content: "" }),
   resolveCatalogId: async () => null,
+  // Same contract as tools/lib/golden-path.mjs's goldenPathPosition (re-exported
+  // by factory-core): three fixed stages + current/blocker/next.
+  goldenPathPosition: async (_cfg, { haveConfig = true, operateNext = null } = {}) => ({
+    stages: [
+      { id: "capture", done: true, detail: "1 contract(s) captured" },
+      { id: "prove", done: false, detail: "no proof built yet" },
+      { id: "handoff", done: false, detail: "nothing handed off yet" },
+    ],
+    current: "prove",
+    blocker: haveConfig ? null : "no project configured",
+    next: haveConfig ? (operateNext || "ge prove") : "ge init",
+  }),
 };
 
 test("GET status", async () => {
@@ -187,6 +199,48 @@ test("runtime node middleware proxies daemon status", async () => {
     globalThis.fetch = previousFetch;
   }
 });
+test("GET position returns the golden-path position contract", async () => {
+  const r = await handleGeApi({ method: "GET", path: "/api/ge/position", query: {}, body: null }, core);
+  expect(r.status).toBe(200);
+  expect(r.json.stages.map((s) => s.id)).toEqual(["capture", "prove", "handoff"]);
+  for (const stage of r.json.stages) {
+    expect(typeof stage.done).toBe("boolean");
+    expect(typeof stage.detail).toBe("string");
+  }
+  expect(["capture", "prove", "handoff"]).toContain(r.json.current);
+  // The mock statusBoard has no project → the route mirrors bare `ge`:
+  // haveConfig=false means the next command is `ge init` and a blocker is set.
+  expect(r.json.next).toBe("ge init");
+  expect(r.json.blocker).toBe("no project configured");
+});
+
+test("GET position derives haveConfig/operateNext from the status board (tools/ge.mjs parity)", async () => {
+  const seen = [];
+  const positionCore = {
+    ...core,
+    statusBoard: () => ({ mode: "remote", planes: [], next: "ge up", project: "p" }),
+    goldenPathPosition: async (_cfg, opts) => {
+      seen.push(opts);
+      return { stages: [], current: "handoff", blocker: null, next: opts.operateNext };
+    },
+  };
+  const r = await handleGeApi({ method: "GET", path: "/api/ge/position", query: {}, body: null }, positionCore);
+  expect(r.status).toBe(200);
+  expect(seen).toEqual([{ haveConfig: true, operateNext: "ge up" }]);
+  expect(r.json.next).toBe("ge up");
+});
+
+test("POST prove and handoff flow through the registry commandForRoute handler", async () => {
+  const prove = await handleGeApi({ method: "POST", path: "/api/ge/prove", query: {}, body: { id: "a1", force: true } }, core);
+  expect(prove.job).toEqual(["prove", "--id", "a1", "--force"]);
+  expect(prove.command.id).toBe("prove");
+  expect(prove.command.cli).toBe("ge prove");
+  const handoff = await handleGeApi({ method: "POST", path: "/api/ge/handoff", query: {}, body: {} }, core);
+  expect(handoff.job).toEqual(["handoff", "agents-cli"]);
+  expect(handoff.command.id).toBe("handoff");
+  expect(handoff.command.cli).toBe("ge handoff");
+});
+
 test("GET commands returns mutating command registry metadata", async () => {
   const r = await handleGeApi({ method: "GET", path: "/api/ge/commands", query: {}, body: null }, core);
   expect(r.status).toBe(200);
@@ -374,6 +428,7 @@ const ROUTE_MATRIX = [
   // the old dispatch matched parts[2] only — deeper paths still hit statusBoard
   { method: "GET", path: "/api/ge/status/extra", known: true },
   { method: "GET", path: "/api/ge/commands", known: true },
+  { method: "GET", path: "/api/ge/position", known: true },
   { method: "GET", path: "/api/ge/specs", known: true },
   { method: "GET", path: "/api/ge/specs/review", known: true },
   { method: "GET", path: "/api/ge/doctor", known: true },
@@ -410,6 +465,10 @@ const ROUTE_MATRIX = [
   { method: "POST", path: "/api/ge/agents/ship", known: true },
   { method: "POST", path: "/api/ge/agents/sync", known: true },
   { method: "POST", path: "/api/ge/daemon/start", known: true },
+  // Golden-path verbs (registry-driven POST routes via commandForRoute).
+  { method: "POST", path: "/api/ge/prove", known: true },
+  { method: "POST", path: "/api/ge/handoff", known: true },
+  { method: "POST", path: "/api/ge/position", known: false },
   // unknown — 404, exactly as the old if-chain + isKnownRoute pair behaved
   { method: "GET", path: "/api/ge/nope", known: false },
   { method: "GET", path: "/api/ge/mode", known: false },

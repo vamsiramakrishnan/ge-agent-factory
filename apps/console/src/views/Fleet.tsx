@@ -3,6 +3,7 @@ import { Button, PageHeader, Section } from "@ge/ui";
 import { useGeQuery } from "../lib/query";
 import { ge, startJob, type StatusBoard, type Fleet as FleetData } from "../services/geClient";
 import { FleetTable } from "../components/FleetTable";
+import { CliEquivalent } from "../components/CliEquivalent";
 import { ErrorBanner } from "../components/ErrorBanner";
 import { useUrlParam } from "../lib/useUrlState";
 import { useToast } from "../lib/toast";
@@ -468,6 +469,13 @@ export default function Fleet({ status, refresh }: FleetProps) {
               {busyAction === "sync" ? "Syncing..." : "Sync code"}
             </Button>
             </div>
+          </div>
+          {/* The console teaches the CLI: what Build / Ship / Sync run,
+              derived from the command registry (never hardcoded here). */}
+          <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            <CliEquivalent commandId={status?.mode === "remote" ? "agents.build" : "agents.build.local"} />
+            <CliEquivalent commandId="agents.ship" />
+            <CliEquivalent commandId="agents.sync" />
           </div>
           {/* Progressive disclosure: sync destination/push are advanced options
               most bulk actions never need — folded until asked for, with the
