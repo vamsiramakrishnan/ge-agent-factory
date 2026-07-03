@@ -212,26 +212,20 @@ no hand-screenshotted or hand-recorded asset is checked in.
 
 | Asset | Source | Regenerate |
 |---|---|---|
-| Diagrams (`docs/assets/diagrams/readme-*.svg`) | `docs/diagrams-src/readme-*.mmd` | `bun run docs:diagrams` |
+| Diagrams (`docs/assets/diagrams/*.svg`) | `docs/diagrams-src/*.mmd` | `bun run docs:diagrams` |
+| Console + presentation screenshots (`docs/assets/screenshots/*.png`) | `tools/docs-shots/*.mjs` (Playwright) — see [Screenshots](docs/DESIGN.md#screenshots) | `bun run docs:shots` |
 | Terminal captures (`docs/assets/tapes/*.gif`) | `docs/tapes/*.tape` ([vhs](https://github.com/charmbracelet/vhs)) | `bun run readme:tapes` |
-| Console + presentation screenshots (`docs/assets/screenshots/*.png`) | `tools/gen-readme-shots.mjs` ([Playwright](https://playwright.dev)) | `bun run readme:shots` |
 
-`bun run readme:assets` runs all three. One-time prerequisites beyond the
-toolchain `mise run setup` already installs:
+`bun run readme:assets` runs all three. `docs:shots` is fully self-contained
+(builds its own throwaway seed state and production servers — see
+[docs/DESIGN.md](docs/DESIGN.md#screenshots)). vhs needs a one-time local
+setup beyond what `mise run setup` installs:
 
-- **vhs** needs [`ttyd`](https://github.com/tsl0922/ttyd) and `ffmpeg` on
-  PATH (`apt-get install ttyd ffmpeg` or your platform's equivalent), plus
-  the `vhs` binary itself (`go install github.com/charmbracelet/vhs@latest`).
-  Recording as root needs `VHS_NO_SANDBOX=true` (Chromium's sandbox refuses
+- [`ttyd`](https://github.com/tsl0922/ttyd) and `ffmpeg` on PATH
+  (`apt-get install ttyd ffmpeg` or your platform's equivalent), plus the
+  `vhs` binary itself (`go install github.com/charmbracelet/vhs@latest`).
+- Recording as root needs `VHS_NO_SANDBOX=true` (Chromium's sandbox refuses
   to start as root).
-- **Playwright** needs a Chromium build once: `bunx playwright install
-  chromium`.
-- The console/presentation screenshots read whatever local state your `ge`
-  runtime daemon has — run `ge daemon start`, `cd apps/console && bun run
-  dev`, and `cd apps/presentation && bun run dev` first. A clean checkout
-  with no registered workspaces will render emptier views than the
-  checked-in images (which reflect a repo that's been through `ge init` +
-  `ge devex smoke`) — see the mission notes in `tools/gen-readme-shots.mjs`.
 
 ## More
 

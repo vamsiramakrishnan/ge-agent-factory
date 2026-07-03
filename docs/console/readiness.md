@@ -28,6 +28,10 @@ Use it:
 - whenever something is blocked and you want the concrete unblock command
   rather than a stack trace.
 
+<p align="center">
+  <img src="../assets/screenshots/readiness.png" alt="Readiness view scoped to the local toolchain, showing a NOT READY verdict with 9 passing and 3 failing checks, a runtime-daemon-stopped card with a Start daemon action, and a Repair Plan listing runnable fixes such as uv tool install google-agents-cli" width="820">
+</p>
+
 CLI equivalents: `ge doctor`, `ge doctor --local|--cloud|--data|--mcp`, and
 `ge doctor --command <id>` for command-scoped preflight.
 

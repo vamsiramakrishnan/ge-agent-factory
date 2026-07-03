@@ -27,6 +27,10 @@ Use it when no contract exists yet. The result feeds straight into the
 [Capture from an interview](../cookbooks/capture-from-interview.html) and
 [Capture from documents](../cookbooks/capture-from-documents.html).
 
+<p align="center">
+  <img src="../assets/screenshots/interview.png" alt="Interview view's Brief step: an input-brief form (business outcome, systems, guardrails, grounding documents) on the left and the not-yet-materialized Agent Spec artifact panel on the right, with a runtime-daemon-needs-a-refresh notice" width="820">
+</p>
+
 ## Spec Review — edit and export
 
 The Spec Review canvas renders the contract half-by-half — the behavior half

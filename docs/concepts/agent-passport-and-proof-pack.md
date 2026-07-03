@@ -14,6 +14,10 @@ artifacts that identify the agent once it is deployed — who it is, what it
 may call, and where it came from. Together they are what you can show an
 auditor.
 
+<p align="center">
+  <img src="../assets/diagrams/signature-pipeline-agent-passport-and-proof-pack.svg" alt="signature pipeline zoomed to passport and proof pack, lit; prove feeds the passport, which hands off across the build boundary, with the rest of the pipeline shown dimmed for context" width="700">
+</p>
+
 ## Why they exist
 
 The handoff line is also an accountability line. Once an agent leaves the
