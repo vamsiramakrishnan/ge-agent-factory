@@ -39,12 +39,14 @@ export async function prepareDrive(cfg, { cassette, recordCassette, targetAgent,
   return { runner, target, recordedTurns: [] };
 }
 
-export function transcriptPathFor(id) {
-  return statePath("transcripts", `${id}.json`);
+// `dir` is injectable so tests (and callers with their own state root) never
+// depend on the module-load-time GE_STATE_ROOT resolution in state-paths.
+export function transcriptPathFor(id, { dir = statePath("transcripts") } = {}) {
+  return `${dir}/${id}.json`;
 }
 
-export function saveTranscript(transcript) {
-  const path = transcriptPathFor(transcript.id);
+export function saveTranscript(transcript, { dir } = {}) {
+  const path = transcriptPathFor(transcript.id, dir ? { dir } : {});
   writeJson(path, transcript);
   return relativeToRepo(path);
 }
