@@ -11,7 +11,7 @@ surface over the factory. Its server exposes the same JSON the `ge` CLI
 emits, dispatched through the same command registry — so the console and the
 CLI are two views of one engine and can never disagree about state.
 
-The left sidebar has seven entries; four detail surfaces open from them. The recent <a href="/ge-agent-factory/reference/glossary/#okf--knowledge-bundle" title="OKF (Open Knowledge Format) is a portable, human-readable version of an agent's spec — a folder of plain Markdown files (called &quot;concepts&quot;) instead of one big JSON blob.">OKF</a> and GE Drive work is represented as console views rather than a separate product surface: OKF lives under Spec Review, and GE Drive is the run-driving surface shared by <a href="/ge-agent-factory/reference/glossary/#pipeline" title="The user-facing, end-to-end path from business intent to a deployed agent — interview → spec → data → simulator → build → eval → preview → deploy — rendered as a plan you can read (ge pipeline plan) and watch (ge pipeline status).">Pipeline</a>, Runs, and agent detail actions:
+The left sidebar has seven entries; three detail surfaces open from them. Recent <a href="/ge-agent-factory/reference/glossary/#okf--knowledge-bundle" title="OKF (Open Knowledge Format) is a portable, human-readable version of an agent's spec — a folder of plain Markdown files (called &quot;concepts&quot;) instead of one big JSON blob.">OKF</a> work is represented as export and review affordances inside the existing Spec Review flow, while run-driving remains in the existing <a href="/ge-agent-factory/reference/glossary/#pipeline" title="The user-facing, end-to-end path from business intent to a deployed agent — interview → spec → data → simulator → build → eval → preview → deploy — rendered as a plan you can read (ge pipeline plan) and watch (ge pipeline status).">Pipeline</a>, Runs, and agent detail surfaces:
 
 | View | What it's for | Page |
 |---|---|---|
@@ -24,8 +24,7 @@ The left sidebar has seven entries; four detail surfaces open from them. The rec
 | **Readiness** | A preflight verdict with runnable fixes, before anything mutating | [Readiness](/ge-agent-factory/console/readiness/) |
 | *Agent detail* | Deep view of one agent: stages, artifacts, per-stage actions | [Fleet & repair](/ge-agent-factory/console/fleet-and-repair/) |
 | *Spec Review* | The contract rendered half-by-half for editing and OKF export | [Contract editor](/ge-agent-factory/console/contract-editor/) |
-| *OKF view* | The OKF knowledge bundle, concept coverage, source files, and export status for the current contract | [OKF & GE Drive views](/ge-agent-factory/console/okf-and-drive/) |
-| *GE Drive view* | Browser controls for `ge prove`, `ge agents build`, stage follow, blockers, and proof artifacts | [OKF & GE Drive views](/ge-agent-factory/console/okf-and-drive/) |
+| *OKF export* | The OKF knowledge bundle, concept coverage, source files, and export status for the current contract | [OKF export & run controls](/ge-agent-factory/console/okf-and-drive/) |
 
 ## Overview — the home base
 
