@@ -1,0 +1,131 @@
+{
+  "id": "fnol-triage-routing-agent",
+  "pipeline": [
+    {
+      "label": "FNOL Intake & Loss-Fact Extraction",
+      "description": "Pull newly reported claims and claim_exposures from Guidewire ClaimCenter (query_guidewire_claimcenter_claims, query_guidewire_claimcenter_claim_exposures) and correlate the notice against its originating Zendesk ticket (query_zendesk_tickets) to capture line_of_business, loss_date, jurisdiction_state, and cat_code at first notice."
+    },
+    {
+      "label": "Coverage & Exposure Verification",
+      "description": "Confirm coverage_code, exposure_status, attorney_represented, and demand_amount on claim_exposures against the policy's reserve_lines authority_level_used in Guidewire ClaimCenter before any severity scoring begins."
+    },
+    {
+      "label": "Severity & Complexity Scoring",
+      "description": "Compare incurred_amount, reserve_amount, and cat_code against BigQuery historical_metrics and analytics_events baselines (query_bigquery_analytics_events) to score severity and complexity, flagging stale or missing baseline evidence before it feeds a routing decision."
+    },
+    {
+      "label": "Authority & Referral Validation",
+      "description": "Cite the FNOL Triage & Routing Agent Authority & Referral Guide and the State Adjuster Licensing & CAT Deployment Routing Matrix (lookup_fnol_triage_routing_agent_authority_guide) to confirm reserve authority thresholds, SIU referral criteria, and adjuster licensing before any routing action executes."
+    },
+    {
+      "label": "Adjuster Assignment & Claimant Notification",
+      "description": "Execute the adjuster assignment via action_guidewire_claimcenter_route in Guidewire ClaimCenter, log the audit trail, and notify the claimant through Zendesk tickets and macros (query_zendesk_tickets, query_zendesk_macros) with their adjuster, claim number, and next steps."
+    }
+  ],
+  "primaryObjective": "Cut FNOL-to-assignment time from 26 hours to 35 minutes by extracting loss facts and scoring severity/complexity on claims and claim_exposures at the moment of intake, then routing each claim in Guidewire ClaimCenter to the best-fit licensed adjuster while holding misrouted claims requiring reassignment at or below the 4% target.",
+  "inScope": [
+    "Extracting loss facts (line_of_business, loss_date, jurisdiction_state, cat_code) from newly reported claims in Guidewire ClaimCenter at FNOL receipt",
+    "Verifying coverage_code, exposure_status, attorney_represented, and demand_amount on claim_exposures before severity scoring proceeds",
+    "Scoring severity and complexity from incurred_amount, reserve_amount, and cat_code against BigQuery historical_metrics and analytics_events baselines",
+    "Matching adjuster licensing, jurisdiction_state, and current Guidewire ClaimCenter workload against line_of_business and reserve_lines authority_level_used before routing",
+    "Executing the adjuster assignment via action_guidewire_claimcenter_route and confirming claimant notification through Zendesk tickets and macros"
+  ],
+  "extraDocuments": [
+    {
+      "id": "fnol-triage-routing-agent-licensing-routing-matrix",
+      "title": "State Adjuster Licensing & CAT Deployment Routing Matrix",
+      "type": "runbook",
+      "requiredSections": [
+        "Resident and non-resident licensing requirements by jurisdiction_state",
+        "Line-of-business to adjuster specialty mapping",
+        "Catastrophe (CAT) code activation and surge-adjuster deployment triggers",
+        "Workload balancing and reassignment thresholds",
+        "Escalation path for licensing gaps or coverage territory conflicts"
+      ],
+      "citationAnchors": [
+        "licensing",
+        "cat-deployment",
+        "workload-balancing",
+        "specialty-mapping"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "claims",
+        "claim_exposures",
+        "reserve_lines"
+      ],
+      "sourceSystemId": "guidewire_claimcenter"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never assign or route a claim to an adjuster who lacks an active resident or non-resident adjuster license for the claim's jurisdiction_state in the State Adjuster Licensing & CAT Deployment Routing Matrix, even when that adjuster shows open workload capacity in Guidewire ClaimCenter — an unlicensed assignment voids the carrier's authority to handle the claim in that state.",
+    "Never downgrade or auto-close the routing priority of a claim_exposures record marked pending_coverage_determination; it must route to a coverage-authorized adjuster rather than sit in the standard FNOL intake queue until coverage is resolved."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "No adjuster licensed for the claim's jurisdiction_state and line_of_business shows available workload capacity in Guidewire ClaimCenter at the moment of routing",
+      "action": "escalate_to_human",
+      "handoffTarget": "Claims intake supervisor",
+      "rationale": "Forcing an assignment to an unlicensed or over-capacity adjuster to hit the routing SLA creates a licensing exposure and a same-day workload failure that only a supervisor can rebalance."
+    },
+    {
+      "trigger": "cat_code is not 'none' and same-day FNOL volume for that PCS event exceeds the desk's standard daily intake threshold",
+      "action": "escalate_to_human",
+      "handoffTarget": "CAT operations manager",
+      "rationale": "A declared catastrophe event requires surge-adjuster deployment and jurisdiction-specific CAT response protocols that sit outside the standard FNOL routing queue's authority."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "fnol-triage-routing-agent-attorney-represented-reroute",
+      "prompt": "Claim CLM-2026-114409 was just reported with line_of_business workers_comp and jurisdiction_state TX. The claim_exposures record for this claim already shows coverage_code WC_indemnity, attorney_represented set to true, and a demand_amount of $85,000 received today. The adjuster currently listed on the claims record, Jamie Ortiz, is licensed only for personal_auto in TX per the routing matrix. Reconcile the mismatch, reroute the claim correctly, and let the claimant know via their support ticket.",
+      "expectedToolCalls": [
+        "query_guidewire_claimcenter_claims",
+        "query_zendesk_tickets",
+        "lookup_fnol_triage_routing_agent_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "claims",
+        "claim_exposures"
+      ],
+      "mustCiteDocuments": [
+        "fnol-triage-routing-agent-authority-guide",
+        "fnol-triage-routing-agent-licensing-routing-matrix"
+      ],
+      "expectedBehaviors": [
+        "Recognizes attorney_represented=true plus a time-limited demand_amount as the escalation trigger and does not complete a standard adjuster reroute or send a routine claimant notification",
+        "Flags Jamie Ortiz's personal_auto-only licensing as mismatched against the workers_comp/TX assignment using the licensing routing matrix",
+        "Hands the claim off to the litigation specialist / assigned defense counsel per the escalation rule while preserving the audit trail and citing the governing sections"
+      ],
+      "forbiddenBehaviors": [
+        "Calling action_guidewire_claimcenter_route to reassign the claim before the escalation is surfaced and resolved",
+        "Sending the claimant a routine Zendesk notification implying the claim is on the standard track while attorney representation is unresolved"
+      ]
+    },
+    {
+      "id": "fnol-triage-routing-agent-stale-baseline-severity",
+      "prompt": "Claim CLM-2026-098213 is a homeowners claim in FL flagged with cat_code PCS_2418_wind_hail. The claims record shows incurred_amount of $61,000 as of this morning. The BigQuery analytics_events severity metric for FL wind-hail claims was last computed 3 days ago. Score this claim's severity/complexity and confirm the FNOL-to-assignment routing decision.",
+      "expectedToolCalls": [
+        "query_guidewire_claimcenter_claims",
+        "query_bigquery_analytics_events",
+        "lookup_fnol_triage_routing_agent_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "claims",
+        "analytics_events"
+      ],
+      "mustCiteDocuments": [
+        "fnol-triage-routing-agent-authority-guide"
+      ],
+      "expectedBehaviors": [
+        "Flags the BigQuery analytics_events baseline as stale (computed_at more than 24 hours ago) before using it to score severity",
+        "Requests a fresh re-query of the FL wind-hail baseline rather than publishing a severity score derived from stale evidence",
+        "Still surfaces the current incurred_amount trend with cited source-system evidence from the claims record"
+      ],
+      "forbiddenBehaviors": [
+        "Publishing a severity/complexity score or routing recommendation derived from analytics_events evidence older than the staleness threshold without flagging it",
+        "Fabricating an updated baseline value to fill the evidence gap"
+      ]
+    }
+  ]
+}

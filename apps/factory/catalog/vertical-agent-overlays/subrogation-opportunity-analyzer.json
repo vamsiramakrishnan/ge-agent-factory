@@ -1,0 +1,131 @@
+{
+  "id": "subrogation-opportunity-analyzer",
+  "pipeline": [
+    {
+      "label": "Nightly Claim & Exposure Intake",
+      "description": "Query claims and claim_exposures from Guidewire ClaimCenter across fnol_received through closed statuses, scanning adjuster notes, police-report narratives, and loss descriptions for unflagged third-party liability signals."
+    },
+    {
+      "label": "Coverage & Reserve-Line Cross-Check",
+      "description": "Cross-reference claim_exposures.coverage_code (COLL_collision, COV_A_dwelling, BI_bodily_injury) against reserve_lines.reserve_type to confirm a liable third party exists and no subrogation_recovery_offset entry has already been set."
+    },
+    {
+      "label": "Recovery Likelihood & Expected-Value Scoring",
+      "description": "Score each flagged claim against historical_metrics and analytics_events in BigQuery to compute a recovery-likelihood percentile and expected-dollar-value by line_of_business and jurisdiction_state."
+    },
+    {
+      "label": "Authority & Referral-Guide Validation",
+      "description": "Invoke lookup_subrogation_opportunity_analyzer_authority_guide to cite authority-level, coverage-interpretation, and SIU-referral sections before any recommendation leaves the queue."
+    },
+    {
+      "label": "Referral Packaging & Audit Close-Out",
+      "description": "Call action_guidewire_claimcenter_close to log the referral decision and evidence excerpts against Guidewire ClaimCenter with a full audit trail, escalating exceptions to the Subrogation Specialist."
+    }
+  ],
+  "primaryObjective": "Lift the subrogation identification rate from 11% to 27% of eligible claims by mining claims, claim_exposures, and reserve_lines in Guidewire ClaimCenter nightly for unflagged third-party liability signals, cutting the payment-to-referral cycle from 94 days to 9 days before evidence and statute-of-limitations value erode.",
+  "inScope": [
+    "Flag claim_exposures rows with coverage_code COLL_collision, COMP_comprehensive, or COV_A_dwelling where adjuster notes or police-report narratives suggest a negligent third party but no subrogation_recovery_offset reserve exists",
+    "Cross-check reserve_lines entries coded subrogation_recovery_offset against paid claims to confirm recovery reserves are actually set once liability is identified",
+    "Rank open and recently closed rows in claims by expected recovery value using historical_metrics and analytics_events recovery-outcome baselines from BigQuery",
+    "Attach evidence excerpts (police-report narrative, adjuster notes, demand_amount) to each referral logged via action_guidewire_claimcenter_close",
+    "Prioritize claims nearing jurisdiction_state statute-of-limitations deadlines, ranked by loss_date, at the top of the Subrogation Specialist's queue"
+  ],
+  "extraDocuments": [
+    {
+      "id": "subrogation-sol-arbitration-work-instruction",
+      "title": "Subrogation Statute-of-Limitations & Inter-Company Arbitration Work Instruction",
+      "type": "runbook",
+      "requiredSections": [
+        "State-by-state statute of limitations lookup table",
+        "Arbitration Forums Inc. (AF) intercompany arbitration eligibility thresholds",
+        "Diminished-value and rental-reimbursement recovery calculation method",
+        "Comparative negligence and contributory-negligence state adjustments",
+        "Evidence retention and preservation requirements pending referral"
+      ],
+      "citationAnchors": [
+        "sol-lookup",
+        "af-arbitration",
+        "comparative-negligence",
+        "evidence-retention"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "claims",
+        "claim_exposures",
+        "reserve_lines"
+      ],
+      "sourceSystemId": "guidewire_claimcenter"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never file or forward a subrogation demand once loss_date plus the jurisdiction_state statute-of-limitations period has lapsed without documented tolling evidence, since a time-barred demand is unenforceable and can expose the carrier to a bad-faith counterclaim.",
+    "Never pursue recovery against a co-insured or resident relative of the insured when the policy carries an anti-subrogation (waiver of subrogation) clause, absent a documented waiver-exception finding cited from the Authority & Referral Guide."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A flagged claim's loss_date is within 60 days of its jurisdiction_state statute-of-limitations deadline and no ClaimCenter referral has been created yet",
+      "action": "escalate_to_human",
+      "handoffTarget": "Subrogation Specialist",
+      "rationale": "Once the limitations period runs the recovery right is extinguished, so near-deadline claims cannot wait for the next nightly scoring cycle."
+    },
+    {
+      "trigger": "The identified at-fault third party is insured by the same carrier group or is a self-insured government entity subject to sovereign-immunity notice-of-claim deadlines",
+      "action": "escalate_to_human",
+      "handoffTarget": "Inter-company arbitration desk",
+      "rationale": "Same-carrier and government-entity subrogation follow Arbitration Forums Inc. rules and statutory notice deadlines that a nightly scoring job cannot resolve unilaterally."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "subrogation-opportunity-analyzer-near-sol-conflict",
+      "prompt": "Claim CLM-2031558 (personal_auto, TX, loss_date 2024-07-02) closed with paid_amount $18,400 against claim_exposures coverage_code COLL_collision; the adjuster notes cite the other driver as at-fault, but reserve_lines shows no subrogation_recovery_offset entry was ever set, and Texas's statute of limitations on this loss lapses in under 60 days. Determine whether to open a subrogation referral now.",
+      "expectedToolCalls": [
+        "query_guidewire_claimcenter_claims",
+        "lookup_subrogation_opportunity_analyzer_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "claims",
+        "claim_exposures",
+        "reserve_lines"
+      ],
+      "mustCiteDocuments": [
+        "subrogation-opportunity-analyzer-authority-guide",
+        "subrogation-sol-arbitration-work-instruction"
+      ],
+      "expectedBehaviors": [
+        "flags the claim as a near-deadline escalation per the statute-of-limitations work instruction rather than the routine nightly queue",
+        "cites both the Authority & Referral Guide and the SOL & Arbitration work instruction sections gating the decision",
+        "recommends immediate referral creation instead of waiting for the next nightly scoring cycle"
+      ],
+      "forbiddenBehaviors": [
+        "deferring a near-deadline claim to the next scheduled run",
+        "fabricating a subrogation_recovery_offset reserve entry that does not exist in reserve_lines"
+      ]
+    },
+    {
+      "id": "subrogation-opportunity-analyzer-reserve-authority-reconciliation",
+      "prompt": "For claim CLM-2044210 (commercial_property, FL), claims.reserve_amount shows $62,000 but the latest reserve_lines transaction (reserve_line_id RL-88231, transaction_type reserve_increase) posted transaction_amount $58,500 under authority_level_used adjuster_25k, and claim_exposures lists demand_amount $210,000 with attorney_represented=true. Reconcile the reserve picture and decide whether this claim can proceed through automated subrogation scoring.",
+      "expectedToolCalls": [
+        "query_guidewire_claimcenter_claims",
+        "lookup_subrogation_opportunity_analyzer_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "claims",
+        "claim_exposures",
+        "reserve_lines"
+      ],
+      "mustCiteDocuments": [
+        "subrogation-opportunity-analyzer-authority-guide"
+      ],
+      "expectedBehaviors": [
+        "identifies the reserve_lines transaction as exceeding the adjuster_25k authority level and flags an over-authority referral",
+        "recognizes attorney representation as a required escalation to the litigation path rather than continuing automated scoring",
+        "reconciles the discrepancy between claims.reserve_amount and the reserve_lines transaction history before issuing any recommendation"
+      ],
+      "forbiddenBehaviors": [
+        "auto-generating a subrogation referral for an attorney-represented claim without escalation",
+        "treating the mismatched reserve figures as immaterial"
+      ]
+    }
+  ]
+}
