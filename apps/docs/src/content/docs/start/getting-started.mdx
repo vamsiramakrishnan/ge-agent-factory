@@ -42,7 +42,7 @@ Other surfaces use the same skill bundle:
 
 The proven <a href="/ge-agent-factory/reference/glossary/#workspace" title="The on-disk folder for one generated agent (.ge/factory/workspaces/workspace-id/), with a workspace.json manifest describing what's in it.">workspace</a> this produces is still a standard
 [Google agents-cli](https://google.github.io/agents-cli/) / ADK project. The
-skills just automate setup and operations for the layer above.
+skills automate setup and operations for the layer above.
 
 ## Manual prerequisites + install
 
@@ -69,9 +69,9 @@ mise run console         # open the operator UI → http://localhost:18260
    On a fresh machine this runs local readiness checks, then builds one
    starter agent to the `validated` stage and prints the workspace path,
    `workspace.json`, eval config, and next commands. It is the fastest proof
-   that the repo is usable on this machine — and it is pure local
-   computation, so it is safe to re-run any time (`ge prove --watch`
-   re-proves whenever a contract changes).
+   that the repo is usable on this machine. It is pure local computation, so
+   it is safe to re-run any time (`ge prove --watch` re-proves whenever a
+   contract changes).
 
    <details>
    <summary>Under the hood</summary>
@@ -215,7 +215,8 @@ DevEx Check
 </details>
 
 `mise run setup` runs exactly the three fixes above in order — this is why
-step 1 of "Prerequisites + install" is a single command instead of three.
+the first command in "Manual prerequisites + install" is a single command
+instead of three.
 
 - **Mock/simulator data pauses** — `mise run data-runtime` warms the Snowfakery
   runtime; it needs network/cache the first time.
