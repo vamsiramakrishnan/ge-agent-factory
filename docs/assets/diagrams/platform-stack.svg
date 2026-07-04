@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 672.035 807.2" width="672.035" height="807.2" style="--bg:#ffffff;--fg:#14171c;--line:#565e6c;--accent:#2953ff;--muted:#79818e;--surface:#eceef2;--border:#dfe2e8;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<g class="subgraph" data-id="SURF" data-label="Surfaces — three doors, one behavior">
+  <rect x="136.84499999999997" y="40" width="398.345" height="113.80000000000001" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="136.84499999999997" y="40" width="398.345" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="148.84499999999997" y="54" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">Surfaces — three doors, one behavior</text>
+</g>
+<g class="subgraph" data-id="CORE" data-label="Operator core">
+  <rect x="197.896" y="201.8" width="276.243" height="113.80000000000001" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="197.896" y="201.8" width="276.243" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="209.896" y="215.8" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">Operator core</text>
+</g>
+<g class="subgraph" data-id="ENGINE" data-label="Generator engine — the factory stages">
+  <rect x="40" y="363.6" width="592.035" height="113.80000000000001" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="40" y="363.6" width="592.035" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="52" y="377.6" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">Generator engine — the factory stages</text>
+</g>
+<g class="subgraph" data-id="ART" data-label="Artifacts on disk — one proven workspace">
+  <rect x="77.19800000000004" y="525.4000000000001" width="517.6389999999999" height="96.9" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="77.19800000000004" y="525.4000000000001" width="517.6389999999999" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="89.19800000000004" y="539.4000000000001" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">Artifacts on disk — one proven workspace</text>
+</g>
+<g class="subgraph" data-id="CLOUD" data-label="Your Google Cloud project — after handoff">
+  <rect x="72.0075" y="670.3" width="528.02" height="96.9" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="72.0075" y="670.3" width="528.02" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="84.0075" y="684.3" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">Your Google Cloud project — after handoff</text>
+</g>
+<polyline class="edge" data-from="SURF" data-to="CORE" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="336.0175,153.8 336.0175,201.8" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="CORE" data-to="ENGINE" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="336.0175,315.6 336.0175,363.6" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="ENGINE" data-to="ART" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="336.0175,477.40000000000003 336.0175,525.4000000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="ART" data-to="CLOUD" data-style="thick" data-arrow-start="false" data-arrow-end="true" points="336.0175,622.3000000000001 336.0175,670.3" fill="none" stroke="var(--_line)" stroke-width="2" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="CLI" data-to="CON" data-style="solid" data-arrow-start="false" data-arrow-end="false" points="232.58599999999998,106.675 280.586,106.675" fill="none" stroke="var(--_line)" stroke-width="1" />
+<polyline class="edge" data-from="CON" data-to="MCP" data-style="solid" data-arrow-start="false" data-arrow-end="false" points="369.96,115.125 417.96,115.125" fill="none" stroke="var(--_line)" stroke-width="1" />
+<polyline class="edge" data-from="COMP" data-to="GEN" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="148.338,434.5 196.338,434.5" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="GEN" data-to="SYN" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="304.978,434.5 352.978,434.5" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="SYN" data-to="EVC" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="475.697,434.5 523.697,434.5" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="CTR" data-to="WS" data-style="solid" data-arrow-start="false" data-arrow-end="false" points="220.363,587.8500000000001 268.363,587.8500000000001" fill="none" stroke="var(--_line)" stroke-width="1" />
+<polyline class="edge" data-from="WS" data-to="PP" data-style="solid" data-arrow-start="false" data-arrow-end="false" points="405.902,587.8500000000001 453.902,587.8500000000001" fill="none" stroke="var(--_line)" stroke-width="1" />
+<polyline class="edge" data-from="ACLI" data-to="AE" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="221.8415,732.75 269.8415,732.75" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="AE" data-to="GEE" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="389.5965,732.75 437.5965,732.75" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<g class="node" data-id="CLI" data-label="ge CLI" data-shape="rectangle">
+  <rect x="152.84499999999997" y="88.225" width="79.74100000000001" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="192.71549999999996" y="106.675" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">ge CLI</text>
+</g>
+<g class="node" data-id="CON" data-label="console" data-shape="rectangle">
+  <rect x="280.586" y="92.45" width="89.374" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="325.273" y="110.9" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">console</text>
+</g>
+<g class="node" data-id="MCP" data-label="MCP tools
++ skills" data-shape="rectangle">
+  <rect x="417.96" y="88.225" width="101.22999999999999" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="468.575" y="115.125" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="468.575" dy="-3.9000000000000012">MCP tools</tspan><tspan x="468.575" dy="16.900000000000002">+ skills</tspan></text>
+</g>
+<g class="node" data-id="RJ" data-label="one command registry + job runner
+route · CLI invocation · risk level" data-shape="rectangle">
+  <rect x="213.896" y="245.8" width="244.243" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="336.0175" y="272.7" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="336.0175" dy="-3.9000000000000012">one command registry + job runner</tspan><tspan x="336.0175" dy="16.900000000000002">route · CLI invocation · risk level</tspan></text>
+</g>
+<g class="node" data-id="COMP" data-label="contract
+compiler" data-shape="rectangle">
+  <rect x="56" y="407.6" width="92.338" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="102.169" y="434.5" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="102.169" dy="-3.9000000000000012">contract</tspan><tspan x="102.169" dy="16.900000000000002">compiler</tspan></text>
+</g>
+<g class="node" data-id="GEN" data-label="workspace
+generator" data-shape="rectangle">
+  <rect x="196.338" y="407.6" width="108.64" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="250.658" y="434.5" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="250.658" dy="-3.9000000000000012">workspace</tspan><tspan x="250.658" dy="16.900000000000002">generator</tspan></text>
+</g>
+<g class="node" data-id="SYN" data-label="twins +
+synthetic data" data-shape="rectangle">
+  <rect x="352.978" y="407.6" width="122.71900000000001" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="414.33750000000003" y="434.5" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="414.33750000000003" dy="-3.9000000000000012">twins +</tspan><tspan x="414.33750000000003" dy="16.900000000000002">synthetic data</tspan></text>
+</g>
+<g class="node" data-id="EVC" data-label="eval
+compiler" data-shape="rectangle">
+  <rect x="523.697" y="407.6" width="92.338" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="569.866" y="434.5" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="569.866" dy="-3.9000000000000012">eval</tspan><tspan x="569.866" dy="16.900000000000002">compiler</tspan></text>
+</g>
+<g class="node" data-id="CTR" data-label="contract (OKF)" data-shape="rectangle">
+  <rect x="93.19800000000004" y="569.4000000000001" width="127.16499999999998" height="36.900000000000006" rx="0" ry="0" fill="#e6ebff" stroke="#2953ff" stroke-width="0.75" />
+  <text x="156.78050000000002" y="587.8500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">contract (OKF)</text>
+</g>
+<g class="node" data-id="WS" data-label="ADK workspace" data-shape="rectangle">
+  <rect x="268.363" y="569.4000000000001" width="137.539" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="337.1325" y="587.8500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">ADK workspace</text>
+</g>
+<g class="node" data-id="PP" data-label="proof pack" data-shape="hexagon">
+  <polygon points="463.127,569.4000000000001 569.612,569.4000000000001 578.837,587.8500000000001 569.612,606.3000000000001 463.127,606.3000000000001 453.902,587.8500000000001" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
+  <text x="516.3695" y="587.8500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">proof pack</text>
+</g>
+<g class="node" data-id="ACLI" data-label="agents-cli / ADK" data-shape="stadium">
+  <rect x="88.0075" y="714.3" width="133.834" height="36.900000000000006" rx="18.450000000000003" ry="18.450000000000003" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
+  <text x="154.9245" y="732.75" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">agents-cli / ADK</text>
+</g>
+<g class="node" data-id="AE" data-label="Agent Engine" data-shape="rectangle">
+  <rect x="269.8415" y="714.3" width="119.75500000000001" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="329.719" y="732.75" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">Agent Engine</text>
+</g>
+<g class="node" data-id="GEE" data-label="Gemini Enterprise" data-shape="stadium">
+  <rect x="437.5965" y="714.3" width="146.431" height="36.900000000000006" rx="18.450000000000003" ry="18.450000000000003" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
+  <text x="510.812" y="732.75" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">Gemini Enterprise</text>
+</g>
+</svg>
