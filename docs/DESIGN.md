@@ -36,18 +36,20 @@ derived from the product's own design tokens
 apps read as one system:
 
 - **Colors** — `docs/_sass/color_schemes/ge.scss` re-tints just-the-docs'
-  stock purple theme to the "Proof Instrument" palette
+  stock purple theme to the "Modernist Functionalism" palette
   (`packages/design/src/palette.mjs`, the canonical source): primary
-  `#2953ff`, on-surface `#14171c`, body text `#383e47`, border `#dfe2e8`,
-  sidebar `#f3f4f7`. `docs/_sass/custom/setup.scss` re-tints the built-in
+  `#00408b`, on-surface `#1b1c1c`, body text `#383e47`, border `#c2c6d4`,
+  sidebar `#f0eded`. `docs/_sass/custom/setup.scss` re-tints the built-in
   blue/green swatches used by callouts to the same palette (`$blue-200:
-  #2953ff`, `$green-200: #0d6d3a`). Both files are generated — run
+  #00408b`, `$green-200: #0d6d3a`). Both files are generated — run
   `bun run docs:tokens` after editing `palette.mjs`.
 - **Fonts** — `docs/_sass/custom/custom.scss` sets `Space Grotesk` for
   headings, nav, and site chrome (`$ge-display-font`); body copy stays on the
   theme's system-ui reading face for long-form legibility. Code uses `Geist
   Mono` (`docs/_sass/custom/setup.scss`, `$mono-font-family`) — the same
-  monospace family as the product UI.
+  monospace family as the product UI. (This is the legacy Jekyll site's own
+  font choice, independent of the Astro/Starlight site's Hanken Grotesk +
+  JetBrains Mono — see `apps/docs/README.md`.)
 
 Don't hand-roll colors or fonts in a page. If something needs a new color,
 add it to `ge.scss` or `setup.scss`, not inline `style=`.
@@ -60,8 +62,9 @@ Diagram source is Mermaid, one `.mmd` file per diagram in
 `docs/diagrams-src/`. Rendering goes through
 [`beautiful-mermaid`](https://www.npmjs.com/package/beautiful-mermaid) via
 `tools/gen-docs-diagrams.mjs`, themed by `tools/lib/docs-diagram-theme.mjs`
-(`DIAGRAM_THEME` — white background, `#2953ff` cobalt accent, `#565e6c`
-graphite lines, Inter font), so every diagram in the site shares one visual system instead of
+(`DIAGRAM_THEME` — reads its colors live from `packages/design/src/palette.mjs`,
+currently a warm paper background, `#00408b` navy accent, `#565e6c` graphite
+lines, Inter font), so every diagram in the site shares one visual system instead of
 hand-drawn ASCII art of varying quality. Output SVGs land in
 `docs/assets/diagrams/*.svg`, one per source file, same basename.
 
@@ -85,11 +88,11 @@ error; it silently fails to match *and* creates a phantom node literally named
 
 ```
 # correct — no semicolons
-classDef cloudbuild fill:#e1f3e7,stroke:#16874a,color:#14171c
+classDef cloudbuild fill:#e1f3e7,stroke:#16874a,color:#1b1c1c
 class validate,preview cloudbuild
 
 # wrong — silently broken, adds a phantom "class" node
-classDef cloudbuild fill:#e1f3e7,stroke:#16874a,color:#14171c;
+classDef cloudbuild fill:#e1f3e7,stroke:#16874a,color:#1b1c1c;
 class validate,preview cloudbuild;
 ```
 
@@ -134,15 +137,15 @@ not every node:
 
 | Meaning | classDef |
 |---|---|
-| Primary / local emphasis, data | `fill:#e6ebff,stroke:#2953ff,color:#14171c` |
-| Cloud / release / passing | `fill:#e1f3e7,stroke:#16874a,color:#14171c` |
-| Blocked / error | `fill:#fce8e5,stroke:#dc3626,color:#14171c` |
+| Primary / local emphasis, data | `fill:#e6ebff,stroke:#00408b,color:#1b1c1c` |
+| Cloud / release / passing | `fill:#e1f3e7,stroke:#16874a,color:#1b1c1c` |
+| Blocked / error | `fill:#fce8e5,stroke:#dc3626,color:#1b1c1c` |
 
 Example (`docs/diagrams-src/write-guard-flow.mmd`):
 
 ```
-classDef blocked fill:#fce8e5,stroke:#dc3626,color:#14171c
-classDef pass fill:#e1f3e7,stroke:#16874a,color:#14171c
+classDef blocked fill:#fce8e5,stroke:#dc3626,color:#1b1c1c
+classDef pass fill:#e1f3e7,stroke:#16874a,color:#1b1c1c
 class D blocked
 class C,E pass
 ```
@@ -157,11 +160,11 @@ one of these diagrams can read any other without a legend:
 | Entity | Shape | Syntax | classDef |
 |---|---|---|---|
 | Human touchpoint (interview, review, approval) | Stadium or circle | `A(["capture"])` / `A(("review"))` | none (default node style — the theme's own white fill/border already reads as "unmarked") |
-| Contract (the use-case spec / OKF pair) | Rectangle, primary emphasis | `A["contract"]` | `contract` — `fill:#e6ebff,stroke:#2953ff,color:#14171c` |
+| Contract (the use-case spec / OKF pair) | Rectangle, primary emphasis | `A["contract"]` | `contract` — `fill:#e6ebff,stroke:#00408b,color:#1b1c1c` |
 | Generated artifact (code, tools, fixtures) | Rectangle, default | `A["tools"]` | none (default node style) |
-| Source-system twin | Cylinder (data store) | `A[("twin")]` | `system` — `fill:#eceef2,stroke:#565e6c,color:#14171c` |
-| Eval / proof gate | Hexagon (gate distinct from a decision) | `A{{"promotion gate"}}` | `proof` — `fill:#e1f3e7,stroke:#16874a,color:#14171c` |
-| Handoff target (agents-cli / ADK / Gemini Enterprise) | Stadium, cloud/release emphasis | `A(["agents-cli"])` | `handoff` — `fill:#e1f3e7,stroke:#16874a,color:#14171c` |
+| Source-system twin | Cylinder (data store) | `A[("twin")]` | `system` — `fill:#f0eded,stroke:#565e6c,color:#1b1c1c` |
+| Eval / proof gate | Hexagon (gate distinct from a decision) | `A{{"promotion gate"}}` | `proof` — `fill:#e1f3e7,stroke:#16874a,color:#1b1c1c` |
+| Handoff target (agents-cli / ADK / Gemini Enterprise) | Stadium, cloud/release emphasis | `A(["agents-cli"])` | `handoff` — `fill:#e1f3e7,stroke:#16874a,color:#1b1c1c` |
 
 This extends, rather than replaces, the general shape vocabulary and brand
 color convention above — those still govern diagrams outside the signature
@@ -188,11 +191,11 @@ invent a different status palette for docs:
 
 | Status | classDef |
 |---|---|
-| `pending` | `fill:#eceef2,stroke:#6b7280,color:#14171c` (the status ramp's `queued` gray) |
-| `running` | `fill:#e6ebff,stroke:#2953ff,color:#14171c` (the ramp's `running` — blue means "live") |
-| `blocked` | `fill:#fbeadb,stroke:#d9660a,color:#14171c` (the ramp's `blocked` orange) |
-| `done` | `fill:#e1f3e7,stroke:#16874a,color:#14171c` (same green as `pass`/handoff above) |
-| `failed` | `fill:#fce8e5,stroke:#dc3626,color:#14171c` (same red as the existing "Blocked / error" row) |
+| `pending` | `fill:#f0eded,stroke:#6b7280,color:#1b1c1c` (the status ramp's `queued` gray) |
+| `running` | `fill:#e6ebff,stroke:#00408b,color:#1b1c1c` (the ramp's `running` — blue means "live") |
+| `blocked` | `fill:#fbeadb,stroke:#d9660a,color:#1b1c1c` (the ramp's `blocked` orange) |
+| `done` | `fill:#e1f3e7,stroke:#16874a,color:#1b1c1c` (same green as `pass`/handoff above) |
+| `failed` | `fill:#fce8e5,stroke:#dc3626,color:#1b1c1c` (same red as the existing "Blocked / error" row) |
 
 ### Embedding a diagram in a page
 

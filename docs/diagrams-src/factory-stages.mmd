@@ -27,10 +27,10 @@ flowchart LR
   poll_runtime --> register_tools
   register_tools --> publish_enterprise
   publish_enterprise --> verify_live
-  classDef control_plane fill:#e6ebff,stroke:#2953ff,color:#14171c
-  classDef cloud_run_service fill:#eceef2,stroke:#565e6c,color:#14171c
-  classDef cloud_build fill:#e1f3e7,stroke:#16874a,color:#14171c
-  classDef cloud_tasks fill:#e4e7ec,stroke:#17339e,color:#14171c
+  classDef control_plane fill:#e6ebff,stroke:#00408b,color:#1b1c1c
+  classDef cloud_run_service fill:#f0eded,stroke:#565e6c,color:#1b1c1c
+  classDef cloud_build fill:#e1f3e7,stroke:#16874a,color:#1b1c1c
+  classDef cloud_tasks fill:#eae7e7,stroke:#001a41,color:#1b1c1c
   class plan,plan_deploy control_plane
   class generate_workspace,generate_data,package_data,harness_refine,load_data,register_tools,verify_live cloud_run_service
   class validate,preview,deploy_runtime,publish_enterprise cloud_build
