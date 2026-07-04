@@ -10,8 +10,8 @@ packet.
 
 ```bash
 ge agents build --ids <use-case-id> --local
-ge mission run --scenario <use-case-id> --ids <use-case-id> --target-stage preview
-ge runtime tasks
+ge pipeline run --scenario <use-case-id> --ids <use-case-id> --target-stage preview
+ge daemon tasks
 ge agents sync --ids <use-case-id> --local
 ```
 
@@ -26,8 +26,8 @@ ge agents sync --ids <use-case-id> --local --remote <git-url> --push
 ```
 
 Local factory workspaces are stored in `.ge/factory/workspaces/` and indexed by
-`.ge/factory/workspaces.json`. Mission/data/simulator artifacts live under
-`.ge/missions/`; daemon task state lives under `.ge/runtime/`.
+`.ge/factory/workspaces.json`. Pipeline/data/simulator artifacts live under
+`.ge/pipelines/`; daemon task state lives under `.ge/runtime/`.
 
 ## Workspace Contract
 

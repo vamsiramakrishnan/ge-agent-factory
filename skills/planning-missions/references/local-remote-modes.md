@@ -62,7 +62,7 @@ factory payload, so remote builds match local.
 For local publish flows, handoff is explicit:
 
 ```text
-local build/repair -> ge agents ship -> cloud load/deploy/register/publish
+local build/repair -> ge handoff -> cloud load/deploy/register/publish
 ```
 
 For remote flows, the cloud factory already owns release-side stages; do not add a local ship handoff.

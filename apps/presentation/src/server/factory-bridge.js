@@ -543,7 +543,7 @@ export async function submitFactoryRun(request) {
   const artifactPrefix = `gs://${targetBucket}/runs/${runId}/items/${workspaceId}`;
   let workspaceArchive = `${artifactPrefix}/workspace.tar.gz`;
 
-  // Handoff (ge agents ship): the client already built + uploaded the workspace.
+  // Handoff (ge handoff): the client already built + uploaded the workspace.
   // Skip regeneration, consume the prebuilt archive, and start past the build
   // boundary (default load_data → deploy → register → publish run remotely).
   const prebuiltArchive = request.prebuiltArchive ? String(request.prebuiltArchive) : null;

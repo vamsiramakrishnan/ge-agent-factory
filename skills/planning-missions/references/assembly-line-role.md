@@ -41,6 +41,6 @@ A good mission makes the next move obvious:
 - missing remote agent -> Factory submits to cloud
 - existing local workspace -> Autopilot doctors and repairs
 - existing remote run -> Autopilot observes
-- publish from local -> explicit `ge agents ship` handoff
+- publish from local -> explicit `ge handoff`
 
 If a harness cannot tell who owns the next move, the mission is not clear enough.

@@ -135,7 +135,7 @@ Or run the fast DevEx gate / one-command local proof:
 
 ```bash
 mise run devex-check      # local doctor + docs links + workspace manifest contracts
-mise run devex-smoke      # doctor → local mode → one validated canary workspace
+mise run prove            # doctor → local mode → one validated canary workspace
 ```
 
 ## 7. (Optional) Cloud setup

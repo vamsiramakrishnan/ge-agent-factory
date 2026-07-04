@@ -3,7 +3,7 @@
 > Legacy walkthrough: this page describes the older single-demo generator flow.
 > The current factory path is documented in the repository `README.md`,
 > `docs/OPERATIONS.md`, and `apps/factory/README.md`: use `mise run setup`,
-> `ge mission ...`, `ge agents build --local`, and console Fleet/Agent Detail
+> `ge pipeline ...`, `ge agents build --local`, and console Fleet/Agent Detail
 > for workspace generation, preview gates, code sync, and deploy handoff.
 
 Welcome! This tutorial will guide you through the setup and execution of your synthesized BigQuery MCP Agent demo.
