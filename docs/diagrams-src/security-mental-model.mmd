@@ -1,4 +1,4 @@
-flowchart LR
+flowchart TD
     OP["Operator / console"] -->|authenticated| GW["gateway\nruntime SA"]
     CT["Cloud Tasks"] -->|"OIDC as runner"| W["worker\nrunner SA, no-allow-unauth"]
     AG["Generated agent"] -->|"agent identity, mTLS"| AGW["Agent Gateway\ngoverned"]

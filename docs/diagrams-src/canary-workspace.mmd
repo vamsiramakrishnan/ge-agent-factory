@@ -1,4 +1,4 @@
-flowchart LR
+flowchart TD
     S["spec\nthe use-case contract"] --> B["ge agents build --canary\nlocal mode stops at the\n'previewed' build boundary"]
     B --> W[".ge/factory/workspaces/&lt;id&gt;/"]
     W --> A["app/agent.py\nreal ADK agent +\nthe 3 callbacks"]
