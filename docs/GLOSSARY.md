@@ -9,7 +9,7 @@ layout: default
 Plain-language translations of the internal jargon you'll run into while
 reading the `ge-agent-factory` codebase and docs (the "GE" is **Gemini
 Enterprise** — the Google Cloud product the factory publishes agents into).
-Each entry gives the term as you'll actually see it, what it IS in one
+Each entry gives the term as you'll see it, what it IS in one
 sentence, and where you're likely to first bump into it.
 
 If a term you needed isn't here, it's probably still worth a doc PR — this
@@ -232,8 +232,8 @@ via `ge handoff agents-cli`, which runs only the post-boundary stages
 
 ## The operator register
 
-The machinery's own names, for people running the factory in anger. Every
-term below is real, supported, and documented — this register just doesn't
+The machinery's own names, for people operating the factory day to day. Every
+term below is real, supported, and documented — this register doesn't
 lead: it lives in `Operate` sections, reference pages, and under-the-hood
 disclosures rather than front doors.
 
@@ -413,7 +413,7 @@ one validated [canary](#canary) workspace) lives at `ge prove`; see
 works end to end before committing to the whole catalog. `--canary` on
 `ge agents build` (or `CANARY=1` on the `mise run provision*` tasks) is the
 opposite of `--all`. Nothing to do with feature-flag canary releases — it's
-just "one [workspace](#workspace), all the way through."
+"one [workspace](#workspace), all the way through."
 
 **Where you'll meet it:** `mise run prove` builds one;
 `CANARY=1 mise run provision-local`; the bootstrap task's optional canary
@@ -530,7 +530,7 @@ calls go through the second.
 ### Review vs. Refine
 
 **What it is:** Two distinct sub-steps of the [harness](#harness). "Review"
-just reports how well the generated code matches the spec
+only reports how well the generated code matches the spec
 (`generator-feedback.json`); "Refine" goes further and tries to
 automatically fix mismatches (`harness-refine.json`). Easy to conflate,
 but only Refine changes code.

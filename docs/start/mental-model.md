@@ -17,7 +17,7 @@ serves one of those five verbs.
 | Verb | What it means | Where it happens today |
 |---|---|---|
 | **Capture** | Turn business intent (an interview, a document, an API surface) into structured input | `ge capture` (opens the console **Interview**; `--from` registers an existing contract file); document upload; simulator synthesis from OpenAPI |
-| **Compile** | Materialize an **Enterprise Agent Contract**: the machine-readable statement of role, scope, tools, evidence rules, escalation and refusal rules, plus the world the agent operates in | The use-case spec (`generationSpec` + `behaviorContract`) and its [portable Markdown twin](../concepts/enterprise-agent-contract.html#the-contracts-portable-form) |
+| **Compile** | Materialize an **Enterprise Agent Contract**: the machine-readable statement of role, scope, tools, evidence rules, escalation and refusal rules, plus the world the agent operates in | The use-case spec (`generationSpec` + `behaviorContract`) and its [portable OKF twin](../concepts/enterprise-agent-contract.html#the-contracts-portable-form-okf) |
 | **Generate** | Emit everything the contract implies: ADK agent code, tools, fixture data, source-system simulations, smoke tests, eval suites | `ge prove` / `ge agents build` (one workspace per contract) |
 | **Prove** | Show — not claim — that the generated agent honors the contract | `ge prove`: evals, the spec-to-code trace, verify-stage review/refine verdicts, the promotion gate |
 | **Hand off** | Give the proven agent to the layer below: agents-cli → ADK Agent Engine → Gemini Enterprise, in your own Google Cloud project | `ge handoff agents-cli` |
@@ -59,8 +59,7 @@ The line has a hard cut in the middle — the **build boundary**:
 
 - **Before the boundary** (compile → generate → prove): everything runs on
   your machine against simulated source systems. No cloud credentials, no
-  side effects. This is the everyday loop, and it is deliberately boring to
-  repeat.
+  side effects. This is the everyday loop, and it is cheap to repeat.
 - **After the boundary** (hand off): stages touch your Google Cloud project —
   per-agent data is loaded, the Agent Runtime is deployed, tools are
   registered, and the agent is published to Gemini Enterprise.

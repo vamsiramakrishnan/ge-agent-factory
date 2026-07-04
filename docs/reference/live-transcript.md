@@ -16,8 +16,8 @@ shape (schema: `tools/lib/live/transcript.mjs`, `apiVersion: ge.dev/v1`,
 transcript shapes, the abstraction would be wrong — the design rule is to
 extend this one.
 
-The wire shape mirrors what the Discovery Engine AssistantService actually
-streams: each chunk is a `StreamAssistResponse`, answer text accumulates from
+The wire shape mirrors what the Discovery Engine AssistantService streams:
+each chunk is a `StreamAssistResponse`, answer text accumulates from
 `replies[].groundedContent.content.text` while `answer.state` is
 `IN_PROGRESS`, terminating at `SUCCEEDED` / `FAILED` / `SKIPPED`. The
 transcript *folds* those chunks down to what each contributed; raw chunk JSON

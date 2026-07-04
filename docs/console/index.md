@@ -13,7 +13,7 @@ surface over the factory. Its server exposes the same JSON the `ge` CLI
 emits, dispatched through the same command registry — so the console and the
 CLI are two views of one engine and can never disagree about state.
 
-The left sidebar has seven entries; three detail surfaces open from them. Recent OKF work is represented as export and review affordances inside the existing Spec Review flow, while run-driving remains in the existing Pipeline, Runs, and agent detail surfaces:
+The left sidebar has seven entries; three detail surfaces open from them. Recent OKF work appears as export and review affordances inside the existing Spec Review flow. Driving runs stays in the existing Pipeline, Runs, and agent detail surfaces:
 
 | View | What it's for | Page |
 |---|---|---|

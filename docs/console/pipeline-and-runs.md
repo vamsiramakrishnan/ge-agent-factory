@@ -18,10 +18,10 @@ A three-step wizard — **Source → Configure → Review**:
 1. **Source** picks an existing contract or starts a new one (handing you to
    the [contract editor](./contract-editor.html) if needed).
 2. **Configure** sets the scenario and the **source systems** via the
-   SystemsField, which autocompletes over the simulated-system corpus and
-   includes the **Bring Your Own System** flow — synthesize a brand-new
+   SystemsField, which autocompletes over the simulated-system corpus. Its
+   **Bring Your Own System** flow synthesizes a brand-new
    [source-system twin](../concepts/source-system-twins.html) from a
-   natural-language description and bind it to the contract, live.
+   natural-language description and binds it to the contract, live.
 3. **Review** shows what will run and launches it.
 
 Use it to drive a single agent (or a bulk scope) from contract to generated,

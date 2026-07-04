@@ -13,8 +13,8 @@ description: The generated workspace is a standard agents-cli/ADK project — op
 [next guide](handoff-adk-gemini-enterprise.html).
 
 The handoff line is deliberate: the factory compiles and proves, and what
-crosses the line is a *standard* `agents-cli` / ADK project with no factory
-runtime library inside (see
+crosses the line is a *standard* `agents-cli` / ADK (Agent Development Kit)
+project with no factory runtime library inside (see
 [Handoff targets](../concepts/handoff-targets.html)). This guide opens a
 proven workspace as exactly that — an ordinary project any ADK engineer can
 run, eval, and deploy with tools they already know.
@@ -137,7 +137,7 @@ What crosses the handoff line (full layout in
 - `agents-cli-manifest.yaml` — project name, `agent_directory`, region,
   `deployment_target: agent_runtime`.
 - `app/agent.py`, `app/tools.py`, `app/knowledge/` — the ADK app, tools, and
-  OKF grounding bundle.
+  OKF (Open Knowledge Format) grounding bundle.
 - `pyproject.toml`, `uv.lock` — standard Python packaging with the
   `[tool.agents-cli]` section.
 - `tests/eval/` — `eval_config.json`, `optimization_config.json`,

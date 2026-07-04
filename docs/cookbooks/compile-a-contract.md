@@ -60,8 +60,8 @@ importable in `.venv` (verified by `mise run deps` / `mise run doctor-local`).
    ge agents build --canary
    ```
 
-   `ge agents build` is the compile command; its flags control scope and the
-   compiler's behavior:
+   `ge agents build` is the compile command; its flags control scope and
+   behavior:
 
    - `--canary` compiles **one** agent; `--all` compiles the whole catalog.
    - `--local` forces this machine via the harness — the local, LLM-driven

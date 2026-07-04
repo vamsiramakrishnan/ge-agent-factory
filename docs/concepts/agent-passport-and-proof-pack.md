@@ -100,8 +100,8 @@ No step in that chain requires asking the engineer who shipped it.
   are visible in the record.
 - **Console:** the Agent detail view (the stage rail, artifacts, live
   logs); the **Runs** view for history; the
-  [all-agents view](../console/fleet-and-repair.html) for the same rolled
-  up across every agent.
+  [all-agents view](../console/fleet-and-repair.html) for the same
+  information rolled up across every agent.
 - **Generated artifacts:** all of the files in the two tables above.
 
 ## Related concepts

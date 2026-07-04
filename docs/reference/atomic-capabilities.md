@@ -58,8 +58,9 @@ specs. See [Capture a contract](../cookbooks/capture-from-interview.html).
 **Review the spec.** The console's spec-review view
 (`#/spec-review/:usecaseId`) inspects and edits a captured contract; the
 interview APIs (`/api/interviews/:id/*`) upload grounding documents, write
-the spec artifact, and render its OKF form. Standalone use: point it at any
-registered contract — nothing downstream needs to exist yet.
+the spec artifact, and render its OKF (Open Knowledge Format) form.
+Standalone use: point it at any registered contract — nothing downstream
+needs to exist yet.
 
 **Compile evals** (`ge evals compile`). Bring your own spec: `--spec` accepts
 any `GenerationSpecEnvelope` JSON, no capture step required, and the output
@@ -102,10 +103,10 @@ factory-built or not: `--ge-app` takes a full engine resource name and
 the most plug-in-your-own-inputs capability of the set. See
 [Drive a shipped agent](../cookbooks/drive-a-shipped-agent.html).
 
-**Prove live** (`ge prove --live`). Runs any ADK-compatible evalset —
-compiled, recorded, or hand-written — against any deployed agent
-(`--ge-app`/`--assistant`) or a cassette. Cost caps (`--max-cases`,
-`--max-turns`) make the live version safe to script. See
+**Prove live** (`ge prove --live`). Runs any evalset compatible with ADK
+(Agent Development Kit) — compiled, recorded, or hand-written — against any
+deployed agent (`--ge-app`/`--assistant`) or a cassette. Cost caps
+(`--max-cases`, `--max-turns`) make the live version safe to script. See
 [Prove the shipped agent live](../cookbooks/prove-live.html).
 
 **Bench** (`ge bench`). Budgets from `.ge.json`, load shape from flags or a

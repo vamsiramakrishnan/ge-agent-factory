@@ -12,8 +12,8 @@ description: Synthesize a simulated source-system twin from an OpenAPI document 
 
 ## When to use this
 
-The agent you're building needs to call an internal API, and what you have is
-that API's OpenAPI document. This guide turns the document into a **source
+The agent you're building needs to call an internal API, and you have that
+API's OpenAPI document. This guide turns the document into a **source
 system** the platform can work with: a simulated twin — a pack served by the
 simulator engine as a stateful, MCP-shaped backend — that the contract's tool
 intents can bind to and that proofs can run against, without touching the real

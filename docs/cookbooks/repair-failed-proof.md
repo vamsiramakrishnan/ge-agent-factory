@@ -34,8 +34,8 @@ the repair runner fix and retry each blocked workspace, and re-prove.
 A blocked workspace (or several) and its run history:
 
 - run ids from `ge agents status` or `ge runs list`;
-- blocker descriptions from `ge fleet status` — *fleet* here is simply the
-  set of all agent workspaces the factory tracks;
+- blocker descriptions from `ge fleet status` — *fleet* here is the set of
+  all agent workspaces the factory tracks;
 - the failing stage's logs (step 2 below).
 
 The repair runner executes through the local daemon (the background process

@@ -14,9 +14,9 @@ Two rails run a compiled eval suite:
   of the loop: reference answers, tool-call interception, deterministic
   fixtures.
 - **Live stream-assist** — the deployed agent through its real assist
-  surface, where GE owns transport-level facts the local rail cannot even
-  see (real latency, session threading, responder identity) but can only
-  observe what the stream exposes.
+  surface. GE owns transport-level facts the local rail cannot see (real
+  latency, session threading, responder identity), but stream-assist can
+  only observe what the stream exposes.
 
 Not every metric can grade both rails. This matrix is the single answer to
 "can metric X grade rail Y" — kept as data

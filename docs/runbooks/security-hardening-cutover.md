@@ -131,7 +131,7 @@ publish_enterprise — builds go via **`gcloud`**, not the REST API):
 
 The factory bucket defaults to the worker's existing `GE_AGENT_FACTORY_BUCKET` /
 `payload.cloud.artifactBucket` (i.e. `gs://$PROJECT-ge-agent-factory/cloudbuild-logs`).
-Both are env-overridable for non-default projects:
+The builder SA and log dir are each env-overridable for non-default projects:
 `GE_AGENT_FACTORY_BUILDER_SA` (bare email or full `projects/.../serviceAccounts/...`),
 `GE_AGENT_FACTORY_BUILD_LOGS_DIR` (full `gs://...` path). The submit is otherwise
 identical (same `--no-source --config cloudbuild.factory-stage.yaml`, same

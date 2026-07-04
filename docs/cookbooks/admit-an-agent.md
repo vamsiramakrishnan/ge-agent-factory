@@ -3,7 +3,7 @@ title: Admit an agent
 parent: Guides
 nav_order: 9
 layout: default
-description: Mint the signed Agent Passport with ge passport emit, verify its integrity, and run the admission gate that ge handoff enforces — contractual checks operationalized as an admission controller.
+description: Mint the signed Agent Passport with ge passport emit, verify its integrity, and run the admission gate that ge handoff enforces — contractual checks enforced as an admission controller.
 ---
 
 # Admit an agent
@@ -48,7 +48,7 @@ releases — refusing denied ones once the gate is required.
 
    This computes the subject identity — one sha256 over everything that
    ships (evidence under `artifacts/` and volatile dirs excluded) plus the
-   contract digest — signs in-toto/DSSE attestations over the promotion
+   contract digest. It signs in-toto/DSSE attestations over the promotion
    packet (and live proof, when present) with the local Ed25519 issuing key
    (`.ge/keys/`, generated on first use), and writes
    `artifacts/agent-passport.json` into the workspace.

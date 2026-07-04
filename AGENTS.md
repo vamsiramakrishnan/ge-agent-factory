@@ -65,8 +65,10 @@ the silent-catch policy, and `.ge.schema.json` drift. All of it is enforced
 in CI too.
 
 If you touched `docs/`, also run `bun run docs:gate` (link/image/blockquote
-correctness, diagram drift, design-token drift, plus the generated-region
-checks: the `ge` CLI reference, the stage-graph diagram, the spec-schema
+correctness, diagram drift, design-token drift, the language & copy gate —
+register rules and the banned-phrase list per
+[`docs/LANGUAGE.md`](docs/LANGUAGE.md), enforced by `tools/lang-gate.mjs` —
+plus the generated-region checks: the `ge` CLI reference, the stage-graph diagram, the spec-schema
 field tables, the console-API registry table, and the skill matrix (in
 `skills/README.md` and `docs/reference/architecture.md`) are rendered from
 source — regenerate with `bun run docs:cli`, `bun run docs:stage-diagram`,

@@ -12,8 +12,8 @@ SAP, …) as a stateful, MCP-shaped backend, without the real systems. Each syst
 is a **pack** (six JSON files) interpreted by a generic Python runtime — the
 standalone `simulator-runtime` package
 ([`packages/simulator-runtime/README.md`](../../packages/simulator-runtime/README.md)),
-consumed by the per-department MCP service. Bring-your-own (BYO) systems are
-mounted at runtime through a lazy layered registry and an overlay.
+consumed by the per-department MCP service. A lazy layered registry and an
+overlay mount bring-your-own (BYO) systems at runtime.
 
 <p align="center">
   <img src="../assets/diagrams/simulator-backend-flow.svg" alt="An agent reads local fixture files when GE_DATA_BACKEND=fixtures, or resolves an MCP toolset from the Agent Registry when GE_DATA_BACKEND=mcp, reaching the per-department FastMCP service, the generic engine with the agent's per-agent store, and a source-system envelope that looks like Workday, Ariba, or SAP" width="750">
@@ -87,8 +87,9 @@ Example: `docusign_clm/`.
 }
 ```
 
-`projection.json` maps graph kinds + realized objects to collections; `seed.json`
-holds the starting rows; `materialization.json` maps `fieldAliases` and `defaults`.
+`projection.json` maps graph kinds + realized objects to collections.
+`seed.json` holds the starting rows. `materialization.json` maps `fieldAliases`
+and `defaults`.
 
 ---
 

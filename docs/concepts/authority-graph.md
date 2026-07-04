@@ -32,7 +32,7 @@ previous one asserted.
 |---|---|---|---|
 | **1 · Contract** | `inScope[]` / `outOfScope[]`, `toolIntents[]`, `evidenceRequirements[]`, `escalationRules[]`, `refusalRules[]` | Review — a controller can read and sign off on it | A bad contract is visible *before* anything is built |
 | **2 · Generated code** | Tools exist only for declared intents, named `<verb>_<system>_<object>`; write-guard and evidence-capture callbacks | ADK callbacks on every turn, regardless of what the model says | A write without required inputs, idempotency key, or enough evidence returns an error/escalation instead of executing |
-| **3 · Platform identity** | Dedicated service accounts per service; OIDC on every service-to-service call; per-agent runtime identity | Google Cloud IAM in your own project | A service without the bounded role simply cannot call |
+| **3 · Platform identity** | Dedicated service accounts per service; OIDC on every service-to-service call; per-agent runtime identity | Google Cloud IAM in your own project | A service without the bounded role cannot call |
 | **4 · Governed front door** | Agent Registry entries + Agent Gateway authz policy | The managed Agent Gateway (mTLS, policy-enforced egress) | Outbound calls to unregistered tools/hosts are blocked (once enforcement is on) |
 
 Read down the table and you have the whole story: the business writes layer
