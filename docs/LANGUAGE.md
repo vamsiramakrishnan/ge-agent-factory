@@ -33,14 +33,19 @@ allowed to lead.
 **Golden register** — the words a stranger meets first. They name *what you
 have*, not *how the machinery does it*:
 
-`agent` · `contract` · `source system` · `eval` · `proof` · `proof pack` ·
-`passport` · `capture` · `prove` · `handoff`
+`agent` · `contract` · `OKF` · `source system` · `eval` · `proof` ·
+`proof pack` · `passport` · `capture` · `prove` · `handoff`
 
-**Operator register** — the machinery's own names, for people running the
-factory in anger. Real, documented, never deleted — but they live behind the
-front door (the `Operate` sections, the reference pages, `<details>` blocks):
+(`OKF` is golden because it names the spec itself — "the contract is
+captured in OKF, the Open Knowledge Format from Google Cloud" is part of
+the front-door story, not machinery. Expand the acronym on first use.)
 
-`planes` · `daemon` · `canary` · `OKF` · `harness` · `fleet` · `pipeline` ·
+**Operator register** — the machinery's own names, for people operating the
+factory day to day. Real, documented, never deleted — but they live behind
+the front door (the `Operate` sections, the reference pages, `<details>`
+blocks):
+
+`planes` · `daemon` · `canary` · `harness` · `fleet` · `pipeline` ·
 `devex` · `mode`
 
 The gate (`tools/lang-gate.mjs`) fails CI when an operator-register word
