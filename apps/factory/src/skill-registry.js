@@ -77,6 +77,11 @@ export const FACTORY_SKILL_BINDINGS = [
     skill: "running-release",
   },
   {
+    capability: "release_admission",
+    stages: ["promote", "plan_deploy", "passport", "admission", "handoff", "deploy", "publish"],
+    skill: "admitting-agents",
+  },
+  {
     capability: "live_proof",
     stages: ["verify_live", "drive", "bench", "live_proof", "cassette", "evalset_replay", "live_transcript"],
     skill: "driving-live-proof",

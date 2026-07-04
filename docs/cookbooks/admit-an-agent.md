@@ -1,7 +1,7 @@
 ---
 title: Admit an agent
 parent: Guides
-nav_order: 15
+nav_order: 9
 layout: default
 description: Mint the signed Agent Passport with ge passport emit, verify its integrity, and run the admission gate that ge handoff enforces — contractual checks operationalized as an admission controller.
 ---

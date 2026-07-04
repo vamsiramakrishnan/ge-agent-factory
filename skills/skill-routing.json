@@ -31,6 +31,7 @@
         "@ge/admission"
       ],
       "docs": [
+        "docs/reference/admission.md",
         "docs/cookbooks/admit-an-agent.md",
         "docs/concepts/agent-passport-and-proof-pack.md"
       ]

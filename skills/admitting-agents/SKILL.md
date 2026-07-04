@@ -125,6 +125,9 @@ cat .ge/factory/workspaces/<id>/artifacts/admission-decision.json
 
 ## References
 
+- Reference: `docs/reference/admission.md` — the passport and decision file
+  formats, the `promotion.gates.admission` policy keys, the full
+  `GEADM001`–`GEADM008` blocker table, key management, and break-glass.
 - Cookbook: `docs/cookbooks/admit-an-agent.md` — the worked loop, the policy
   block, and the break-glass contract.
 - Concepts: `docs/concepts/agent-passport-and-proof-pack.md` (what the

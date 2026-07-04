@@ -31,12 +31,13 @@ and the [Glossary](../GLOSSARY.html).
 | 6 | [Generate simulations](generate-simulations.html) | Simulated source systems with deterministic seed data, mounted or promoted |
 | 7 | [Prove an agent](prove-an-agent.html) | The behavior-contract eval set run as proof that the agent honors its contract |
 | 8 | [Repair a failed proof](repair-failed-proof.html) | A diagnosed failure and a repaired, re-proven agent |
-| 9 | [Hand off to agents-cli](handoff-agents-cli.html) | The compiled agent handed to the agents-cli workflow |
-| 10 | [Hand off to ADK / Gemini Enterprise](handoff-adk-gemini-enterprise.html) | The compiled agent handed to ADK or Gemini Enterprise |
-| 11 | [Drive a shipped agent](drive-a-shipped-agent.html) | A live conversation with the deployed agent, instrumented per turn, recordable as eval cases and cassettes |
-| 12 | [Compile behavioral evals](compile-behavioral-evals.html) | An executable behavior suite derived from the contract — evalset, coverage, grading dataset, and load profile |
-| 13 | [Prove the shipped agent live](prove-live.html) | Evalset cases run through the deployed assist surface — metric grid, conformance baselines, and the live gate verdict |
-| 14 | [Bench against live budgets](bench-live-budgets.html) | Latency and error budgets verdicted against the live surface, with cassette replay for CI |
+| 9 | [Admit an agent](admit-an-agent.html) | A signed Agent Passport over the proof pack, and the recorded admission decision that gates the handoff |
+| 10 | [Hand off to agents-cli](handoff-agents-cli.html) | The compiled agent handed to the agents-cli workflow |
+| 11 | [Hand off to ADK / Gemini Enterprise](handoff-adk-gemini-enterprise.html) | The compiled agent handed to ADK or Gemini Enterprise |
+| 12 | [Drive a shipped agent](drive-a-shipped-agent.html) | A live conversation with the deployed agent, instrumented per turn, recordable as eval cases and cassettes |
+| 13 | [Compile behavioral evals](compile-behavioral-evals.html) | An executable behavior suite derived from the contract — evalset, coverage, grading dataset, and load profile |
+| 14 | [Prove the shipped agent live](prove-live.html) | Evalset cases run through the deployed assist surface — metric grid, conformance baselines, and the live gate verdict |
+| 15 | [Bench against live budgets](bench-live-budgets.html) | Latency and error budgets verdicted against the live surface, with cassette replay for CI |
 
 > Where a path or flag differs from common assumptions, the guide calls it out
 > explicitly.

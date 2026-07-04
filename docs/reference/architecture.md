@@ -161,6 +161,7 @@ rendered from `skills/skill-routing.json`, `FACTORY_SKILL_BINDINGS`
 | [`building-simulators`](../../skills/building-simulators/) | `simulator_build` | `ge data synth`, `ge pipeline run`, `ge daemon start` | [`@ge/synthkit`](../../packages/synthkit/) | [`synthetic-data.md`](synthetic-data.md), [`simulator-systems.md`](simulator-systems.md) |
 | [`checking-workspaces`](../../skills/checking-workspaces/) | `workspace_check` | — | [`@ge/agent-workspace`](../../packages/agent-workspace/) | — |
 | [`running-release`](../../skills/running-release/) | `release_run` | `ge handoff`, `ge agents status`, `ge agents logs` | — | — |
+| [`admitting-agents`](../../skills/admitting-agents/) | `release_admission` | `ge passport emit`, `ge passport verify`, `ge passport admit`, `ge handoff` | [`@ge/admission`](../../packages/admission/) | [`admission.md`](admission.md), [`admit-an-agent.md`](../cookbooks/admit-an-agent.md), [`agent-passport-and-proof-pack.md`](../concepts/agent-passport-and-proof-pack.md) |
 | [`driving-live-proof`](../../skills/driving-live-proof/) | `live_proof` | `ge evals compile`, `ge drive`, `ge prove --live`, `ge bench` | [`@ge/evalkit`](../../packages/evalkit/) | [`evaluation-generation.md`](evaluation-generation.md), [`metric-applicability.md`](metric-applicability.md), [`live-transcript.md`](live-transcript.md), [`live-budgets.md`](live-budgets.md) |
 | [`operating-console`](../../skills/operating-console/) | `console_operation` | `ge daemon start` | — | [`console-and-apis.md`](console-and-apis.md) |
 | [`recording-evidence`](../../skills/recording-evidence/) | `evidence_recording` | — | [`@ge/run-ledger`](../../packages/run-ledger/) | — |
@@ -172,7 +173,6 @@ rendered from `skills/skill-routing.json`, `FACTORY_SKILL_BINDINGS`
 | [`triaging-runs`](../../skills/triaging-runs/) | `run_triage` | `ge agents status`, `ge agents logs` | — | — |
 | [`guarding-the-factory`](../../skills/guarding-the-factory/) | `factory_safety` | — | — | — |
 | [`authoring-okf-specs`](../../skills/authoring-okf-specs/) | `knowledge_format` | `ge okf customize`, `ge agents register`, `ge agents track` | [`@ge/okf`](../../packages/okf/) | [`okf.md`](okf.md), [`agent-lifecycle.md`](agent-lifecycle.md) |
-| [`admitting-agents`](../../skills/admitting-agents/) | — | `ge passport emit`, `ge passport verify`, `ge passport admit`, `ge handoff` | [`@ge/admission`](../../packages/admission/) | [`admit-an-agent.md`](../cookbooks/admit-an-agent.md), [`agent-passport-and-proof-pack.md`](../concepts/agent-passport-and-proof-pack.md) |
 <!-- END GENERATED: skill-matrix -->
 
 ---
