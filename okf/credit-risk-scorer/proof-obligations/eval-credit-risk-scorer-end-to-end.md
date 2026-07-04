@@ -1,0 +1,47 @@
+---
+type: Proof Obligation
+title: "Golden eval obligation — Run the Credit Risk Scorer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required."
+description: golden eval proof obligation
+source_id: "eval-credit-risk-scorer-end-to-end"
+tags:
+  - finance
+  - okf
+  - brd
+timestamp: "2026-07-01T00:00:00.000Z"
+source_kind: generationSpec
+source_path: behaviorContract.goldenEvals.0
+generation_status: generated
+ge_status: generated
+---
+
+# Golden eval obligation — Run the Credit Risk Scorer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.
+
+- **Kind:** golden eval
+- **Spec source:** behaviorContract.goldenEvals.0
+- **Eval:** [credit-risk-scorer-end-to-end](/tests/credit-risk-scorer-end-to-end.md)
+
+
+## Mechanisms
+
+- [query_d_b_d_b_records](/tools/query-d-b-d-b-records.md)
+- [query_moody_s_moody_s_records](/tools/query-moody-s-moody-s-records.md)
+- [query_sap_s_4hana_fi_gl_entries](/tools/query-sap-s-4hana-fi-gl-entries.md)
+- [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
+- [lookup_credit_risk_scorer_controls_playbook](/tools/lookup-credit-risk-scorer-controls-playbook.md)
+
+## Entities that must be referenced
+
+- d_b_records
+- moody_s_records
+- gl_entries
+- analytics_events
+
+## Forbidden behaviors
+
+- do not invent KPI numbers
+- do not skip the evidence_lookup step before any recommendation
+- do not act on single-system evidence
+
+# Citations
+
+- [credit-risk-scorer-controls-playbook](/documents/credit-risk-scorer-controls-playbook.md)

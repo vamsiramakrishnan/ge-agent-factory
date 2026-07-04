@@ -1,0 +1,1083 @@
+{
+  "id": "dunning-communication-drafter",
+  "title": "Dunning Communication Drafter",
+  "department": "finance",
+  "sourcePath": "../presentation/src/components/slides/use-cases/finance/DunningCommunicationDrafter.tsx",
+  "subtitle": "A-2303 - AR & Collections",
+  "persona": "AR Specialist",
+  "layer": "Layer 3: Custom ADK",
+  "triggerType": "event",
+  "domainId": "domain-23",
+  "systems": [
+    "SAP S/4HANA FI",
+    "HighRadius",
+    "BigQuery",
+    "Vertex AI"
+  ],
+  "kpis": [
+    {
+      "label": "Dunning response rate",
+      "before": "22%",
+      "after": "58%"
+    },
+    {
+      "label": "Time to draft",
+      "before": "20 min/letter",
+      "after": "< 1 min"
+    },
+    {
+      "label": "Days to payment post-dunning",
+      "before": "18 days",
+      "after": "7 days"
+    }
+  ],
+  "statusQuo": [
+    "Generic template-based dunning letters that ignore customer relationship history and context.",
+    "Same boilerplate sent to a 10-year strategic partner as to a first-time buyer with payment issues.",
+    "AR staff spend 20+ minutes per letter trying to personalize generic templates manually."
+  ],
+  "agentification": [
+    "Gemini drafts context-aware communications -- a courtesy reminder to a long-term customer reads differently than a final notice to a high-risk account.",
+    "ML predicts optimal timing and channel based on historical response patterns by customer segment.",
+    "Response rates nearly triple as communications feel personalized and contextually appropriate."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "SAP S/4HANA FI",
+        "description": "Dunning levels, payment history, customer master, open invoices"
+      },
+      {
+        "system": "HighRadius",
+        "description": "Customer interaction history, prior communications, promise-to-pay logs"
+      },
+      {
+        "system": "BigQuery",
+        "description": "Communication response analytics, optimal timing models, tone effectiveness data"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Dunning communication generation with tone and context adaptation"
+      },
+      {
+        "system": "Email / CRM",
+        "description": "Communication delivery and response tracking"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Dunning Context Assembly",
+        "description": "Pull customer payment history, relationship tenure, open disputes, prior dunning communications, and current balance details. Build a complete picture of the collection situation."
+      },
+      {
+        "label": "Response Prediction",
+        "description": "ML model predicts payment likelihood and optimal communication timing. Analyzes which dunning tone historically drives fastest response for this customer segment."
+      },
+      {
+        "label": "Communication Generation",
+        "description": "Gemini drafts the dunning communication adapting tone to context. A first reminder to a 10-year customer reads as a courtesy; a third notice to a high-risk account includes escalation language and legal references. Personalizes with specific invoice details."
+      },
+      {
+        "label": "Delivery & Tracking",
+        "description": "Route approved communication via email or CRM. Track open, read, and response events. Feed response data back for model improvement."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Dunning Communication Drafter so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "sap_s_4hana_fi",
+        "name": "SAP S/4HANA FI",
+        "owns": [
+          "gl_entries",
+          "subledger_balances",
+          "open_items"
+        ],
+        "protocol": "RFC/BAPI",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_sap_s_4hana_fi_gl_entries",
+          "query_sap_s_4hana_fi_subledger_balances",
+          "query_sap_s_4hana_fi_open_items"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "highradius",
+        "name": "HighRadius",
+        "owns": [
+          "payment_remittances",
+          "collections_queues",
+          "deduction_cases"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_highradius_payment_remittances",
+          "query_highradius_collections_queues",
+          "query_highradius_deduction_cases"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "bigquery",
+        "name": "BigQuery",
+        "owns": [
+          "analytics_events",
+          "historical_metrics",
+          "cached_aggregates"
+        ],
+        "protocol": "BigQuery SQL",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_bigquery_analytics_events",
+          "query_bigquery_historical_metrics",
+          "query_bigquery_cached_aggregates"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "gl_entries",
+        "sourceSystemId": "sap_s_4hana_fi",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "posting_date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "account",
+            "type": "enum",
+            "values": [
+              "1000-Cash",
+              "2000-AP",
+              "2100-AR",
+              "3000-Revenue",
+              "4000-Expense",
+              "5000-COGS"
+            ],
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": -50000,
+            "max": 50000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP"
+            ],
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "posted",
+              "pending",
+              "reversed"
+            ],
+            "weights": [
+              0.8,
+              0.15,
+              0.05
+            ],
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "subledger_balances",
+        "sourceSystemId": "sap_s_4hana_fi",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "posting_date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "account",
+            "type": "enum",
+            "values": [
+              "1000-Cash",
+              "2000-AP",
+              "2100-AR",
+              "3000-Revenue",
+              "4000-Expense",
+              "5000-COGS"
+            ],
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": -50000,
+            "max": 50000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP"
+            ],
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "posted",
+              "pending",
+              "reversed"
+            ],
+            "weights": [
+              0.8,
+              0.15,
+              0.05
+            ],
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "open_items",
+        "sourceSystemId": "sap_s_4hana_fi",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "posting_date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "account",
+            "type": "enum",
+            "values": [
+              "1000-Cash",
+              "2000-AP",
+              "2100-AR",
+              "3000-Revenue",
+              "4000-Expense",
+              "5000-COGS"
+            ],
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": -50000,
+            "max": 50000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP"
+            ],
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "posted",
+              "pending",
+              "reversed"
+            ],
+            "weights": [
+              0.8,
+              0.15,
+              0.05
+            ],
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "payment_remittances",
+        "sourceSystemId": "highradius",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "vendor",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": 100,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP",
+              "JPY"
+            ],
+            "weights": [
+              0.7,
+              0.15,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "pending",
+              "approved",
+              "paid",
+              "rejected"
+            ],
+            "weights": [
+              0.1,
+              0.3,
+              0.3,
+              0.2,
+              0.1
+            ],
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "due_date",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "collections_queues",
+        "sourceSystemId": "highradius",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "deduction_cases",
+        "sourceSystemId": "highradius",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "analytics_events",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "historical_metric_id",
+            "type": "ref",
+            "ref": "historical_metrics.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "historical_metrics",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "cached_aggregates",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "analytics_events.historical_metric_id",
+        "to": "historical_metrics.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "dunning-communication-drafter-controls-playbook",
+        "sourceSystemId": "bigquery",
+        "type": "policy",
+        "title": "Dunning Communication Drafter Controls Playbook",
+        "requiredSections": [
+          "Workflow scope",
+          "Materiality thresholds",
+          "Escalation triggers",
+          "Audit evidence requirements",
+          "Quarter-end variations"
+        ],
+        "linkedEntities": [
+          "gl_entries",
+          "subledger_balances",
+          "open_items"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "scope",
+          "materiality",
+          "escalation",
+          "audit-evidence"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "sap_s_4hana_fi_draft_api",
+        "sourceSystemId": "sap_s_4hana_fi",
+        "method": "POST",
+        "path": "/api/sap_s_4hana_fi/draft",
+        "description": "Synchronous endpoint the agent calls to draft in SAP S/4HANA FI after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "dunning-communication-drafter-baseline-gap",
+        "description": "Seed a realistic gap where Dunning response rate sits between 22% and 58%, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "gl_entries",
+          "subledger_balances"
+        ],
+        "discoveryPath": [
+          "Inspect SAP S/4HANA FI records for the affected entities",
+          "Compare against HighRadius historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next AR Specialist action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "dunning_communication_drafter",
+        "schemas": [
+          "sap_s_4hana_fi",
+          "highradius"
+        ]
+      },
+      "bigquery": {
+        "dataset": "finance_dunning_communication_drafter",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "dunning-communication-drafter-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "dunning-communication-drafter-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Dunning Communication Drafter workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "AR Specialist agent for the Dunning Communication Drafter workflow",
+      "primaryObjective": "Gemini drafts context-aware communications -- a courtesy reminder to a long-term customer reads differently than a final notice to a high-risk account. ML predicts optimal timing and channel based on historical response patterns by customer segment. so the AR Specialist can move the Dunning response rate KPI.",
+      "inScope": [
+        "Gemini drafts context-aware communications -- a courtesy reminder to a long-term customer reads differently than a final notice to a high-risk account",
+        "ML predicts optimal timing and channel based on historical response patterns by customer segment",
+        "Response rates nearly triple as communications feel personalized and contextually appropriate"
+      ],
+      "outOfScope": [
+        "Final sign-off on materially significant journal entries (Controller retains authority)",
+        "Restatement of prior-period filings",
+        "Tax position changes that require external advisor review"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_sap_s_4hana_fi_gl_entries",
+          "kind": "query",
+          "sourceSystemId": "sap_s_4hana_fi",
+          "description": "Retrieve gl entries from SAP S/4HANA FI for the Dunning Communication Drafter workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "gl_entries_records",
+            "gl_entries_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_highradius_payment_remittances",
+          "kind": "query",
+          "sourceSystemId": "highradius",
+          "description": "Retrieve payment remittances from HighRadius for the Dunning Communication Drafter workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "payment_remittances_records",
+            "payment_remittances_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_bigquery_analytics_events",
+          "kind": "query",
+          "sourceSystemId": "bigquery",
+          "description": "Retrieve analytics events from BigQuery for the Dunning Communication Drafter workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "analytics_events_records",
+            "analytics_events_summary"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "lookup_dunning_communication_drafter_controls_playbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "bigquery",
+          "description": "Look up sections of the Dunning Communication Drafter Controls Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_sap_s_4hana_fi_draft",
+          "kind": "action",
+          "sourceSystemId": "sap_s_4hana_fi",
+          "description": "Execute the draft step in SAP S/4HANA FI after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "dunning_context_assembly",
+            "label": "Dunning Context Assembly",
+            "description": "Pull customer payment history, relationship tenure, open disputes, prior dunning communications, and current balance details. Build a complete picture of the collection situation.",
+            "tools": [
+              "query_highradius_payment_remittances",
+              "lookup_dunning_communication_drafter_controls_playbook"
+            ]
+          },
+          {
+            "id": "response_prediction",
+            "label": "Response Prediction",
+            "description": "ML model predicts payment likelihood and optimal communication timing. Analyzes which dunning tone historically drives fastest response for this customer segment.",
+            "tools": [
+              "query_highradius_payment_remittances",
+              "lookup_dunning_communication_drafter_controls_playbook"
+            ]
+          },
+          {
+            "id": "communication_generation",
+            "label": "Communication Generation",
+            "description": "Gemini drafts the dunning communication adapting tone to context. A first reminder to a 10-year customer reads as a courtesy; a third notice to a high-risk account includes escalation language and legal references. Personalizes with specific invoice details.",
+            "tools": [
+              "lookup_dunning_communication_drafter_controls_playbook",
+              "action_sap_s_4hana_fi_draft"
+            ]
+          },
+          {
+            "id": "delivery_tracking",
+            "label": "Delivery & Tracking",
+            "description": "Route approved communication via email or CRM. Track open, read, and response events. Feed response data back for model improvement.",
+            "tools": [
+              "query_bigquery_analytics_events",
+              "lookup_dunning_communication_drafter_controls_playbook"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Dunning response rate moved from 22% toward 58%",
+          "mustCite": [
+            "sap_s_4hana_fi.gl_entries",
+            "highradius.payment_remittances"
+          ],
+          "sourceSystemIds": [
+            "sap_s_4hana_fi",
+            "highradius"
+          ]
+        },
+        {
+          "claim": "Time to draft moved from 20 min/letter toward < 1 min",
+          "mustCite": [
+            "sap_s_4hana_fi.gl_entries",
+            "highradius.payment_remittances"
+          ],
+          "sourceSystemIds": [
+            "sap_s_4hana_fi",
+            "highradius"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Dunning response rate regresses past the 22% baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "AR Specialist",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed draft action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from SAP S/4HANA FI (and other named systems) entities.",
+        "Never bypass AR Specialist approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "dunning-communication-drafter-end-to-end",
+          "prompt": "Run the Dunning Communication Drafter workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_sap_s_4hana_fi_gl_entries",
+            "query_highradius_payment_remittances",
+            "query_bigquery_analytics_events",
+            "lookup_dunning_communication_drafter_controls_playbook",
+            "action_sap_s_4hana_fi_draft"
+          ],
+          "mustReferenceEntities": [
+            "gl_entries",
+            "payment_remittances",
+            "analytics_events"
+          ],
+          "mustCiteDocuments": [
+            "dunning-communication-drafter-controls-playbook"
+          ],
+          "expectedActionOutcome": "Action draft executed against SAP S/4HANA FI, with audit-trail entry and AR Specialist notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute draft without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/finance/DunningCommunicationDrafter.tsx",
+    "familyId": "dunning-communication-drafter",
+    "variant": {
+      "familyId": "dunning-communication-drafter",
+      "variantId": "dunning-communication-drafter",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

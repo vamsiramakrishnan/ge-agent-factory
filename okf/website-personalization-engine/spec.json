@@ -1,0 +1,1253 @@
+{
+  "id": "website-personalization-engine",
+  "title": "Website Personalization Engine",
+  "department": "marketing",
+  "sourcePath": "../presentation/src/components/slides/use-cases/marketing/WebsitePersonalizationEngine.tsx",
+  "subtitle": "A-3205 • Digital Marketing & SEO/SEM",
+  "persona": "Digital Marketing Mgr",
+  "layer": "Layer 3: Custom ADK",
+  "triggerType": "event",
+  "domainId": "domain-32",
+  "systems": [
+    "Google Optimize",
+    "GA4",
+    "Salesforce CRM",
+    "HubSpot",
+    "Vertex AI"
+  ],
+  "kpis": [
+    {
+      "label": "Conversion rate lift",
+      "before": "Generic pages",
+      "after": "+35% personalized"
+    },
+    {
+      "label": "Personalization coverage",
+      "before": "2 segments",
+      "after": "12+ segments"
+    },
+    {
+      "label": "Time to first CTA",
+      "before": "Static",
+      "after": "Context-aware"
+    }
+  ],
+  "statusQuo": [
+    "Website serves the same experience to all visitors regardless of company, intent, or funnel stage.",
+    "Personalization limited to basic rules (e.g., logged-in vs. anonymous) without behavioral context.",
+    "High-value enterprise visitors get the same generic CTA as casual browsers."
+  ],
+  "agentification": [
+    "Gemini reasons about multi-signal personalization — combining firmographic, behavioral, and intent data for contextual experiences.",
+    "Real-time visitor classification with account-level matching and propensity scoring.",
+    "Personalization that feels helpful, not creepy — adapting content depth and CTAs to buying stage."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Google Optimize",
+        "description": "A/B test configurations, content variant serving, experiment tracking"
+      },
+      {
+        "system": "Google Analytics 4",
+        "description": "Visitor behavior signals, referral source, session context"
+      },
+      {
+        "system": "Salesforce CRM",
+        "description": "Account matching, deal stage, customer status"
+      },
+      {
+        "system": "HubSpot",
+        "description": "Known contact data, lead score, content engagement history"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Personalization strategy reasoning, content variant selection"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Visitor Context Assembly",
+        "description": "Assemble visitor context from GA4 session data (referral source, pages viewed), CRM account matching (Salesforce), and MAP contact data (HubSpot lead score, engagement history)."
+      },
+      {
+        "label": "Segmentation & Scoring",
+        "description": "Real-time visitor segmentation using propensity scoring, account tier identification, and content recommendation engine. Predict conversion likelihood by visitor segment."
+      },
+      {
+        "label": "Personalization Reasoning",
+        "description": "Gemini determines the right personalization strategy — a Fortune 500 visitor from a competitor comparison keyword who has visited pricing twice should see enterprise messaging with a 'talk to sales' CTA, not a generic newsletter signup."
+      },
+      {
+        "label": "Variant Serving & Tracking",
+        "description": "Serve personalized content variant via Google Optimize. Track engagement and conversion metrics. Feed results back to optimization models."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Website Personalization Engine so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "google_optimize",
+        "name": "Google Optimize",
+        "owns": [
+          "google_optimize_records",
+          "google_optimize_events",
+          "google_optimize_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_google_optimize_google_optimize_records",
+          "query_google_optimize_google_optimize_events",
+          "query_google_optimize_google_optimize_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "ga4",
+        "name": "GA4",
+        "owns": [
+          "session_events",
+          "conversion_paths",
+          "audience_segments"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_ga4_session_events",
+          "query_ga4_conversion_paths",
+          "query_ga4_audience_segments"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "salesforce_crm",
+        "name": "Salesforce CRM",
+        "owns": [
+          "accounts",
+          "opportunities",
+          "campaign_influence"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_salesforce_crm_accounts",
+          "query_salesforce_crm_opportunities",
+          "query_salesforce_crm_campaign_influence"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "hubspot",
+        "name": "HubSpot",
+        "owns": [
+          "contacts",
+          "deals",
+          "engagement_events"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_hubspot_contacts",
+          "query_hubspot_deals",
+          "query_hubspot_engagement_events"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "google_optimize_records",
+        "sourceSystemId": "google_optimize",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "google_optimize_events",
+        "sourceSystemId": "google_optimize",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "google_optimize_record_id",
+            "type": "ref",
+            "ref": "google_optimize_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "google_optimize_audit_trail",
+        "sourceSystemId": "google_optimize",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "session_events",
+        "sourceSystemId": "ga4",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "conversion_path_id",
+            "type": "ref",
+            "ref": "conversion_paths.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "conversion_paths",
+        "sourceSystemId": "ga4",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "audience_segments",
+        "sourceSystemId": "ga4",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "enum",
+            "values": [
+              "email",
+              "social",
+              "search",
+              "display",
+              "content",
+              "events"
+            ],
+            "required": true
+          },
+          {
+            "name": "segment",
+            "type": "enum",
+            "values": [
+              "enterprise",
+              "mid_market",
+              "smb"
+            ],
+            "required": true
+          },
+          {
+            "name": "impressions",
+            "type": "number",
+            "min": 1000,
+            "max": 500000,
+            "required": true
+          },
+          {
+            "name": "conversions",
+            "type": "number",
+            "min": 0,
+            "max": 5000,
+            "required": true
+          },
+          {
+            "name": "spend",
+            "type": "number",
+            "min": 1000,
+            "max": 200000,
+            "required": true
+          },
+          {
+            "name": "ctr",
+            "type": "float",
+            "min": 0.1,
+            "max": 9.5,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "launched_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "accounts",
+        "sourceSystemId": "salesforce_crm",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "account_name",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "number",
+            "min": 5000,
+            "max": 1000000,
+            "required": true
+          },
+          {
+            "name": "stage",
+            "type": "enum",
+            "values": [
+              "prospecting",
+              "qualification",
+              "proposal",
+              "negotiation",
+              "closed_won",
+              "closed_lost"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "close_date",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "opportunities",
+        "sourceSystemId": "salesforce_crm",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "campaign_influence",
+        "sourceSystemId": "salesforce_crm",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "enum",
+            "values": [
+              "email",
+              "social",
+              "search",
+              "display",
+              "content",
+              "events"
+            ],
+            "required": true
+          },
+          {
+            "name": "segment",
+            "type": "enum",
+            "values": [
+              "enterprise",
+              "mid_market",
+              "smb"
+            ],
+            "required": true
+          },
+          {
+            "name": "impressions",
+            "type": "number",
+            "min": 1000,
+            "max": 500000,
+            "required": true
+          },
+          {
+            "name": "conversions",
+            "type": "number",
+            "min": 0,
+            "max": 5000,
+            "required": true
+          },
+          {
+            "name": "spend",
+            "type": "number",
+            "min": 1000,
+            "max": 200000,
+            "required": true
+          },
+          {
+            "name": "ctr",
+            "type": "float",
+            "min": 0.1,
+            "max": 9.5,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "launched_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "contacts",
+        "sourceSystemId": "hubspot",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "company",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "score",
+            "type": "number",
+            "min": 0,
+            "max": 100,
+            "required": true
+          },
+          {
+            "name": "stage",
+            "type": "enum",
+            "values": [
+              "new",
+              "qualified",
+              "engaged",
+              "opportunity",
+              "lost"
+            ],
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "deals",
+        "sourceSystemId": "hubspot",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "account_name",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "number",
+            "min": 5000,
+            "max": 1000000,
+            "required": true
+          },
+          {
+            "name": "stage",
+            "type": "enum",
+            "values": [
+              "prospecting",
+              "qualification",
+              "proposal",
+              "negotiation",
+              "closed_won",
+              "closed_lost"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "close_date",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "engagement_events",
+        "sourceSystemId": "hubspot",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "company",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "score",
+            "type": "number",
+            "min": 0,
+            "max": 100,
+            "required": true
+          },
+          {
+            "name": "stage",
+            "type": "enum",
+            "values": [
+              "new",
+              "qualified",
+              "engaged",
+              "opportunity",
+              "lost"
+            ],
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "contact_id",
+            "type": "ref",
+            "ref": "contacts.id",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "google_optimize_events.google_optimize_record_id",
+        "to": "google_optimize_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "session_events.conversion_path_id",
+        "to": "conversion_paths.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "engagement_events.contact_id",
+        "to": "contacts.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "website-personalization-engine-playbook",
+        "sourceSystemId": "ga4",
+        "type": "playbook",
+        "title": "Website Personalization Engine Playbook",
+        "requiredSections": [
+          "Audience guidelines",
+          "Brand voice rules",
+          "Channel-specific guardrails",
+          "Measurement framework",
+          "Approval thresholds"
+        ],
+        "linkedEntities": [
+          "google_optimize_records",
+          "google_optimize_events",
+          "google_optimize_audit_trail"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "audience",
+          "brand-voice",
+          "channels",
+          "approvals"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "google_optimize_match_api",
+        "sourceSystemId": "google_optimize",
+        "method": "POST",
+        "path": "/api/google_optimize/match",
+        "description": "Synchronous endpoint the agent calls to match in Google Optimize after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "website-personalization-engine-baseline-gap",
+        "description": "Seed a realistic gap where Conversion rate lift sits between Generic pages and +35% personalized, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "google_optimize_records",
+          "google_optimize_events"
+        ],
+        "discoveryPath": [
+          "Inspect Google Optimize records for the affected entities",
+          "Compare against GA4 historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next Digital Marketing Mgr action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "website_personalization_engine",
+        "schemas": [
+          "google_optimize",
+          "salesforce_crm",
+          "hubspot"
+        ]
+      },
+      "bigquery": {
+        "dataset": "marketing_website_personalization_engine",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "website-personalization-engine-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "website-personalization-engine-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Website Personalization Engine workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "Digital Marketing Mgr agent for the Website Personalization Engine workflow",
+      "primaryObjective": "Gemini reasons about multi-signal personalization — combining firmographic, behavioral, and intent data for contextual experiences. Real-time visitor classification with account-level matching and propensity scoring. so the Digital Marketing Mgr can move the Conversion rate lift KPI.",
+      "inScope": [
+        "Gemini reasons about multi-signal personalization — combining firmographic, behavioral, and intent data for contextual experiences",
+        "Real-time visitor classification with account-level matching and propensity scoring",
+        "Personalization that feels helpful, not creepy — adapting content depth and CTAs to buying stage"
+      ],
+      "outOfScope": [
+        "Final approval of paid spend reallocations above the governance threshold",
+        "Trademark, legal, or regulated-industry claim approval",
+        "Crisis communications without comms-team sign-off"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_google_optimize_google_optimize_records",
+          "kind": "query",
+          "sourceSystemId": "google_optimize",
+          "description": "Retrieve google optimize records from Google Optimize for the Website Personalization Engine workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "google_optimize_records_records",
+            "google_optimize_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_ga4_session_events",
+          "kind": "query",
+          "sourceSystemId": "ga4",
+          "description": "Retrieve session events from GA4 for the Website Personalization Engine workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "session_events_records",
+            "session_events_summary"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "query_salesforce_crm_accounts",
+          "kind": "query",
+          "sourceSystemId": "salesforce_crm",
+          "description": "Retrieve accounts from Salesforce CRM for the Website Personalization Engine workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "accounts_records",
+            "accounts_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_hubspot_contacts",
+          "kind": "query",
+          "sourceSystemId": "hubspot",
+          "description": "Retrieve contacts from HubSpot for the Website Personalization Engine workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "contacts_records",
+            "contacts_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_website_personalization_engine_playbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "ga4",
+          "description": "Look up sections of the Website Personalization Engine Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_google_optimize_match",
+          "kind": "action",
+          "sourceSystemId": "google_optimize",
+          "description": "Execute the match step in Google Optimize after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "visitor_context_assembly",
+            "label": "Visitor Context Assembly",
+            "description": "Assemble visitor context from GA4 session data (referral source, pages viewed), CRM account matching (Salesforce), and MAP contact data (HubSpot lead score, engagement history).",
+            "tools": [
+              "query_ga4_session_events",
+              "query_salesforce_crm_accounts",
+              "query_hubspot_contacts",
+              "lookup_website_personalization_engine_playbook",
+              "action_google_optimize_match"
+            ]
+          },
+          {
+            "id": "segmentation_scoring",
+            "label": "Segmentation & Scoring",
+            "description": "Real-time visitor segmentation using propensity scoring, account tier identification, and content recommendation engine. Predict conversion likelihood by visitor segment.",
+            "tools": [
+              "lookup_website_personalization_engine_playbook"
+            ]
+          },
+          {
+            "id": "personalization_reasoning",
+            "label": "Personalization Reasoning",
+            "description": "Gemini determines the right personalization strategy — a Fortune 500 visitor from a competitor comparison keyword who has visited pricing twice should see enterprise messaging with a 'talk to sales' CTA, not a generic newsletter signup.",
+            "tools": [
+              "lookup_website_personalization_engine_playbook"
+            ]
+          },
+          {
+            "id": "variant_serving_tracking",
+            "label": "Variant Serving & Tracking",
+            "description": "Serve personalized content variant via Google Optimize. Track engagement and conversion metrics. Feed results back to optimization models.",
+            "tools": [
+              "query_google_optimize_google_optimize_records",
+              "action_google_optimize_match"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Conversion rate lift moved from Generic pages toward +35% personalized",
+          "mustCite": [
+            "google_optimize.google_optimize_records",
+            "ga4.session_events"
+          ],
+          "sourceSystemIds": [
+            "google_optimize",
+            "ga4"
+          ]
+        },
+        {
+          "claim": "Personalization coverage moved from 2 segments toward 12+ segments",
+          "mustCite": [
+            "google_optimize.google_optimize_records",
+            "ga4.session_events"
+          ],
+          "sourceSystemIds": [
+            "google_optimize",
+            "ga4"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Conversion rate lift regresses past the Generic pages baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Digital Marketing Mgr",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed match action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Google Optimize (and other named systems) entities.",
+        "Never bypass Digital Marketing Mgr approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "website-personalization-engine-end-to-end",
+          "prompt": "Run the Website Personalization Engine workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_google_optimize_google_optimize_records",
+            "query_ga4_session_events",
+            "query_salesforce_crm_accounts",
+            "query_hubspot_contacts",
+            "lookup_website_personalization_engine_playbook",
+            "action_google_optimize_match"
+          ],
+          "mustReferenceEntities": [
+            "google_optimize_records",
+            "session_events",
+            "accounts",
+            "contacts"
+          ],
+          "mustCiteDocuments": [
+            "website-personalization-engine-playbook"
+          ],
+          "expectedActionOutcome": "Action match executed against Google Optimize, with audit-trail entry and Digital Marketing Mgr notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute match without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/marketing/WebsitePersonalizationEngine.tsx",
+    "familyId": "website-personalization-engine",
+    "variant": {
+      "familyId": "website-personalization-engine",
+      "variantId": "website-personalization-engine",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

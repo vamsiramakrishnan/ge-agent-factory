@@ -1,0 +1,31 @@
+---
+type: Proof Obligation
+title: Evidence obligation — Recovery verified after remediation execution
+description: evidence requirement proof obligation
+source_id: "evidence-recovery-verified-after-remediation-execution"
+tags:
+  - it
+  - okf
+  - brd
+timestamp: "2026-07-01T00:00:00.000Z"
+source_kind: generationSpec
+source_path: behaviorContract.evidenceRequirements.3
+generation_status: generated
+ge_status: generated
+---
+
+# Evidence obligation — Recovery verified after remediation execution
+
+- **Kind:** evidence requirement
+- **Spec source:** behaviorContract.evidenceRequirements.3
+- **Claim:** [Recovery verified after remediation execution](/claims/recovery-verified-after-remediation-execution.md)
+
+## Required citations
+
+- incidents.outcome
+- datadog metrics post-action
+
+## Source systems
+
+- [datadog](/systems/datadog.md)
+- [kubernetes](/systems/kubernetes.md)

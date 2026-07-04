@@ -1,0 +1,13 @@
+---
+type: Index
+title: Source Systems
+timestamp: "2026-07-01T00:00:00.000Z"
+---
+
+# Source Systems
+
+- [SAP S/4HANA FI/MM](/systems/sap-s-4hana-fi-mm.md)
+- [Coupa](/systems/coupa.md)
+- [SpendHQ](/systems/spendhq.md)
+- [Sievo](/systems/sievo.md)
+- [BigQuery](/systems/bigquery.md)

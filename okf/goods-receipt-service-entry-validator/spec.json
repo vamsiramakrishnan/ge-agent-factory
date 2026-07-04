@@ -1,0 +1,1058 @@
+{
+  "id": "goods-receipt-service-entry-validator",
+  "title": "Goods Receipt & Service Entry Validator",
+  "department": "procurement",
+  "sourcePath": "../presentation/src/components/slides/use-cases/procurement/GoodsReceiptValidator.tsx",
+  "subtitle": "A-1508 • Procure-to-Pay",
+  "persona": "Buyer",
+  "layer": "Layer 2: Agent Designer",
+  "triggerType": "event",
+  "domainId": "domain-15",
+  "systems": [
+    "SAP S/4HANA MM (MIGO)",
+    "WMS",
+    "IoT/RFID"
+  ],
+  "kpis": [
+    {
+      "label": "GR discrepancy detection",
+      "before": "Manual spot checks",
+      "after": "100% automated"
+    },
+    {
+      "label": "Service validation time",
+      "before": "3-5 days",
+      "after": "Same day"
+    },
+    {
+      "label": "False GR confirmations",
+      "before": "12% undetected",
+      "after": "<2%"
+    }
+  ],
+  "statusQuo": [
+    "Warehouse staff confirms receipt in SAP without verifying quantities against PO — discrepancies caught only at invoice.",
+    "Service entry sheets rubber-stamped without validating whether SOW deliverables were actually completed.",
+    "No correlation between IoT/RFID data at the dock and ERP goods receipt postings."
+  ],
+  "agentification": [
+    "IoT/RFID data automatically cross-referenced against PO quantities with anomaly detection on variances.",
+    "LLM validates service entry sheets against actual SOW — confirms that 'section 4.2 deliverables' (documents, reviews, sign-offs) were met.",
+    "Interprets subjective completion criteria in service contracts and flags incomplete deliverables before payment is triggered."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "SAP S/4HANA MM",
+        "description": "Goods receipt posting (MIGO), PO data, delivery schedules, inspection triggers"
+      },
+      {
+        "system": "WMS",
+        "description": "Warehouse management receipt data, bin locations, packing slip scans"
+      },
+      {
+        "system": "IoT/RFID",
+        "description": "Dock-level barcode/RFID scans, real-time quantity counts, pallet tracking"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Service entry sheet validation — reads SOW deliverables and validates completion against subjective criteria"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Receipt Data Ingestion",
+        "description": "Receive goods receipt data from warehouse MIGO posting or IoT/RFID sensors at the dock. Correlate physical count data with delivery documentation."
+      },
+      {
+        "label": "Quantity & Quality Matching",
+        "description": "Cross-reference received quantities against PO. Detect anomalies in quantities, delivery timing, and packaging. Recommend quality inspection sampling based on supplier history."
+      },
+      {
+        "label": "Service Entry Validation",
+        "description": "For services, LLM reads service entry sheets stating 'completed phase 2 design review deliverables as per SOW section 4.2' and validates against the actual SOW to confirm that section 4.2 deliverables (specific documents, reviews, sign-offs) were actually met. Interprets subjective completion criteria."
+      },
+      {
+        "label": "Receipt Confirmation & Downstream Trigger",
+        "description": "Confirm validated goods receipt or service entry in ERP, triggering three-way match eligibility for invoice processing."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Goods Receipt & Service Entry Validator so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "sap_s_4hana_mm_migo",
+        "name": "SAP S/4HANA MM (MIGO)",
+        "owns": [
+          "purchase_orders",
+          "material_movements",
+          "vendors"
+        ],
+        "protocol": "RFC/BAPI",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_sap_s_4hana_mm_migo_purchase_orders",
+          "query_sap_s_4hana_mm_migo_material_movements",
+          "query_sap_s_4hana_mm_migo_vendors"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "wms",
+        "name": "WMS",
+        "owns": [
+          "wms_records",
+          "wms_events",
+          "wms_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_wms_wms_records",
+          "query_wms_wms_events",
+          "query_wms_wms_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "iot_rfid",
+        "name": "IoT/RFID",
+        "owns": [
+          "iot_rfid_records",
+          "iot_rfid_events",
+          "iot_rfid_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_iot_rfid_iot_rfid_records",
+          "query_iot_rfid_iot_rfid_events",
+          "query_iot_rfid_iot_rfid_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "purchase_orders",
+        "sourceSystemId": "sap_s_4hana_mm_migo",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "vendor",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": 100,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP",
+              "JPY"
+            ],
+            "weights": [
+              0.7,
+              0.15,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "pending",
+              "approved",
+              "paid",
+              "rejected"
+            ],
+            "weights": [
+              0.1,
+              0.3,
+              0.3,
+              0.2,
+              0.1
+            ],
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "due_date",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "material_movements",
+        "sourceSystemId": "sap_s_4hana_mm_migo",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "posting_date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "account",
+            "type": "enum",
+            "values": [
+              "1000-Cash",
+              "2000-AP",
+              "2100-AR",
+              "3000-Revenue",
+              "4000-Expense",
+              "5000-COGS"
+            ],
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": -50000,
+            "max": 50000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP"
+            ],
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "posted",
+              "pending",
+              "reversed"
+            ],
+            "weights": [
+              0.8,
+              0.15,
+              0.05
+            ],
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "vendors",
+        "sourceSystemId": "sap_s_4hana_mm_migo",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "values": [
+              "IT",
+              "Consulting",
+              "Manufacturing",
+              "Logistics",
+              "Facilities",
+              "Marketing"
+            ],
+            "required": true
+          },
+          {
+            "name": "rating",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "annual_spend",
+            "type": "number",
+            "min": 10000,
+            "max": 5000000,
+            "required": true
+          },
+          {
+            "name": "risk_score",
+            "type": "enum",
+            "values": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "weights": [
+              0.5,
+              0.35,
+              0.15
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending_review",
+              "terminated"
+            ],
+            "required": true
+          },
+          {
+            "name": "onboarded_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "wms_records",
+        "sourceSystemId": "wms",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "wms_events",
+        "sourceSystemId": "wms",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "wms_record_id",
+            "type": "ref",
+            "ref": "wms_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "wms_audit_trail",
+        "sourceSystemId": "wms",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "iot_rfid_records",
+        "sourceSystemId": "iot_rfid",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "iot_rfid_events",
+        "sourceSystemId": "iot_rfid",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "iot_rfid_record_id",
+            "type": "ref",
+            "ref": "iot_rfid_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "iot_rfid_audit_trail",
+        "sourceSystemId": "iot_rfid",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "wms_events.wms_record_id",
+        "to": "wms_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "iot_rfid_events.iot_rfid_record_id",
+        "to": "iot_rfid_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "goods-receipt-service-entry-validator-policy-guide",
+        "sourceSystemId": "sap_s_4hana_mm_migo",
+        "type": "policy",
+        "title": "Goods Receipt & Service Entry Validator Procurement Policy Guide",
+        "requiredSections": [
+          "Sourcing principles",
+          "Approval thresholds",
+          "Supplier risk requirements",
+          "Contract and compliance gates",
+          "Exception handling"
+        ],
+        "linkedEntities": [
+          "purchase_orders",
+          "material_movements",
+          "vendors"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "sourcing",
+          "approvals",
+          "supplier-risk",
+          "exceptions"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "sap_s_4hana_mm_migo_trigger_api",
+        "sourceSystemId": "sap_s_4hana_mm_migo",
+        "method": "POST",
+        "path": "/api/sap_s_4hana_mm_migo/trigger",
+        "description": "Synchronous endpoint the agent calls to trigger in SAP S/4HANA MM (MIGO) after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "goods-receipt-service-entry-validator-baseline-gap",
+        "description": "Seed a realistic gap where GR discrepancy detection sits between Manual spot checks and 100% automated, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "purchase_orders",
+          "material_movements"
+        ],
+        "discoveryPath": [
+          "Inspect SAP S/4HANA MM (MIGO) records for the affected entities",
+          "Compare against WMS historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next Buyer action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "goods_receipt_service_entry_validator",
+        "schemas": [
+          "sap_s_4hana_mm_migo",
+          "wms",
+          "iot_rfid"
+        ]
+      },
+      "bigquery": {
+        "dataset": "procurement_goods_receipt_service_entry_validator",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "goods-receipt-service-entry-validator-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "goods-receipt-service-entry-validator-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Goods Receipt & Service Entry Validator workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "Buyer agent for the Goods Receipt & Service Entry Validator workflow",
+      "primaryObjective": "IoT/RFID data automatically cross-referenced against PO quantities with anomaly detection on variances. LLM validates service entry sheets against actual SOW — confirms that 'section 4.2 deliverables' (documents, reviews, sign-offs) were met. so the Buyer can move the GR discrepancy detection KPI.",
+      "inScope": [
+        "IoT/RFID data automatically cross-referenced against PO quantities with anomaly detection on variances",
+        "LLM validates service entry sheets against actual SOW — confirms that 'section 4.2 deliverables' (documents, reviews, sign-offs) were met",
+        "Interprets subjective completion criteria in service contracts and flags incomplete deliverables before payment is triggered"
+      ],
+      "outOfScope": [
+        "Contract execution without legal review",
+        "Supplier disqualification decisions (category lead retains authority)",
+        "Single-source justification overrides above policy threshold"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_sap_s_4hana_mm_migo_purchase_orders",
+          "kind": "query",
+          "sourceSystemId": "sap_s_4hana_mm_migo",
+          "description": "Retrieve purchase orders from SAP S/4HANA MM (MIGO) for the Goods Receipt & Service Entry Validator workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "purchase_orders_records",
+            "purchase_orders_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_wms_wms_records",
+          "kind": "query",
+          "sourceSystemId": "wms",
+          "description": "Retrieve wms records from WMS for the Goods Receipt & Service Entry Validator workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "wms_records_records",
+            "wms_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_iot_rfid_iot_rfid_records",
+          "kind": "query",
+          "sourceSystemId": "iot_rfid",
+          "description": "Retrieve iot rfid records from IoT/RFID for the Goods Receipt & Service Entry Validator workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "iot_rfid_records_records",
+            "iot_rfid_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_goods_receipt_service_entry_validator_policy_guide",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "sap_s_4hana_mm_migo",
+          "description": "Look up sections of the Goods Receipt & Service Entry Validator Procurement Policy Guide to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_sap_s_4hana_mm_migo_trigger",
+          "kind": "action",
+          "sourceSystemId": "sap_s_4hana_mm_migo",
+          "description": "Execute the trigger step in SAP S/4HANA MM (MIGO) after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "receipt_data_ingestion",
+            "label": "Receipt Data Ingestion",
+            "description": "Receive goods receipt data from warehouse MIGO posting or IoT/RFID sensors at the dock. Correlate physical count data with delivery documentation.",
+            "tools": [
+              "query_sap_s_4hana_mm_migo_purchase_orders",
+              "query_iot_rfid_iot_rfid_records",
+              "lookup_goods_receipt_service_entry_validator_policy_guide",
+              "action_sap_s_4hana_mm_migo_trigger"
+            ]
+          },
+          {
+            "id": "service_entry_validation",
+            "label": "Service Entry Validation",
+            "description": "For services, LLM reads service entry sheets stating 'completed phase 2 design review deliverables as per SOW section 4.2' and validates against the actual SOW to confirm that section 4.2 deliverables (specific documents, reviews, sign-offs) were actually met. Interprets subjective completion criteria.",
+            "tools": [
+              "lookup_goods_receipt_service_entry_validator_policy_guide"
+            ]
+          },
+          {
+            "id": "receipt_confirmation_downstream_trigger",
+            "label": "Receipt Confirmation & Downstream Trigger",
+            "description": "Confirm validated goods receipt or service entry in ERP, triggering three-way match eligibility for invoice processing.",
+            "tools": [
+              "lookup_goods_receipt_service_entry_validator_policy_guide",
+              "action_sap_s_4hana_mm_migo_trigger"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "GR discrepancy detection moved from Manual spot checks toward 100% automated",
+          "mustCite": [
+            "sap_s_4hana_mm_migo.purchase_orders",
+            "wms.wms_records"
+          ],
+          "sourceSystemIds": [
+            "sap_s_4hana_mm_migo",
+            "wms"
+          ]
+        },
+        {
+          "claim": "Service validation time moved from 3-5 days toward Same day",
+          "mustCite": [
+            "sap_s_4hana_mm_migo.purchase_orders",
+            "wms.wms_records"
+          ],
+          "sourceSystemIds": [
+            "sap_s_4hana_mm_migo",
+            "wms"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "GR discrepancy detection regresses past the Manual spot checks baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Buyer",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed trigger action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from SAP S/4HANA MM (MIGO) (and other named systems) entities.",
+        "Never bypass Buyer approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "goods-receipt-service-entry-validator-end-to-end",
+          "prompt": "Run the Goods Receipt & Service Entry Validator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_sap_s_4hana_mm_migo_purchase_orders",
+            "query_wms_wms_records",
+            "query_iot_rfid_iot_rfid_records",
+            "lookup_goods_receipt_service_entry_validator_policy_guide",
+            "action_sap_s_4hana_mm_migo_trigger"
+          ],
+          "mustReferenceEntities": [
+            "purchase_orders",
+            "wms_records",
+            "iot_rfid_records"
+          ],
+          "mustCiteDocuments": [
+            "goods-receipt-service-entry-validator-policy-guide"
+          ],
+          "expectedActionOutcome": "Action trigger executed against SAP S/4HANA MM (MIGO), with audit-trail entry and Buyer notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute trigger without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/procurement/GoodsReceiptValidator.tsx",
+    "familyId": "goods-receipt-service-entry-validator",
+    "variant": {
+      "familyId": "goods-receipt-service-entry-validator",
+      "variantId": "goods-receipt-service-entry-validator",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

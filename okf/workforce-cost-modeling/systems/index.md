@@ -1,0 +1,12 @@
+---
+type: Index
+title: Source Systems
+timestamp: "2026-07-01T00:00:00.000Z"
+---
+
+# Source Systems
+
+- [Workday](/systems/workday.md)
+- [SAP BPC](/systems/sap-bpc.md)
+- [Google BigQuery](/systems/google-bigquery.md)
+- [Google Sheets](/systems/google-sheets.md)

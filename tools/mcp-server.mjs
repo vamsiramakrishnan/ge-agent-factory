@@ -123,6 +123,27 @@ const HANDLERS = {
     }
     return summary;
   },
+  // OKF agent lifecycle — the same return/throw core as `ge okf customize` /
+  // `ge agents register` / `ge agents track` (tools/lib/okf-lifecycle.mjs).
+  "okf.customize": async (a) => {
+    const { customizeVariant, parsePairs } = await import("./lib/okf-lifecycle.mjs");
+    return customizeVariant({
+      base: a.base,
+      id: a.id,
+      swapSystems: parsePairs(a.swapSystem, "swapSystem"),
+      renames: parsePairs(a.rename, "rename"),
+      vertical: a.vertical,
+      out: a.out,
+    });
+  },
+  "agents.register": async (a) => {
+    const { registerBundle } = await import("./lib/okf-lifecycle.mjs");
+    return registerBundle({ bundle: a.bundle, owner: a.owner });
+  },
+  "agents.track": async (a) => {
+    const { trackAgent } = await import("./lib/okf-lifecycle.mjs");
+    return trackAgent({ id: a.id });
+  },
 };
 
 for (const command of Object.values(GE_COMMANDS)) {

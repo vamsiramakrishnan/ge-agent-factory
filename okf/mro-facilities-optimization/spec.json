@@ -1,0 +1,1434 @@
+{
+  "id": "mro-facilities-optimization",
+  "title": "MRO & Facilities Optimization",
+  "department": "procurement",
+  "sourcePath": "../presentation/src/components/slides/use-cases/procurement/MROFacilitiesOptimization.tsx",
+  "subtitle": "A-1804 • Indirect & Tail Spend",
+  "persona": "Indirect Procurement Lead",
+  "layer": "Layer 4: Data Agent",
+  "triggerType": "scheduled",
+  "domainId": "domain-18",
+  "systems": [
+    "SAP S/4HANA MM",
+    "Maximo",
+    "eMaint",
+    "Coupa",
+    "VMI systems"
+  ],
+  "kpis": [
+    {
+      "label": "MRO stockout rate",
+      "before": "8-12%",
+      "after": "<2%"
+    },
+    {
+      "label": "Excess inventory",
+      "before": "$2.4M carrying cost",
+      "after": "$900K (62% reduction)"
+    },
+    {
+      "label": "Emergency orders",
+      "before": "15% of MRO spend",
+      "after": "<3%"
+    }
+  ],
+  "statusQuo": [
+    "MRO inventory managed by rules of thumb — safety stock levels set once and never adjusted, leading to simultaneous stockouts and excess.",
+    "Usage spikes trigger emergency purchases at premium pricing with no investigation into root cause.",
+    "No correlation between maintenance schedules and consumable demand — turnarounds cause surprise shortages every time."
+  ],
+  "agentification": [
+    "Time-series demand forecasting on MRO consumables (filters, bearings, lubricants, safety gloves) with automated min/max optimization based on lead time variability.",
+    "LLM interprets consumption anomalies against maintenance work orders: 'Bearing consumption at Plant C up 300% this month — plant is doing a scheduled turnaround, expected and temporary, not a trend change.'",
+    "Generates plain-English recommendations: 'Current safety stock for Type-B filters covers 14 days — lead time variability suggests 21 days given sole-source supplier inconsistency.'"
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "SAP S/4HANA MM",
+        "description": "Plant maintenance consumption data, material master, reorder points"
+      },
+      {
+        "system": "Maximo",
+        "description": "CMMS work orders, preventive maintenance schedules, equipment history"
+      },
+      {
+        "system": "eMaint",
+        "description": "Maintenance work orders, turnaround schedules for anomaly correlation"
+      },
+      {
+        "system": "Coupa",
+        "description": "MRO catalog items, VMI replenishment triggers, supplier orders"
+      },
+      {
+        "system": "BigQuery",
+        "description": "Demand forecasting models, usage pattern analytics, min/max optimization"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Anomaly interpretation, plain-English inventory recommendations"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Consumption Data Aggregation",
+        "description": "Pull MRO consumption data from CMMS and ERP plant maintenance modules. Correlate consumption patterns with maintenance work orders and turnaround schedules to distinguish trend changes from planned events."
+      },
+      {
+        "label": "Demand Forecasting & Optimization",
+        "description": "Time-series forecasting on MRO consumables (filters, bearings, lubricants, safety gloves). Min/max inventory optimization based on lead time variability, usage patterns, and supplier reliability."
+      },
+      {
+        "label": "Anomaly Interpretation & Replenishment",
+        "description": "LLM interprets usage anomalies against maintenance context — 'bearing consumption up 300% due to scheduled turnaround, temporary.' Generates plain-English recommendations and triggers optimized VMI replenishment orders."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for MRO & Facilities Optimization so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "sap_s_4hana_mm",
+        "name": "SAP S/4HANA MM",
+        "owns": [
+          "purchase_orders",
+          "material_movements",
+          "vendors"
+        ],
+        "protocol": "RFC/BAPI",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_sap_s_4hana_mm_purchase_orders",
+          "query_sap_s_4hana_mm_material_movements",
+          "query_sap_s_4hana_mm_vendors"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "maximo",
+        "name": "Maximo",
+        "owns": [
+          "maximo_records",
+          "maximo_events",
+          "maximo_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_maximo_maximo_records",
+          "query_maximo_maximo_events",
+          "query_maximo_maximo_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "emaint",
+        "name": "eMaint",
+        "owns": [
+          "emaint_records",
+          "emaint_events",
+          "emaint_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_emaint_emaint_records",
+          "query_emaint_emaint_events",
+          "query_emaint_emaint_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "coupa",
+        "name": "Coupa",
+        "owns": [
+          "requisitions",
+          "purchase_orders",
+          "invoices"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_coupa_requisitions",
+          "query_coupa_purchase_orders",
+          "query_coupa_invoices"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "vmi_systems",
+        "name": "VMI systems",
+        "owns": [
+          "vmi_systems_records",
+          "vmi_systems_events",
+          "vmi_systems_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_vmi_systems_vmi_systems_records",
+          "query_vmi_systems_vmi_systems_events",
+          "query_vmi_systems_vmi_systems_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "purchase_orders",
+        "sourceSystemId": "sap_s_4hana_mm",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "vendor",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": 100,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP",
+              "JPY"
+            ],
+            "weights": [
+              0.7,
+              0.15,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "pending",
+              "approved",
+              "paid",
+              "rejected"
+            ],
+            "weights": [
+              0.1,
+              0.3,
+              0.3,
+              0.2,
+              0.1
+            ],
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "due_date",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "material_movements",
+        "sourceSystemId": "sap_s_4hana_mm",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "posting_date",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "account",
+            "type": "enum",
+            "values": [
+              "1000-Cash",
+              "2000-AP",
+              "2100-AR",
+              "3000-Revenue",
+              "4000-Expense",
+              "5000-COGS"
+            ],
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": -50000,
+            "max": 50000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP"
+            ],
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "posted",
+              "pending",
+              "reversed"
+            ],
+            "weights": [
+              0.8,
+              0.15,
+              0.05
+            ],
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "vendors",
+        "sourceSystemId": "sap_s_4hana_mm",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "values": [
+              "IT",
+              "Consulting",
+              "Manufacturing",
+              "Logistics",
+              "Facilities",
+              "Marketing"
+            ],
+            "required": true
+          },
+          {
+            "name": "rating",
+            "type": "number",
+            "min": 1,
+            "max": 5,
+            "required": true
+          },
+          {
+            "name": "annual_spend",
+            "type": "number",
+            "min": 10000,
+            "max": 5000000,
+            "required": true
+          },
+          {
+            "name": "risk_score",
+            "type": "enum",
+            "values": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "weights": [
+              0.5,
+              0.35,
+              0.15
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending_review",
+              "terminated"
+            ],
+            "required": true
+          },
+          {
+            "name": "onboarded_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "maximo_records",
+        "sourceSystemId": "maximo",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "maximo_events",
+        "sourceSystemId": "maximo",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "maximo_record_id",
+            "type": "ref",
+            "ref": "maximo_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "maximo_audit_trail",
+        "sourceSystemId": "maximo",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "emaint_records",
+        "sourceSystemId": "emaint",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "emaint_events",
+        "sourceSystemId": "emaint",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "emaint_record_id",
+            "type": "ref",
+            "ref": "emaint_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "emaint_audit_trail",
+        "sourceSystemId": "emaint",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "requisitions",
+        "sourceSystemId": "coupa",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "vendor",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": 100,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP",
+              "JPY"
+            ],
+            "weights": [
+              0.7,
+              0.15,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "pending",
+              "approved",
+              "paid",
+              "rejected"
+            ],
+            "weights": [
+              0.1,
+              0.3,
+              0.3,
+              0.2,
+              0.1
+            ],
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "due_date",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "invoices",
+        "sourceSystemId": "coupa",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "vendor",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": 100,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP",
+              "JPY"
+            ],
+            "weights": [
+              0.7,
+              0.15,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "pending",
+              "approved",
+              "paid",
+              "rejected"
+            ],
+            "weights": [
+              0.1,
+              0.3,
+              0.3,
+              0.2,
+              0.1
+            ],
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "due_date",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "vmi_systems_records",
+        "sourceSystemId": "vmi_systems",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "vmi_systems_events",
+        "sourceSystemId": "vmi_systems",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "vmi_systems_record_id",
+            "type": "ref",
+            "ref": "vmi_systems_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "vmi_systems_audit_trail",
+        "sourceSystemId": "vmi_systems",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "maximo_events.maximo_record_id",
+        "to": "maximo_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "emaint_events.emaint_record_id",
+        "to": "emaint_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "vmi_systems_events.vmi_systems_record_id",
+        "to": "vmi_systems_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "mro-facilities-optimization-policy-guide",
+        "sourceSystemId": "sap_s_4hana_mm",
+        "type": "policy",
+        "title": "MRO & Facilities Optimization Procurement Policy Guide",
+        "requiredSections": [
+          "Sourcing principles",
+          "Approval thresholds",
+          "Supplier risk requirements",
+          "Contract and compliance gates",
+          "Exception handling"
+        ],
+        "linkedEntities": [
+          "purchase_orders",
+          "material_movements",
+          "vendors"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "sourcing",
+          "approvals",
+          "supplier-risk",
+          "exceptions"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "sap_s_4hana_mm_recommend_api",
+        "sourceSystemId": "sap_s_4hana_mm",
+        "method": "POST",
+        "path": "/api/sap_s_4hana_mm/recommend",
+        "description": "Synchronous endpoint the agent calls to recommend in SAP S/4HANA MM after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "mro-facilities-optimization-baseline-gap",
+        "description": "Seed a realistic gap where MRO stockout rate sits between 8-12% and <2%, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "purchase_orders",
+          "material_movements"
+        ],
+        "discoveryPath": [
+          "Inspect SAP S/4HANA MM records for the affected entities",
+          "Compare against Maximo historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next Indirect Procurement Lead action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "mro_facilities_optimization",
+        "schemas": [
+          "sap_s_4hana_mm",
+          "maximo",
+          "emaint",
+          "coupa",
+          "vmi_systems"
+        ]
+      },
+      "bigquery": {
+        "dataset": "procurement_mro_facilities_optimization",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "mro-facilities-optimization-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "mro-facilities-optimization-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the MRO & Facilities Optimization workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "Indirect Procurement Lead agent for the MRO & Facilities Optimization workflow",
+      "primaryObjective": "Time-series demand forecasting on MRO consumables (filters, bearings, lubricants, safety gloves) with automated min/max optimization based on lead time variability. LLM interprets consumption anomalies against maintenance work orders: 'Bearing consumption at Plant C up 300% this month — plant is doing a scheduled turnaround, expected and temporary, not a trend change.' so the Indirect Procurement Lead can move the MRO stockout rate KPI.",
+      "inScope": [
+        "Time-series demand forecasting on MRO consumables (filters, bearings, lubricants, safety gloves) with automated min/max optimization based on lead time variability",
+        "LLM interprets consumption anomalies against maintenance work orders: 'Bearing consumption at Plant C up 300% this month — plant is doing a scheduled turnaround, expected and temporary, not a trend change.'",
+        "Generates plain-English recommendations: 'Current safety stock for Type-B filters covers 14 days — lead time variability suggests 21 days given sole-source supplier inconsistency.'"
+      ],
+      "outOfScope": [
+        "Contract execution without legal review",
+        "Supplier disqualification decisions (category lead retains authority)",
+        "Single-source justification overrides above policy threshold"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_sap_s_4hana_mm_purchase_orders",
+          "kind": "query",
+          "sourceSystemId": "sap_s_4hana_mm",
+          "description": "Retrieve purchase orders from SAP S/4HANA MM for the MRO & Facilities Optimization workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "purchase_orders_records",
+            "purchase_orders_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_maximo_maximo_records",
+          "kind": "query",
+          "sourceSystemId": "maximo",
+          "description": "Retrieve maximo records from Maximo for the MRO & Facilities Optimization workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "maximo_records_records",
+            "maximo_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_emaint_emaint_records",
+          "kind": "query",
+          "sourceSystemId": "emaint",
+          "description": "Retrieve emaint records from eMaint for the MRO & Facilities Optimization workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "emaint_records_records",
+            "emaint_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_coupa_requisitions",
+          "kind": "query",
+          "sourceSystemId": "coupa",
+          "description": "Retrieve requisitions from Coupa for the MRO & Facilities Optimization workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "requisitions_records",
+            "requisitions_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_mro_facilities_optimization_policy_guide",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "sap_s_4hana_mm",
+          "description": "Look up sections of the MRO & Facilities Optimization Procurement Policy Guide to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_sap_s_4hana_mm_recommend",
+          "kind": "action",
+          "sourceSystemId": "sap_s_4hana_mm",
+          "description": "Execute the recommend step in SAP S/4HANA MM after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "consumption_data_aggregation",
+            "label": "Consumption Data Aggregation",
+            "description": "Pull MRO consumption data from CMMS and ERP plant maintenance modules. Correlate consumption patterns with maintenance work orders and turnaround schedules to distinguish trend changes from planned events.",
+            "tools": [
+              "query_sap_s_4hana_mm_purchase_orders"
+            ]
+          },
+          {
+            "id": "demand_forecasting_optimization",
+            "label": "Demand Forecasting & Optimization",
+            "description": "Time-series forecasting on MRO consumables (filters, bearings, lubricants, safety gloves). Min/max inventory optimization based on lead time variability, usage patterns, and supplier reliability.",
+            "tools": [
+              "lookup_mro_facilities_optimization_policy_guide"
+            ]
+          },
+          {
+            "id": "anomaly_interpretation_replenishment",
+            "label": "Anomaly Interpretation & Replenishment",
+            "description": "LLM interprets usage anomalies against maintenance context — 'bearing consumption up 300% due to scheduled turnaround, temporary.' Generates plain-English recommendations and triggers optimized VMI replenishment orders.",
+            "tools": [
+              "query_sap_s_4hana_mm_purchase_orders",
+              "action_sap_s_4hana_mm_recommend"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "MRO stockout rate moved from 8-12% toward <2%",
+          "mustCite": [
+            "sap_s_4hana_mm.purchase_orders",
+            "maximo.maximo_records"
+          ],
+          "sourceSystemIds": [
+            "sap_s_4hana_mm",
+            "maximo"
+          ]
+        },
+        {
+          "claim": "Excess inventory moved from $2.4M carrying cost toward $900K (62% reduction)",
+          "mustCite": [
+            "sap_s_4hana_mm.purchase_orders",
+            "maximo.maximo_records"
+          ],
+          "sourceSystemIds": [
+            "sap_s_4hana_mm",
+            "maximo"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "MRO stockout rate regresses past the 8-12% baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Indirect Procurement Lead",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed recommend action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from SAP S/4HANA MM (and other named systems) entities.",
+        "Never bypass Indirect Procurement Lead approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "mro-facilities-optimization-end-to-end",
+          "prompt": "Run the MRO & Facilities Optimization workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_sap_s_4hana_mm_purchase_orders",
+            "query_maximo_maximo_records",
+            "query_emaint_emaint_records",
+            "query_coupa_requisitions",
+            "lookup_mro_facilities_optimization_policy_guide",
+            "action_sap_s_4hana_mm_recommend"
+          ],
+          "mustReferenceEntities": [
+            "purchase_orders",
+            "maximo_records",
+            "emaint_records",
+            "requisitions",
+            "vmi_systems_records"
+          ],
+          "mustCiteDocuments": [
+            "mro-facilities-optimization-policy-guide"
+          ],
+          "expectedActionOutcome": "Action recommend executed against SAP S/4HANA MM, with audit-trail entry and Indirect Procurement Lead notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute recommend without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/procurement/MROFacilitiesOptimization.tsx",
+    "familyId": "mro-facilities-optimization",
+    "variant": {
+      "familyId": "mro-facilities-optimization",
+      "variantId": "mro-facilities-optimization",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

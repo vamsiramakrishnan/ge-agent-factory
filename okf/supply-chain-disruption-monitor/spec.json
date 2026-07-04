@@ -1,0 +1,1497 @@
+{
+  "id": "supply-chain-disruption-monitor",
+  "title": "Supply Chain Disruption Monitor",
+  "department": "procurement",
+  "sourcePath": "../presentation/src/components/slides/use-cases/procurement/SupplyChainDisruptionMonitor.tsx",
+  "subtitle": "A-1602 • Supplier Risk",
+  "persona": "Supply Chain Lead",
+  "layer": "Layer 3: Custom ADK",
+  "triggerType": "scheduled",
+  "domainId": "domain-16",
+  "systems": [
+    "Resilinc",
+    "Everstream",
+    "Google News API",
+    "Weather APIs",
+    "Maritime AIS",
+    "BigQuery"
+  ],
+  "kpis": [
+    {
+      "label": "Disruption detection time",
+      "before": "Days after impact",
+      "after": "Hours before impact"
+    },
+    {
+      "label": "Signal sources monitored",
+      "before": "Manual news scan",
+      "after": "1,000+ feeds continuous"
+    },
+    {
+      "label": "Supply chain tiers covered",
+      "before": "Tier-1 only",
+      "after": "Tier-1 through Tier-3"
+    }
+  ],
+  "statusQuo": [
+    "Disruptions discovered only when a supplier misses a delivery — reactive, not predictive.",
+    "No visibility into sub-tier supplier geography or shipping lane dependencies.",
+    "Risk team manually scans news — can't connect a Malaysian port strike to your specific supply chain."
+  ],
+  "agentification": [
+    "NLP on global news, weather, and maritime data detects emerging disruptions before they hit your supply chain.",
+    "LLM connects a Reuters article about a labor strike at a port to your tier-2 supplier who ships through that port.",
+    "Synthesizes 12+ weak signals — factory inspections, D&B downgrades, LinkedIn departures — into coherent early-warning narratives."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Resilinc",
+        "description": "Supply chain disruption alerts, supplier location mapping"
+      },
+      {
+        "system": "Everstream",
+        "description": "Predictive supply chain risk analytics, weather and geo-risk data"
+      },
+      {
+        "system": "Google News API",
+        "description": "Real-time global news feed for NLP-based disruption detection"
+      },
+      {
+        "system": "Maritime AIS",
+        "description": "Vessel tracking, port congestion data, shipping lane status"
+      },
+      {
+        "system": "BigQuery",
+        "description": "Geo-risk correlation engine, supplier-location graph, impact modeling"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "News article interpretation, weak signal synthesis, early-warning narrative generation"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Continuous Signal Ingestion",
+        "description": "Poll global news feeds, ingest Resilinc and Everstream disruption alerts, correlate weather event data and maritime AIS signals with supplier locations and shipping lanes."
+      },
+      {
+        "label": "Geo-Risk Scoring & Correlation",
+        "description": "Map events to supplier locations and sub-tier dependencies. Weather event severity classification, port congestion tracking from AIS data, and impact radius estimation using geo-risk scoring models."
+      },
+      {
+        "label": "Early-Warning Narrative Synthesis",
+        "description": "Gemini reads a Reuters article about a labor strike at a Malaysian port and reasons that this affects your tier-2 electronics supplier who ships through that port. Synthesizes 12+ weak signals into coherent early-warning narratives."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Supply Chain Disruption Monitor so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "resilinc",
+        "name": "Resilinc",
+        "owns": [
+          "resilinc_records",
+          "resilinc_events",
+          "resilinc_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_resilinc_resilinc_records",
+          "query_resilinc_resilinc_events",
+          "query_resilinc_resilinc_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "everstream",
+        "name": "Everstream",
+        "owns": [
+          "everstream_records",
+          "everstream_events",
+          "everstream_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_everstream_everstream_records",
+          "query_everstream_everstream_events",
+          "query_everstream_everstream_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "google_news_api",
+        "name": "Google News API",
+        "owns": [
+          "google_news_api_records",
+          "google_news_api_events",
+          "google_news_api_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_google_news_api_google_news_api_records",
+          "query_google_news_api_google_news_api_events",
+          "query_google_news_api_google_news_api_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "weather_apis",
+        "name": "Weather APIs",
+        "owns": [
+          "weather_apis_records",
+          "weather_apis_events",
+          "weather_apis_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_weather_apis_weather_apis_records",
+          "query_weather_apis_weather_apis_events",
+          "query_weather_apis_weather_apis_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "maritime_ais",
+        "name": "Maritime AIS",
+        "owns": [
+          "maritime_ais_records",
+          "maritime_ais_events",
+          "maritime_ais_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_maritime_ais_maritime_ais_records",
+          "query_maritime_ais_maritime_ais_events",
+          "query_maritime_ais_maritime_ais_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "bigquery",
+        "name": "BigQuery",
+        "owns": [
+          "analytics_events",
+          "historical_metrics",
+          "cached_aggregates"
+        ],
+        "protocol": "BigQuery SQL",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_bigquery_analytics_events",
+          "query_bigquery_historical_metrics",
+          "query_bigquery_cached_aggregates"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "resilinc_records",
+        "sourceSystemId": "resilinc",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "resilinc_events",
+        "sourceSystemId": "resilinc",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "resilinc_record_id",
+            "type": "ref",
+            "ref": "resilinc_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "resilinc_audit_trail",
+        "sourceSystemId": "resilinc",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "everstream_records",
+        "sourceSystemId": "everstream",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "everstream_events",
+        "sourceSystemId": "everstream",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "everstream_record_id",
+            "type": "ref",
+            "ref": "everstream_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "everstream_audit_trail",
+        "sourceSystemId": "everstream",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "google_news_api_records",
+        "sourceSystemId": "google_news_api",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "google_news_api_events",
+        "sourceSystemId": "google_news_api",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "google_news_api_record_id",
+            "type": "ref",
+            "ref": "google_news_api_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "google_news_api_audit_trail",
+        "sourceSystemId": "google_news_api",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "weather_apis_records",
+        "sourceSystemId": "weather_apis",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "weather_apis_events",
+        "sourceSystemId": "weather_apis",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "weather_apis_record_id",
+            "type": "ref",
+            "ref": "weather_apis_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "weather_apis_audit_trail",
+        "sourceSystemId": "weather_apis",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "maritime_ais_records",
+        "sourceSystemId": "maritime_ais",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "maritime_ais_events",
+        "sourceSystemId": "maritime_ais",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "maritime_ais_record_id",
+            "type": "ref",
+            "ref": "maritime_ais_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "maritime_ais_audit_trail",
+        "sourceSystemId": "maritime_ais",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "analytics_events",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "historical_metric_id",
+            "type": "ref",
+            "ref": "historical_metrics.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "historical_metrics",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "cached_aggregates",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "resilinc_events.resilinc_record_id",
+        "to": "resilinc_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "everstream_events.everstream_record_id",
+        "to": "everstream_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "google_news_api_events.google_news_api_record_id",
+        "to": "google_news_api_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "weather_apis_events.weather_apis_record_id",
+        "to": "weather_apis_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "maritime_ais_events.maritime_ais_record_id",
+        "to": "maritime_ais_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "analytics_events.historical_metric_id",
+        "to": "historical_metrics.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "supply-chain-disruption-monitor-policy-guide",
+        "sourceSystemId": "bigquery",
+        "type": "policy",
+        "title": "Supply Chain Disruption Monitor Procurement Policy Guide",
+        "requiredSections": [
+          "Sourcing principles",
+          "Approval thresholds",
+          "Supplier risk requirements",
+          "Contract and compliance gates",
+          "Exception handling"
+        ],
+        "linkedEntities": [
+          "resilinc_records",
+          "resilinc_events",
+          "resilinc_audit_trail"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "sourcing",
+          "approvals",
+          "supplier-risk",
+          "exceptions"
+        ]
+      }
+    ],
+    "apis": [],
+    "anomalies": [
+      {
+        "id": "supply-chain-disruption-monitor-baseline-gap",
+        "description": "Seed a realistic gap where Disruption detection time sits between Days after impact and Hours before impact, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "resilinc_records",
+          "resilinc_events"
+        ],
+        "discoveryPath": [
+          "Inspect Resilinc records for the affected entities",
+          "Compare against Everstream historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next Supply Chain Lead action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "supply_chain_disruption_monitor",
+        "schemas": [
+          "resilinc",
+          "everstream",
+          "google_news_api",
+          "weather_apis",
+          "maritime_ais"
+        ]
+      },
+      "bigquery": {
+        "dataset": "procurement_supply_chain_disruption_monitor",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "supply-chain-disruption-monitor-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "supply-chain-disruption-monitor-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Supply Chain Disruption Monitor workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "Supply Chain Lead agent for the Supply Chain Disruption Monitor workflow",
+      "primaryObjective": "NLP on global news, weather, and maritime data detects emerging disruptions before they hit your supply chain. LLM connects a Reuters article about a labor strike at a port to your tier-2 supplier who ships through that port. so the Supply Chain Lead can move the Disruption detection time KPI.",
+      "inScope": [
+        "NLP on global news, weather, and maritime data detects emerging disruptions before they hit your supply chain",
+        "LLM connects a Reuters article about a labor strike at a port to your tier-2 supplier who ships through that port",
+        "Synthesizes 12+ weak signals — factory inspections, D&B downgrades, LinkedIn departures — into coherent early-warning narratives"
+      ],
+      "outOfScope": [
+        "Contract execution without legal review",
+        "Supplier disqualification decisions (category lead retains authority)",
+        "Single-source justification overrides above policy threshold"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_resilinc_resilinc_records",
+          "kind": "query",
+          "sourceSystemId": "resilinc",
+          "description": "Retrieve resilinc records from Resilinc for the Supply Chain Disruption Monitor workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "resilinc_records_records",
+            "resilinc_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_everstream_everstream_records",
+          "kind": "query",
+          "sourceSystemId": "everstream",
+          "description": "Retrieve everstream records from Everstream for the Supply Chain Disruption Monitor workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "everstream_records_records",
+            "everstream_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_google_news_api_google_news_api_records",
+          "kind": "query",
+          "sourceSystemId": "google_news_api",
+          "description": "Retrieve google news api records from Google News API for the Supply Chain Disruption Monitor workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "google_news_api_records_records",
+            "google_news_api_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_weather_apis_weather_apis_records",
+          "kind": "query",
+          "sourceSystemId": "weather_apis",
+          "description": "Retrieve weather apis records from Weather APIs for the Supply Chain Disruption Monitor workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "weather_apis_records_records",
+            "weather_apis_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_supply_chain_disruption_monitor_policy_guide",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "bigquery",
+          "description": "Look up sections of the Supply Chain Disruption Monitor Procurement Policy Guide to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "continuous_signal_ingestion",
+            "label": "Continuous Signal Ingestion",
+            "description": "Poll global news feeds, ingest Resilinc and Everstream disruption alerts, correlate weather event data and maritime AIS signals with supplier locations and shipping lanes.",
+            "tools": [
+              "query_resilinc_resilinc_records",
+              "query_everstream_everstream_records",
+              "query_google_news_api_google_news_api_records",
+              "query_weather_apis_weather_apis_records",
+              "lookup_supply_chain_disruption_monitor_policy_guide"
+            ]
+          },
+          {
+            "id": "geo_risk_scoring_correlation",
+            "label": "Geo-Risk Scoring & Correlation",
+            "description": "Map events to supplier locations and sub-tier dependencies. Weather event severity classification, port congestion tracking from AIS data, and impact radius estimation using geo-risk scoring models.",
+            "tools": [
+              "query_weather_apis_weather_apis_records"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Disruption detection time moved from Days after impact toward Hours before impact",
+          "mustCite": [
+            "resilinc.resilinc_records",
+            "everstream.everstream_records"
+          ],
+          "sourceSystemIds": [
+            "resilinc",
+            "everstream"
+          ]
+        },
+        {
+          "claim": "Signal sources monitored moved from Manual news scan toward 1,000+ feeds continuous",
+          "mustCite": [
+            "resilinc.resilinc_records",
+            "everstream.everstream_records"
+          ],
+          "sourceSystemIds": [
+            "resilinc",
+            "everstream"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Disruption detection time regresses past the Days after impact baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Supply Chain Lead",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Resilinc (and other named systems) entities.",
+        "Never bypass Supply Chain Lead approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "supply-chain-disruption-monitor-end-to-end",
+          "prompt": "Run the Supply Chain Disruption Monitor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_resilinc_resilinc_records",
+            "query_everstream_everstream_records",
+            "query_google_news_api_google_news_api_records",
+            "query_weather_apis_weather_apis_records",
+            "lookup_supply_chain_disruption_monitor_policy_guide"
+          ],
+          "mustReferenceEntities": [
+            "resilinc_records",
+            "everstream_records",
+            "google_news_api_records",
+            "weather_apis_records",
+            "maritime_ais_records",
+            "analytics_events"
+          ],
+          "mustCiteDocuments": [
+            "supply-chain-disruption-monitor-policy-guide"
+          ],
+          "expectedActionOutcome": "Supply Chain Lead receives a fully-cited recommendation; no external state change without explicit approval.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not act on single-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/procurement/SupplyChainDisruptionMonitor.tsx",
+    "familyId": "supply-chain-disruption-monitor",
+    "variant": {
+      "familyId": "supply-chain-disruption-monitor",
+      "variantId": "supply-chain-disruption-monitor",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

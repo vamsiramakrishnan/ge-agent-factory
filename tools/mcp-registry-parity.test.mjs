@@ -35,6 +35,11 @@ const EXPECTED_TOOLS = {
   // Synthetic-data widening (synthkit surfacing, 2026-07-03): factory_data_synth
   // exposes the same seed-generation core as `ge data synth`.
   factory_data_synth: ["system", "seed?", "profile?", "edgeCaseRate?", "out?"],
+  // OKF agent-lifecycle widening (customize → register → track, 2026-07-04):
+  // the three lifecycle verbs share tools/lib/okf-lifecycle.mjs with the CLI.
+  factory_okf_customize: ["base", "id", "swapSystem?", "rename?", "vertical?", "out?"],
+  factory_agents_register: ["bundle", "owner?"],
+  factory_agents_track: ["id"],
 };
 
 const KNOWN_RISKS = ["mutates-cloud", "starts-workloads", "starts-local-workloads", "writes-repo", "read-only"];

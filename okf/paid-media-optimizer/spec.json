@@ -1,0 +1,1181 @@
+{
+  "id": "paid-media-optimizer",
+  "title": "Paid Media Optimizer",
+  "department": "marketing",
+  "sourcePath": "../presentation/src/components/slides/use-cases/marketing/PaidMediaOptimizer.tsx",
+  "subtitle": "A-3104 \\u2022 Demand Generation",
+  "persona": "Digital Marketing Mgr",
+  "layer": "Layer 4: Data Agent",
+  "triggerType": "scheduled",
+  "domainId": "domain-31",
+  "systems": [
+    "Google Ads",
+    "Meta Ads",
+    "LinkedIn Ads",
+    "BigQuery",
+    "Looker"
+  ],
+  "kpis": [
+    {
+      "label": "ROAS improvement",
+      "before": "Baseline",
+      "after": "+25-40%"
+    },
+    {
+      "label": "Optimization frequency",
+      "before": "Weekly manual",
+      "after": "Daily automated"
+    },
+    {
+      "label": "Creative fatigue detection",
+      "before": "Weeks late",
+      "after": "< 3 days"
+    }
+  ],
+  "statusQuo": [
+    "Paid media optimization done weekly through manual platform checks with reactive rather than proactive adjustments.",
+    "Creative fatigue discovered when performance drops significantly, days or weeks after onset.",
+    "Cross-platform budget allocation based on siloed platform-level metrics without unified attribution."
+  ],
+  "agentification": [
+    "Gemini diagnoses why campaign performance degraded by reading ad copy, landing pages, and competitive landscape for root cause analysis.",
+    "Creative fatigue detection identifies saturation within 3 days, enabling proactive creative rotation.",
+    "Daily automated optimization with cross-platform attribution enables continuous ROAS improvement."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Google Ads",
+        "description": "Campaign performance, bid data, quality scores, conversion tracking"
+      },
+      {
+        "system": "Meta Ads Manager",
+        "description": "Ad set performance, audience metrics, creative variants"
+      },
+      {
+        "system": "LinkedIn Ads",
+        "description": "B2B ad performance, company targeting, engagement data"
+      },
+      {
+        "system": "HubSpot",
+        "description": "Lead source attribution, downstream conversion tracking"
+      },
+      {
+        "system": "BigQuery",
+        "description": "Unified ad performance data, cross-channel attribution, optimization models"
+      },
+      {
+        "system": "Looker",
+        "description": "Paid media performance dashboards, ROAS visualizations"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Performance Collection",
+        "description": "Pull daily performance data from Google Ads, Meta Ads, and LinkedIn Ads. Aggregate in BigQuery with lead source attribution from HubSpot."
+      },
+      {
+        "label": "Optimization Modeling",
+        "description": "Bid optimization models. Budget pacing algorithms. Cross-channel attribution. Audience performance segmentation. Creative fatigue detection. ROAS prediction per campaign."
+      },
+      {
+        "label": "Root Cause Diagnosis",
+        "description": "Gemini interprets why campaign performance degraded \\u2014 reads ad copy, landing page, and competitive landscape to diagnose creative fatigue, audience saturation, or competitive pressure. Generates actionable optimization recommendations."
+      },
+      {
+        "label": "Execution & Dashboards",
+        "description": "Push bid adjustments and budget reallocations to ad platforms. Feed Looker dashboards. Route budget shifts >20% for manager approval."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Paid Media Optimizer so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "google_ads",
+        "name": "Google Ads",
+        "owns": [
+          "campaigns",
+          "ad_groups",
+          "spend_records"
+        ],
+        "protocol": "Ads API",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_google_ads_campaigns",
+          "query_google_ads_ad_groups",
+          "query_google_ads_spend_records"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "meta_ads",
+        "name": "Meta Ads",
+        "owns": [
+          "campaigns",
+          "ad_creatives",
+          "spend_records"
+        ],
+        "protocol": "Ads API",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_meta_ads_campaigns",
+          "query_meta_ads_ad_creatives",
+          "query_meta_ads_spend_records"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "linkedin_ads",
+        "name": "LinkedIn Ads",
+        "owns": [
+          "campaigns",
+          "audience_segments",
+          "spend_records"
+        ],
+        "protocol": "Ads API",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_linkedin_ads_campaigns",
+          "query_linkedin_ads_audience_segments",
+          "query_linkedin_ads_spend_records"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "bigquery",
+        "name": "BigQuery",
+        "owns": [
+          "analytics_events",
+          "historical_metrics",
+          "cached_aggregates"
+        ],
+        "protocol": "BigQuery SQL",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_bigquery_analytics_events",
+          "query_bigquery_historical_metrics",
+          "query_bigquery_cached_aggregates"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "looker",
+        "name": "Looker",
+        "owns": [
+          "dashboards",
+          "explore_queries",
+          "metric_definitions"
+        ],
+        "protocol": "LookerML",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_looker_dashboards",
+          "query_looker_explore_queries",
+          "query_looker_metric_definitions"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "campaigns",
+        "sourceSystemId": "google_ads",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "enum",
+            "values": [
+              "email",
+              "social",
+              "search",
+              "display",
+              "content",
+              "events"
+            ],
+            "required": true
+          },
+          {
+            "name": "segment",
+            "type": "enum",
+            "values": [
+              "enterprise",
+              "mid_market",
+              "smb"
+            ],
+            "required": true
+          },
+          {
+            "name": "impressions",
+            "type": "number",
+            "min": 1000,
+            "max": 500000,
+            "required": true
+          },
+          {
+            "name": "conversions",
+            "type": "number",
+            "min": 0,
+            "max": 5000,
+            "required": true
+          },
+          {
+            "name": "spend",
+            "type": "number",
+            "min": 1000,
+            "max": 200000,
+            "required": true
+          },
+          {
+            "name": "ctr",
+            "type": "float",
+            "min": 0.1,
+            "max": 9.5,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "launched_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "ad_groups",
+        "sourceSystemId": "google_ads",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "enum",
+            "values": [
+              "email",
+              "social",
+              "search",
+              "display",
+              "content",
+              "events"
+            ],
+            "required": true
+          },
+          {
+            "name": "segment",
+            "type": "enum",
+            "values": [
+              "enterprise",
+              "mid_market",
+              "smb"
+            ],
+            "required": true
+          },
+          {
+            "name": "impressions",
+            "type": "number",
+            "min": 1000,
+            "max": 500000,
+            "required": true
+          },
+          {
+            "name": "conversions",
+            "type": "number",
+            "min": 0,
+            "max": 5000,
+            "required": true
+          },
+          {
+            "name": "spend",
+            "type": "number",
+            "min": 1000,
+            "max": 200000,
+            "required": true
+          },
+          {
+            "name": "ctr",
+            "type": "float",
+            "min": 0.1,
+            "max": 9.5,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "launched_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "spend_records",
+        "sourceSystemId": "google_ads",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "service",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": 1,
+            "max": 10000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR"
+            ],
+            "required": true
+          },
+          {
+            "name": "period_start",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "period_end",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "ad_creatives",
+        "sourceSystemId": "meta_ads",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "audience_segments",
+        "sourceSystemId": "linkedin_ads",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "enum",
+            "values": [
+              "email",
+              "social",
+              "search",
+              "display",
+              "content",
+              "events"
+            ],
+            "required": true
+          },
+          {
+            "name": "segment",
+            "type": "enum",
+            "values": [
+              "enterprise",
+              "mid_market",
+              "smb"
+            ],
+            "required": true
+          },
+          {
+            "name": "impressions",
+            "type": "number",
+            "min": 1000,
+            "max": 500000,
+            "required": true
+          },
+          {
+            "name": "conversions",
+            "type": "number",
+            "min": 0,
+            "max": 5000,
+            "required": true
+          },
+          {
+            "name": "spend",
+            "type": "number",
+            "min": 1000,
+            "max": 200000,
+            "required": true
+          },
+          {
+            "name": "ctr",
+            "type": "float",
+            "min": 0.1,
+            "max": 9.5,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "launched_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "analytics_events",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "historical_metric_id",
+            "type": "ref",
+            "ref": "historical_metrics.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "historical_metrics",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "cached_aggregates",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "dashboards",
+        "sourceSystemId": "looker",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "explore_queries",
+        "sourceSystemId": "looker",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "metric_definitions",
+        "sourceSystemId": "looker",
+        "datastore": "bigquery",
+        "rowCount": 30,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "analytics_events.historical_metric_id",
+        "to": "historical_metrics.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "paid-media-optimizer-playbook",
+        "sourceSystemId": "google_ads",
+        "type": "playbook",
+        "title": "Paid Media Optimizer Playbook",
+        "requiredSections": [
+          "Audience guidelines",
+          "Brand voice rules",
+          "Channel-specific guardrails",
+          "Measurement framework",
+          "Approval thresholds"
+        ],
+        "linkedEntities": [
+          "campaigns",
+          "ad_groups",
+          "spend_records"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "audience",
+          "brand-voice",
+          "channels",
+          "approvals"
+        ]
+      }
+    ],
+    "apis": [],
+    "anomalies": [
+      {
+        "id": "paid-media-optimizer-baseline-gap",
+        "description": "Seed a realistic gap where ROAS improvement sits between Baseline and +25-40%, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "campaigns",
+          "ad_groups"
+        ],
+        "discoveryPath": [
+          "Inspect Google Ads records for the affected entities",
+          "Compare against Meta Ads historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next Digital Marketing Mgr action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "paid_media_optimizer",
+        "schemas": []
+      },
+      "bigquery": {
+        "dataset": "marketing_paid_media_optimizer",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "paid-media-optimizer-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "paid-media-optimizer-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Paid Media Optimizer workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "Digital Marketing Mgr agent for the Paid Media Optimizer workflow",
+      "primaryObjective": "Gemini diagnoses why campaign performance degraded by reading ad copy, landing pages, and competitive landscape for root cause analysis. Creative fatigue detection identifies saturation within 3 days, enabling proactive creative rotation. so the Digital Marketing Mgr can move the ROAS improvement KPI.",
+      "inScope": [
+        "Gemini diagnoses why campaign performance degraded by reading ad copy, landing pages, and competitive landscape for root cause analysis",
+        "Creative fatigue detection identifies saturation within 3 days, enabling proactive creative rotation",
+        "Daily automated optimization with cross-platform attribution enables continuous ROAS improvement"
+      ],
+      "outOfScope": [
+        "Final approval of paid spend reallocations above the governance threshold",
+        "Trademark, legal, or regulated-industry claim approval",
+        "Crisis communications without comms-team sign-off"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_google_ads_campaigns",
+          "kind": "query",
+          "sourceSystemId": "google_ads",
+          "description": "Retrieve campaigns from Google Ads for the Paid Media Optimizer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "campaigns_records",
+            "campaigns_summary"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "query_meta_ads_campaigns",
+          "kind": "query",
+          "sourceSystemId": "meta_ads",
+          "description": "Retrieve campaigns from Meta Ads for the Paid Media Optimizer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "campaigns_records",
+            "campaigns_summary"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "query_linkedin_ads_campaigns",
+          "kind": "query",
+          "sourceSystemId": "linkedin_ads",
+          "description": "Retrieve campaigns from LinkedIn Ads for the Paid Media Optimizer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "campaigns_records",
+            "campaigns_summary"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "query_bigquery_analytics_events",
+          "kind": "query",
+          "sourceSystemId": "bigquery",
+          "description": "Retrieve analytics events from BigQuery for the Paid Media Optimizer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "analytics_events_records",
+            "analytics_events_summary"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "lookup_paid_media_optimizer_playbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "google_ads",
+          "description": "Look up sections of the Paid Media Optimizer Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "performance_collection",
+            "label": "Performance Collection",
+            "description": "Pull daily performance data from Google Ads, Meta Ads, and LinkedIn Ads. Aggregate in BigQuery with lead source attribution from HubSpot.",
+            "tools": [
+              "query_google_ads_campaigns",
+              "query_meta_ads_campaigns",
+              "query_linkedin_ads_campaigns",
+              "query_bigquery_analytics_events",
+              "lookup_paid_media_optimizer_playbook"
+            ]
+          },
+          {
+            "id": "root_cause_diagnosis",
+            "label": "Root Cause Diagnosis",
+            "description": "Gemini interprets why campaign performance degraded \\u2014 reads ad copy, landing page, and competitive landscape to diagnose creative fatigue, audience saturation, or competitive pressure. Generates actionable optimization recommendations.",
+            "tools": [
+              "query_google_ads_campaigns",
+              "query_meta_ads_campaigns",
+              "query_linkedin_ads_campaigns",
+              "lookup_paid_media_optimizer_playbook"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "ROAS improvement moved from Baseline toward +25-40%",
+          "mustCite": [
+            "google_ads.campaigns",
+            "meta_ads.campaigns"
+          ],
+          "sourceSystemIds": [
+            "google_ads",
+            "meta_ads"
+          ]
+        },
+        {
+          "claim": "Optimization frequency moved from Weekly manual toward Daily automated",
+          "mustCite": [
+            "google_ads.campaigns",
+            "meta_ads.campaigns"
+          ],
+          "sourceSystemIds": [
+            "google_ads",
+            "meta_ads"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "ROAS improvement regresses past the Baseline baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Digital Marketing Mgr",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Google Ads (and other named systems) entities.",
+        "Never bypass Digital Marketing Mgr approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "paid-media-optimizer-end-to-end",
+          "prompt": "Run the Paid Media Optimizer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_google_ads_campaigns",
+            "query_meta_ads_campaigns",
+            "query_linkedin_ads_campaigns",
+            "query_bigquery_analytics_events",
+            "lookup_paid_media_optimizer_playbook"
+          ],
+          "mustReferenceEntities": [
+            "campaigns",
+            "campaigns",
+            "campaigns",
+            "analytics_events",
+            "dashboards"
+          ],
+          "mustCiteDocuments": [
+            "paid-media-optimizer-playbook"
+          ],
+          "expectedActionOutcome": "Digital Marketing Mgr receives a fully-cited recommendation; no external state change without explicit approval.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not act on single-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/marketing/PaidMediaOptimizer.tsx",
+    "familyId": "paid-media-optimizer",
+    "variant": {
+      "familyId": "paid-media-optimizer",
+      "variantId": "paid-media-optimizer",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

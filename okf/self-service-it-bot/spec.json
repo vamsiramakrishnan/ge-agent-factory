@@ -1,0 +1,1210 @@
+{
+  "id": "self-service-it-bot",
+  "title": "Self-Service IT Bot",
+  "department": "it",
+  "sourcePath": "../presentation/src/components/slides/use-cases/it/SelfServiceITBot.tsx",
+  "subtitle": "A-4604 • End User Computing",
+  "persona": "End User Support Lead",
+  "layer": "Layer 1: OOTB",
+  "triggerType": "chat",
+  "domainId": "domain-46",
+  "systems": [
+    "Slack",
+    "ServiceNow",
+    "Okta",
+    "Google Workspace",
+    "Vertex AI"
+  ],
+  "kpis": [
+    {
+      "label": "Self-service resolution rate",
+      "before": "15%",
+      "after": "65%"
+    },
+    {
+      "label": "Average resolution time",
+      "before": "4 hours (with human)",
+      "after": "3 minutes (bot)"
+    },
+    {
+      "label": "Help desk ticket volume",
+      "before": "500/week",
+      "after": "200/week"
+    }
+  ],
+  "statusQuo": [
+    "Every IT issue — even simple password resets — requires a ServiceNow ticket and human agent interaction.",
+    "Average resolution time is 4 hours because tickets queue behind higher priority items.",
+    "Users lose productivity waiting for simple fixes that could be self-service."
+  ],
+  "agentification": [
+    "Gemini understands IT issues in natural language and resolves common requests automatically.",
+    "LLM executes automated fixes for password resets, access requests, and VPN issues directly.",
+    "65% self-service resolution rate reduces help desk ticket volume by 60% and average resolution to 3 minutes."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Slack",
+        "description": "Chat interface for IT support requests"
+      },
+      {
+        "system": "ServiceNow",
+        "description": "Ticket creation, KB articles, service catalog"
+      },
+      {
+        "system": "Okta",
+        "description": "Password resets, access status checks, group management"
+      },
+      {
+        "system": "Google Workspace",
+        "description": "Account settings, permission checks, calendar access"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Natural language understanding, troubleshooting reasoning"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Intent Understanding",
+        "description": "Parse the user's natural language request to understand the issue type, urgency, and affected systems. Classify as password/access/VPN/hardware/software/other."
+      },
+      {
+        "label": "Knowledge Retrieval",
+        "description": "Search ServiceNow KB and Confluence for matching resolution articles. Rank by relevance and recency. Check for known outages or recent changes that might explain the issue."
+      },
+      {
+        "label": "Resolution Execution",
+        "description": "For common issues (password reset, access request, VPN troubleshooting), execute automated fixes directly. For complex issues, provide step-by-step guided troubleshooting with screenshots."
+      },
+      {
+        "label": "Escalation & Learning",
+        "description": "If self-service fails, create ServiceNow ticket with full conversation context for human agent. Log resolution patterns to improve future auto-resolution."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Self-Service IT Bot so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "slack",
+        "name": "Slack",
+        "owns": [
+          "messages",
+          "channels",
+          "thread_replies"
+        ],
+        "protocol": "Slack API",
+        "localBacking": [
+          "json-api"
+        ],
+        "toolNames": [
+          "query_slack_messages",
+          "query_slack_channels",
+          "query_slack_thread_replies"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "servicenow",
+        "name": "ServiceNow",
+        "owns": [
+          "tickets",
+          "change_requests",
+          "incidents"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_servicenow_tickets",
+          "query_servicenow_change_requests",
+          "query_servicenow_incidents"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "okta",
+        "name": "Okta",
+        "owns": [
+          "users",
+          "groups",
+          "access_grants"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_okta_users",
+          "query_okta_groups",
+          "query_okta_access_grants"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "google_workspace",
+        "name": "Google Workspace",
+        "owns": [
+          "accounts",
+          "group_memberships",
+          "license_assignments"
+        ],
+        "protocol": "Workspace API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_google_workspace_accounts",
+          "query_google_workspace_group_memberships",
+          "query_google_workspace_license_assignments"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "messages",
+        "sourceSystemId": "slack",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "author",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "body",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "sentiment",
+            "type": "enum",
+            "values": [
+              "positive",
+              "neutral",
+              "negative"
+            ],
+            "weights": [
+              0.4,
+              0.4,
+              0.2
+            ],
+            "required": true
+          },
+          {
+            "name": "sent_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "channels",
+        "sourceSystemId": "slack",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "thread_replies",
+        "sourceSystemId": "slack",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "author",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "body",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "sentiment",
+            "type": "enum",
+            "values": [
+              "positive",
+              "neutral",
+              "negative"
+            ],
+            "weights": [
+              0.4,
+              0.4,
+              0.2
+            ],
+            "required": true
+          },
+          {
+            "name": "sent_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "tickets",
+        "sourceSystemId": "servicenow",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "priority",
+            "type": "enum",
+            "values": [
+              "P1",
+              "P2",
+              "P3",
+              "P4"
+            ],
+            "weights": [
+              0.05,
+              0.15,
+              0.4,
+              0.4
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "open",
+              "triaged",
+              "in_progress",
+              "resolved",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "assignee",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "values": [
+              "access",
+              "hardware",
+              "software",
+              "network",
+              "policy",
+              "billing"
+            ],
+            "required": true
+          },
+          {
+            "name": "sla_met",
+            "type": "boolean",
+            "trueRate": 0.78
+          }
+        ]
+      },
+      {
+        "name": "change_requests",
+        "sourceSystemId": "servicenow",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "priority",
+            "type": "enum",
+            "values": [
+              "P1",
+              "P2",
+              "P3",
+              "P4"
+            ],
+            "weights": [
+              0.05,
+              0.15,
+              0.4,
+              0.4
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "open",
+              "triaged",
+              "in_progress",
+              "resolved",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "assignee",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "values": [
+              "access",
+              "hardware",
+              "software",
+              "network",
+              "policy",
+              "billing"
+            ],
+            "required": true
+          },
+          {
+            "name": "sla_met",
+            "type": "boolean",
+            "trueRate": 0.78
+          }
+        ]
+      },
+      {
+        "name": "incidents",
+        "sourceSystemId": "servicenow",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "priority",
+            "type": "enum",
+            "values": [
+              "P1",
+              "P2",
+              "P3",
+              "P4"
+            ],
+            "weights": [
+              0.05,
+              0.15,
+              0.4,
+              0.4
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "open",
+              "triaged",
+              "in_progress",
+              "resolved",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "assignee",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "values": [
+              "access",
+              "hardware",
+              "software",
+              "network",
+              "policy",
+              "billing"
+            ],
+            "required": true
+          },
+          {
+            "name": "sla_met",
+            "type": "boolean",
+            "trueRate": 0.78
+          }
+        ]
+      },
+      {
+        "name": "users",
+        "sourceSystemId": "okta",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "groups",
+        "sourceSystemId": "okta",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "access_grants",
+        "sourceSystemId": "okta",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "accounts",
+        "sourceSystemId": "google_workspace",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "account_name",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "number",
+            "min": 5000,
+            "max": 1000000,
+            "required": true
+          },
+          {
+            "name": "stage",
+            "type": "enum",
+            "values": [
+              "prospecting",
+              "qualification",
+              "proposal",
+              "negotiation",
+              "closed_won",
+              "closed_lost"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "close_date",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "group_memberships",
+        "sourceSystemId": "google_workspace",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "license_assignments",
+        "sourceSystemId": "google_workspace",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      }
+    ],
+    "relationships": [],
+    "documents": [
+      {
+        "id": "self-service-it-bot-runbook",
+        "sourceSystemId": "slack",
+        "type": "runbook",
+        "title": "Self-Service IT Bot Operations Runbook",
+        "requiredSections": [
+          "Detection signals",
+          "Triage procedures",
+          "Remediation actions",
+          "Rollback criteria",
+          "Post-incident review"
+        ],
+        "linkedEntities": [
+          "messages",
+          "channels",
+          "thread_replies"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "detection",
+          "triage",
+          "remediation",
+          "rollback"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "slack_execute_api",
+        "sourceSystemId": "slack",
+        "method": "POST",
+        "path": "/api/slack/execute",
+        "description": "Synchronous endpoint the agent calls to execute in Slack after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "self-service-it-bot-baseline-gap",
+        "description": "Seed a realistic gap where Self-service resolution rate sits between 15% and 65%, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "messages",
+          "channels"
+        ],
+        "discoveryPath": [
+          "Inspect Slack records for the affected entities",
+          "Compare against ServiceNow historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next End User Support Lead action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "self_service_it_bot",
+        "schemas": [
+          "slack",
+          "servicenow",
+          "okta",
+          "google_workspace"
+        ]
+      },
+      "bigquery": {
+        "dataset": "it_self_service_it_bot",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "self-service-it-bot-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "self-service-it-bot-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Self-Service IT Bot workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "End User Support Lead agent for the Self-Service IT Bot workflow",
+      "primaryObjective": "Gemini understands IT issues in natural language and resolves common requests automatically. LLM executes automated fixes for password resets, access requests, and VPN issues directly. so the End User Support Lead can move the Self-service resolution rate KPI.",
+      "inScope": [
+        "Gemini understands IT issues in natural language and resolves common requests automatically",
+        "LLM executes automated fixes for password resets, access requests, and VPN issues directly",
+        "65% self-service resolution rate reduces help desk ticket volume by 60% and average resolution to 3 minutes"
+      ],
+      "outOfScope": [
+        "Production deployments outside an approved change window",
+        "Irreversible destructive actions on shared infrastructure (DROP, force-delete, key rotation)",
+        "Security incident attribution requiring forensics"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_slack_messages",
+          "kind": "query",
+          "sourceSystemId": "slack",
+          "description": "Retrieve messages from Slack for the Self-Service IT Bot workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "messages_records",
+            "messages_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_servicenow_tickets",
+          "kind": "query",
+          "sourceSystemId": "servicenow",
+          "description": "Retrieve tickets from ServiceNow for the Self-Service IT Bot workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "tickets_records",
+            "tickets_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_okta_users",
+          "kind": "query",
+          "sourceSystemId": "okta",
+          "description": "Retrieve users from Okta for the Self-Service IT Bot workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "users_records",
+            "users_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_google_workspace_accounts",
+          "kind": "query",
+          "sourceSystemId": "google_workspace",
+          "description": "Retrieve accounts from Google Workspace for the Self-Service IT Bot workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "accounts_records",
+            "accounts_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_self_service_it_bot_runbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "slack",
+          "description": "Look up sections of the Self-Service IT Bot Operations Runbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_slack_execute",
+          "kind": "action",
+          "sourceSystemId": "slack",
+          "description": "Execute the execute step in Slack after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "knowledge_retrieval",
+            "label": "Knowledge Retrieval",
+            "description": "Search ServiceNow KB and Confluence for matching resolution articles. Rank by relevance and recency. Check for known outages or recent changes that might explain the issue.",
+            "tools": [
+              "query_servicenow_tickets",
+              "lookup_self_service_it_bot_runbook"
+            ]
+          },
+          {
+            "id": "resolution_execution",
+            "label": "Resolution Execution",
+            "description": "For common issues (password reset, access request, VPN troubleshooting), execute automated fixes directly. For complex issues, provide step-by-step guided troubleshooting with screenshots.",
+            "tools": [
+              "action_slack_execute"
+            ]
+          },
+          {
+            "id": "escalation_learning",
+            "label": "Escalation & Learning",
+            "description": "If self-service fails, create ServiceNow ticket with full conversation context for human agent. Log resolution patterns to improve future auto-resolution.",
+            "tools": [
+              "query_servicenow_tickets",
+              "lookup_self_service_it_bot_runbook"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Self-service resolution rate moved from 15% toward 65%",
+          "mustCite": [
+            "slack.messages",
+            "servicenow.tickets"
+          ],
+          "sourceSystemIds": [
+            "slack",
+            "servicenow"
+          ]
+        },
+        {
+          "claim": "Average resolution time moved from 4 hours (with human) toward 3 minutes (bot)",
+          "mustCite": [
+            "slack.messages",
+            "servicenow.tickets"
+          ],
+          "sourceSystemIds": [
+            "slack",
+            "servicenow"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Self-service resolution rate regresses past the 15% baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "End User Support Lead",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed execute action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Slack (and other named systems) entities.",
+        "Never bypass End User Support Lead approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "self-service-it-bot-end-to-end",
+          "prompt": "Run the Self-Service IT Bot workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_slack_messages",
+            "query_servicenow_tickets",
+            "query_okta_users",
+            "query_google_workspace_accounts",
+            "lookup_self_service_it_bot_runbook",
+            "action_slack_execute"
+          ],
+          "mustReferenceEntities": [
+            "messages",
+            "tickets",
+            "users",
+            "accounts"
+          ],
+          "mustCiteDocuments": [
+            "self-service-it-bot-runbook"
+          ],
+          "expectedActionOutcome": "Action execute executed against Slack, with audit-trail entry and End User Support Lead notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute execute without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/it/SelfServiceITBot.tsx",
+    "familyId": "self-service-it-bot",
+    "variant": {
+      "familyId": "self-service-it-bot",
+      "variantId": "self-service-it-bot",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

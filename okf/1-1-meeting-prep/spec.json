@@ -1,0 +1,1235 @@
+{
+  "id": "1-1-meeting-prep",
+  "title": "1:1 Meeting Prep",
+  "department": "hr",
+  "sourcePath": "../presentation/src/components/slides/use-cases/hr/OneOnOnePrep.tsx",
+  "subtitle": "A-303 • Performance Mgmt",
+  "persona": "Manager",
+  "layer": "Layer 2: Agent Designer",
+  "triggerType": "scheduled",
+  "domainId": "domain-3",
+  "systems": [
+    "Google Calendar",
+    "Workday",
+    "Slack",
+    "Lattice"
+  ],
+  "kpis": [
+    {
+      "label": "Prep time",
+      "before": "30 min",
+      "after": "Zero"
+    },
+    {
+      "label": "Agenda relevance",
+      "before": "Generic",
+      "after": "Data-driven"
+    },
+    {
+      "label": "Follow-up tracking",
+      "before": "Lost",
+      "after": "Automated"
+    }
+  ],
+  "statusQuo": [
+    "1:1 agendas created ad-hoc or not at all; lack of consistency.",
+    "Managers manually gather context from multiple siloed systems.",
+    "Talking points based on memory rather than objective data signals."
+  ],
+  "agentification": [
+    "Auto-generated agendas with goal progress and recent feedback.",
+    "Suggested coaching topics based on real-time performance signals.",
+    "Integrated recognition and milestone reminders for managers."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Workday",
+        "description": "Employee profile, recent performance data, tenure milestones"
+      },
+      {
+        "system": "Lattice",
+        "description": "OKR progress, recent feedback, check-in history"
+      },
+      {
+        "system": "Google Calendar",
+        "description": "Upcoming 1:1 meetings, scheduling context"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Context synthesis, talking point generation, coaching prompts"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Meeting Detection",
+        "description": "Monitor Google Calendar for upcoming 1:1 meetings. Trigger context assembly 24 hours before each scheduled session."
+      },
+      {
+        "label": "Context Assembly",
+        "description": "Gather OKR progress from Lattice, recent feedback, sentiment signals, and performance data from Workday. Build comprehensive employee context."
+      },
+      {
+        "label": "Agenda Generation",
+        "description": "Gemini generates personalized talking points, coaching prompts, and recognition reminders based on assembled context and recent developments."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for 1:1 Meeting Prep so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "google_calendar",
+        "name": "Google Calendar",
+        "owns": [
+          "events",
+          "attendee_responses",
+          "room_bookings"
+        ],
+        "protocol": "Workspace API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_google_calendar_events",
+          "query_google_calendar_attendee_responses",
+          "query_google_calendar_room_bookings"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "workday",
+        "name": "Workday",
+        "owns": [
+          "employees",
+          "positions",
+          "compensation_records"
+        ],
+        "protocol": "Workday REST",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_workday_employees",
+          "query_workday_positions",
+          "query_workday_compensation_records"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "slack",
+        "name": "Slack",
+        "owns": [
+          "messages",
+          "channels",
+          "thread_replies"
+        ],
+        "protocol": "Slack API",
+        "localBacking": [
+          "json-api"
+        ],
+        "toolNames": [
+          "query_slack_messages",
+          "query_slack_channels",
+          "query_slack_thread_replies"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "lattice",
+        "name": "Lattice",
+        "owns": [
+          "engagement_surveys",
+          "feedback_records",
+          "review_cycles"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_lattice_engagement_surveys",
+          "query_lattice_feedback_records",
+          "query_lattice_review_cycles"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "events",
+        "sourceSystemId": "google_calendar",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "attendee_response_id",
+            "type": "ref",
+            "ref": "attendee_responses.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "attendee_responses",
+        "sourceSystemId": "google_calendar",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "respondent_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "question_code",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "score",
+            "type": "number",
+            "min": 1,
+            "max": 10,
+            "required": true
+          },
+          {
+            "name": "comment",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "submitted_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "room_bookings",
+        "sourceSystemId": "google_calendar",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "employees",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "positions",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "compensation_records",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "messages",
+        "sourceSystemId": "slack",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "author",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "body",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "sentiment",
+            "type": "enum",
+            "values": [
+              "positive",
+              "neutral",
+              "negative"
+            ],
+            "weights": [
+              0.4,
+              0.4,
+              0.2
+            ],
+            "required": true
+          },
+          {
+            "name": "sent_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "channels",
+        "sourceSystemId": "slack",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "thread_replies",
+        "sourceSystemId": "slack",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "author",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "body",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "sentiment",
+            "type": "enum",
+            "values": [
+              "positive",
+              "neutral",
+              "negative"
+            ],
+            "weights": [
+              0.4,
+              0.4,
+              0.2
+            ],
+            "required": true
+          },
+          {
+            "name": "sent_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "engagement_surveys",
+        "sourceSystemId": "lattice",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "respondent_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "question_code",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "score",
+            "type": "number",
+            "min": 1,
+            "max": 10,
+            "required": true
+          },
+          {
+            "name": "comment",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "submitted_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "feedback_records",
+        "sourceSystemId": "lattice",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "respondent_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "question_code",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "score",
+            "type": "number",
+            "min": 1,
+            "max": 10,
+            "required": true
+          },
+          {
+            "name": "comment",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "submitted_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "review_cycles",
+        "sourceSystemId": "lattice",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "events.attendee_response_id",
+        "to": "attendee_responses.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "1-1-meeting-prep-policy-handbook",
+        "sourceSystemId": "google_calendar",
+        "type": "policy",
+        "title": "1:1 Meeting Prep Policy Handbook",
+        "requiredSections": [
+          "Eligibility and scope",
+          "Workflow steps",
+          "Manager responsibilities",
+          "Compliance and audit",
+          "Sensitive-data handling"
+        ],
+        "linkedEntities": [
+          "events",
+          "attendee_responses",
+          "room_bookings"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "eligibility",
+          "workflow",
+          "compliance",
+          "sensitive-data"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "google_calendar_generate_api",
+        "sourceSystemId": "google_calendar",
+        "method": "POST",
+        "path": "/api/google_calendar/generate",
+        "description": "Synchronous endpoint the agent calls to generate in Google Calendar after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "1-1-meeting-prep-baseline-gap",
+        "description": "Seed a realistic gap where Prep time sits between 30 min and Zero, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "events",
+          "attendee_responses"
+        ],
+        "discoveryPath": [
+          "Inspect Google Calendar records for the affected entities",
+          "Compare against Workday historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next Manager action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "1_1_meeting_prep",
+        "schemas": [
+          "google_calendar",
+          "workday",
+          "slack",
+          "lattice"
+        ]
+      },
+      "bigquery": {
+        "dataset": "hr_1_1_meeting_prep",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "1-1-meeting-prep-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "1-1-meeting-prep-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the 1:1 Meeting Prep workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "Manager agent for the 1:1 Meeting Prep workflow",
+      "primaryObjective": "Auto-generated agendas with goal progress and recent feedback. Suggested coaching topics based on real-time performance signals. so the Manager can move the Prep time KPI.",
+      "inScope": [
+        "Auto-generated agendas with goal progress and recent feedback",
+        "Suggested coaching topics based on real-time performance signals",
+        "Integrated recognition and milestone reminders for managers"
+      ],
+      "outOfScope": [
+        "Final hiring, termination, or compensation decisions (HRBP/leadership retains authority)",
+        "Performance management adjudication and disciplinary action",
+        "Legal interpretation of employment law in ambiguous jurisdictions"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_google_calendar_events",
+          "kind": "query",
+          "sourceSystemId": "google_calendar",
+          "description": "Retrieve events from Google Calendar for the 1:1 Meeting Prep workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "events_records",
+            "events_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_workday_employees",
+          "kind": "query",
+          "sourceSystemId": "workday",
+          "description": "Retrieve employees from Workday for the 1:1 Meeting Prep workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "employees_records",
+            "employees_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_slack_messages",
+          "kind": "query",
+          "sourceSystemId": "slack",
+          "description": "Retrieve messages from Slack for the 1:1 Meeting Prep workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "messages_records",
+            "messages_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_lattice_engagement_surveys",
+          "kind": "query",
+          "sourceSystemId": "lattice",
+          "description": "Retrieve engagement surveys from Lattice for the 1:1 Meeting Prep workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "engagement_surveys_records",
+            "engagement_surveys_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_1_1_meeting_prep_policy_handbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "google_calendar",
+          "description": "Look up sections of the 1:1 Meeting Prep Policy Handbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_google_calendar_generate",
+          "kind": "action",
+          "sourceSystemId": "google_calendar",
+          "description": "Execute the generate step in Google Calendar after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "meeting_detection",
+            "label": "Meeting Detection",
+            "description": "Monitor Google Calendar for upcoming 1:1 meetings. Trigger context assembly 24 hours before each scheduled session.",
+            "tools": [
+              "query_google_calendar_events",
+              "lookup_1_1_meeting_prep_policy_handbook",
+              "action_google_calendar_generate"
+            ]
+          },
+          {
+            "id": "context_assembly",
+            "label": "Context Assembly",
+            "description": "Gather OKR progress from Lattice, recent feedback, sentiment signals, and performance data from Workday. Build comprehensive employee context.",
+            "tools": [
+              "query_workday_employees",
+              "query_lattice_engagement_surveys"
+            ]
+          },
+          {
+            "id": "agenda_generation",
+            "label": "Agenda Generation",
+            "description": "Gemini generates personalized talking points, coaching prompts, and recognition reminders based on assembled context and recent developments.",
+            "tools": [
+              "action_google_calendar_generate"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Prep time moved from 30 min toward Zero",
+          "mustCite": [
+            "google_calendar.events",
+            "workday.employees"
+          ],
+          "sourceSystemIds": [
+            "google_calendar",
+            "workday"
+          ]
+        },
+        {
+          "claim": "Agenda relevance moved from Generic toward Data-driven",
+          "mustCite": [
+            "google_calendar.events",
+            "workday.employees"
+          ],
+          "sourceSystemIds": [
+            "google_calendar",
+            "workday"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Prep time regresses past the 30 min baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Manager",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed generate action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Google Calendar (and other named systems) entities.",
+        "Never bypass Manager approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "1-1-meeting-prep-end-to-end",
+          "prompt": "Run the 1:1 Meeting Prep workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_google_calendar_events",
+            "query_workday_employees",
+            "query_slack_messages",
+            "query_lattice_engagement_surveys",
+            "lookup_1_1_meeting_prep_policy_handbook",
+            "action_google_calendar_generate"
+          ],
+          "mustReferenceEntities": [
+            "events",
+            "employees",
+            "messages",
+            "engagement_surveys"
+          ],
+          "mustCiteDocuments": [
+            "1-1-meeting-prep-policy-handbook"
+          ],
+          "expectedActionOutcome": "Action generate executed against Google Calendar, with audit-trail entry and Manager notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute generate without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/hr/OneOnOnePrep.tsx",
+    "familyId": "1-1-meeting-prep",
+    "variant": {
+      "familyId": "1-1-meeting-prep",
+      "variantId": "1-1-meeting-prep",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

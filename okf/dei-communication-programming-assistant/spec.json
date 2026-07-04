@@ -1,0 +1,1116 @@
+{
+  "id": "dei-communication-programming-assistant",
+  "title": "DEI Communication & Programming Assistant",
+  "department": "hr",
+  "sourcePath": "../presentation/src/components/slides/use-cases/hr/DEICommunicationProgramming.tsx",
+  "subtitle": "A-903 • DEI Strategy & Programming",
+  "persona": "DEI Lead",
+  "layer": "Layer 1: OOTB",
+  "triggerType": "chat",
+  "domainId": "domain-9",
+  "systems": [
+    "Google Docs",
+    "Slack",
+    "LMS",
+    "Intranet"
+  ],
+  "kpis": [
+    {
+      "label": "Content creation",
+      "before": "Ad-hoc",
+      "after": "Data-informed"
+    },
+    {
+      "label": "Program design",
+      "before": "Trend-based",
+      "after": "Org-specific"
+    },
+    {
+      "label": "Participation tracking",
+      "before": "Manual",
+      "after": "Automated"
+    }
+  ],
+  "statusQuo": [
+    "DEI communications drafted ad-hoc without data backing or representation context.",
+    "Program design based on industry trends rather than org-specific needs.",
+    "Participation tracking is manual with no connection to impact measurement."
+  ],
+  "agentification": [
+    "Data-informed DEI communications tied to organizational representation data.",
+    "Evidence-based program design informed by engagement and belonging surveys.",
+    "Automated participation tracking with impact correlation to belonging metrics."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Google Docs",
+        "description": "DEI communication drafts, program content, brand guidelines"
+      },
+      {
+        "system": "Slack",
+        "description": "DEI program announcements, ERG communications, event promotion"
+      },
+      {
+        "system": "Workday",
+        "description": "Representation data, belonging survey results, org demographics"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Data-informed content generation, evidence-based program design"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "DEI Data Intake",
+        "description": "Pull representation data and belonging survey results from Workday. Identify organizational gaps and priority areas that should inform communication and programming."
+      },
+      {
+        "label": "Content Generation",
+        "description": "Gemini generates data-backed DEI communications tied to actual organizational representation data. Ensures messaging is authentic, specific, and avoids performative language."
+      },
+      {
+        "label": "Evidence-Based Program Design",
+        "description": "Design DEI programs informed by engagement and belonging survey data. Match interventions to identified gaps with expected impact estimates."
+      },
+      {
+        "label": "Distribution & Impact Tracking",
+        "description": "Distribute content via Slack and Google Docs. Track participation rates and correlate to belonging metrics for continuous improvement."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for DEI Communication & Programming Assistant so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "google_docs",
+        "name": "Google Docs",
+        "owns": [
+          "documents",
+          "comments",
+          "revision_history"
+        ],
+        "protocol": "Workspace API",
+        "localBacking": [
+          "cloud-storage"
+        ],
+        "toolNames": [
+          "query_google_docs_documents",
+          "query_google_docs_comments",
+          "query_google_docs_revision_history"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "slack",
+        "name": "Slack",
+        "owns": [
+          "messages",
+          "channels",
+          "thread_replies"
+        ],
+        "protocol": "Slack API",
+        "localBacking": [
+          "json-api"
+        ],
+        "toolNames": [
+          "query_slack_messages",
+          "query_slack_channels",
+          "query_slack_thread_replies"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "lms",
+        "name": "LMS",
+        "owns": [
+          "lms_records",
+          "lms_events",
+          "lms_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_lms_lms_records",
+          "query_lms_lms_events",
+          "query_lms_lms_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "intranet",
+        "name": "Intranet",
+        "owns": [
+          "intranet_records",
+          "intranet_events",
+          "intranet_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_intranet_intranet_records",
+          "query_intranet_intranet_events",
+          "query_intranet_intranet_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "documents",
+        "sourceSystemId": "google_docs",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "review",
+              "published",
+              "archived"
+            ],
+            "required": true
+          },
+          {
+            "name": "last_updated",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "comments",
+        "sourceSystemId": "google_docs",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "revision_history",
+        "sourceSystemId": "google_docs",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "document_id",
+            "type": "ref",
+            "ref": "documents.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "messages",
+        "sourceSystemId": "slack",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "author",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "body",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "sentiment",
+            "type": "enum",
+            "values": [
+              "positive",
+              "neutral",
+              "negative"
+            ],
+            "weights": [
+              0.4,
+              0.4,
+              0.2
+            ],
+            "required": true
+          },
+          {
+            "name": "sent_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "channels",
+        "sourceSystemId": "slack",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "thread_replies",
+        "sourceSystemId": "slack",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "author",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "body",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "sentiment",
+            "type": "enum",
+            "values": [
+              "positive",
+              "neutral",
+              "negative"
+            ],
+            "weights": [
+              0.4,
+              0.4,
+              0.2
+            ],
+            "required": true
+          },
+          {
+            "name": "sent_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "lms_records",
+        "sourceSystemId": "lms",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "lms_events",
+        "sourceSystemId": "lms",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "lms_record_id",
+            "type": "ref",
+            "ref": "lms_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "lms_audit_trail",
+        "sourceSystemId": "lms",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "intranet_records",
+        "sourceSystemId": "intranet",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "intranet_events",
+        "sourceSystemId": "intranet",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "intranet_record_id",
+            "type": "ref",
+            "ref": "intranet_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "intranet_audit_trail",
+        "sourceSystemId": "intranet",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "revision_history.document_id",
+        "to": "documents.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "lms_events.lms_record_id",
+        "to": "lms_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "intranet_events.intranet_record_id",
+        "to": "intranet_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "dei-communication-programming-assistant-policy-handbook",
+        "sourceSystemId": "google_docs",
+        "type": "policy",
+        "title": "DEI Communication & Programming Assistant Policy Handbook",
+        "requiredSections": [
+          "Eligibility and scope",
+          "Workflow steps",
+          "Manager responsibilities",
+          "Compliance and audit",
+          "Sensitive-data handling"
+        ],
+        "linkedEntities": [
+          "documents",
+          "comments",
+          "revision_history"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "eligibility",
+          "workflow",
+          "compliance",
+          "sensitive-data"
+        ]
+      }
+    ],
+    "apis": [],
+    "anomalies": [
+      {
+        "id": "dei-communication-programming-assistant-baseline-gap",
+        "description": "Seed a realistic gap where Content creation sits between Ad-hoc and Data-informed, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "documents",
+          "comments"
+        ],
+        "discoveryPath": [
+          "Inspect Google Docs records for the affected entities",
+          "Compare against Slack historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next DEI Lead action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "dei_communication_programming_assistant",
+        "schemas": [
+          "google_docs",
+          "slack",
+          "lms",
+          "intranet"
+        ]
+      },
+      "bigquery": {
+        "dataset": "hr_dei_communication_programming_assistant",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "dei-communication-programming-assistant-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "dei-communication-programming-assistant-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the DEI Communication & Programming Assistant workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "DEI Lead agent for the DEI Communication & Programming Assistant workflow",
+      "primaryObjective": "Data-informed DEI communications tied to organizational representation data. Evidence-based program design informed by engagement and belonging surveys. so the DEI Lead can move the Content creation KPI.",
+      "inScope": [
+        "Data-informed DEI communications tied to organizational representation data",
+        "Evidence-based program design informed by engagement and belonging surveys",
+        "Automated participation tracking with impact correlation to belonging metrics"
+      ],
+      "outOfScope": [
+        "Final hiring, termination, or compensation decisions (HRBP/leadership retains authority)",
+        "Performance management adjudication and disciplinary action",
+        "Legal interpretation of employment law in ambiguous jurisdictions"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_google_docs_documents",
+          "kind": "query",
+          "sourceSystemId": "google_docs",
+          "description": "Retrieve documents from Google Docs for the DEI Communication & Programming Assistant workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "documents_records",
+            "documents_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_slack_messages",
+          "kind": "query",
+          "sourceSystemId": "slack",
+          "description": "Retrieve messages from Slack for the DEI Communication & Programming Assistant workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "messages_records",
+            "messages_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_lms_lms_records",
+          "kind": "query",
+          "sourceSystemId": "lms",
+          "description": "Retrieve lms records from LMS for the DEI Communication & Programming Assistant workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "lms_records_records",
+            "lms_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_intranet_intranet_records",
+          "kind": "query",
+          "sourceSystemId": "intranet",
+          "description": "Retrieve intranet records from Intranet for the DEI Communication & Programming Assistant workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "intranet_records_records",
+            "intranet_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_dei_communication_programming_assistant_policy_handbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "google_docs",
+          "description": "Look up sections of the DEI Communication & Programming Assistant Policy Handbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "dei_data_intake",
+            "label": "DEI Data Intake",
+            "description": "Pull representation data and belonging survey results from Workday. Identify organizational gaps and priority areas that should inform communication and programming.",
+            "tools": [
+              "lookup_dei_communication_programming_assistant_policy_handbook"
+            ]
+          },
+          {
+            "id": "content_generation",
+            "label": "Content Generation",
+            "description": "Gemini generates data-backed DEI communications tied to actual organizational representation data. Ensures messaging is authentic, specific, and avoids performative language.",
+            "tools": [
+              "lookup_dei_communication_programming_assistant_policy_handbook"
+            ]
+          },
+          {
+            "id": "distribution_impact_tracking",
+            "label": "Distribution & Impact Tracking",
+            "description": "Distribute content via Slack and Google Docs. Track participation rates and correlate to belonging metrics for continuous improvement.",
+            "tools": [
+              "query_google_docs_documents",
+              "query_slack_messages",
+              "lookup_dei_communication_programming_assistant_policy_handbook"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Content creation moved from Ad-hoc toward Data-informed",
+          "mustCite": [
+            "google_docs.documents",
+            "slack.messages"
+          ],
+          "sourceSystemIds": [
+            "google_docs",
+            "slack"
+          ]
+        },
+        {
+          "claim": "Program design moved from Trend-based toward Org-specific",
+          "mustCite": [
+            "google_docs.documents",
+            "slack.messages"
+          ],
+          "sourceSystemIds": [
+            "google_docs",
+            "slack"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Content creation regresses past the Ad-hoc baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "DEI Lead",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Google Docs (and other named systems) entities.",
+        "Never bypass DEI Lead approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "dei-communication-programming-assistant-end-to-end",
+          "prompt": "Run the DEI Communication & Programming Assistant workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_google_docs_documents",
+            "query_slack_messages",
+            "query_lms_lms_records",
+            "query_intranet_intranet_records",
+            "lookup_dei_communication_programming_assistant_policy_handbook"
+          ],
+          "mustReferenceEntities": [
+            "documents",
+            "messages",
+            "lms_records",
+            "intranet_records"
+          ],
+          "mustCiteDocuments": [
+            "dei-communication-programming-assistant-policy-handbook"
+          ],
+          "expectedActionOutcome": "DEI Lead receives a fully-cited recommendation; no external state change without explicit approval.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not act on single-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/hr/DEICommunicationProgramming.tsx",
+    "familyId": "dei-communication-programming-assistant",
+    "variant": {
+      "familyId": "dei-communication-programming-assistant",
+      "variantId": "dei-communication-programming-assistant",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}
