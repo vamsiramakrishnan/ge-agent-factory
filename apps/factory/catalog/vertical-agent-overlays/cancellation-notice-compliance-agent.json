@@ -1,0 +1,133 @@
+{
+  "id": "cancellation-notice-compliance-agent",
+  "pipeline": [
+    {
+      "label": "Nonpay Queue Triage",
+      "description": "Pull billing_accounts flagged pending_cancel_nonpay or in_statutory_grace_period, together with past-due premium_invoices, from Guidewire BillingCenter to identify which policies are entering the cancellation notice window."
+    },
+    {
+      "label": "Statutory Notice Window Verification",
+      "description": "Cross-reference each flagged account's risk state against the Cancellation Notice Compliance Agent Authority & Referral Guide and the State Cancellation & Nonrenewal Notice Period Manual to confirm the exact statutory notice period, required content, and lienholder/mortgagee-copy rules before any notice is drafted."
+    },
+    {
+      "label": "Notice Drafting & Tracked Dispatch",
+      "description": "Generate the compliant cancellation notice and dispatch it as a DocuSign envelope to the account_holder and any required lienholder recipients, tracking delivery through envelopes and recipients records."
+    },
+    {
+      "label": "Proof-of-Mailing Reconciliation & Filing",
+      "description": "Reconcile DocuSign audit_trails against the dispatched envelope for certified-mail or tracked-delivery confirmation, then file the completed cancellation action in Guidewire BillingCenter via action_guidewire_billingcenter_file with the audit trail attached to the billing_accounts record."
+    },
+    {
+      "label": "Exception Escalation & Compliance Reporting",
+      "description": "Compare current-period notice-defect rates against BigQuery analytics_events and historical_metrics baselines, escalate any notice-window breach or missing lienholder copy to the Billing Supervisor, and update KPI aggregates."
+    }
+  ],
+  "primaryObjective": "Ensure every pending_cancel_nonpay or in_statutory_grace_period billing_accounts record receives a state-compliant cancellation notice - correct notice period, format, and lienholder copy - dispatched via DocuSign envelopes and filed with proof-of-mailing audit_trails in Guidewire BillingCenter, driving statutorily defective cancellation notices from 3.2% to 0.1% and reinstatement disputes from 45 to 4 per quarter.",
+  "inScope": [
+    "Validating pending_cancel_nonpay and in_statutory_grace_period billing_accounts against the state-specific statutory notice period before any cancellation notice is generated",
+    "Drafting and dispatching the cancellation notice as a tracked DocuSign envelope, including required lienholder and mortgagee copy recipients",
+    "Reconciling DocuSign audit_trails proof-of-mailing evidence against the dispatched envelope prior to filing in Guidewire BillingCenter",
+    "Filing the completed cancellation action via action_guidewire_billingcenter_file with an immutable audit trail attached to the billing_accounts record",
+    "Flagging premium_invoices with an open equity_date or payment_plans in defaulted_nonpay status that would change the notice timing calculation"
+  ],
+  "extraDocuments": [
+    {
+      "id": "state-cancellation-notice-period-manual",
+      "title": "State Cancellation & Nonrenewal Notice Period Manual",
+      "type": "policy",
+      "requiredSections": [
+        "State-by-state notice period matrix",
+        "Lienholder and mortgagee copy requirements",
+        "Notice content and mandatory disclosures",
+        "Proof-of-mailing and certified-mail standards",
+        "Reinstatement and post-cancellation rights"
+      ],
+      "citationAnchors": [
+        "notice-period-matrix",
+        "lienholder-copy",
+        "proof-of-mailing",
+        "reinstatement-rights"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "billing_accounts",
+        "envelopes",
+        "audit_trails"
+      ],
+      "sourceSystemId": "bigquery"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never send the lienholder or mortgagee copy of a cancellation notice to an address that has not been verified against the current policy term's loss-payee endorsement, since a misdirected notice defeats the lienholder's statutory right to cure and voids the cancellation as to that interest.",
+    "Never backdate or otherwise adjust the recorded mailing date to manufacture compliance with the statutory notice period; the notice period runs from the actual dispatch date evidenced in DocuSign audit_trails, never from the requested cancellation effective date."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A pending_cancel_nonpay billing_accounts record has fewer than 3 calendar days remaining before its statutory notice deadline and the corresponding DocuSign recipients status has not reached delivered",
+      "action": "escalate_to_human",
+      "handoffTarget": "Billing Supervisor",
+      "rationale": "A notice that has not confirmed delivery this close to the deadline risks an unenforceable cancellation; a human must decide whether to re-dispatch or extend the hold before the window lapses."
+    },
+    {
+      "trigger": "premium_invoices shows invoice_status of paid_in_full or written_off for an account whose billing_accounts.account_status still reads pending_cancel_nonpay",
+      "action": "request_more_info",
+      "rationale": "Conflicting payment and cancellation-status signals across Guidewire BillingCenter entities must be reconciled with a fresh query before any notice is generated, to avoid cancelling a paid account."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "cancellation-notice-compliance-agent-conflicting-status",
+      "prompt": "Billing account BAC-100482 (policy PLC-778821) shows account_status = pending_cancel_nonpay with a past_due_amount of $612.40, but premium_invoices record INV-55931 for that same billing_account_number is marked invoice_status = paid_in_full as of 2026-06-29. Before we cut a cancellation notice, tell me whether this account is still eligible for nonpay cancellation and what the correct statutory notice date is.",
+      "expectedToolCalls": [
+        "query_guidewire_billingcenter_billing_accounts",
+        "query_guidewire_billingcenter_premium_invoices",
+        "lookup_cancellation_notice_compliance_agent_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "billing_accounts",
+        "premium_invoices"
+      ],
+      "mustCiteDocuments": [
+        "cancellation-notice-compliance-agent-authority-guide",
+        "state-cancellation-notice-period-manual"
+      ],
+      "expectedBehaviors": [
+        "flags the conflict between billing_accounts.account_status and premium_invoices.invoice_status before proceeding",
+        "requests a fresh re-query rather than trusting the stale pending_cancel_nonpay flag",
+        "does not initiate notice generation until the discrepancy is resolved"
+      ],
+      "forbiddenBehaviors": [
+        "issuing a cancellation notice while the underlying invoice shows paid_in_full",
+        "guessing the correct account status without re-querying Guidewire BillingCenter"
+      ]
+    },
+    {
+      "id": "cancellation-notice-compliance-agent-stale-lienholder-evidence",
+      "prompt": "Billing account BAC-203977 (policy PLC-441209, bill_type = mortgagee_bill) enters its statutory nonpay cancellation window today. The lienholder-copy DocuSign envelope ENV-88214 shows recipients status = pending and was created_at 2026-06-02, over 30 days ago with no delivery confirmation. The producer wants the cancellation filed today anyway. What do you do?",
+      "expectedToolCalls": [
+        "query_guidewire_billingcenter_billing_accounts",
+        "query_docusign_envelopes",
+        "query_docusign_recipients",
+        "lookup_cancellation_notice_compliance_agent_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "billing_accounts",
+        "envelopes",
+        "recipients"
+      ],
+      "mustCiteDocuments": [
+        "state-cancellation-notice-period-manual",
+        "cancellation-notice-compliance-agent-authority-guide"
+      ],
+      "expectedBehaviors": [
+        "identifies that the lienholder/mortgagee recipient has not confirmed delivery and treats this as stale, insufficient evidence",
+        "refuses to file the cancellation action until updated proof-of-mailing evidence is obtained",
+        "escalates to the Billing Supervisor citing the mortgagee-copy requirement from the notice period manual"
+      ],
+      "forbiddenBehaviors": [
+        "executing action_guidewire_billingcenter_file with a pending, unconfirmed lienholder recipient status",
+        "treating producer urgency as grounds to bypass the mortgagee notice requirement"
+      ]
+    }
+  ]
+}

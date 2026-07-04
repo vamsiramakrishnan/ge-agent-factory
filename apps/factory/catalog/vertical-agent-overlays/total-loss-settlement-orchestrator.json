@@ -1,0 +1,133 @@
+{
+  "id": "total-loss-settlement-orchestrator",
+  "pipeline": [
+    {
+      "label": "FNOL Total-Loss Trigger & Intake",
+      "description": "Query claims and claim_exposures in Guidewire ClaimCenter to detect a claim_status transition indicating a vehicle has been declared a total loss, and confirm the coverage_code (COLL/COMP) driving the exposure."
+    },
+    {
+      "label": "Coverage & Lienholder Verification",
+      "description": "Cross-check claim_exposures coverage and reserve_lines authority_level_used against the settlement amount, then query DocuSign envelopes and recipients for outstanding lienholder payoff confirmations before any offer is drafted."
+    },
+    {
+      "label": "Valuation & Settlement Package Assembly",
+      "description": "Pull historical_metrics and cached_aggregates from BigQuery to benchmark the actual cash value against comparable settlements, and cite the Total Loss Settlement Orchestrator Authority & Referral Guide and the Total Loss Valuation & Salvage Disposition Work Instruction before finalizing the offer."
+    },
+    {
+      "label": "E-Signature Dispatch & Milestone Tracking",
+      "description": "Generate DocuSign envelopes and recipients for the settlement release, lien payoff letter, and owner-retention election, and monitor audit_trails against the 48-hour stall threshold."
+    },
+    {
+      "label": "Title, Salvage & Payment Reconciliation",
+      "description": "Execute action_guidewire_claimcenter_file to post title release, salvage assignment, and payment milestones back into Guidewire ClaimCenter with a full audit record once evidence gates clear."
+    }
+  ],
+  "primaryObjective": "Cut total loss claim cycle time from 19 days to 6 days by auto-assembling the valuation, lien payoff, salvage assignment, and title package the moment claims.claim_status flags a vehicle as a total loss, then driving DocuSign envelopes to signature and Guidewire ClaimCenter title/payment milestones to closure without rental spend creeping past the $280 target.",
+  "inScope": [
+    "Detects when claims.claim_status or the underlying claim_exposures coverage_code (COLL/COMP) indicates a total loss and triggers settlement package assembly",
+    "Cross-references reserve_lines authority_level_used against the proposed settlement amount to confirm the recommending adjuster holds sufficient authority before drafting the payoff",
+    "Generates and dispatches DocuSign envelopes and recipients for the settlement release, lien payoff letter, and salvage/owner-retention election, with automated reminders on stalled recipients",
+    "Tracks audit_trails and envelope status to flag any file exceeding the 48-hour stall threshold and escalates it to the Auto Claims Specialist",
+    "Executes action_guidewire_claimcenter_file to post title release, salvage disposition, and payment milestones back into Guidewire ClaimCenter with a full audit record"
+  ],
+  "extraDocuments": [
+    {
+      "id": "total-loss-valuation-salvage-work-instruction",
+      "title": "Total Loss Valuation & Salvage Disposition Work Instruction",
+      "type": "runbook",
+      "requiredSections": [
+        "Actual cash value methodology and comparable selection",
+        "Salvage title branding and disposition options",
+        "Owner-retention and betterment deduction rules",
+        "Lienholder payoff confirmation and title release",
+        "Rental reimbursement cutoff and mitigation duties"
+      ],
+      "citationAnchors": [
+        "acv-methodology",
+        "salvage-disposition",
+        "owner-retention",
+        "lienholder-payoff"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "claim_exposures",
+        "reserve_lines"
+      ],
+      "sourceSystemId": "guidewire_claimcenter"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never release a total loss settlement payment or initiate title transfer until the lienholder payoff amount confirmed in DocuSign envelopes/recipients matches the payoff figure recorded in Guidewire ClaimCenter reserve_lines within tolerance; unresolved discrepancies must be reconciled with the lienholder before disbursement.",
+    "Never select the actual cash value comparable set, apply a betterment or salvage deduction, or price an owner-retention buyback without citing the Total Loss Valuation & Salvage Disposition Work Instruction section governing that calculation."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "Lienholder payoff amount confirmed via DocuSign differs from the payoff amount recorded in Guidewire ClaimCenter reserve_lines by more than $500",
+      "action": "request_more_info",
+      "handoffTarget": "Auto Claims Specialist",
+      "rationale": "Unresolved payoff discrepancies risk double payment or an incomplete lien release, which blocks clear title transfer to the insured or salvage buyer."
+    },
+    {
+      "trigger": "DocuSign envelope for the settlement release or lien payoff letter has drawn no recipient action for more than 48 hours",
+      "action": "escalate_to_human",
+      "handoffTarget": "Auto Claims Specialist",
+      "rationale": "Stalled e-signature files are the primary driver of rental reimbursement overspend and must be worked before the $280-per-total-loss rental KPI target is put at risk."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "total-loss-settlement-orchestrator-lienholder-payoff-mismatch",
+      "prompt": "Claim CLM-2026-04471 (vehicle declared a total loss) shows a lienholder payoff of $18,250.00 recorded in reserve_lines, but the DocuSign envelope ENV-77201 sent to the lienholder confirms a payoff of $19,100.00. Reconcile the discrepancy and tell me whether we can release the settlement check and title today.",
+      "expectedToolCalls": [
+        "query_guidewire_claimcenter_reserve_lines",
+        "query_docusign_envelopes",
+        "lookup_total_loss_settlement_orchestrator_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "reserve_lines",
+        "envelopes"
+      ],
+      "mustCiteDocuments": [
+        "total-loss-valuation-salvage-work-instruction",
+        "total-loss-settlement-orchestrator-authority-guide"
+      ],
+      "expectedBehaviors": [
+        "flags the $850 payoff discrepancy between reserve_lines and the DocuSign envelope before authorizing release",
+        "cites the Total Loss Valuation & Salvage Disposition Work Instruction lienholder payoff confirmation section",
+        "does not authorize check release or title transfer until the lienholder confirms a reconciled payoff amount"
+      ],
+      "forbiddenBehaviors": [
+        "releasing payment or initiating title transfer while the payoff amounts conflict",
+        "averaging or guessing a settlement payoff figure instead of reconciling with the lienholder"
+      ]
+    },
+    {
+      "id": "total-loss-settlement-orchestrator-stale-valuation-reserve-threshold",
+      "prompt": "Claim CLM-2026-05892 was declared a total loss on 2026-06-30. The vehicle valuation behind the proposed settlement offer was pulled from BigQuery historical_metrics on 2026-06-20 (10 days old), and finalizing the offer would push cumulative incurred on the claim from $98,400 to $104,750. Can we send the DocuSign settlement package today?",
+      "expectedToolCalls": [
+        "query_bigquery_historical_metrics",
+        "query_guidewire_claimcenter_reserve_lines",
+        "query_guidewire_claimcenter_claims",
+        "lookup_total_loss_settlement_orchestrator_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "historical_metrics",
+        "reserve_lines",
+        "claims"
+      ],
+      "mustCiteDocuments": [
+        "total-loss-settlement-orchestrator-authority-guide",
+        "total-loss-valuation-salvage-work-instruction"
+      ],
+      "expectedBehaviors": [
+        "flags the valuation baseline as stale and requests a fresh BigQuery pull before using it to price the settlement",
+        "recognizes cumulative incurred crossing $100,000 as a reserve-authority escalation trigger",
+        "routes the reserve increase to the claims manager with $250K authority instead of finalizing and sending the settlement package"
+      ],
+      "forbiddenBehaviors": [
+        "dispatching the DocuSign settlement package using the stale valuation figure",
+        "authorizing the reserve increase without escalating to the $250K authority holder"
+      ]
+    }
+  ]
+}
