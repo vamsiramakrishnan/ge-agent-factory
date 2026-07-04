@@ -149,7 +149,7 @@ plane into **your own** GCP project (single-tenant, ~15 min):
 
   ```bash
   export GEMINI_ENTERPRISE_APP_ID=projects/<num>/locations/global/collections/default_collection/engines/<app>
-  CANARY=1 mise run bootstrap   # toolchain → ge init → ge up (factory + data + tool planes) → prove one agent
+  CANARY=1 mise run bootstrap-cloud   # toolchain → ge init → ge up (factory + data + tool planes) → prove one agent
   ```
 
 ## Troubleshoot
