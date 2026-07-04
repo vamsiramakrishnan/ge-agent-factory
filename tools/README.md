@@ -35,6 +35,8 @@ operator path uses the same command contract.
 | `infra <init\|plan\|apply\|output\|destroy>` | Drive the Terraform module (vars from config) |
 | `images build [builder]` / `images deploy [gateway\|worker\|all]` | Build / deploy the gateway+worker images |
 | `data up` / `data doctor` | Provision + check the shared data stores |
+| `data synth --system <id> [--seed N] [--profile realistic]` | Deterministic seed data for a simulator twin (`@ge/synthkit`; local, no cloud) |
+| `evals compile [--max-cases N]` | Compile the behavioral eval suite from a captured contract (`@ge/evalkit`) → `.ge/behavioral/` |
 | `mcp deploy` / `mcp doctor` | Deploy + check the per-department custom MCP services |
 | `agents build --canary\|--all\|--dept <d>\|--ids <a,b>` | Build agents in the active mode (`--local`/`--remote` override) |
 | `agents status [--watch]` | Poll runs → stage tally + per-run status |

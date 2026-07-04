@@ -256,6 +256,12 @@ never disagree. Full layout, conventions, and how to run one app locally:
 | [`tools/`](tools) | The `ge` CLI, the MCP server, the shared operator core + local runtime daemon. |
 | [`packages/`](packages) | Shared contracts and engines: the agent-spec schema, the run ledger, OKF, design tokens, plus the extracted `@ge/synthkit` (deterministic synthetic data) and `@ge/evalkit` (behavioral eval compiler + metrics) engines — see [`packages/README.md`](packages/README.md). |
 
+The map from station skill → capability → `ge` commands → engine package →
+reference docs is the
+[factory-line matrix](skills/README.md#the-factory-line-matrix) in
+`skills/README.md` — generated from source and drift-gated in CI, like the
+CLI reference.
+
 ## The `ge` CLI
 
 Bare `ge` prints a status board with the next step; `ge --help` groups the

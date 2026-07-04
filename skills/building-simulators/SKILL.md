@@ -112,6 +112,13 @@ Materialize after Snowfakery has produced row output:
 npm run generator:materialize-simulators -- --dir <workspace>
 ```
 
+Synthesize a pack's deterministic seed data directly (no cloud calls; Snowfakery tier when `snowfakery` is on PATH, in-process offline tier otherwise — identical `--system`/`--seed`/`--profile` inputs produce identical bytes within a tier):
+
+```bash
+bun tools/ge.mjs data synth --system <system_id> --json
+bun tools/ge.mjs data synth --system <system_id> --seed 42 --profile realistic --edge-case-rate 0.06
+```
+
 ## Failure Handling
 
 - `projection collection missing from schema`: patch `projection.json` or `schema.json`.
@@ -175,3 +182,5 @@ Check `simulatorInterop.unbridgedScenarioPackCounts`; active scenario packs shou
 - For archetype selection and starter objects, read `references/archetypes.md`.
 - For the downstream handoff record, read `references/decision-record.schema.json`.
 - For the mission data node inventory, load `planning-missions` and read its mission node reference.
+- Engine: seed realization (`ge data synth`) runs on `@ge/synthkit` (`packages/synthkit/README.md`) — read it when tuning determinism, recipes, or the statistical realism tier.
+- Docs: `docs/reference/synthetic-data.md` (the deep dive on pack contract → recipe → rows → seed.json), `docs/reference/simulator-systems.md`.

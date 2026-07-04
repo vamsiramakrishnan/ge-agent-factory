@@ -67,10 +67,11 @@ in CI too.
 If you touched `docs/`, also run `bun run docs:gate` (link/image/blockquote
 correctness, diagram drift, design-token drift, plus the generated-region
 checks: the `ge` CLI reference, the stage-graph diagram, the spec-schema
-field tables, and the console-API registry table are rendered from source —
-regenerate with `bun run docs:cli`, `bun run docs:stage-diagram`,
-`bun run docs:spec-ref`, `bun run docs:console-api`, and diagrams with
-`bun run docs:diagrams`). See
+field tables, the console-API registry table, and the skill matrix (in
+`skills/README.md` and `docs/reference/architecture.md`) are rendered from
+source — regenerate with `bun run docs:cli`, `bun run docs:stage-diagram`,
+`bun run docs:spec-ref`, `bun run docs:console-api`,
+`bun run docs:skill-matrix`, and diagrams with `bun run docs:diagrams`). See
 [`docs/DESIGN.md`](docs/DESIGN.md) for the diagram/callout authoring
 conventions, including a silent-failure gotcha in the Mermaid renderer that's
 worth reading before adding a new diagram.

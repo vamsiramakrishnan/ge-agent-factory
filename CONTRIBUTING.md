@@ -65,7 +65,7 @@ and an MCP server.
 | [`skills/`](skills) | Cross-runtime harness skills (one dir per skill, each with a `SKILL.md`). |
 | [`installer/`](installer) | Terraform + the guided Cloud Shell installer (`TUTORIAL.md`) that stands the platform up in a target project. |
 | [`docs/`](docs) | The GitHub Pages documentation site plus operator runbooks, ADRs, and design specs. |
-| [`packages/`](packages) | Shared workspace packages (e.g. `@ge/agent-resolver`). See [`packages/std/README.md`](packages/std/README.md) for the `@ge/std` utility catalog — check it before hand-rolling a naming/JSON/CSV/merge helper. |
+| [`packages/`](packages) | Shared workspace packages: contracts (the agent-spec schema, run ledger, OKF, design tokens) plus the extracted engines — `@ge/synthkit` (deterministic synthetic data, behind `ge data synth`) and `@ge/evalkit` (behavioral eval compiler + metrics, behind `ge evals compile`). Catalog: [`packages/README.md`](packages/README.md). See [`packages/std/README.md`](packages/std/README.md) for the `@ge/std` utility catalog — check it before hand-rolling a naming/JSON/CSV/merge helper. |
 
 ---
 
@@ -150,7 +150,10 @@ mise run skills-doctor   # verify the manifest is current and the skills are dis
 
 `mise run skills-install` symlinks the repo skills into a headless harness skills dir
 (`AGENTS_SKILLS_DIR`, default `~/.agents/skills`). `mise run skills-spec-audit` reports
-Agent Skills spec portability gaps.
+Agent Skills spec portability gaps. The station-by-station map — which skill
+owns which capability, `ge` commands, and engine package — is the
+[factory-line matrix](skills/README.md#the-factory-line-matrix) in
+`skills/README.md`.
 
 ---
 
@@ -172,11 +175,11 @@ Knowledge Format) v0.1**, a portable BRD exchange format, via the converters in
 
 ## Adding a `ge` command / console action
 
-The console, CLI, and doctor bind mutating operator commands through one
+The console, CLI, and MCP server bind mutating operator commands through one
 registry (`tools/lib/ge-command-registry.mjs` — its header JSDoc is the field
-contract). One entry gives a command its `/api/ge/*` route, preflight gating,
-risk label, and live job streaming; don't add bespoke console route logic for
-something a registry entry covers.
+contract). One entry gives a command its `/api/ge/*` route, its `factory_*`
+MCP tool, preflight gating, risk label, and live job streaming; don't add
+bespoke console route logic for something a registry entry covers.
 
 - Cookbook: [Add a ge command](docs/contributing/add-a-ge-command.md)
 - Layer rules: [`skills/operating-console/references/api-transport-contract.md`](skills/operating-console/references/api-transport-contract.md)
@@ -200,7 +203,9 @@ simulator from a natural-language description (NL / OpenAPI / samples) directly 
 the console's Systems field.
 
 - Concept: [Simulators & BYO](docs/concepts/source-system-twins.md)
-- Reference: [Simulator systems](docs/reference/simulator-systems.md)
+- Reference: [Simulator systems](docs/reference/simulator-systems.md) ·
+  [Synthetic data](docs/reference/synthetic-data.md) (seed data is realized by
+  `@ge/synthkit` via `ge data synth`)
 - Cookbook: [Generate simulations](docs/cookbooks/generate-simulations.md)
 
 ---
