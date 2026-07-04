@@ -519,7 +519,24 @@ Check the per-department MCP services + Agent Registry readiness
 
 ### `ge agents`
 
-Agent lifecycle: build · resume · status · logs · sync (release proven agents with `ge handoff`)
+Agent lifecycle: register · track · build · resume · status · logs · sync (release proven agents with `ge handoff`)
+
+### `ge agents register`
+
+Register an OKF bundle as a tracked agent: compile it, flip provenance draft→registered (version +1), refresh the catalog
+
+| Flag | Type | Description |
+|---|---|---|
+| `--bundle` | string | Agent id (resolved under the OKF corpus root) or an explicit bundle directory |
+| `--owner` | string | Owner email to stamp into the bundle's provenance |
+
+### `ge agents track`
+
+Report one agent's lifecycle state: provenance, registry presence, and its variant lineage chain
+
+| Flag | Type | Description |
+|---|---|---|
+| `--id` | string | Agent id (resolved under the OKF corpus root) or an explicit bundle directory |
 
 ### `ge agents build`
 
@@ -698,7 +715,7 @@ Next action per work item from the ledger + pipeline state machine
 
 ### `ge okf`
 
-OKF knowledge substrate: compile · audit · graph · explain · diff · repair
+OKF knowledge substrate: compile · customize · audit · graph · explain · diff · repair
 
 ### `ge okf audit`
 
@@ -740,6 +757,19 @@ Compile spec→OKF bundle or OKF bundle→spec (typed compiler with variant reso
 | `--out` | string |  |
 | `--all` | boolean | Compile every generated catalog agent spec into an OKF bundle and write audit/graph/coverage sidecars |
 | `--variant-base` | string | Base bundle directory for a variant bundle (default: sibling directory named after the root's variant_of id) |
+
+### `ge okf customize`
+
+Scaffold a variant bundle from a base agent (system swaps, terminology, vertical policy overlay) and compile it against the base
+
+| Flag | Type | Description |
+|---|---|---|
+| `--base` | string | Base agent id (under the OKF corpus root) or an explicit bundle directory |
+| `--id` | string | New agent id for the variant bundle |
+| `--swap-system` | string | System swap <from>=<to> (repeatable, or comma-separated) |
+| `--rename` | string | Terminology rewrite <term>=<replacement> (repeatable, or comma-separated) |
+| `--vertical` | string | Vertical name — sets variant_kind vertical and adds a policy-overlay stub |
+| `--out` | string | Output bundle directory (default <okf root>/<id>) |
 
 ### `ge okf diff`
 

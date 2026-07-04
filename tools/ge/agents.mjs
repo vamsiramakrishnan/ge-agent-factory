@@ -4,6 +4,7 @@
 // `ge handoff` (tools/ge/handoff.mjs).
 import { defineCommand } from "citty";
 import { groupResumeActions } from "../lib/agents-resume.mjs";
+import { registerBundle, trackAgent } from "../lib/okf-lifecycle.mjs";
 import { guarded, common, cfgFrom, emit, out, pc, ui, elog, core, modeOf, LOCAL_BUILD_BOUNDARY } from "./shared.mjs";
 
 // One render + poll loop shared by `ge agents status --watch` and
@@ -198,4 +199,62 @@ const agentsResume = defineCommand({
   }),
 });
 
-export const agents = defineCommand({ meta: { name: "agents", description: "Agent lifecycle: build · resume · status · logs · sync (release proven agents with `ge handoff`)" }, subCommands: { build: agentsBuild, resume: agentsResume, status: agentsStatus, logs: agentsLogs, sync: agentsSync } });
+// ── register / track: the OKF-bundle lifecycle ─────────────────────────────
+// A bundle under the OKF corpus root (GE_OKF_ROOT, default okf/) IS the agent's
+// source of truth; register compiles it, flips provenance draft→registered in
+// its root index.md, and re-runs `bun run catalog` so the generated registry
+// picks it up. Track reports where one agent stands: provenance, registry
+// presence, and the variant lineage chain back to the root base.
+const agentsRegister = defineCommand({
+  meta: { name: "register", description: "Register an OKF bundle as a tracked agent: compile it, flip provenance draft→registered (version +1), refresh the catalog" },
+  args: {
+    ...common,
+    bundle: { type: "string", required: true, description: "Agent id (resolved under the OKF corpus root) or an explicit bundle directory" },
+    owner: { type: "string", description: "Owner email to stamp into the bundle's provenance" },
+  },
+  run: guarded(async ({ args }) => {
+    const result = await registerBundle({ bundle: args.bundle, owner: args.owner });
+    emit(args, result, (r) => {
+      out(`\n${ui.glyph("passed")} ${pc.green(`registered ${r.agentId}`)} ${pc.dim(`v${r.version}`)}`);
+      out(ui.kv([
+        ["bundle", pc.dim(r.bundle)],
+        r.owner && ["owner", r.owner],
+        ["catalog", r.catalogEntry ? pc.green("entry present") : pc.yellow(r.catalog.ran && !r.catalog.ok ? "regeneration failed" : "no entry yet")],
+      ]));
+      if (r.catalog.error) out(pc.dim(`  ${r.catalog.error}`));
+      out(ui.next(r.next, "see the agent's lifecycle state"));
+    });
+  }),
+});
+
+const agentsTrack = defineCommand({
+  meta: { name: "track", description: "Report one agent's lifecycle state: provenance, registry presence, and its variant lineage chain" },
+  args: {
+    ...common,
+    id: { type: "string", required: true, description: "Agent id (resolved under the OKF corpus root) or an explicit bundle directory" },
+  },
+  run: guarded(async ({ args }) => {
+    const result = await trackAgent({ id: args.id });
+    emit(args, result, (r) => {
+      out(ui.title("Agent", r.agentId));
+      const statusWord = r.status === "registered" || r.status === "promoted" ? pc.green(r.status) : r.status === "retired" ? pc.red(r.status) : pc.yellow(r.status);
+      out(ui.kv([
+        ["status", statusWord],
+        ["bundle", pc.dim(r.bundle)],
+        r.provenance?.origin && ["origin", r.provenance.origin],
+        r.provenance?.version !== undefined && ["version", String(r.provenance.version)],
+        r.provenance?.owner && ["owner", r.provenance.owner],
+        ["registry", r.inRegistry ? pc.green("present") : pc.yellow("absent")],
+      ]));
+      if (r.lineage.length) {
+        out("  lineage " + [r.agentId, ...r.lineage.map((l) => l.missing ? pc.red(`${l.id} (missing)`) : l.cycle ? pc.red(`${l.id} (cycle)`) : l.id)].join(pc.dim(" → ")));
+      }
+      if (!r.inRegistry) {
+        if (r.status === "draft") out(ui.next(`ge agents register --bundle ${r.agentId}`, "compile + register the bundle so the catalog knows it"));
+        else out(ui.next("bun run catalog", "regenerate the catalog so it picks the bundle up"));
+      }
+    });
+  }),
+});
+
+export const agents = defineCommand({ meta: { name: "agents", description: "Agent lifecycle: register · track · build · resume · status · logs · sync (release proven agents with `ge handoff`)" }, subCommands: { register: agentsRegister, track: agentsTrack, build: agentsBuild, resume: agentsResume, status: agentsStatus, logs: agentsLogs, sync: agentsSync } });
