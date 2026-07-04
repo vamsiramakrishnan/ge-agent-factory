@@ -76,14 +76,14 @@ suite (see [`cloudbuild.ci.yaml`](cloudbuild.ci.yaml)). Run the same gate
 locally with:
 
 ```bash
-mise run ci             # source:hygiene → lint → catalog → docs:gate → test:gated  (mirrors CI)
+mise run ci             # source:hygiene → typecheck → catalog → docs:gate → test:gated  (mirrors CI)
 ```
 
 Or run the individual checks:
 
 ```bash
 bun run source:hygiene   # repo hygiene guard (tools/source-hygiene.mjs)
-bun run lint             # typecheck every workspace (tsc --noEmit, per app)
+bun run typecheck        # typecheck every typed workspace (tsc --noEmit, per app/package)
 bun run docs:gate        # docs link/image/blockquote + diagram-drift + design-token checks
 bun run test:gated       # bun test apps tools packages, cross-checked against
                          # tools/known-test-failures.json (see AGENTS.md)
@@ -103,9 +103,12 @@ bun run build:console
 bun run build:presentation
 ```
 
-> CI typechecks with `bun run lint` because `vite build` strips types — a TS error
-> can otherwise ship silently. `apps/factory` has no `lint` script, so
-> `bun run lint` typechecks the console and presentation apps. The Python tests are
+> CI typechecks with `bun run typecheck` because `vite build` strips types — a TS
+> error can otherwise ship silently. `apps/factory` has no `typecheck` script, so
+> `bun run typecheck` covers the console app, the presentation app, and the
+> `@ge/run-ledger`/`@ge/runtime` packages. There is no linter in this repo yet
+> (`typecheck` catches type errors, not style/correctness lint rules — see
+> `docs/plans/taste-campaign/08-next-horizon.md` item B1). The Python tests are
 > **not** part of the `bun`/Cloud Build CI gate today — run them yourself when you
 > touch `mcp-service` or the simulator packs.
 {: .note }
@@ -144,12 +147,12 @@ By convention every `description` ends with a **"Use when …"** trigger so the 
 can route to it. After adding or editing a skill:
 
 ```bash
-mise run skills-sync     # validate the repo skills + (re)write the harness skill manifest
-mise run skills-doctor   # verify the manifest is current and the skills are discoverable
+mise run skills-sync     # (re)write the harness skill manifest, validating each skill first
+mise run skills-doctor   # health check: manifest is current and the skills are discoverable
 ```
 
 `mise run skills-install` symlinks the repo skills into a headless harness skills dir
-(`AGENTS_SKILLS_DIR`, default `~/.agents/skills`). `mise run skills-spec-audit` reports
+(`AGENTS_SKILLS_DIR`, default `~/.agents/skills`). `mise run skills-doctor-spec` reports
 Agent Skills spec portability gaps. The station-by-station map — which skill
 owns which capability, `ge` commands, and engine package — is the
 [factory-line matrix](skills/README.md#the-factory-line-matrix) in
@@ -192,7 +195,7 @@ Generated agents are grounded by simulated source systems under
 `apps/factory/simulator-systems/`. To add one:
 
 ```bash
-bun run generator:new-simulator          # scaffold a new simulator pack
+bun run generator:scaffold-simulator          # scaffold a new simulator pack
 bun run generator:validate-simulators    # validate the pack (schema/tools/workflows)
 bun run generator:materialize-simulators # materialize seed data
 bun run generator:test-simulators        # python3 -m pytest simulator conformance

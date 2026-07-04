@@ -36,12 +36,12 @@ echo "Setup done."
 echo "Next:"
 echo "  mise run doctor-local              # confirm local tools are ready"
 echo "  mise run console                   # open the Pipeline/Fleet/Activity UI"
-echo "  mise run mode-local && CANARY=1 mise run provision-local"
+echo "  mise run mode-local && CANARY=1 mise run build-agents-local"
 echo "                                     # build one agent locally up to preview"
 """
 
-[tasks.bootstrap]
-description = "END-TO-END: toolchain + `ge init` + `ge up` (factory+data+tool planes — the three infrastructure layers → doctor). Needs GEMINI_ENTERPRISE_APP_ID + gcloud auth. CANARY=1 also builds one agent."
+[tasks.bootstrap-cloud]
+description = "END-TO-END: toolchain + `ge init` + `ge up` (factory+data+tool planes — the three infrastructure layers → doctor). Needs GEMINI_ENTERPRISE_APP_ID + gcloud auth. CANARY=1 also builds one agent. (Cloned-repo cloud stand-up — for bootstrapping a brand-new project from scratch, see `bunx create-ge-agent-factory`.)"
 run = """#!/usr/bin/env bash
 set -euo pipefail
 if [ -z "${GEMINI_ENTERPRISE_APP_ID:-}" ] && [ ! -f .ge.json ]; then
@@ -64,12 +64,17 @@ if [ -n "${CANARY:-}" ]; then
   bun tools/ge.mjs agents build --canary
 fi
 echo ""
-echo "✓ Bootstrap complete. Next: ge agents build --all   ·   console: mise run console   ·   local-only: mise run mode-local && CANARY=1 mise run provision-local"
+echo "✓ Bootstrap complete. Next: ge agents build --all   ·   console: mise run console   ·   local-only: mise run mode-local && CANARY=1 mise run build-agents-local"
 """
 
+[tasks.bootstrap]
+description = "Alias for bootstrap-cloud (kept for muscle memory; prefer bootstrap-cloud — the name doesn't collide with bunx create-ge-agent-factory's from-scratch \"bootstrap\")"
+depends = ["bootstrap-cloud"]
+run = "true"
+
 [tasks.all]
-description = "Alias for bootstrap"
-depends = ["bootstrap"]
+description = "Alias for bootstrap-cloud"
+depends = ["bootstrap-cloud"]
 run = "true"
 
 [tasks.catalog]
@@ -77,11 +82,11 @@ description = "Generate the use-case catalog build artifact (git-ignored) from t
 run = "cd apps/factory && bun scripts/sync-use-cases-from-slides.mjs"
 
 [tasks.ci]
-description = "Run the CI gate locally (hygiene + lint + docs:gate + gated test suite) — mirrors cloudbuild.ci.yaml"
+description = "Run the CI gate locally (hygiene + typecheck + docs:gate + gated test suite) — mirrors cloudbuild.ci.yaml"
 run = """#!/usr/bin/env bash
 set -euo pipefail
 bun run source:hygiene
-bun run lint
+bun run typecheck
 mise run catalog
 bun run docs:gate
 bun run test:gated
@@ -174,11 +179,11 @@ echo "  Note: not wired into 'install' yet — that still installs the bun-wrapp
 # ── Skills (harness) ─────────────────────────────────────────────────────
 
 [tasks.skills-sync]
-description = "Validate repository skills and write the harness skill manifest (the index coding-agent harnesses load skills from)"
+description = "Write the harness skill manifest from repository skills (the index coding-agent harnesses load skills from), validating each skill first"
 run = "node scripts/sync-harness-skills.mjs"
 
 [tasks.skills-doctor]
-description = "Verify the harness skill manifest is current and complete"
+description = "Health check: the harness skill manifest is current and every skill is discoverable"
 run = """#!/usr/bin/env bash
 set -euo pipefail
 node scripts/sync-harness-skills.mjs --check
@@ -186,8 +191,8 @@ bun apps/factory/src/cli.js skills >/dev/null
 echo "✓ harness skills are discoverable"
 """
 
-[tasks.skills-spec-audit]
-description = "Report Agent Skills spec portability gaps for repo skills"
+[tasks.skills-doctor-spec]
+description = "Health check: Agent Skills spec portability gaps for repo skills"
 run = "node skills/navigating-factory-line/scripts/audit-agent-skills-spec.mjs"
 
 [tasks.skills-install]
@@ -275,13 +280,23 @@ run = "bun tools/ge.mjs mode local"
 description = "Switch to remote mode (cloud factory builds + deploys)"
 run = "bun tools/ge.mjs mode remote"
 
-[tasks.provision]
+[tasks.build-agents]
 description = "Build agents in the active mode (CANARY=1 for one, else --all)"
 run = 'bun tools/ge.mjs agents build ${CANARY:+--canary} ${CANARY:---all}'
 
-[tasks.provision-local]
+[tasks.build-agents-local]
 description = "Build agents on this machine via the Antigravity harness (LLM spec-fidelity review; CANARY=1 builds just one agent)"
 run = 'bun tools/ge.mjs agents build --local ${CANARY:+--canary} ${CANARY:---all}'
+
+[tasks.provision]
+description = "Alias for build-agents ('provision' collided with apps/factory/src/cli.js's unrelated infra-plan meaning; prefer build-agents)"
+depends = ["build-agents"]
+run = "true"
+
+[tasks.provision-local]
+description = "Alias for build-agents-local ('provision' collided with apps/factory/src/cli.js's unrelated infra-plan meaning; prefer build-agents-local)"
+depends = ["build-agents-local"]
+run = "true"
 
 [tasks.sync]
 description = "Sync generated agent code → git (active mode; GCS in remote, workspaces in local)"
@@ -346,9 +361,9 @@ printf "  Local health check:               \\033[36mmise run doctor-local\\033[
 printf "  Fast DevEx gate:                  \\033[36mmise run devex-check\\033[0m\\n"
 printf "  One-command local proof:          \\033[36mmise run prove\\033[0m  (or: ge prove)\\n"
 printf "  Open the main UI:                 \\033[36mmise run console\\033[0m  (http://localhost:18260)\\n"
-printf "  Build one agent locally:          \\033[36mmise run mode-local && CANARY=1 mise run provision-local\\033[0m\\n"
+printf "  Build one agent locally:          \\033[36mmise run mode-local && CANARY=1 mise run build-agents-local\\033[0m\\n"
 printf "  Watch runs and blockers:          \\033[36mmise run console\\033[0m  then open Activity, or run \\033[36mge agents status --watch\\033[0m\\n"
-printf "  Cloud install / deploy path:      \\033[36mGEMINI_ENTERPRISE_APP_ID=... CANARY=1 mise run bootstrap\\033[0m\\n"
+printf "  Cloud install / deploy path:      \\033[36mGEMINI_ENTERPRISE_APP_ID=... CANARY=1 mise run bootstrap-cloud\\033[0m\\n"
 printf "  Before pushing code:              \\033[36mmise run ci\\033[0m\\n"
 printf "\\n\\033[1mCurrent factory status\\033[0m\\n"
 command -v bun >/dev/null 2>&1 && bun tools/ge.mjs || printf "  Bun is not available yet. Run 'mise run setup' first.\\n"
@@ -380,14 +395,14 @@ printf "  \\033[36mmise run doctor-local\\033[0m          Check local tools: Bun
 printf "  \\033[36mmise run devex-check\\033[0m           Fast gate: local doctor, docs links, workspace manifest contracts\\n"
 printf "  \\033[36mmise run prove\\033[0m                Prove the local path: health check → one validated agent workspace\\n"
 printf "  \\033[36mmise run console\\033[0m               Open the operator UI for Pipeline, Fleet, Activity, Doctor, and generated specs\\n"
-printf "  \\033[36mCANARY=1 mise run provision-local\\033[0m Build one generated agent locally up to the preview/build boundary\\n"
+printf "  \\033[36mCANARY=1 mise run build-agents-local\\033[0m Build one generated agent locally up to the preview/build boundary\\n"
 printf "\\n\\033[1mWhich local app should I run?\\033[0m\\n"
 printf "  \\033[36mconsole\\033[0m       The day-to-day developer/operator UI: choose specs, run Pipeline, inspect runs and blockers\\n"
 printf "  \\033[36mpresentation\\033[0m  The transformation deck and source use-case catalog used to explain the system\\n"
 printf "  \\033[36mgenerator\\033[0m     Lower-level generator workbench for mock data, harness runs, and generated workspaces\\n"
 printf "\\n\\033[1mIf you are deploying to a cloud project\\033[0m\\n"
 printf "  export GEMINI_ENTERPRISE_APP_ID=projects/<num>/locations/global/collections/default_collection/engines/<app>\\n"
-printf "  \\033[36mCANARY=1 mise run bootstrap\\033[0m     Stand up planes and prove one agent end to end\\n"
+printf "  \\033[36mCANARY=1 mise run bootstrap-cloud\\033[0m     Stand up planes and prove one agent end to end\\n"
 printf "\\n\\033[1mNeed a status-based recommendation?\\033[0m  Run \\033[36mmise run next\\033[0m\\n"
 printf "\\n\\033[1mFull task list with descriptions:\\033[0m  \\033[36mmise tasks\\033[0m\\n"
 """

@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 603.7800833333333 1273.7709999999997" width="603.7800833333333" height="1273.7709999999997" style="--bg:#f7f7f5;--fg:#1a1a18;--line:#55554f;--accent:#cc3d0d;--muted:#7c7c74;--surface:#e3e3df;--border:#d4d4cf;background:var(--bg)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 603.7800833333333 1273.7709999999997" width="603.7800833333333" height="1273.7709999999997" style="--bg:#fcf9f8;--fg:#1b1c1c;--line:#565e6c;--accent:#00408b;--muted:#79818e;--surface:#f0eded;--border:#c2c6d4;background:var(--bg)">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
   text { font-family: 'Inter', system-ui, sans-serif; }
@@ -96,17 +96,17 @@ config available?" data-shape="diamond">
 </g>
 <g class="node" data-id="Durable" data-label="Durable store
 (Firestore / AlloyDB)" data-shape="rectangle">
-  <rect x="39.99999999999997" y="1179.9709999999998" width="161.251" height="53.800000000000004" rx="0" ry="0" fill="#dfeadf" stroke="#2e7a47" stroke-width="0.75" />
-  <text x="120.62549999999997" y="1206.8709999999999" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1a18"><tspan x="120.62549999999997" dy="-3.9000000000000012">Durable store</tspan><tspan x="120.62549999999997" dy="16.900000000000002">(Firestore / AlloyDB)</tspan></text>
+  <rect x="39.99999999999997" y="1179.9709999999998" width="161.251" height="53.800000000000004" rx="0" ry="0" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
+  <text x="120.62549999999997" y="1206.8709999999999" text-anchor="middle" font-size="13" font-weight="500" fill="#1b1c1c"><tspan x="120.62549999999997" dy="-3.9000000000000012">Durable store</tspan><tspan x="120.62549999999997" dy="16.900000000000002">(Firestore / AlloyDB)</tspan></text>
 </g>
 <g class="node" data-id="Fallback" data-label="Degrade to memory
 (log warning)" data-shape="rectangle">
-  <rect x="229.25099999999998" y="1179.9709999999998" width="154.582" height="53.800000000000004" rx="0" ry="0" fill="#fce8e5" stroke="#b3231c" stroke-width="0.75" />
-  <text x="306.542" y="1206.8709999999999" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1a18"><tspan x="306.542" dy="-3.9000000000000012">Degrade to memory</tspan><tspan x="306.542" dy="16.900000000000002">(log warning)</tspan></text>
+  <rect x="229.25099999999998" y="1179.9709999999998" width="154.582" height="53.800000000000004" rx="0" ry="0" fill="#fce8e5" stroke="#dc3626" stroke-width="0.75" />
+  <text x="306.542" y="1206.8709999999999" text-anchor="middle" font-size="13" font-weight="500" fill="#1b1c1c"><tspan x="306.542" dy="-3.9000000000000012">Degrade to memory</tspan><tspan x="306.542" dy="16.900000000000002">(log warning)</tspan></text>
 </g>
 <g class="node" data-id="Fallback2" data-label="memory
 (no degrade needed)" data-shape="rectangle">
-  <rect x="400.3060833333333" y="907.6179999999998" width="163.474" height="53.800000000000004" rx="0" ry="0" fill="#fce8e5" stroke="#b3231c" stroke-width="0.75" />
-  <text x="482.04308333333324" y="934.5179999999998" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1a18"><tspan x="482.04308333333324" dy="-3.9000000000000012">memory</tspan><tspan x="482.04308333333324" dy="16.900000000000002">(no degrade needed)</tspan></text>
+  <rect x="400.3060833333333" y="907.6179999999998" width="163.474" height="53.800000000000004" rx="0" ry="0" fill="#fce8e5" stroke="#dc3626" stroke-width="0.75" />
+  <text x="482.04308333333324" y="934.5179999999998" text-anchor="middle" font-size="13" font-weight="500" fill="#1b1c1c"><tspan x="482.04308333333324" dy="-3.9000000000000012">memory</tspan><tspan x="482.04308333333324" dy="16.900000000000002">(no degrade needed)</tspan></text>
 </g>
 </svg>

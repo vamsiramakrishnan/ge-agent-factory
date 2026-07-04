@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ShieldCheck, ChevronRight } from "lucide-react";
+import { normalizeAgentId } from "@ge/agent-resolver";
 import { useSlideNavigation } from "../../../context/SlideContext";
 import { AGENTS, AgentElement, TRIGGER_CONFIG } from "../../../constants/agents";
 import { DOMAINS } from "../../../constants/domains";
@@ -26,7 +27,7 @@ const ElementCell = ({
 }) => {
   const TriggerIcon = TRIGGER_ICONS[agent.triggerType];
   const layerInfo = LAYER_STYLES[agent.layer];
-  const num = agent.agentId.replace("A-", "");
+  const num = normalizeAgentId(agent.agentId).num;
 
   return (
     <motion.button
@@ -112,7 +113,7 @@ const HoverDetail = ({ agent }: { key?: React.Key; agent: AgentElement }) => {
     >
       <div className="flex items-center gap-2 mb-2">
         <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ backgroundColor: domain?.color }}>
-          <span className="text-[8px] font-bold text-white font-mono">{agent.agentId.replace("A-", "")}</span>
+          <span className="text-[8px] font-bold text-white font-mono">{normalizeAgentId(agent.agentId).num}</span>
         </div>
         <div>
           <div className="text-[11px] font-headline font-bold leading-tight">{agent.shortName}</div>

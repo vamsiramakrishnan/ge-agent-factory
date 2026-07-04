@@ -56,7 +56,7 @@ run that has blocked.
    ge agents build --remote --all      # force remote
    ```
 
-   (`mise run` equivalents: `CANARY=1 mise run provision`, `CANARY=1 mise run provision-local`.)
+   (`mise run` equivalents: `CANARY=1 mise run build-agents`, `CANARY=1 mise run build-agents-local`.)
 
 3. **Watch it live in the console.** Open the console; the Run Drawer follows any
    run (including remote runs via the run <a href="/ge-agent-factory/reference/glossary/#ledger" title="The durable, event-sourced record of every run — one entry per run, item, and stage — that ge agents status, the Fleet view, and the console's Activity feed all read.">ledger</a> SSE — Server-Sent Events — stream), and the Activity

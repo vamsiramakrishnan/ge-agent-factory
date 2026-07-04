@@ -491,7 +491,7 @@ export const GE_COMMANDS = {
     path: "/api/ge/okf/customize",
     cli: "ge okf customize",
     label: "Customize an agent",
-    summary: "Scaffold a variant OKF bundle from a base agent (system swaps, terminology rewrites, vertical policy overlay) and compile it against the base",
+    summary: "Customize a base agent into a new variant OKF bundle (system swaps, terminology rewrites, vertical policy overlay) and compile it against the base",
     guide: {
       when: "an existing agent should be adapted — same behavior contract, different source systems, vocabulary, or vertical policy",
       next: ["ge agents register --bundle <id>", "ge okf compile --from bundle --to spec --bundle <dir> --out <spec.json>"],
@@ -502,7 +502,7 @@ export const GE_COMMANDS = {
     requirements: { bins: ["node"], config: [] },
     mcp: {
       tool: "factory_okf_customize",
-      description: "Local, deterministic: scaffold a variant OKF bundle from a base agent's bundle. Writes the minimal variant (root index.md declaring variant_of/variant_kind + a Variant Binding concept) under the OKF corpus root, then immediately compiles it against the base with full variant resolution — a bad swap target or unknown term comes back as a structured error, never a silent no-op. base/id are agent ids under okf/ (or explicit paths). Register the result with factory_agents_register.",
+      description: "Local, deterministic: customize a base agent's bundle into a new variant OKF bundle. Writes the minimal variant (root index.md declaring variant_of/variant_kind + a Variant Binding concept) under the OKF corpus root, then immediately compiles it against the base with full variant resolution — a bad swap target or unknown term comes back as a structured error, never a silent no-op. base/id are agent ids under okf/ (or explicit paths). Register the result with factory_agents_register.",
       params: {
         base: { type: "string", description: "Base agent id (under the OKF corpus root) or bundle directory" },
         id: { type: "string", description: "New agent id for the variant" },
@@ -596,7 +596,7 @@ export const GE_COMMANDS = {
       toolPlane: true,
     },
     mcp: {
-      tool: "factory_provision",
+      tool: "factory_agents_build",
       description: "Mutating: build agents. local=true runs on-machine via the Antigravity harness (stops at the local build boundary; use factory_handoff to hand off to the cloud afterwards); otherwise submits directly to the cloud gateway end-to-end. scope: 'canary' | 'all'; or dept/ids. Poll cloud submissions with factory_status.",
       params: {
         scope: { type: "string", enum: ["canary", "all"], optional: true },
@@ -746,7 +746,7 @@ export const GE_COMMANDS = {
     expectedDuration: "under 10s",
     requirements: { bins: [], config: [] },
     mcp: {
-      tool: "factory_list_usecases",
+      tool: "factory_usecases_list",
       description: "List the agent use-case catalog (filterable by department/search).",
       params: {
         department: { type: "string", optional: true },
@@ -789,7 +789,7 @@ export const GE_COMMANDS = {
     requirements: { bins: [], config: [] },
     mcp: {
       tool: "factory_status",
-      description: "Read-only: poll already-submitted CLOUD runs (from a prior factory_provision without local=true) and return the stage tally + per-run status. Does not track local harness builds — see factory_provision's local mode for those.",
+      description: "Read-only: poll already-submitted CLOUD runs (from a prior factory_agents_build without local=true) and return the stage tally + per-run status. Does not track local harness builds — see factory_agents_build's local mode for those.",
       params: {
         noProxy: { type: "boolean", optional: true },
       },

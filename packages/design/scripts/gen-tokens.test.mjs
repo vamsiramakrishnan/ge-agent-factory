@@ -7,6 +7,7 @@ import { PALETTE } from "../src/palette.mjs";
 import {
   TARGETS,
   TOKEN_TABLE,
+  checkDocsCustomCssAnchors,
   checkTokens,
   formatCheckReport,
   renderRegion,
@@ -42,8 +43,8 @@ test("$green-200 keeps its shipped value, now traced to PALETTE.tertiarySwatchDa
   // tip-callout accent); palette.mjs carries it as tertiarySwatchDark and
   // TOKEN_TABLE maps the ramp entry to that key — no raw hex pins remain
   // anywhere in the table.
-  expect(renderRegion("setup.scss")).toContain("$green-200: #266b3d;");
-  expect(PALETTE.tertiarySwatchDark).toBe("#266b3d");
+  expect(renderRegion("setup.scss")).toContain("$green-200: #0d6d3a;");
+  expect(PALETTE.tertiarySwatchDark).toBe("#0d6d3a");
   const row = TOKEN_TABLE.find((r) => r.name === "$green-200");
   expect(row?.key).toBe("tertiarySwatchDark");
   expect(row?.raw).toBeUndefined();
@@ -66,14 +67,14 @@ test("checkTokens flags a hand-edited hex inside a marked region and writeTokens
       writeFileSync(dest, readFileSync(join(ROOT, target.relPath), "utf8"));
     }
     const setupPath = join(tmp, "docs/_sass/custom/setup.scss");
-    writeFileSync(setupPath, readFileSync(setupPath, "utf8").replace("$blue-200: #cc3d0d;", "$blue-200: #ff0000;"));
+    writeFileSync(setupPath, readFileSync(setupPath, "utf8").replace("$blue-200: #00408b;", "$blue-200: #ff0000;"));
 
     const drifted = checkTokens(tmp);
     expect(drifted.ok).toBe(false);
     expect(drifted.findings.map((f) => f.file)).toEqual(["docs/_sass/custom/setup.scss"]);
     const report = formatCheckReport(drifted);
     expect(report).toContain("-$blue-200: #ff0000;");
-    expect(report).toContain("+$blue-200: #cc3d0d;");
+    expect(report).toContain("+$blue-200: #00408b;");
 
     const { changed } = writeTokens(tmp);
     expect(changed).toEqual(["docs/_sass/custom/setup.scss"]);
@@ -97,4 +98,34 @@ test("writeTokens is a no-op on an up-to-date tree", () => {
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }
+});
+
+test("checkDocsCustomCssAnchors returns no findings when the file is absent (isolated fixture roots)", () => {
+  const tmp = mkdtempSync(join(tmpdir(), "gen-tokens-test-"));
+  try {
+    expect(checkDocsCustomCssAnchors(tmp)).toEqual([]);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("checkDocsCustomCssAnchors flags a drifted annotated anchor in apps/docs/src/styles/custom.css", () => {
+  const tmp = mkdtempSync(join(tmpdir(), "gen-tokens-test-"));
+  try {
+    const dest = join(tmp, "apps/docs/src/styles/custom.css");
+    mkdirSync(dirname(dest), { recursive: true });
+    const original = readFileSync(join(ROOT, "apps/docs/src/styles/custom.css"), "utf8");
+    writeFileSync(dest, original.replace("--sl-color-accent: #00408b; /* --color-primary */", "--sl-color-accent: #123456; /* --color-primary */"));
+
+    const findings = checkDocsCustomCssAnchors(tmp);
+    expect(findings.length).toBeGreaterThan(0);
+    expect(findings[0].message).toContain("drifted");
+    expect(findings[0].file).toBe("apps/docs/src/styles/custom.css");
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("the checked-in apps/docs/src/styles/custom.css has no drifted anchors", () => {
+  expect(checkDocsCustomCssAnchors(ROOT)).toEqual([]);
 });

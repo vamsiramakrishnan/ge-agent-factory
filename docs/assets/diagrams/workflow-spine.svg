@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 564.6229999999998 235.60000000000002" width="564.6229999999998" height="235.60000000000002" style="--bg:#f7f7f5;--fg:#1a1a18;--line:#55554f;--accent:#cc3d0d;--muted:#7c7c74;--surface:#e3e3df;--border:#d4d4cf;background:var(--bg)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 564.6229999999998 235.60000000000002" width="564.6229999999998" height="235.60000000000002" style="--bg:#fcf9f8;--fg:#1b1c1c;--line:#565e6c;--accent:#00408b;--muted:#79818e;--surface:#f0eded;--border:#c2c6d4;background:var(--bg)">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
   text { font-family: 'Inter', system-ui, sans-serif; }
@@ -34,8 +34,8 @@
   <text x="152.7632499999999" y="66.9" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="152.7632499999999" dy="-3.9000000000000012">&quot;architecture.pipeline</tspan><tspan x="152.7632499999999" dy="16.900000000000002">[{label, description}</tspan></text>
 </g>
 <g class="node" data-id="B" data-label="B" data-shape="rectangle">
-  <rect x="264.3527499999999" y="40" width="60" height="36.900000000000006" rx="0" ry="0" fill="#f6ddd1" stroke="#cc3d0d" stroke-width="0.75" />
-  <text x="294.3527499999999" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1a18" dy="4.55">B</text>
+  <rect x="264.3527499999999" y="40" width="60" height="36.900000000000006" rx="0" ry="0" fill="#e6ebff" stroke="#00408b" stroke-width="0.75" />
+  <text x="294.3527499999999" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#1b1c1c" dy="4.55">B</text>
 </g>
 <g class="node" data-id="C" data-label="spec generation
 WRITES behaviorContract.workflow" data-shape="rectangle">

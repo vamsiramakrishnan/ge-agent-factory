@@ -128,14 +128,14 @@ Or build one agent locally, up to the preview/build boundary:
 
 ```bash
 mise run mode-local
-CANARY=1 mise run provision-local
+CANARY=1 mise run build-agents-local
 ```
 
 Or run the fast DevEx gate / one-command local proof:
 
 ```bash
 mise run devex-check      # local doctor + docs links + workspace manifest contracts
-mise run devex-smoke      # doctor → local mode → one validated canary workspace
+mise run prove            # doctor → local mode → one validated canary workspace
 ```
 
 ## 7. (Optional) Cloud setup
@@ -149,7 +149,7 @@ plane into **your own** GCP project (single-tenant, ~15 min):
 
   ```bash
   export GEMINI_ENTERPRISE_APP_ID=projects/<num>/locations/global/collections/default_collection/engines/<app>
-  CANARY=1 mise run bootstrap   # toolchain → ge init → ge up (factory + data + tool planes) → prove one agent
+  CANARY=1 mise run bootstrap-cloud   # toolchain → ge init → ge up (factory + data + tool planes) → prove one agent
   ```
 
 ## Troubleshoot

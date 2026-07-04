@@ -1,42 +1,40 @@
-import { useEffect, useState } from "react";
+import { useGeQuery } from "../lib/query";
 import { ge } from "../services/geClient";
 import { normalizeStatus } from "../lib/runStatus";
 
+interface PulseCounts {
+  running: number;
+  blocked: number;
+  failed: number;
+  done: number;
+}
+
+const ZERO_COUNTS: PulseCounts = { running: 0, blocked: 0, failed: 0, done: 0 };
+
+async function fetchPulseCounts(): Promise<PulseCounts> {
+  const { runs } = await ge.ledgerRuns(25);
+  const next = { ...ZERO_COUNTS };
+  for (const run of runs) {
+    const s = normalizeStatus(run.status);
+    if (s === "running") next.running += 1;
+    else if (s === "blocked") next.blocked += 1;
+    else if (s === "failed") next.failed += 1;
+    else if (s === "done") next.done += 1;
+  }
+  return next;
+}
+
 // Compact, calm live cluster for the TopBar: ▶running ⏸blocked ✕failed ✓done,
-// derived from the durable run ledger (polled on an off-:00 cadence). Click →
-// Activity. `blocked` means pausable/needs-attention; `failed` (incl. cancelled
-// /timed-out, which normalize to failed) is terminal and is counted separately
-// so we never label a failure as something the operator can resume.
+// derived from the durable run ledger (polled on an off-:00 cadence via the
+// shared query layer — lib/query.ts). Click → Activity. `blocked` means
+// pausable/needs-attention; `failed` (incl. cancelled/timed-out, which
+// normalize to failed) is terminal and is counted separately so we never
+// label a failure as something the operator can resume.
 export function NowPulse() {
-  const [counts, setCounts] = useState({ running: 0, blocked: 0, failed: 0, done: 0 });
-  const [ok, setOk] = useState(true);
+  const query = useGeQuery<PulseCounts>(["nowPulse"], fetchPulseCounts, { intervalMs: 4200 });
+  const counts = query.data ?? ZERO_COUNTS;
 
-  useEffect(() => {
-    let alive = true;
-    const poll = async () => {
-      try {
-        const { runs } = await ge.ledgerRuns(25);
-        if (!alive) return;
-        const next = { running: 0, blocked: 0, failed: 0, done: 0 };
-        for (const run of runs) {
-          const s = normalizeStatus(run.status);
-          if (s === "running") next.running += 1;
-          else if (s === "blocked") next.blocked += 1;
-          else if (s === "failed") next.failed += 1;
-          else if (s === "done") next.done += 1;
-        }
-        setCounts(next);
-        setOk(true);
-      } catch {
-        if (alive) setOk(false);
-      }
-    };
-    poll();
-    const interval = window.setInterval(poll, 4200); // off-:00 cadence
-    return () => { alive = false; window.clearInterval(interval); };
-  }, []);
-
-  if (!ok) return null;
+  if (query.isError) return null;
 
   return (
     // The live-runs counter renders behind readout glass (the one black

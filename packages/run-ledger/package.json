@@ -3,10 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Framework-agnostic 'follow any long-running pipeline' observability core: a durable run/stage ledger (SQLite/Postgres adapters, lazy Firestore backend), the SSE frame/event schema, status normalization, and a pure frames→state reducer. No React, no DOM.",
+  "description": "Framework-agnostic 'follow any long-running pipeline' observability core: a durable run/stage ledger (SQLite adapter, lazy Firestore backend), the SSE frame/event schema, status normalization, and a pure frames→state reducer. No React, no DOM.",
   "scripts": {
     "test": "bun test src/index.test.mjs",
     "typecheck": "bunx tsc --noEmit -p ."
+  },
+  "optionalDependencies": {
+    "@google-cloud/firestore": "^8.6.0"
   },
   "main": "./src/index.mjs",
   "types": "./src/index.d.ts",

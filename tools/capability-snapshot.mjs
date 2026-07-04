@@ -2,15 +2,22 @@
 // Capability snapshot — the additivity oracle for interface refactors.
 //
 // Dumps every capability the `ge` surface exposes, one canonical sorted line
-// per fact, so that `diff artifacts/capability-before.txt artifacts/capability-after.txt`
+// per fact, so that `diff /tmp/capability-before.txt /tmp/capability-after.txt`
 // shows ONLY `>` additions when a change-set is genuinely additive. A single
 // `<` (removed line) means a command, flag, description, registry entry, or
 // MCP tool was deleted or mutated — which fails the additivity law.
 //
-//   bun tools/capability-snapshot.mjs artifacts/capability-before.txt
+//   bun tools/capability-snapshot.mjs /tmp/capability-before.txt
 //   … make changes …
-//   bun tools/capability-snapshot.mjs artifacts/capability-after.txt
-//   diff artifacts/capability-before.txt artifacts/capability-after.txt
+//   bun tools/capability-snapshot.mjs /tmp/capability-after.txt
+//   diff /tmp/capability-before.txt /tmp/capability-after.txt
+//
+// Output paths are scratch by convention — if you want to keep a snapshot as
+// a historical record of a specific rename/refactor, file it under
+// docs/plans/<name>/ (see docs/plans/rename-sweep-2026-07-03/ for an example),
+// not a root artifacts/ dir — that name collides with the per-workspace
+// artifacts/ concept used elsewhere in this repo (apps/factory/artifacts/,
+// generated workspace artifacts/spec-code-trace.json, etc).
 //
 // What it snapshots (all statically, without executing any command — several
 // commands mutate cloud state, so running each one for a `--json` sample is

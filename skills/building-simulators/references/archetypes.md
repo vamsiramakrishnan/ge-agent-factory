@@ -5,7 +5,7 @@ Use the closest archetype unless the user gives a stronger domain model. Confirm
 Run this command for the source-of-truth machine-readable catalog:
 
 ```bash
-npm run generator:new-simulator -- --list-archetypes true
+npm run generator:scaffold-simulator -- --list-archetypes true
 ```
 
 ## Archetype Map
