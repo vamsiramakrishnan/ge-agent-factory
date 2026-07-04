@@ -174,11 +174,11 @@ echo "  Note: not wired into 'install' yet — that still installs the bun-wrapp
 # ── Skills (harness) ─────────────────────────────────────────────────────
 
 [tasks.skills-sync]
-description = "Validate repository skills and write the harness skill manifest (the index coding-agent harnesses load skills from)"
+description = "Write the harness skill manifest from repository skills (the index coding-agent harnesses load skills from), validating each skill first"
 run = "node scripts/sync-harness-skills.mjs"
 
 [tasks.skills-doctor]
-description = "Verify the harness skill manifest is current and complete"
+description = "Health check: the harness skill manifest is current and every skill is discoverable"
 run = """#!/usr/bin/env bash
 set -euo pipefail
 node scripts/sync-harness-skills.mjs --check
@@ -186,8 +186,8 @@ bun apps/factory/src/cli.js skills >/dev/null
 echo "✓ harness skills are discoverable"
 """
 
-[tasks.skills-spec-audit]
-description = "Report Agent Skills spec portability gaps for repo skills"
+[tasks.skills-doctor-spec]
+description = "Health check: Agent Skills spec portability gaps for repo skills"
 run = "node skills/navigating-factory-line/scripts/audit-agent-skills-spec.mjs"
 
 [tasks.skills-install]
