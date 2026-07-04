@@ -32,9 +32,12 @@ Storage is behind a tiny **`LedgerStore`** adapter — `{ run, all, get, close }
 same logic runs on:
 
 - **SQLite** locally + in tests (`sqliteAdapter`, via `bun:sqlite` or `better-sqlite3`),
-- **Postgres / AlloyDB** in the cloud control plane (`pgAdapter`, lazy-imports `pg`),
 - **Firestore** as a live-push backend (`@ge/run-ledger/firestore`, lazy-imports
   `@google-cloud/firestore`).
+
+A Postgres/AlloyDB `pgAdapter` existed at one point but was deleted (2026-07-02,
+`f9bfe1a4`) because it couldn't work with `createRunLedger`'s synchronous read
+contract — there is no Postgres-backed `LedgerStore` today.
 
 `openRunLedger()` is best-effort: it returns `null` if no SQLite driver is available,
 so callers can transparently fall back to legacy file stores.

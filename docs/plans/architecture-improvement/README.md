@@ -1,6 +1,19 @@
 # Architecture Improvement Implementation Plans
 
-This folder breaks the architecture review into six separate week-by-week implementation plans. Each plan is intended to be independently executable, reviewable, and mergeable.
+> **Status (2026-07-04).** Written 2026-06-24, before the later
+> [`docs/plans/taste-campaign/`](../taste-campaign/00-orchestration.md)
+> (all 7 workstreams done as of 2026-07-02). That campaign substantially
+> advanced this plan's Week 3 (single operator contract — see
+> `01-registry-single-source.md`), Week 4 (core service decomposition — see
+> `03-factory-mjs-finish.md` and `04-tools-lib-topology.md`), and Week 6
+> (generated data/frontend guardrails — see `05-generated-truth.md`); check
+> those docs before assuming a Week 3/4/6 item here is still open. **Weeks
+> 1, 2, 5, and 7 (security hardening, IAM/Terraform ownership, state model
+> cleanup, system simulators/MCP) have not been re-verified against the
+> current tree** — treat their acceptance criteria as unconfirmed rather
+> than done or not done until someone checks.
+
+This folder breaks the architecture review into seven separate week-by-week implementation plans. Each plan is intended to be independently executable, reviewable, and mergeable.
 
 ## Sequence
 
@@ -10,6 +23,7 @@ This folder breaks the architecture review into six separate week-by-week implem
 4. [Week 4: Core Service Decomposition](week-04-core-service-decomposition.md)
 5. [Week 5: State Model Cleanup](week-05-state-model-cleanup.md)
 6. [Week 6: Generated Data And Frontend Guardrails](week-06-generated-data-and-frontend-guardrails.md)
+7. [Week 7: System Simulators And MCP](week-07-system-simulators-and-mcp.md)
 
 ## Operating Principles
 
