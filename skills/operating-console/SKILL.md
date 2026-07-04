@@ -71,7 +71,7 @@ Run:
 
 ```bash
 bun test apps/console/src/server/ge-api.test.mjs apps/console/src/server/transport.test.mjs
-bun run lint
+bun run typecheck
 node --check apps/console/src/server/ge-api.mjs
 node --check apps/console/src/server/transport.mjs
 node --check apps/console/src/server/job-store.mjs

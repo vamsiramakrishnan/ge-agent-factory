@@ -23,7 +23,7 @@ steps:
   - id: typecheck
     name: 'oven/bun:1.3'
     entrypoint: bun
-    args: ['run', 'lint']
+    args: ['run', 'typecheck']
     waitFor: ['install']
 
   # The catalog is a generated build artifact (relocated out of the source tree);
