@@ -1,7 +1,7 @@
 // Loaded last (after color scheme + component modules + callouts) -- see
 // just-the-docs.scss.liquid. Safe to override any rendered class here.
 
-$ge-display-font: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+$ge-display-font: "Archivo", ui-sans-serif, system-ui, sans-serif;
 
 // Headings, nav, and site chrome carry the product's display font
 // (packages/design/src/tokens.css --font-headline); body copy stays on the

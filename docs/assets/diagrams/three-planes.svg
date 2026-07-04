@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 891.5169999999999 897.9" width="891.5169999999999" height="897.9" style="--bg:#ffffff;--fg:#14171c;--line:#565e6c;--accent:#2953ff;--muted:#79818e;--surface:#eceef2;--border:#dfe2e8;background:var(--bg)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 891.5169999999999 897.9" width="891.5169999999999" height="897.9" style="--bg:#f7f7f5;--fg:#1a1a18;--line:#55554f;--accent:#cc3d0d;--muted:#7c7c74;--surface:#e3e3df;--border:#d4d4cf;background:var(--bg)">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
   text { font-family: 'Inter', system-ui, sans-serif; }
@@ -74,56 +74,56 @@ queue" data-shape="rectangle">
   <text x="578.7729999999999" y="463.85" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">worker</text>
 </g>
 <g class="node" data-id="GCS" data-label="GCS" data-shape="cylinder">
-  <rect x="189.37400000000002" y="609.3" width="68.62599999999999" height="36.900000000000006" fill="#e6ebff" stroke="none" />
-  <line x1="189.37400000000002" y1="609.3" x2="189.37400000000002" y2="646.1999999999999" stroke="#2953ff" stroke-width="0.75" />
-  <line x1="258" y1="609.3" x2="258" y2="646.1999999999999" stroke="#2953ff" stroke-width="0.75" />
-  <ellipse cx="223.687" cy="646.1999999999999" rx="34.312999999999995" ry="7" fill="#e6ebff" stroke="#2953ff" stroke-width="0.75" />
-  <ellipse cx="223.687" cy="609.3" rx="34.312999999999995" ry="7" fill="#e6ebff" stroke="#2953ff" stroke-width="0.75" />
-  <text x="223.687" y="627.75" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">GCS</text>
+  <rect x="189.37400000000002" y="609.3" width="68.62599999999999" height="36.900000000000006" fill="#f6ddd1" stroke="none" />
+  <line x1="189.37400000000002" y1="609.3" x2="189.37400000000002" y2="646.1999999999999" stroke="#cc3d0d" stroke-width="0.75" />
+  <line x1="258" y1="609.3" x2="258" y2="646.1999999999999" stroke="#cc3d0d" stroke-width="0.75" />
+  <ellipse cx="223.687" cy="646.1999999999999" rx="34.312999999999995" ry="7" fill="#f6ddd1" stroke="#cc3d0d" stroke-width="0.75" />
+  <ellipse cx="223.687" cy="609.3" rx="34.312999999999995" ry="7" fill="#f6ddd1" stroke="#cc3d0d" stroke-width="0.75" />
+  <text x="223.687" y="627.75" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1a18" dy="4.55">GCS</text>
 </g>
 <g class="node" data-id="ADB" data-label="AlloyDB" data-shape="cylinder">
-  <rect x="412.26599999999996" y="609.3" width="89.374" height="36.900000000000006" fill="#e6ebff" stroke="none" />
-  <line x1="412.26599999999996" y1="609.3" x2="412.26599999999996" y2="646.1999999999999" stroke="#2953ff" stroke-width="0.75" />
-  <line x1="501.64" y1="609.3" x2="501.64" y2="646.1999999999999" stroke="#2953ff" stroke-width="0.75" />
-  <ellipse cx="456.953" cy="646.1999999999999" rx="44.687" ry="7" fill="#e6ebff" stroke="#2953ff" stroke-width="0.75" />
-  <ellipse cx="456.953" cy="609.3" rx="44.687" ry="7" fill="#e6ebff" stroke="#2953ff" stroke-width="0.75" />
-  <text x="456.953" y="627.75" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">AlloyDB</text>
+  <rect x="412.26599999999996" y="609.3" width="89.374" height="36.900000000000006" fill="#f6ddd1" stroke="none" />
+  <line x1="412.26599999999996" y1="609.3" x2="412.26599999999996" y2="646.1999999999999" stroke="#cc3d0d" stroke-width="0.75" />
+  <line x1="501.64" y1="609.3" x2="501.64" y2="646.1999999999999" stroke="#cc3d0d" stroke-width="0.75" />
+  <ellipse cx="456.953" cy="646.1999999999999" rx="44.687" ry="7" fill="#f6ddd1" stroke="#cc3d0d" stroke-width="0.75" />
+  <ellipse cx="456.953" cy="609.3" rx="44.687" ry="7" fill="#f6ddd1" stroke="#cc3d0d" stroke-width="0.75" />
+  <text x="456.953" y="627.75" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1a18" dy="4.55">AlloyDB</text>
 </g>
 <g class="node" data-id="FS" data-label="Firestore" data-shape="cylinder">
-  <rect x="529.64" y="609.3" width="98.266" height="36.900000000000006" fill="#e6ebff" stroke="none" />
-  <line x1="529.64" y1="609.3" x2="529.64" y2="646.1999999999999" stroke="#2953ff" stroke-width="0.75" />
-  <line x1="627.906" y1="609.3" x2="627.906" y2="646.1999999999999" stroke="#2953ff" stroke-width="0.75" />
-  <ellipse cx="578.773" cy="646.1999999999999" rx="49.133" ry="7" fill="#e6ebff" stroke="#2953ff" stroke-width="0.75" />
-  <ellipse cx="578.773" cy="609.3" rx="49.133" ry="7" fill="#e6ebff" stroke="#2953ff" stroke-width="0.75" />
-  <text x="578.773" y="627.75" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">Firestore</text>
+  <rect x="529.64" y="609.3" width="98.266" height="36.900000000000006" fill="#f6ddd1" stroke="none" />
+  <line x1="529.64" y1="609.3" x2="529.64" y2="646.1999999999999" stroke="#cc3d0d" stroke-width="0.75" />
+  <line x1="627.906" y1="609.3" x2="627.906" y2="646.1999999999999" stroke="#cc3d0d" stroke-width="0.75" />
+  <ellipse cx="578.773" cy="646.1999999999999" rx="49.133" ry="7" fill="#f6ddd1" stroke="#cc3d0d" stroke-width="0.75" />
+  <ellipse cx="578.773" cy="609.3" rx="49.133" ry="7" fill="#f6ddd1" stroke="#cc3d0d" stroke-width="0.75" />
+  <text x="578.773" y="627.75" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1a18" dy="4.55">Firestore</text>
 </g>
 <g class="node" data-id="BQ" data-label="BigQuery" data-shape="cylinder">
-  <rect x="286" y="609.3" width="98.26599999999999" height="36.900000000000006" fill="#e6ebff" stroke="none" />
-  <line x1="286" y1="609.3" x2="286" y2="646.1999999999999" stroke="#2953ff" stroke-width="0.75" />
-  <line x1="384.26599999999996" y1="609.3" x2="384.26599999999996" y2="646.1999999999999" stroke="#2953ff" stroke-width="0.75" />
-  <ellipse cx="335.133" cy="646.1999999999999" rx="49.132999999999996" ry="7" fill="#e6ebff" stroke="#2953ff" stroke-width="0.75" />
-  <ellipse cx="335.133" cy="609.3" rx="49.132999999999996" ry="7" fill="#e6ebff" stroke="#2953ff" stroke-width="0.75" />
-  <text x="335.133" y="627.75" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">BigQuery</text>
+  <rect x="286" y="609.3" width="98.26599999999999" height="36.900000000000006" fill="#f6ddd1" stroke="none" />
+  <line x1="286" y1="609.3" x2="286" y2="646.1999999999999" stroke="#cc3d0d" stroke-width="0.75" />
+  <line x1="384.26599999999996" y1="609.3" x2="384.26599999999996" y2="646.1999999999999" stroke="#cc3d0d" stroke-width="0.75" />
+  <ellipse cx="335.133" cy="646.1999999999999" rx="49.132999999999996" ry="7" fill="#f6ddd1" stroke="#cc3d0d" stroke-width="0.75" />
+  <ellipse cx="335.133" cy="609.3" rx="49.132999999999996" ry="7" fill="#f6ddd1" stroke="#cc3d0d" stroke-width="0.75" />
+  <text x="335.133" y="627.75" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1a18" dy="4.55">BigQuery</text>
 </g>
 <g class="node" data-id="BT" data-label="Bigtable" data-shape="cylinder">
-  <rect x="72" y="609.3" width="89.374" height="36.900000000000006" fill="#e6ebff" stroke="none" />
-  <line x1="72" y1="609.3" x2="72" y2="646.1999999999999" stroke="#2953ff" stroke-width="0.75" />
-  <line x1="161.374" y1="609.3" x2="161.374" y2="646.1999999999999" stroke="#2953ff" stroke-width="0.75" />
-  <ellipse cx="116.687" cy="646.1999999999999" rx="44.687" ry="7" fill="#e6ebff" stroke="#2953ff" stroke-width="0.75" />
-  <ellipse cx="116.687" cy="609.3" rx="44.687" ry="7" fill="#e6ebff" stroke="#2953ff" stroke-width="0.75" />
-  <text x="116.687" y="627.75" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">Bigtable</text>
+  <rect x="72" y="609.3" width="89.374" height="36.900000000000006" fill="#f6ddd1" stroke="none" />
+  <line x1="72" y1="609.3" x2="72" y2="646.1999999999999" stroke="#cc3d0d" stroke-width="0.75" />
+  <line x1="161.374" y1="609.3" x2="161.374" y2="646.1999999999999" stroke="#cc3d0d" stroke-width="0.75" />
+  <ellipse cx="116.687" cy="646.1999999999999" rx="44.687" ry="7" fill="#f6ddd1" stroke="#cc3d0d" stroke-width="0.75" />
+  <ellipse cx="116.687" cy="609.3" rx="44.687" ry="7" fill="#f6ddd1" stroke="#cc3d0d" stroke-width="0.75" />
+  <text x="116.687" y="627.75" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1a18" dy="4.55">Bigtable</text>
 </g>
 <g class="node" data-id="AG" data-label="Agent Gateway" data-shape="rectangle">
-  <rect x="689.3879999999999" y="602.3" width="128.647" height="36.900000000000006" rx="0" ry="0" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
-  <text x="753.7114999999999" y="620.75" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">Agent Gateway</text>
+  <rect x="689.3879999999999" y="602.3" width="128.647" height="36.900000000000006" rx="0" ry="0" fill="#dfeadf" stroke="#2e7a47" stroke-width="0.75" />
+  <text x="753.7114999999999" y="620.75" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1a18" dy="4.55">Agent Gateway</text>
 </g>
 <g class="node" data-id="MS" data-label="per-department
 MCP services" data-shape="rectangle">
-  <rect x="687.906" y="687.1999999999999" width="131.611" height="53.800000000000004" rx="0" ry="0" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
-  <text x="753.7114999999999" y="714.0999999999999" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c"><tspan x="753.7114999999999" dy="-3.9000000000000012">per-department</tspan><tspan x="753.7114999999999" dy="16.900000000000002">MCP services</tspan></text>
+  <rect x="687.906" y="687.1999999999999" width="131.611" height="53.800000000000004" rx="0" ry="0" fill="#dfeadf" stroke="#2e7a47" stroke-width="0.75" />
+  <text x="753.7114999999999" y="714.0999999999999" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1a18"><tspan x="753.7114999999999" dy="-3.9000000000000012">per-department</tspan><tspan x="753.7114999999999" dy="16.900000000000002">MCP services</tspan></text>
 </g>
 <g class="node" data-id="AR" data-label="Agent Registry" data-shape="rectangle">
-  <rect x="689.3879999999999" y="789" width="128.647" height="36.900000000000006" rx="0" ry="0" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
-  <text x="753.7114999999999" y="807.45" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">Agent Registry</text>
+  <rect x="689.3879999999999" y="789" width="128.647" height="36.900000000000006" rx="0" ry="0" fill="#dfeadf" stroke="#2e7a47" stroke-width="0.75" />
+  <text x="753.7114999999999" y="807.45" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1a18" dy="4.55">Agent Registry</text>
 </g>
 </svg>

@@ -11,32 +11,33 @@
 //
 // Terminals speak 16-color ANSI, not hex, so each entry carries BOTH the hex
 // pair the console renders and the nearest ANSI name the CLI renders. The
-// ANSI approximation is deliberately coarser: blue-means-live collapses to
+// ANSI approximation is deliberately coarser: signal-means-live collapses to
 // cyan (queued/running/repairing all read as "in motion" at a glance in a
 // TTY), and blocked shares failed's red because a 16-color terminal has no
 // orange. Changing an `ansi` value changes CLI output bytes — treat that as
 // an interface change, not a refactor.
 //
 // `cssValue` overrides the emitted CSS value where the ramp deliberately
-// aliases a chrome-palette token (`running` IS --color-primary, `passed` IS
-// --color-tertiary — one blue, one green, one meaning); `hex` stays the
+// aliases a chrome-palette token (`running` IS --color-primary — the Braun
+// power dot lit means "on" — and `passed` IS --color-tertiary — one signal,
+// one green, one meaning); `hex` stays the
 // resolved color so JS consumers (diagrams, chart themes) never have to parse
 // a var() reference.
 export const STATUS_RAMP = {
-  queued: { hex: "#6b7280", ink: "#454c59", ansi: "cyan" },
-  running: { hex: "#2953ff", ink: "#1d3fc7", ansi: "cyan", cssValue: "var(--color-primary)" },
-  passed: { hex: "#16874a", ink: "#0d6d3a", ansi: "green", cssValue: "var(--color-tertiary)" },
-  failed: { hex: "#dc3626", ink: "#9a1f14", ansi: "red" },
-  blocked: { hex: "#d9660a", ink: "#8f4207", ansi: "red" },
-  warning: { hex: "#ca9a08", ink: "#7a5e05", ansi: "yellow" },
-  repairing: { hex: "#0f8f8a", ink: "#0a5f5b", ansi: "cyan" },
+  queued: { hex: "#6e6e68", ink: "#4a4a44", ansi: "cyan" },
+  running: { hex: "#cc3d0d", ink: "#a32f08", ansi: "cyan", cssValue: "var(--color-primary)" },
+  passed: { hex: "#2e7a47", ink: "#266b3d", ansi: "green", cssValue: "var(--color-tertiary)" },
+  failed: { hex: "#b3231c", ink: "#8a1d14", ansi: "red" },
+  blocked: { hex: "#96590d", ink: "#6b3f08", ansi: "red" },
+  warning: { hex: "#a37e06", ink: "#6f5604", ansi: "yellow" },
+  repairing: { hex: "#2b7f78", ink: "#1e5a55", ansi: "cyan" },
 };
 
 // Not a run status: flags AI-assisted content (the "bring your own system"
 // flow). Kept beside the ramp so every semantic hue lives in one file, but
 // deliberately visually distinct from run state.
 export const STATUS_ACCENTS = {
-  synthesized: { hex: "#7c4fe0", ink: "#5a34a8" },
+  synthesized: { hex: "#6f55b8", ink: "#513d8c" },
 };
 
 // Loose operator vocabulary → ramp tone. This is the CLI-side normalization

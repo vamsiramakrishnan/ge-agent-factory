@@ -5,20 +5,20 @@
 // BEGIN GENERATED: palette -- do not edit; run `bun run docs:tokens`
 $color-scheme: ge;
 
-$body-background-color: #ffffff; // --color-surface
-$body-heading-color: #14171c; // --color-on-surface
-$body-text-color: #383e47; // secondary ink, still AA on white
-$link-color: #2953ff; // --color-primary
-$nav-child-link-color: #383e47;
-$sidebar-color: #f3f4f7; // --color-background
-$base-button-color: #f6f7f9; // --color-surface-container-low
-$btn-primary-color: #2953ff;
-$code-background-color: #f6f7f9;
+$body-background-color: #f7f7f5; // --color-surface
+$body-heading-color: #1a1a18; // --color-on-surface
+$body-text-color: #3a3a35; // secondary ink, still AA on white
+$link-color: #cc3d0d; // --color-primary
+$nav-child-link-color: #3a3a35;
+$sidebar-color: #e9e9e6; // --color-background
+$base-button-color: #efefec; // --color-surface-container-low
+$btn-primary-color: #cc3d0d;
+$code-background-color: #efefec;
 $feedback-color: darken($sidebar-color, 3%);
-$table-background-color: #ffffff;
-$search-background-color: #ffffff;
-$search-result-preview-color: #383e47;
-$border-color: #dfe2e8; // --color-outline-variant
+$table-background-color: #f7f7f5;
+$search-background-color: #f7f7f5;
+$search-result-preview-color: #3a3a35;
+$border-color: #d4d4cf; // --color-outline-variant
 // END GENERATED: palette
 
 @import "./vendor/accessible-pygments/github-light";

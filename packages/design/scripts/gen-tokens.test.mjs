@@ -42,8 +42,8 @@ test("$green-200 keeps its shipped value, now traced to PALETTE.tertiarySwatchDa
   // tip-callout accent); palette.mjs carries it as tertiarySwatchDark and
   // TOKEN_TABLE maps the ramp entry to that key — no raw hex pins remain
   // anywhere in the table.
-  expect(renderRegion("setup.scss")).toContain("$green-200: #0d6d3a;");
-  expect(PALETTE.tertiarySwatchDark).toBe("#0d6d3a");
+  expect(renderRegion("setup.scss")).toContain("$green-200: #266b3d;");
+  expect(PALETTE.tertiarySwatchDark).toBe("#266b3d");
   const row = TOKEN_TABLE.find((r) => r.name === "$green-200");
   expect(row?.key).toBe("tertiarySwatchDark");
   expect(row?.raw).toBeUndefined();
@@ -66,14 +66,14 @@ test("checkTokens flags a hand-edited hex inside a marked region and writeTokens
       writeFileSync(dest, readFileSync(join(ROOT, target.relPath), "utf8"));
     }
     const setupPath = join(tmp, "docs/_sass/custom/setup.scss");
-    writeFileSync(setupPath, readFileSync(setupPath, "utf8").replace("$blue-200: #2953ff;", "$blue-200: #ff0000;"));
+    writeFileSync(setupPath, readFileSync(setupPath, "utf8").replace("$blue-200: #cc3d0d;", "$blue-200: #ff0000;"));
 
     const drifted = checkTokens(tmp);
     expect(drifted.ok).toBe(false);
     expect(drifted.findings.map((f) => f.file)).toEqual(["docs/_sass/custom/setup.scss"]);
     const report = formatCheckReport(drifted);
     expect(report).toContain("-$blue-200: #ff0000;");
-    expect(report).toContain("+$blue-200: #2953ff;");
+    expect(report).toContain("+$blue-200: #cc3d0d;");
 
     const { changed } = writeTokens(tmp);
     expect(changed).toEqual(["docs/_sass/custom/setup.scss"]);
