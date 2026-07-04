@@ -25,7 +25,12 @@ const EXPECTED_TOOLS = {
   factory_doctor: [],
   factory_status: ["noProxy?"],
   factory_logs: ["runId", "stage?", "item?"],
-  factory_provision: ["scope?", "dept?", "ids?", "concurrency?", "force?", "noProxy?", "local?", "vertex?", "target?", "limit?"],
+  // Renamed from factory_provision (2026-07-04): "provision" was a third
+  // spelling for "build agents" (alongside CLI `ge agents build` and mise's
+  // provision/provision-local tasks), while apps/factory/src/cli.js's own
+  // `factory provision` meant something unrelated (infra/control-plane
+  // apply) -- renamed to match its registry id "agents.build".
+  factory_agents_build: ["scope?", "dept?", "ids?", "concurrency?", "force?", "noProxy?", "local?", "vertex?", "target?", "limit?"],
   factory_sync: ["force?", "push?", "commit?", "local?", "remote?", "create?"],
   factory_mcp_deploy: [],
   factory_mcp_doctor: [],

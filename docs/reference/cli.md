@@ -960,8 +960,8 @@ the handful that collide with a built-in mise command name (`doctor`, `install`,
 | `mise run mcp-deploy` / `mise run mcp-doctor` | `ge mcp deploy` / `ge mcp doctor` |
 | `mise run status` | bare `ge` |
 | `mise run mode-local` / `mise run mode-remote` | `ge mode local` / `ge mode remote` |
-| `mise run provision [CANARY=1]` | `ge agents build` (`--canary` or `--all`) |
-| `mise run provision-local [CANARY=1]` | `ge agents build --local` |
+| `mise run build-agents [CANARY=1]` | `ge agents build` (`--canary` or `--all`) |
+| `mise run build-agents-local [CANARY=1]` | `ge agents build --local` |
 | `mise run sync` / `mise run sync-local` | `ge agents sync --push` / `--local --create --push` |
 | `mise run mcp-server` / `mise run mcp` | Run the factory's MCP server (stdio) |
 

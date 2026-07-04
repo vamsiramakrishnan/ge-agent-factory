@@ -36,7 +36,7 @@ mise run devex-check
 mise run prove
 mise run console
 mise run mode-local
-CANARY=1 mise run provision-local
+CANARY=1 mise run build-agents-local
 ```
 
 The local path installs the toolchain, checks docs and workspace contracts,
@@ -134,7 +134,7 @@ manifest path, then gives the next commands to run.
 ### Generator or generated-agent change
 
 1. Edit `apps/factory/src/*` or the relevant generator scripts.
-2. Build one canary locally with `mise run mode-local && CANARY=1 mise run provision-local`.
+2. Build one canary locally with `mise run mode-local && CANARY=1 mise run build-agents-local`.
 3. Inspect the generated workspace under `.ge/factory/workspaces/`.
 4. Run evals when the change affects behavior contracts.
 5. Update [Agent generation](./reference/agent-generation.html),

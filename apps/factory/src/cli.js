@@ -129,7 +129,7 @@ function printHelp() {
   ge-harness factory plan [--usecases <id,id>] [--department all|hr] [--domain <id>] [--limit <n|all>] [--target <stage>] [--project <gcp-project>]
   ge-harness factory run [--plan .ge/factory/factory-plan.json] [--target <created|validated|harness_reviewed|harness_refined|data_packaged|previewed|deploy_planned|deployed|registered|publish_planned|published>] [--vertex true|false] [--no-vertex] [--project <gcp-project> --location global] [--continue true] [--stream true]
   ge-harness factory control-plane --project <gcp-project> [--region us-central1] [--bucket <name>]
-  ge-harness factory provision --project <gcp-project> [--region us-central1] [--bucket <name>] [--apply true]
+  ge-harness factory infra-plan --project <gcp-project> [--region us-central1] [--bucket <name>] [--apply true]
   ge-harness factory submit --workspace <id> --project <gcp-project> [--project-number <n>] [--stage validate] [--target publish_enterprise] [--dispatch queue|execute] [--workspace-archive gs://...] [--artifact-prefix gs://...] [--run-agent-evals true]
   ge-harness factory status [--plan .ge/factory/factory-plan.json]
   ge-harness agent run --workspace-dir <dir> --message <prompt> [--agent antigravity-sdk|agy|gemini] [--vertex true|false] [--no-vertex] [--project <gcp-project> --location us-central1]
@@ -251,7 +251,7 @@ async function runCommand(args) {
     return true;
   }
 
-  if (command === "factory" && subcommand === "provision") {
+  if (command === "factory" && subcommand === "infra-plan") {
     const plan = buildControlPlanePlanFromFlags(flags);
     const apply = flags.apply === "true" || flags.apply === true;
     const outRel = flags.output || "factory/control-plane-provision.json";
