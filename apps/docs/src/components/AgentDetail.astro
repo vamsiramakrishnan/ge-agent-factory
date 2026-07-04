@@ -155,12 +155,12 @@ const stats = [
     border-radius: 999px;
   }
   .agent-tag-hitl {
-    color: #e11d48;
-    border-color: color-mix(in srgb, #e11d48 35%, var(--sl-color-gray-5));
+    color: var(--ge-status-blocked-text);
+    border-color: color-mix(in srgb, var(--ge-status-blocked) 35%, var(--sl-color-gray-5));
   }
   .agent-tag-ok {
-    color: #059669;
-    border-color: color-mix(in srgb, #059669 35%, var(--sl-color-gray-5));
+    color: var(--ge-status-passed-text);
+    border-color: color-mix(in srgb, var(--ge-status-passed) 35%, var(--sl-color-gray-5));
   }
 
   /* Spec stat-strip */
@@ -194,8 +194,10 @@ const stats = [
   }
 
   .agent-hitl-note {
-    border-left: 3px solid #e11d48;
-    padding-left: 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--ge-status-blocked) 35%, transparent);
+    background: color-mix(in srgb, var(--ge-status-blocked) 8%, transparent);
+    border-radius: 0.5rem;
+    padding: 0.6rem 0.75rem;
     font-size: var(--sl-text-sm);
   }
   .agent-source {

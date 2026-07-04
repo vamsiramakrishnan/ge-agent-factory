@@ -117,13 +117,6 @@ body::after {
 .accent-glow {
   background: linear-gradient(135deg, var(--gem-iris) 0%, var(--gem-blue) 100%);
 }
-.text-gem-gradient {
-  background: linear-gradient(120deg, var(--gem-blue), var(--gem-iris) 55%, var(--gem-magenta));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
 /* ═══ Two-channel elevation (replaces the flat single-blue shadows) ═════════ */
 .shadow-ambient {
   box-shadow:

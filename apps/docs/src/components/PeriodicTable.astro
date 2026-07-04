@@ -503,8 +503,8 @@ const SHIELD_PATH = "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z M9 12l2 2 4-4";
     left: 0.25rem;
     width: 0.6rem;
     height: 0.6rem;
-    color: #e11d48;
-    opacity: 0.7;
+    color: var(--ge-status-blocked);
+    opacity: 0.8;
   }
 
   /* ── Sidebar ── */
@@ -576,8 +576,8 @@ const SHIELD_PATH = "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z M9 12l2 2 4-4";
     background: var(--pt-surface);
   }
   .pt-tag-hitl {
-    color: #e11d48;
-    border-color: color-mix(in srgb, #e11d48 35%, var(--pt-border));
+    color: var(--ge-status-blocked-text);
+    border-color: color-mix(in srgb, var(--ge-status-blocked) 35%, var(--pt-border));
   }
   .pt-detail-link {
     display: inline-block;
@@ -636,7 +636,7 @@ const SHIELD_PATH = "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z M9 12l2 2 4-4";
     flex-shrink: 0;
   }
   .pt-legend-hitl {
-    color: #e11d48;
+    color: var(--ge-status-blocked);
   }
   .pt-legend-domain:hover .pt-legend-domain-title {
     color: var(--sl-color-text-accent);
