@@ -82,13 +82,13 @@ published set can't drift from what agents see.
 ## Theme
 
 `src/styles/custom.css` derives everything from the product's canonical
-design sources — the "Proof Instrument" chrome palette in
-`packages/design/src/palette.mjs` (cobalt primary `#2953ff`, cool neutrals;
+design sources — the "Punktraster" chrome palette in
+`packages/design/src/palette.mjs` (vermilion signal `#cc3d0d`, warm chassis greys;
 same palette as `docs/_sass/color_schemes/ge.scss`) and the status→color
 vocabulary in `packages/design/src/status-ramp.mjs`, exposed to components as
-`--ge-status-*` custom properties. Space Grotesk carries headings/chrome,
+`--ge-status-*` custom properties. Archivo carries headings/chrome,
 Geist Mono code (self-hosted via Fontsource); dark mode is a cool-slate ramp
-around the same cobalt signal. If the palette changes, change `palette.mjs`
+around the same vermilion signal. If the palette changes, change `palette.mjs`
 first (`node tools/check-design-tokens.mjs` guards the generated copies) and
 re-derive here — strategic design context lives in `PRODUCT.md`.
 

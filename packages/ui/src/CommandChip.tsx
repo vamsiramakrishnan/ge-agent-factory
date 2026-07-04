@@ -23,23 +23,25 @@ export function CommandChip({ command, className }: CommandChipProps) {
   };
 
   return (
+    // Commands are terminal content, so they render behind the instrument's
+    // readout glass (tokens.css .dial-window), not on the chassis.
     <span
       className={cx(
-        "inline-flex items-center gap-2 rounded-md border border-outline-variant/40 bg-surface-container-low px-2.5 py-1.5 font-mono text-xs text-on-surface",
+        "dial-window inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 font-mono text-xs",
         className,
       )}
     >
-      <span className="select-none text-secondary" aria-hidden="true">$</span>
+      <span className="select-none text-white/40" aria-hidden="true">$</span>
       <span className="min-w-0 break-all">{command}</span>
       <button
         type="button"
         onClick={copy}
         aria-label="Copy command"
         title="Copy command"
-        className="shrink-0 rounded p-0.5 text-secondary transition-colors hover:bg-surface-container hover:text-on-surface"
+        className="shrink-0 rounded p-0.5 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
       >
         {copied
-          ? <Check className="h-3.5 w-3.5 text-status-passed-ink" aria-hidden />
+          ? <Check className="h-3.5 w-3.5 text-status-passed" aria-hidden />
           : <Copy className="h-3.5 w-3.5" aria-hidden />}
       </button>
     </span>

@@ -1,5 +1,5 @@
 // Shared visual theme for docs diagrams (tools/gen-docs-diagrams.mjs), derived
-// from the same "Proof Instrument" palette the console/presentation apps use
+// from the same "Punktraster" palette the console/presentation apps use
 // (packages/design/src/tokens.css) so the docs site and the product UI read as
 // one system instead of a generic canned theme.
 //
@@ -14,7 +14,7 @@ export const DIAGRAM_THEME = {
   fg: PALETTE.onSurface, // --color-on-surface
   accent: PALETTE.primary, // --color-primary
   line: PALETTE.secondary, // --color-secondary
-  muted: "#79818e", // derived cool-slate rung between secondary and outlineVariant
+  muted: "#7c7c74", // derived warm-grey rung between secondary and outlineVariant
   surface: PALETTE.surfaceContainer, // --color-surface-container
   border: PALETTE.outlineVariant, // --color-outline-variant
   font: "Inter",

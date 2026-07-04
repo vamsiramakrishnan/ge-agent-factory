@@ -147,15 +147,19 @@ export function LogStream({ runId, stage, item }: LogStreamProps) {
         )}
         <button
           onClick={() => setFollow(!follow)}
-          className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
-            follow ? "bg-primary text-on-primary" : "bg-surface-container-high text-secondary"
+          aria-pressed={follow}
+          className={`key inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+            follow
+              ? "border-outline/70 bg-surface font-semibold text-on-surface"
+              : "border-outline/50 bg-surface-container-low text-secondary hover:text-on-surface"
           }`}
         >
+          {follow && <span className="lamp h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />}
           Follow
         </button>
         <button
           onClick={() => setEvents([])}
-          className="px-3 py-1 text-xs font-medium rounded bg-surface-container-high text-secondary hover:bg-outline-variant/50 transition-colors inline-flex items-center gap-1.5"
+          className="key inline-flex items-center gap-1.5 rounded-full border border-outline/50 bg-surface-container-low px-3 py-1 text-xs font-medium text-secondary transition-colors hover:text-on-surface"
         >
           <Trash2 className="w-3 h-3" />
           Clear
@@ -164,7 +168,7 @@ export function LogStream({ runId, stage, item }: LogStreamProps) {
 
       <div
         ref={containerRef}
-        className="flex-1 overflow-auto bg-slate-900 text-slate-100 font-mono text-xs p-2"
+        className="dial-window flex-1 overflow-auto rounded-none border-x-0 border-b-0 font-mono text-xs p-2"
       >
         {displayEvents.map((evt, idx) => {
           if (evt.type === "log") {
@@ -179,7 +183,7 @@ export function LogStream({ runId, stage, item }: LogStreamProps) {
             const segments = evt.line ? ansiToSegments(evt.line) : [];
             return (
               <div key={evt.id} className="leading-snug">
-                <span className="text-slate-500 select-none mr-2">{idx + 1}</span>
+                <span className="text-white/30 select-none mr-2">{idx + 1}</span>
                 <span className={levelClass}>
                   {segments.map((seg, si) => (
                     <span key={si} className={seg.className}>
@@ -199,7 +203,7 @@ export function LogStream({ runId, stage, item }: LogStreamProps) {
                   ? "text-rose-400"
                   : "text-blue-400";
             return (
-              <div key={evt.id} className={`border-t border-slate-700 mt-1 pt-1 ${color} font-semibold`}>
+              <div key={evt.id} className={`border-t border-white/15 mt-1 pt-1 ${color} font-semibold`}>
                 {evt.type.replace(/_/g, " ").toUpperCase()}: {evt.stage}
               </div>
             );

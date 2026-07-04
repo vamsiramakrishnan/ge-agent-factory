@@ -1,23 +1,25 @@
 /* Brand layer over Starlight, derived from the product's design tokens —
- * the "Proof Instrument" palette in packages/design/src/palette.mjs (chrome)
- * and packages/design/src/status-ramp.mjs (semantic status hues). Those two
- * files are THE canonical source; every hex below is either copied from them
- * verbatim or is a documented light/dark rung along one of their hues (same
- * contract as docs/_sass/custom/setup.scss's derived swatches). If the
- * palette changes, change palette.mjs first and re-derive here.
+ * the "Punktraster" palette in packages/design/src/palette.mjs (a Braun-era
+ * instrument chassis after Dieter Rams: warm achromatic greys, off-white
+ * panels, one vermilion signal) and packages/design/src/status-ramp.mjs
+ * (semantic status hues). Those two files are THE canonical source; every
+ * hex below is either copied from them verbatim or is a documented
+ * light/dark rung along one of their hues (same contract as
+ * docs/_sass/custom/setup.scss's derived swatches). If the palette changes,
+ * change palette.mjs first and re-derive here.
  *
- * Type follows the same rule as the product: Space Grotesk for headings and
- * chrome, the system reading face for body copy (a deliberate long-form
- * legibility choice, see docs/DESIGN.md), Geist Mono for code. */
-@import "@fontsource/space-grotesk/500.css";
-@import "@fontsource/space-grotesk/600.css";
-@import "@fontsource/space-grotesk/700.css";
+ * Type follows the product's Rams rule: one grotesque family (Archivo, the
+ * Akzidenz-Grotesk descendant) for headings and chrome, the system reading
+ * face for long-form body copy (see docs/DESIGN.md), Geist Mono for code. */
+@import "@fontsource/archivo/500.css";
+@import "@fontsource/archivo/600.css";
+@import "@fontsource/archivo/700.css";
 @import "@fontsource/geist-mono/400.css";
 @import "@fontsource/geist-mono/500.css";
 @import "@fontsource/geist-mono/600.css";
 
 :root {
-  --ge-display-font: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --ge-display-font: "Archivo", ui-sans-serif, system-ui, sans-serif;
   --sl-font-mono: "Geist Mono", "SFMono-Regular", ui-monospace, menlo, consolas, monospace;
 }
 
@@ -25,34 +27,34 @@
  * console to docs. Components (RiskBadge, OkfSpec, …) reference these instead
  * of inventing hues. `-ink` is the AA text-on-tint shade. ─────────────────── */
 :root {
-  --ge-status-queued: #6b7280;
-  --ge-status-queued-ink: #454c59;
-  --ge-status-running: #2953ff; /* IS --color-primary: blue means "live" */
-  --ge-status-running-ink: #1d3fc7;
-  --ge-status-passed: #16874a; /* IS --color-tertiary: one green, one meaning */
-  --ge-status-passed-ink: #0d6d3a;
-  --ge-status-failed: #dc3626;
-  --ge-status-failed-ink: #9a1f14;
-  --ge-status-blocked: #d9660a;
-  --ge-status-blocked-ink: #8f4207;
-  --ge-status-warning: #ca9a08;
-  --ge-status-warning-ink: #7a5e05;
-  --ge-status-repairing: #0f8f8a;
-  --ge-status-repairing-ink: #0a5f5b;
-  --ge-accent-synthesized: #7c4fe0;
-  --ge-accent-synthesized-ink: #5a34a8;
+  --ge-status-queued: #6e6e68;
+  --ge-status-queued-ink: #4a4a44;
+  --ge-status-running: #cc3d0d; /* IS --color-primary: the lit power dot means "on" */
+  --ge-status-running-ink: #a32f08;
+  --ge-status-passed: #2e7a47; /* IS --color-tertiary: one green, one meaning */
+  --ge-status-passed-ink: #266b3d;
+  --ge-status-failed: #b3231c;
+  --ge-status-failed-ink: #8a1d14;
+  --ge-status-blocked: #96590d;
+  --ge-status-blocked-ink: #6b3f08;
+  --ge-status-warning: #a37e06;
+  --ge-status-warning-ink: #6f5604;
+  --ge-status-repairing: #2b7f78;
+  --ge-status-repairing-ink: #1e5a55;
+  --ge-accent-synthesized: #6f55b8;
+  --ge-accent-synthesized-ink: #513d8c;
 
   /* `-text` is the theme-safe small-text shade: lightened base on dark,
    * the AA ink shade on light (overridden below). Components use these for
    * colored text and the raw base for dots, borders, and fills. */
-  --ge-status-queued-text: color-mix(in srgb, #6b7280 45%, white);
-  --ge-status-running-text: color-mix(in srgb, #2953ff 52%, white);
-  --ge-status-passed-text: color-mix(in srgb, #16874a 55%, white);
-  --ge-status-failed-text: color-mix(in srgb, #dc3626 55%, white);
-  --ge-status-blocked-text: color-mix(in srgb, #d9660a 55%, white);
-  --ge-status-warning-text: color-mix(in srgb, #ca9a08 55%, white);
-  --ge-status-repairing-text: color-mix(in srgb, #0f8f8a 55%, white);
-  --ge-accent-synthesized-text: color-mix(in srgb, #7c4fe0 55%, white);
+  --ge-status-queued-text: color-mix(in srgb, #6e6e68 45%, white);
+  --ge-status-running-text: color-mix(in srgb, #cc3d0d 58%, white);
+  --ge-status-passed-text: color-mix(in srgb, #2e7a47 55%, white);
+  --ge-status-failed-text: color-mix(in srgb, #b3231c 55%, white);
+  --ge-status-blocked-text: color-mix(in srgb, #96590d 55%, white);
+  --ge-status-warning-text: color-mix(in srgb, #a37e06 55%, white);
+  --ge-status-repairing-text: color-mix(in srgb, #2b7f78 55%, white);
+  --ge-accent-synthesized-text: color-mix(in srgb, #6f55b8 55%, white);
 }
 
 :root[data-theme="light"] {
@@ -66,78 +68,183 @@
   --ge-accent-synthesized-text: var(--ge-accent-synthesized-ink);
 }
 
-/* ── Dark palette — cool slate around --color-on-surface's hue, cobalt
- * signal. Derived rungs; anchors from palette.mjs are marked. ─────────────── */
+/* ── Dark palette — warm charcoal around --color-on-surface's hue: a Braun
+ * chassis at night, not a cool slate. Derived rungs; anchors from palette.mjs
+ * are marked. ─────────────────────────────────────────────────────────────── */
 :root {
-  --sl-color-accent-low: #1a2650;
-  --sl-color-accent: #2953ff; /* --color-primary */
-  --sl-color-accent-high: #b9c8ff;
-  --sl-color-text-accent: #8fa4ff;
-  --sl-color-white: #f2f4f8;
-  --sl-color-gray-1: #dde1e8;
-  --sl-color-gray-2: #b8bfca;
-  --sl-color-gray-3: #8a93a3;
-  --sl-color-gray-4: #565e6c; /* --color-secondary */
-  --sl-color-gray-5: #2a303b;
-  --sl-color-gray-6: #1a1e26;
-  --sl-color-black: #12151b;
+  --sl-color-accent-low: #3a1608;
+  --sl-color-accent: #cc3d0d; /* --color-primary */
+  --sl-color-accent-high: #f4b49a;
+  --sl-color-text-accent: #ff8a5c; /* 7.9:1 on the dark chassis */
+  --sl-color-white: #f4f4f1;
+  --sl-color-gray-1: #dededa;
+  --sl-color-gray-2: #bdbdb6;
+  --sl-color-gray-3: #8b8b83;
+  --sl-color-gray-4: #55554f; /* --color-secondary */
+  --sl-color-gray-5: #2b2b28;
+  --sl-color-gray-6: #1b1b19;
+  --sl-color-black: #131311;
 
   /* Starlight's semantic hue families (asides, badges) re-tinted to the
-   * status ramp: note=running-blue, tip=purple, caution=warning, danger=failed. */
-  --sl-color-blue: #5578ff; /* --color-primary-container */
-  --sl-color-blue-low: #1a2650;
-  --sl-color-blue-high: #b9c8ff;
-  --sl-color-green: #2fae6b;
-  --sl-color-green-low: #0e2b1c;
-  --sl-color-green-high: #a4e5c0;
-  --sl-color-orange: #f08a3c;
-  --sl-color-orange-low: #33210f;
-  --sl-color-orange-high: #f8c79b;
-  --sl-color-red: #ef6355;
-  --sl-color-red-low: #351512;
-  --sl-color-red-high: #f7b3ab;
-  --sl-color-yellow: #d9ad2b;
-  --sl-color-yellow-low: #2f2708;
-  --sl-color-yellow-high: #ecd48b;
-  --sl-color-purple: #9d78ec;
-  --sl-color-purple-low: #241640;
-  --sl-color-purple-high: #cfbcf6;
+   * status ramp: note=running-signal, tip=purple, caution=warning, danger=failed. */
+  --sl-color-blue: #e05a26; /* --color-primary-container */
+  --sl-color-blue-low: #33150a;
+  --sl-color-blue-high: #f4b49a;
+  --sl-color-green: #4e9d6b;
+  --sl-color-green-low: #12271a;
+  --sl-color-green-high: #b3d9c0;
+  --sl-color-orange: #c98a3d;
+  --sl-color-orange-low: #2d2011;
+  --sl-color-orange-high: #ecc99d;
+  --sl-color-red: #e0594d;
+  --sl-color-red-low: #331210;
+  --sl-color-red-high: #f3b4ad;
+  --sl-color-yellow: #c9a02b;
+  --sl-color-yellow-low: #2b2409;
+  --sl-color-yellow-high: #e9d18b;
+  --sl-color-purple: #9d85d6;
+  --sl-color-purple-low: #221739;
+  --sl-color-purple-high: #cfc2ee;
 }
 
 /* ── Light palette (--color-* in tokens.css, verbatim where marked) ───────── */
 :root[data-theme="light"] {
-  --sl-color-accent-low: #e6ebff; /* --color-secondary-container */
-  --sl-color-accent: #2953ff; /* --color-primary */
-  --sl-color-accent-high: #17339e; /* $blue-300 hover/active rung */
-  --sl-color-text-accent: #2953ff; /* 5.5:1 on white */
-  --sl-color-white: #14171c; /* --color-on-surface */
-  --sl-color-gray-1: #2a3038;
-  --sl-color-gray-2: #383e47; /* secondaryInk — body text, AA on white */
-  --sl-color-gray-3: #565e6c; /* --color-secondary */
-  --sl-color-gray-4: #79818e;
-  --sl-color-gray-5: #dfe2e8; /* --color-outline-variant */
-  --sl-color-gray-6: #eceef2; /* --color-surface-container */
-  --sl-color-gray-7: #f6f7f9; /* --color-surface-container-low */
-  --sl-color-black: #ffffff; /* --color-surface */
+  --sl-color-accent-low: #f6ddd1; /* --color-secondary-container */
+  --sl-color-accent: #cc3d0d; /* --color-primary */
+  --sl-color-accent-high: #7e2506; /* $blue-300 hover/active rung */
+  --sl-color-text-accent: #cc3d0d; /* 4.9:1 on white */
+  --sl-color-white: #1a1a18; /* --color-on-surface */
+  --sl-color-gray-1: #2b2b27;
+  --sl-color-gray-2: #3a3a35; /* secondaryInk — body text, AA on white */
+  --sl-color-gray-3: #55554f; /* --color-secondary */
+  --sl-color-gray-4: #7c7c74;
+  --sl-color-gray-5: #d4d4cf; /* --color-outline-variant */
+  --sl-color-gray-6: #e3e3df; /* --color-surface-container */
+  --sl-color-gray-7: #efefec; /* --color-surface-container-low */
+  --sl-color-black: #f7f7f5; /* --color-surface */
 
-  --sl-color-blue: #2953ff;
-  --sl-color-blue-low: #e6ebff; /* --color-secondary-container */
-  --sl-color-blue-high: #1d3fc7; /* running-ink */
-  --sl-color-green: #16874a;
-  --sl-color-green-low: #e1f3e7; /* --color-tertiary-container */
-  --sl-color-green-high: #0d6d3a; /* passed-ink */
-  --sl-color-orange: #d9660a;
-  --sl-color-orange-low: #fbeadb;
-  --sl-color-orange-high: #8f4207; /* blocked-ink */
-  --sl-color-red: #dc3626;
-  --sl-color-red-low: #fce8e5;
-  --sl-color-red-high: #9a1f14; /* failed-ink */
-  --sl-color-yellow: #ca9a08;
-  --sl-color-yellow-low: #faf2d4;
-  --sl-color-yellow-high: #7a5e05; /* warning-ink */
-  --sl-color-purple: #7c4fe0;
-  --sl-color-purple-low: #f0eafb;
-  --sl-color-purple-high: #5a34a8; /* synthesized-ink */
+  --sl-color-blue: #cc3d0d;
+  --sl-color-blue-low: #f6ddd1; /* --color-secondary-container */
+  --sl-color-blue-high: #a32f08; /* running-ink */
+  --sl-color-green: #2e7a47;
+  --sl-color-green-low: #dfeadf; /* --color-tertiary-container */
+  --sl-color-green-high: #266b3d; /* passed-ink */
+  --sl-color-orange: #96590d;
+  --sl-color-orange-low: #f3e6d3;
+  --sl-color-orange-high: #6b3f08; /* blocked-ink */
+  --sl-color-red: #b3231c;
+  --sl-color-red-low: #f8e2e0;
+  --sl-color-red-high: #8a1d14; /* failed-ink */
+  --sl-color-yellow: #a37e06;
+  --sl-color-yellow-low: #f5edd1;
+  --sl-color-yellow-high: #6f5604; /* warning-ink */
+  --sl-color-purple: #6f55b8;
+  --sl-color-purple-low: #ece7f7;
+  --sl-color-purple-high: #513d8c; /* synthesized-ink */
+}
+
+/* ── The dot-matrix grille — the Braun speaker perforation as a texture.
+ * Dots are punched from the ink color at low alpha so one rule serves both
+ * themes; it marks apparatus zones (the hero band, panel headers), never
+ * body copy. ──────────────────────────────────────────────────────────────── */
+.ge-grille {
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--sl-color-white) 14%, transparent) 1px,
+    transparent 1.5px
+  );
+  background-size: 8px 8px;
+}
+
+/* ── Bedienelemente: the machined control vocabulary, docs edition — the
+ * same physics the console's tokens.css defines (keys travel, lamps recess,
+ * readouts sit behind dark glass, rules are measuring scales). ───────────── */
+
+/* Buttons are machined keys: pill-shaped, a light-catching top edge, real
+ * travel on press. Starlight's hero/action buttons all go through
+ * .sl-link-button. */
+.sl-link-button {
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.18),
+    0 1px 1px rgba(19, 19, 17, 0.15);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.sl-link-button:active {
+  transform: translateY(0.5px);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.28);
+}
+
+.sl-link-button.secondary,
+.sl-link-button.minimal {
+  border: 1px solid var(--sl-color-gray-5);
+  background: var(--sl-color-gray-6);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(19, 19, 17, 0.06),
+    0 1px 1px rgba(19, 19, 17, 0.08);
+}
+
+:root:not([data-theme="light"]) .sl-link-button.secondary,
+:root:not([data-theme="light"]) .sl-link-button.minimal {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sl-link-button,
+  .sl-link-button:active {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* Code sits behind the readout glass: the astro config pins a single dark
+ * syntax theme in BOTH site themes (code is terminal content, not prose);
+ * this chrome makes the frame read as the instrument's black dial window. */
+.expressive-code .frame {
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(10, 10, 9, 0.6);
+}
+
+.expressive-code .frame.is-terminal .header {
+  font-family: var(--ge-display-font);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Inline code stays a quiet chassis chip (readable in running prose). */
+.sl-markdown-content code:not(pre code) {
+  border: 1px solid var(--sl-color-gray-5);
+  background: var(--sl-color-gray-6);
+  border-radius: 0.25rem;
+}
+
+/* Horizontal rules are measuring scales, not blank lines. */
+.sl-markdown-content hr {
+  height: 7px;
+  border: 0;
+  border-bottom: 1px solid var(--sl-color-gray-5);
+  background-image:
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 48px);
+  background-size: 100% 4px, 100% 100%;
+  background-position: left bottom, left bottom;
+  background-repeat: repeat-x;
+  color: color-mix(in srgb, var(--sl-color-white) 35%, transparent);
+}
+
+/* Section joints: h2 sits on a module seam. */
+.sl-markdown-content h2 {
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--sl-color-gray-6);
 }
 
 /* ── Type ───────────────────────────────────────────────────────────────── */
@@ -167,27 +274,47 @@ h3 {
   font-weight: 700;
 }
 
-/* Sidebar group labels and top-level links carry the display face too, like
- * the product's nav chrome. */
+/* Sidebar group labels are engraved captions — how every label is printed
+ * on the chassis: small, wide-tracked, uppercase. */
 nav.sidebar .top-level > li > details > summary .group-label > span {
   font-family: var(--ge-display-font);
+  font-size: 0.6875rem;
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
 }
 
-/* Current-page marker: the product's "blue means live" applied to nav. */
+/* Same engraving for the "On this page" caption in the right rail. */
+.right-sidebar-panel h2 {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-3);
+}
+
+/* Current-page marker: the product's "the lit dot means on" applied to nav —
+ * a quiet recessed surface plus a round indicator light, not a stripe. */
 nav.sidebar a[aria-current="page"],
 nav.sidebar a[aria-current="page"]:hover,
 nav.sidebar a[aria-current="page"]:focus {
-  background-color: var(--sl-color-accent-low);
-  color: var(--sl-color-text-accent);
+  position: relative;
+  background-color: var(--sl-color-gray-6);
+  color: var(--sl-color-white);
   font-weight: 600;
 }
 
-:root[data-theme="light"] nav.sidebar a[aria-current="page"],
-:root[data-theme="light"] nav.sidebar a[aria-current="page"]:hover,
-:root[data-theme="light"] nav.sidebar a[aria-current="page"]:focus {
-  color: var(--sl-color-accent-high);
+nav.sidebar a[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  right: 0.6rem;
+  top: 50%;
+  width: 0.375rem;
+  height: 0.375rem;
+  margin-top: -0.1875rem;
+  border-radius: 999px;
+  background: var(--sl-color-accent);
 }
 
 /* Focus ring matches the product (tokens.css :focus-visible). */
@@ -200,7 +327,7 @@ nav.sidebar a[aria-current="page"]:focus {
  * border + tint, matching the product's callout treatment. ──────────────── */
 .starlight-aside {
   border: 1px solid color-mix(in srgb, var(--sl-color-asides-border) 55%, transparent);
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
 }
 
 /* ── Tables — this site leans heavily on wide reference tables ──────────── */
@@ -212,7 +339,11 @@ nav.sidebar a[aria-current="page"]:focus {
 .sl-markdown-content thead th {
   background-color: var(--sl-color-gray-6);
   font-family: var(--ge-display-font);
+  font-size: 0.6875rem;
   font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sl-color-gray-2);
   text-align: left;
 }
 
@@ -234,13 +365,13 @@ nav.sidebar a[aria-current="page"]:focus {
 
 /* ── Cards get the product's quiet elevation on hover ───────────────────── */
 .card {
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   transition: box-shadow 120ms ease, border-color 120ms ease;
 }
 
 .card:hover {
   border-color: color-mix(in srgb, var(--sl-color-accent) 35%, var(--sl-color-gray-5));
-  box-shadow: 0 4px 24px rgba(41, 83, 255, 0.08);
+  box-shadow: 0 4px 24px rgba(204, 61, 13, 0.08);
 }
 
 /* ── Landing page: the three-step first-run journey ─────────────────────── */
@@ -274,7 +405,7 @@ nav.sidebar a[aria-current="page"]:focus {
 .sl-markdown-content img[src$=".svg"] {
   background: #ffffff;
   border: 1px solid var(--sl-color-gray-5);
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   padding: 0.75rem;
 }
 
@@ -282,30 +413,50 @@ nav.sidebar a[aria-current="page"]:focus {
 .hero {
   position: relative;
   overflow: hidden;
-  border-bottom: 1px solid color-mix(in srgb, var(--sl-color-accent) 16%, transparent);
+  border-bottom: 1px solid var(--sl-color-gray-5);
 }
 
-/* Instrument-panel wash: cobalt is the only voice; the green (passed) and
- * teal (repairing) ramp hues sit far back as secondary glows. */
+/* The grille band: the perforated speaker face of the instrument, dissolving
+ * toward the housing edge. One texture, no glow — the signal color is saved
+ * for controls. */
 .hero::before {
   content: "";
   position: absolute;
-  inset: -20% -10% auto;
-  height: 28rem;
+  inset: 0 0 auto;
+  height: 22rem;
   pointer-events: none;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(85, 120, 255, 0.22), transparent 28rem),
-    radial-gradient(circle at 78% 12%, rgba(22, 135, 74, 0.14), transparent 24rem),
-    linear-gradient(135deg, rgba(41, 83, 255, 0.13), transparent 55%);
-  filter: blur(4px);
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--sl-color-white) 16%, transparent) 1px,
+    transparent 1.5px
+  );
+  background-size: 8px 8px;
+  -webkit-mask-image: linear-gradient(180deg, black 0%, transparent 92%);
+  mask-image: linear-gradient(180deg, black 0%, transparent 92%);
   z-index: -1;
+}
+
+/* The hero closes on a measuring scale — the tuning dial's tick strip. */
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 8px;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 48px);
+  background-size: 100% 4px, 100% 100%;
+  background-position: left bottom, left bottom;
+  background-repeat: repeat-x;
+  color: color-mix(in srgb, var(--sl-color-white) 38%, transparent);
 }
 
 .hero h1 {
   max-width: 11ch;
   margin-inline: auto;
-  font-size: clamp(3rem, 9vw, 5.5rem);
-  line-height: 0.95;
+  font-size: clamp(3rem, 9vw, 5rem);
+  line-height: 0.98;
 }
 
 .hero .tagline {
@@ -317,12 +468,23 @@ nav.sidebar a[aria-current="page"]:focus {
   position: relative;
   margin: 1.5rem auto 2rem;
   padding: clamp(0.8rem, 2vw, 1.25rem);
-  border: 1px solid color-mix(in srgb, var(--sl-color-accent) 22%, var(--sl-color-gray-5));
-  border-radius: 1.4rem;
-  background:
-    linear-gradient(var(--sl-color-black), var(--sl-color-black)) padding-box,
-    linear-gradient(135deg, rgba(85, 120, 255, 0.6), rgba(22, 135, 74, 0.4), rgba(15, 143, 138, 0.35)) border-box;
-  box-shadow: 0 24px 80px rgba(41, 83, 255, 0.16);
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.875rem;
+  background: var(--sl-color-black);
+  box-shadow: 0 24px 80px rgba(19, 19, 17, 0.28);
+}
+
+/* The one signal on the panel: a lit power dot in the top corner, like the
+ * standby light on the chassis. */
+.ge-hero-panel::after {
+  content: "";
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--sl-color-accent);
 }
 
 .ge-hero-panel img {
@@ -350,7 +512,7 @@ nav.sidebar a[aria-current="page"]:focus {
   border: 1px solid var(--sl-color-gray-5);
   border-radius: 999px;
   color: var(--sl-color-gray-2);
-  background: color-mix(in srgb, var(--sl-color-accent-low) 32%, transparent);
+  background: var(--sl-color-gray-6);
   font-family: var(--ge-display-font);
   font-size: var(--sl-text-sm);
   text-align: center;
@@ -373,16 +535,16 @@ nav.sidebar a[aria-current="page"]:focus {
   gap: 1rem;
   padding: 1.1rem;
   border: 1px solid var(--sl-color-gray-5);
-  border-radius: 1rem;
+  border-radius: 0.625rem;
   color: inherit;
   text-decoration: none;
-  background: linear-gradient(180deg, color-mix(in srgb, var(--sl-color-gray-6) 70%, transparent), transparent);
+  background: var(--sl-color-gray-6);
   transition: box-shadow 120ms ease, border-color 120ms ease;
 }
 
 .ge-value-card:hover {
   border-color: var(--sl-color-accent);
-  box-shadow: 0 16px 42px rgba(41, 83, 255, 0.12);
+  box-shadow: 0 16px 42px rgba(204, 61, 13, 0.1);
 }
 
 .ge-value-card strong {
@@ -407,7 +569,7 @@ nav.sidebar a[aria-current="page"]:focus {
   object-fit: contain;
   padding: 0.7rem;
   border: 1px solid var(--sl-color-gray-5);
-  border-radius: 0.9rem;
+  border-radius: 0.625rem;
   background: var(--sl-color-gray-6);
 }
 
@@ -423,7 +585,7 @@ nav.sidebar a[aria-current="page"]:focus {
   height: 100%;
   object-fit: cover;
   border: 1px solid var(--sl-color-gray-5);
-  border-radius: 1rem;
+  border-radius: 0.625rem;
   background: var(--sl-color-gray-6);
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.16);
 }

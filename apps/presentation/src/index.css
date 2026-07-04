@@ -1,7 +1,9 @@
-/* Geist (body/UI) — paired with Space Grotesk (display) + Geist Mono (data),
-   both already loaded by @ge/design. Geist reads better than Space Grotesk for
-   paragraphs and dense use-case copy. */
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap');
+/* Geist (body/UI) — paired with Space Grotesk (display) + Geist Mono (data).
+   Space Grotesk is loaded here (the deck's own display voice — @ge/design
+   moved to Archivo and no longer ships it); Geist Mono still comes from
+   @ge/design. Geist reads better than Space Grotesk for paragraphs and dense
+   use-case copy. */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
 @import "@ge/design/tokens.css";
 
 /* ═══════════════════════════════════════════════════════════════════════════

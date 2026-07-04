@@ -1,15 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
-  /* Two-face pairing: Space Grotesk is the characterful display face, used
-     sparingly for page/section titles and large numerals — not paragraph
-     text. IBM Plex Sans is the UI workhorse (chosen for its technical/
-     documentation heritage — this is a certification-document product).
-     Geist Mono carries every data value: ids, hashes, timestamps, log
-     lines, JSON, CLI output. */
-  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-headline: "Space Grotesk", "IBM Plex Sans", sans-serif;
+  /* One family, weights do the work — the Rams rule. Archivo is the
+     Akzidenz-Grotesk descendant that carries everything: titles, labels,
+     body, buttons (hierarchy comes from size and weight, never from a
+     second voice). --font-headline stays defined so existing call sites
+     keep working, but it resolves to the same family. Geist Mono carries
+     every data value: ids, hashes, timestamps, log lines, JSON, CLI
+     output. */
+  --font-sans: "Archivo", ui-sans-serif, system-ui, sans-serif;
+  --font-headline: "Archivo", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, monospace;
 
   /* Micro type scale — named steps for the console's dense data surfaces
@@ -20,32 +21,33 @@
   --text-4xs: 0.625rem;
   --text-4xs--line-height: 0.875rem;
 
-  /* Radius scale — tuned slightly more deliberate than Tailwind's default
-     (buttons/inputs get more presence, panels read as considered surfaces
-     rather than a generic 8px-everywhere default). */
-  --radius-sm: 0.3125rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
+  /* Radius scale — Braun housing corners: gently eased, never bubbly.
+     Tighter than the Tailwind default so panels read as machined chassis
+     edges; circular elements (status dots, control knobs) use rounded-full
+     and carry the softness instead. */
+  --radius-sm: 0.1875rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.875rem;
 
   /* ─── Chrome palette ─────────────────────────── */
   /* BEGIN GENERATED: palette — do not edit; run `bun run docs:tokens` */
-  --color-primary: #2953ff;
-  --color-primary-container: #5578ff;
-  --color-background: #f3f4f7;
-  --color-surface: #ffffff;
-  --color-surface-container: #eceef2;
-  --color-surface-container-low: #f6f7f9;
-  --color-surface-container-high: #e4e7ec;
-  --color-surface-container-lowest: #ffffff;
-  --color-surface-bright: #ffffff;
-  --color-surface-tint: #2953ff;
-  --color-on-surface: #14171c;
-  --color-secondary: #565e6c;
-  --color-secondary-container: #e6ebff;
-  --color-tertiary: #16874a;
-  --color-tertiary-container: #e1f3e7;
-  --color-outline-variant: #dfe2e8;
+  --color-primary: #cc3d0d;
+  --color-primary-container: #e05a26;
+  --color-background: #e9e9e6;
+  --color-surface: #f7f7f5;
+  --color-surface-container: #e3e3df;
+  --color-surface-container-low: #efefec;
+  --color-surface-container-high: #dbdbd6;
+  --color-surface-container-lowest: #f7f7f5;
+  --color-surface-bright: #f7f7f5;
+  --color-surface-tint: #cc3d0d;
+  --color-on-surface: #1a1a18;
+  --color-secondary: #55554f;
+  --color-secondary-container: #f6ddd1;
+  --color-tertiary: #2e7a47;
+  --color-tertiary-container: #dfeadf;
+  --color-outline-variant: #d4d4cf;
   /* END GENERATED: palette */
 
   /* --color-outline is deliberately NOT part of the generated brand-palette
@@ -55,7 +57,7 @@
      hairline dividers. Previously referenced across ~30 components with no
      token behind it at all (a silent no-op border-color); defined here so
      `border-outline/NN` resolves to something intentional. */
-  --color-outline: #c7cbd4;
+  --color-outline: #c3c3bc;
 
   /* --color-on-surface-variant: same story as --color-outline above — ~30
      components already write `text-on-surface-variant` (a real Material
@@ -63,7 +65,7 @@
      defined it. It's exactly --color-secondary's job, so alias it rather
      than carry two names for one meaning going forward — new code should
      prefer `text-secondary`. */
-  --color-on-surface-variant: #565e6c;
+  --color-on-surface-variant: #55554f;
 
   /* ─── Status ramp (generated from packages/design/src/status-ramp.mjs —
      the same table the `ge` CLI colorizer reads, so status color is ONE
@@ -72,29 +74,30 @@
      color). Every operator-facing state maps to exactly one of these seven
      hues, each with a vivid "-500" value for dots/fills/icons and a darker
      "-ink" value for AA text-on-tint. `running` intentionally reuses
-     --color-primary — in this system, blue means "live": it is both the
-     interactive accent and the color of work in progress. `passed` reuses
+     --color-primary — in this system, the vermilion dot means "on": it is
+     both the interactive accent and the color of work in progress, exactly
+     like the lit power dot on a Braun chassis. `passed` reuses
      --color-tertiary for the same reason: one green, one meaning.
      `synthesized` is not a run status — it flags AI-assisted content (the
      "bring your own system" flow) and is kept visually distinct from the
      status ramp on purpose. ─── */
   /* BEGIN GENERATED: status-ramp — do not edit; run `bun run docs:tokens` */
-  --color-status-queued: #6b7280;
-  --color-status-queued-ink: #454c59;
+  --color-status-queued: #6e6e68;
+  --color-status-queued-ink: #4a4a44;
   --color-status-running: var(--color-primary);
-  --color-status-running-ink: #1d3fc7;
+  --color-status-running-ink: #a32f08;
   --color-status-passed: var(--color-tertiary);
-  --color-status-passed-ink: #0d6d3a;
-  --color-status-failed: #dc3626;
-  --color-status-failed-ink: #9a1f14;
-  --color-status-blocked: #d9660a;
-  --color-status-blocked-ink: #8f4207;
-  --color-status-warning: #ca9a08;
-  --color-status-warning-ink: #7a5e05;
-  --color-status-repairing: #0f8f8a;
-  --color-status-repairing-ink: #0a5f5b;
-  --color-accent-synthesized: #7c4fe0;
-  --color-accent-synthesized-ink: #5a34a8;
+  --color-status-passed-ink: #266b3d;
+  --color-status-failed: #b3231c;
+  --color-status-failed-ink: #8a1d14;
+  --color-status-blocked: #96590d;
+  --color-status-blocked-ink: #6b3f08;
+  --color-status-warning: #a37e06;
+  --color-status-warning-ink: #6f5604;
+  --color-status-repairing: #2b7f78;
+  --color-status-repairing-ink: #1e5a55;
+  --color-accent-synthesized: #6f55b8;
+  --color-accent-synthesized-ink: #513d8c;
   /* END GENERATED: status-ramp */
 }
 
@@ -141,37 +144,190 @@
 
 /* ─── Brand Accents (apps/presentation only) ──── */
 .hero-gradient {
-  background: linear-gradient(135deg, #2953ff 0%, #5578ff 58%, #16874a 100%);
+  background: linear-gradient(135deg, #cc3d0d 0%, #e05a26 58%, #2e7a47 100%);
 }
 
 .flow-gradient {
-  background: linear-gradient(135deg, #2953ff 0%, #5578ff 100%);
+  background: linear-gradient(135deg, #cc3d0d 0%, #e05a26 100%);
 }
 
 .accent-glow {
-  background: linear-gradient(135deg, #565e6c 0%, #5578ff 100%);
+  background: linear-gradient(135deg, #55554f 0%, #e05a26 100%);
 }
 
 /* ─── Ambient Shadows ─────────────────────────── */
 .shadow-ambient {
-  box-shadow: 0 4px 24px rgba(20, 23, 28, 0.06);
+  box-shadow: 0 4px 24px rgba(26, 26, 24, 0.06);
 }
 
 .shadow-ambient-lg {
-  box-shadow: 0 12px 48px rgba(20, 23, 28, 0.12);
+  box-shadow: 0 12px 48px rgba(26, 26, 24, 0.12);
 }
 
 .shadow-glow {
-  box-shadow: 0 0 20px rgba(41, 83, 255, 0.16);
+  box-shadow: 0 0 20px rgba(204, 61, 13, 0.16);
 }
 
 /* ─── Ghost Borders ───────────────────────────── */
 .ghost-border {
-  border: 1px solid rgba(20, 23, 28, 0.12);
+  border: 1px solid rgba(26, 26, 24, 0.12);
 }
 
 .ghost-border-focus {
-  border: 1px solid rgba(41, 83, 255, 0.28);
+  border: 1px solid rgba(204, 61, 13, 0.28);
+}
+
+/* ─── Bedienelemente: the machined control vocabulary ────────
+   What makes a Braun product read as hardware is not color, it's physics:
+   keys are milled (a light-catching top edge, a seated shadow, real travel
+   when pressed), lamps are recessed behind a bezel, readouts sit in a black
+   dial window, module joints are visible seams, and every label is engraved
+   small and wide. These classes are that physics; @ge/ui primitives and the
+   console shell compose them with token utilities. */
+
+/* A machined key: the ET66 button. Compose with rounded-full + a bg. */
+.key {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 rgba(26, 26, 24, 0.08),
+    0 1px 1px rgba(26, 26, 24, 0.1);
+  transition: box-shadow 120ms ease, transform 120ms ease, background-color 120ms ease;
+}
+
+.key:active {
+  transform: translateY(0.5px);
+  box-shadow:
+    inset 0 1px 2px rgba(26, 26, 24, 0.18),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* The signal key (filled vermilion): highlight dims, rim darkens. */
+.key-signal {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+    0 1px 1px rgba(26, 26, 24, 0.18);
+}
+
+.key-signal:active {
+  transform: translateY(0.5px);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.3),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* A recessed indicator lamp: compose with rounded-full + a status bg.
+   The bezel ring and the top-edge shadow make it sit IN the panel. */
+.lamp {
+  box-shadow:
+    inset 0 1px 1px rgba(26, 26, 24, 0.35),
+    0 0 0 1px rgba(26, 26, 24, 0.1),
+    0 0.5px 0 1px rgba(255, 255, 255, 0.5);
+}
+
+/* A recessed well: the track a switch or input sits in. */
+.well {
+  box-shadow:
+    inset 0 1px 2px rgba(26, 26, 24, 0.12),
+    inset 0 0 0 1px rgba(26, 26, 24, 0.05),
+    0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* The black dial window: the T1000 tuning scale. Data readouts (logs,
+   terminals, live traces) sit behind this glass. */
+.dial-window {
+  background: #161614;
+  color: #d6d6d0;
+  border: 1px solid rgba(10, 10, 9, 0.9);
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Readout tints: the status ramp lifted for legibility behind the dial
+   window's dark glass (the light-surface hexes are AA on white, not on
+   #161614). Same seven meanings, lifted along each hue — documented
+   derived rungs, same contract as the docs theme's dark-mode ramp. */
+.dial-window .text-status-running { color: #ff8a5c; }
+.dial-window .text-status-blocked { color: #dfa257; }
+.dial-window .text-status-failed { color: #f5948b; }
+.dial-window .text-status-passed { color: #85c79c; }
+.dial-window .text-status-queued { color: #a8a8a0; }
+.dial-window .text-status-warning { color: #d9b84a; }
+.dial-window .text-status-repairing { color: #6fc2bc; }
+
+/* The measuring scale: a strip of ruler ticks (minor every 8px, major every
+   48px), drawn from currentColor so it engraves onto any surface. Give the
+   element a height (h-1.5 ≈ 6px) and it reads as the tuning scale. */
+.ticks-x {
+  background-image:
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 48px);
+  background-size: 100% 4px, 100% 100%;
+  background-position: left bottom, left bottom;
+  background-repeat: repeat-x;
+  color: color-mix(in srgb, var(--color-on-surface) 35%, transparent);
+}
+
+/* A module seam: the visible joint where two housing panels meet — a
+   hairline with a machined highlight under it. */
+.seam-b {
+  border-bottom: 1px solid var(--color-outline-variant);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+/* The control fascia: the face of the instrument (top bar, panel headers).
+   Matte, barely-there vertical light falloff — lacquer, not gloss. */
+.fascia {
+  background: linear-gradient(180deg, #fbfbf9 0%, #f3f3f0 100%);
+}
+
+/* An engraved label: how every caption on the chassis is printed. */
+.engraved {
+  font-size: var(--text-4xs);
+  line-height: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .key,
+  .key:active,
+  .key-signal:active {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* ─── Punktraster: the dot-matrix grille ────────
+   The Braun speaker-grille perforation as a surface texture. Dots are
+   punched from the ink color at low alpha so the pattern works on any
+   chassis surface; it marks *apparatus* zones (shell chrome, empty states,
+   the hero band) — never behind body text. `.grille-fade` dissolves the
+   perforation toward transparent like a grille meeting the housing edge. */
+.grille {
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-on-surface) 14%, transparent) 1px,
+    transparent 1.5px
+  );
+  background-size: 8px 8px;
+}
+
+.grille-fine {
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-on-surface) 10%, transparent) 0.75px,
+    transparent 1.25px
+  );
+  background-size: 5px 5px;
+}
+
+.grille-fade {
+  -webkit-mask-image: linear-gradient(180deg, black 0%, transparent 100%);
+  mask-image: linear-gradient(180deg, black 0%, transparent 100%);
 }
 
 /* ─── Panel system ─────────────────────────────
@@ -183,9 +339,9 @@
 .editorial-card,
 .editorial-micro-card {
   position: relative;
-  border: 1px solid rgba(20, 23, 28, 0.1);
+  border: 1px solid rgba(26, 26, 24, 0.1);
   background: var(--color-surface);
-  box-shadow: 0 1px 2px rgba(20, 23, 28, 0.04);
+  box-shadow: 0 1px 2px rgba(26, 26, 24, 0.04);
 }
 
 .editorial-card > * {
@@ -194,7 +350,7 @@
 }
 
 .editorial-card-tint {
-  background: color-mix(in srgb, var(--color-primary) 4%, white);
+  background: color-mix(in srgb, var(--color-primary) 4%, var(--color-surface));
 }
 
 .editorial-card-muted {
@@ -211,8 +367,8 @@
 .editorial-card-interactive:hover,
 .editorial-card-interactive:focus-within {
   transform: translateY(-1px);
-  border-color: rgba(41, 83, 255, 0.35);
-  box-shadow: 0 4px 16px rgba(20, 23, 28, 0.08);
+  border-color: rgba(204, 61, 13, 0.35);
+  box-shadow: 0 4px 16px rgba(26, 26, 24, 0.08);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -226,7 +382,7 @@
   border-color: var(--color-primary);
   background: var(--color-primary);
   color: white;
-  box-shadow: 0 4px 16px rgba(41, 83, 255, 0.22);
+  box-shadow: 0 4px 16px rgba(204, 61, 13, 0.22);
 }
 
 /* ─── Use Case Detail Contrast Guardrails (apps/presentation only) ─── */
@@ -239,23 +395,23 @@
 .use-case-detail .text-secondary\/25,
 .use-case-detail .text-secondary\/30,
 .use-case-detail .text-secondary\/35 {
-  color: #3c4043;
+  color: #3f3f39;
 }
 
 .use-case-detail .text-secondary\/40,
 .use-case-detail .text-secondary\/45,
 .use-case-detail .text-secondary\/50 {
-  color: #4b4f54;
+  color: #4e4e48;
 }
 
 .use-case-detail .text-secondary\/60,
 .use-case-detail .text-secondary\/70 {
-  color: #3c4043;
+  color: #3f3f39;
 }
 
 .use-case-detail .text-primary\/30,
 .use-case-detail .text-primary\/40 {
-  color: #1967d2;
+  color: #a32f08;
 }
 
 .use-case-detail [class*="text-[5px]"],
@@ -283,7 +439,7 @@
 .use-case-detail .bg-surface-container,
 .use-case-detail .bg-surface-container-low,
 .use-case-detail .bg-surface-container-high {
-  border: 1px solid rgba(60, 64, 67, 0.12);
+  border: 1px solid rgba(58, 58, 53, 0.12);
 }
 
 .use-case-detail .line-through {
@@ -322,8 +478,8 @@
 
 /* ─── Agent Node Pulse ────────────────────────── */
 @keyframes agent-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(41, 83, 255, 0.24); }
-  50% { box-shadow: 0 0 12px 4px rgba(41, 83, 255, 0.12); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(204, 61, 13, 0.24); }
+  50% { box-shadow: 0 0 12px 4px rgba(204, 61, 13, 0.12); }
 }
 
 .agent-glow {

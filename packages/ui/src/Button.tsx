@@ -5,25 +5,26 @@ import { cx } from "./cx";
 // THE button. Before this existed the console carried ~40 inline button
 // recipes across five dialects (two class orders for primary, two spinner
 // idioms, three paddings) — this is the one place the recipe lives now.
-// Variants map to the design tokens the recipes already used:
-//   primary  — filled brand action (bg-primary → hover primary-container)
-//   outline  — secondary action (outline border, surface-container hover)
+// Buttons are machined keys (tokens.css .key/.key-signal): pill-shaped,
+// a light-catching top edge, real travel on press — the ET66 button.
+//   primary  — the signal key (filled vermilion → hover primary-container)
+//   outline  — a chassis key (raised off-white, firm outline border)
 //   ghost    — tertiary/link-like action (text-primary, primary/10 hover)
 // `loading` swaps in the one canonical spinner (lucide Loader2) and disables.
 export type ButtonVariant = "primary" | "outline" | "ghost";
 export type ButtonSize = "sm" | "md";
 
-const BASE = "inline-flex items-center justify-center gap-2 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed outline-none focus-visible:ring-2 focus-visible:ring-primary/35 focus-visible:ring-offset-1 focus-visible:ring-offset-surface";
+const BASE = "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed outline-none focus-visible:ring-2 focus-visible:ring-primary/35 focus-visible:ring-offset-1 focus-visible:ring-offset-surface";
 
 const VARIANT: Record<ButtonVariant, string> = {
-  primary: "bg-primary text-white hover:bg-primary-container",
-  outline: "border border-outline/30 text-on-surface hover:bg-surface-container",
+  primary: "key key-signal bg-primary text-white hover:bg-primary-container",
+  outline: "key border border-outline/70 bg-surface-container-low text-on-surface hover:bg-surface-container",
   ghost: "text-primary hover:bg-primary/10",
 };
 
 const SIZE: Record<ButtonSize, string> = {
-  sm: "rounded-md px-3 py-1.5 text-sm",
-  md: "rounded-md px-4 py-2 text-sm",
+  sm: "px-3.5 py-1.5 text-sm",
+  md: "px-5 py-2 text-sm",
 };
 
 export function buttonClass({ variant = "primary", size = "md", className }: { variant?: ButtonVariant; size?: ButtonSize; className?: string } = {}) {

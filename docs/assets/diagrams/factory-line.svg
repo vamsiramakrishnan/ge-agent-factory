@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1243.4719999999998 466.7" width="1243.4719999999998" height="466.7" style="--bg:#ffffff;--fg:#14171c;--line:#565e6c;--accent:#2953ff;--muted:#79818e;--surface:#eceef2;--border:#dfe2e8;background:var(--bg)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1243.4719999999998 466.7" width="1243.4719999999998" height="466.7" style="--bg:#f7f7f5;--fg:#1a1a18;--line:#55554f;--accent:#cc3d0d;--muted:#7c7c74;--surface:#e3e3df;--border:#d4d4cf;background:var(--bg)">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
   text { font-family: 'Inter', system-ui, sans-serif; }
@@ -75,12 +75,12 @@
   <text x="485.10299999999984" y="247.35000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">harness_refine</text>
 </g>
 <g class="node" data-id="validate" data-label="validate" data-shape="rectangle">
-  <rect x="600.0199999999999" y="228.9" width="87.892" height="36.900000000000006" rx="0" ry="0" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
-  <text x="643.9659999999999" y="247.35000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">validate</text>
+  <rect x="600.0199999999999" y="228.9" width="87.892" height="36.900000000000006" rx="0" ry="0" fill="#dfeadf" stroke="#2e7a47" stroke-width="0.75" />
+  <text x="643.9659999999999" y="247.35000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1a18" dy="4.55">validate</text>
 </g>
 <g class="node" data-id="preview" data-label="preview" data-shape="rectangle">
-  <rect x="735.9119999999998" y="228.9" width="89.374" height="36.900000000000006" rx="0" ry="0" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
-  <text x="780.5989999999998" y="247.35000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">preview</text>
+  <rect x="735.9119999999998" y="228.9" width="89.374" height="36.900000000000006" rx="0" ry="0" fill="#dfeadf" stroke="#2e7a47" stroke-width="0.75" />
+  <text x="780.5989999999998" y="247.35000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1a18" dy="4.55">preview</text>
 </g>
 <g class="node" data-id="plan_deploy" data-label="plan_deploy" data-shape="rectangle">
   <rect x="56" y="373.8" width="114.568" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
@@ -91,20 +91,20 @@
   <text x="268.442" y="392.25" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">load_data</text>
 </g>
 <g class="node" data-id="deploy_runtime" data-label="deploy_runtime" data-shape="rectangle">
-  <rect x="366.316" y="373.8" width="132.35199999999998" height="36.900000000000006" rx="0" ry="0" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
-  <text x="432.49199999999996" y="392.25" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">deploy_runtime</text>
+  <rect x="366.316" y="373.8" width="132.35199999999998" height="36.900000000000006" rx="0" ry="0" fill="#dfeadf" stroke="#2e7a47" stroke-width="0.75" />
+  <text x="432.49199999999996" y="392.25" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1a18" dy="4.55">deploy_runtime</text>
 </g>
 <g class="node" data-id="poll_runtime" data-label="poll_runtime" data-shape="rectangle">
-  <rect x="546.6679999999999" y="373.8" width="113.086" height="36.900000000000006" rx="0" ry="0" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
-  <text x="603.2109999999999" y="392.25" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">poll_runtime</text>
+  <rect x="546.6679999999999" y="373.8" width="113.086" height="36.900000000000006" rx="0" ry="0" fill="#dfeadf" stroke="#2e7a47" stroke-width="0.75" />
+  <text x="603.2109999999999" y="392.25" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1a18" dy="4.55">poll_runtime</text>
 </g>
 <g class="node" data-id="register_tools" data-label="register_tools" data-shape="rectangle">
   <rect x="707.7539999999999" y="373.8" width="124.94200000000001" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
   <text x="770.2249999999999" y="392.25" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">register_tools</text>
 </g>
 <g class="node" data-id="publish_enterprise" data-label="publish_enterprise" data-shape="rectangle">
-  <rect x="880.6959999999999" y="373.8" width="154.582" height="36.900000000000006" rx="0" ry="0" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
-  <text x="957.9869999999999" y="392.25" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c" dy="4.55">publish_enterprise</text>
+  <rect x="880.6959999999999" y="373.8" width="154.582" height="36.900000000000006" rx="0" ry="0" fill="#dfeadf" stroke="#2e7a47" stroke-width="0.75" />
+  <text x="957.9869999999999" y="392.25" text-anchor="middle" font-size="13" font-weight="500" fill="#1a1a18" dy="4.55">publish_enterprise</text>
 </g>
 <g class="node" data-id="verify_live" data-label="verify_live" data-shape="rectangle">
   <rect x="1083.2779999999998" y="373.8" width="104.194" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
