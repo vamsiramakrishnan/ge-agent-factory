@@ -11,12 +11,13 @@ import catalog from "../../../data/agent-catalog.json";
 import okf from "../../../data/agent-okf.json";
 
 export async function getStaticPaths() {
-  const { agents } = catalog as any;
+  const { agents, verticalAgents } = catalog as any;
   // A handful of use-cases appear as a tile in two departments (e.g. a
   // regulatory monitor in both Finance and IT) and share one spec slug — emit
-  // one page per unique slug; both tiles link to it.
+  // one page per unique slug; both tiles link to it. Vertical agents come
+  // from the registry (no slide grid) and share this same detail route.
   const seen = new Set<string>();
-  return agents
+  return [...agents, ...(verticalAgents ?? [])]
     .filter((a: any) => !seen.has(a.slug) && seen.add(a.slug))
     .map((agent: any) => ({
       params: { slug: agent.slug },

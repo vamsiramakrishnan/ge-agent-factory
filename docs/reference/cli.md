@@ -529,6 +529,7 @@ Register an OKF bundle as a tracked agent: compile it, flip provenance draft→r
 |---|---|---|
 | `--bundle` | string | Agent id (resolved under the OKF corpus root) or an explicit bundle directory |
 | `--owner` | string | Owner email to stamp into the bundle's provenance |
+| `--catalog` | boolean | Re-run `bun run catalog` after registering (pass --catalog=false in batch loops and regenerate once at the end) |
 
 ### `ge agents track`
 
