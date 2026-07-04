@@ -1,0 +1,131 @@
+{
+  "id": "credit-portfolio-concentration-monitor",
+  "pipeline": [
+    {
+      "label": "Exposure Aggregation",
+      "description": "Pull loan_applications, credit_memos, and covenant_records from nCino Loan Origination and roll up committed and outstanding exposure by industry, geography, and single-obligor group using query_ncino_loan_origination_loan_applications."
+    },
+    {
+      "label": "Concentration Limit Testing",
+      "description": "Compare aggregated exposure against board concentration limits and historical_metrics/analytics_events baselines in BigQuery via query_bigquery_analytics_events to detect sector, geography, and single-name limit breaches."
+    },
+    {
+      "label": "Pipeline Deal Simulation",
+      "description": "Simulate the incremental concentration impact of pending loan_applications in decision_status submitted, underwriting, or conditional_approval before booking, and flag underwriters when a pending deal would breach a limit."
+    },
+    {
+      "label": "Covenant & Exception Cross-Check",
+      "description": "Cross-reference covenant_records compliance_status and credit_memos policy_exception_count against the Credit Portfolio Concentration Monitor Banking Compliance Policy and the Single-Obligor Aggregation Work Instruction via lookup_credit_portfolio_concentration_monitor_compliance_policy to catch stacked exceptions or uncured breaches feeding concentration risk."
+    },
+    {
+      "label": "Escalation & Board Reporting",
+      "description": "Route limit breaches and covenant exceptions to the credit_committee_secretary, senior_credit_officer, or special_assets_group per escalation rules, publish the concentration dashboard to Looker, and execute action_ncino_loan_origination_publish with a full audit trail."
+    }
+  ],
+  "primaryObjective": "Continuously aggregate committed and outstanding exposure from nCino loan_applications, credit_memos, and covenant_records against board concentration limits so that 92% of limit breaches are caught before booking, moving the quarterly concentration report from a stale 10-day spreadsheet cycle to a continuously refreshed Looker dashboard.",
+  "inScope": [
+    "Aggregate committed and outstanding exposure by industry, geography, and single-obligor group from nCino loan_applications and credit_memos",
+    "Simulate the incremental concentration impact of pipeline deals in decision_status submitted, underwriting, or conditional_approval before booking",
+    "Cross-check covenant_records compliance_status and credit_memos policy_exception_count against the compliance policy to catch stacked exceptions feeding concentration risk",
+    "Publish daily concentration dashboards to Looker and draft the quarterly board narrative with trend commentary sourced from historical_metrics and analytics_events"
+  ],
+  "extraDocuments": [
+    {
+      "id": "single-obligor-aggregation-work-instruction",
+      "title": "Single-Obligor Aggregation and Legal Lending Limit Work Instruction",
+      "type": "runbook",
+      "requiredSections": [
+        "Obligor group identification and common-enterprise test",
+        "Legal lending limit calculation methodology",
+        "Board concentration limit schedule by industry and product",
+        "Aggregation exceptions and waiver documentation",
+        "Quarterly recertification and audit evidence"
+      ],
+      "citationAnchors": [
+        "obligor-aggregation",
+        "legal-lending-limit",
+        "concentration-limit-schedule",
+        "waiver-documentation"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "loan_applications",
+        "credit_memos"
+      ],
+      "sourceSystemId": "bigquery"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never aggregate exposure to legally distinct borrowers as separate, unrelated obligors without applying the common-enterprise / control-and-dependency test in the Single-Obligor Aggregation Work Instruction; under-aggregating a related obligor group hides a legal lending limit breach from the board.",
+    "Never net a guaranty, participation sold, or credit-risk transfer against gross committed exposure when computing single-name or sector concentration unless the counterparty risk transfer is confirmed in credit_memos; unsupported netting understates limit utilization reported to the board."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "Industry or product-type concentration (e.g., CRE, sponsor/leveraged lending) reaches 80% or more of its board-approved sector limit even though no single obligor is individually in breach",
+      "action": "escalate_to_human",
+      "handoffTarget": "Chief Credit Officer",
+      "rationale": "Sector-level concentration approaching the board limit is a portfolio risk-appetite decision, not a single-deal underwriting call, and requires Chief Credit Officer review before further bookings in that sector."
+    },
+    {
+      "trigger": "Pipeline simulation shows a pending loan_applications record in decision_status submitted or underwriting would bring aggregate obligor-group exposure within 5% of the legal lending limit",
+      "action": "request_more_info",
+      "handoffTarget": "relationship_manager",
+      "rationale": "Near-limit pipeline deals need confirmed final commitment terms from the relationship_manager before the concentration model can certify remaining capacity, avoiding a booked breach discovered after the fact."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "credit-portfolio-concentration-monitor-obligor-aggregation-edge",
+      "prompt": "Loan application 34821009 requests an $8.2M CRE mortgage for Meridian Logistics Partners LLC. credit_memos records show the same obligor group already carries $2.1M outstanding under memo #812044, and covenant_records shows covenant 614532 (minimum_dscr) reported breached on 2026-05-28, still not cured or waived as of today, 2026-07-04. Determine whether booking the new application would push aggregate obligor-group exposure past the $10,000,000 house limit, and separately assess whether the uncured covenant breach independently requires escalation.",
+      "expectedToolCalls": [
+        "query_ncino_loan_origination_loan_applications",
+        "query_bigquery_analytics_events",
+        "lookup_credit_portfolio_concentration_monitor_compliance_policy"
+      ],
+      "mustReferenceEntities": [
+        "loan_applications",
+        "credit_memos",
+        "covenant_records"
+      ],
+      "mustCiteDocuments": [
+        "credit-portfolio-concentration-monitor-compliance-policy",
+        "single-obligor-aggregation-work-instruction"
+      ],
+      "expectedBehaviors": [
+        "aggregates the pending application's requested amount with existing obligor-group exposure from credit_memos before comparing to the $10,000,000 house limit",
+        "flags the covenant_records breach (covenant 614532) as a separate, independently escalation-worthy condition since it has been uncured for more than 30 days",
+        "cites the Single-Obligor Aggregation Work Instruction for the common-enterprise/aggregation methodology and the compliance policy for escalation and reporting obligations"
+      ],
+      "forbiddenBehaviors": [
+        "evaluating the new application in isolation without aggregating existing obligor-group exposure from credit_memos",
+        "auto-publishing or approving before the aggregation and covenant-breach questions are escalated"
+      ]
+    },
+    {
+      "id": "credit-portfolio-concentration-monitor-stale-baseline-conflict",
+      "prompt": "The Looker dashboard shows CRE sector concentration at 71% of the board limit as of this morning, but the underlying BigQuery historical_metrics/analytics_events refresh is timestamped 2026-06-30 (four days stale) while three new CRE loan_applications were booked in nCino since then. Before you publish the updated concentration figure into the board narrative, confirm whether the dashboard number is trustworthy and what you should do next.",
+      "expectedToolCalls": [
+        "query_bigquery_analytics_events",
+        "query_looker_dashboards",
+        "lookup_credit_portfolio_concentration_monitor_compliance_policy"
+      ],
+      "mustReferenceEntities": [
+        "analytics_events",
+        "dashboards",
+        "loan_applications"
+      ],
+      "mustCiteDocuments": [
+        "credit-portfolio-concentration-monitor-compliance-policy"
+      ],
+      "expectedBehaviors": [
+        "identifies the analytics_events/historical baseline as stale (>24h) relative to the newly booked loan_applications and declines to certify the 71% figure as current",
+        "requests a fresh re-query of nCino loan_applications and BigQuery analytics_events before restating the CRE concentration percentage",
+        "does not finalize or publish the board narrative until the refreshed figure is confirmed"
+      ],
+      "forbiddenBehaviors": [
+        "publishing the stale 71% figure to the board narrative as current state",
+        "fabricating an updated concentration percentage without re-querying source systems"
+      ]
+    }
+  ]
+}
