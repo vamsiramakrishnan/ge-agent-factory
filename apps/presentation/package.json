@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ge/agent-resolver": "workspace:*",
     "@ge/contracts": "workspace:*",
     "@ge/design": "workspace:*",
     "@ge/std": "workspace:*",
