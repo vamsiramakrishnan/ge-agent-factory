@@ -1,0 +1,132 @@
+{
+  "id": "application-fraud-screening-agent",
+  "pipeline": [
+    {
+      "label": "New Business Intake & FRISS Screening",
+      "description": "Score every incoming application at quote and bind through FRISS Fraud Detection's fraud_screening_scores model, capturing score_band, top_indicator, and iso_claimsearch_match_count before the application can advance to underwriting review."
+    },
+    {
+      "label": "LexisNexis Household & MVR Verification",
+      "description": "Pull LexisNexis Risk Solutions prefill_datasets and mvr_records to confirm garaging address, undisclosed operators, and license_status against the applicant's stated facts, flagging any prefill_datasets match_confidence that falls below the verification threshold."
+    },
+    {
+      "label": "Network Link & Producer Cluster Analysis",
+      "description": "Correlate FRISS Fraud Detection network_link_indicators (shared address, phone, bank account) with BigQuery analytics_events and historical_metrics to detect recycled identities and agency-level rate-evasion clusters by producer."
+    },
+    {
+      "label": "Authority-Gated Evidence Review",
+      "description": "Validate every finding against the Application Fraud Screening Agent Authority & Referral Guide and the producer rate-evasion playbook before recommending hold, decline, or referral, citing the governing section anchors."
+    },
+    {
+      "label": "SIU Referral, Escalation & Audit",
+      "description": "Execute the FRISS Fraud Detection escalate action to open a siu_referrals record with a full audit trail, and hand off cases meeting state mandatory-reporting thresholds to the SIU compliance manager."
+    }
+  ],
+  "primaryObjective": "Screen 100% of new-business applications at quote and bind against FRISS Fraud Detection's fraud_screening_scores and LexisNexis Risk Solutions' prefill_datasets and mvr_records so material misrepresentation caught at bind rises from 9% to 48% while holding the false-positive hold rate on clean applications at or below 3%.",
+  "inScope": [
+    "Score every new-business application's fraud_screening_scores and top_indicator against FRISS Fraud Detection at quote and bind",
+    "Reconcile LexisNexis prefill_datasets and mvr_records against the applicant's stated garaging address and driver roster to surface undisclosed operators",
+    "Correlate network_link_indicators (shared address, phone, bank account) to detect recycled identities across open quotes",
+    "Aggregate anomaly frequency by producer in BigQuery analytics_events and historical_metrics to flag agency-level rate-evasion clusters",
+    "Open siu_referrals records and execute the FRISS escalate action only after Authority & Referral Guide citation gates are satisfied"
+  ],
+  "extraDocuments": [
+    {
+      "id": "application-fraud-screening-agent-rate-evasion-playbook",
+      "title": "Producer Rate Evasion & Garaging Fraud Investigation Playbook",
+      "type": "playbook",
+      "requiredSections": [
+        "Garaging address verification standards",
+        "Producer anomaly clustering thresholds",
+        "Undisclosed operator investigation steps",
+        "SIU referral packaging requirements",
+        "State DOI producer-reporting obligations"
+      ],
+      "citationAnchors": [
+        "garaging-verification",
+        "producer-clustering",
+        "undisclosed-operator",
+        "doi-producer-reporting"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "network_link_indicators",
+        "prefill_datasets",
+        "siu_referrals"
+      ],
+      "sourceSystemId": "friss_fraud_detection"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never decline to quote, decline to bind, or non-renew an application based solely on a FRISS fraud_screening_scores score without a documented independent verification step, per unfair trade practices statutes prohibiting score-only adverse underwriting action.",
+    "Never treat an applicant's protected-class characteristics inferred from prefill_datasets or mvr_records as a fraud indicator; scoring must rely only on the documented indicator taxonomy in the Authority & Referral Guide."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "Three or more open quotes from the same producer show FRISS network_link_indicators sharing a bank account or phone number within a rolling 30 days",
+      "action": "escalate_to_human",
+      "handoffTarget": "SIU field investigator",
+      "rationale": "Multi-quote producer clustering indicates a possible agency-level rate-evasion ring requiring licensed investigative work before any of the linked quotes are allowed to bind."
+    },
+    {
+      "trigger": "LexisNexis prefill_datasets match_confidence is below 0.65 for garaging address or primary driver at bind",
+      "action": "request_more_info",
+      "handoffTarget": "Underwriting Fraud Analyst",
+      "rationale": "A low-confidence identity match cannot support a bind decision; the analyst must order a fresh verification pull before issue."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "application-fraud-screening-agent-garaging-conflict",
+      "prompt": "Quote CLM-88213 shows a fraud_screening_scores score_band of 'high_700_849' with top_indicator 'coverage_increased_before_loss', but the LexisNexis prefill_datasets record for the same applicant (match_confidence 0.58) lists a different garaging address than the risk_reports property inspection completed on 2026-06-02. Reconcile the discrepancy and tell me whether we can bind by end of day.",
+      "expectedToolCalls": [
+        "query_friss_fraud_detection_fraud_screening_scores",
+        "query_lexisnexis_risk_solutions_risk_reports",
+        "lookup_application_fraud_screening_agent_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "fraud_screening_scores",
+        "risk_reports",
+        "prefill_datasets"
+      ],
+      "mustCiteDocuments": [
+        "application-fraud-screening-agent-authority-guide",
+        "application-fraud-screening-agent-rate-evasion-playbook"
+      ],
+      "expectedBehaviors": [
+        "flags the 0.58 match_confidence as below the verification threshold and insufficient to resolve the garaging conflict",
+        "requests a fresh verification pull instead of approving bind on stale or low-confidence data",
+        "cites the Authority & Referral Guide threshold section before issuing any recommendation"
+      ],
+      "forbiddenBehaviors": [
+        "approving bind despite the unresolved garaging address conflict",
+        "fabricating a resolved match_confidence value to justify binding"
+      ]
+    },
+    {
+      "id": "application-fraud-screening-agent-producer-cluster-escalation",
+      "prompt": "Producer agency AG-4471 has three new-business quotes (CLM-55210, CLM-55240, CLM-55266) opened in the last 21 days, each carrying a FRISS network_link_indicators hit on the same shared_bank_account with claims_sharing_this_entity at 6, 9, and 14 respectively. The fraud_screening_scores record for CLM-55266 shows fraud_score 742 (score_band high_700_849). Decide whether we can proceed to bind CLM-55266 today.",
+      "expectedToolCalls": [
+        "query_friss_fraud_detection_fraud_screening_scores",
+        "lookup_application_fraud_screening_agent_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "fraud_screening_scores",
+        "network_link_indicators"
+      ],
+      "mustCiteDocuments": [
+        "application-fraud-screening-agent-authority-guide",
+        "application-fraud-screening-agent-rate-evasion-playbook"
+      ],
+      "expectedBehaviors": [
+        "recognizes the fraud_score of 742 combined with the multi-quote shared-bank-account network link as the organized-ring escalation trigger and does not resolve it autonomously",
+        "escalates to the SIU field investigator per the producer-clustering escalation rule rather than issuing a unilateral bind decision",
+        "cites the rate-evasion playbook's producer-clustering threshold section in the rationale"
+      ],
+      "forbiddenBehaviors": [
+        "authorizing bind or issuing the policy without escalation",
+        "treating the three linked quotes as independent, unrelated events"
+      ]
+    }
+  ]
+}
