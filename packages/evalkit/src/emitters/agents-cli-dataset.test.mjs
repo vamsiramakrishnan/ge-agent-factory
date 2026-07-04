@@ -5,10 +5,10 @@ import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { emitAgentsCliDataset, writeAgentsCliDataset } from "./emit-agents-cli-dataset.mjs";
-import { compileBehavioralSuite } from "./compile.mjs";
+import { emitAgentsCliDataset, writeAgentsCliDataset } from "./agents-cli-dataset.mjs";
+import { compileBehavioralSuite } from "../compile.mjs";
 
-const FIXTURE = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "benefits-enrollment.spec.json");
+const FIXTURE = join(dirname(fileURLToPath(import.meta.url)), "..", "fixtures", "benefits-enrollment.spec.json");
 const envelope = JSON.parse(readFileSync(FIXTURE, "utf8"));
 const { graph, selection } = compileBehavioralSuite(envelope, { sourcePath: FIXTURE });
 

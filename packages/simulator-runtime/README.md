@@ -76,6 +76,51 @@ GE_SIMULATOR_SYSTEMS_DIR=/path/to/my-corpus \
   python -c "import simulator_runtime; from simulator_runtime.registry import list_simulator_contracts; print(len(list_simulator_contracts()))"
 ```
 
+## Determinism extras: virtual time, chaos profiles, record/replay
+
+Three opt-in capabilities, each **off by default** (no env var, no contract field ⇒
+byte-for-byte the behaviour described above) and **deterministic** (every draw is a
+keyed BLAKE2b digest — never a salted `hash()` or an unseeded RNG — so the same call
+sequence reproduces exactly across processes and machines).
+
+- **Virtual clock** (`simulator_runtime.clock`) — enable with
+  `GE_SIMULATOR_VIRTUAL_TIME=1` (global) or `virtualTime: true` on a contract.
+  Simulation time starts at `GE_SIMULATOR_EPOCH` (ISO-8601, default
+  `2026-01-01T09:00:00Z`) and advances 13–97 s per call, derived from the state key
+  and call index. While enabled, audit events gain a deterministic `ts` stamp and
+  per-tool `latency` injection **records** the sampled delay (audit detail
+  `virtual_latency_ms=…`) instead of wall-sleeping, so time-shaped simulations run
+  at full speed in tests. `clock.now_iso(ctx)` / `clock.advance(ctx, seconds=None)`
+  are the API; clock state rides inside the same per-`agent:system:scenario` state
+  document as everything else.
+
+- **Chaos profiles** (`simulator_runtime.chaos`) — enable with
+  `GE_SIMULATOR_CHAOS_PROFILE=<name>` (global) or `chaosProfile: "<name>"` on a
+  contract (contract wins over env). Profiles: `steady` (labelled baseline, injects
+  nothing), `brownout` (3× latency + timeouts), `storm` (heavy rate limiting +
+  latency spikes), `flaky_dependency` (timeout/conflict bursts confined to
+  deterministic call-index windows), `degraded_writes` (conflicts/validation errors
+  on write tools; reads stay clean). Chaos composes with the existing weighted
+  `failureModes` machinery as a second, independent draw keyed by
+  `(agent, system, scenario, profile, call_index, tool)` — it never changes which
+  contract-declared failures fire — and injected failures are audited with
+  `detail="chaos:<profile>"`.
+
+- **Record/replay cassettes** (`simulator_runtime.replay`) — set
+  `GE_SIMULATOR_RECORD_DIR=<dir>` to append every router call (ok and error
+  envelopes alike) to a human-readable `<dir>/<agent>__<system>.jsonl` cassette;
+  set `GE_SIMULATOR_REPLAY_DIR=<dir>` to serve recorded envelopes (flagged
+  `"replayed": true`) as the response. A replay hit still drives the live
+  handler (its result is discarded) so simulator state — rows, approvals, the
+  audit trail — advances exactly as it did while recording, keeping mixed
+  hit/miss runs state-coherent; replay assumes the recording run's pack corpus
+  and seeds. Calls are matched by a BLAKE2b
+  fingerprint of the tool plus canonicalized args (volatile client tokens such as
+  `idempotency_key`/`request_id`/`nonce` are excluded); repeated identical calls
+  replay their responses in recorded order, and a miss **falls through to live
+  execution** — a partial cassette degrades to a partial replay, never an error.
+  With neither variable set there is zero file IO.
+
 ## Install
 
 ```bash

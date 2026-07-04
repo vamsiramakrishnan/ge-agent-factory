@@ -2,8 +2,8 @@
 // generateDomainDocuments / generateParagraph / pickEntityRefs / generateValue)
 // and the Snowfakery recipe renderers (snowfakeryFakeForColumn /
 // renderYamlValue). Written against the in-file functions BEFORE their
-// extraction into factory/fixtures/ and factory/data/ — these assertions are
-// the parity proof across the move and must not change with it.
+// extraction (now @ge/synthkit/values and @ge/synthkit/snowfakery) — these
+// assertions are the parity proof across the move and must not change with it.
 //
 // The functions are nondeterministic per-process unless seeded, so every
 // faker-backed test reseeds the SAME faker singleton factory.mjs imports
@@ -16,8 +16,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { faker } from "@faker-js/faker";
 import { generateDocument, generateDomainDocuments, generateParagraph, pickEntityRefs } from "./factory/fixtures/document-gen.mjs";
-import { generateValue } from "./factory/fixtures/value-gen.mjs";
-import { renderYamlValue, snowfakeryFakeForColumn } from "./factory/data/snowfakery-recipe-render.mjs";
+import { generateValue } from "@ge/synthkit/values";
+import { renderYamlValue, snowfakeryFakeForColumn } from "@ge/synthkit/snowfakery";
 
 const FIXTURE_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "tests", "fixtures", "data-gen-unit");
 const manifest = JSON.parse(readFileSync(join(FIXTURE_DIR, "manifest.json"), "utf8"));

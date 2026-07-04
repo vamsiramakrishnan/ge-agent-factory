@@ -24,12 +24,14 @@ use [Core Concepts](../concepts/).
 | [Contract schema](spec-schema.html) | The Enterprise Agent Contract's fields: `generationSpec`, `behaviorContract` (incl. `workflow`, `answerableQueries`, eval `mechanisms`), and `architecture.pipeline` — tables generated from the zod schema. |
 | [OKF](okf.html) | The contract's portable Markdown form — concept types, bundle layout, and the `spec-to-okf` / `okf-to-spec` converters. |
 | [Generated artifacts](agent-generation.html) | What a compiled agent looks like on disk: real ADK, the three callbacks, the dual tool backend, multi-agent topology, the knowledge bundle, and the eval set. |
-| [Simulator systems](simulator-systems.html) | The source-system twin engine: the pack contract, the generic runtime, the BYO overlay, state backends, and the pack tooling. |
+| [Simulator systems](simulator-systems.html) | The source-system twin engine: the pack contract, the generic runtime, the BYO overlay, state backends, the pack tooling, and the determinism extras (virtual clock, chaos profiles, record/replay). |
+| [Synthetic data](synthetic-data.html) | How seed data is synthesized: the recipe model, the Snowfakery and offline realization tiers, the statistical realism profile, determinism guarantees, and `ge data synth`. |
 | [Console & APIs](console-and-apis.html) | The server API endpoints under `/api/ge/*`, `/api/runtime/*`, `/api/systems/*`, and `/api/interviews/:id/*` — the mutating route table is generated from the command registry. |
 | [Config](config.html) | `.ge.json`, the flag → env → file → default precedence, and `ge config explain`. |
 | [Architecture](architecture.html) | The three planes, local vs remote mode, the durable control plane (ADR 0001), the run ledger, and the request/auth flow. |
 | [Live transcript](live-transcript.html) | The LiveTranscript artifact every live surface produces and consumes — fields, where it is written, who reads it. |
 | [Live budgets and gates](live-budgets.html) | Every `live.budgets` key, the `live.bench` hard guard rails, and the `promotion.gates.live` policy. |
+| [Evaluation generation](evaluation-generation.html) | The behavioral compiler pipeline (graph → expansion → set-cover → emitters), the `--perturb`/`--adversarial` hardening flags, and the statistics (Wilson intervals, lexical similarity). |
 | [Metric applicability](metric-applicability.html) | Which eval metric families grade the local rail vs the live assist surface, and the honest-status policy. |
 | [Atomic capabilities](atomic-capabilities.html) | The end-to-end system as composable capabilities — CLI verb, console route, MCP tool, and skill for each. |
 | [Agent operability](agent-operability.html) | The contract that makes the factory drivable by an AI agent — position/next guidance, background runs, event streams, resume plans, mid-run questions, skill loading. |
@@ -45,6 +47,8 @@ use [Core Concepts](../concepts/).
 | Change the contract's portable form | [OKF](okf.html) |
 | Debug compiled ADK code | [Generated artifacts](agent-generation.html) |
 | Add or validate a source-system twin pack | [Simulator systems](simulator-systems.html) |
+| Generate or tune a pack's seed data | [Synthetic data](synthetic-data.html) |
+| Understand where an eval suite's cases come from | [Evaluation generation](evaluation-generation.html) |
 | Wire a UI or automation against the backend | [Console & APIs](console-and-apis.html) |
 | Understand where a config value came from | [Config](config.html) |
 | Explain local vs remote mode or the three planes | [Architecture](architecture.html) |

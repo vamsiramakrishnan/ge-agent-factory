@@ -78,7 +78,10 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { existsSync, readFileSync } from "node:fs";
 import { join, extname, basename, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildRecipe, generateWithFaker } from "./lib/data-recipe.mjs";
+import { buildRecipe, generateWithFaker } from "@ge/synthkit/recipe";
+// Shared faker-backed column dispatch. NOT self-seeding: it consumes the same
+// faker singleton this script seeds below, so output bytes are unchanged.
+import { generateValue } from "@ge/synthkit/values";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 
@@ -99,72 +102,6 @@ function parseColumnSpec(spec) {
     else if (rest.length > 0) { col.min = Number(rest[0]) || undefined; col.max = Number(rest[1]) || undefined; col.len = Number(rest[0]) || undefined; }
     return col;
   });
-}
-
-function generateValue(col, rowIndex, generatedTables) {
-  const type = col.type || "string";
-
-  if (type === "seq") {
-    const pattern = col.pattern || `${col.name?.slice(0, 3).toUpperCase() || "ID"}-{n}`;
-    return pattern.replace(/\{n(?::(\d+))?\}/g, (_, pad) =>
-      String(rowIndex + 1).padStart(Number(pad) || 4, "0")
-    );
-  }
-
-  if (type === "number") {
-    return faker.number.int({ min: col.min ?? 0, max: col.max ?? 1000 });
-  }
-
-  if (type === "float") {
-    return Number(faker.number.float({ min: col.min ?? 0, max: col.max ?? 1000, fractionDigits: col.decimals ?? 2 }));
-  }
-
-  if (type === "date") {
-    const d = faker.date.between({ from: col.min || "2020-01-01", to: col.max || "2026-01-01" });
-    return d.toISOString().slice(0, 10);
-  }
-
-  if (type === "enum") {
-    const values = Array.isArray(col.values) ? col.values : ["A", "B", "C"];
-    if (col.weights && Array.isArray(col.weights)) {
-      return faker.helpers.weightedArrayElement(
-        values.map((v, i) => ({ value: v, weight: col.weights[i] || 1 }))
-      );
-    }
-    return faker.helpers.arrayElement(values);
-  }
-
-  if (type === "boolean") {
-    return faker.datatype.boolean({ probability: col.trueRate ?? 0.5 });
-  }
-
-  if (type === "ref") {
-    const [entity, field] = (col.ref || "").split(".");
-    const refRows = generatedTables[entity];
-    if (refRows && refRows.length > 0) {
-      return faker.helpers.arrayElement(refRows)[field || "id"] ?? null;
-    }
-    return `${entity}-${faker.number.int({ min: 1, max: 100 })}`;
-  }
-
-  // Faker method dispatch
-  const fakerPath = type.split(".");
-  if (fakerPath.length === 2) {
-    const [module, method] = fakerPath;
-    try {
-      const fn = faker[module]?.[method];
-      if (typeof fn === "function") {
-        const opts = {};
-        if (col.min !== undefined) opts.min = col.min;
-        if (col.max !== undefined) opts.max = col.max;
-        if (col.len !== undefined) opts.length = col.len;
-        return Object.keys(opts).length > 0 ? fn(opts) : fn();
-      }
-    } catch { /* fall through */ }
-  }
-
-  // Fallback
-  return faker.lorem.word();
 }
 
 function generateTable(tableDef, generatedTables) {

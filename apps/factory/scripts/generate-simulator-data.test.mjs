@@ -11,7 +11,7 @@ import {
   applyMaterialization,
   mergeByKey,
   checkFkClosure,
-} from "./lib/data-recipe.mjs";
+} from "@ge/synthkit/recipe";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(SCRIPT_DIR, "../../..");
@@ -123,6 +123,65 @@ describe("generate-simulator-data: non-empty collections", () => {
         expect(String(row[spec.primaryKey])).not.toBe("");
       }
     }
+  });
+});
+
+describe("generate-simulator-data: --profile", () => {
+  test("default run and explicit --profile baseline are byte-identical", () => {
+    const run = (extraArgs) => {
+      const result = Bun.spawnSync(
+        ["node", CLI, "--pack", SERVICENOW, "--seed", "123", "--no-snowfakery", "--stdout", ...extraArgs],
+        { cwd: REPO_ROOT },
+      );
+      expect(result.exitCode).toBe(0);
+      return new TextDecoder().decode(result.stdout);
+    };
+    expect(run([])).toBe(run(["--profile", "baseline"]));
+  });
+
+  test("--profile realistic produces a valid, FK-closed seed and report highlights", () => {
+    const out = mkdtempSync(join(tmpdir(), "ge-gen-sim-realistic-"));
+    try {
+      const result = Bun.spawnSync(
+        ["node", CLI, "--pack", SERVICENOW, "--seed", "42", "--profile", "realistic", "--out", join(out, "seed.json")],
+        { cwd: REPO_ROOT },
+      );
+      expect(result.exitCode).toBe(0);
+      const summary = JSON.parse(new TextDecoder().decode(result.stdout));
+      expect(summary.tier).toBe("realistic");
+      expect(summary.profile).toBe("realistic");
+      expect(summary.fkClosureOk).toBe(true);
+      expect(summary.fkViolations).toBe(0);
+      expect(summary.personas).toBe(24);
+      expect(summary.distributionFields).toBeGreaterThan(10);
+      expect(summary.edgeCases).toBeGreaterThanOrEqual(0);
+      const seed = JSON.parse(readFileSync(join(out, "seed.json"), "utf8"));
+      expect(Array.isArray(seed.incidents)).toBe(true);
+      expect(seed.incidents.length).toBeGreaterThan(0);
+    } finally {
+      rmSync(out, { recursive: true, force: true });
+    }
+  });
+
+  test("unknown --profile exits with usage error", () => {
+    const result = Bun.spawnSync(
+      ["node", CLI, "--pack", SERVICENOW, "--profile", "cinematic", "--stdout"],
+      { cwd: REPO_ROOT },
+    );
+    expect(result.exitCode).toBe(2);
+    expect(new TextDecoder().decode(result.stderr)).toContain("Unknown --profile");
+  });
+
+  test("--profile realistic is byte-deterministic across runs", () => {
+    const run = () => {
+      const result = Bun.spawnSync(
+        ["node", CLI, "--pack", SERVICENOW, "--seed", "9", "--profile", "realistic", "--stdout"],
+        { cwd: REPO_ROOT },
+      );
+      expect(result.exitCode).toBe(0);
+      return new TextDecoder().decode(result.stdout);
+    };
+    expect(run()).toBe(run());
   });
 });
 

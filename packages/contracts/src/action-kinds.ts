@@ -59,6 +59,7 @@ export const GeCommandIdSchema = z.enum([
   "handoff",
   "up",
   "data.up",
+  "data.synth",
   "mcp.deploy",
   "agents.build",
   "agents.build.local",

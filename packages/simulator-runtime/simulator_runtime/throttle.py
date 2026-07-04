@@ -49,14 +49,28 @@ def apply_latency(
     *,
     rng: random.Random | None = None,
     sleeper: Callable[[float], None] = time.sleep,
+    ctx: Any = None,
+    contract: dict[str, Any] | None = None,
+    tool: str = "",
 ) -> float:
     """Sleep for a sampled latency and return the seconds slept.
 
     Backward-compatible: ``latency`` of None/empty sleeps 0 and returns 0.0. Tests
     pass a fake ``sleeper`` (and seeded ``rng``) so no real time elapses.
+
+    When a ``ctx`` is supplied and virtual time is enabled (see ``clock.py``), the
+    sampled latency advances the simulation clock and is recorded as an audit
+    event instead of wall-sleeping — the known real-sleep weakness, fixed as an
+    opt-in. Without ``ctx`` (or with virtual time off, the default) behaviour is
+    exactly as before.
     """
     if not latency:
         return 0.0
+    if ctx is not None:
+        from simulator_runtime import clock
+
+        if clock.enabled(ctx, contract):
+            return clock.record_virtual_latency(ctx, latency, tool=tool)
     seconds = _resolve_latency_seconds(latency, rng or random.Random())
     if seconds > 0:
         sleeper(seconds)

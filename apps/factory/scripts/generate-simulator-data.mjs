@@ -4,7 +4,7 @@
  *
  * Given a simulator system id (resolved against the registry) OR an explicit pack
  * contract (schema/projection/materialization/workflows), this:
- *   1. builds a normalized recipe from the contract (scripts/lib/data-recipe.mjs),
+ *   1. builds a normalized recipe from the contract (@ge/synthkit/recipe),
  *   2. tries the Snowfakery tier — spawns `snowfakery` on the recipe; if `snowfakery`
  *      is not on PATH or the run fails, logs a clear notice and falls back to the
  *      in-process Faker tier (zero external deps, fully offline),
@@ -18,6 +18,12 @@
  *   node scripts/generate-simulator-data.mjs --pack simulator-systems/servicenow [--seed 42]
  *   node scripts/generate-simulator-data.mjs --system servicenow --no-snowfakery   # force offline tier
  *   node scripts/generate-simulator-data.mjs --system servicenow --stdout          # print seed, don't write
+ *   node scripts/generate-simulator-data.mjs --system servicenow --profile realistic [--edge-case-rate 0.06]
+ *                                                                # statistical realism tier (@ge/synthkit/realism)
+ *
+ * `ge data synth` (tools/ge/data.mjs) drives the same core in-process via the
+ * exported synthesizeSeed() — the spec-to-okf.mjs pattern: the script body is
+ * importable, and main() only runs when this file is the entry point.
  */
 import { readFileSync, writeFileSync, mkdirSync, existsSync, mkdtempSync, rmSync } from "node:fs";
 import { parseFlagArgs } from "@ge/std/cli-args";
@@ -29,13 +35,14 @@ import { writeJson, readJson } from "@ge/std/json-io";
 import {
   buildRecipe,
   generateWithFaker,
-  toSnowfakeryYaml,
   scenarioCoverageRows,
   applyMaterialization,
   mergeByKey,
   checkFkClosure,
   snakeCase,
-} from "./lib/data-recipe.mjs";
+} from "@ge/synthkit/recipe";
+import { toSnowfakeryYaml } from "@ge/synthkit/snowfakery";
+import { generateRealistic, REALISM_PROFILES } from "@ge/synthkit/realism";
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
 const SYSTEMS_DIR = resolve(SCRIPT_DIR, "../simulator-systems");
@@ -43,7 +50,7 @@ const SYSTEMS_DIR = resolve(SCRIPT_DIR, "../simulator-systems");
 const parseArgs = (argv) => parseFlagArgs(argv).flags;
 
 // Load a pack contract from a directory of {schema,projection,materialization,workflows}.json.
-function loadContractFromDir(packDir) {
+export function loadContractFromDir(packDir) {
   const read = (name) => readJson(join(packDir, name), null);
   const schema = read("schema.json");
   if (!schema) throw new Error(`No schema.json in pack dir: ${packDir}`);
@@ -58,7 +65,7 @@ function loadContractFromDir(packDir) {
 }
 
 // Resolve a system id to its pack directory under simulator-systems/.
-function resolveSystemDir(systemId) {
+export function resolveSystemDir(systemId) {
   const direct = join(SYSTEMS_DIR, systemId);
   if (existsSync(join(direct, "schema.json"))) return direct;
   const normalized = snakeCase(systemId);
@@ -110,12 +117,24 @@ function trySnowfakery(recipe, { systemId }) {
 }
 
 // ── assemble ───────────────────────────────────────────────────────────────────
-function buildSeed(contract, { seed, preferSnowfakery }) {
+export function buildSeed(contract, { seed, preferSnowfakery, profile = "baseline", edgeCaseRate }) {
   const recipe = buildRecipe(contract, { seed });
 
   let tier = "faker";
   let rowsByCollection;
-  if (preferSnowfakery) {
+  let realism = null;
+  if (profile !== "baseline") {
+    // Realistic tier is in-process by design (statistical post-processing on the
+    // offline generator); Snowfakery is skipped so the profile fully governs values.
+    const result = generateRealistic(recipe, contract, {
+      seed,
+      profile,
+      ...(edgeCaseRate === undefined ? {} : { edgeCaseRate }),
+    });
+    rowsByCollection = result.data;
+    realism = result.report;
+    tier = "realistic";
+  } else if (preferSnowfakery) {
     const sf = trySnowfakery(recipe, { systemId: contract.id });
     if (sf.ok) {
       tier = "snowfakery";
@@ -155,28 +174,32 @@ function buildSeed(contract, { seed, preferSnowfakery }) {
   if (!Array.isArray(materialized.audit_events)) materialized.audit_events = [];
 
   const fk = checkFkClosure(recipe, materialized);
-  return { recipe, tier, data: materialized, fk };
+  return { recipe, tier, data: materialized, fk, realism };
 }
 
-async function main() {
-  const flags = parseArgs(process.argv.slice(2));
-  const seed = Number(flags.seed) || 42;
-  const preferSnowfakery = flags["no-snowfakery"] ? false : flags.snowfakery !== "false";
-
-  let contract;
-  if (flags.pack) {
-    contract = loadContractFromDir(resolve(flags.pack));
-  } else if (flags.system) {
-    contract = loadContractFromDir(resolveSystemDir(flags.system));
-  } else {
-    console.error(`Usage:
-  node scripts/generate-simulator-data.mjs --system <id> [--seed N] [--out <seed.json>] [--no-snowfakery] [--stdout]
-  node scripts/generate-simulator-data.mjs --pack <dir> [--seed N] [--out <seed.json>]`);
-    process.exit(2);
-    return;
+/**
+ * The importable core: resolve the contract, realize the seed, optionally
+ * write it. Returns { summary, data, fk } and THROWS on a bad profile or a
+ * missing system/pack (the CLI's usage/exit-code rendering stays in main();
+ * in-process callers like `ge data synth` get real errors instead).
+ */
+export function synthesizeSeed({
+  system,
+  pack,
+  seed = 42,
+  preferSnowfakery = true,
+  profile = "baseline",
+  edgeCaseRate,
+  out,
+  write = true,
+} = {}) {
+  if (profile !== "baseline" && !REALISM_PROFILES[profile]) {
+    throw new Error(`Unknown profile "${profile}". Available: baseline, ${Object.keys(REALISM_PROFILES).join(", ")}`);
   }
+  if (!system && !pack) throw new Error("pass a simulator system id or a pack directory");
+  const contract = pack ? loadContractFromDir(resolve(pack)) : loadContractFromDir(resolveSystemDir(system));
 
-  const { recipe, tier, data, fk } = buildSeed(contract, { seed, preferSnowfakery });
+  const { recipe, tier, data, fk, realism } = buildSeed(contract, { seed, preferSnowfakery, profile, edgeCaseRate });
 
   const summary = {
     ok: true,
@@ -189,6 +212,56 @@ async function main() {
     fkClosureOk: fk.ok,
     fkViolations: fk.violations.length,
   };
+  if (realism) {
+    // Realism-report highlights; the baseline summary shape is untouched so
+    // default runs stay byte-identical.
+    summary.profile = profile;
+    summary.personas = realism.personas;
+    summary.edgeCases = realism.edgeCases.length;
+    summary.edgeCaseKinds = [...new Set(realism.edgeCases.map((e) => e.kind))].sort();
+    summary.distributionFields = Object.keys(realism.distributions).length;
+  }
+
+  if (write) {
+    const outPath = out
+      ? resolve(out)
+      : (contract.packDir ? join(contract.packDir, "seed.json") : resolve(`${snakeCase(contract.id)}.seed.json`));
+    writeJson(outPath, data);
+    summary.out = outPath;
+  }
+  return { summary, data, fk };
+}
+
+async function main() {
+  const flags = parseArgs(process.argv.slice(2));
+  const seed = Number(flags.seed) || 42;
+  const preferSnowfakery = flags["no-snowfakery"] ? false : flags.snowfakery !== "false";
+  const profile = flags.profile || "baseline";
+  if (profile !== "baseline" && !REALISM_PROFILES[profile]) {
+    console.error(`Unknown --profile "${profile}". Available: baseline, ${Object.keys(REALISM_PROFILES).join(", ")}`);
+    process.exit(2);
+    return;
+  }
+  const edgeCaseRate = flags["edge-case-rate"] === undefined ? undefined : Number(flags["edge-case-rate"]);
+
+  if (!flags.pack && !flags.system) {
+    console.error(`Usage:
+  node scripts/generate-simulator-data.mjs --system <id> [--seed N] [--out <seed.json>] [--no-snowfakery] [--stdout] [--profile baseline|realistic] [--edge-case-rate 0.06]
+  node scripts/generate-simulator-data.mjs --pack <dir> [--seed N] [--out <seed.json>]`);
+    process.exit(2);
+    return;
+  }
+
+  const { summary, data, fk } = synthesizeSeed({
+    system: flags.system,
+    pack: flags.pack,
+    seed,
+    preferSnowfakery,
+    profile,
+    edgeCaseRate,
+    out: flags.out,
+    write: !flags.stdout,
+  });
 
   if (flags.stdout) {
     // stdout carries the seed JSON only; the summary goes to stderr so callers can
@@ -196,17 +269,14 @@ async function main() {
     console.log(JSON.stringify(data, null, 2));
     console.error(JSON.stringify(summary, null, 2));
   } else {
-    const outPath = flags.out
-      ? resolve(flags.out)
-      : (contract.packDir ? join(contract.packDir, "seed.json") : resolve(`${snakeCase(contract.id)}.seed.json`));
-    writeJson(outPath, data);
-    summary.out = outPath;
     console.log(JSON.stringify(summary, null, 2));
   }
   if (!fk.ok) process.exit(1);
 }
 
-main().catch((error) => {
-  console.error(error.stack || error.message);
-  process.exit(1);
-});
+if (import.meta.main || process.argv[1] === fileURLToPath(import.meta.url)) {
+  main().catch((error) => {
+    console.error(error.stack || error.message);
+    process.exit(1);
+  });
+}

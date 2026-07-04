@@ -1,0 +1,275 @@
+/**
+ * snowfakery.mjs — every Snowfakery-recipe emitter in the repo, plus the YAML
+ * helpers they share. Consolidates three formerly-scattered renderers:
+ *
+ *   1. `toSnowfakeryYaml(recipe)` — the RECIPE dialect (formerly in
+ *      apps/factory/scripts/lib/data-recipe.mjs). Renders a normalized pack
+ *      recipe (see ./recipe.mjs) with a pinned seed; the high-fidelity tier of
+ *      the simulator seed generator. Byte-pinned by
+ *      apps/factory/tests/to-snowfakery-yaml-golden.test.js.
+ *
+ *   2. `planRecipeYaml(realizationPlan, { referenceTargetFor })` — the PLAN
+ *      dialect (formerly `snowfakeryRecipe` inline in
+ *      apps/factory/scripts/plan-mock-data.mjs). Renders the mock-data
+ *      planner's graph-controlled realization plan, with column-name domain
+ *      heuristics (carrier/premium/deductible/...) and provenance comments.
+ *      Byte-pinned (via the whole planner workspace) by
+ *      apps/factory/tests/plan-mock-data-golden.test.js.
+ *
+ *   3. `snowfakeryFakeForColumn(col)` + `renderYamlValue(value, indent)` — the
+ *      CONTRACT/COLUMN dialect (formerly
+ *      apps/factory/scripts/factory/data/snowfakery-recipe-render.mjs, itself
+ *      extracted from factory.mjs's cmdSnowfakeryRecipe). Maps a workspace
+ *      schema column to its Snowfakery fake/expression and renders the value
+ *      tree with JSON-quoted scalars. Seed-pinned by
+ *      apps/factory/scripts/factory-data-gen.test.mjs.
+ *
+ * THE DIALECTS DIVERGE ON PURPOSE. They serve different input shapes and
+ * different consumers, and each output is byte-frozen by the golden/parity
+ * tests above: the recipe dialect quotes leaf scalars through the `yaml`
+ * package (`yamlScalar`), the contract dialect through `JSON.stringify`
+ * (`renderYamlValue`), and the plan dialect hard-codes its field heuristics.
+ * Do not unify their heuristics or quoting without regenerating (and
+ * defending) the corresponding goldens.
+ *
+ * Shared YAML helpers (`yamlScalar`, `snowExpression`, `renderYaml`) were
+ * formerly apps/factory/scripts/factory/data/yaml-render.mjs and keep its
+ * contract: pure string functions, byte-identical output.
+ */
+
+import { stringify as yamlStringify } from "yaml";
+import { bigQuerySafeName } from "@ge/std/naming";
+import { codePrefix, stringGeneratorFor } from "./recipe.mjs";
+
+// ── shared YAML + Snowfakery-expression helpers ────────────────────────────────
+// renderYaml's overall document shape (forced double-quoting of every string
+// scalar, "- \n  " block layout for array items that are objects, no line
+// folding) is a hand-rolled convention that does not match the `yaml` package's
+// idiomatic stringify() output, so the recursive traversal stays custom. The
+// leaf-scalar string-escaping rules, however, are delegated to `yaml`'s
+// double-quoted scalar emitter (with line folding disabled and JSON-style
+// escapes) — verified byte-identical to the former JSON.stringify-based
+// escaping across ASCII, unicode, control-character, and long-string inputs.
+
+const SCALAR_STRING_OPTIONS = { defaultStringType: "QUOTE_DOUBLE", lineWidth: 0, doubleQuotedAsJSON: true };
+
+export function yamlScalar(value) {
+  if (value === null || value === undefined) return "null";
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  return yamlStringify(String(value), SCALAR_STRING_OPTIONS).trim();
+}
+
+export function snowExpression(expression) {
+  return `\${{${expression}}}`;
+}
+
+export function renderYaml(value, indent = 0) {
+  const pad = " ".repeat(indent);
+  if (Array.isArray(value)) {
+    if (!value.length) return `${pad}[]`;
+    return value.map((item) => {
+      if (item && typeof item === "object") {
+        const rendered = renderYaml(item, indent + 2).trimStart();
+        return `${pad}- ${rendered.includes("\n") ? `\n${renderYaml(item, indent + 2)}` : rendered}`;
+      }
+      return `${pad}- ${yamlScalar(item)}`;
+    }).join("\n");
+  }
+  if (value && typeof value === "object") {
+    const lines = [];
+    for (const [key, child] of Object.entries(value)) {
+      if (child && typeof child === "object") {
+        lines.push(`${pad}${key}:`);
+        lines.push(renderYaml(child, indent + 2));
+      } else {
+        lines.push(`${pad}${key}: ${yamlScalar(child)}`);
+      }
+    }
+    return lines.join("\n");
+  }
+  return `${pad}${yamlScalar(value)}`;
+}
+
+// ── dialect 1: recipe → Snowfakery YAML ────────────────────────────────────────
+/**
+ * Render a normalized pack recipe (from ./recipe.mjs's buildRecipe) as a
+ * Snowfakery recipe string with a PINNED seed. FK fields use
+ * `${{reference(...)}}` against the prior object; primary keys/codes use
+ * sequential values keyed on `${{unique_id}}` so a Snowfakery run is also
+ * deterministic.
+ *
+ * The header comment below still names the module's pre-consolidation path —
+ * kept verbatim because the golden fixture pins these exact bytes.
+ */
+export function toSnowfakeryYaml(recipe) {
+  const lines = [
+    "# Generated by scripts/lib/data-recipe.mjs — high-fidelity tier.",
+    "# Deterministic: seed is pinned; the offline Faker tier reads the same recipe.",
+    "- snowfakery_version: 3",
+    `- option: seed`,
+    `  default: ${recipe.seed}`,
+  ];
+  const known = new Set(recipe.order);
+  for (const name of recipe.order) {
+    const spec = recipe.collections[name];
+    if (!spec || !spec.count) continue;
+    lines.push(`- object: ${name}`);
+    lines.push(`  count: ${spec.count}`);
+    lines.push("  fields:");
+    for (const [field, desc] of Object.entries(spec.fields)) {
+      if (desc.kind === "pk") {
+        lines.push(`    ${field}: "${snowExpression(`'${codePrefix(field)}' & unique_id`)}"`);
+      } else if (desc.kind === "ref") {
+        if (known.has(desc.collection) && desc.collection !== name) {
+          lines.push(`    ${field}: "${snowExpression(`reference('${desc.collection}').${desc.refField}`)}"`);
+        } else {
+          lines.push(`    ${field}: "${snowExpression("unique_id")}"`);
+        }
+      } else if (desc.kind === "enum") {
+        lines.push(`    ${field}:`);
+        lines.push("      random_choice:");
+        for (const value of desc.values) lines.push(`        - ${yamlScalar(value)}`);
+      } else if (desc.kind === "number") {
+        lines.push(`    ${field}:`);
+        lines.push("      random_number:");
+        lines.push("        min: 0");
+        lines.push("        max: 100");
+      } else if (desc.kind === "boolean") {
+        lines.push(`    ${field}:`);
+        lines.push("      random_choice:");
+        lines.push("        - true");
+        lines.push("        - false");
+      } else {
+        lines.push(`    ${field}:`);
+        lines.push(...snowfakeryStringField(desc.generator || stringGeneratorFor(field)));
+      }
+    }
+  }
+  return lines.join("\n") + "\n";
+}
+
+function snowfakeryStringField(generator) {
+  switch (generator.gen) {
+    case "email":
+      return ["      fake: Email"];
+    case "name":
+      return ["      fake: Name"];
+    case "date":
+      return ["      date_between:", '        start_date: "2025-01-01"', '        end_date: "2026-12-31"'];
+    case "money":
+      return ["      random_number:", "        min: 100", "        max: 50000"];
+    case "sentence":
+      return ["      fake: Sentence"];
+    case "uri":
+      return ["      fake: Url"];
+    case "code":
+      // Non-PK code-shaped string (e.g. a free `number` field): pin to a unique id.
+      return [`      I_have_a_value: "${snowExpression(`'${generator.prefix}' & unique_id`)}"`];
+    case "version":
+    case "word":
+    default:
+      return ["      fake: Word"];
+  }
+}
+
+// ── dialect 2: realization plan → Snowfakery YAML ──────────────────────────────
+/**
+ * Render the mock-data planner's Snowfakery realization plan (objects with
+ * provenance metadata + flat column lists) as the canonical structured recipe.
+ *
+ * `referenceTargetFor(column, { availableObjects, currentObject })` is injected
+ * by the caller (plan-mock-data.mjs passes its lakehouse-targets resolver) so
+ * the app-level FK-target heuristics stay with the app; omit it and no column
+ * is treated as a cross-object reference.
+ */
+export function planRecipeYaml(realizationPlan, { referenceTargetFor = () => null } = {}) {
+  const lines = [
+    "# Canonical Snowfakery recipe for structured mock rows.",
+    "# Controlled by mock_data/snowfakery/realization-plan.json, which is derived from mock_data/scenario/scenario-graph.json.",
+    "- snowfakery_version: 3",
+  ];
+  const availableObjects = new Set((realizationPlan.objects || []).map((object) => object.object).filter(Boolean));
+  for (const object of realizationPlan.objects || []) {
+      lines.push(`# source_systems: ${JSON.stringify(object.sourceSystems || [])}`);
+      lines.push(`# graph_node_ids: ${JSON.stringify(object.graphNodeIds || [])}`);
+      lines.push(`# pack_bridge_ids: ${JSON.stringify(object.packBridgeIds || [])}`);
+      lines.push(`# simulator_collections: ${JSON.stringify(object.simulatorCollections || [])}`);
+      lines.push(`- object: ${object.object}`);
+      lines.push(`  count: ${Math.max(1, Number(object.count || 20))}`);
+      lines.push("  fields:");
+      for (const column of object.fields || []) {
+        const referenceTarget = referenceTargetFor(column, { availableObjects, currentObject: object.object });
+        if (referenceTarget) lines.push(`    ${column}: "${snowExpression(`reference('${referenceTarget}')`)}"`);
+        else if (column.endsWith("_id") && column !== "id") lines.push(`    ${column}: "${snowExpression("unique_id")}"`);
+        else if (column === "id" || column === "source_record_id") lines.push(`    ${column}: "${snowExpression("unique_id")}"`);
+        else if (column.includes("email")) {
+          lines.push(`    ${column}:`);
+          lines.push("      fake: Email");
+        } else if (column.includes("name") || column === "carrier") {
+          lines.push(`    ${column}:`);
+          lines.push("      fake: Company");
+        }
+        else if (column.includes("date") || column.includes("_at")) {
+          lines.push(`    ${column}:`);
+          lines.push("      date_between:");
+          lines.push('        start_date: "2025-01-01"');
+          lines.push('        end_date: "2026-12-31"');
+        } else if (column.includes("premium") || column.includes("deductible") || column.includes("days") || column === "dependents") {
+          lines.push(`    ${column}:`);
+          lines.push("      random_number:");
+          lines.push("        min: 1");
+          lines.push("        max: 5000");
+        } else {
+          lines.push(`    ${column}:`);
+          lines.push("      fake: Word");
+        }
+      }
+  }
+  return lines.join("\n") + "\n";
+}
+
+// ── dialect 3: workspace schema column → Snowfakery fake ───────────────────────
+// Map a schema column to its Snowfakery fake/expression, and render the
+// resulting value tree as the recipe's YAML fragment. Pure functions, byte
+// output identical to the former factory.mjs inline helpers. Distinct from
+// renderYaml above, which serves the plan-mock-data pipeline with a different
+// (yaml-package-backed) quoting convention.
+
+export function snowfakeryFakeForColumn(col) {
+  const name = String(col.name || "").toLowerCase();
+  const type = String(col.type || "string").toLowerCase();
+  if (type === "ref") return { reference: col.ref ? bigQuerySafeName(col.ref.split(".")[0]) : "Unknown" };
+  if (type === "number") return { random_number: { min: col.min ?? 0, max: col.max ?? 1000 } };
+  if (type === "float") return { random_number: { min: col.min ?? 0, max: col.max ?? 1000 } };
+  if (type === "boolean") return "${{random_choice(true, false)}}";
+  if (type === "date") return { date_between: { start_date: col.min || "2024-01-01", end_date: col.max || "2026-12-31" } };
+  if (type === "enum") return `\${{random_choice(${(col.values || ["A", "B", "C"]).map((v) => JSON.stringify(v)).join(", ")} )}}`;
+  if (type.startsWith("person.") || name.includes("name")) return { fake: "Name" };
+  if (type.startsWith("internet.email") || name.includes("email")) return { fake: "Email" };
+  if (name.includes("company") || name.includes("vendor") || name.includes("supplier") || type.startsWith("company.")) return { fake: "Company" };
+  if (name.includes("city")) return { fake: "City" };
+  if (name.includes("state")) return { fake: "State" };
+  if (name.includes("address")) return { fake: "StreetAddress" };
+  if (name.includes("phone")) return { fake: "PhoneNumber" };
+  if (name.includes("description") || name.includes("notes") || name.includes("body") || type.includes("paragraph")) return { fake: "Paragraph" };
+  if (name.includes("title") || type.includes("sentence")) return { fake: "Sentence" };
+  if (type === "seq") return `\${{unique_id}}`;
+  return { fake: "Word" };
+}
+
+export function renderYamlValue(value, indent = 0) {
+  const pad = " ".repeat(indent);
+  if (typeof value === "string") return `${pad}${JSON.stringify(value)}`;
+  if (typeof value === "number" || typeof value === "boolean") return `${pad}${value}`;
+  if (!value || typeof value !== "object") return `${pad}null`;
+  const lines = [];
+  for (const [key, child] of Object.entries(value)) {
+    if (child && typeof child === "object" && !Array.isArray(child)) {
+      lines.push(`${pad}${key}:`);
+      lines.push(renderYamlValue(child, indent + 2));
+    } else {
+      lines.push(`${pad}${key}: ${JSON.stringify(child)}`);
+    }
+  }
+  return lines.join("\n");
+}
