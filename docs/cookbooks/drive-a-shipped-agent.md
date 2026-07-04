@@ -1,7 +1,7 @@
 ---
 title: Drive a shipped agent
 parent: Guides
-nav_order: 11
+nav_order: 12
 layout: default
 description: Talk to the deployed agent through the same streaming assist surface real users hit — interactive or scripted, with a timing/responder footer per turn, recording conversations as eval cases and cassettes.
 ---

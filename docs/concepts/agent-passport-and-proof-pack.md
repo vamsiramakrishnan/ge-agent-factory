@@ -61,6 +61,7 @@ passing.
 | Agent Registry entry (`register_tools` stage; `adk` / `mcp` / `a2a`) | the agent and the toolsets it may resolve |
 | per-agent Agent Runtime identity | the IAM principal the agent runs as — grants go to the principalSet, not a shared account |
 | `workspace.json` | the workspace manifest: what is in this agent, stage by stage |
+| `artifacts/agent-passport.json` | the consolidated signed form: the workspace's content digest, the contract digest, and signed attestations over the proof pack — verifiable offline |
 | run ledger entries | the full build/deploy/publish history, event by event |
 
 > **The consolidated form.** `ge passport emit <id>` mints the single
@@ -90,7 +91,10 @@ No step in that chain requires asking the engineer who shipped it.
 
 ## Where they appear
 
-- **CLI:** `ge agents status` (milestones per agent), `ge runs show <id>` /
+- **CLI:** `ge passport emit|verify|admit` (mint the signed passport, check
+  its integrity, run the recorded admission decision — see
+  [Admission gate & Agent Passport](../reference/admission.html));
+  `ge agents status` (milestones per agent), `ge runs show <id>` /
   `ge runs events <id>` (the durable history), `ge agents logs <runId>`
   (per-stage output). The gate runs inside the build; `--force` overrides
   are visible in the record.

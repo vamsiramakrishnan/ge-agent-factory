@@ -31,7 +31,17 @@ CLI twin (`ge capture` / `ge prove` / `ge handoff`):
 |---|---|---|
 | `factory_capture` | `from?` | Ensures the console is running and returns the Interview deep link for contract capture; `from` registers an existing `agent-spec.json`. Starts a local dev server if needed. |
 | `factory_prove` | `id?`, `target?`, `force?` | **Mutates (local)** — proves the current contracts: fresh machine → health check + first validated workspace; workspaces present → rebuild their proof to the build boundary. |
-| `factory_handoff` | `target?`, `ids?`, `startStage?`, `targetStage?`, `noProxy?` | **Mutates** — hands proven local builds to a deploy target (`agents-cli` today: uploads the prebuilt workspaces, then runs deploy → register → publish remotely). Unsupported targets return a structured what/where/why/fix error. |
+| `factory_handoff` | `target?`, `ids?`, `startStage?`, `targetStage?`, `noProxy?`, `force?` | **Mutates** — hands proven local builds to a deploy target (`agents-cli` today: uploads the prebuilt workspaces, then runs deploy → register → publish remotely). Every workspace passes the admission gate first (recorded decision; audit mode by default); `force` is the recorded break-glass for a denied decision. Unsupported targets return a structured what/where/why/fix error. |
+
+Release-admission tools — the signed Agent Passport and the gate `ge handoff`
+enforces (see [Admission gate & Agent Passport](reference/admission.html)).
+All local, no cloud calls:
+
+| Tool | Args | Notes |
+|---|---|---|
+| `factory_passport_emit` | `id` | **Mutates (local)** — mints the signed Agent Passport (`artifacts/agent-passport.json`) for one proven workspace: subject digests + in-toto/DSSE attestations over the promotion packet (and live proof when present), signed with the local Ed25519 issuing key. Requires a promotion packet — run `factory_prove` first. |
+| `factory_passport_verify` | `id` | Read-only — verifies the passport offline: attestation signatures against the trusted key, subject digests recomputed from the bytes on disk. A failure means the evidence no longer describes this workspace. |
+| `factory_passport_admit` | `id`, `stage?`, `force?` | Runs the admission gate and returns the AdmissionDecision (stable `GEADM001`–`GEADM008` blockers, each naming its fix). The decision is recorded to the workspace and the `.ge/admission/decisions.jsonl` audit log either way; only a `required` gate refuses. |
 
 Live-behavior tools — the layer over the deployed assist surface. Every one
 accepts a `cassette` (recorded stream) so a model can run it with zero cloud

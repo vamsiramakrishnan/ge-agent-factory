@@ -64,6 +64,7 @@ A few behaviors are environment-only, documented where they're used:
 | `GE_CONSOLE_READONLY` | read-only production console | [Operations](../OPERATIONS.html) |
 | `GE_HARNESS_PYTHON` | override the harness interpreter | [Operations](../OPERATIONS.html) |
 | `GE_ALLOW_UNPROMOTED` | override the promotion gate (visible, deliberate) | [Evals as proof](../concepts/evals-as-proof.html) |
+| `GE_ADMISSION_BREAK_GLASS` | release despite a denied admission decision — a recorded override, same as `ge handoff --force` | [Admission gate & Agent Passport](./admission.html) |
 | `GE_SIMULATOR_OVERLAY_BACKEND` | share BYO twin overlays across instances (`firestore`/`alloydb`) | [Simulator systems](./simulator-systems.html) |
 
 ## Where config is read
