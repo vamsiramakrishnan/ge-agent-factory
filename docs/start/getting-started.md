@@ -23,8 +23,8 @@ translations of every internal term, the operator vocabulary included.
 
 The easiest setup path is to let your coding agent run the factory's install
 skill. The skill performs the clone/bootstrap, checks each phase, applies the
-structured fixes it knows about, and leaves the `ge` CLI plus harness skills
-ready for the next operator step.
+structured fixes it knows about, and leaves the `ge` CLI plus the factory's
+agent skills ready for the next operator step.
 
 ```bash
 bunx create-ge-agent-factory        # any machine: clone + guided, verified install

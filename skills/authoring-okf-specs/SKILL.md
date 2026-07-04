@@ -64,6 +64,11 @@ concept types, undeclared systems, bad bindings, variant cycles) render as a
 DxError and exit non-zero; see `packages/okf/README.md` for the concept-type
 grammar and error-code catalog.
 
+After compiling, the OKF agent lifecycle continues with `ge okf customize`
+(derive a variant bundle), then `ge agents register --bundle okf/<id>` and
+`ge agents track --id <id>` — the register/track walkthrough lives in the
+`interviewing-specs` skill; this skill owns authoring and compiling the bundle.
+
 Validate the converter and the round-trip:
 
 ```bash
