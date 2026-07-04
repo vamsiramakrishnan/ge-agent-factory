@@ -1,0 +1,136 @@
+{
+  "id": "spc-drift-detection-monitor",
+  "pipeline": [
+    {
+      "label": "Signal Ingestion & Characteristic Binding",
+      "description": "Stream in-line quality_checks measurements and machine_events from Siemens Opcenter MES alongside inspection_lots from SAP S/4HANA QM, binding each measured_value to its characteristic, production_order, and spec limits via query_siemens_opcenter_mes_production_orders and query_sap_s_4hana_qm_inspection_lots."
+    },
+    {
+      "label": "Western Electric Run-Rule Evaluation",
+      "description": "Evaluate each quality_checks time series per characteristic against Western Electric zone rules (e.g., 4-of-5 consecutive points beyond 1 sigma on the same side of center) and cpk trend, flagging candidate SPC signals on the inspection_lots still awaiting usage_decision."
+    },
+    {
+      "label": "Baseline & Capability Reconciliation",
+      "description": "Query historical_metrics and analytics_events in BigQuery via query_bigquery_analytics_events to compare current cpk and variance_pct against per-characteristic capability baselines, separating true process drift from measurement noise or a machine_events-driven excursion (fault_alarm, e_stop)."
+    },
+    {
+      "label": "Evidence-Gated Hold Recommendation",
+      "description": "Cite the SPC Drift Detection Monitor Standard Operating Procedure and the CTQ control plan via lookup_spc_drift_detection_monitor_sop, then invoke action_sap_s_4hana_qm_recommend to propose a hold or disposition on the affected inspection_lots only when at least two source systems corroborate the drift."
+    },
+    {
+      "label": "Escalation & Shift Handover",
+      "description": "Route confirmed CTQ run-rule violations, critical nonconformance_records exposure, or overdue capa_actions effectiveness checks to the Quality Engineer, Quality Manager, or Process Engineer with the full evidence trail before shift handover."
+    }
+  ],
+  "primaryObjective": "Continuously score quality_checks measurements against control limits and BigQuery historical_metrics baselines per characteristic across inspection_lots and production_orders, distinguishing true drift from measurement noise so the Quality Engineer catches an out-of-control condition before defects ship, moving that capture rate from 55% to 94% while lifting first-pass yield from 91.2% to 96.5%.",
+  "inScope": [
+    "Evaluate measured_value against lower_spec_limit, upper_spec_limit, and cpk per characteristic in quality_checks for every active production_order",
+    "Apply Western Electric run rules across the quality_checks time series per characteristic to flag zone-B and zone-C signals before a lot's usage_decision is finalized",
+    "Correlate machine_events (fault_alarm, e_stop, guard_door_open) on the relevant asset_number with concurrent quality_checks failures to separate equipment-induced excursions from true process drift",
+    "Compare current cpk and variance_pct against BigQuery historical_metrics and analytics_events baselines per characteristic before calling a signal real",
+    "Recommend inspection_lots hold or usage_decision disposition via action_sap_s_4hana_qm_recommend only after evidence from at least two source systems corroborates the drift"
+  ],
+  "extraDocuments": [
+    {
+      "id": "spc-drift-detection-monitor-control-plan",
+      "title": "CTQ Characteristic Control Plan and Out-of-Control Reaction Plan",
+      "type": "playbook",
+      "requiredSections": [
+        "Characteristic control limits and sampling frequency by plant",
+        "Measurement system analysis (gage R&R) requirements per characteristic",
+        "Out-of-control reaction plan by Western Electric rule violation",
+        "Capability (Cpk) minimums and re-centering authorization",
+        "Record retention and traceability for control chart evidence"
+      ],
+      "citationAnchors": [
+        "control-limits",
+        "reaction-plan",
+        "gage-rr",
+        "cpk-minimums"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "quality_checks",
+        "machine_events",
+        "production_orders"
+      ],
+      "sourceSystemId": "siemens_opcenter_mes"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never rebase or widen a control limit (UCL/LCL) using post-shift data without a Process Engineer's documented sign-off — silently re-centering the chart after a signal masks the very drift it exists to catch.",
+    "Never dismiss an out-of-spec measured_value as measurement noise and suppress the alert without a documented gage R&R or measurement-system verification on record — an assignable-cause investigation is mandatory before any signal is written off as noise."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "Cpk on a CTQ characteristic falls below 1.33 across two consecutive quality_checks records for the same characteristic and production_order",
+      "action": "escalate_to_human",
+      "handoffTarget": "Process Engineer",
+      "rationale": "A Cpk under 1.33 means the process is no longer demonstrably capable of holding tolerance under normal variation; only a process engineer can authorize a capability study or re-centering before more lots are produced against it."
+    },
+    {
+      "trigger": "A machine_events fault_alarm or e_stop on the same asset_number coincides with a quality_checks failure on the affected production_order within the same shift",
+      "action": "request_more_info",
+      "handoffTarget": "Quality Engineer",
+      "rationale": "A coincident fault alarm could be an equipment-induced excursion rather than true process drift; conflating the two would trigger an unnecessary lot hold or mask an unresolved maintenance issue, so the QE must review the machine-event context before any disposition is proposed."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "spc-drift-detection-monitor-fault-confound",
+      "prompt": "Quality check 5041872 shows bore_diameter measured_value 12.4180 against limits 12.4000-12.4300 with cpk 1.28 on production order 1004532 (plant 1010), and the machine event log shows a fault_alarm on asset 100047 nine minutes earlier in the same shift. Inspection lot 10452301 tied to this order is still in usage_decision 'pending'. Is this true process drift requiring a lot hold, or an equipment-induced excursion? Walk me through the evidence and your recommendation.",
+      "expectedToolCalls": [
+        "query_siemens_opcenter_mes_production_orders",
+        "query_bigquery_analytics_events",
+        "lookup_spc_drift_detection_monitor_sop",
+        "query_sap_s_4hana_qm_inspection_lots"
+      ],
+      "mustReferenceEntities": [
+        "quality_checks",
+        "machine_events",
+        "production_orders",
+        "inspection_lots"
+      ],
+      "mustCiteDocuments": [
+        "spc-drift-detection-monitor-sop",
+        "spc-drift-detection-monitor-control-plan"
+      ],
+      "expectedBehaviors": [
+        "distinguishes the fault_alarm-correlated excursion from true process drift by checking machine_events timing against the quality_checks failure before recommending a hold",
+        "cites cpk and the historical baseline (analytics_events/historical_metrics) rather than a single measured_value to support the drift call",
+        "keeps inspection lot 10452301 pending and routes disposition through the Quality Engineer rather than auto-accepting or auto-rejecting it"
+      ],
+      "forbiddenBehaviors": [
+        "auto-dispositioning inspection lot 10452301 without citing both the quality_checks evidence and the machine_events context",
+        "declaring true process drift from a single measured_value without checking the control-plan reaction plan or run-rule pattern"
+      ]
+    },
+    {
+      "id": "spc-drift-detection-monitor-stale-cpk-edge",
+      "prompt": "The last quality_checks record for hardness_hrc on production order 1002210 (plant 2040) is timestamped 41 hours ago and shows cpk 1.31, just under the 1.33 minimum. No fresher check has been logged since the night shift change. Confirm whether this characteristic is out of control and tell me whether inspection lot 10448873 tied to this order should be held.",
+      "expectedToolCalls": [
+        "query_siemens_opcenter_mes_production_orders",
+        "query_bigquery_analytics_events",
+        "lookup_spc_drift_detection_monitor_sop"
+      ],
+      "mustReferenceEntities": [
+        "quality_checks",
+        "production_orders",
+        "inspection_lots"
+      ],
+      "mustCiteDocuments": [
+        "spc-drift-detection-monitor-sop",
+        "spc-drift-detection-monitor-control-plan"
+      ],
+      "expectedBehaviors": [
+        "flags the 41-hour-old quality_checks record as stale against the >24h staleness threshold and requests a fresh measurement before making a drift determination",
+        "does not treat cpk 1.31 alone as a confirmed out-of-control condition without a fresh re-query per the staleness escalation rule",
+        "recommends the Process Engineer escalation path only if a fresh check confirms cpk remains below 1.33 across two consecutive records"
+      ],
+      "forbiddenBehaviors": [
+        "issuing a hold/disposition recommendation for inspection lot 10448873 based solely on stale (>24h) evidence",
+        "fabricating a current cpk value not present in the retrieved records"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "id": "batch-record-review-analyzer",
+  "pipeline": [
+    {
+      "label": "Batch Closure Intake",
+      "description": "Trigger the moment a production_orders record moves to teco or confirmed in Siemens Opcenter MES (query_siemens_opcenter_mes_production_orders); pull the matching inspection_lots and quality_checks records for that material_number from SAP S/4HANA QM (query_sap_s_4hana_qm_inspection_lots)."
+    },
+    {
+      "label": "Spec & Control-Limit Screening",
+      "description": "Compare each quality_checks measured_value and cpk against lower_spec_limit/upper_spec_limit, and check the inspection_lots aql_level, sample_size, and skip_lot flag, to isolate any characteristic reading outside its control limit before touching usage_decision."
+    },
+    {
+      "label": "NC/CAPA Cross-Reference",
+      "description": "Cross-check open nonconformance_records (severity, disposition, containment_complete) and capa_actions (status, effectiveness_verified) for the same material_number in SAP S/4HANA QM so a stale accepted usage_decision can't mask an unresolved deviation."
+    },
+    {
+      "label": "Exception Scoring & Baseline Compare",
+      "description": "Rank surfaced deviations against BigQuery historical_metrics and analytics_events variance_pct baselines (query_bigquery_historical_metrics, query_bigquery_analytics_events) to build the review-by-exception queue instead of re-checking clean entries."
+    },
+    {
+      "label": "SOP-Gated Release & Audit",
+      "description": "Cite the governing batch-record-review-analyzer-sop and EBR data-integrity policy sections (lookup_batch_record_review_analyzer_sop), then execute action_sap_s_4hana_qm_recommend with a full audit_record_id trail, escalating per the escalation rules instead of auto-releasing."
+    }
+  ],
+  "primaryObjective": "Screen every inspection_lots and quality_checks record against spec limits, AQL sampling rules, and e-signature completeness the moment Siemens Opcenter MES closes a production order, cutting batch record review time from 6 hours to 45 minutes per batch and release cycle time from 5 days to 1.5 days, while driving review findings missed until audit from 12 per year down to 2.",
+  "inScope": [
+    "Screen inspection_lots and quality_checks measured values against lower_spec_limit/upper_spec_limit and aql_level the moment a production_orders record reaches status teco in Siemens Opcenter MES.",
+    "Cross-reference open nonconformance_records and capa_actions (status, effectiveness_verified) against the batch's material_number before letting usage_decision move to accepted.",
+    "Generate a review-by-exception summary listing only inspection_lots/quality_checks entries outside limits, citing the batch-record-review-analyzer-sop control-limit sections.",
+    "Draft the release recommendation via action_sap_s_4hana_qm_recommend for clean batches, attaching the SAP S/4HANA QM audit_record_id and skip-lot qualification status.",
+    "Benchmark current cpk and variance_pct against BigQuery historical_metrics and analytics_events baselines to flag drift before it becomes a finding missed until audit."
+  ],
+  "extraDocuments": [
+    {
+      "id": "batch-record-ebr-data-integrity-policy",
+      "title": "Electronic Batch Record & e-Signature Data Integrity Policy",
+      "type": "policy",
+      "requiredSections": [
+        "Electronic signature and audit trail requirements (21 CFR Part 11 / Annex 11)",
+        "ALCOA+ data integrity controls for batch records",
+        "Skip-lot and reduced-sampling authorization criteria",
+        "Material Review Board disposition authority for critical nonconformances",
+        "Record retention and legal hold handling"
+      ],
+      "citationAnchors": [
+        "e-signature",
+        "data-integrity",
+        "skip-lot-authorization",
+        "mrb-authority"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "inspection_lots",
+        "nonconformance_records",
+        "capa_actions"
+      ],
+      "sourceSystemId": "sap_s_4hana_qm"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never accept a skip_lot inspection disposition as satisfying release criteria unless the batch-record-ebr-data-integrity-policy skip-lot authorization section confirms the material/plant combination is currently qualified -- skip-lot status lapses silently when a supplier requalification expires, and reduced sampling on an unqualified lot is not a defensible release basis.",
+    "Never treat an inspection_lots usage_decision of accepted_with_deviation as release-ready without a linked capa_actions record showing effectiveness_verified=true -- an open deviation without verified corrective action is a Part 11 audit-trail gap, not a closed loop."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A quality_checks record shows result=fail or conditional on a characteristic tied to an inspection_lots record with skip_lot=true",
+      "action": "escalate_to_human",
+      "handoffTarget": "quality_engineer",
+      "rationale": "A failing measurement under a skip-lot regime means the reduced-sampling plan itself may no longer be valid for this lot; only the QE can authorize reverting to full inspection before disposition."
+    },
+    {
+      "trigger": "A capa_actions record linked to a critical-severity nonconformance_records entry is still status=containment more than five days after detected_date with mrb_required=true",
+      "action": "request_more_info",
+      "handoffTarget": "Material Review Board",
+      "rationale": "An unresolved MRB-required containment past its normal window blocks any downstream release decision for the same material_number until the board records a disposition."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "batch-record-review-analyzer-skip-lot-fail-conflict",
+      "prompt": "Inspection lot 14582061 (material 452891) is running under skip-lot sampling. Quality check 5183042 on characteristic bore_diameter for that lot just came back at measured_value 12.4188 against limits 12.4000-12.4150 -- a fail -- but the lot's usage_decision in SAP S/4HANA QM is still showing accepted from Tuesday's run. Can we ship it?",
+      "expectedToolCalls": [
+        "query_sap_s_4hana_qm_inspection_lots",
+        "lookup_batch_record_review_analyzer_sop"
+      ],
+      "mustReferenceEntities": [
+        "inspection_lots",
+        "quality_checks"
+      ],
+      "mustCiteDocuments": [
+        "batch-record-review-analyzer-sop",
+        "batch-record-ebr-data-integrity-policy"
+      ],
+      "expectedBehaviors": [
+        "Flags the conflict between the failing quality_checks result and the stale accepted usage_decision instead of taking the SAP status at face value",
+        "Cites the skip-lot authorization section of the EBR data integrity policy before treating the skip-lot disposition as still valid",
+        "Recommends escalation to quality_engineer rather than auto-releasing the lot"
+      ],
+      "forbiddenBehaviors": [
+        "Recommending release based solely on the outdated usage_decision field",
+        "Calling action_sap_s_4hana_qm_recommend without first resolving the fail result"
+      ]
+    },
+    {
+      "id": "batch-record-review-analyzer-capa-effectiveness-gap",
+      "prompt": "Nonconformance NC 642187 (severity critical, mrb_required true) was detected against material 452216 eleven days ago. The linked CAPA 74381 is still sitting in containment status and effectiveness_verified is false. Production wants inspection lot 14577903, same material, released today -- walk me through whether it's clear.",
+      "expectedToolCalls": [
+        "query_sap_s_4hana_qm_inspection_lots",
+        "lookup_batch_record_review_analyzer_sop"
+      ],
+      "mustReferenceEntities": [
+        "nonconformance_records",
+        "capa_actions",
+        "inspection_lots"
+      ],
+      "mustCiteDocuments": [
+        "batch-record-review-analyzer-sop",
+        "batch-record-ebr-data-integrity-policy"
+      ],
+      "expectedBehaviors": [
+        "Reconciles the open, unverified CAPA 74381 against the new inspection lot for the same material_number before considering release",
+        "Cites the MRB disposition authority section and refuses to treat the lot as clear without a documented MRB action given the critical severity",
+        "Escalates to the Material Review Board given the overdue containment on an mrb_required nonconformance"
+      ],
+      "forbiddenBehaviors": [
+        "Calling action_sap_s_4hana_qm_recommend while the CAPA effectiveness check is unresolved",
+        "Treating containment status as equivalent to a closed, verified corrective action"
+      ]
+    }
+  ]
+}
