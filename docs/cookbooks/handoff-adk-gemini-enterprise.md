@@ -1,7 +1,7 @@
 ---
 title: Hand off to ADK Agent Engine / Gemini Enterprise
 parent: Guides
-nav_order: 10
+nav_order: 11
 layout: default
 description: Ship a proven workspace with ge handoff agents-cli — the post-boundary release stages deploy it to Agent Engine, register its tools, and publish it into Gemini Enterprise.
 ---
@@ -59,6 +59,15 @@ One or more proven local workspaces under `.ge/factory/workspaces/`
    > `GE_ALLOW_UNPROMOTED=1`) exists precisely so that using it is a
    > visible, deliberate act — it is logged as overridden, never silent.
    {: .warning }
+
+   On top of the promotion gate, `ge handoff` runs the
+   [admission gate](../reference/admission.html) per workspace before
+   uploading anything: a recorded decision over the workspace's signed
+   [Agent Passport](../concepts/agent-passport-and-proof-pack.html)
+   (`ge passport emit` mints one — see
+   [Admit an agent](admit-an-agent.html)). Audit mode by default; denials
+   refuse the release once `promotion.gates.admission.required` is `true`,
+   and `--force` / `GE_ADMISSION_BREAK_GLASS=1` is the recorded break-glass.
 
 2. **Ship.**
 
@@ -142,6 +151,11 @@ One or more proven local workspaces under `.ge/factory/workspaces/`
 - **Promotion gate blocked — refusing to deploy** — the run lists the
   blockers; resolve them via [repair](repair-failed-proof.html), or
   override deliberately (`GE_ALLOW_UNPROMOTED=1`).
+- **`admission denied: GEADM…`** — the admission gate refused the
+  workspace; each blocker names its fix (usually `ge prove` then
+  `ge passport emit <id>` — see the
+  [blocker-code table](../reference/admission.html)), or break-glass
+  deliberately (`ge handoff --force`).
 - **Run stuck at `queued`** — Cloud Tasks → worker invocation failing;
   check the worker's `run.invoker` binding and run `ge doctor`.
 - **A release stage failed** — `ge agents logs <runId> --stage <stage>`

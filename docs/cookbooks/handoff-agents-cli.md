@@ -1,7 +1,7 @@
 ---
 title: Hand off to agents-cli
 parent: Guides
-nav_order: 9
+nav_order: 10
 layout: default
 description: The generated workspace is a standard agents-cli/ADK project — open it, run its evals with stock agents-cli, and understand what a manual deploy would look like.
 ---
@@ -106,8 +106,11 @@ A compiled, [proven](prove-an-agent.html) workspace. Find its path:
    to enforce.
 
    > Prefer `ge handoff agents-cli` over a by-hand deploy: it runs the same
-   > `agents-cli` deploy underneath, plus the promotion gate, tool
-   > registration, and Gemini Enterprise publishing.
+   > `agents-cli` deploy underneath, plus the promotion gate, the
+   > [admission gate](../reference/admission.html) (a recorded decision over
+   > the workspace's signed Agent Passport — see
+   > [Admit an agent](admit-an-agent.html)), tool registration, and Gemini
+   > Enterprise publishing.
    {: .note }
 
 ## Expected output

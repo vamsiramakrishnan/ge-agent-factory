@@ -1,7 +1,7 @@
 ---
 title: Compile behavioral evals
 parent: Guides
-nav_order: 12
+nav_order: 13
 layout: default
 description: Turn a captured contract (or any spec envelope you bring) into an executable behavior suite — graphs, coverage, selected cases, an ADK evalset, a grading dataset, and a load profile — with ge evals compile.
 ---

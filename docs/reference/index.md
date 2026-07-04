@@ -32,6 +32,7 @@ use [Core Concepts](../concepts/).
 | [Architecture](architecture.html) | The three planes, local vs remote mode, the durable control plane (ADR 0001), the run ledger, the request/auth flow, and the skill matrix (station → skill → `ge` command → engine package → doc, generated from source). |
 | [Live transcript](live-transcript.html) | The LiveTranscript artifact every live surface produces and consumes — fields, where it is written, who reads it. |
 | [Live budgets and gates](live-budgets.html) | Every `live.budgets` key, the `live.bench` hard guard rails, and the `promotion.gates.live` policy. |
+| [Admission gate & Agent Passport](admission.html) | The signed passport file, the recorded AdmissionDecision, the `promotion.gates.admission` policy keys, the `GEADM` blocker codes, key management, and break-glass. |
 | [Evaluation generation](evaluation-generation.html) | The behavioral compiler pipeline (graph → expansion → set-cover → emitters), the `--perturb`/`--adversarial` hardening flags, and the statistics (Wilson intervals, lexical similarity). |
 | [Metric applicability](metric-applicability.html) | Which eval metric families grade the local rail vs the live assist surface, and the honest-status policy. |
 | [Atomic capabilities](atomic-capabilities.html) | The end-to-end system as composable capabilities — CLI verb, console route, MCP tool, and skill for each. |

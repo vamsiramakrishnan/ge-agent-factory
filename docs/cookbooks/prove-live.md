@@ -1,7 +1,7 @@
 ---
 title: Prove the shipped agent live
 parent: Guides
-nav_order: 13
+nav_order: 14
 layout: default
 description: Run evalset cases through the deployed agent's assist surface (or a cassette replay) with ge prove --live — per-case metric grid, conformance baselines, drift detection, and the live promotion gate.
 ---

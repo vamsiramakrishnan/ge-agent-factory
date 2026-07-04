@@ -156,12 +156,29 @@ promotion packet is the closest single summary.
 
 **What it is:** The identity side of the proof story: the artifacts that say
 what a deployed agent *is* — `agents-cli-manifest.yaml`, its Agent Registry
-entry, its per-agent runtime identity, and its `workspace.json` manifest.
-There is no single consolidated passport file yet; consolidating one is
-roadmap work.
+entry, its per-agent runtime identity, and its `workspace.json` manifest —
+plus their consolidated, signed form: `artifacts/agent-passport.json`,
+minted by `ge passport emit`, which binds the proof pack to the workspace's
+exact content by digest and signature.
 
 **Where you'll meet it:** `docs/concepts/agent-passport-and-proof-pack.md`;
-the `register_tools` stage; Agent detail in the console.
+`ge passport emit|verify|admit`; the `register_tools` stage; Agent detail in
+the console.
+
+---
+
+### Admission Gate
+
+**What it is:** The recorded allow/deny decision in front of a release:
+`ge handoff` verifies each workspace's [Agent Passport](#agent-passport) —
+signatures, digest bindings, freshness, and the attested verdicts — against
+the `promotion.gates.admission` policy before uploading anything. It ships
+in audit mode (every decision recorded, nothing refused) and enforces once
+an operator sets `required: true`; `--force` is the recorded break-glass.
+
+**Where you'll meet it:** `ge passport admit`;
+`docs/reference/admission.md`; `docs/cookbooks/admit-an-agent.md`; the
+decision log at `.ge/admission/decisions.jsonl`.
 
 ---
 
