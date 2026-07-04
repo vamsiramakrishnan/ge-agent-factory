@@ -12,8 +12,8 @@ Google Cloud project.
 
 ## Goal
 
-Run an agent build through the <a href="/ge-agent-factory/reference/glossary/#pipeline" title="The user-facing, end-to-end path from business intent to a deployed agent — interview → spec → data → simulator → build → eval → preview → deploy — rendered as a plan you can read (ge pipeline plan) and watch (ge pipeline status).">pipeline</a> — local on your machine or remote in the
-cloud factory — watch it live in the console (Run Drawer / Activity), and resume a
+Run an agent build through the <a href="/ge-agent-factory/reference/glossary/#pipeline" title="The user-facing, end-to-end path from business intent to a deployed agent — interview → spec → data → simulator → build → eval → preview → deploy — rendered as a plan you can read (ge pipeline plan) and watch (ge pipeline status).">pipeline</a>, local on your machine or remote in the
+cloud factory. Watch it live in the console (Run Drawer / Activity), and resume a
 run that has blocked.
 
 <p align="center">
@@ -59,7 +59,7 @@ run that has blocked.
    (`mise run` equivalents: `CANARY=1 mise run provision`, `CANARY=1 mise run provision-local`.)
 
 3. **Watch it live in the console.** Open the console; the Run Drawer follows any
-   run (including remote runs via the run <a href="/ge-agent-factory/reference/glossary/#ledger" title="The durable, event-sourced record of every run — one entry per run, item, and stage — that ge agents status, the Fleet view, and the console's Activity feed all read.">ledger</a> SSE stream), and the Activity
+   run (including remote runs via the run <a href="/ge-agent-factory/reference/glossary/#ledger" title="The durable, event-sourced record of every run — one entry per run, item, and stage — that ge agents status, the Fleet view, and the console's Activity feed all read.">ledger</a> SSE — Server-Sent Events — stream), and the Activity
    timeline shows stage-by-stage progress and blockers.
 
 4. **Watch it from the CLI.**

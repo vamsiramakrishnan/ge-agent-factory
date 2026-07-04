@@ -93,6 +93,26 @@ classDef cloudbuild fill:#e1f3e7,stroke:#16874a,color:#14171c;
 class validate,preview cloudbuild;
 ```
 
+### Three more silent renderer landmines
+
+All three fail without an error, so check the rendered SVG, not just the
+source:
+
+- **Never write an edge that names a *nested* subgraph.** Edges between
+  *top-level* subgraphs are fine (`factory-line.mmd`'s `AB --> VR`), but if
+  the subgraph sits inside another subgraph, an edge to its id renders a
+  phantom duplicate box with the same title floating next to the real one.
+  Connect nested groups through their inner nodes instead.
+- **Define a node's label before (or where) the node is first referenced.**
+  A node that first appears bare in an edge (`CLI --> GW`) and only later
+  gets its label (`GW["Cloud Run gateway"]` inside a subgraph) renders with
+  the bare id as its label. Put cross-subgraph edges *after* the subgraph
+  blocks that define their endpoints — see `three-planes.mmd`.
+- **`~~~` (invisible link) is not supported** — the statement's remaining
+  nodes are silently dropped from the diagram. For a row of peers with no
+  flow between them, use `---` (a plain line, no arrowhead), which renders
+  correctly.
+
 ### Shape vocabulary
 
 Standard Mermaid flowchart node shapes, used consistently across
@@ -126,6 +146,26 @@ direction — see `factory-line.mmd`'s three subgraphs (`Author and Build`,
 `flowchart TD`. This is also the main lever for fixing an SVG that renders too
 tall or too wide: switch the outer direction, or add/adjust a subgraph's own
 `direction`.
+
+### Layered (stacked / boxes-in-boxes) diagrams
+
+For an architecture that is *layers*, not a pipeline — surfaces over a core
+over an engine, or a directory of grouped artifacts — two shapes render
+reliably; anything more entangled tends to collapse into overlapping boxes:
+
+- **Stacked layers** (`platform-stack.mmd`, `repo-layers.mmd`): one
+  top-level `subgraph` per layer, connected **subgraph-to-subgraph**
+  (`SURF --> CORE`) — that is what stacks the boxes vertically. Inside each
+  layer, set `direction LR` and chain the nodes: `-->` where the flow is
+  real, `---` between mere peers. Do **not** connect layers node-to-node
+  across boxes — cross-box node edges make the renderer place the boxes
+  side-by-side instead of stacked.
+- **One outer box with nested groups** (`workspace-anatomy.mmd`,
+  `three-planes.mmd`): a single outer `subgraph` containing the inner
+  groups, with a *small* number of node-to-node edges between the inner
+  groups (about four is the proven ceiling). Keep the landmines above in
+  mind: no edges to a nested subgraph's id, labels defined at first
+  reference.
 
 ### Brand color convention
 
@@ -437,7 +477,7 @@ listing itself as the first entry.
 Add a diagram only where a flow, architecture, or decision is currently
 prose-only *and* a picture would genuinely resolve it faster than reading —
 not for every table, command list, or file layout, which read fine as text.
-Before adding a new one, check the existing set (19 diagrams as of this
+Before adding a new one, check the existing set (37 diagrams as of this
 writing, see filenames in `docs/diagrams-src/`) so a new diagram doesn't
 duplicate an existing concept from a slightly different angle — extend or
 reference the existing one instead where possible.

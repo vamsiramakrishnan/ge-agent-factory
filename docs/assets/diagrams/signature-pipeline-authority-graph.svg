@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1588.916 182.61666666666667" width="1588.916" height="182.61666666666667" style="--bg:#ffffff;--fg:#14171c;--line:#565e6c;--accent:#2953ff;--muted:#79818e;--surface:#eceef2;--border:#dfe2e8;background:var(--bg)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 479.9323333333333 742.0999999999999" width="479.9323333333333" height="742.0999999999999" style="--bg:#ffffff;--fg:#14171c;--line:#565e6c;--accent:#2953ff;--muted:#79818e;--surface:#eceef2;--border:#dfe2e8;background:var(--bg)">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
   text { font-family: 'Inter', system-ui, sans-serif; }
@@ -26,51 +26,51 @@
     <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
   </marker>
 </defs>
-<polyline class="edge" data-from="CAP" data-to="CONTRACT" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="127.892,95.975 175.892,95.975" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
-<polyline class="edge" data-from="CONTRACT" data-to="GEN" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="370.48799999999994,89.825 406.48799999999994,89.825 406.48799999999994,77.025 744.81,77.025" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
-<polyline class="edge" data-from="GEN" data-to="TWIN" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="840.112,83.175 864.1119999999999,83.175 864.1119999999999,65.45 888.1119999999999,65.45" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
-<polyline class="edge" data-from="GEN" data-to="PROVE" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="840.112,83.175 864.1119999999999,83.175 864.1119999999999,83.175 1098.1039999999998,83.175" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
-<polyline class="edge" data-from="TWIN" data-to="PROVE" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1050.1039999999998,65.45 1086.1039999999998,65.45 1086.1039999999998,77.025 1098.1039999999998,77.025" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
-<polyline class="edge" data-from="PROVE" data-to="PASSPORT" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1195.6219999999998,83.175 1243.6219999999998,83.175" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
-<polyline class="edge" data-from="PASSPORT" data-to="HANDOFF" data-style="thick" data-arrow-start="false" data-arrow-end="true" points="1413.7649999999999,83.175 1449.7649999999999,83.175 1449.7649999999999,97.38333333333333 1461.7649999999999,97.38333333333333" fill="none" stroke="var(--_line)" stroke-width="2" marker-end="url(#arrowhead)" />
-<polyline class="edge" data-from="CONTRACT" data-to="AUTH" data-style="dotted" data-arrow-start="false" data-arrow-end="true" points="370.48799999999994,102.125 406.48799999999994,102.125 406.48799999999994,115.71666666666667 418.48799999999994,115.71666666666667" fill="none" stroke="var(--_line)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
-<polyline class="edge" data-from="AUTH" data-to="GEN" data-style="dotted" data-arrow-start="false" data-arrow-end="true" points="696.81,115.71666666666667 720.81,115.71666666666667 720.81,83.175 744.81,83.175" fill="none" stroke="var(--_line)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
-<polyline class="edge" data-from="AUTH" data-to="HANDOFF" data-style="dotted" data-arrow-start="false" data-arrow-end="true" points="696.81,115.71666666666667 720.81,115.71666666666667 720.81,103.53333333333333 1461.7649999999999,103.53333333333333" fill="none" stroke="var(--_line)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="CAP" data-to="CONTRACT" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="225.69083333333333,76.9 225.69083333333333,124.9" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="CONTRACT" data-to="GEN" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="193.25816666666668,161.8 193.25816666666668,197.8 150.61033333333336,197.8 150.61033333333336,311.6" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="GEN" data-to="TWIN" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="166.49400000000003,348.5 166.49400000000003,372.5 120.99600000000001,372.5 120.99600000000001,396.5" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="GEN" data-to="PROVE" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="166.49400000000003,348.5 166.49400000000003,372.5 166.49400000000003,372.5 166.49400000000003,495.4" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="TWIN" data-to="PROVE" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="120.99600000000001,447.4 120.99600000000001,483.4 150.241,483.4 150.241,495.4" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="PROVE" data-to="PASSPORT" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="166.494,532.3 166.494,580.3" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="PASSPORT" data-to="HANDOFF" data-style="thick" data-arrow-start="false" data-arrow-end="true" points="166.494,617.1999999999999 166.494,653.1999999999999 242.48566666666665,653.1999999999999 242.48566666666665,665.1999999999999" fill="none" stroke="var(--_line)" stroke-width="2" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="CONTRACT" data-to="AUTH" data-style="dotted" data-arrow-start="false" data-arrow-end="true" points="258.1235,161.8 258.1235,197.8 300.7713333333333,197.8 300.7713333333333,209.8" fill="none" stroke="var(--_line)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="AUTH" data-to="GEN" data-style="dotted" data-arrow-start="false" data-arrow-end="true" points="300.77133333333336,263.6 300.77133333333336,287.6 166.49400000000003,287.6 166.49400000000003,311.6" fill="none" stroke="var(--_line)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="AUTH" data-to="HANDOFF" data-style="dotted" data-arrow-start="false" data-arrow-end="true" points="300.77133333333336,263.6 300.77133333333336,287.6 257.0108333333333,287.6 257.0108333333333,665.1999999999999" fill="none" stroke="var(--_line)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
 <g class="node" data-id="CAP" data-label="capture" data-shape="stadium">
-  <rect x="40" y="77.525" width="87.892" height="36.900000000000006" rx="18.450000000000003" ry="18.450000000000003" fill="#f6f7f9" stroke="#dfe2e8" stroke-width="0.75" />
-  <text x="83.946" y="95.97500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="#79818e" dy="4.55">capture</text>
+  <rect x="181.7448333333333" y="40" width="87.892" height="36.900000000000006" rx="18.450000000000003" ry="18.450000000000003" fill="#f6f7f9" stroke="#dfe2e8" stroke-width="0.75" />
+  <text x="225.6908333333333" y="58.45" text-anchor="middle" font-size="13" font-weight="500" fill="#79818e" dy="4.55">capture</text>
 </g>
 <g class="node" data-id="CONTRACT" data-label="Enterprise Agent Contract" data-shape="rectangle">
-  <rect x="175.892" y="77.525" width="194.59599999999995" height="36.900000000000006" rx="0" ry="0" fill="#f6f7f9" stroke="#dfe2e8" stroke-width="0.75" />
-  <text x="273.18999999999994" y="95.97500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="#79818e" dy="4.55">Enterprise Agent Contract</text>
+  <rect x="128.39283333333333" y="124.9" width="194.59599999999995" height="36.900000000000006" rx="0" ry="0" fill="#f6f7f9" stroke="#dfe2e8" stroke-width="0.75" />
+  <text x="225.6908333333333" y="143.35000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="#79818e" dy="4.55">Enterprise Agent Contract</text>
 </g>
 <g class="node" data-id="GEN" data-label="generate" data-shape="rectangle">
-  <rect x="744.81" y="64.725" width="95.30199999999999" height="36.900000000000006" rx="0" ry="0" fill="#f6f7f9" stroke="#dfe2e8" stroke-width="0.75" />
-  <text x="792.4609999999999" y="83.175" text-anchor="middle" font-size="13" font-weight="500" fill="#79818e" dy="4.55">generate</text>
+  <rect x="118.84300000000002" y="311.6" width="95.30199999999999" height="36.900000000000006" rx="0" ry="0" fill="#f6f7f9" stroke="#dfe2e8" stroke-width="0.75" />
+  <text x="166.49400000000003" y="330.05" text-anchor="middle" font-size="13" font-weight="500" fill="#79818e" dy="4.55">generate</text>
 </g>
 <g class="node" data-id="TWIN" data-label="source-system twins" data-shape="cylinder">
-  <rect x="888.1119999999999" y="47" width="161.99200000000002" height="36.900000000000006" fill="#f6f7f9" stroke="none" />
-  <line x1="888.1119999999999" y1="47" x2="888.1119999999999" y2="83.9" stroke="#dfe2e8" stroke-width="0.75" />
-  <line x1="1050.1039999999998" y1="47" x2="1050.1039999999998" y2="83.9" stroke="#dfe2e8" stroke-width="0.75" />
-  <ellipse cx="969.1079999999998" cy="83.9" rx="80.99600000000001" ry="7" fill="#f6f7f9" stroke="#dfe2e8" stroke-width="0.75" />
-  <ellipse cx="969.1079999999998" cy="47" rx="80.99600000000001" ry="7" fill="#f6f7f9" stroke="#dfe2e8" stroke-width="0.75" />
-  <text x="969.1079999999998" y="65.45" text-anchor="middle" font-size="13" font-weight="500" fill="#79818e" dy="4.55">source-system twins</text>
+  <rect x="40" y="403.5" width="161.99200000000002" height="36.900000000000006" fill="#f6f7f9" stroke="none" />
+  <line x1="40" y1="403.5" x2="40" y2="440.4" stroke="#dfe2e8" stroke-width="0.75" />
+  <line x1="201.99200000000002" y1="403.5" x2="201.99200000000002" y2="440.4" stroke="#dfe2e8" stroke-width="0.75" />
+  <ellipse cx="120.99600000000001" cy="440.4" rx="80.99600000000001" ry="7" fill="#f6f7f9" stroke="#dfe2e8" stroke-width="0.75" />
+  <ellipse cx="120.99600000000001" cy="403.5" rx="80.99600000000001" ry="7" fill="#f6f7f9" stroke="#dfe2e8" stroke-width="0.75" />
+  <text x="120.99600000000001" y="421.95" text-anchor="middle" font-size="13" font-weight="500" fill="#79818e" dy="4.55">source-system twins</text>
 </g>
 <g class="node" data-id="PROVE" data-label="prove" data-shape="hexagon">
-  <polygon points="1107.3289999999997,64.725 1186.397,64.725 1195.6219999999998,83.175 1186.397,101.625 1107.3289999999997,101.625 1098.1039999999998,83.175" fill="#f6f7f9" stroke="#dfe2e8" stroke-width="0.75" />
-  <text x="1146.8629999999998" y="83.175" text-anchor="middle" font-size="13" font-weight="500" fill="#79818e" dy="4.55">prove</text>
+  <polygon points="126.96000000000001,495.4 206.02800000000002,495.4 215.25300000000001,513.85 206.02800000000002,532.3 126.96000000000001,532.3 117.73500000000001,513.85" fill="#f6f7f9" stroke="#dfe2e8" stroke-width="0.75" />
+  <text x="166.49400000000003" y="513.85" text-anchor="middle" font-size="13" font-weight="500" fill="#79818e" dy="4.55">prove</text>
 </g>
 <g class="node" data-id="PASSPORT" data-label="passport &amp; proof pack" data-shape="rectangle">
-  <rect x="1243.6219999999998" y="64.725" width="170.143" height="36.900000000000006" rx="0" ry="0" fill="#f6f7f9" stroke="#dfe2e8" stroke-width="0.75" />
-  <text x="1328.6934999999999" y="83.175" text-anchor="middle" font-size="13" font-weight="500" fill="#79818e" dy="4.55">passport &amp; proof pack</text>
+  <rect x="81.42250000000001" y="580.3" width="170.143" height="36.900000000000006" rx="0" ry="0" fill="#f6f7f9" stroke="#dfe2e8" stroke-width="0.75" />
+  <text x="166.49400000000003" y="598.75" text-anchor="middle" font-size="13" font-weight="500" fill="#79818e" dy="4.55">passport &amp; proof pack</text>
 </g>
 <g class="node" data-id="HANDOFF" data-label="hand off" data-shape="stadium">
-  <rect x="1461.7649999999999" y="85.08333333333333" width="87.15100000000001" height="36.900000000000006" rx="18.450000000000003" ry="18.450000000000003" fill="#f6f7f9" stroke="#dfe2e8" stroke-width="0.75" />
-  <text x="1505.3404999999998" y="103.53333333333333" text-anchor="middle" font-size="13" font-weight="500" fill="#79818e" dy="4.55">hand off</text>
+  <rect x="213.43533333333332" y="665.1999999999999" width="87.15100000000001" height="36.900000000000006" rx="18.450000000000003" ry="18.450000000000003" fill="#f6f7f9" stroke="#dfe2e8" stroke-width="0.75" />
+  <text x="257.0108333333333" y="683.65" text-anchor="middle" font-size="13" font-weight="500" fill="#79818e" dy="4.55">hand off</text>
 </g>
 <g class="node" data-id="AUTH" data-label="authority graph
 scope · tools · evidence · escalation" data-shape="hexagon">
-  <polygon points="431.93799999999993,88.81666666666666 683.3599999999999,88.81666666666666 696.81,115.71666666666667 683.3599999999999,142.61666666666667 431.93799999999993,142.61666666666667 418.48799999999994,115.71666666666667" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
-  <text x="557.6489999999999" y="115.71666666666667" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c"><tspan x="557.6489999999999" dy="-3.9000000000000012">authority graph</tspan><tspan x="557.6489999999999" dy="16.900000000000002">scope · tools · evidence · escalation</tspan></text>
+  <polygon points="175.06033333333335,209.8 426.4823333333333,209.8 439.9323333333333,236.70000000000002 426.4823333333333,263.6 175.06033333333335,263.6 161.61033333333336,236.70000000000002" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
+  <text x="300.77133333333336" y="236.70000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c"><tspan x="300.77133333333336" dy="-3.9000000000000012">authority graph</tspan><tspan x="300.77133333333336" dy="16.900000000000002">scope · tools · evidence · escalation</tspan></text>
 </g>
 </svg>

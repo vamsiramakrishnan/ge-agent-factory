@@ -1,0 +1,31 @@
+flowchart TD
+    subgraph SURF["Surfaces — three doors, one behavior"]
+        direction LR
+        CLI["ge CLI"] --- CON["console"] --- MCP["MCP tools\n+ skills"]
+    end
+    subgraph CORE["Operator core"]
+        RJ["one command registry + job runner\nroute · CLI invocation · risk level"]
+    end
+    subgraph ENGINE["Generator engine — the factory stages"]
+        direction LR
+        COMP["contract\ncompiler"] --> GEN["workspace\ngenerator"] --> SYN["twins +\nsynthetic data"] --> EVC["eval\ncompiler"]
+    end
+    subgraph ART["Artifacts on disk — one proven workspace"]
+        direction LR
+        CTR["contract (OKF)"] --- WS["ADK workspace"] --- PP{{"proof pack"}}
+    end
+    subgraph CLOUD["Your Google Cloud project — after handoff"]
+        direction LR
+        ACLI(["agents-cli / ADK"]) --> AE["Agent Engine"] --> GEE(["Gemini Enterprise"])
+    end
+    SURF --> CORE
+    CORE --> ENGINE
+    ENGINE --> ART
+    ART ==> CLOUD
+
+    classDef contract fill:#e6ebff,stroke:#2953ff,color:#14171c
+    classDef proof fill:#e1f3e7,stroke:#16874a,color:#14171c
+    classDef handoff fill:#e1f3e7,stroke:#16874a,color:#14171c
+    class CTR contract
+    class PP proof
+    class ACLI,GEE handoff

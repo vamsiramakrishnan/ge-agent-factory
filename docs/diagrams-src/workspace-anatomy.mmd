@@ -1,0 +1,35 @@
+flowchart TD
+    subgraph WS[".ge/factory/workspaces/&lt;id&gt;/ — one proven agent"]
+        subgraph CB["Contract"]
+            direction LR
+            SPECJ["usecase-spec.json\nbehaviorContract + generationSpec"]
+            OKFT["OKF twin\nportable Markdown"]
+        end
+        subgraph GB["Generated agent — standard ADK Python"]
+            direction LR
+            AGPY["app/agent.py"]
+            TLPY["app/tools.py\nsource_adapters"]
+        end
+        subgraph SB["Simulation"]
+            direction LR
+            TW[("source-system\ntwins")]
+            FX[("fixtures\nsynthetic data")]
+        end
+        subgraph PB["Proof"]
+            direction LR
+            EV{{"eval suite"}}
+            TR["spec-to-code\ntrace"]
+            MF["workspace.json\nmanifest + readiness"]
+        end
+        SPECJ --> AGPY
+        SPECJ --> TW
+        AGPY --> EV
+        FX --> EV
+    end
+
+    classDef contract fill:#e6ebff,stroke:#2953ff,color:#14171c
+    classDef system fill:#eceef2,stroke:#565e6c,color:#14171c
+    classDef proof fill:#e1f3e7,stroke:#16874a,color:#14171c
+    class SPECJ,OKFT contract
+    class TW,FX system
+    class EV proof

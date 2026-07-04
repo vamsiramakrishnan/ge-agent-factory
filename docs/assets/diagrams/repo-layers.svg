@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 746.876 637.1" width="746.876" height="637.1" style="--bg:#ffffff;--fg:#14171c;--line:#565e6c;--accent:#2953ff;--muted:#79818e;--surface:#eceef2;--border:#dfe2e8;background:var(--bg)">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
+  text { font-family: 'Inter', system-ui, sans-serif; }
+  svg {
+    /* Derived from --bg and --fg (overridable via --line, --accent, etc.) */
+    --_text:          var(--fg);
+    --_text-sec:      var(--muted, color-mix(in srgb, var(--fg) 60%, var(--bg)));
+    --_text-muted:    var(--muted, color-mix(in srgb, var(--fg) 40%, var(--bg)));
+    --_text-faint:    color-mix(in srgb, var(--fg) 25%, var(--bg));
+    --_line:          var(--line, color-mix(in srgb, var(--fg) 50%, var(--bg)));
+    --_arrow:         var(--accent, color-mix(in srgb, var(--fg) 85%, var(--bg)));
+    --_node-fill:     var(--surface, color-mix(in srgb, var(--fg) 3%, var(--bg)));
+    --_node-stroke:   var(--border, color-mix(in srgb, var(--fg) 20%, var(--bg)));
+    --_group-fill:    var(--bg);
+    --_group-hdr:     color-mix(in srgb, var(--fg) 5%, var(--bg));
+    --_inner-stroke:  color-mix(in srgb, var(--fg) 12%, var(--bg));
+    --_key-badge:     color-mix(in srgb, var(--fg) 10%, var(--bg));
+  }
+</style>
+<defs>
+  <marker id="arrowhead" markerWidth="8" markerHeight="5" refX="7" refY="2.5" orient="auto">
+    <polygon points="0 0, 8 2.5, 0 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+  <marker id="arrowhead-start" markerWidth="8" markerHeight="5" refX="1" refY="2.5" orient="auto-start-reverse">
+    <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
+  </marker>
+</defs>
+<g class="subgraph" data-id="APPS" data-label="apps/* — product surfaces">
+  <rect x="117.57899999999998" y="40" width="511.718" height="113.80000000000001" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="117.57899999999998" y="40" width="511.718" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="129.57899999999998" y="54" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">apps/* — product surfaces</text>
+</g>
+<g class="subgraph" data-id="OPS" data-label="tools/ — the operator core">
+  <rect x="53.111999999999966" y="270.1" width="640.652" height="113.80000000000001" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="53.111999999999966" y="270.1" width="640.652" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="65.11199999999997" y="284.1" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">tools/ — the operator core</text>
+</g>
+<g class="subgraph" data-id="PKG" data-label="packages/* — shared engines">
+  <rect x="40" y="500.20000000000005" width="666.876" height="96.9" rx="0" ry="0" fill="var(--_group-fill)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <rect x="40" y="500.20000000000005" width="666.876" height="28" rx="0" ry="0" fill="var(--_group-hdr)" stroke="var(--_node-stroke)" stroke-width="1" />
+  <text x="52" y="514.2" font-size="12" font-weight="600" fill="var(--_text-sec)" dy="4.199999999999999">packages/* — shared engines</text>
+</g>
+<polyline class="edge" data-from="APPS" data-to="OPS" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="imports — never the reverse" points="373.438,153.8 373.438,270.1" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="OPS" data-to="PKG" data-style="solid" data-arrow-start="false" data-arrow-end="true" data-label="imports — never the reverse" points="373.438,383.90000000000003 373.438,500.20000000000005" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="ACON" data-to="AFAC" data-style="solid" data-arrow-start="false" data-arrow-end="false" points="256.298,110.9 304.298,110.9" fill="none" stroke="var(--_line)" stroke-width="1" />
+<polyline class="edge" data-from="AFAC" data-to="ADOC" data-style="solid" data-arrow-start="false" data-arrow-end="false" points="460.36199999999997,110.9 508.36199999999997,110.9" fill="none" stroke="var(--_line)" stroke-width="1" />
+<polyline class="edge" data-from="GE" data-to="LIB" data-style="solid" data-arrow-start="false" data-arrow-end="false" points="191.83099999999996,341 239.83099999999996,341" fill="none" stroke="var(--_line)" stroke-width="1" />
+<polyline class="edge" data-from="LIB" data-to="MCPS" data-style="solid" data-arrow-start="false" data-arrow-end="false" points="464.80799999999994,341 512.808,341" fill="none" stroke="var(--_line)" stroke-width="1" />
+<polyline class="edge" data-from="SPEC" data-to="SYNK" data-style="solid" data-arrow-start="false" data-arrow-end="false" points="191.31599999999997,562.6500000000001 239.31599999999997,562.6500000000001" fill="none" stroke="var(--_line)" stroke-width="1" />
+<polyline class="edge" data-from="SYNK" data-to="EVK" data-style="solid" data-arrow-start="false" data-arrow-end="false" points="354.625,562.6500000000001 402.625,562.6500000000001" fill="none" stroke="var(--_line)" stroke-width="1" />
+<polyline class="edge" data-from="EVK" data-to="RL" data-style="solid" data-arrow-start="false" data-arrow-end="false" points="510.524,562.6500000000001 558.524,562.6500000000001" fill="none" stroke="var(--_line)" stroke-width="1" />
+<g class="edge-label" data-from="APPS" data-to="OPS" data-label="imports — never the reverse">
+  <rect x="299.438" y="196.8" width="147.14200000000002" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="373.009" y="211.95000000000002" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">imports — never the reverse</text>
+</g>
+<g class="edge-label" data-from="OPS" data-to="PKG" data-label="imports — never the reverse">
+  <rect x="299.438" y="426.90000000000003" width="147.14200000000002" height="30.3" rx="2" ry="2" fill="var(--bg)" stroke="var(--_inner-stroke)" stroke-width="1" />
+  <text x="373.009" y="442.05" text-anchor="middle" font-size="11" font-weight="400" fill="var(--_text-sec)" dy="3.8499999999999996">imports — never the reverse</text>
+</g>
+<g class="node" data-id="ACON" data-label="apps/console
+operator UI" data-shape="rectangle">
+  <rect x="133.57899999999998" y="84" width="122.71900000000001" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="194.93849999999998" y="110.9" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="194.93849999999998" dy="-3.9000000000000012">apps/console</tspan><tspan x="194.93849999999998" dy="16.900000000000002">operator UI</tspan></text>
+</g>
+<g class="node" data-id="AFAC" data-label="apps/factory
+generator + worker" data-shape="rectangle">
+  <rect x="304.298" y="84" width="156.06400000000002" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="382.33000000000004" y="110.9" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="382.33000000000004" dy="-3.9000000000000012">apps/factory</tspan><tspan x="382.33000000000004" dy="16.900000000000002">generator + worker</tspan></text>
+</g>
+<g class="node" data-id="ADOC" data-label="apps/docs
+docs site" data-shape="rectangle">
+  <rect x="508.36199999999997" y="84" width="104.93499999999999" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="560.8294999999999" y="110.9" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="560.8294999999999" dy="-3.9000000000000012">apps/docs</tspan><tspan x="560.8294999999999" dy="16.900000000000002">docs site</tspan></text>
+</g>
+<g class="node" data-id="GE" data-label="tools/ge.mjs
+CLI boundary" data-shape="rectangle">
+  <rect x="69.11199999999997" y="314.1" width="122.71900000000001" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="130.47149999999996" y="341" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="130.47149999999996" dy="-3.9000000000000012">tools/ge.mjs</tspan><tspan x="130.47149999999996" dy="16.900000000000002">CLI boundary</tspan></text>
+</g>
+<g class="node" data-id="LIB" data-label="tools/lib/*
+factory-core · registry · ledger" data-shape="rectangle">
+  <rect x="239.83099999999996" y="314.1" width="224.97699999999998" height="53.800000000000004" rx="0" ry="0" fill="#e6ebff" stroke="#2953ff" stroke-width="0.75" />
+  <text x="352.31949999999995" y="341" text-anchor="middle" font-size="13" font-weight="500" fill="#14171c"><tspan x="352.31949999999995" dy="-3.9000000000000012">tools/lib/*</tspan><tspan x="352.31949999999995" dy="16.900000000000002">factory-core · registry · ledger</tspan></text>
+</g>
+<g class="node" data-id="MCPS" data-label="tools/mcp-server.mjs
+MCP boundary" data-shape="rectangle">
+  <rect x="512.808" y="314.1" width="164.95600000000002" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="595.2860000000001" y="341" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="595.2860000000001" dy="-3.9000000000000012">tools/mcp-server.mjs</tspan><tspan x="595.2860000000001" dy="16.900000000000002">MCP boundary</tspan></text>
+</g>
+<g class="node" data-id="SPEC" data-label="@ge/agent-spec" data-shape="rectangle">
+  <rect x="56" y="544.2" width="135.31599999999997" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="123.65799999999999" y="562.6500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">@ge/agent-spec</text>
+</g>
+<g class="node" data-id="SYNK" data-label="@ge/synthkit" data-shape="rectangle">
+  <rect x="239.31599999999997" y="544.2" width="115.30900000000001" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="296.97049999999996" y="562.6500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">@ge/synthkit</text>
+</g>
+<g class="node" data-id="EVK" data-label="@ge/evalkit" data-shape="rectangle">
+  <rect x="402.625" y="544.2" width="107.89900000000002" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="456.5745" y="562.6500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">@ge/evalkit</text>
+</g>
+<g class="node" data-id="RL" data-label="@ge/run-ledger" data-shape="rectangle">
+  <rect x="558.524" y="544.2" width="132.352" height="36.900000000000006" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="624.7" y="562.6500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)" dy="4.55">@ge/run-ledger</text>
+</g>
+</svg>
