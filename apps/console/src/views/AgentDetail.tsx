@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Boxes,
@@ -27,6 +28,7 @@ import {
   type WorkspaceDoctorReport,
   type WorkspaceRepairReport,
 } from "../services/geClient";
+import { useGeQuery } from "../lib/query";
 import { StatusPill } from "../components/StatusPill";
 import { StatusChip, normalizeStatus } from "../lib/runStatus";
 import { Lifecycle } from "../components/Lifecycle";
@@ -41,121 +43,86 @@ interface AgentDetailProps {
 
 type StageFilter = "all" | "attention" | "active" | "done";
 
+// Calm off-:00 cadence: how often the agent/plan/gate state silently re-syncs
+// with the backend without a manual refresh (matches the polling cadence
+// this view used before migrating onto the shared query layer).
+const POLL_INTERVAL_MS = 5100;
+
+function doctorErrorReport(workspaceId: string, err: unknown): WorkspaceDoctorReport {
+  return {
+    workspace: workspaceId,
+    stage: "preview",
+    ok: false,
+    blockers: [{ id: "console:doctor", message: err instanceof Error ? err.message : String(err) }],
+    repairTasks: [],
+  };
+}
+
 export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
-  const [agent, setAgent] = useState<FleetAgent | null>(null);
-  const [pipelinePlan, setPipelinePlan] = useState<PipelinePlan | null>(null);
-  const [doctor, setDoctor] = useState<WorkspaceDoctorReport | null>(null);
+  const queryClient = useQueryClient();
   const [repairReport, setRepairReport] = useState<WorkspaceRepairReport | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [planLoading, setPlanLoading] = useState(false);
-  const [doctorLoading, setDoctorLoading] = useState(false);
-  const [syncing, setSyncing] = useState(false);
   const [codeSyncing, setCodeSyncing] = useState(false);
   const [repairing, setRepairing] = useState(false);
   const [actionBusy, setActionBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stageFilter, setStageFilter] = useState<StageFilter>("all");
-  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
   const [codeSyncRemote, setCodeSyncRemote] = useState(() => window.localStorage.getItem("ge.sync.remote") || "");
   const [codeSyncPush, setCodeSyncPush] = useState(() => window.localStorage.getItem("ge.sync.push") !== "false");
 
+  // Data via the shared query layer (lib/query.ts): polling cadence, job-done
+  // invalidation, dedupe, and focus refetch all come from the conventions
+  // there instead of a per-view useEffect/setInterval/"ge:job:done" stack.
+  // pipelinePlan and doctor depend on the agent record (its id/workspaceId),
+  // so they're gated with `enabled` — the same dependent-query idiom Overview
+  // and Fleet don't need but this view does.
+  const agentQuery = useGeQuery<FleetAgent>(
+    ["agent", id],
+    async () => {
+      const result = await ge.agent(id);
+      if (!result.agent) throw new Error("Agent not found");
+      return result.agent;
+    },
+    { intervalMs: POLL_INTERVAL_MS },
+  );
+  const agent = agentQuery.data ?? null;
   const workspaceId = agent?.workspaceId || agent?.actionPlan?.workspaceIds?.[0] || null;
+
+  const pipelinePlanQuery = useGeQuery<PipelinePlan>(
+    ["pipelinePlan", agent?.id ?? id],
+    () => ge.pipelinePlan({ scenario: agent!.id, usecaseId: agent!.id, ids: [agent!.id], targetStage: "preview" }),
+    { enabled: Boolean(agent), intervalMs: POLL_INTERVAL_MS },
+  );
+  const pipelinePlan = pipelinePlanQuery.data ?? null;
+
+  const doctorQueryKey = ["workspaceDoctor", workspaceId, "preview"];
+  const doctorQuery = useGeQuery<WorkspaceDoctorReport>(
+    doctorQueryKey,
+    () => ge.workspaceDoctor(workspaceId!, "preview").catch((err) => doctorErrorReport(workspaceId!, err)),
+    { enabled: Boolean(workspaceId), intervalMs: POLL_INTERVAL_MS },
+  );
+  const doctor = doctorQuery.data ?? null;
+
+  const loading = agentQuery.isLoading;
+  // "Syncing" = a background refetch in flight, not the very first load — the
+  // same distinction the old silent-vs-initial `load()` flag drew.
+  const syncing = agentQuery.isFetching && !agentQuery.isLoading;
+  const planLoading = pipelinePlanQuery.isFetching;
+  const doctorLoading = doctorQuery.isFetching;
+  const lastSyncedAt = agentQuery.dataUpdatedAt ? new Date(agentQuery.dataUpdatedAt).toISOString() : null;
+
   const primaryPlan = agent?.actionPlan || pipelinePlan?.next?.actionPlan || null;
   const primaryCommand = actionCommand(primaryPlan);
   const currentStage = agent?.stage || pipelinePlan?.next?.id || "spec";
 
-  const loadWorkspaceDoctor = async (nextWorkspaceId = workspaceId, stage = "preview") => {
-    if (!nextWorkspaceId) {
-      setDoctor(null);
-      return;
-    }
-    setDoctorLoading(true);
-    try {
-      const report = await ge.workspaceDoctor(nextWorkspaceId, stage);
-      setDoctor(report);
-      setRepairReport(null);
-    } catch (err) {
-      setDoctor({
-        workspace: nextWorkspaceId,
-        stage,
-        ok: false,
-        blockers: [{ id: "console:doctor", message: err instanceof Error ? err.message : String(err) }],
-        repairTasks: [],
-      });
-    } finally {
-      setDoctorLoading(false);
-    }
-  };
+  const refreshAll = () => Promise.all([agentQuery.refetch(), pipelinePlanQuery.refetch(), doctorQuery.refetch()]);
 
-  const loadSecondaryState = async (nextAgent: FleetAgent, wait: boolean) => {
-    setPlanLoading(true);
-    const nextWorkspaceId = nextAgent.workspaceId || nextAgent.actionPlan?.workspaceIds?.[0] || null;
-    const planPromise = ge.pipelinePlan({
-      scenario: nextAgent.id,
-      usecaseId: nextAgent.id,
-      ids: [nextAgent.id],
-      targetStage: "preview",
-    }).then((nextPlan) => {
-      setPipelinePlan(nextPlan);
-    }).catch((err) => {
-      setError(err instanceof Error ? err.message : String(err));
-    }).finally(() => {
-      setPlanLoading(false);
-    });
-    const doctorPromise = loadWorkspaceDoctor(nextWorkspaceId, "preview");
-    if (wait) await Promise.allSettled([planPromise, doctorPromise]);
-  };
-
-  const load = async (options: { awaitSecondary?: boolean; silent?: boolean } = {}) => {
-    const initialLoad = !agent && !options.silent;
-    if (initialLoad) setLoading(true);
-    if (options.silent) setSyncing(true);
-    setError(null);
-    try {
-      const result = await ge.agent(id);
-      const nextAgent = result.agent;
-      if (!nextAgent) {
-        setAgent(null);
-        setPipelinePlan(null);
-        setDoctor(null);
-        setError("Agent not found");
-        return;
-      }
-      setAgent(nextAgent);
-      setLoading(false);
-      const secondary = loadSecondaryState(nextAgent, Boolean(options.awaitSecondary));
-      if (options.awaitSecondary) await secondary;
-      else void secondary;
-      setLastSyncedAt(new Date().toISOString());
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-      setAgent(null);
-      setPipelinePlan(null);
-    } finally {
-      if (initialLoad) setLoading(false);
-      if (options.silent) setSyncing(false);
-    }
-  };
-
+  // An action error self-heals on the next successful background poll — the
+  // same self-healing the old load()'s unconditional `setError(null)` gave
+  // every 5.1s, now tied to the agent query actually landing fresh data
+  // instead of a bespoke interval tick.
   useEffect(() => {
-    void load();
-  }, [id]);
-
-  useEffect(() => {
-    const onJobDone = () => {
-      void load({ awaitSecondary: true, silent: true });
-    };
-    window.addEventListener("ge:job:done", onJobDone);
-    // Don't go stale: calm off-:00 silent re-sync so the triage band, gate, and
-    // next action track the backend without a manual refresh. Cancelled on unmount.
-    const interval = window.setInterval(() => {
-      void load({ silent: true });
-    }, 5100);
-    return () => {
-      window.removeEventListener("ge:job:done", onJobDone);
-      window.clearInterval(interval);
-    };
-  }, [id]);
+    if (agentQuery.dataUpdatedAt) setError(null);
+  }, [agentQuery.dataUpdatedAt]);
 
   const runPlan = async (plan: FleetActionPlan | null | undefined) => {
     if (!plan || !agent) return;
@@ -172,7 +139,7 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
       if (plan.kind === "build_agents" || command.startsWith("ge agents build")) {
         const ids = plan.agentIds?.length ? plan.agentIds.join(",") : agent.id;
         await startJob(`Build ${agent.title}`, ge.build({ ids, local: status?.mode === "remote" ? false : true }));
-        await Promise.all([load({ awaitSecondary: true, silent: true }), refresh()]);
+        await Promise.all([refreshAll(), refresh()]);
         return;
       }
 
@@ -181,13 +148,13 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
           ? plan.workspaceIds.join(",")
           : workspaceId || agent.id;
         await startJob(`Hand off ${agent.title}`, ge.handoff({ ids }));
-        await Promise.all([load({ awaitSecondary: true, silent: true }), refresh()]);
+        await Promise.all([refreshAll(), refresh()]);
         return;
       }
 
       if ((plan.kind === "resume_pipeline" || plan.kind === "resume_repair" || plan.kind === "resume_harness") && plan.taskId) {
         await ge.runtimeResume(plan.taskId);
-        await Promise.all([load({ awaitSecondary: true, silent: true }), refresh()]);
+        await Promise.all([refreshAll(), refresh()]);
         return;
       }
 
@@ -199,7 +166,7 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
           attempts: 3,
           runPreview: true,
         });
-        await Promise.all([load({ awaitSecondary: true, silent: true }), refresh()]);
+        await Promise.all([refreshAll(), refresh()]);
         return;
       }
 
@@ -212,7 +179,7 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
           attempts: 3,
           runPreview: true,
         });
-        await Promise.all([load({ awaitSecondary: true, silent: true }), refresh()]);
+        await Promise.all([refreshAll(), refresh()]);
         return;
       }
 
@@ -239,10 +206,13 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
         runPreview: false,
       });
       setRepairReport(report);
-      setDoctor(report.finalDoctor);
-      await Promise.all([load({ awaitSecondary: true, silent: true }), refresh()]);
+      // Show the repair's own final-doctor snapshot immediately, without
+      // waiting for the next doctor poll — a direct cache write, same intent
+      // as the old setDoctor(report.finalDoctor).
+      queryClient.setQueryData(doctorQueryKey, report.finalDoctor);
+      await Promise.all([refreshAll(), refresh()]);
     } catch (err) {
-      setDoctor({
+      queryClient.setQueryData(doctorQueryKey, {
         workspace: workspaceId,
         stage: doctor?.stage || "preview",
         ok: false,
@@ -268,7 +238,7 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
         remote: remote || undefined,
         push: codeSyncPush,
       }));
-      await Promise.all([load({ awaitSecondary: true, silent: true }), refresh()]);
+      await Promise.all([refreshAll(), refresh()]);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -285,14 +255,15 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
   }
 
   if (error || !agent) {
+    const loadErrorMessage = agentQuery.error instanceof Error ? agentQuery.error.message : null;
     return (
       <div className="mx-auto flex h-full max-w-xl flex-col items-center justify-center px-6 text-center">
         <TriangleAlert className="mb-3 h-7 w-7 text-status-warning-ink" />
-        <h1 className="text-lg font-semibold text-on-surface">{error || "Agent not found"}</h1>
+        <h1 className="text-lg font-semibold text-on-surface">{error || loadErrorMessage || "Agent not found"}</h1>
         <p className="mt-2 text-sm text-secondary">Fleet could not resolve this agent detail record.</p>
         <button
           type="button"
-          onClick={() => load()}
+          onClick={() => refreshAll()}
           className="mt-5 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-container"
         >
           <RefreshCw className="h-4 w-4" />
@@ -349,7 +320,7 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => load({ awaitSecondary: true, silent: true })}
+              onClick={() => refreshAll()}
               disabled={loading || actionBusy || syncing}
             >
               <RefreshCw className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`} />
@@ -411,7 +382,7 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
         )}
       </div>
 
-      {error && <ErrorBanner tone="amber" message={error} onRetry={() => load()} />}
+      {error && <ErrorBanner tone="amber" message={error} onRetry={() => refreshAll()} />}
 
       <section className="mb-6 grid gap-3 md:grid-cols-4">
         <Stat size="md" label="Health" value={<StatusChip status={health} />} />
@@ -492,7 +463,7 @@ export default function AgentDetail({ id, status, refresh }: AgentDetailProps) {
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
-                  onClick={() => loadWorkspaceDoctor(workspaceId, "preview")}
+                  onClick={() => doctorQuery.refetch()}
                   disabled={doctorLoading || repairing || !workspaceId}
                   className="inline-flex items-center gap-2 rounded-md border border-primary/30 px-3 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10 disabled:opacity-50"
                 >
