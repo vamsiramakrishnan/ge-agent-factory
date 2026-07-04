@@ -15,7 +15,9 @@ const EXPECTED_TOOLS = {
   // sweep (unreleased surface — no alias kept).
   factory_capture: ["from?"],
   factory_prove: ["id?", "target?", "force?"],
-  factory_handoff: ["target?", "ids?", "startStage?", "targetStage?", "noProxy?"],
+  // Admission-gate widening (Agent Passport + handoff admission gate,
+  // 2026-07-04): factory_handoff gains the recorded break-glass `force`.
+  factory_handoff: ["target?", "ids?", "startStage?", "targetStage?", "noProxy?", "force?"],
   factory_list_usecases: ["department?", "search?", "limit?"],
   factory_doctor: [],
   factory_status: ["noProxy?"],
@@ -40,6 +42,12 @@ const EXPECTED_TOOLS = {
   factory_okf_customize: ["base", "id", "swapSystem?", "rename?", "vertical?", "out?"],
   factory_agents_register: ["bundle", "owner?"],
   factory_agents_track: ["id"],
+  // Admission-gate widening (Agent Passport + handoff admission gate,
+  // 2026-07-04): mint/verify the signed passport and run the recorded
+  // admission decision — the same evaluation `ge handoff` enforces.
+  factory_passport_emit: ["id"],
+  factory_passport_verify: ["id"],
+  factory_passport_admit: ["id", "stage?", "force?"],
 };
 
 const KNOWN_RISKS = ["mutates-cloud", "starts-workloads", "starts-local-workloads", "writes-repo", "read-only"];

@@ -63,11 +63,16 @@ passing.
 | `workspace.json` | the workspace manifest: what is in this agent, stage by stage |
 | run ledger entries | the full build/deploy/publish history, event by event |
 
-> **Roadmap.** There is no single consolidated `agent-passport.json` file
-> today — the passport is the set of artifacts above. Consolidating them
-> into one signed, portable document (and a `ge` command that emits it) is
-> roadmap work; until it ships, treat this page's tables as the passport's
-> table of contents.
+> **The consolidated form.** `ge passport emit <id>` mints the single
+> signed, portable document this table used to promise:
+> `artifacts/agent-passport.json` — the workspace's content digest and
+> contract digest, plus Ed25519-signed attestations (in-toto/DSSE) over the
+> promotion packet and live proof. `ge passport verify` checks it offline;
+> `ge passport admit` turns it into a recorded admission decision, and
+> `ge handoff` enforces that decision once the gate is required — see
+> [Admit an agent](../cookbooks/admit-an-agent.html). The identity artifacts
+> in the table above still exist individually; the passport is their signed
+> summary, not their replacement.
 {: .note }
 
 ## Example — reading a shipped agent's story
