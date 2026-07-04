@@ -1,4 +1,4 @@
-flowchart LR
+flowchart TD
     A["agent"] -->|"GE_DATA_BACKEND=fixtures\nlocal / eval"| B[("local fixture files")]
     A -->|"GE_DATA_BACKEND=mcp\ncloud"| C["MCP toolset\nAgent Registry"]
     C --> D["per-department FastMCP"]

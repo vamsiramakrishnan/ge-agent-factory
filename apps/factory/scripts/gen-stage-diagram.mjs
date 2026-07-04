@@ -42,7 +42,7 @@ export const OWNER_STYLES = {
 export function generateMermaid(stages = FACTORY_STAGE_GRAPH) {
   const lines = [
     "%% GENERATED from apps/factory/src/factory-orchestration.js — run bun run docs:stage-diagram",
-    "flowchart LR",
+    "flowchart TD",
   ];
   for (const stage of stages) {
     lines.push(`  ${stage.id}["${stage.label}"]`);

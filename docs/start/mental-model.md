@@ -44,6 +44,12 @@ it:
 - The **proof** that gates release is a comparison between the contract and
   what was actually generated.
 
+One built workspace shows the whole derivation on disk:
+
+<p align="center">
+  <img src="../assets/diagrams/workspace-anatomy.svg" alt="One workspace directory drawn as a box containing four inner boxes: the contract (usecase-spec.json and its portable OKF twin), the generated agent (app/agent.py and app/tools.py), the simulation (source-system twins and synthetic-data fixtures), and the proof (eval suite, spec-to-code trace, and the workspace.json manifest); arrows show the contract generating the agent and the twins, and the agent plus fixtures feeding the eval suite" width="760">
+</p>
+
 This is what makes the output trustworthy: there is no hand-wired step where
 an engineer's interpretation silently replaces the business's stated intent.
 Read [the Enterprise Agent Contract](../concepts/enterprise-agent-contract.html)

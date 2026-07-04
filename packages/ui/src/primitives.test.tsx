@@ -32,7 +32,8 @@ describe("cx", () => {
 describe("Button", () => {
   test("renders variants from one recipe table", () => {
     expect(buttonClass({ variant: "primary" })).toContain("bg-primary");
-    expect(buttonClass({ variant: "outline" })).toContain("border-outline/30");
+    expect(buttonClass({ variant: "primary" })).toContain("key-signal");
+    expect(buttonClass({ variant: "outline" })).toContain("border-outline/70");
     expect(buttonClass({ variant: "ghost" })).toContain("hover:bg-primary/10");
   });
 
@@ -134,7 +135,7 @@ describe("PageHeader", () => {
         actions={<Button size="sm">Refresh</Button>}
       />,
     );
-    expect(getByText("Spec to deploy").className).toContain("uppercase");
+    expect(getByText("Spec to deploy").className).toContain("engraved");
     const heading = getByRole("heading", { level: 1 });
     expect(heading.textContent).toBe("Pipeline");
     expect(heading.className).toContain("text-2xl");
@@ -143,8 +144,8 @@ describe("PageHeader", () => {
     expect(getByRole("button", { name: "Refresh" })).toBeDefined();
     const header = container.firstElementChild!;
     expect(header.tagName).toBe("HEADER");
-    expect(header.className).toContain("border-b");
-    expect(header.className).toContain("pb-6");
+    // The closing rule is now the ruler-tick scale strip inside the header.
+    expect(header.querySelector(".ticks-x")).not.toBeNull();
     expect(header.className).toContain("mb-6");
   });
 

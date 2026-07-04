@@ -16,7 +16,14 @@ export interface EmptyStateProps {
 export function EmptyState({ icon: Icon, title, detail, action, className }: EmptyStateProps) {
   return (
     <div className={cx("flex flex-col items-center justify-center py-8 text-center", className)}>
-      {Icon && <Icon className="mb-3 h-8 w-8 text-secondary/40" aria-hidden />}
+      {Icon && (
+        <div
+          className="grille-fine mb-3 grid h-14 w-14 place-items-center rounded-full border border-outline-variant/70 bg-surface-container-low"
+          aria-hidden
+        >
+          <Icon className="h-6 w-6 text-secondary/50" />
+        </div>
+      )}
       <p className="text-sm text-secondary">{title}</p>
       {detail && <p className="mt-1 text-xs text-secondary/80">{detail}</p>}
       {action && <div className="mt-3">{action}</div>}

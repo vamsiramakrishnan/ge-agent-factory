@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2160.2269999999994 179.8" width="2160.2269999999994" height="179.8" style="--bg:#fcf9f8;--fg:#1b1c1c;--line:#565e6c;--accent:#00408b;--muted:#79818e;--surface:#f0eded;--border:#c2c6d4;background:var(--bg)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 463.45333333333326 826.6" width="463.45333333333326" height="826.6" style="--bg:#fcf9f8;--fg:#1b1c1c;--line:#565e6c;--accent:#00408b;--muted:#79818e;--surface:#f0eded;--border:#c2c6d4;background:var(--bg)">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
   text { font-family: 'Inter', system-ui, sans-serif; }
@@ -26,56 +26,56 @@
     <polygon points="8 0, 0 2.5, 8 5" fill="var(--_arrow)" stroke="var(--_arrow)" stroke-width="0.75" stroke-linejoin="round" />
   </marker>
 </defs>
-<polyline class="edge" data-from="CAP" data-to="CONTRACT" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="274.6099999999999,93.15833333333335 322.6099999999999,93.15833333333335" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
-<polyline class="edge" data-from="CONTRACT" data-to="GEN" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="517.2059999999999,84.19166666666668 553.2059999999999,84.19166666666668 553.2059999999999,74.20833333333334 891.5279999999998,74.20833333333334" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
-<polyline class="edge" data-from="GEN" data-to="TWIN" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1088.3469999999998,83.17500000000001 1112.3469999999998,83.17500000000001 1112.3469999999998,65.45 1136.3469999999998,65.45" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
-<polyline class="edge" data-from="GEN" data-to="PROVE" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1088.3469999999998,83.17500000000001 1112.3469999999998,83.17500000000001 1112.3469999999998,83.17500000000001 1346.3389999999997,83.17500000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
-<polyline class="edge" data-from="TWIN" data-to="PROVE" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1298.3389999999997,65.45 1334.3389999999997,65.45 1334.3389999999997,74.20833333333334 1346.3389999999997,74.20833333333334" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
-<polyline class="edge" data-from="PROVE" data-to="PASSPORT" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="1600.2079999999996,83.17500000000001 1648.2079999999996,83.17500000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
-<polyline class="edge" data-from="PASSPORT" data-to="HANDOFF" data-style="thick" data-arrow-start="false" data-arrow-end="true" points="1818.3509999999997,83.17500000000001 1854.3509999999997,83.17500000000001 1854.3509999999997,93.15833333333335 1866.3509999999997,93.15833333333335" fill="none" stroke="var(--_line)" stroke-width="2" marker-end="url(#arrowhead)" />
-<polyline class="edge" data-from="CONTRACT" data-to="AUTH" data-style="dotted" data-arrow-start="false" data-arrow-end="true" points="517.2059999999999,102.125 553.2059999999999,102.125 553.2059999999999,112.90000000000002 565.2059999999999,112.90000000000002" fill="none" stroke="var(--_line)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
-<polyline class="edge" data-from="AUTH" data-to="GEN" data-style="dotted" data-arrow-start="false" data-arrow-end="true" points="843.5279999999998,112.90000000000002 867.5279999999998,112.90000000000002 867.5279999999998,83.17500000000001 891.5279999999998,83.17500000000001" fill="none" stroke="var(--_line)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
-<polyline class="edge" data-from="AUTH" data-to="HANDOFF" data-style="dotted" data-arrow-start="false" data-arrow-end="true" points="843.5279999999998,112.90000000000002 867.5279999999998,112.90000000000002 867.5279999999998,102.12500000000001 1866.3509999999997,102.12500000000001" fill="none" stroke="var(--_line)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="CAP" data-to="CONTRACT" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="209.2118333333333,93.80000000000001 209.2118333333333,141.8" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="CONTRACT" data-to="GEN" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="176.77916666666664,195.60000000000002 176.77916666666664,231.60000000000002 134.13133333333332,231.60000000000002 134.13133333333332,345.40000000000003" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="GEN" data-to="TWIN" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="166.93449999999996,399.20000000000005 166.93449999999996,423.20000000000005 121.43649999999998,423.20000000000005 121.43649999999998,447.20000000000005" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="GEN" data-to="PROVE" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="166.93449999999996,399.20000000000005 166.93449999999996,423.20000000000005 166.93449999999999,423.20000000000005 166.93449999999999,546.1" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="TWIN" data-to="PROVE" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="121.43649999999998,498.1 121.43649999999998,534.1 124.62299999999999,534.1 124.62299999999999,546.1" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="PROVE" data-to="PASSPORT" data-style="solid" data-arrow-start="false" data-arrow-end="true" points="166.93449999999999,599.9000000000001 166.93449999999999,647.9000000000001" fill="none" stroke="var(--_line)" stroke-width="1" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="PASSPORT" data-to="HANDOFF" data-style="thick" data-arrow-start="false" data-arrow-end="true" points="166.93449999999999,684.8000000000001 166.93449999999999,720.8000000000001 211.24841666666663,720.8000000000001 211.24841666666663,732.8000000000001" fill="none" stroke="var(--_line)" stroke-width="2" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="CONTRACT" data-to="AUTH" data-style="dotted" data-arrow-start="false" data-arrow-end="true" points="241.6445,195.60000000000002 241.6445,231.60000000000002 284.2923333333333,231.60000000000002 284.2923333333333,243.60000000000002" fill="none" stroke="var(--_line)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="AUTH" data-to="GEN" data-style="dotted" data-arrow-start="false" data-arrow-end="true" points="284.2923333333333,297.40000000000003 284.2923333333333,321.40000000000003 166.93449999999996,321.40000000000003 166.93449999999996,345.40000000000003" fill="none" stroke="var(--_line)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
+<polyline class="edge" data-from="AUTH" data-to="HANDOFF" data-style="dotted" data-arrow-start="false" data-arrow-end="true" points="284.2923333333333,297.40000000000003 284.2923333333333,321.40000000000003 253.5610833333333,321.40000000000003 253.5610833333333,732.8000000000001" fill="none" stroke="var(--_line)" stroke-width="1" stroke-dasharray="4 4" marker-end="url(#arrowhead)" />
 <g class="node" data-id="CAP" data-label="capture
 interview · documents · OpenAPI" data-shape="stadium">
-  <rect x="40" y="66.25833333333334" width="234.60999999999993" height="53.800000000000004" rx="26.900000000000002" ry="26.900000000000002" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
-  <text x="157.30499999999995" y="93.15833333333335" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="157.30499999999995" dy="-3.9000000000000012">capture</tspan><tspan x="157.30499999999995" dy="16.900000000000002">interview · documents · OpenAPI</tspan></text>
+  <rect x="91.90683333333332" y="40" width="234.60999999999993" height="53.800000000000004" rx="26.900000000000002" ry="26.900000000000002" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="209.2118333333333" y="66.9" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="209.2118333333333" dy="-3.9000000000000012">capture</tspan><tspan x="209.2118333333333" dy="16.900000000000002">interview · documents · OpenAPI</tspan></text>
 </g>
 <g class="node" data-id="CONTRACT" data-label="Enterprise Agent Contract
 spec + OKF twin" data-shape="rectangle">
-  <rect x="322.6099999999999" y="66.25833333333334" width="194.59599999999995" height="53.800000000000004" rx="0" ry="0" fill="#e6ebff" stroke="#00408b" stroke-width="0.75" />
-  <text x="419.9079999999999" y="93.15833333333335" text-anchor="middle" font-size="13" font-weight="500" fill="#1b1c1c"><tspan x="419.9079999999999" dy="-3.9000000000000012">Enterprise Agent Contract</tspan><tspan x="419.9079999999999" dy="16.900000000000002">spec + OKF twin</tspan></text>
+  <rect x="111.91383333333332" y="141.8" width="194.59599999999995" height="53.800000000000004" rx="0" ry="0" fill="#e6ebff" stroke="#00408b" stroke-width="0.75" />
+  <text x="209.2118333333333" y="168.70000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="#1b1c1c"><tspan x="209.2118333333333" dy="-3.9000000000000012">Enterprise Agent Contract</tspan><tspan x="209.2118333333333" dy="16.900000000000002">spec + OKF twin</tspan></text>
 </g>
 <g class="node" data-id="GEN" data-label="generate
 ADK code · tools · fixtures" data-shape="rectangle">
-  <rect x="891.5279999999998" y="56.275000000000006" width="196.819" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
-  <text x="989.9374999999998" y="83.17500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="989.9374999999998" dy="-3.9000000000000012">generate</tspan><tspan x="989.9374999999998" dy="16.900000000000002">ADK code · tools · fixtures</tspan></text>
+  <rect x="68.52499999999998" y="345.40000000000003" width="196.819" height="53.800000000000004" rx="0" ry="0" fill="var(--_node-fill)" stroke="var(--_node-stroke)" stroke-width="0.75" />
+  <text x="166.93449999999996" y="372.3" text-anchor="middle" font-size="13" font-weight="500" fill="var(--_text)"><tspan x="166.93449999999996" dy="-3.9000000000000012">generate</tspan><tspan x="166.93449999999996" dy="16.900000000000002">ADK code · tools · fixtures</tspan></text>
 </g>
 <g class="node" data-id="TWIN" data-label="source-system twins" data-shape="cylinder">
-  <rect x="1136.3469999999998" y="47" width="161.99200000000002" height="36.900000000000006" fill="#f0eded" stroke="none" />
-  <line x1="1136.3469999999998" y1="47" x2="1136.3469999999998" y2="83.9" stroke="#565e6c" stroke-width="0.75" />
-  <line x1="1298.3389999999997" y1="47" x2="1298.3389999999997" y2="83.9" stroke="#565e6c" stroke-width="0.75" />
-  <ellipse cx="1217.3429999999998" cy="83.9" rx="80.99600000000001" ry="7" fill="#f0eded" stroke="#565e6c" stroke-width="0.75" />
-  <ellipse cx="1217.3429999999998" cy="47" rx="80.99600000000001" ry="7" fill="#f0eded" stroke="#565e6c" stroke-width="0.75" />
-  <text x="1217.3429999999998" y="65.45" text-anchor="middle" font-size="13" font-weight="500" fill="#1b1c1c" dy="4.55">source-system twins</text>
+  <rect x="40.44049999999997" y="454.20000000000005" width="161.99200000000002" height="36.900000000000006" fill="#f0eded" stroke="none" />
+  <line x1="40.44049999999997" y1="454.20000000000005" x2="40.44049999999997" y2="491.1" stroke="#565e6c" stroke-width="0.75" />
+  <line x1="202.4325" y1="454.20000000000005" x2="202.4325" y2="491.1" stroke="#565e6c" stroke-width="0.75" />
+  <ellipse cx="121.43649999999998" cy="491.1" rx="80.99600000000001" ry="7" fill="#f0eded" stroke="#565e6c" stroke-width="0.75" />
+  <ellipse cx="121.43649999999998" cy="454.20000000000005" rx="80.99600000000001" ry="7" fill="#f0eded" stroke="#565e6c" stroke-width="0.75" />
+  <text x="121.43649999999998" y="472.65000000000003" text-anchor="middle" font-size="13" font-weight="500" fill="#1b1c1c" dy="4.55">source-system twins</text>
 </g>
 <g class="node" data-id="PROVE" data-label="prove
 evals · harness · promotion gate" data-shape="hexagon">
-  <polygon points="1359.7889999999998,56.275000000000006 1586.7579999999996,56.275000000000006 1600.2079999999996,83.17500000000001 1586.7579999999996,110.07500000000002 1359.7889999999998,110.07500000000002 1346.3389999999997,83.17500000000001" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
-  <text x="1473.2734999999998" y="83.17500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="#1b1c1c"><tspan x="1473.2734999999998" dy="-3.9000000000000012">prove</tspan><tspan x="1473.2734999999998" dy="16.900000000000002">evals · harness · promotion gate</tspan></text>
+  <polygon points="53.45,546.1 280.419,546.1 293.86899999999997,573 280.419,599.9 53.45,599.9 40,573" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
+  <text x="166.93449999999999" y="573" text-anchor="middle" font-size="13" font-weight="500" fill="#1b1c1c"><tspan x="166.93449999999999" dy="-3.9000000000000012">prove</tspan><tspan x="166.93449999999999" dy="16.900000000000002">evals · harness · promotion gate</tspan></text>
 </g>
 <g class="node" data-id="PASSPORT" data-label="passport &amp; proof pack" data-shape="rectangle">
-  <rect x="1648.2079999999996" y="64.72500000000001" width="170.143" height="36.900000000000006" rx="0" ry="0" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
-  <text x="1733.2794999999996" y="83.17500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="#1b1c1c" dy="4.55">passport &amp; proof pack</text>
+  <rect x="81.86299999999999" y="647.9000000000001" width="170.143" height="36.900000000000006" rx="0" ry="0" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
+  <text x="166.93449999999999" y="666.3500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="#1b1c1c" dy="4.55">passport &amp; proof pack</text>
 </g>
 <g class="node" data-id="HANDOFF" data-label="hand off
 agents-cli · ADK · Gemini Enterprise" data-shape="stadium">
-  <rect x="1866.3509999999997" y="75.22500000000001" width="253.87599999999995" height="53.800000000000004" rx="26.900000000000002" ry="26.900000000000002" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
-  <text x="1993.2889999999995" y="102.12500000000001" text-anchor="middle" font-size="13" font-weight="500" fill="#1b1c1c"><tspan x="1993.2889999999995" dy="-3.9000000000000012">hand off</tspan><tspan x="1993.2889999999995" dy="16.900000000000002">agents-cli · ADK · Gemini Enterprise</tspan></text>
+  <rect x="126.62308333333333" y="732.8000000000001" width="253.87599999999995" height="53.800000000000004" rx="26.900000000000002" ry="26.900000000000002" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
+  <text x="253.5610833333333" y="759.7" text-anchor="middle" font-size="13" font-weight="500" fill="#1b1c1c"><tspan x="253.5610833333333" dy="-3.9000000000000012">hand off</tspan><tspan x="253.5610833333333" dy="16.900000000000002">agents-cli · ADK · Gemini Enterprise</tspan></text>
 </g>
 <g class="node" data-id="AUTH" data-label="authority graph
 scope · tools · evidence · escalation" data-shape="hexagon">
-  <polygon points="578.656,86.00000000000001 830.0779999999997,86.00000000000001 843.5279999999998,112.90000000000002 830.0779999999997,139.8 578.656,139.8 565.2059999999999,112.90000000000002" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
-  <text x="704.3669999999998" y="112.90000000000002" text-anchor="middle" font-size="13" font-weight="500" fill="#1b1c1c"><tspan x="704.3669999999998" dy="-3.9000000000000012">authority graph</tspan><tspan x="704.3669999999998" dy="16.900000000000002">scope · tools · evidence · escalation</tspan></text>
+  <polygon points="158.5813333333333,243.60000000000002 410.0033333333333,243.60000000000002 423.45333333333326,270.5 410.0033333333333,297.40000000000003 158.5813333333333,297.40000000000003 145.13133333333332,270.5" fill="#e1f3e7" stroke="#16874a" stroke-width="0.75" />
+  <text x="284.2923333333333" y="270.5" text-anchor="middle" font-size="13" font-weight="500" fill="#1b1c1c"><tspan x="284.2923333333333" dy="-3.9000000000000012">authority graph</tspan><tspan x="284.2923333333333" dy="16.900000000000002">scope · tools · evidence · escalation</tspan></text>
 </g>
 </svg>

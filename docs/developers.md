@@ -55,6 +55,14 @@ CANARY=1 mise run bootstrap-cloud
 
 ## Repo map
 
+The layering is enforced, not conventional: apps import the operator core,
+the core imports the shared packages, and nothing imports upward
+(`node tools/check-no-app-imports.mjs`, part of the commit gate):
+
+<p align="center">
+  <img src="assets/diagrams/repo-layers.svg" alt="Three stacked layers: the apps layer (console, factory, docs) imports the tools operator core (ge.mjs CLI boundary, tools/lib, mcp-server.mjs MCP boundary); the core imports the shared packages layer (@ge/agent-spec, @ge/synthkit, @ge/evalkit, @ge/run-ledger); both edges are labeled imports — never the reverse" width="700">
+</p>
+
 | Path | Purpose | Start here when... |
 |---|---|---|
 | `tools/ge.mjs` | Human CLI over the factory core | Adding or debugging operator commands |
@@ -86,7 +94,7 @@ The three platform [planes](./GLOSSARY.html#planes) — the infrastructure
 layers `ge up` stands up — are:
 
 <p align="center">
-  <img src="assets/diagrams/three-planes.svg" alt="ge CLI and console drive the factory plane, which reads and writes the data plane and the tool (MCP) plane" width="650">
+  <img src="assets/diagrams/three-planes.svg" alt="The ge CLI and console call into your Google Cloud project, drawn as one box holding all three planes: the factory plane (Cloud Run gateway, Cloud Tasks queue, worker), the data plane stores (GCS, AlloyDB, Firestore, BigQuery, Bigtable), and the tool plane (Agent Gateway, per-department MCP services, Agent Registry), with the worker reading and writing the other two planes" width="660">
 </p>
 
 | Plane | Owns |
