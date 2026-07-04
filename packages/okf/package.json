@@ -3,12 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Standalone OKF (Open Knowledge Format) v0.1 bundle toolkit: slugging, minimal YAML frontmatter emit/parse, concept (Markdown) read/write, link helpers. Node builtins only, zero domain coupling.",
+  "description": "Standalone OKF (Open Knowledge Format) v0.1 bundle toolkit: slugging, minimal YAML frontmatter emit/parse, concept (Markdown) read/write, link helpers — plus the typed OKF→spec compiler (parse → IR → resolve/variant → emit) under ./compile. The primitive layer stays node-builtins-only and domain-free; the compiler depends only on sibling leaf packages (@ge/std, @ge/agent-spec), never apps/* or tools/*.",
   "scripts": {
-    "test": "bun test src/index.test.mjs"
+    "test": "bun test src"
   },
   "main": "./src/index.mjs",
   "exports": {
-    ".": "./src/index.mjs"
+    ".": "./src/index.mjs",
+    "./compile": "./src/compile/index.mjs"
+  },
+  "dependencies": {
+    "@ge/agent-spec": "workspace:*",
+    "@ge/std": "workspace:*"
+  },
+  "devDependencies": {
+    "fast-check": "^3.23.2"
   }
 }

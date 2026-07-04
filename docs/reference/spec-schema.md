@@ -52,6 +52,9 @@ All object shapes below are loose: unknown extra keys are allowed, not rejected.
 | `relationships[]` | object[] | no |  |
 | `apis[]` | object[] | no |  |
 | `behaviorContract` | object | yes | see [`behaviorContract`](#behaviorcontract) |
+| `variantOf` | object | no |  |
+| `bindings` | object | no |  |
+| `provenance` | object | no |  |
 
 **`generationSpec.rowPolicy`**
 
@@ -100,6 +103,17 @@ All object shapes below are loose: unknown extra keys are allowed, not rejected.
 | `max` | string or number | no |  |
 | `decimals` | number | no |  |
 | `trueRate` | number | no |  |
+| `unit` | string | no |  |
+| `range` | object | no |  |
+| `piiClass` | enum | no | one of `none`, `personal`, `sensitive`, `regulated` |
+| `maskingPolicy` | string | no |  |
+
+**`generationSpec.entities[].columns[].range`**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `min` | number | yes |  |
+| `max` | number | yes |  |
 
 **`generationSpec.documents[]`**
 
@@ -211,6 +225,58 @@ All object shapes below are loose: unknown extra keys are allowed, not rejected.
 | `fixture` | string | no |  |
 | `mcpToolName` | string | no |  |
 | `idempotencyKey` | string | no |  |
+
+**`generationSpec.variantOf`**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `baseId` | string | yes |  |
+| `kind` | enum | yes | one of `vertical`, `source-swap`, `custom` |
+
+**`generationSpec.bindings`**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `systems` | record<string, string> | no |  |
+| `terminology` | record<string, string> | no |  |
+| `policyOverlays[]` | object[] | no |  |
+| `workflowOverrides` | object | no |  |
+
+**`generationSpec.bindings.policyOverlays[]`**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `kind` | enum | yes | one of `refusal`, `escalation` |
+| `rule` | string or object | yes |  |
+
+**`generationSpec.bindings.workflowOverrides`**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `mode` | enum | no | one of `sequential`, `parallel` |
+| `steps[]` | object[] | no |  |
+
+**`generationSpec.bindings.workflowOverrides.steps[]`**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `id` | string | yes |  |
+| `label` | string | no |  |
+| `description` | string | no |  |
+| `tools[]` | string[] | no |  |
+| `remove` | boolean | no |  |
+
+**`generationSpec.provenance`**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `origin` | enum | yes | one of `interview`, `deck`, `migration`, `variant`, `manual` |
+| `sourceRef` | string | no |  |
+| `version` | string or number | no |  |
+| `owner` | string | no |  |
+| `status` | enum | no | one of `draft`, `registered`, `promoted`, `retired` |
+| `createdAt` | string | no |  |
+| `lineage[]` | string[] | no |  |
 <!-- END GENERATED: spec-schema-generation-spec -->
 
 **`sourceSystems[]`** example:
@@ -254,6 +320,14 @@ All object shapes below are loose: unknown extra keys are allowed, not rejected.
 | `goldenEvals[]` | object[] | yes | min 1 item |
 | `workflow` | object | no |  |
 | `answerableQueries[]` | object[] | no |  |
+| `groundingContracts[]` | object[] | no |  |
+| `toolContracts[]` | object[] | no |  |
+| `refusalPolicies[]` | object[] | no |  |
+| `escalationPolicies[]` | object[] | no |  |
+| `personas[]` | object[] | no |  |
+| `errorPathBehavior[]` | object[] | no |  |
+| `slos` | object | no |  |
+| `capabilityDependencies[]` | object[] | no |  |
 
 **`behaviorContract.toolIntents[]`**
 
@@ -323,6 +397,133 @@ All object shapes below are loose: unknown extra keys are allowed, not rejected.
 | `tools[]` | string[] | yes |  |
 | `evidence[]` | string[] | no |  |
 | `stage` | string | no |  |
+
+**`behaviorContract.groundingContracts[]`**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `claimType` | string | yes |  |
+| `evidence[]` | object[] | yes | min 1 item |
+| `citationRequired` | boolean | yes |  |
+
+**`behaviorContract.groundingContracts[].evidence[]`**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `system` | string | yes |  |
+| `tool` | string | no |  |
+| `entity` | string | no |  |
+| `field` | string | no |  |
+
+**`behaviorContract.toolContracts[]`**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `tool` | string | yes |  |
+| `preconditions[]` | string[] | yes |  |
+| `postconditions[]` | string[] | yes |  |
+| `idempotency` | enum | yes | one of `safe`, `idempotent`, `effectful` |
+| `confirmationPolicy` | enum | yes | one of `never`, `destructive`, `always` |
+
+**`behaviorContract.refusalPolicies[]`**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `id` | string | no |  |
+| `trigger` | object | yes |  |
+| `response` | string | yes |  |
+| `rationale` | string | yes |  |
+
+**`behaviorContract.refusalPolicies[].trigger`**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `kind` | enum | yes | one of `entity_condition`, `request_category`, `authority_missing`, `data_sensitivity` |
+| `entity` | string | no |  |
+| `condition` | string | no |  |
+| `category` | string | no |  |
+| `authority` | string | no |  |
+| `sensitivity` | enum | no | one of `none`, `personal`, `sensitive`, `regulated` |
+
+**`behaviorContract.escalationPolicies[]`**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `id` | string | no |  |
+| `trigger` | object | yes |  |
+| `response` | string | yes |  |
+| `rationale` | string | yes |  |
+| `handoffTarget` | string | no |  |
+
+**`behaviorContract.escalationPolicies[].trigger`**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `kind` | enum | yes | one of `entity_condition`, `request_category`, `authority_missing`, `data_sensitivity` |
+| `entity` | string | no |  |
+| `condition` | string | no |  |
+| `category` | string | no |  |
+| `authority` | string | no |  |
+| `sensitivity` | enum | no | one of `none`, `personal`, `sensitive`, `regulated` |
+
+**`behaviorContract.personas[]`**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `id` | string | yes |  |
+| `role` | string | yes |  |
+| `goals[]` | string[] | yes | min 1 item |
+| `vocabulary` | string | no |  |
+| `patience` | enum | no | one of `low`, `medium`, `high` |
+| `adversarial` | boolean | no |  |
+| `simulationInstruction` | string | no |  |
+
+**`behaviorContract.errorPathBehavior[]`**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `failureMode` | enum | yes | one of `rate_limited`, `timeout`, `conflict`, `validation_error`, `not_found`, `permission_denied`, `unavailable` |
+| `behavior` | enum | yes | one of `retry`, `inform`, `escalate`, `degrade` |
+| `maxRetries` | number | no |  |
+| `fallback` | string | no |  |
+| `toolOverrides` | record<string, object> | no |  |
+
+**`behaviorContract.slos`**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `taskSuccess` | object | no |  |
+| `latency` | object | no |  |
+| `containment` | object | no |  |
+
+**`behaviorContract.slos.taskSuccess`**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `definition` | string | yes |  |
+| `target` | number | yes |  |
+
+**`behaviorContract.slos.latency`**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `p95TtftMs` | number | no |  |
+| `p95FullMs` | number | no |  |
+
+**`behaviorContract.slos.containment`**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `target` | number | yes |  |
+
+**`behaviorContract.capabilityDependencies[]`**
+
+| Field | Type | Required | Constraints |
+|---|---|---|---|
+| `capability` | string | yes |  |
+| `requires[]` | string[] | yes | min 1 item |
+| `fallback` | enum | no | one of `degrade`, `refuse`, `escalate` |
+| `fallbackDetail` | string | no |  |
 <!-- END GENERATED: spec-schema-behavior-contract -->
 
 **`toolIntents[]`** example:
