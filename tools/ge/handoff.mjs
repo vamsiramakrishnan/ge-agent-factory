@@ -17,9 +17,10 @@ export const handoff = defineCommand({
     "target-stage": { type: "string", description: "Stage to stop at (default publish_enterprise)" },
     concurrency: { type: "string", description: "Parallel remote submissions (default 2)" },
     "no-proxy": { type: "boolean", description: "Call the gateway directly over HTTPS instead of the gcloud run proxy tunnel" },
+    force: { type: "boolean", description: "Break-glass: release despite a denied admission decision (the override is recorded in the decision log)" },
   },
   run: guarded(async ({ args }) => {
-    const res = await core.handoff(cfgFrom(args), { target: args.target || "agents-cli", ids: args.ids, startStage: args["start-stage"], targetStage: args["target-stage"], concurrency: args.concurrency, noProxy: args["no-proxy"], log: elog });
+    const res = await core.handoff(cfgFrom(args), { target: args.target || "agents-cli", ids: args.ids, startStage: args["start-stage"], targetStage: args["target-stage"], concurrency: args.concurrency, noProxy: args["no-proxy"], force: args.force, log: elog });
     emit(args, res, (r) => {
       out(ui.title("Handoff"));
       out(ui.kv([

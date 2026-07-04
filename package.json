@@ -79,8 +79,10 @@
     "generator:new-simulator": "node apps/factory/scripts/scaffold-simulator-pack.mjs"
   },
   "dependencies": {
+    "@ge/admission": "workspace:*",
     "@ge/agent-resolver": "workspace:*",
     "@ge/agent-spec": "workspace:*",
+    "@ge/agent-workspace": "workspace:*",
     "@ge/contracts": "workspace:*",
     "@ge/design": "workspace:*",
     "@ge/evalkit": "workspace:*",

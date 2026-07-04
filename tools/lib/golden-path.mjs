@@ -149,7 +149,7 @@ export function createGoldenPathOps({ repoRoot, firstProof, provisionLocal, prov
   // `agents-cli` is the supported target today (agents-cli deploy →
   // Agent Engine → Gemini Enterprise). Anything else gets the error contract.
   const HANDOFF_TARGETS = ["agents-cli"];
-  async function handoff(cfg, { target = "agents-cli", ids = undefined, startStage = undefined, targetStage = undefined, concurrency = undefined, noProxy = undefined, log = noop } = {}) {
+  async function handoff(cfg, { target = "agents-cli", ids = undefined, startStage = undefined, targetStage = undefined, concurrency = undefined, noProxy = undefined, force = undefined, log = noop } = {}) {
     if (!HANDOFF_TARGETS.includes(target)) {
       throw new DxError(`unsupported handoff target '${target}'.`, {
         where: "handoff target",
@@ -157,7 +157,7 @@ export function createGoldenPathOps({ repoRoot, firstProof, provisionLocal, prov
         fix: "ge handoff agents-cli",
       });
     }
-    const result = await handoffRun(cfg, { ids, startStage, targetStage, concurrency, noProxy, log });
+    const result = await handoffRun(cfg, { ids, startStage, targetStage, concurrency, noProxy, force, log });
     return { kind: "ge.handoff", target, ...result };
   }
 

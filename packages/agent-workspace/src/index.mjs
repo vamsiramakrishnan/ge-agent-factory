@@ -37,6 +37,8 @@ export const ARTIFACT_PATHS = Object.freeze({
   publishPlan: "artifacts/publish-plan.json",
   publishPlanMarkdown: "artifacts/PUBLISH_PLAN.md",
   cloudTopology: "artifacts/cloud-topology.json",
+  agentPassport: "artifacts/agent-passport.json",
+  admissionDecision: "artifacts/admission-decision.json",
 });
 
 export const DATA_PATHS = Object.freeze({
