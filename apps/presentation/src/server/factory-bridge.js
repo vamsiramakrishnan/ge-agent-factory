@@ -518,7 +518,7 @@ export async function submitFactoryRun(request) {
       ? String(generationSpec.displayName)
       : humanize(title);
 
-  const runId = "run-" + Math.random().toString(36).substring(2, 8) + "-" + Date.now().toString().slice(-4);
+  const runId = "run-" + crypto.randomUUID().slice(0, 8) + "-" + Date.now().toString().slice(-4);
   const target = request.target || {};
   const targetProject = target.projectId || CONTROL_PLANE_PROJECT;
   const targetRegion = target.runtimeRegion || "us-central1";
