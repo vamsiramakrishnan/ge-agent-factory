@@ -1,0 +1,30 @@
+{
+  "id": "guidewire_policycenter_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into guidewire_policycenter collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "contract"
+      ],
+      "realizedObjects": [
+        "agreements",
+        "clauses",
+        "obligations",
+        "amendments"
+      ],
+      "simulatorCollection": "agreements",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "approval"
+      ],
+      "realizedObjects": [
+        "approvals"
+      ],
+      "simulatorCollection": "approvals",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

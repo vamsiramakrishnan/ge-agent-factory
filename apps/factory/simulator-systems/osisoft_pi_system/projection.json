@@ -1,0 +1,29 @@
+{
+  "id": "osisoft_pi_system_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into osisoft_pi_system collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "service"
+      ],
+      "realizedObjects": [
+        "services",
+        "slos"
+      ],
+      "simulatorCollection": "services",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "incident"
+      ],
+      "realizedObjects": [
+        "alerts",
+        "incidents"
+      ],
+      "simulatorCollection": "incidents",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

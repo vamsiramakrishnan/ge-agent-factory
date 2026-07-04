@@ -1,0 +1,54 @@
+{
+  "id": "ericsson_network_manager_workflows",
+  "version": 1,
+  "primitives": [
+    "role_permission_gate",
+    "state_machine",
+    "approval_blocker",
+    "audit_trail"
+  ],
+  "toolHandlers": {
+    "submit_service_update": {
+      "primitive": "state_machine_update",
+      "collection": "services",
+      "primaryKey": "service_id",
+      "roleArg": "role",
+      "allowedRoles": [
+        "sre",
+        "service_owner",
+        "incident_commander",
+        "platform_admin"
+      ],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "transitions": {
+        "*": [
+          "active",
+          "pending_approval",
+          "inactive",
+          "cancelled",
+          "closed",
+          "approved",
+          "rejected"
+        ],
+        "active": [
+          "pending_approval",
+          "inactive",
+          "cancelled",
+          "closed"
+        ],
+        "pending_approval": [
+          "active",
+          "approved",
+          "rejected",
+          "cancelled"
+        ],
+        "approved": [
+          "closed",
+          "inactive"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "id": "kinaxis_rapidresponse_schema",
+  "version": 1,
+  "collections": {
+    "planning_models": {
+      "primaryKey": "model_id",
+      "fields": {
+        "model_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "period": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        }
+      }
+    },
+    "scenarios": {
+      "primaryKey": "scenario_id",
+      "fields": {
+        "scenario_id": {
+          "type": "string"
+        },
+        "model_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        }
+      }
+    },
+    "forecast_lines": {
+      "primaryKey": "forecast_line_id",
+      "fields": {
+        "forecast_line_id": {
+          "type": "string"
+        },
+        "scenario_id": {
+          "type": "string"
+        },
+        "cost_center": {
+          "type": "string"
+        },
+        "account": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "budget_owners": {
+      "primaryKey": "owner_id",
+      "fields": {
+        "owner_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "cost_center": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": {
+          "type": "string"
+        },
+        "source_record_id": {
+          "type": "string"
+        },
+        "approver": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "entity": {
+          "type": "string"
+        },
+        "entity_id": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

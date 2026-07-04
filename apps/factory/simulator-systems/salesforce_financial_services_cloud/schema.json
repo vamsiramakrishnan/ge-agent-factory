@@ -1,0 +1,109 @@
+{
+  "id": "salesforce_financial_services_cloud_schema",
+  "version": 1,
+  "collections": {
+    "accounts": {
+      "primaryKey": "account_id",
+      "fields": {
+        "account_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "industry": {
+          "type": "string"
+        },
+        "segment": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "contacts": {
+      "primaryKey": "contact_id",
+      "fields": {
+        "contact_id": {
+          "type": "string"
+        },
+        "account_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "role": {
+          "type": "string"
+        }
+      }
+    },
+    "opportunities": {
+      "primaryKey": "opportunity_id",
+      "fields": {
+        "opportunity_id": {
+          "type": "string"
+        },
+        "account_id": {
+          "type": "string"
+        },
+        "stage": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "close_date": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "activities": {
+      "primaryKey": "activity_id",
+      "fields": {
+        "activity_id": {
+          "type": "string"
+        },
+        "account_id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "entity": {
+          "type": "string"
+        },
+        "entity_id": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

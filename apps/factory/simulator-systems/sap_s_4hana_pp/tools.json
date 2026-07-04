@@ -1,0 +1,75 @@
+{
+  "id": "sap_s_4hana_pp_tools",
+  "version": 1,
+  "tools": [
+    {
+      "name": "search_suppliers",
+      "description": "Search suppliers in sap_s_4hana_pp.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_supplier",
+      "description": "Get one supplier in sap_s_4hana_pp.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "supplier_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "supplier_id"
+        ]
+      }
+    },
+    {
+      "name": "submit_supplier_update",
+      "description": "Submit an update to one supplier in sap_s_4hana_pp.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "supplier_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "supplier_id"
+        ]
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List sap_s_4hana_pp simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  ]
+}

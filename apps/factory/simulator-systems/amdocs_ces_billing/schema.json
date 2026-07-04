@@ -1,0 +1,131 @@
+{
+  "id": "amdocs_ces_billing_schema",
+  "version": 1,
+  "collections": {
+    "vendors": {
+      "primaryKey": "vendor_id",
+      "fields": {
+        "vendor_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "payment_terms": {
+          "type": "string"
+        }
+      }
+    },
+    "invoices": {
+      "primaryKey": "invoice_id",
+      "fields": {
+        "invoice_id": {
+          "type": "string"
+        },
+        "vendor_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "due_date": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "journal_entries": {
+      "primaryKey": "journal_id",
+      "fields": {
+        "journal_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "ledger": {
+          "type": "string"
+        },
+        "period": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        }
+      }
+    },
+    "payments": {
+      "primaryKey": "payment_id",
+      "fields": {
+        "payment_id": {
+          "type": "string"
+        },
+        "invoice_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "payment_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "amount": {
+          "type": "number"
+        }
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": {
+          "type": "string"
+        },
+        "source_record_id": {
+          "type": "string"
+        },
+        "approver": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "entity": {
+          "type": "string"
+        },
+        "entity_id": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

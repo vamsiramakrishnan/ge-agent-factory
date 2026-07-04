@@ -1,0 +1,75 @@
+{
+  "id": "ericsson_network_manager_tools",
+  "version": 1,
+  "tools": [
+    {
+      "name": "search_services",
+      "description": "Search services in ericsson_network_manager.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_service",
+      "description": "Get one service in ericsson_network_manager.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "service_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "service_id"
+        ]
+      }
+    },
+    {
+      "name": "submit_service_update",
+      "description": "Submit an update to one service in ericsson_network_manager.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "service_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "service_id"
+        ]
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List ericsson_network_manager simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  ]
+}

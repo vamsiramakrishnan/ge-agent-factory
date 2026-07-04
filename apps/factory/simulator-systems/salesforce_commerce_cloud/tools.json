@@ -1,0 +1,75 @@
+{
+  "id": "salesforce_commerce_cloud_tools",
+  "version": 1,
+  "tools": [
+    {
+      "name": "search_accounts",
+      "description": "Search accounts in salesforce_commerce_cloud.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_account",
+      "description": "Get one account in salesforce_commerce_cloud.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "account_id"
+        ]
+      }
+    },
+    {
+      "name": "submit_account_update",
+      "description": "Submit an update to one account in salesforce_commerce_cloud.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "account_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "account_id"
+        ]
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List salesforce_commerce_cloud simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  ]
+}

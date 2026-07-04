@@ -1,0 +1,50 @@
+{
+  "companies": [
+    {
+      "company_id": "COMPANY-001",
+      "name": "Name 1",
+      "status": "active",
+      "country": "US",
+      "industry": "Manufacturing"
+    }
+  ],
+  "signals": [
+    {
+      "signal_id": "SIGNAL-001",
+      "company_id": "COMPANY-001",
+      "status": "active",
+      "signal_type": "Signal Type 1",
+      "severity": "medium",
+      "detected_at": "2026-03-15T14:30:00Z"
+    }
+  ],
+  "watchlists": [
+    {
+      "watchlist_id": "WATCHLIST-001",
+      "name": "Name 1",
+      "status": "active",
+      "owner": "Jordan Rivera",
+      "domain": "operations"
+    }
+  ],
+  "risk_scores": [
+    {
+      "score_id": "SCORE-001",
+      "company_id": "COMPANY-001",
+      "status": "active",
+      "score": 82,
+      "model_version": "v2.4",
+      "as_of_date": "2026-03-15"
+    }
+  ],
+  "source_feeds": [
+    {
+      "feed_id": "FEED-001",
+      "name": "Name 1",
+      "status": "active",
+      "provider": "internal",
+      "last_refresh_at": "2026-03-15T14:30:00Z"
+    }
+  ],
+  "audit_events": []
+}

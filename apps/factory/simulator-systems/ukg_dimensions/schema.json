@@ -1,0 +1,188 @@
+{
+  "id": "ukg_dimensions_schema",
+  "version": 1,
+  "collections": {
+    "workers": {
+      "primaryKey": "worker_id",
+      "fields": {
+        "worker_id": {
+          "type": "string"
+        },
+        "employee_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "status": {
+          "type": "string"
+        },
+        "worker_type": {
+          "type": "string"
+        },
+        "position_id": {
+          "type": "string"
+        },
+        "manager_id": {
+          "type": "string"
+        },
+        "supervisory_org_id": {
+          "type": "string"
+        },
+        "cost_center": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        }
+      }
+    },
+    "positions": {
+      "primaryKey": "position_id",
+      "fields": {
+        "position_id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "job_profile": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "supervisory_org_id": {
+          "type": "string"
+        },
+        "cost_center": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "worker_id": {
+          "type": "string"
+        }
+      }
+    },
+    "supervisory_orgs": {
+      "primaryKey": "org_id",
+      "fields": {
+        "org_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "manager_id": {
+          "type": "string"
+        },
+        "parent_org_id": {
+          "type": "string"
+        },
+        "cost_center": {
+          "type": "string"
+        },
+        "company": {
+          "type": "string"
+        }
+      }
+    },
+    "job_requisitions": {
+      "primaryKey": "requisition_id",
+      "fields": {
+        "requisition_id": {
+          "type": "string"
+        },
+        "position_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "recruiter": {
+          "type": "string"
+        },
+        "hiring_manager_id": {
+          "type": "string"
+        },
+        "target_start_date": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "worker_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": {
+          "type": "string"
+        },
+        "worker_id": {
+          "type": "string"
+        },
+        "event_type": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "effective_date": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": {
+          "type": "string"
+        },
+        "source_record_id": {
+          "type": "string"
+        },
+        "approver": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "entity": {
+          "type": "string"
+        },
+        "entity_id": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

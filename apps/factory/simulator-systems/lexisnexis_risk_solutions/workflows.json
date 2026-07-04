@@ -1,0 +1,54 @@
+{
+  "id": "lexisnexis_risk_solutions_workflows",
+  "version": 1,
+  "primitives": [
+    "role_permission_gate",
+    "state_machine",
+    "approval_blocker",
+    "audit_trail"
+  ],
+  "toolHandlers": {
+    "submit_company_update": {
+      "primitive": "state_machine_update",
+      "collection": "companies",
+      "primaryKey": "company_id",
+      "roleArg": "role",
+      "allowedRoles": [
+        "analyst",
+        "risk_manager",
+        "category_manager",
+        "finance_owner"
+      ],
+      "stateField": "status",
+      "targetStateArg": "status",
+      "noteArg": "note",
+      "transitions": {
+        "*": [
+          "active",
+          "pending_approval",
+          "inactive",
+          "cancelled",
+          "closed",
+          "approved",
+          "rejected"
+        ],
+        "active": [
+          "pending_approval",
+          "inactive",
+          "cancelled",
+          "closed"
+        ],
+        "pending_approval": [
+          "active",
+          "approved",
+          "rejected",
+          "cancelled"
+        ],
+        "approved": [
+          "closed",
+          "inactive"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,297 @@
+{
+  "id": "ukg_dimensions_materialization",
+  "version": 1,
+  "collections": {
+    "workers": {
+      "primaryKey": "worker_id",
+      "fieldAliases": {
+        "worker_id": [
+          "worker_id",
+          "id",
+          "source_record_id"
+        ],
+        "employee_id": [
+          "employee_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "email": [
+          "email",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "worker_type": [
+          "worker_type",
+          "id",
+          "source_record_id"
+        ],
+        "position_id": [
+          "position_id",
+          "id",
+          "source_record_id"
+        ],
+        "manager_id": [
+          "manager_id",
+          "id",
+          "source_record_id"
+        ],
+        "supervisory_org_id": [
+          "supervisory_org_id",
+          "id",
+          "source_record_id"
+        ],
+        "cost_center": [
+          "cost_center",
+          "id",
+          "source_record_id"
+        ],
+        "location": [
+          "location",
+          "id",
+          "source_record_id"
+        ],
+        "country": [
+          "country",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "positions": {
+      "primaryKey": "position_id",
+      "fieldAliases": {
+        "position_id": [
+          "position_id",
+          "id",
+          "source_record_id"
+        ],
+        "title": [
+          "title",
+          "id",
+          "source_record_id"
+        ],
+        "job_profile": [
+          "job_profile",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "supervisory_org_id": [
+          "supervisory_org_id",
+          "id",
+          "source_record_id"
+        ],
+        "cost_center": [
+          "cost_center",
+          "id",
+          "source_record_id"
+        ],
+        "location": [
+          "location",
+          "id",
+          "source_record_id"
+        ],
+        "worker_id": [
+          "worker_id",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "supervisory_orgs": {
+      "primaryKey": "org_id",
+      "fieldAliases": {
+        "org_id": [
+          "org_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "manager_id": [
+          "manager_id",
+          "id",
+          "source_record_id"
+        ],
+        "parent_org_id": [
+          "parent_org_id",
+          "id",
+          "source_record_id"
+        ],
+        "cost_center": [
+          "cost_center",
+          "id",
+          "source_record_id"
+        ],
+        "company": [
+          "company",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    },
+    "job_requisitions": {
+      "primaryKey": "requisition_id",
+      "fieldAliases": {
+        "requisition_id": [
+          "requisition_id",
+          "id",
+          "source_record_id"
+        ],
+        "position_id": [
+          "position_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "recruiter": [
+          "recruiter",
+          "id",
+          "source_record_id"
+        ],
+        "hiring_manager_id": [
+          "hiring_manager_id",
+          "id",
+          "source_record_id"
+        ],
+        "target_start_date": [
+          "target_start_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "worker_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "worker_id": [
+          "worker_id",
+          "id",
+          "source_record_id"
+        ],
+        "event_type": [
+          "event_type",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "reason": [
+          "reason",
+          "id",
+          "source_record_id"
+        ],
+        "effective_date": [
+          "effective_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fieldAliases": {
+        "approval_id": [
+          "approval_id",
+          "id",
+          "source_record_id"
+        ],
+        "source_record_id": [
+          "source_record_id",
+          "id"
+        ],
+        "approver": [
+          "approver",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "reason": [
+          "reason",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "active"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

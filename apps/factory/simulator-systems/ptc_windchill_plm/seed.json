@@ -1,0 +1,58 @@
+{
+  "projects": [
+    {
+      "project_id": "PROJECT-001",
+      "name": "Name 1",
+      "status": "active",
+      "owner": "Jordan Rivera",
+      "department": "People Operations"
+    }
+  ],
+  "issues": [
+    {
+      "issue_id": "ISSUE-001",
+      "project_id": "PROJECT-001",
+      "status": "active",
+      "priority": "high",
+      "assignee": "Priya Shah",
+      "summary": "Pending review for downstream workflow"
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "TASK-001",
+      "issue_id": "ISSUE-001",
+      "status": "active",
+      "assignee": "Priya Shah",
+      "due_date": "2026-03-15"
+    }
+  ],
+  "sprints": [
+    {
+      "sprint_id": "SPRINT-001",
+      "project_id": "PROJECT-001",
+      "state": "active",
+      "start_date": "2026-03-15",
+      "end_date": "2026-03-15"
+    }
+  ],
+  "releases": [
+    {
+      "release_id": "RELEASE-001",
+      "project_id": "PROJECT-001",
+      "status": "active",
+      "version": "2026.1",
+      "release_date": "2026-03-15"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APPROVAL-001",
+      "source_record_id": "SOURCE-RECORD-001",
+      "approver": "Approver 1",
+      "state": "active",
+      "reason": "Quarterly business review"
+    }
+  ],
+  "audit_events": []
+}
