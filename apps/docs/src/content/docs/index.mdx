@@ -84,8 +84,8 @@ Everything below is local and credential-free. It gives you a validated canary w
 
 <div class="ge-journey">
   <CardGrid>
-    <Card title="1 · Bootstrap" icon="setting">
-      <span class="ge-eta">~5–10 min · one time</span>
+    <Card title="Bootstrap" icon="setting">
+      <span class="ge-label">Stage 01</span> <span class="ge-eta">~5–10 min · one time</span>
 
       ```bash
       mise run setup
@@ -93,8 +93,8 @@ Everything below is local and credential-free. It gives you a validated canary w
 
       Provisions Bun, Python, uv, Terraform, repo dependencies, and the `ge` CLI.
     </Card>
-    <Card title="2 · Initialize" icon="document">
-      <span class="ge-eta">~30 s</span>
+    <Card title="Initialize" icon="document">
+      <span class="ge-label">Stage 02</span> <span class="ge-eta">~30 s</span>
 
       ```bash
       ge init
@@ -102,8 +102,8 @@ Everything below is local and credential-free. It gives you a validated canary w
 
       Discovers local configuration and writes `.ge.json` so bare `ge` can show a next-step status board.
     </Card>
-    <Card title="3 · Prove" icon="approve-check">
-      <span class="ge-eta">~5 min</span>
+    <Card title="Prove" icon="approve-check">
+      <span class="ge-label">Stage 03</span> <span class="ge-eta">~5 min</span>
 
       ```bash
       ge devex smoke
