@@ -1,0 +1,13 @@
+---
+type: Index
+title: Agent Tools
+timestamp: "2026-07-01T00:00:00.000Z"
+---
+
+# Agent Tools
+
+- [query_workday_employees](/tools/query-workday-employees.md)
+- [query_sap_successfactors_employee_records](/tools/query-sap-successfactors-employee-records.md)
+- [query_servicenow_tickets](/tools/query-servicenow-tickets.md)
+- [lookup_hris_data_quality_monitor_agent_policy_handbook](/tools/lookup-hris-data-quality-monitor-agent-policy-handbook.md)
+- [action_workday_log_entry](/tools/action-workday-log-entry.md)

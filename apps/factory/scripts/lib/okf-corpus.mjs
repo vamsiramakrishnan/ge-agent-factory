@@ -115,9 +115,17 @@ export async function listBundleDirs(root) {
     .sort();
 }
 
-async function walkMarkdown(dir, prefix = "") {
+/** Relative paths of every .md file under `dir` (missing dir → []). */
+export async function walkMarkdown(dir, prefix = "") {
+  let dirents;
+  try {
+    dirents = await readdir(dir, { withFileTypes: true });
+  } catch (error) {
+    if (error.code === "ENOENT") return [];
+    throw error;
+  }
   const out = [];
-  for (const entry of await readdir(dir, { withFileTypes: true })) {
+  for (const entry of dirents) {
     const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
     if (entry.isDirectory()) out.push(...(await walkMarkdown(join(dir, entry.name), rel)));
     else if (entry.name.endsWith(".md")) out.push(rel);
@@ -143,6 +151,30 @@ export async function readBundleSpec(bundleDir) {
 
 const sortedJson = (value) => JSON.stringify(value);
 
+// `compileOkfBundle` emits collections in concept ENCOUNTER order, which for a
+// directory bundle is the filesystem walk order (alphabetical-ish) while an
+// in-memory rebuild carries spec order. The SET of concepts is what parity is
+// about, so canonicalize both compiled specs by sorting each collection on its
+// stable key before byte-comparing. Workflow step order is semantic (parsed
+// from the workflow index listing) and is deliberately NOT sorted.
+export function canonicalizeCompiledSpec(spec) {
+  const byKey = (key) => (a, b) => String(a?.[key] ?? "").localeCompare(String(b?.[key] ?? ""));
+  const clone = JSON.parse(JSON.stringify(spec));
+  const gs = clone.generationSpec || {};
+  // The emitter aliases behaviorContract at the top level AND inside
+  // generationSpec; the clone splits that alias, so canonicalize both.
+  for (const bc of [clone.behaviorContract, gs.behaviorContract]) {
+    if (!bc) continue;
+    if (Array.isArray(bc.toolIntents)) bc.toolIntents.sort(byKey("name"));
+    if (Array.isArray(bc.answerableQueries)) bc.answerableQueries.sort(byKey("id"));
+    if (Array.isArray(bc.goldenEvals)) bc.goldenEvals.sort(byKey("id"));
+  }
+  if (Array.isArray(gs.sourceSystems)) gs.sourceSystems.sort(byKey("id"));
+  if (Array.isArray(gs.entities)) gs.entities.sort(byKey("name"));
+  if (Array.isArray(gs.documents)) gs.documents.sort(byKey("id"));
+  return clone;
+}
+
 /**
  * Verify one on-disk bundle against its source spec. Returns a structured
  * `{ ok, problems }` report (never throws on content problems):
@@ -151,8 +183,11 @@ const sortedJson = (value) => JSON.stringify(value);
  *      rebuild from the spec (missing/extra/drifted .md files are named).
  *   2. COMPILE — `compileOkfBundle` on the on-disk bundle reports zero errors.
  *   3. PARITY — the compiled spec JSON of the on-disk bundle byte-matches the
- *      compiled spec JSON of the in-memory rebuild (the wave-A harness
- *      pattern: compile(spec→okf(spec)) is byte-stable end to end).
+ *      compiled spec JSON of the in-memory rebuild after collection-order
+ *      canonicalization (the compiler emits collections in concept encounter
+ *      order, which differs between a directory walk and spec order — the
+ *      wave-A harness pattern: compile(spec→okf(spec)) is byte-stable end to
+ *      end, modulo that ordering).
  *   4. INVARIANTS — tool names, source-system / entity / workflow-step counts
  *      recovered by the compiler match the source spec.
  */
@@ -191,10 +226,10 @@ export async function verifyBundleAgainstSpec(bundleDir, entry, { timestamp = MI
   for (const error of memory.errors) {
     problems.push({ kind: "compile-error", code: error.code, conceptPath: `(rebuild) ${error.conceptPath}`, message: error.message, fix: error.fix });
   }
-  if (sortedJson(disk.spec) !== sortedJson(memory.spec)) {
+  if (sortedJson(canonicalizeCompiledSpec(disk.spec)) !== sortedJson(canonicalizeCompiledSpec(memory.spec))) {
     problems.push({
       kind: "compile-parity",
-      message: "compileOkfBundle(on-disk bundle) and compile(rebuilt-from-spec bundle) emit different spec JSON",
+      message: "compileOkfBundle(on-disk bundle) and compile(rebuilt-from-spec bundle) emit different spec JSON (after collection-order canonicalization)",
       fix: "bun run catalog:migrate",
     });
   }

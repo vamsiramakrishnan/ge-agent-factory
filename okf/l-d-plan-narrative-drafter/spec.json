@@ -1,0 +1,957 @@
+{
+  "id": "l-d-plan-narrative-drafter",
+  "title": "L&D Plan Narrative Drafter",
+  "department": "hr",
+  "sourcePath": "../presentation/src/components/slides/use-cases/hr/LDPlanDrafter.tsx",
+  "subtitle": "A-502 • L&D",
+  "persona": "L&D Lead",
+  "layer": "Layer 1: OOTB",
+  "triggerType": "chat",
+  "domainId": "domain-5",
+  "systems": [
+    "Google Docs",
+    "Google Slides",
+    "LMS"
+  ],
+  "kpis": [
+    {
+      "label": "Plan drafting",
+      "before": "3 weeks",
+      "after": "1 hour"
+    },
+    {
+      "label": "Business alignment",
+      "before": "Assumed",
+      "after": "Data-linked"
+    },
+    {
+      "label": "Stakeholder versions",
+      "before": "1 generic",
+      "after": "Role-specific"
+    }
+  ],
+  "statusQuo": [
+    "L&D plans written from scratch each cycle with no reusable templates.",
+    "Strategy narratives disconnected from actual business priorities and skills data.",
+    "Stakeholder buy-in delayed by lengthy drafting and revision loops."
+  ],
+  "agentification": [
+    "Auto-generates L&D strategy narratives from skills gap data and business priorities.",
+    "Executive-ready formatting with consistent structure and data-backed recommendations.",
+    "Iterative refinement workflow incorporating stakeholder input in real time."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Workday",
+        "description": "Workforce planning data, headcount, role requirements"
+      },
+      {
+        "system": "Cornerstone",
+        "description": "Learning catalog, program history, completion data"
+      },
+      {
+        "system": "Google Docs",
+        "description": "L&D strategy document output, stakeholder review workflows"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Strategy narrative generation, program-to-gap mapping, ROI projection"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Data Input Assembly",
+        "description": "Load skills gap analysis results, business priorities, and budget parameters. Pull historical program effectiveness data from Cornerstone."
+      },
+      {
+        "label": "Strategy Narrative Drafting",
+        "description": "Gemini drafts L&D strategy narrative with data citations, linking recommended programs to specific capability gaps and business objectives."
+      },
+      {
+        "label": "Formatting & Distribution",
+        "description": "Format as executive-ready document with consistent structure, ROI projections, and role-specific stakeholder versions. Publish to Google Docs for review."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for L&D Plan Narrative Drafter so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "google_docs",
+        "name": "Google Docs",
+        "owns": [
+          "documents",
+          "comments",
+          "revision_history"
+        ],
+        "protocol": "Workspace API",
+        "localBacking": [
+          "cloud-storage"
+        ],
+        "toolNames": [
+          "query_google_docs_documents",
+          "query_google_docs_comments",
+          "query_google_docs_revision_history"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "google_slides",
+        "name": "Google Slides",
+        "owns": [
+          "presentations",
+          "slide_assets",
+          "view_logs"
+        ],
+        "protocol": "Workspace API",
+        "localBacking": [
+          "cloud-storage"
+        ],
+        "toolNames": [
+          "query_google_slides_presentations",
+          "query_google_slides_slide_assets",
+          "query_google_slides_view_logs"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "lms",
+        "name": "LMS",
+        "owns": [
+          "lms_records",
+          "lms_events",
+          "lms_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_lms_lms_records",
+          "query_lms_lms_events",
+          "query_lms_lms_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "documents",
+        "sourceSystemId": "google_docs",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "review",
+              "published",
+              "archived"
+            ],
+            "required": true
+          },
+          {
+            "name": "last_updated",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "comments",
+        "sourceSystemId": "google_docs",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "revision_history",
+        "sourceSystemId": "google_docs",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "document_id",
+            "type": "ref",
+            "ref": "documents.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "presentations",
+        "sourceSystemId": "google_slides",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "review",
+              "published",
+              "archived"
+            ],
+            "required": true
+          },
+          {
+            "name": "last_updated",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "slide_assets",
+        "sourceSystemId": "google_slides",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "view_logs",
+        "sourceSystemId": "google_slides",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "presentation_id",
+            "type": "ref",
+            "ref": "presentations.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "lms_records",
+        "sourceSystemId": "lms",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "lms_events",
+        "sourceSystemId": "lms",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "lms_record_id",
+            "type": "ref",
+            "ref": "lms_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "lms_audit_trail",
+        "sourceSystemId": "lms",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "revision_history.document_id",
+        "to": "documents.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "view_logs.presentation_id",
+        "to": "presentations.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "lms_events.lms_record_id",
+        "to": "lms_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "l-d-plan-narrative-drafter-policy-handbook",
+        "sourceSystemId": "google_docs",
+        "type": "policy",
+        "title": "L&D Plan Narrative Drafter Policy Handbook",
+        "requiredSections": [
+          "Eligibility and scope",
+          "Workflow steps",
+          "Manager responsibilities",
+          "Compliance and audit",
+          "Sensitive-data handling"
+        ],
+        "linkedEntities": [
+          "documents",
+          "comments",
+          "revision_history"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "eligibility",
+          "workflow",
+          "compliance",
+          "sensitive-data"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "google_docs_recommend_api",
+        "sourceSystemId": "google_docs",
+        "method": "POST",
+        "path": "/api/google_docs/recommend",
+        "description": "Synchronous endpoint the agent calls to recommend in Google Docs after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "l-d-plan-narrative-drafter-baseline-gap",
+        "description": "Seed a realistic gap where Plan drafting sits between 3 weeks and 1 hour, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "documents",
+          "comments"
+        ],
+        "discoveryPath": [
+          "Inspect Google Docs records for the affected entities",
+          "Compare against Google Slides historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next L&D Lead action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "l_d_plan_narrative_drafter",
+        "schemas": [
+          "google_docs",
+          "google_slides",
+          "lms"
+        ]
+      },
+      "bigquery": {
+        "dataset": "hr_l_d_plan_narrative_drafter",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "l-d-plan-narrative-drafter-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "l-d-plan-narrative-drafter-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the L&D Plan Narrative Drafter workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "L&D Lead agent for the L&D Plan Narrative Drafter workflow",
+      "primaryObjective": "Auto-generates L&D strategy narratives from skills gap data and business priorities. Executive-ready formatting with consistent structure and data-backed recommendations. so the L&D Lead can move the Plan drafting KPI.",
+      "inScope": [
+        "Auto-generates L&D strategy narratives from skills gap data and business priorities",
+        "Executive-ready formatting with consistent structure and data-backed recommendations",
+        "Iterative refinement workflow incorporating stakeholder input in real time"
+      ],
+      "outOfScope": [
+        "Final hiring, termination, or compensation decisions (HRBP/leadership retains authority)",
+        "Performance management adjudication and disciplinary action",
+        "Legal interpretation of employment law in ambiguous jurisdictions"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_google_docs_documents",
+          "kind": "query",
+          "sourceSystemId": "google_docs",
+          "description": "Retrieve documents from Google Docs for the L&D Plan Narrative Drafter workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "documents_records",
+            "documents_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_google_slides_presentations",
+          "kind": "query",
+          "sourceSystemId": "google_slides",
+          "description": "Retrieve presentations from Google Slides for the L&D Plan Narrative Drafter workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "presentations_records",
+            "presentations_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_lms_lms_records",
+          "kind": "query",
+          "sourceSystemId": "lms",
+          "description": "Retrieve lms records from LMS for the L&D Plan Narrative Drafter workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "lms_records_records",
+            "lms_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_l_d_plan_narrative_drafter_policy_handbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "google_docs",
+          "description": "Look up sections of the L&D Plan Narrative Drafter Policy Handbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_google_docs_recommend",
+          "kind": "action",
+          "sourceSystemId": "google_docs",
+          "description": "Execute the recommend step in Google Docs after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "strategy_narrative_drafting",
+            "label": "Strategy Narrative Drafting",
+            "description": "Gemini drafts L&D strategy narrative with data citations, linking recommended programs to specific capability gaps and business objectives.",
+            "tools": [
+              "lookup_l_d_plan_narrative_drafter_policy_handbook",
+              "action_google_docs_recommend"
+            ]
+          },
+          {
+            "id": "formatting_distribution",
+            "label": "Formatting & Distribution",
+            "description": "Format as executive-ready document with consistent structure, ROI projections, and role-specific stakeholder versions. Publish to Google Docs for review.",
+            "tools": [
+              "query_google_docs_documents",
+              "query_google_slides_presentations",
+              "lookup_l_d_plan_narrative_drafter_policy_handbook",
+              "action_google_docs_recommend"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Plan drafting moved from 3 weeks toward 1 hour",
+          "mustCite": [
+            "google_docs.documents",
+            "google_slides.presentations"
+          ],
+          "sourceSystemIds": [
+            "google_docs",
+            "google_slides"
+          ]
+        },
+        {
+          "claim": "Business alignment moved from Assumed toward Data-linked",
+          "mustCite": [
+            "google_docs.documents",
+            "google_slides.presentations"
+          ],
+          "sourceSystemIds": [
+            "google_docs",
+            "google_slides"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Plan drafting regresses past the 3 weeks baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "L&D Lead",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed recommend action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Google Docs (and other named systems) entities.",
+        "Never bypass L&D Lead approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "l-d-plan-narrative-drafter-end-to-end",
+          "prompt": "Run the L&D Plan Narrative Drafter workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_google_docs_documents",
+            "query_google_slides_presentations",
+            "query_lms_lms_records",
+            "lookup_l_d_plan_narrative_drafter_policy_handbook",
+            "action_google_docs_recommend"
+          ],
+          "mustReferenceEntities": [
+            "documents",
+            "presentations",
+            "lms_records"
+          ],
+          "mustCiteDocuments": [
+            "l-d-plan-narrative-drafter-policy-handbook"
+          ],
+          "expectedActionOutcome": "Action recommend executed against Google Docs, with audit-trail entry and L&D Lead notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute recommend without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/hr/LDPlanDrafter.tsx",
+    "familyId": "l-d-plan-narrative-drafter",
+    "variant": {
+      "familyId": "l-d-plan-narrative-drafter",
+      "variantId": "l-d-plan-narrative-drafter",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

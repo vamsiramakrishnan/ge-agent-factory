@@ -1,0 +1,1269 @@
+{
+  "id": "okr-progress-tracker-agent",
+  "title": "OKR Progress Tracker Agent",
+  "department": "hr",
+  "sourcePath": "../presentation/src/components/slides/use-cases/hr/OKRProgressTracker.tsx",
+  "subtitle": "A-302 • Performance Mgmt",
+  "persona": "Manager",
+  "layer": "Layer 2: Agent Designer",
+  "triggerType": "scheduled",
+  "domainId": "domain-3",
+  "systems": [
+    "Workday",
+    "Jira",
+    "Google Sheets",
+    "Slack"
+  ],
+  "kpis": [
+    {
+      "label": "Update frequency",
+      "before": "Quarterly",
+      "after": "Continuous"
+    },
+    {
+      "label": "Stalled goal detection",
+      "before": "At review",
+      "after": "Real-time"
+    },
+    {
+      "label": "Recalibration speed",
+      "before": "Next quarter",
+      "after": "Immediate"
+    }
+  ],
+  "statusQuo": [
+    "OKR tracking managed in disconnected spreadsheets across teams.",
+    "Progress updates happen quarterly at best, masking early warning signs.",
+    "Recalibration of goals happens too late to course-correct meaningfully."
+  ],
+  "agentification": [
+    "Continuous OKR progress monitoring from integrated data sources.",
+    "Automated nudges for stalled goals and at-risk key results.",
+    "Mid-cycle recalibration suggestions based on changing business context."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Workday",
+        "description": "Employee goals, performance indicators"
+      },
+      {
+        "system": "Lattice",
+        "description": "OKR hierarchy, key result progress, check-ins"
+      },
+      {
+        "system": "Jira",
+        "description": "Project delivery signals, sprint velocity, task completion"
+      },
+      {
+        "system": "BigQuery",
+        "description": "OKR progress analytics, trend data, risk signals"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Progress Signal Collection",
+        "description": "Continuous sync of OKR progress from Lattice, project delivery signals from Jira, and performance indicators from Workday into BigQuery."
+      },
+      {
+        "label": "Trajectory Analysis",
+        "description": "Completion trajectory modeling with at-risk detection. Statistical analysis of progress velocity and predicted end-of-cycle outcomes."
+      },
+      {
+        "label": "Nudge & Recalibration",
+        "description": "Automated nudges for stalled or at-risk goals. Mid-cycle recalibration suggestions based on changing business context."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for OKR Progress Tracker Agent so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "workday",
+        "name": "Workday",
+        "owns": [
+          "employees",
+          "positions",
+          "compensation_records"
+        ],
+        "protocol": "Workday REST",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_workday_employees",
+          "query_workday_positions",
+          "query_workday_compensation_records"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "jira",
+        "name": "Jira",
+        "owns": [
+          "issues",
+          "sprints",
+          "epics"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_jira_issues",
+          "query_jira_sprints",
+          "query_jira_epics"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "google_sheets",
+        "name": "Google Sheets",
+        "owns": [
+          "sheets",
+          "named_ranges",
+          "edit_history"
+        ],
+        "protocol": "Workspace API",
+        "localBacking": [
+          "cloud-storage"
+        ],
+        "toolNames": [
+          "query_google_sheets_sheets",
+          "query_google_sheets_named_ranges",
+          "query_google_sheets_edit_history"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "slack",
+        "name": "Slack",
+        "owns": [
+          "messages",
+          "channels",
+          "thread_replies"
+        ],
+        "protocol": "Slack API",
+        "localBacking": [
+          "json-api"
+        ],
+        "toolNames": [
+          "query_slack_messages",
+          "query_slack_channels",
+          "query_slack_thread_replies"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "employees",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "positions",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "compensation_records",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "issues",
+        "sourceSystemId": "jira",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "sprints",
+        "sourceSystemId": "jira",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "epics",
+        "sourceSystemId": "jira",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "sheets",
+        "sourceSystemId": "google_sheets",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "named_ranges",
+        "sourceSystemId": "google_sheets",
+        "datastore": "alloydb",
+        "rowCount": 30,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "edit_history",
+        "sourceSystemId": "google_sheets",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "sheet_id",
+            "type": "ref",
+            "ref": "sheets.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "messages",
+        "sourceSystemId": "slack",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "author",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "body",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "sentiment",
+            "type": "enum",
+            "values": [
+              "positive",
+              "neutral",
+              "negative"
+            ],
+            "weights": [
+              0.4,
+              0.4,
+              0.2
+            ],
+            "required": true
+          },
+          {
+            "name": "sent_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "channels",
+        "sourceSystemId": "slack",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "thread_replies",
+        "sourceSystemId": "slack",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "author",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "body",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "sentiment",
+            "type": "enum",
+            "values": [
+              "positive",
+              "neutral",
+              "negative"
+            ],
+            "weights": [
+              0.4,
+              0.4,
+              0.2
+            ],
+            "required": true
+          },
+          {
+            "name": "sent_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "edit_history.sheet_id",
+        "to": "sheets.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "okr-progress-tracker-agent-policy-handbook",
+        "sourceSystemId": "workday",
+        "type": "policy",
+        "title": "OKR Progress Tracker Agent Policy Handbook",
+        "requiredSections": [
+          "Eligibility and scope",
+          "Workflow steps",
+          "Manager responsibilities",
+          "Compliance and audit",
+          "Sensitive-data handling"
+        ],
+        "linkedEntities": [
+          "employees",
+          "positions",
+          "compensation_records"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "eligibility",
+          "workflow",
+          "compliance",
+          "sensitive-data"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "google_sheets_publish_okr_scorecard",
+        "sourceSystemId": "google_sheets",
+        "method": "POST",
+        "path": "/v4/spreadsheets/{spreadsheet_id}/values/{range}:batchUpdate",
+        "description": "Publish the refreshed OKR scorecard rows to the team's tracking sheet.",
+        "requestSchema": {
+          "spreadsheet_id": "string",
+          "range": "string",
+          "scorecard_rows": "object[]"
+        },
+        "responseSchema": {
+          "spreadsheet_id": "string",
+          "updated_range": "string",
+          "updated_rows": "number"
+        },
+        "idempotencyKey": "spreadsheet_id+period+revision_hash"
+      },
+      {
+        "id": "slack_notify_okr_owner",
+        "sourceSystemId": "slack",
+        "method": "POST",
+        "path": "/api/chat.postMessage",
+        "description": "Notify the OKR owner in Slack when a key result is detected as stalled or off-track.",
+        "requestSchema": {
+          "channel": "string",
+          "owner_user_id": "string",
+          "objective_id": "string",
+          "text": "string",
+          "attachments": "object[]"
+        },
+        "responseSchema": {
+          "ts": "string",
+          "channel": "string",
+          "message_id": "string"
+        },
+        "idempotencyKey": "owner_user_id+objective_id+digest_hash"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "okr-progress-tracker-agent-baseline-gap",
+        "description": "Seed a realistic gap where Update frequency sits between Quarterly and Continuous, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "employees",
+          "positions"
+        ],
+        "discoveryPath": [
+          "Inspect Workday records for the affected entities",
+          "Compare against Jira historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next Manager action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "okr_progress_tracker_agent",
+        "schemas": [
+          "workday",
+          "jira",
+          "google_sheets",
+          "slack"
+        ]
+      },
+      "bigquery": {
+        "dataset": "hr_okr_progress_tracker_agent",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "okr-progress-tracker-agent-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "okr-progress-tracker-agent-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the OKR Progress Tracker Agent workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "Manager agent for the OKR Progress Tracker Agent workflow",
+      "primaryObjective": "Continuous OKR progress monitoring from integrated data sources. Automated nudges for stalled goals and at-risk key results. so the Manager can move the Update frequency KPI.",
+      "inScope": [
+        "Continuous OKR progress monitoring from integrated data sources",
+        "Automated nudges for stalled goals and at-risk key results",
+        "Mid-cycle recalibration suggestions based on changing business context"
+      ],
+      "outOfScope": [
+        "Final hiring, termination, or compensation decisions (HRBP/leadership retains authority)",
+        "Performance management adjudication and disciplinary action",
+        "Legal interpretation of employment law in ambiguous jurisdictions"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_workday_employees",
+          "kind": "query",
+          "sourceSystemId": "workday",
+          "description": "Retrieve employees from Workday for the OKR Progress Tracker Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "employees_records",
+            "employees_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_jira_issues",
+          "kind": "query",
+          "sourceSystemId": "jira",
+          "description": "Retrieve issues from Jira for the OKR Progress Tracker Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "issues_records",
+            "issues_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_google_sheets_sheets",
+          "kind": "query",
+          "sourceSystemId": "google_sheets",
+          "description": "Retrieve sheets from Google Sheets for the OKR Progress Tracker Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "sheets_records",
+            "sheets_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_slack_messages",
+          "kind": "query",
+          "sourceSystemId": "slack",
+          "description": "Retrieve messages from Slack for the OKR Progress Tracker Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "messages_records",
+            "messages_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_okr_progress_tracker_agent_policy_handbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "google_sheets",
+          "description": "Look up sections of the OKR Progress Tracker Agent Policy Handbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_google_sheets_publish_okr_scorecard",
+          "kind": "action",
+          "sourceSystemId": "google_sheets",
+          "description": "Publish the refreshed OKR scorecard back to the team's tracking sheet with per-key-result status, blockers, and cited evidence so managers see the same view as the agent.",
+          "requiredInputs": [
+            "team_id",
+            "period",
+            "scorecard_rows"
+          ],
+          "produces": [
+            "sheet_revision_id",
+            "publish_timestamp"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        },
+        {
+          "name": "action_slack_notify_okr_owner",
+          "kind": "action",
+          "sourceSystemId": "slack",
+          "description": "Notify the OKR owner in Slack when a key result is detected as stalled or off-track, attaching the cited Jira/Workday evidence and the recommended next action.",
+          "requiredInputs": [
+            "owner_user_id",
+            "objective_id",
+            "evidence_links"
+          ],
+          "produces": [
+            "slack_message_id",
+            "delivery_receipt"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "progress_signal_collection",
+            "label": "Progress Signal Collection",
+            "description": "Continuous sync of OKR progress from Lattice, project delivery signals from Jira, and performance indicators from Workday into BigQuery.",
+            "tools": [
+              "query_workday_employees",
+              "query_jira_issues",
+              "lookup_okr_progress_tracker_agent_policy_handbook"
+            ]
+          },
+          {
+            "id": "trajectory_analysis",
+            "label": "Trajectory Analysis",
+            "description": "Completion trajectory modeling with at-risk detection. Statistical analysis of progress velocity and predicted end-of-cycle outcomes.",
+            "tools": [
+              "lookup_okr_progress_tracker_agent_policy_handbook"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Update frequency moved from Quarterly toward Continuous",
+          "mustCite": [
+            "workday.employees",
+            "jira.issues"
+          ],
+          "sourceSystemIds": [
+            "workday",
+            "jira"
+          ]
+        },
+        {
+          "claim": "Stalled goal detection moved from At review toward Real-time",
+          "mustCite": [
+            "workday.employees",
+            "jira.issues"
+          ],
+          "sourceSystemIds": [
+            "workday",
+            "jira"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Update frequency regresses past the Quarterly baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Manager",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Workday (and other named systems) entities.",
+        "Never bypass Manager approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "okr-progress-tracker-agent-end-to-end",
+          "prompt": "Run the OKR Progress Tracker Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_workday_employees",
+            "query_jira_issues",
+            "query_google_sheets_sheets",
+            "query_slack_messages",
+            "lookup_okr_progress_tracker_agent_policy_handbook"
+          ],
+          "mustReferenceEntities": [
+            "employees",
+            "issues",
+            "sheets",
+            "messages"
+          ],
+          "mustCiteDocuments": [
+            "okr-progress-tracker-agent-policy-handbook"
+          ],
+          "expectedActionOutcome": "Manager receives a fully-cited recommendation; no external state change without explicit approval.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not act on single-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/hr/OKRProgressTracker.tsx",
+    "familyId": "okr-progress-tracker-agent",
+    "variant": {
+      "familyId": "okr-progress-tracker-agent",
+      "variantId": "okr-progress-tracker-agent",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

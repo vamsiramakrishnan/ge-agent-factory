@@ -1,0 +1,1250 @@
+{
+  "id": "payroll-input-validation",
+  "title": "Payroll Input Validation",
+  "department": "hr",
+  "sourcePath": "../presentation/src/components/slides/use-cases/hr/PayrollValidation.tsx",
+  "subtitle": "A-805 • Payroll",
+  "persona": "Payroll Manager",
+  "layer": "Layer 3: Custom ADK",
+  "triggerType": "scheduled",
+  "domainId": "domain-8",
+  "systems": [
+    "ADP",
+    "Workday",
+    "Google BigQuery",
+    "Google Sheets"
+  ],
+  "kpis": [
+    {
+      "label": "Pre-run errors caught",
+      "before": "Post-run discovery",
+      "after": "Pre-run prevention"
+    },
+    {
+      "label": "Validation coverage",
+      "before": "Sampling",
+      "after": "100%"
+    },
+    {
+      "label": "Payroll accuracy",
+      "before": "99.2%",
+      "after": "99.97%"
+    }
+  ],
+  "statusQuo": [
+    "Manual cross-referencing of HRIS changes and timesheets.",
+    "Discrepancies often discovered during or after the payroll run.",
+    "High cost of corrections, off-cycle checks, and potential penalties."
+  ],
+  "agentification": [
+    "Automated pre-run validation across T&A, HRIS, and Benefits.",
+    "Proactive flagging of garnishment conflicts and missing data.",
+    "Exception-based workflow focusing human effort on complex errors."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Workday",
+        "description": "HRIS changes, benefits elections, time and attendance data"
+      },
+      {
+        "system": "ADP",
+        "description": "Payroll inputs, garnishment data, tax withholding rules"
+      },
+      {
+        "system": "BigQuery",
+        "description": "Validation rules engine, historical payroll patterns, anomaly thresholds"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Anomaly reasoning, exception explanation, validation narrative"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Payroll Data Aggregation",
+        "description": "Pull all payroll inputs from Workday (HRIS changes, benefits), ADP (garnishments, tax), and time systems. Build unified pre-run dataset with every input source cross-referenced."
+      },
+      {
+        "label": "Cross-System Validation",
+        "description": "Validate every payroll input against source systems and business rules. Check for missing timesheets, benefit election mismatches, and garnishment conflicts."
+      },
+      {
+        "label": "Anomaly Detection & Explanation",
+        "description": "Gemini analyzes flagged exceptions, explains root causes, and prioritizes by financial impact. Distinguishes legitimate changes from errors requiring correction."
+      },
+      {
+        "label": "Approval Workflow",
+        "description": "Route clean payroll for manager approval. Present exception dashboard with one-click resolution actions for each flagged item."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Payroll Input Validation so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "adp",
+        "name": "ADP",
+        "owns": [
+          "adp_records",
+          "adp_events",
+          "adp_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_adp_adp_records",
+          "query_adp_adp_events",
+          "query_adp_adp_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "workday",
+        "name": "Workday",
+        "owns": [
+          "employees",
+          "positions",
+          "compensation_records"
+        ],
+        "protocol": "Workday REST",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_workday_employees",
+          "query_workday_positions",
+          "query_workday_compensation_records"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "google_bigquery",
+        "name": "Google BigQuery",
+        "owns": [
+          "analytics_events",
+          "historical_metrics",
+          "cached_aggregates"
+        ],
+        "protocol": "BigQuery SQL",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_google_bigquery_analytics_events",
+          "query_google_bigquery_historical_metrics",
+          "query_google_bigquery_cached_aggregates"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "google_sheets",
+        "name": "Google Sheets",
+        "owns": [
+          "sheets",
+          "named_ranges",
+          "edit_history"
+        ],
+        "protocol": "Workspace API",
+        "localBacking": [
+          "cloud-storage"
+        ],
+        "toolNames": [
+          "query_google_sheets_sheets",
+          "query_google_sheets_named_ranges",
+          "query_google_sheets_edit_history"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "adp_records",
+        "sourceSystemId": "adp",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "adp_events",
+        "sourceSystemId": "adp",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "adp_record_id",
+            "type": "ref",
+            "ref": "adp_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "adp_audit_trail",
+        "sourceSystemId": "adp",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "employees",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "positions",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "compensation_records",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "analytics_events",
+        "sourceSystemId": "google_bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "historical_metric_id",
+            "type": "ref",
+            "ref": "historical_metrics.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "historical_metrics",
+        "sourceSystemId": "google_bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "cached_aggregates",
+        "sourceSystemId": "google_bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "sheets",
+        "sourceSystemId": "google_sheets",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "named_ranges",
+        "sourceSystemId": "google_sheets",
+        "datastore": "alloydb",
+        "rowCount": 30,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "edit_history",
+        "sourceSystemId": "google_sheets",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "sheet_id",
+            "type": "ref",
+            "ref": "sheets.id",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "adp_events.adp_record_id",
+        "to": "adp_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "analytics_events.historical_metric_id",
+        "to": "historical_metrics.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "edit_history.sheet_id",
+        "to": "sheets.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "payroll-input-validation-policy-handbook",
+        "sourceSystemId": "google_bigquery",
+        "type": "policy",
+        "title": "Payroll Input Validation Policy Handbook",
+        "requiredSections": [
+          "Eligibility and scope",
+          "Workflow steps",
+          "Manager responsibilities",
+          "Compliance and audit",
+          "Sensitive-data handling"
+        ],
+        "linkedEntities": [
+          "adp_records",
+          "adp_events",
+          "adp_audit_trail"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "eligibility",
+          "workflow",
+          "compliance",
+          "sensitive-data"
+        ]
+      }
+    ],
+    "apis": [],
+    "anomalies": [
+      {
+        "id": "payroll-input-validation-baseline-gap",
+        "description": "Seed a realistic gap where Pre-run errors caught sits between Post-run discovery and Pre-run prevention, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "adp_records",
+          "adp_events"
+        ],
+        "discoveryPath": [
+          "Inspect ADP records for the affected entities",
+          "Compare against Workday historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next Payroll Manager action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "payroll_input_validation",
+        "schemas": [
+          "adp",
+          "workday",
+          "google_sheets"
+        ]
+      },
+      "bigquery": {
+        "dataset": "hr_payroll_input_validation",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "payroll-input-validation-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "payroll-input-validation-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Payroll Input Validation workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "Payroll Manager agent for the Payroll Input Validation workflow",
+      "primaryObjective": "Automated pre-run validation across T&A, HRIS, and Benefits. Proactive flagging of garnishment conflicts and missing data. so the Payroll Manager can move the Pre-run errors caught KPI.",
+      "inScope": [
+        "Automated pre-run validation across T&A, HRIS, and Benefits",
+        "Proactive flagging of garnishment conflicts and missing data",
+        "Exception-based workflow focusing human effort on complex errors"
+      ],
+      "outOfScope": [
+        "Final hiring, termination, or compensation decisions (HRBP/leadership retains authority)",
+        "Performance management adjudication and disciplinary action",
+        "Legal interpretation of employment law in ambiguous jurisdictions"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_adp_adp_records",
+          "kind": "query",
+          "sourceSystemId": "adp",
+          "description": "Retrieve adp records from ADP for the Payroll Input Validation workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "adp_records_records",
+            "adp_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_workday_employees",
+          "kind": "query",
+          "sourceSystemId": "workday",
+          "description": "Retrieve employees from Workday for the Payroll Input Validation workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "employees_records",
+            "employees_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_google_bigquery_analytics_events",
+          "kind": "query",
+          "sourceSystemId": "google_bigquery",
+          "description": "Retrieve analytics events from Google BigQuery for the Payroll Input Validation workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "analytics_events_records",
+            "analytics_events_summary"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "query_google_sheets_sheets",
+          "kind": "query",
+          "sourceSystemId": "google_sheets",
+          "description": "Retrieve sheets from Google Sheets for the Payroll Input Validation workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "sheets_records",
+            "sheets_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_payroll_input_validation_policy_handbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "google_bigquery",
+          "description": "Look up sections of the Payroll Input Validation Policy Handbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "payroll_data_aggregation",
+            "label": "Payroll Data Aggregation",
+            "description": "Pull all payroll inputs from Workday (HRIS changes, benefits), ADP (garnishments, tax), and time systems. Build unified pre-run dataset with every input source cross-referenced.",
+            "tools": [
+              "query_adp_adp_records",
+              "query_workday_employees",
+              "lookup_payroll_input_validation_policy_handbook"
+            ]
+          },
+          {
+            "id": "cross_system_validation",
+            "label": "Cross-System Validation",
+            "description": "Validate every payroll input against source systems and business rules. Check for missing timesheets, benefit election mismatches, and garnishment conflicts.",
+            "tools": [
+              "query_google_sheets_sheets",
+              "lookup_payroll_input_validation_policy_handbook"
+            ]
+          },
+          {
+            "id": "approval_workflow",
+            "label": "Approval Workflow",
+            "description": "Route clean payroll for manager approval. Present exception dashboard with one-click resolution actions for each flagged item.",
+            "tools": [
+              "lookup_payroll_input_validation_policy_handbook"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Pre-run errors caught moved from Post-run discovery toward Pre-run prevention",
+          "mustCite": [
+            "adp.adp_records",
+            "workday.employees"
+          ],
+          "sourceSystemIds": [
+            "adp",
+            "workday"
+          ]
+        },
+        {
+          "claim": "Validation coverage moved from Sampling toward 100%",
+          "mustCite": [
+            "adp.adp_records",
+            "workday.employees"
+          ],
+          "sourceSystemIds": [
+            "adp",
+            "workday"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Pre-run errors caught regresses past the Post-run discovery baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Payroll Manager",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from ADP (and other named systems) entities.",
+        "Never bypass Payroll Manager approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "payroll-input-validation-end-to-end",
+          "prompt": "Run the Payroll Input Validation workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_adp_adp_records",
+            "query_workday_employees",
+            "query_google_bigquery_analytics_events",
+            "query_google_sheets_sheets",
+            "lookup_payroll_input_validation_policy_handbook"
+          ],
+          "mustReferenceEntities": [
+            "adp_records",
+            "employees",
+            "analytics_events",
+            "sheets"
+          ],
+          "mustCiteDocuments": [
+            "payroll-input-validation-policy-handbook"
+          ],
+          "expectedActionOutcome": "Payroll Manager receives a fully-cited recommendation; no external state change without explicit approval.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not act on single-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/hr/PayrollValidation.tsx",
+    "familyId": "payroll-input-validation",
+    "variant": {
+      "familyId": "payroll-input-validation",
+      "variantId": "payroll-input-validation",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

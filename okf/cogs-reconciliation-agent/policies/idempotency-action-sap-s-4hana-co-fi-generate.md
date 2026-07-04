@@ -1,0 +1,29 @@
+---
+type: Policy
+title: Idempotency policy — action_sap_s_4hana_co_fi_generate
+description: Use idempotency key target_id+rationale for action_sap_s_4hana_co_fi_generate.
+source_id: "idempotency-action-sap-s-4hana-co-fi-generate"
+tags:
+  - finance
+  - okf
+  - brd
+timestamp: "2026-07-01T00:00:00.000Z"
+source_kind: generationSpec
+source_path: generationSpec.apis.sap_s_4hana_co_fi_generate_api
+generation_status: generated
+ge_status: generated
+---
+
+# Idempotency policy — action_sap_s_4hana_co_fi_generate
+
+- **Policy kind:** tool idempotency
+- **Spec source:** generationSpec.apis.sap_s_4hana_co_fi_generate_api
+- **Tool:** [action_sap_s_4hana_co_fi_generate](/tools/action-sap-s-4hana-co-fi-generate.md)
+
+## Rule
+
+Use idempotency key target_id+rationale for action_sap_s_4hana_co_fi_generate.
+
+# Citations
+
+- [action_sap_s_4hana_co_fi_generate](/tools/action-sap-s-4hana-co-fi-generate.md)

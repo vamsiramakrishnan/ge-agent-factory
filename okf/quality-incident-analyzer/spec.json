@@ -1,0 +1,1192 @@
+{
+  "id": "quality-incident-analyzer",
+  "title": "Quality Incident Analyzer",
+  "department": "procurement",
+  "sourcePath": "../presentation/src/components/slides/use-cases/procurement/QualityIncidentAnalyzer.tsx",
+  "subtitle": "A-1702 • Supplier Performance",
+  "persona": "Quality Engineer",
+  "layer": "Layer 3: Custom ADK",
+  "triggerType": "event",
+  "domainId": "domain-17",
+  "systems": [
+    "SAP QM (QM01/QM02)",
+    "Quality Management Systems",
+    "CAPA Tools",
+    "BigQuery"
+  ],
+  "kpis": [
+    {
+      "label": "Root cause accuracy",
+      "before": "60% keyword-based",
+      "after": "92% context-aware"
+    },
+    {
+      "label": "CAPA response time",
+      "before": "5-7 days",
+      "after": "Same day"
+    },
+    {
+      "label": "Recurrence detection",
+      "before": "Missed patterns",
+      "after": "Cross-incident linking"
+    }
+  ],
+  "statusQuo": [
+    "Root cause classification relies on dropdown menus — quality engineers pick the closest 8D category, losing nuance.",
+    "NCR narratives written by inspectors ('visible tool marks near the bore') go unanalyzed beyond keyword search.",
+    "Recurrence patterns across suppliers and parts are missed because historical NCRs live in disconnected systems."
+  ],
+  "agentification": [
+    "LLM reads inspector narratives: 'surface finish appears rough with visible tool marks — possible worn tooling or incorrect feed rate' and reasons about root cause hypotheses.",
+    "Cross-references recent NCRs: 'Third surface finish complaint in 6 months, same machine center — supplier CAPA said replaced tooling but recurrence suggests spindle wear or coolant system degradation.'",
+    "Generates technically informed 8D reports with specific corrective actions, not just keyword categorization."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "SAP QM (QM01/QM02)",
+        "description": "Non-conformance reports, quality inspection results, defect notifications"
+      },
+      {
+        "system": "Quality Management Systems",
+        "description": "Quality records, inspection procedures, specification data"
+      },
+      {
+        "system": "CAPA Tools",
+        "description": "Corrective and preventive action tracking, 8D workflow management"
+      },
+      {
+        "system": "BigQuery",
+        "description": "Historical NCR analytics, pattern detection, recurrence prediction"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "NCR narrative interpretation, root cause reasoning, technically informed CAPA generation"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "NCR Intake & History Pull",
+        "description": "Receive NCR notification from SAP QM system. Pull historical quality data for the affected supplier, part, and plant. Trigger CAPA workflow in tracking system."
+      },
+      {
+        "label": "Pattern Detection & Classification",
+        "description": "Root cause classification against 8D categories. Pattern detection across suppliers, parts, and plants — is this defect type increasing? Recurrence prediction based on historical CAPA effectiveness."
+      },
+      {
+        "label": "Root Cause Reasoning & CAPA Drafting",
+        "description": "Gemini reads NCR narratives ('surface finish appears rough with visible tool marks near the bore — possible worn tooling or incorrect feed rate') and reasons about root cause hypotheses. Cross-references recent NCRs: 'Third surface finish complaint in 6 months, same machine center — supplier CAPA said replaced tooling but recurrence suggests spindle wear or coolant system degradation.'"
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Quality Incident Analyzer so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "sap_qm_qm01_qm02",
+        "name": "SAP QM (QM01/QM02)",
+        "owns": [
+          "sap_qm_qm01_qm02_records",
+          "sap_qm_qm01_qm02_events",
+          "sap_qm_qm01_qm02_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_sap_qm_qm01_qm02_sap_qm_qm01_qm02_records",
+          "query_sap_qm_qm01_qm02_sap_qm_qm01_qm02_events",
+          "query_sap_qm_qm01_qm02_sap_qm_qm01_qm02_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "quality_management_systems",
+        "name": "Quality Management Systems",
+        "owns": [
+          "quality_management_systems_records",
+          "quality_management_systems_events",
+          "quality_management_systems_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_quality_management_systems_quality_management_systems_records",
+          "query_quality_management_systems_quality_management_systems_events",
+          "query_quality_management_systems_quality_management_systems_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "capa_tools",
+        "name": "CAPA Tools",
+        "owns": [
+          "capa_tools_records",
+          "capa_tools_events",
+          "capa_tools_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_capa_tools_capa_tools_records",
+          "query_capa_tools_capa_tools_events",
+          "query_capa_tools_capa_tools_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "bigquery",
+        "name": "BigQuery",
+        "owns": [
+          "analytics_events",
+          "historical_metrics",
+          "cached_aggregates"
+        ],
+        "protocol": "BigQuery SQL",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_bigquery_analytics_events",
+          "query_bigquery_historical_metrics",
+          "query_bigquery_cached_aggregates"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "sap_qm_qm01_qm02_records",
+        "sourceSystemId": "sap_qm_qm01_qm02",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "sap_qm_qm01_qm02_events",
+        "sourceSystemId": "sap_qm_qm01_qm02",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "sap_qm_qm01_qm02_record_id",
+            "type": "ref",
+            "ref": "sap_qm_qm01_qm02_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "sap_qm_qm01_qm02_audit_trail",
+        "sourceSystemId": "sap_qm_qm01_qm02",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "quality_management_systems_records",
+        "sourceSystemId": "quality_management_systems",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "quality_management_systems_events",
+        "sourceSystemId": "quality_management_systems",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "quality_management_systems_record_id",
+            "type": "ref",
+            "ref": "quality_management_systems_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "quality_management_systems_audit_trail",
+        "sourceSystemId": "quality_management_systems",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "capa_tools_records",
+        "sourceSystemId": "capa_tools",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "capa_tools_events",
+        "sourceSystemId": "capa_tools",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "capa_tools_record_id",
+            "type": "ref",
+            "ref": "capa_tools_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "capa_tools_audit_trail",
+        "sourceSystemId": "capa_tools",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "analytics_events",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "historical_metric_id",
+            "type": "ref",
+            "ref": "historical_metrics.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "historical_metrics",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "cached_aggregates",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "sap_qm_qm01_qm02_events.sap_qm_qm01_qm02_record_id",
+        "to": "sap_qm_qm01_qm02_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "quality_management_systems_events.quality_management_systems_record_id",
+        "to": "quality_management_systems_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "capa_tools_events.capa_tools_record_id",
+        "to": "capa_tools_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "analytics_events.historical_metric_id",
+        "to": "historical_metrics.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "quality-incident-analyzer-policy-guide",
+        "sourceSystemId": "bigquery",
+        "type": "policy",
+        "title": "Quality Incident Analyzer Procurement Policy Guide",
+        "requiredSections": [
+          "Sourcing principles",
+          "Approval thresholds",
+          "Supplier risk requirements",
+          "Contract and compliance gates",
+          "Exception handling"
+        ],
+        "linkedEntities": [
+          "sap_qm_qm01_qm02_records",
+          "sap_qm_qm01_qm02_events",
+          "sap_qm_qm01_qm02_audit_trail"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "sourcing",
+          "approvals",
+          "supplier-risk",
+          "exceptions"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "sap_qm_qm01_qm02_generate_api",
+        "sourceSystemId": "sap_qm_qm01_qm02",
+        "method": "POST",
+        "path": "/api/sap_qm_qm01_qm02/generate",
+        "description": "Synchronous endpoint the agent calls to generate in SAP QM (QM01/QM02) after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "quality-incident-analyzer-baseline-gap",
+        "description": "Seed a realistic gap where Root cause accuracy sits between 60% keyword-based and 92% context-aware, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "sap_qm_qm01_qm02_records",
+          "sap_qm_qm01_qm02_events"
+        ],
+        "discoveryPath": [
+          "Inspect SAP QM (QM01/QM02) records for the affected entities",
+          "Compare against Quality Management Systems historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next Quality Engineer action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "quality_incident_analyzer",
+        "schemas": [
+          "sap_qm_qm01_qm02",
+          "quality_management_systems",
+          "capa_tools"
+        ]
+      },
+      "bigquery": {
+        "dataset": "procurement_quality_incident_analyzer",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "quality-incident-analyzer-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "quality-incident-analyzer-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Quality Incident Analyzer workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "Quality Engineer agent for the Quality Incident Analyzer workflow",
+      "primaryObjective": "LLM reads inspector narratives: 'surface finish appears rough with visible tool marks — possible worn tooling or incorrect feed rate' and reasons about root cause hypotheses. Cross-references recent NCRs: 'Third surface finish complaint in 6 months, same machine center — supplier CAPA said replaced tooling but recurrence suggests spindle wear or coolant system degradation.' so the Quality Engineer can move the Root cause accuracy KPI.",
+      "inScope": [
+        "LLM reads inspector narratives: 'surface finish appears rough with visible tool marks — possible worn tooling or incorrect feed rate' and reasons about root cause hypotheses",
+        "Cross-references recent NCRs: 'Third surface finish complaint in 6 months, same machine center — supplier CAPA said replaced tooling but recurrence suggests spindle wear or coolant system degradation.'",
+        "Generates technically informed 8D reports with specific corrective actions, not just keyword categorization"
+      ],
+      "outOfScope": [
+        "Contract execution without legal review",
+        "Supplier disqualification decisions (category lead retains authority)",
+        "Single-source justification overrides above policy threshold"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_sap_qm_qm01_qm02_sap_qm_qm01_qm02_records",
+          "kind": "query",
+          "sourceSystemId": "sap_qm_qm01_qm02",
+          "description": "Retrieve sap qm qm01 qm02 records from SAP QM (QM01/QM02) for the Quality Incident Analyzer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "sap_qm_qm01_qm02_records_records",
+            "sap_qm_qm01_qm02_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_quality_management_systems_quality_management_systems_records",
+          "kind": "query",
+          "sourceSystemId": "quality_management_systems",
+          "description": "Retrieve quality management systems records from Quality Management Systems for the Quality Incident Analyzer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "quality_management_systems_records_records",
+            "quality_management_systems_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_capa_tools_capa_tools_records",
+          "kind": "query",
+          "sourceSystemId": "capa_tools",
+          "description": "Retrieve capa tools records from CAPA Tools for the Quality Incident Analyzer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "capa_tools_records_records",
+            "capa_tools_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_bigquery_analytics_events",
+          "kind": "query",
+          "sourceSystemId": "bigquery",
+          "description": "Retrieve analytics events from BigQuery for the Quality Incident Analyzer workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "analytics_events_records",
+            "analytics_events_summary"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "lookup_quality_incident_analyzer_policy_guide",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "bigquery",
+          "description": "Look up sections of the Quality Incident Analyzer Procurement Policy Guide to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_sap_qm_qm01_qm02_generate",
+          "kind": "action",
+          "sourceSystemId": "sap_qm_qm01_qm02",
+          "description": "Execute the generate step in SAP QM (QM01/QM02) after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "ncr_intake_history_pull",
+            "label": "NCR Intake & History Pull",
+            "description": "Receive NCR notification from SAP QM system. Pull historical quality data for the affected supplier, part, and plant. Trigger CAPA workflow in tracking system.",
+            "tools": [
+              "query_sap_qm_qm01_qm02_sap_qm_qm01_qm02_records",
+              "query_quality_management_systems_quality_management_systems_records",
+              "query_capa_tools_capa_tools_records",
+              "lookup_quality_incident_analyzer_policy_guide",
+              "action_sap_qm_qm01_qm02_generate"
+            ]
+          },
+          {
+            "id": "pattern_detection_classification",
+            "label": "Pattern Detection & Classification",
+            "description": "Root cause classification against 8D categories. Pattern detection across suppliers, parts, and plants — is this defect type increasing? Recurrence prediction based on historical CAPA effectiveness.",
+            "tools": [
+              "query_capa_tools_capa_tools_records"
+            ]
+          },
+          {
+            "id": "root_cause_reasoning_capa_drafting",
+            "label": "Root Cause Reasoning & CAPA Drafting",
+            "description": "Gemini reads NCR narratives ('surface finish appears rough with visible tool marks near the bore — possible worn tooling or incorrect feed rate') and reasons about root cause hypotheses. Cross-references recent NCRs: 'Third surface finish complaint in 6 months, same machine center — supplier CAPA said replaced tooling but recurrence suggests spindle wear or coolant system degradation.'",
+            "tools": [
+              "query_capa_tools_capa_tools_records"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Root cause accuracy moved from 60% keyword-based toward 92% context-aware",
+          "mustCite": [
+            "sap_qm_qm01_qm02.sap_qm_qm01_qm02_records",
+            "quality_management_systems.quality_management_systems_records"
+          ],
+          "sourceSystemIds": [
+            "sap_qm_qm01_qm02",
+            "quality_management_systems"
+          ]
+        },
+        {
+          "claim": "CAPA response time moved from 5-7 days toward Same day",
+          "mustCite": [
+            "sap_qm_qm01_qm02.sap_qm_qm01_qm02_records",
+            "quality_management_systems.quality_management_systems_records"
+          ],
+          "sourceSystemIds": [
+            "sap_qm_qm01_qm02",
+            "quality_management_systems"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Root cause accuracy regresses past the 60% keyword-based baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Quality Engineer",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed generate action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from SAP QM (QM01/QM02) (and other named systems) entities.",
+        "Never bypass Quality Engineer approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "quality-incident-analyzer-end-to-end",
+          "prompt": "Run the Quality Incident Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_sap_qm_qm01_qm02_sap_qm_qm01_qm02_records",
+            "query_quality_management_systems_quality_management_systems_records",
+            "query_capa_tools_capa_tools_records",
+            "query_bigquery_analytics_events",
+            "lookup_quality_incident_analyzer_policy_guide",
+            "action_sap_qm_qm01_qm02_generate"
+          ],
+          "mustReferenceEntities": [
+            "sap_qm_qm01_qm02_records",
+            "quality_management_systems_records",
+            "capa_tools_records",
+            "analytics_events"
+          ],
+          "mustCiteDocuments": [
+            "quality-incident-analyzer-policy-guide"
+          ],
+          "expectedActionOutcome": "Action generate executed against SAP QM (QM01/QM02), with audit-trail entry and Quality Engineer notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute generate without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/procurement/QualityIncidentAnalyzer.tsx",
+    "familyId": "quality-incident-analyzer",
+    "variant": {
+      "familyId": "quality-incident-analyzer",
+      "variantId": "quality-incident-analyzer",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

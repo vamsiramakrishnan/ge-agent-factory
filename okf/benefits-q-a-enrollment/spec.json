@@ -1,0 +1,977 @@
+{
+  "id": "benefits-q-a-enrollment",
+  "title": "Benefits Q&A & Enrollment",
+  "department": "hr",
+  "sourcePath": "../presentation/src/components/slides/use-cases/hr/BenefitsAssistant.tsx",
+  "subtitle": "A-406 • Total Rewards",
+  "persona": "Employee",
+  "layer": "Layer 1: OOTB",
+  "triggerType": "chat",
+  "domainId": "domain-4",
+  "systems": [
+    "Workday",
+    "Benefits Platform",
+    "Google Chat"
+  ],
+  "kpis": [
+    {
+      "label": "Response time",
+      "before": "24 hrs",
+      "after": "Instant"
+    },
+    {
+      "label": "HR ticket reduction",
+      "before": "Baseline",
+      "after": "-55%"
+    },
+    {
+      "label": "Enrollment accuracy",
+      "before": "85%",
+      "after": "98%"
+    }
+  ],
+  "statusQuo": [
+    "Benefits questions answered via slow email or support tickets.",
+    "Enrollment guidance limited to static, complex plan PDFs.",
+    "Life event changes require manual form processing and validation."
+  ],
+  "agentification": [
+    "24/7 conversational support for plan info and enrollment guidance.",
+    "Personalized plan comparison based on individual employee data.",
+    "Automated life-event processing and carrier data sync."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Workday",
+        "description": "Employee profile, current benefits elections, eligibility rules"
+      },
+      {
+        "system": "Benefitfocus",
+        "description": "Plan details, carrier networks, coverage options, enrollment status"
+      },
+      {
+        "system": "Google Drive",
+        "description": "Benefits plan documents, SPDs, open enrollment guides"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Natural language Q&A, plan comparison reasoning, enrollment guidance"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Question Understanding",
+        "description": "Parse employee benefits question in natural language. Identify intent (plan info, enrollment change, life event, cost comparison) and retrieve employee context from Workday."
+      },
+      {
+        "label": "Plan Analysis",
+        "description": "Cross-reference employee eligibility against available plan options from Benefitfocus. Retrieve relevant plan documents and SPD sections from Google Drive."
+      },
+      {
+        "label": "Personalized Response",
+        "description": "Gemini generates context-aware response with personalized plan comparisons, cost breakdowns, and actionable next steps. Initiates enrollment changes or escalates to HR."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Benefits enrollment needs enough employees, plans, enrollments, and chat messages to prove personalization, life-event handling, and accuracy metrics without becoming a large-data demo."
+    },
+    "sourceSystems": [
+      {
+        "id": "workday",
+        "name": "Workday",
+        "owns": [
+          "employees",
+          "life_events",
+          "employment_status",
+          "dependents"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "json-api",
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_workday_employees",
+          "query_workday_life_events"
+        ],
+        "mcpToolNames": [
+          "workday_get_employee",
+          "workday_list_life_events"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "benefits_platform",
+        "name": "Benefits Platform",
+        "owns": [
+          "benefit_plans",
+          "enrollments",
+          "eligibility_rules",
+          "carrier_sync_events"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "json-api",
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_benefits_platform_benefit_plans",
+          "query_benefits_platform_enrollments",
+          "action_benefits_platform_enroll"
+        ],
+        "mcpToolNames": [
+          "benefits_compare_plans",
+          "benefits_submit_enrollment"
+        ],
+        "evidence": [
+          "sql_result",
+          "source_system_record",
+          "generated_audit_trail",
+          "api_response"
+        ]
+      },
+      {
+        "id": "google_chat",
+        "name": "Google Chat",
+        "owns": [
+          "messages",
+          "spaces",
+          "employee_notifications"
+        ],
+        "protocol": "Workspace API",
+        "localBacking": [
+          "json-api",
+          "firestore"
+        ],
+        "toolNames": [
+          "query_google_chat_messages",
+          "action_google_chat_notify_employee"
+        ],
+        "mcpToolNames": [
+          "google_chat_send_message"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail",
+          "api_response"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "employees",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 50,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "employment_status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.82,
+              0.13,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "life_event",
+            "type": "enum",
+            "values": [
+              "none",
+              "birth_of_child",
+              "marriage",
+              "move",
+              "loss_of_coverage"
+            ],
+            "weights": [
+              0.62,
+              0.12,
+              0.1,
+              0.08,
+              0.08
+            ],
+            "required": true
+          },
+          {
+            "name": "dependents",
+            "type": "number",
+            "min": 0,
+            "max": 4,
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "benefit_plans",
+        "sourceSystemId": "benefits_platform",
+        "datastore": "alloydb",
+        "rowCount": 25,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "carrier",
+            "type": "enum",
+            "values": [
+              "Aetna",
+              "Cigna",
+              "UnitedHealthcare",
+              "Kaiser"
+            ],
+            "required": true
+          },
+          {
+            "name": "plan_name",
+            "type": "enum",
+            "values": [
+              "Gold PPO",
+              "Standard PPO",
+              "Silver HMO",
+              "Bronze HSA"
+            ],
+            "required": true
+          },
+          {
+            "name": "coverage_tier",
+            "type": "enum",
+            "values": [
+              "employee_only",
+              "employee_spouse",
+              "family"
+            ],
+            "required": true
+          },
+          {
+            "name": "monthly_premium",
+            "type": "number",
+            "min": 50,
+            "max": 450,
+            "required": true
+          },
+          {
+            "name": "deductible",
+            "type": "number",
+            "min": 500,
+            "max": 6000,
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "enrollments",
+        "sourceSystemId": "benefits_platform",
+        "datastore": "alloydb",
+        "rowCount": 50,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "employee_id",
+            "type": "ref",
+            "ref": "employees.id",
+            "required": true
+          },
+          {
+            "name": "plan_id",
+            "type": "ref",
+            "ref": "benefit_plans.id",
+            "required": true
+          },
+          {
+            "name": "coverage_tier",
+            "type": "enum",
+            "values": [
+              "employee_only",
+              "employee_spouse",
+              "family"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending_carrier_sync",
+              "waived",
+              "terminated"
+            ],
+            "required": true
+          },
+          {
+            "name": "audit_trail",
+            "type": "lorem.sentence",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "messages",
+        "sourceSystemId": "google_chat",
+        "datastore": "firestore",
+        "rowCount": 50,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "employee_id",
+            "type": "ref",
+            "ref": "employees.id",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "enum",
+            "values": [
+              "google_chat"
+            ],
+            "required": true
+          },
+          {
+            "name": "body",
+            "type": "lorem.paragraph",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "sent",
+              "delivered",
+              "failed"
+            ],
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "enrollments.employee_id",
+        "to": "employees.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "enrollments.plan_id",
+        "to": "benefit_plans.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "messages.employee_id",
+        "to": "employees.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "benefits-open-enrollment-guide",
+        "sourceSystemId": "benefits_platform",
+        "type": "guide",
+        "title": "2026 Benefits Open Enrollment Guide",
+        "requiredSections": [
+          "Eligibility",
+          "Plan comparison",
+          "Life event enrollment window",
+          "Carrier sync timing"
+        ],
+        "linkedEntities": [
+          "benefit_plans",
+          "enrollments"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "eligibility-window",
+          "family-tier",
+          "carrier-sync"
+        ]
+      },
+      {
+        "id": "life-event-processing-sop",
+        "sourceSystemId": "workday",
+        "type": "sop",
+        "title": "Qualified Life Event Processing SOP",
+        "requiredSections": [
+          "Birth of child",
+          "Marriage",
+          "Loss of coverage",
+          "Required documentation",
+          "Audit trail"
+        ],
+        "linkedEntities": [
+          "employees",
+          "enrollments"
+        ],
+        "minimumWordCount": 400,
+        "citationAnchors": [
+          "qle-window",
+          "documentation",
+          "approval"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "systemId": "workday",
+        "operation": "get_employee_profile",
+        "method": "GET",
+        "path": "/systems/workday/employees/{employee_id}",
+        "requestSchema": {
+          "employee_id": "string"
+        },
+        "responseSchema": {
+          "id": "string",
+          "life_event": "string",
+          "dependents": "number",
+          "source_record_id": "string"
+        },
+        "fixture": "mock_data/apis/fixtures/workday_get_employee_profile.json",
+        "mcpToolName": "workday_get_employee"
+      },
+      {
+        "systemId": "benefits_platform",
+        "operation": "submit_enrollment",
+        "method": "POST",
+        "path": "/systems/benefits-platform/enrollments",
+        "requestSchema": {
+          "employee_id": "string",
+          "plan_id": "string",
+          "coverage_tier": "string"
+        },
+        "responseSchema": {
+          "enrollment_id": "string",
+          "status": "string",
+          "carrier_sync_id": "string",
+          "audit_trail": "string"
+        },
+        "fixture": "mock_data/apis/fixtures/benefits_submit_enrollment.json",
+        "mcpToolName": "benefits_submit_enrollment"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "family-tier-life-event-gap",
+        "description": "Employees with a birth-of-child life event are still enrolled in employee-only coverage and need family-tier guidance.",
+        "affectedEntities": [
+          "employees",
+          "enrollments",
+          "benefit_plans"
+        ],
+        "discoveryPath": [
+          "Find employees with life_event=birth_of_child",
+          "Join active enrollments",
+          "Compare coverage_tier against dependents",
+          "Recommend family plan options"
+        ],
+        "expectedEvidence": [
+          "Workday source record",
+          "Benefits Platform enrollment row",
+          "Plan guide citation",
+          "Generated audit trail"
+        ],
+        "expectedRecommendation": "Move eligible employee to an appropriate family tier and submit carrier sync."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "hr_benefits",
+        "schemas": [
+          "workday",
+          "benefits_platform"
+        ]
+      },
+      "firestore": {
+        "database": "hr-benefits-chat",
+        "collections": [
+          "google_chat_messages",
+          "employee_notifications"
+        ]
+      },
+      "bigquery": {
+        "dataset": "hr_benefits_analytics",
+        "tables": [
+          "enrollment_accuracy",
+          "ticket_reduction",
+          "response_time"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "hr-benefits-evidence",
+        "prefixes": [
+          "documents/benefits",
+          "audit-trails"
+        ]
+      },
+      "apis": {
+        "serviceName": "hr-benefits-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "behaviorContract": {
+      "role": "Benefits enrollment copilot for active GE employees in Workday",
+      "primaryObjective": "Answer a benefits question with personalized plan evidence and, when an employee asks to enroll or change coverage, submit the enrollment to the Benefits Platform and confirm via Google Chat — never invent enrollments, plan IDs, or carrier sync results.",
+      "inScope": [
+        "Plan comparison grounded in the employee's region, dependents, and life event",
+        "Qualified life event (QLE) processing within the documented enrollment window",
+        "Submitting an enrollment to the Benefits Platform and emitting a Google Chat confirmation",
+        "Citing the open-enrollment guide and life-event SOP for any policy assertion"
+      ],
+      "outOfScope": [
+        "Medical advice or recommending a specific carrier on clinical grounds",
+        "Negotiating premiums, deductibles, or out-of-network coverage exceptions",
+        "Modifying compensation, payroll, or non-benefits Workday records",
+        "Answering on behalf of a different employee than the authenticated requester"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_workday_employees",
+          "kind": "query",
+          "sourceSystemId": "workday",
+          "description": "Resolve the employee profile (region, employment_status, dependents, active life_event) for the requester before any plan reasoning.",
+          "requiredInputs": [
+            "employee_id"
+          ],
+          "produces": [
+            "employee_record",
+            "active_life_event"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_workday_life_events",
+          "kind": "query",
+          "sourceSystemId": "workday",
+          "description": "Confirm the QLE type and timestamp so the agent can prove the enrollment window is still open.",
+          "requiredInputs": [
+            "employee_id"
+          ],
+          "produces": [
+            "life_event_record"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_benefits_platform_benefit_plans",
+          "kind": "query",
+          "sourceSystemId": "benefits_platform",
+          "description": "List the plans the employee is eligible for, scoped by region and coverage tier the employee can move into.",
+          "requiredInputs": [
+            "region",
+            "coverage_tier"
+          ],
+          "produces": [
+            "eligible_plan_set"
+          ],
+          "evidenceEmitted": [
+            "sql_result",
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_benefits_platform_enrollments",
+          "kind": "query",
+          "sourceSystemId": "benefits_platform",
+          "description": "Return the employee's current active enrollment to compare against requested changes.",
+          "requiredInputs": [
+            "employee_id"
+          ],
+          "produces": [
+            "current_enrollment"
+          ],
+          "evidenceEmitted": [
+            "sql_result",
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "action_benefits_platform_enroll",
+          "kind": "action",
+          "sourceSystemId": "benefits_platform",
+          "description": "Submit an enrollment change to the Benefits Platform; returns enrollment_id, carrier_sync_id, and an audit trail line that the agent must echo to the employee.",
+          "requiredInputs": [
+            "employee_id",
+            "plan_id",
+            "coverage_tier"
+          ],
+          "produces": [
+            "enrollment_id",
+            "carrier_sync_id",
+            "audit_trail"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        },
+        {
+          "name": "action_google_chat_notify_employee",
+          "kind": "notification",
+          "sourceSystemId": "google_chat",
+          "description": "Send the employee a Google Chat confirmation that includes the enrollment_id and the audit_trail line from the Benefits Platform.",
+          "requiredInputs": [
+            "employee_id",
+            "enrollment_id",
+            "audit_trail"
+          ],
+          "produces": [
+            "chat_message_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        },
+        {
+          "name": "evidence_open_enrollment_guide",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "benefits_platform",
+          "description": "Cite the open-enrollment guide for eligibility/window/carrier-sync claims (citation anchors: eligibility-window, family-tier, carrier-sync).",
+          "requiredInputs": [
+            "citation_anchor"
+          ],
+          "produces": [
+            "document_citation"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "evidence_life_event_sop",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "workday",
+          "description": "Cite the QLE SOP for any documentation requirement, approval, or QLE-window assertion.",
+          "requiredInputs": [
+            "citation_anchor"
+          ],
+          "produces": [
+            "document_citation"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "question_understanding",
+            "label": "Question Understanding",
+            "description": "Parse employee benefits question in natural language. Identify intent (plan info, enrollment change, life event, cost comparison) and retrieve employee context from Workday.",
+            "tools": [
+              "query_workday_employees",
+              "query_workday_life_events",
+              "query_benefits_platform_benefit_plans",
+              "query_benefits_platform_enrollments",
+              "action_benefits_platform_enroll",
+              "action_google_chat_notify_employee",
+              "evidence_open_enrollment_guide",
+              "evidence_life_event_sop"
+            ]
+          },
+          {
+            "id": "plan_analysis",
+            "label": "Plan Analysis",
+            "description": "Cross-reference employee eligibility against available plan options from Benefitfocus. Retrieve relevant plan documents and SPD sections from Google Drive.",
+            "tools": [
+              "query_benefits_platform_benefit_plans",
+              "action_google_chat_notify_employee"
+            ]
+          },
+          {
+            "id": "personalized_response",
+            "label": "Personalized Response",
+            "description": "Gemini generates context-aware response with personalized plan comparisons, cost breakdowns, and actionable next steps. Initiates enrollment changes or escalates to HR.",
+            "tools": [
+              "action_benefits_platform_enroll",
+              "evidence_open_enrollment_guide"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Employee is eligible for the requested coverage tier",
+          "mustCite": [
+            "employees.region",
+            "employees.dependents",
+            "employees.life_event",
+            "eligibility-window"
+          ],
+          "sourceSystemIds": [
+            "workday",
+            "benefits_platform"
+          ]
+        },
+        {
+          "claim": "Plan comparison numbers (premium, deductible)",
+          "mustCite": [
+            "benefit_plans.monthly_premium",
+            "benefit_plans.deductible"
+          ],
+          "sourceSystemIds": [
+            "benefits_platform"
+          ]
+        },
+        {
+          "claim": "Enrollment was submitted",
+          "mustCite": [
+            "enrollments.id",
+            "enrollments.audit_trail",
+            "carrier-sync"
+          ],
+          "sourceSystemIds": [
+            "benefits_platform"
+          ]
+        },
+        {
+          "claim": "Employee has been notified",
+          "mustCite": [
+            "messages.id"
+          ],
+          "sourceSystemIds": [
+            "google_chat"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Employee is on_leave or inactive in Workday",
+          "action": "escalate_to_human",
+          "handoffTarget": "Total Rewards HRBP",
+          "rationale": "Only active employees can self-serve enrollments through this agent; leave-status changes require HRBP review."
+        },
+        {
+          "trigger": "Requested plan is not in the eligible_plan_set for the employee's region",
+          "action": "refuse",
+          "rationale": "Carrier networks are region-scoped; the agent must not submit an ineligible enrollment."
+        },
+        {
+          "trigger": "Life event is older than the QLE window in the SOP",
+          "action": "refuse",
+          "rationale": "QLE window is a hard policy limit; cite life-event-processing-sop.qle-window and direct the employee to open enrollment instead."
+        },
+        {
+          "trigger": "Required input (employee_id, plan_id, or coverage_tier) is missing or ambiguous",
+          "action": "request_more_info",
+          "rationale": "Never guess identifiers; the agent must ask for the specific missing field."
+        },
+        {
+          "trigger": "Benefits Platform action returns status=failed or carrier_sync_id is null",
+          "action": "escalate_to_human",
+          "handoffTarget": "Benefits operations",
+          "rationale": "A failed carrier sync must be visible to a human; do not retry silently or claim success."
+        }
+      ],
+      "refusalRules": [
+        "Never answer for an employee_id other than the authenticated requester.",
+        "Never invent enrollment_id, carrier_sync_id, plan_id, or audit_trail values — only echo what action_benefits_platform_enroll returned.",
+        "Never give medical advice or recommend a carrier on clinical grounds.",
+        "Never claim a plan is eligible without citing both a Workday source record and the open-enrollment guide.",
+        "Never bypass the QLE window even if the employee insists."
+      ],
+      "goldenEvals": [
+        {
+          "id": "qle-family-tier-enrollment",
+          "prompt": "I am employee EMP-0007. I just had a baby and need to move to a family Standard PPO. Please enroll me and confirm.",
+          "expectedToolCalls": [
+            "query_workday_employees",
+            "query_workday_life_events",
+            "query_benefits_platform_benefit_plans",
+            "query_benefits_platform_enrollments",
+            "evidence_life_event_sop",
+            "action_benefits_platform_enroll",
+            "action_google_chat_notify_employee"
+          ],
+          "mustReferenceEntities": [
+            "employees",
+            "benefit_plans",
+            "enrollments",
+            "messages"
+          ],
+          "mustCiteDocuments": [
+            "life-event-processing-sop",
+            "benefits-open-enrollment-guide"
+          ],
+          "expectedActionOutcome": "Enrollment submitted to Benefits Platform with carrier_sync_id and Google Chat confirmation sent to the employee.",
+          "forbiddenBehaviors": [
+            "do not invent enrollment_id or carrier_sync_id",
+            "do not skip the QLE window check"
+          ]
+        },
+        {
+          "id": "plan-comparison-no-action",
+          "prompt": "I am employee EMP-0012. Can you compare the Gold PPO and Standard PPO for me? I am not ready to enroll yet.",
+          "expectedToolCalls": [
+            "query_workday_employees",
+            "query_benefits_platform_benefit_plans",
+            "evidence_open_enrollment_guide"
+          ],
+          "mustReferenceEntities": [
+            "employees",
+            "benefit_plans"
+          ],
+          "mustCiteDocuments": [
+            "benefits-open-enrollment-guide"
+          ],
+          "expectedActionOutcome": "Side-by-side premium/deductible comparison with eligibility caveats; no enrollment action taken.",
+          "forbiddenBehaviors": [
+            "do not call action_benefits_platform_enroll without an explicit enroll request",
+            "do not invent premium or deductible numbers"
+          ]
+        },
+        {
+          "id": "out-of-window-refusal",
+          "prompt": "I had a baby 11 months ago — can you still add my child to family coverage today?",
+          "expectedToolCalls": [
+            "query_workday_employees",
+            "query_workday_life_events",
+            "evidence_life_event_sop"
+          ],
+          "mustCiteDocuments": [
+            "life-event-processing-sop"
+          ],
+          "expectedActionOutcome": "Refuse the enrollment, cite the QLE window from the SOP, and route the employee to the next open enrollment.",
+          "forbiddenBehaviors": [
+            "do not call action_benefits_platform_enroll",
+            "do not pretend the QLE window can be extended"
+          ]
+        }
+      ]
+    },
+    "validation": {
+      "smokePrompt": "I am employee EMP-0007. I just had a baby and need to compare family plan options and enroll in Standard PPO.",
+      "expectedAnswer": [
+        "cites Workday life event",
+        "compares eligible plans",
+        "submits Benefits Platform enrollment",
+        "emits Google Chat confirmation",
+        "includes generated audit trail"
+      ],
+      "assertions": [
+        "all tool names use canonical system ids",
+        "all enrollment foreign keys resolve",
+        "at least one document citation is used",
+        "response proves instant KPI path"
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/hr/BenefitsAssistant.tsx",
+    "familyId": "benefits-q-a-enrollment",
+    "variant": {
+      "familyId": "benefits-q-a-enrollment",
+      "variantId": "benefits-q-a-enrollment",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

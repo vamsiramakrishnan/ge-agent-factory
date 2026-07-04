@@ -1,0 +1,1084 @@
+{
+  "id": "calibration-analytics-agent",
+  "title": "Calibration Analytics Agent",
+  "department": "hr",
+  "sourcePath": "../presentation/src/components/slides/use-cases/hr/CalibrationAnalytics.tsx",
+  "subtitle": "A-306 • Performance Mgmt",
+  "persona": "HRBP",
+  "layer": "Layer 4: Data Agent",
+  "triggerType": "event",
+  "domainId": "domain-3",
+  "systems": [
+    "Workday",
+    "Google BigQuery",
+    "Google Sheets"
+  ],
+  "kpis": [
+    {
+      "label": "Pre-cal prep",
+      "before": "2 weeks",
+      "after": "Instant"
+    },
+    {
+      "label": "Bias detection",
+      "before": "Post-facto",
+      "after": "Pre-session"
+    },
+    {
+      "label": "Rating equity",
+      "before": "Inconsistent",
+      "after": "Data-validated"
+    }
+  ],
+  "statusQuo": [
+    "Calibration sessions driven by recency bias and loudest-voice dynamics.",
+    "Rating distributions inconsistent across managers and business units.",
+    "Equity concerns surface post-facto when remediation is costly."
+  ],
+  "agentification": [
+    "Pre-calibration analytics surfacing distribution anomalies by manager.",
+    "Bias detection across protected categories with statistical rigor.",
+    "Data-driven calibration recommendations anchored in objective evidence."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Workday",
+        "description": "Proposed ratings, employee demographics, manager assignments"
+      },
+      {
+        "system": "BigQuery",
+        "description": "Rating distribution analytics, historical calibration data"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Bias detection, disparity analysis, calibration recommendations"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Rating Data Assembly",
+        "description": "Pull proposed ratings, employee demographics, and manager assignment data from Workday. Combine with historical rating patterns from BigQuery."
+      },
+      {
+        "label": "Distribution & Bias Analysis",
+        "description": "Analyze bell curve distributions, cross-manager patterns, and outlier detection. Statistical disparity analysis across protected categories."
+      },
+      {
+        "label": "Calibration Recommendations",
+        "description": "Gemini generates data-backed calibration suggestions anchored in objective evidence. Surfaces specific manager patterns and equity concerns."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Calibration Analytics Agent so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "workday",
+        "name": "Workday",
+        "owns": [
+          "employees",
+          "positions",
+          "compensation_records"
+        ],
+        "protocol": "Workday REST",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_workday_employees",
+          "query_workday_positions",
+          "query_workday_compensation_records"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "google_bigquery",
+        "name": "Google BigQuery",
+        "owns": [
+          "analytics_events",
+          "historical_metrics",
+          "cached_aggregates"
+        ],
+        "protocol": "BigQuery SQL",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_google_bigquery_analytics_events",
+          "query_google_bigquery_historical_metrics",
+          "query_google_bigquery_cached_aggregates"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "google_sheets",
+        "name": "Google Sheets",
+        "owns": [
+          "sheets",
+          "named_ranges",
+          "edit_history"
+        ],
+        "protocol": "Workspace API",
+        "localBacking": [
+          "cloud-storage"
+        ],
+        "toolNames": [
+          "query_google_sheets_sheets",
+          "query_google_sheets_named_ranges",
+          "query_google_sheets_edit_history"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "employees",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "positions",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "compensation_records",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "analytics_events",
+        "sourceSystemId": "google_bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "historical_metric_id",
+            "type": "ref",
+            "ref": "historical_metrics.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "historical_metrics",
+        "sourceSystemId": "google_bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "cached_aggregates",
+        "sourceSystemId": "google_bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "sheets",
+        "sourceSystemId": "google_sheets",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "named_ranges",
+        "sourceSystemId": "google_sheets",
+        "datastore": "alloydb",
+        "rowCount": 30,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "edit_history",
+        "sourceSystemId": "google_sheets",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "sheet_id",
+            "type": "ref",
+            "ref": "sheets.id",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "analytics_events.historical_metric_id",
+        "to": "historical_metrics.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "edit_history.sheet_id",
+        "to": "sheets.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "calibration-analytics-agent-policy-handbook",
+        "sourceSystemId": "google_bigquery",
+        "type": "policy",
+        "title": "Calibration Analytics Agent Policy Handbook",
+        "requiredSections": [
+          "Eligibility and scope",
+          "Workflow steps",
+          "Manager responsibilities",
+          "Compliance and audit",
+          "Sensitive-data handling"
+        ],
+        "linkedEntities": [
+          "employees",
+          "positions",
+          "compensation_records"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "eligibility",
+          "workflow",
+          "compliance",
+          "sensitive-data"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "workday_recommend_api",
+        "sourceSystemId": "workday",
+        "method": "POST",
+        "path": "/api/workday/recommend",
+        "description": "Synchronous endpoint the agent calls to recommend in Workday after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "calibration-analytics-agent-baseline-gap",
+        "description": "Seed a realistic gap where Pre-cal prep sits between 2 weeks and Instant, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "employees",
+          "positions"
+        ],
+        "discoveryPath": [
+          "Inspect Workday records for the affected entities",
+          "Compare against Google BigQuery historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next HRBP action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "calibration_analytics_agent",
+        "schemas": [
+          "workday",
+          "google_sheets"
+        ]
+      },
+      "bigquery": {
+        "dataset": "hr_calibration_analytics_agent",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "calibration-analytics-agent-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "calibration-analytics-agent-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Calibration Analytics Agent workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "HRBP agent for the Calibration Analytics Agent workflow",
+      "primaryObjective": "Pre-calibration analytics surfacing distribution anomalies by manager. Bias detection across protected categories with statistical rigor. so the HRBP can move the Pre-cal prep KPI.",
+      "inScope": [
+        "Pre-calibration analytics surfacing distribution anomalies by manager",
+        "Bias detection across protected categories with statistical rigor",
+        "Data-driven calibration recommendations anchored in objective evidence"
+      ],
+      "outOfScope": [
+        "Final hiring, termination, or compensation decisions (HRBP/leadership retains authority)",
+        "Performance management adjudication and disciplinary action",
+        "Legal interpretation of employment law in ambiguous jurisdictions"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_workday_employees",
+          "kind": "query",
+          "sourceSystemId": "workday",
+          "description": "Retrieve employees from Workday for the Calibration Analytics Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "employees_records",
+            "employees_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_google_bigquery_analytics_events",
+          "kind": "query",
+          "sourceSystemId": "google_bigquery",
+          "description": "Retrieve analytics events from Google BigQuery for the Calibration Analytics Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "analytics_events_records",
+            "analytics_events_summary"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "query_google_sheets_sheets",
+          "kind": "query",
+          "sourceSystemId": "google_sheets",
+          "description": "Retrieve sheets from Google Sheets for the Calibration Analytics Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "sheets_records",
+            "sheets_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_calibration_analytics_agent_policy_handbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "google_bigquery",
+          "description": "Look up sections of the Calibration Analytics Agent Policy Handbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_workday_recommend",
+          "kind": "action",
+          "sourceSystemId": "workday",
+          "description": "Execute the recommend step in Workday after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "rating_data_assembly",
+            "label": "Rating Data Assembly",
+            "description": "Pull proposed ratings, employee demographics, and manager assignment data from Workday. Combine with historical rating patterns from BigQuery.",
+            "tools": [
+              "query_workday_employees",
+              "query_google_bigquery_analytics_events",
+              "lookup_calibration_analytics_agent_policy_handbook",
+              "action_workday_recommend"
+            ]
+          },
+          {
+            "id": "calibration_recommendations",
+            "label": "Calibration Recommendations",
+            "description": "Gemini generates data-backed calibration suggestions anchored in objective evidence. Surfaces specific manager patterns and equity concerns.",
+            "tools": [
+              "lookup_calibration_analytics_agent_policy_handbook",
+              "action_workday_recommend"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Pre-cal prep moved from 2 weeks toward Instant",
+          "mustCite": [
+            "workday.employees",
+            "google_bigquery.analytics_events"
+          ],
+          "sourceSystemIds": [
+            "workday",
+            "google_bigquery"
+          ]
+        },
+        {
+          "claim": "Bias detection moved from Post-facto toward Pre-session",
+          "mustCite": [
+            "workday.employees",
+            "google_bigquery.analytics_events"
+          ],
+          "sourceSystemIds": [
+            "workday",
+            "google_bigquery"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Pre-cal prep regresses past the 2 weeks baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "HRBP",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed recommend action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Workday (and other named systems) entities.",
+        "Never bypass HRBP approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "calibration-analytics-agent-end-to-end",
+          "prompt": "Run the Calibration Analytics Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_workday_employees",
+            "query_google_bigquery_analytics_events",
+            "query_google_sheets_sheets",
+            "lookup_calibration_analytics_agent_policy_handbook",
+            "action_workday_recommend"
+          ],
+          "mustReferenceEntities": [
+            "employees",
+            "analytics_events",
+            "sheets"
+          ],
+          "mustCiteDocuments": [
+            "calibration-analytics-agent-policy-handbook"
+          ],
+          "expectedActionOutcome": "Action recommend executed against Workday, with audit-trail entry and HRBP notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute recommend without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/hr/CalibrationAnalytics.tsx",
+    "familyId": "calibration-analytics-agent",
+    "variant": {
+      "familyId": "calibration-analytics-agent",
+      "variantId": "calibration-analytics-agent",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

@@ -1,0 +1,1185 @@
+{
+  "id": "backup-dr-compliance-agent",
+  "title": "Backup & DR Compliance Agent",
+  "department": "it",
+  "sourcePath": "../presentation/src/components/slides/use-cases/it/BackupDRComplianceAgent.tsx",
+  "subtitle": "A-4008 • Infra & Cloud Ops",
+  "persona": "Cloud Architect / SRE Manager",
+  "layer": "Layer 2: Agent Designer",
+  "triggerType": "scheduled",
+  "domainId": "domain-40",
+  "systems": [
+    "AWS Backup",
+    "GCP Cloud Storage",
+    "Terraform",
+    "BigQuery",
+    "Vertex AI"
+  ],
+  "kpis": [
+    {
+      "label": "Backup coverage gaps",
+      "before": "Found in DR drills",
+      "after": "Daily detection"
+    },
+    {
+      "label": "RPO/RTO compliance",
+      "before": "Quarterly audit",
+      "after": "Continuous monitoring"
+    },
+    {
+      "label": "DR readiness score",
+      "before": "Unknown",
+      "after": "Daily scored by tier"
+    }
+  ],
+  "statusQuo": [
+    "Backup coverage gaps discovered during annual DR drills — by then the gap has existed for months.",
+    "RPO/RTO compliance measured quarterly via manual audit, not continuously monitored.",
+    "New systems and migrations often miss backup configuration, creating unprotected data."
+  ],
+  "agentification": [
+    "Gemini identifies backup coverage gaps immediately — catching systems dropped from backup jobs during migrations.",
+    "Continuous RPO/RTO compliance scoring replaces quarterly audits with daily validated readiness.",
+    "Storage growth forecasting prevents backup infrastructure from running out of capacity unexpectedly."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "AWS Backup",
+        "description": "Backup job status, restore points, cross-region copies"
+      },
+      {
+        "system": "GCP Cloud Storage",
+        "description": "Object storage backups, lifecycle policies, cross-region status"
+      },
+      {
+        "system": "Terraform",
+        "description": "Infrastructure declarations for backup policy validation"
+      },
+      {
+        "system": "BigQuery",
+        "description": "Backup history, RPO/RTO compliance tracking, storage growth"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "DR readiness narrative, coverage gap identification, compliance reasoning"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Backup Status Collection",
+        "description": "Verify backup completion across AWS Backup and GCP Cloud Storage. Check cross-region replication status. Validate backup retention meets policy requirements by system tier."
+      },
+      {
+        "label": "RPO/RTO Compliance Scoring",
+        "description": "Track backup success rates over time. Benchmark restore times against RTO targets. Score RPO compliance based on backup frequency vs. data change rate. Forecast storage growth."
+      },
+      {
+        "label": "DR Readiness Narrative",
+        "description": "Gemini generates report: 'All tier-1 systems meet RPO targets. The user-uploads S3 bucket hasn't been in the cross-region backup since March migration — violates 4-hour RPO. Adding to backup job immediately.'"
+      },
+      {
+        "label": "Report & Remediation",
+        "description": "DR compliance report published with coverage gap alerts. Non-compliant systems flagged with auto-generated remediation actions. Quarterly DR drill schedule maintained."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Backup & DR Compliance Agent so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "aws_backup",
+        "name": "AWS Backup",
+        "owns": [
+          "billing_records",
+          "resource_inventory",
+          "alarm_events"
+        ],
+        "protocol": "AWS SDK",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_aws_backup_billing_records",
+          "query_aws_backup_resource_inventory",
+          "query_aws_backup_alarm_events"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "gcp_cloud_storage",
+        "name": "GCP Cloud Storage",
+        "owns": [
+          "gcp_cloud_storage_records",
+          "gcp_cloud_storage_events",
+          "gcp_cloud_storage_audit_trail"
+        ],
+        "protocol": "GCP SDK",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_gcp_cloud_storage_gcp_cloud_storage_records",
+          "query_gcp_cloud_storage_gcp_cloud_storage_events",
+          "query_gcp_cloud_storage_gcp_cloud_storage_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "terraform",
+        "name": "Terraform",
+        "owns": [
+          "modules",
+          "state_versions",
+          "plan_diffs"
+        ],
+        "protocol": "HCL/CLI",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_terraform_modules",
+          "query_terraform_state_versions",
+          "query_terraform_plan_diffs"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "bigquery",
+        "name": "BigQuery",
+        "owns": [
+          "analytics_events",
+          "historical_metrics",
+          "cached_aggregates"
+        ],
+        "protocol": "BigQuery SQL",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_bigquery_analytics_events",
+          "query_bigquery_historical_metrics",
+          "query_bigquery_cached_aggregates"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "billing_records",
+        "sourceSystemId": "aws_backup",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "service",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": 1,
+            "max": 10000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR"
+            ],
+            "required": true
+          },
+          {
+            "name": "period_start",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "period_end",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "resource_inventory",
+        "sourceSystemId": "aws_backup",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "alarm_events",
+        "sourceSystemId": "aws_backup",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "billing_record_id",
+            "type": "ref",
+            "ref": "billing_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "gcp_cloud_storage_records",
+        "sourceSystemId": "gcp_cloud_storage",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "gcp_cloud_storage_events",
+        "sourceSystemId": "gcp_cloud_storage",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "gcp_cloud_storage_record_id",
+            "type": "ref",
+            "ref": "gcp_cloud_storage_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "gcp_cloud_storage_audit_trail",
+        "sourceSystemId": "gcp_cloud_storage",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "modules",
+        "sourceSystemId": "terraform",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "state_versions",
+        "sourceSystemId": "terraform",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "plan_diffs",
+        "sourceSystemId": "terraform",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "analytics_events",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "historical_metric_id",
+            "type": "ref",
+            "ref": "historical_metrics.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "historical_metrics",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "cached_aggregates",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "alarm_events.billing_record_id",
+        "to": "billing_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "gcp_cloud_storage_events.gcp_cloud_storage_record_id",
+        "to": "gcp_cloud_storage_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "analytics_events.historical_metric_id",
+        "to": "historical_metrics.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "backup-dr-compliance-agent-runbook",
+        "sourceSystemId": "bigquery",
+        "type": "runbook",
+        "title": "Backup & DR Compliance Agent Operations Runbook",
+        "requiredSections": [
+          "Detection signals",
+          "Triage procedures",
+          "Remediation actions",
+          "Rollback criteria",
+          "Post-incident review"
+        ],
+        "linkedEntities": [
+          "billing_records",
+          "resource_inventory",
+          "alarm_events"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "detection",
+          "triage",
+          "remediation",
+          "rollback"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "aws_backup_validate_api",
+        "sourceSystemId": "aws_backup",
+        "method": "POST",
+        "path": "/api/aws_backup/validate",
+        "description": "Synchronous endpoint the agent calls to validate in AWS Backup after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "backup-dr-compliance-agent-baseline-gap",
+        "description": "Seed a realistic gap where Backup coverage gaps sits between Found in DR drills and Daily detection, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "billing_records",
+          "resource_inventory"
+        ],
+        "discoveryPath": [
+          "Inspect AWS Backup records for the affected entities",
+          "Compare against GCP Cloud Storage historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next Cloud Architect / SRE Manager action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "backup_dr_compliance_agent",
+        "schemas": [
+          "aws_backup",
+          "gcp_cloud_storage",
+          "terraform"
+        ]
+      },
+      "bigquery": {
+        "dataset": "it_backup_dr_compliance_agent",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "backup-dr-compliance-agent-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "backup-dr-compliance-agent-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Backup & DR Compliance Agent workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "Cloud Architect / SRE Manager agent for the Backup & DR Compliance Agent workflow",
+      "primaryObjective": "Gemini identifies backup coverage gaps immediately — catching systems dropped from backup jobs during migrations. Continuous RPO/RTO compliance scoring replaces quarterly audits with daily validated readiness. so the Cloud Architect / SRE Manager can move the Backup coverage gaps KPI.",
+      "inScope": [
+        "Gemini identifies backup coverage gaps immediately — catching systems dropped from backup jobs during migrations",
+        "Continuous RPO/RTO compliance scoring replaces quarterly audits with daily validated readiness",
+        "Storage growth forecasting prevents backup infrastructure from running out of capacity unexpectedly"
+      ],
+      "outOfScope": [
+        "Production deployments outside an approved change window",
+        "Irreversible destructive actions on shared infrastructure (DROP, force-delete, key rotation)",
+        "Security incident attribution requiring forensics"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_aws_backup_billing_records",
+          "kind": "query",
+          "sourceSystemId": "aws_backup",
+          "description": "Retrieve billing records from AWS Backup for the Backup & DR Compliance Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "billing_records_records",
+            "billing_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_gcp_cloud_storage_gcp_cloud_storage_records",
+          "kind": "query",
+          "sourceSystemId": "gcp_cloud_storage",
+          "description": "Retrieve gcp cloud storage records from GCP Cloud Storage for the Backup & DR Compliance Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "gcp_cloud_storage_records_records",
+            "gcp_cloud_storage_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_terraform_modules",
+          "kind": "query",
+          "sourceSystemId": "terraform",
+          "description": "Retrieve modules from Terraform for the Backup & DR Compliance Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "modules_records",
+            "modules_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_bigquery_analytics_events",
+          "kind": "query",
+          "sourceSystemId": "bigquery",
+          "description": "Retrieve analytics events from BigQuery for the Backup & DR Compliance Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "analytics_events_records",
+            "analytics_events_summary"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "lookup_backup_dr_compliance_agent_runbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "bigquery",
+          "description": "Look up sections of the Backup & DR Compliance Agent Operations Runbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_aws_backup_validate",
+          "kind": "action",
+          "sourceSystemId": "aws_backup",
+          "description": "Execute the validate step in AWS Backup after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "backup_status_collection",
+            "label": "Backup Status Collection",
+            "description": "Verify backup completion across AWS Backup and GCP Cloud Storage. Check cross-region replication status. Validate backup retention meets policy requirements by system tier.",
+            "tools": [
+              "query_aws_backup_billing_records",
+              "query_gcp_cloud_storage_gcp_cloud_storage_records",
+              "lookup_backup_dr_compliance_agent_runbook",
+              "action_aws_backup_validate"
+            ]
+          },
+          {
+            "id": "rpo_rto_compliance_scoring",
+            "label": "RPO/RTO Compliance Scoring",
+            "description": "Track backup success rates over time. Benchmark restore times against RTO targets. Score RPO compliance based on backup frequency vs. data change rate. Forecast storage growth.",
+            "tools": [
+              "query_aws_backup_billing_records",
+              "query_gcp_cloud_storage_gcp_cloud_storage_records",
+              "lookup_backup_dr_compliance_agent_runbook",
+              "action_aws_backup_validate"
+            ]
+          },
+          {
+            "id": "dr_readiness_narrative",
+            "label": "DR Readiness Narrative",
+            "description": "Gemini generates report: 'All tier-1 systems meet RPO targets. The user-uploads S3 bucket hasn't been in the cross-region backup since March migration — violates 4-hour RPO. Adding to backup job immediately.'",
+            "tools": [
+              "query_aws_backup_billing_records",
+              "lookup_backup_dr_compliance_agent_runbook",
+              "action_aws_backup_validate"
+            ]
+          },
+          {
+            "id": "report_remediation",
+            "label": "Report & Remediation",
+            "description": "DR compliance report published with coverage gap alerts. Non-compliant systems flagged with auto-generated remediation actions. Quarterly DR drill schedule maintained.",
+            "tools": [
+              "lookup_backup_dr_compliance_agent_runbook"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Backup coverage gaps moved from Found in DR drills toward Daily detection",
+          "mustCite": [
+            "aws_backup.billing_records",
+            "gcp_cloud_storage.gcp_cloud_storage_records"
+          ],
+          "sourceSystemIds": [
+            "aws_backup",
+            "gcp_cloud_storage"
+          ]
+        },
+        {
+          "claim": "RPO/RTO compliance moved from Quarterly audit toward Continuous monitoring",
+          "mustCite": [
+            "aws_backup.billing_records",
+            "gcp_cloud_storage.gcp_cloud_storage_records"
+          ],
+          "sourceSystemIds": [
+            "aws_backup",
+            "gcp_cloud_storage"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Backup coverage gaps regresses past the Found in DR drills baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Cloud Architect / SRE Manager",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed validate action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from AWS Backup (and other named systems) entities.",
+        "Never bypass Cloud Architect / SRE Manager approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "backup-dr-compliance-agent-end-to-end",
+          "prompt": "Run the Backup & DR Compliance Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_aws_backup_billing_records",
+            "query_gcp_cloud_storage_gcp_cloud_storage_records",
+            "query_terraform_modules",
+            "query_bigquery_analytics_events",
+            "lookup_backup_dr_compliance_agent_runbook",
+            "action_aws_backup_validate"
+          ],
+          "mustReferenceEntities": [
+            "billing_records",
+            "gcp_cloud_storage_records",
+            "modules",
+            "analytics_events"
+          ],
+          "mustCiteDocuments": [
+            "backup-dr-compliance-agent-runbook"
+          ],
+          "expectedActionOutcome": "Action validate executed against AWS Backup, with audit-trail entry and Cloud Architect / SRE Manager notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute validate without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/it/BackupDRComplianceAgent.tsx",
+    "familyId": "backup-dr-compliance-agent",
+    "variant": {
+      "familyId": "backup-dr-compliance-agent",
+      "variantId": "backup-dr-compliance-agent",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

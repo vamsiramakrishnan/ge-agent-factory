@@ -1,0 +1,1145 @@
+{
+  "id": "investor-relations-prep-agent",
+  "title": "Investor Relations Prep Agent",
+  "department": "finance",
+  "sourcePath": "../presentation/src/components/slides/use-cases/finance/InvestorRelationsPrepAgent.tsx",
+  "subtitle": "A-2808 • Finance Analytics & Reporting",
+  "persona": "CFO",
+  "layer": "Layer 3: Custom ADK",
+  "triggerType": "scheduled",
+  "domainId": "domain-28",
+  "systems": [
+    "Bloomberg",
+    "S&P Capital IQ",
+    "BigQuery",
+    "Google Slides",
+    "Vertex AI"
+  ],
+  "kpis": [
+    {
+      "label": "IR prep time",
+      "before": "2-3 weeks",
+      "after": "3-5 days"
+    },
+    {
+      "label": "Q&A coverage",
+      "before": "10-15 anticipated questions",
+      "after": "40+ with prepared responses"
+    },
+    {
+      "label": "Consensus analysis",
+      "before": "Manual spreadsheet",
+      "after": "Automated with variance ranking"
+    }
+  ],
+  "statusQuo": [
+    "Investor relations preparation takes weeks of manual compilation from multiple data sources.",
+    "Analyst Q&A preparation limited to 10-15 obvious questions without systematic coverage.",
+    "Consensus analysis done manually in spreadsheets, missing real-time estimate revisions."
+  ],
+  "agentification": [
+    "Automated compilation of results, consensus estimates, and peer data in days instead of weeks.",
+    "Gemini anticipates 40+ analyst questions with prepared talking points based on variance patterns.",
+    "Real-time consensus tracking identifies estimate revisions and prepares proactive messaging."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Bloomberg",
+        "description": "Analyst estimates, market data, peer valuations"
+      },
+      {
+        "system": "S&P Capital IQ",
+        "description": "Consensus estimates, peer financials, industry data"
+      },
+      {
+        "system": "BigQuery",
+        "description": "Internal financial results, KPIs, guidance tracking"
+      },
+      {
+        "system": "Google Slides",
+        "description": "Earnings presentation output"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Analyst question anticipation, talking point generation, script drafting"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Data Assembly",
+        "description": "Compile quarterly results from BigQuery. Pull analyst consensus estimates from Bloomberg and Capital IQ. Gather peer results for competitive context."
+      },
+      {
+        "label": "Variance Analysis",
+        "description": "Compare results vs. consensus on every major line item. Rank variances by magnitude and analyst sensitivity. Analyze performance vs. prior guidance."
+      },
+      {
+        "label": "Q&A Preparation",
+        "description": "Gemini anticipates analyst questions: 'Given the 3% revenue miss, analysts will ask about pipeline and guidance. Prepare: pipeline is $150M (up 20%), miss was timing-driven, guidance maintained.' Drafts earnings script and talking points."
+      },
+      {
+        "label": "Presentation Assembly",
+        "description": "Generate earnings presentation in Google Slides with results, peer comparisons, guidance update, and supporting appendix materials."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Investor Relations Prep Agent so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "bloomberg",
+        "name": "Bloomberg",
+        "owns": [
+          "bloomberg_records",
+          "bloomberg_events",
+          "bloomberg_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_bloomberg_bloomberg_records",
+          "query_bloomberg_bloomberg_events",
+          "query_bloomberg_bloomberg_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "s_p_capital_iq",
+        "name": "S&P Capital IQ",
+        "owns": [
+          "s_p_capital_iq_records",
+          "s_p_capital_iq_events",
+          "s_p_capital_iq_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_s_p_capital_iq_s_p_capital_iq_records",
+          "query_s_p_capital_iq_s_p_capital_iq_events",
+          "query_s_p_capital_iq_s_p_capital_iq_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "bigquery",
+        "name": "BigQuery",
+        "owns": [
+          "analytics_events",
+          "historical_metrics",
+          "cached_aggregates"
+        ],
+        "protocol": "BigQuery SQL",
+        "localBacking": [
+          "bigquery"
+        ],
+        "toolNames": [
+          "query_bigquery_analytics_events",
+          "query_bigquery_historical_metrics",
+          "query_bigquery_cached_aggregates"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "google_slides",
+        "name": "Google Slides",
+        "owns": [
+          "presentations",
+          "slide_assets",
+          "view_logs"
+        ],
+        "protocol": "Workspace API",
+        "localBacking": [
+          "cloud-storage"
+        ],
+        "toolNames": [
+          "query_google_slides_presentations",
+          "query_google_slides_slide_assets",
+          "query_google_slides_view_logs"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "bloomberg_records",
+        "sourceSystemId": "bloomberg",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "bloomberg_events",
+        "sourceSystemId": "bloomberg",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "bloomberg_record_id",
+            "type": "ref",
+            "ref": "bloomberg_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "bloomberg_audit_trail",
+        "sourceSystemId": "bloomberg",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "s_p_capital_iq_records",
+        "sourceSystemId": "s_p_capital_iq",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "s_p_capital_iq_events",
+        "sourceSystemId": "s_p_capital_iq",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "s_p_capital_iq_record_id",
+            "type": "ref",
+            "ref": "s_p_capital_iq_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "s_p_capital_iq_audit_trail",
+        "sourceSystemId": "s_p_capital_iq",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "analytics_events",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "historical_metric_id",
+            "type": "ref",
+            "ref": "historical_metrics.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "historical_metrics",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "cached_aggregates",
+        "sourceSystemId": "bigquery",
+        "datastore": "bigquery",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "enum",
+            "values": [
+              "day",
+              "week",
+              "month",
+              "quarter"
+            ],
+            "required": true
+          },
+          {
+            "name": "metric_name",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "float",
+            "min": 0,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "variance_pct",
+            "type": "float",
+            "min": -50,
+            "max": 50,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "computed_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "presentations",
+        "sourceSystemId": "google_slides",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "review",
+              "published",
+              "archived"
+            ],
+            "required": true
+          },
+          {
+            "name": "last_updated",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "slide_assets",
+        "sourceSystemId": "google_slides",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "view_logs",
+        "sourceSystemId": "google_slides",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "presentation_id",
+            "type": "ref",
+            "ref": "presentations.id",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "bloomberg_events.bloomberg_record_id",
+        "to": "bloomberg_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "s_p_capital_iq_events.s_p_capital_iq_record_id",
+        "to": "s_p_capital_iq_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "analytics_events.historical_metric_id",
+        "to": "historical_metrics.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      },
+      {
+        "from": "view_logs.presentation_id",
+        "to": "presentations.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "investor-relations-prep-agent-controls-playbook",
+        "sourceSystemId": "bigquery",
+        "type": "policy",
+        "title": "Investor Relations Prep Agent Controls Playbook",
+        "requiredSections": [
+          "Workflow scope",
+          "Materiality thresholds",
+          "Escalation triggers",
+          "Audit evidence requirements",
+          "Quarter-end variations"
+        ],
+        "linkedEntities": [
+          "bloomberg_records",
+          "bloomberg_events",
+          "bloomberg_audit_trail"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "scope",
+          "materiality",
+          "escalation",
+          "audit-evidence"
+        ]
+      }
+    ],
+    "apis": [],
+    "anomalies": [
+      {
+        "id": "investor-relations-prep-agent-baseline-gap",
+        "description": "Seed a realistic gap where IR prep time sits between 2-3 weeks and 3-5 days, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "bloomberg_records",
+          "bloomberg_events"
+        ],
+        "discoveryPath": [
+          "Inspect Bloomberg records for the affected entities",
+          "Compare against S&P Capital IQ historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next CFO action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "investor_relations_prep_agent",
+        "schemas": [
+          "bloomberg",
+          "s_p_capital_iq",
+          "google_slides"
+        ]
+      },
+      "bigquery": {
+        "dataset": "finance_investor_relations_prep_agent",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "investor-relations-prep-agent-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "investor-relations-prep-agent-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Investor Relations Prep Agent workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "CFO agent for the Investor Relations Prep Agent workflow",
+      "primaryObjective": "Automated compilation of results, consensus estimates, and peer data in days instead of weeks. Gemini anticipates 40+ analyst questions with prepared talking points based on variance patterns. so the CFO can move the IR prep time KPI.",
+      "inScope": [
+        "Automated compilation of results, consensus estimates, and peer data in days instead of weeks",
+        "Gemini anticipates 40+ analyst questions with prepared talking points based on variance patterns",
+        "Real-time consensus tracking identifies estimate revisions and prepares proactive messaging"
+      ],
+      "outOfScope": [
+        "Final sign-off on materially significant journal entries (Controller retains authority)",
+        "Restatement of prior-period filings",
+        "Tax position changes that require external advisor review"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_bloomberg_bloomberg_records",
+          "kind": "query",
+          "sourceSystemId": "bloomberg",
+          "description": "Retrieve bloomberg records from Bloomberg for the Investor Relations Prep Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "bloomberg_records_records",
+            "bloomberg_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_s_p_capital_iq_s_p_capital_iq_records",
+          "kind": "query",
+          "sourceSystemId": "s_p_capital_iq",
+          "description": "Retrieve s p capital iq records from S&P Capital IQ for the Investor Relations Prep Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "s_p_capital_iq_records_records",
+            "s_p_capital_iq_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_bigquery_analytics_events",
+          "kind": "query",
+          "sourceSystemId": "bigquery",
+          "description": "Retrieve analytics events from BigQuery for the Investor Relations Prep Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "analytics_events_records",
+            "analytics_events_summary"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "query_google_slides_presentations",
+          "kind": "query",
+          "sourceSystemId": "google_slides",
+          "description": "Retrieve presentations from Google Slides for the Investor Relations Prep Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "presentations_records",
+            "presentations_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_investor_relations_prep_agent_controls_playbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "bigquery",
+          "description": "Look up sections of the Investor Relations Prep Agent Controls Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "data_assembly",
+            "label": "Data Assembly",
+            "description": "Compile quarterly results from BigQuery. Pull analyst consensus estimates from Bloomberg and Capital IQ. Gather peer results for competitive context.",
+            "tools": [
+              "query_bloomberg_bloomberg_records",
+              "query_s_p_capital_iq_s_p_capital_iq_records",
+              "query_bigquery_analytics_events",
+              "lookup_investor_relations_prep_agent_controls_playbook"
+            ]
+          },
+          {
+            "id": "q_a_preparation",
+            "label": "Q&A Preparation",
+            "description": "Gemini anticipates analyst questions: 'Given the 3% revenue miss, analysts will ask about pipeline and guidance. Prepare: pipeline is $150M (up 20%), miss was timing-driven, guidance maintained.' Drafts earnings script and talking points.",
+            "tools": [
+              "lookup_investor_relations_prep_agent_controls_playbook"
+            ]
+          },
+          {
+            "id": "presentation_assembly",
+            "label": "Presentation Assembly",
+            "description": "Generate earnings presentation in Google Slides with results, peer comparisons, guidance update, and supporting appendix materials.",
+            "tools": [
+              "query_google_slides_presentations"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "IR prep time moved from 2-3 weeks toward 3-5 days",
+          "mustCite": [
+            "bloomberg.bloomberg_records",
+            "s_p_capital_iq.s_p_capital_iq_records"
+          ],
+          "sourceSystemIds": [
+            "bloomberg",
+            "s_p_capital_iq"
+          ]
+        },
+        {
+          "claim": "Q&A coverage moved from 10-15 anticipated questions toward 40+ with prepared responses",
+          "mustCite": [
+            "bloomberg.bloomberg_records",
+            "s_p_capital_iq.s_p_capital_iq_records"
+          ],
+          "sourceSystemIds": [
+            "bloomberg",
+            "s_p_capital_iq"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "IR prep time regresses past the 2-3 weeks baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "CFO",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Bloomberg (and other named systems) entities.",
+        "Never bypass CFO approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "investor-relations-prep-agent-end-to-end",
+          "prompt": "Run the Investor Relations Prep Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_bloomberg_bloomberg_records",
+            "query_s_p_capital_iq_s_p_capital_iq_records",
+            "query_bigquery_analytics_events",
+            "query_google_slides_presentations",
+            "lookup_investor_relations_prep_agent_controls_playbook"
+          ],
+          "mustReferenceEntities": [
+            "bloomberg_records",
+            "s_p_capital_iq_records",
+            "analytics_events",
+            "presentations"
+          ],
+          "mustCiteDocuments": [
+            "investor-relations-prep-agent-controls-playbook"
+          ],
+          "expectedActionOutcome": "CFO receives a fully-cited recommendation; no external state change without explicit approval.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not act on single-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/finance/InvestorRelationsPrepAgent.tsx",
+    "familyId": "investor-relations-prep-agent",
+    "variant": {
+      "familyId": "investor-relations-prep-agent",
+      "variantId": "investor-relations-prep-agent",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

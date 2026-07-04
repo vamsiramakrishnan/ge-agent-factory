@@ -46,6 +46,7 @@ use [Core Concepts](../concepts/).
 | Run or script the factory | [CLI](cli.html) |
 | Change the contract | [Contract schema](spec-schema.html) |
 | Change the contract's portable form | [OKF](okf.html) |
+| Make a variant of an agent, register it, or check where it stands | [Agent lifecycle](agent-lifecycle.html) |
 | Debug compiled ADK code | [Generated artifacts](agent-generation.html) |
 | Add or validate a source-system twin pack | [Simulator systems](simulator-systems.html) |
 | Generate or tune a pack's seed data | [Synthetic data](synthetic-data.html) |

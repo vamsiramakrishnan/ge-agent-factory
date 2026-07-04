@@ -1,0 +1,1067 @@
+{
+  "id": "p-card-reconciliation-agent",
+  "title": "P-Card Reconciliation Agent",
+  "department": "procurement",
+  "sourcePath": "../presentation/src/components/slides/use-cases/procurement/PCardReconciliationAgent.tsx",
+  "subtitle": "A-1511 • Procure-to-Pay",
+  "persona": "Buyer",
+  "layer": "Layer 2: Agent Designer",
+  "triggerType": "event",
+  "domainId": "domain-15",
+  "systems": [
+    "Citibank/JP Morgan Commercial Card",
+    "SAP Concur",
+    "Coupa"
+  ],
+  "kpis": [
+    {
+      "label": "Reconciliation time",
+      "before": "3-5 days/cycle",
+      "after": "Same day"
+    },
+    {
+      "label": "Categorization accuracy",
+      "before": "65%",
+      "after": "94%"
+    },
+    {
+      "label": "Policy exceptions caught",
+      "before": "40% detected",
+      "after": "95% detected"
+    }
+  ],
+  "statusQuo": [
+    "Cardholders manually categorize transactions — 35% miscoded, polluting spend data.",
+    "Cryptic merchant descriptions ('AMZN MKTP US*2K4TH1') make it impossible to verify what was purchased.",
+    "Receipt matching is manual and incomplete — 25% of transactions lack supporting documentation."
+  ],
+  "agentification": [
+    "LLM interprets cryptic merchant codes and maps to correct spend categories using vendor context and purchase patterns.",
+    "Reads receipt images with handwritten notes ('team lunch — 8 attendees') and validates against per-person meal policy limits.",
+    "Flags suspicious patterns with context: 'Three hotel charges in same city on consecutive nights with no approved trip — possible personal use.'"
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Citibank/JP Morgan",
+        "description": "Commercial card transaction feeds, statement data, merchant category codes"
+      },
+      {
+        "system": "SAP Concur",
+        "description": "Expense reports, receipt images, policy rule engine, cardholder profiles"
+      },
+      {
+        "system": "Coupa",
+        "description": "Expense policy rules, GL code mapping, reconciliation workflow, spend categorization"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Decode cryptic merchant descriptions, interpret receipt notes, detect policy gaming patterns"
+      },
+      {
+        "system": "Google Document AI",
+        "description": "OCR receipt image extraction for handwritten notes and non-standard receipt formats"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Transaction Ingestion",
+        "description": "Ingest card transaction feed from commercial card provider at statement close. Match transactions against receipt images in Concur. Identify transactions lacking supporting documentation."
+      },
+      {
+        "label": "Auto-Categorization & Anomaly Detection",
+        "description": "Categorize transactions to UNSPSC/GL codes using merchant codes and historical patterns. OCR receipt matching for documentation. Anomaly detection on spending patterns — unusual merchant, time of day, amount relative to cardholder history."
+      },
+      {
+        "label": "LLM Interpretation & Policy Validation",
+        "description": "Decode cryptic merchant descriptions ('SQ *HARDWARE STORE #4521', 'AMZN MKTP US*2K4TH1') and map to correct spend categories. Read receipt images with handwritten notes ('team lunch — 8 attendees') and validate against per-person meal policy limits. Flag policy gaming: 'Expenses consistently at $1 below manager-approval threshold.'"
+      },
+      {
+        "label": "Exception Reporting & Reconciliation",
+        "description": "Generate reconciliation report with policy violations and suspicious patterns flagged with context for manager review. Route compliant transactions for auto-posting."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for P-Card Reconciliation Agent so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "citibank_jp_morgan_commercial_card",
+        "name": "Citibank/JP Morgan Commercial Card",
+        "owns": [
+          "citibank_jp_morgan_commercial_card_records",
+          "citibank_jp_morgan_commercial_card_events",
+          "citibank_jp_morgan_commercial_card_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_citibank_jp_morgan_commercial_card_citibank_jp_morgan_commercial_card_records",
+          "query_citibank_jp_morgan_commercial_card_citibank_jp_morgan_commercial_card_events",
+          "query_citibank_jp_morgan_commercial_card_citibank_jp_morgan_commercial_card_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "sap_concur",
+        "name": "SAP Concur",
+        "owns": [
+          "expense_reports",
+          "travel_bookings",
+          "policy_exceptions"
+        ],
+        "protocol": "RFC/BAPI",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_sap_concur_expense_reports",
+          "query_sap_concur_travel_bookings",
+          "query_sap_concur_policy_exceptions"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "coupa",
+        "name": "Coupa",
+        "owns": [
+          "requisitions",
+          "purchase_orders",
+          "invoices"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_coupa_requisitions",
+          "query_coupa_purchase_orders",
+          "query_coupa_invoices"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "citibank_jp_morgan_commercial_card_records",
+        "sourceSystemId": "citibank_jp_morgan_commercial_card",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "citibank_jp_morgan_commercial_card_events",
+        "sourceSystemId": "citibank_jp_morgan_commercial_card",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "citibank_jp_morgan_commercial_card_record_id",
+            "type": "ref",
+            "ref": "citibank_jp_morgan_commercial_card_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "citibank_jp_morgan_commercial_card_audit_trail",
+        "sourceSystemId": "citibank_jp_morgan_commercial_card",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "expense_reports",
+        "sourceSystemId": "sap_concur",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "travel_bookings",
+        "sourceSystemId": "sap_concur",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "policy_exceptions",
+        "sourceSystemId": "sap_concur",
+        "datastore": "alloydb",
+        "rowCount": 30,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "values": [
+              "compliance",
+              "operational",
+              "financial",
+              "security"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "draft",
+              "retired"
+            ],
+            "required": true
+          },
+          {
+            "name": "last_updated",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "requisitions",
+        "sourceSystemId": "coupa",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "vendor",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": 100,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP",
+              "JPY"
+            ],
+            "weights": [
+              0.7,
+              0.15,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "pending",
+              "approved",
+              "paid",
+              "rejected"
+            ],
+            "weights": [
+              0.1,
+              0.3,
+              0.3,
+              0.2,
+              0.1
+            ],
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "due_date",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "purchase_orders",
+        "sourceSystemId": "coupa",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "vendor",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": 100,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP",
+              "JPY"
+            ],
+            "weights": [
+              0.7,
+              0.15,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "pending",
+              "approved",
+              "paid",
+              "rejected"
+            ],
+            "weights": [
+              0.1,
+              0.3,
+              0.3,
+              0.2,
+              0.1
+            ],
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "due_date",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "invoices",
+        "sourceSystemId": "coupa",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "vendor",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "float",
+            "min": 100,
+            "max": 100000,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "currency",
+            "type": "enum",
+            "values": [
+              "USD",
+              "EUR",
+              "GBP",
+              "JPY"
+            ],
+            "weights": [
+              0.7,
+              0.15,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "draft",
+              "pending",
+              "approved",
+              "paid",
+              "rejected"
+            ],
+            "weights": [
+              0.1,
+              0.3,
+              0.3,
+              0.2,
+              0.1
+            ],
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "due_date",
+            "type": "date",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "citibank_jp_morgan_commercial_card_events.citibank_jp_morgan_commercial_card_record_id",
+        "to": "citibank_jp_morgan_commercial_card_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "p-card-reconciliation-agent-policy-guide",
+        "sourceSystemId": "citibank_jp_morgan_commercial_card",
+        "type": "policy",
+        "title": "P-Card Reconciliation Agent Procurement Policy Guide",
+        "requiredSections": [
+          "Sourcing principles",
+          "Approval thresholds",
+          "Supplier risk requirements",
+          "Contract and compliance gates",
+          "Exception handling"
+        ],
+        "linkedEntities": [
+          "citibank_jp_morgan_commercial_card_records",
+          "citibank_jp_morgan_commercial_card_events",
+          "citibank_jp_morgan_commercial_card_audit_trail"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "sourcing",
+          "approvals",
+          "supplier-risk",
+          "exceptions"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "citibank_jp_morgan_commercial_card_approve_api",
+        "sourceSystemId": "citibank_jp_morgan_commercial_card",
+        "method": "POST",
+        "path": "/api/citibank_jp_morgan_commercial_card/approve",
+        "description": "Synchronous endpoint the agent calls to approve in Citibank/JP Morgan Commercial Card after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "p-card-reconciliation-agent-baseline-gap",
+        "description": "Seed a realistic gap where Reconciliation time sits between 3-5 days/cycle and Same day, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "citibank_jp_morgan_commercial_card_records",
+          "citibank_jp_morgan_commercial_card_events"
+        ],
+        "discoveryPath": [
+          "Inspect Citibank/JP Morgan Commercial Card records for the affected entities",
+          "Compare against SAP Concur historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next Buyer action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "p_card_reconciliation_agent",
+        "schemas": [
+          "citibank_jp_morgan_commercial_card",
+          "sap_concur",
+          "coupa"
+        ]
+      },
+      "bigquery": {
+        "dataset": "procurement_p_card_reconciliation_agent",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "p-card-reconciliation-agent-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "p-card-reconciliation-agent-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the P-Card Reconciliation Agent workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "Buyer agent for the P-Card Reconciliation Agent workflow",
+      "primaryObjective": "LLM interprets cryptic merchant codes and maps to correct spend categories using vendor context and purchase patterns. Reads receipt images with handwritten notes ('team lunch — 8 attendees') and validates against per-person meal policy limits. so the Buyer can move the Reconciliation time KPI.",
+      "inScope": [
+        "LLM interprets cryptic merchant codes and maps to correct spend categories using vendor context and purchase patterns",
+        "Reads receipt images with handwritten notes ('team lunch — 8 attendees') and validates against per-person meal policy limits",
+        "Flags suspicious patterns with context: 'Three hotel charges in same city on consecutive nights with no approved trip — possible personal use.'"
+      ],
+      "outOfScope": [
+        "Contract execution without legal review",
+        "Supplier disqualification decisions (category lead retains authority)",
+        "Single-source justification overrides above policy threshold"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_citibank_jp_morgan_commercial_card_citibank_jp_morgan_commercial_card_records",
+          "kind": "query",
+          "sourceSystemId": "citibank_jp_morgan_commercial_card",
+          "description": "Retrieve citibank jp morgan commercial card records from Citibank/JP Morgan Commercial Card for the P-Card Reconciliation Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "citibank_jp_morgan_commercial_card_records_records",
+            "citibank_jp_morgan_commercial_card_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_sap_concur_expense_reports",
+          "kind": "query",
+          "sourceSystemId": "sap_concur",
+          "description": "Retrieve expense reports from SAP Concur for the P-Card Reconciliation Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "expense_reports_records",
+            "expense_reports_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_coupa_requisitions",
+          "kind": "query",
+          "sourceSystemId": "coupa",
+          "description": "Retrieve requisitions from Coupa for the P-Card Reconciliation Agent workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "requisitions_records",
+            "requisitions_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_p_card_reconciliation_agent_policy_guide",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "citibank_jp_morgan_commercial_card",
+          "description": "Look up sections of the P-Card Reconciliation Agent Procurement Policy Guide to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_citibank_jp_morgan_commercial_card_approve",
+          "kind": "action",
+          "sourceSystemId": "citibank_jp_morgan_commercial_card",
+          "description": "Execute the approve step in Citibank/JP Morgan Commercial Card after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "transaction_ingestion",
+            "label": "Transaction Ingestion",
+            "description": "Ingest card transaction feed from commercial card provider at statement close. Match transactions against receipt images in Concur. Identify transactions lacking supporting documentation.",
+            "tools": [
+              "query_citibank_jp_morgan_commercial_card_citibank_jp_morgan_commercial_card_records",
+              "query_sap_concur_expense_reports",
+              "lookup_p_card_reconciliation_agent_policy_guide",
+              "action_citibank_jp_morgan_commercial_card_approve"
+            ]
+          },
+          {
+            "id": "auto_categorization_anomaly_detection",
+            "label": "Auto-Categorization & Anomaly Detection",
+            "description": "Categorize transactions to UNSPSC/GL codes using merchant codes and historical patterns. OCR receipt matching for documentation. Anomaly detection on spending patterns — unusual merchant, time of day, amount relative to cardholder history.",
+            "tools": [
+              "query_citibank_jp_morgan_commercial_card_citibank_jp_morgan_commercial_card_records",
+              "lookup_p_card_reconciliation_agent_policy_guide",
+              "action_citibank_jp_morgan_commercial_card_approve"
+            ]
+          },
+          {
+            "id": "llm_interpretation_policy_validation",
+            "label": "LLM Interpretation & Policy Validation",
+            "description": "Decode cryptic merchant descriptions ('SQ *HARDWARE STORE #4521', 'AMZN MKTP US*2K4TH1') and map to correct spend categories. Read receipt images with handwritten notes ('team lunch — 8 attendees') and validate against per-person meal policy limits. Flag policy gaming: 'Expenses consistently at $1 below manager-approval threshold.'",
+            "tools": [
+              "query_sap_concur_expense_reports",
+              "lookup_p_card_reconciliation_agent_policy_guide"
+            ]
+          },
+          {
+            "id": "exception_reporting_reconciliation",
+            "label": "Exception Reporting & Reconciliation",
+            "description": "Generate reconciliation report with policy violations and suspicious patterns flagged with context for manager review. Route compliant transactions for auto-posting.",
+            "tools": [
+              "lookup_p_card_reconciliation_agent_policy_guide"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Reconciliation time moved from 3-5 days/cycle toward Same day",
+          "mustCite": [
+            "citibank_jp_morgan_commercial_card.citibank_jp_morgan_commercial_card_records",
+            "sap_concur.expense_reports"
+          ],
+          "sourceSystemIds": [
+            "citibank_jp_morgan_commercial_card",
+            "sap_concur"
+          ]
+        },
+        {
+          "claim": "Categorization accuracy moved from 65% toward 94%",
+          "mustCite": [
+            "citibank_jp_morgan_commercial_card.citibank_jp_morgan_commercial_card_records",
+            "sap_concur.expense_reports"
+          ],
+          "sourceSystemIds": [
+            "citibank_jp_morgan_commercial_card",
+            "sap_concur"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Reconciliation time regresses past the 3-5 days/cycle baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Buyer",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed approve action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Citibank/JP Morgan Commercial Card (and other named systems) entities.",
+        "Never bypass Buyer approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "p-card-reconciliation-agent-end-to-end",
+          "prompt": "Run the P-Card Reconciliation Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_citibank_jp_morgan_commercial_card_citibank_jp_morgan_commercial_card_records",
+            "query_sap_concur_expense_reports",
+            "query_coupa_requisitions",
+            "lookup_p_card_reconciliation_agent_policy_guide",
+            "action_citibank_jp_morgan_commercial_card_approve"
+          ],
+          "mustReferenceEntities": [
+            "citibank_jp_morgan_commercial_card_records",
+            "expense_reports",
+            "requisitions"
+          ],
+          "mustCiteDocuments": [
+            "p-card-reconciliation-agent-policy-guide"
+          ],
+          "expectedActionOutcome": "Action approve executed against Citibank/JP Morgan Commercial Card, with audit-trail entry and Buyer notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute approve without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/procurement/PCardReconciliationAgent.tsx",
+    "familyId": "p-card-reconciliation-agent",
+    "variant": {
+      "familyId": "p-card-reconciliation-agent",
+      "variantId": "p-card-reconciliation-agent",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

@@ -1,0 +1,1502 @@
+{
+  "id": "onboarding-orchestration",
+  "title": "Onboarding Orchestration",
+  "department": "hr",
+  "sourcePath": "../presentation/src/components/slides/use-cases/hr/OnboardingOrchestration.tsx",
+  "subtitle": "A-211 • Talent Acquisition",
+  "persona": "HR Ops Lead",
+  "layer": "Layer 2: Agent Designer",
+  "triggerType": "event",
+  "domainId": "domain-2",
+  "systems": [
+    "Workday",
+    "LMS",
+    "ServiceNow",
+    "Slack",
+    "Google Workspace"
+  ],
+  "kpis": [
+    {
+      "label": "Time to productivity",
+      "before": "45 days",
+      "after": "21 days"
+    },
+    {
+      "label": "Compliance completion",
+      "before": "Week 2",
+      "after": "Day 1"
+    },
+    {
+      "label": "90-day retention",
+      "before": "82%",
+      "after": "94%"
+    }
+  ],
+  "statusQuo": [
+    "Manual checklists across 5-6 systems; high administrative burden.",
+    "Day-1 readiness failures (no laptop, no badge) are common.",
+    "Compliance training assigned manually and often completed late."
+  ],
+  "agentification": [
+    "Multi-step orchestration of IT, Facilities, and HR tasks via API.",
+    "Auto-assignment of training by role, location, and seniority.",
+    "Real-time completion tracking with automated escalation loops."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Workday",
+        "description": "Employee profile, role, location, compliance requirements"
+      },
+      {
+        "system": "ServiceNow",
+        "description": "IT tickets, facilities requests, access provisioning"
+      },
+      {
+        "system": "Slack",
+        "description": "Welcome messages, buddy introductions, team channels"
+      },
+      {
+        "system": "Google Workspace",
+        "description": "Training assignments, document access, team calendars"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Onboarding Plan Generation",
+        "description": "Start date triggers personalized onboarding plan based on role, location, seniority, and compliance requirements from Workday."
+      },
+      {
+        "label": "Task Orchestration",
+        "description": "Multi-step orchestration across ServiceNow, Slack, and Google Workspace. Training auto-assigned, buddy paired, team channels joined."
+      },
+      {
+        "label": "Milestone Tracking",
+        "description": "30/60/90-day milestone monitoring with automated check-ins. Real-time completion tracking with escalation for overdue items."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Onboarding Orchestration so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "workday",
+        "name": "Workday",
+        "owns": [
+          "employees",
+          "positions",
+          "compensation_records"
+        ],
+        "protocol": "Workday REST",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_workday_employees",
+          "query_workday_positions",
+          "query_workday_compensation_records"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "lms",
+        "name": "LMS",
+        "owns": [
+          "lms_records",
+          "lms_events",
+          "lms_audit_trail"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_lms_lms_records",
+          "query_lms_lms_events",
+          "query_lms_lms_audit_trail"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "servicenow",
+        "name": "ServiceNow",
+        "owns": [
+          "tickets",
+          "change_requests",
+          "incidents"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_servicenow_tickets",
+          "query_servicenow_change_requests",
+          "query_servicenow_incidents"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "slack",
+        "name": "Slack",
+        "owns": [
+          "messages",
+          "channels",
+          "thread_replies"
+        ],
+        "protocol": "Slack API",
+        "localBacking": [
+          "json-api"
+        ],
+        "toolNames": [
+          "query_slack_messages",
+          "query_slack_channels",
+          "query_slack_thread_replies"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "google_workspace",
+        "name": "Google Workspace",
+        "owns": [
+          "accounts",
+          "group_memberships",
+          "license_assignments"
+        ],
+        "protocol": "Workspace API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_google_workspace_accounts",
+          "query_google_workspace_group_memberships",
+          "query_google_workspace_license_assignments"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "employees",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "positions",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "compensation_records",
+        "sourceSystemId": "workday",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "email",
+            "type": "internet.email",
+            "required": true
+          },
+          {
+            "name": "department",
+            "type": "enum",
+            "values": [
+              "Finance",
+              "HR",
+              "IT",
+              "Marketing",
+              "Procurement",
+              "Engineering",
+              "Operations"
+            ],
+            "required": true
+          },
+          {
+            "name": "region",
+            "type": "enum",
+            "values": [
+              "US",
+              "EMEA",
+              "APAC",
+              "LATAM"
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "on_leave",
+              "inactive"
+            ],
+            "weights": [
+              0.85,
+              0.1,
+              0.05
+            ],
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "enum",
+            "values": [
+              "L3",
+              "L4",
+              "L5",
+              "L6",
+              "L7"
+            ],
+            "required": true
+          },
+          {
+            "name": "hired_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "lms_records",
+        "sourceSystemId": "lms",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "lms_events",
+        "sourceSystemId": "lms",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          },
+          {
+            "name": "lms_record_id",
+            "type": "ref",
+            "ref": "lms_records.id",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "lms_audit_trail",
+        "sourceSystemId": "lms",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "actor",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "action",
+            "type": "enum",
+            "values": [
+              "create",
+              "update",
+              "delete",
+              "approve",
+              "reject",
+              "escalate",
+              "view",
+              "share"
+            ],
+            "required": true
+          },
+          {
+            "name": "target_type",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "tickets",
+        "sourceSystemId": "servicenow",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "priority",
+            "type": "enum",
+            "values": [
+              "P1",
+              "P2",
+              "P3",
+              "P4"
+            ],
+            "weights": [
+              0.05,
+              0.15,
+              0.4,
+              0.4
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "open",
+              "triaged",
+              "in_progress",
+              "resolved",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "assignee",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "values": [
+              "access",
+              "hardware",
+              "software",
+              "network",
+              "policy",
+              "billing"
+            ],
+            "required": true
+          },
+          {
+            "name": "sla_met",
+            "type": "boolean",
+            "trueRate": 0.78
+          }
+        ]
+      },
+      {
+        "name": "change_requests",
+        "sourceSystemId": "servicenow",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "priority",
+            "type": "enum",
+            "values": [
+              "P1",
+              "P2",
+              "P3",
+              "P4"
+            ],
+            "weights": [
+              0.05,
+              0.15,
+              0.4,
+              0.4
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "open",
+              "triaged",
+              "in_progress",
+              "resolved",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "assignee",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "values": [
+              "access",
+              "hardware",
+              "software",
+              "network",
+              "policy",
+              "billing"
+            ],
+            "required": true
+          },
+          {
+            "name": "sla_met",
+            "type": "boolean",
+            "trueRate": 0.78
+          }
+        ]
+      },
+      {
+        "name": "incidents",
+        "sourceSystemId": "servicenow",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "title",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "priority",
+            "type": "enum",
+            "values": [
+              "P1",
+              "P2",
+              "P3",
+              "P4"
+            ],
+            "weights": [
+              0.05,
+              0.15,
+              0.4,
+              0.4
+            ],
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "open",
+              "triaged",
+              "in_progress",
+              "resolved",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "assignee",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "enum",
+            "values": [
+              "access",
+              "hardware",
+              "software",
+              "network",
+              "policy",
+              "billing"
+            ],
+            "required": true
+          },
+          {
+            "name": "sla_met",
+            "type": "boolean",
+            "trueRate": 0.78
+          }
+        ]
+      },
+      {
+        "name": "messages",
+        "sourceSystemId": "slack",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "author",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "body",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "sentiment",
+            "type": "enum",
+            "values": [
+              "positive",
+              "neutral",
+              "negative"
+            ],
+            "weights": [
+              0.4,
+              0.4,
+              0.2
+            ],
+            "required": true
+          },
+          {
+            "name": "sent_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "channels",
+        "sourceSystemId": "slack",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "thread_replies",
+        "sourceSystemId": "slack",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "author",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "body",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "sentiment",
+            "type": "enum",
+            "values": [
+              "positive",
+              "neutral",
+              "negative"
+            ],
+            "weights": [
+              0.4,
+              0.4,
+              0.2
+            ],
+            "required": true
+          },
+          {
+            "name": "sent_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "accounts",
+        "sourceSystemId": "google_workspace",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "account_name",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "number",
+            "min": 5000,
+            "max": 1000000,
+            "required": true
+          },
+          {
+            "name": "stage",
+            "type": "enum",
+            "values": [
+              "prospecting",
+              "qualification",
+              "proposal",
+              "negotiation",
+              "closed_won",
+              "closed_lost"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "close_date",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "group_memberships",
+        "sourceSystemId": "google_workspace",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "license_assignments",
+        "sourceSystemId": "google_workspace",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "lms_events.lms_record_id",
+        "to": "lms_records.id",
+        "cardinality": "many-to-one",
+        "orphanPolicy": "none"
+      }
+    ],
+    "documents": [
+      {
+        "id": "onboarding-orchestration-policy-handbook",
+        "sourceSystemId": "workday",
+        "type": "policy",
+        "title": "Onboarding Orchestration Policy Handbook",
+        "requiredSections": [
+          "Eligibility and scope",
+          "Workflow steps",
+          "Manager responsibilities",
+          "Compliance and audit",
+          "Sensitive-data handling"
+        ],
+        "linkedEntities": [
+          "employees",
+          "positions",
+          "compensation_records"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "eligibility",
+          "workflow",
+          "compliance",
+          "sensitive-data"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "workday_assign_api",
+        "sourceSystemId": "workday",
+        "method": "POST",
+        "path": "/api/workday/assign",
+        "description": "Synchronous endpoint the agent calls to assign in Workday after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "onboarding-orchestration-baseline-gap",
+        "description": "Seed a realistic gap where Time to productivity sits between 45 days and 21 days, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "employees",
+          "positions"
+        ],
+        "discoveryPath": [
+          "Inspect Workday records for the affected entities",
+          "Compare against LMS historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next HR Ops Lead action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "onboarding_orchestration",
+        "schemas": [
+          "workday",
+          "lms",
+          "servicenow",
+          "slack",
+          "google_workspace"
+        ]
+      },
+      "bigquery": {
+        "dataset": "hr_onboarding_orchestration",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "onboarding-orchestration-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "onboarding-orchestration-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Onboarding Orchestration workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "HR Ops Lead agent for the Onboarding Orchestration workflow",
+      "primaryObjective": "Multi-step orchestration of IT, Facilities, and HR tasks via API. Auto-assignment of training by role, location, and seniority. so the HR Ops Lead can move the Time to productivity KPI.",
+      "inScope": [
+        "Multi-step orchestration of IT, Facilities, and HR tasks via API",
+        "Auto-assignment of training by role, location, and seniority",
+        "Real-time completion tracking with automated escalation loops"
+      ],
+      "outOfScope": [
+        "Final hiring, termination, or compensation decisions (HRBP/leadership retains authority)",
+        "Performance management adjudication and disciplinary action",
+        "Legal interpretation of employment law in ambiguous jurisdictions"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_workday_employees",
+          "kind": "query",
+          "sourceSystemId": "workday",
+          "description": "Retrieve employees from Workday for the Onboarding Orchestration workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "employees_records",
+            "employees_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_lms_lms_records",
+          "kind": "query",
+          "sourceSystemId": "lms",
+          "description": "Retrieve lms records from LMS for the Onboarding Orchestration workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "lms_records_records",
+            "lms_records_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_servicenow_tickets",
+          "kind": "query",
+          "sourceSystemId": "servicenow",
+          "description": "Retrieve tickets from ServiceNow for the Onboarding Orchestration workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "tickets_records",
+            "tickets_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_slack_messages",
+          "kind": "query",
+          "sourceSystemId": "slack",
+          "description": "Retrieve messages from Slack for the Onboarding Orchestration workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "messages_records",
+            "messages_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_onboarding_orchestration_policy_handbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "workday",
+          "description": "Look up sections of the Onboarding Orchestration Policy Handbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_workday_assign",
+          "kind": "action",
+          "sourceSystemId": "workday",
+          "description": "Execute the assign step in Workday after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "onboarding_plan_generation",
+            "label": "Onboarding Plan Generation",
+            "description": "Start date triggers personalized onboarding plan based on role, location, seniority, and compliance requirements from Workday.",
+            "tools": [
+              "query_workday_employees",
+              "lookup_onboarding_orchestration_policy_handbook",
+              "action_workday_assign"
+            ]
+          },
+          {
+            "id": "task_orchestration",
+            "label": "Task Orchestration",
+            "description": "Multi-step orchestration across ServiceNow, Slack, and Google Workspace. Training auto-assigned, buddy paired, team channels joined.",
+            "tools": [
+              "query_servicenow_tickets",
+              "query_slack_messages",
+              "lookup_onboarding_orchestration_policy_handbook",
+              "action_workday_assign"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Time to productivity moved from 45 days toward 21 days",
+          "mustCite": [
+            "workday.employees",
+            "lms.lms_records"
+          ],
+          "sourceSystemIds": [
+            "workday",
+            "lms"
+          ]
+        },
+        {
+          "claim": "Compliance completion moved from Week 2 toward Day 1",
+          "mustCite": [
+            "workday.employees",
+            "lms.lms_records"
+          ],
+          "sourceSystemIds": [
+            "workday",
+            "lms"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Time to productivity regresses past the 45 days baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "HR Ops Lead",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed assign action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Workday (and other named systems) entities.",
+        "Never bypass HR Ops Lead approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "onboarding-orchestration-end-to-end",
+          "prompt": "Run the Onboarding Orchestration workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_workday_employees",
+            "query_lms_lms_records",
+            "query_servicenow_tickets",
+            "query_slack_messages",
+            "lookup_onboarding_orchestration_policy_handbook",
+            "action_workday_assign"
+          ],
+          "mustReferenceEntities": [
+            "employees",
+            "lms_records",
+            "tickets",
+            "messages",
+            "accounts"
+          ],
+          "mustCiteDocuments": [
+            "onboarding-orchestration-policy-handbook"
+          ],
+          "expectedActionOutcome": "Action assign executed against Workday, with audit-trail entry and HR Ops Lead notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute assign without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/hr/OnboardingOrchestration.tsx",
+    "familyId": "onboarding-orchestration",
+    "variant": {
+      "familyId": "onboarding-orchestration",
+      "variantId": "onboarding-orchestration",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}

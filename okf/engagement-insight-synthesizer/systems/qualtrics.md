@@ -1,0 +1,27 @@
+---
+type: Source System
+title: Qualtrics
+description: "Survey responses, demographic cuts, open-text feedback"
+tags:
+  - hr
+  - okf
+  - brd
+timestamp: "2026-07-01T00:00:00.000Z"
+---
+
+# Qualtrics
+
+Survey responses, demographic cuts, open-text feedback
+
+- **Protocol:** REST API
+- **Local backing:** alloydb
+
+# Schema
+
+- [survey_responses](/tables/survey-responses.md)
+- [respondent_segments](/tables/respondent-segments.md)
+- [trend_metrics](/tables/trend-metrics.md)
+
+## Tools using this system
+
+- [query_qualtrics_survey_responses](/tools/query-qualtrics-survey-responses.md)

@@ -1,0 +1,85 @@
+---
+type: Agent Tool
+title: query_marketo_campaigns
+description: "Retrieve campaigns from Marketo for the List Management & Segmentation Agent workflow."
+tags:
+  - marketing
+  - okf
+  - brd
+timestamp: "2026-07-01T00:00:00.000Z"
+source_kind: generationSpec
+source_path: behaviorContract.toolIntents
+generation_status: generated
+ge_status: generated
+---
+
+# query_marketo_campaigns
+
+Retrieve campaigns from Marketo for the List Management & Segmentation Agent workflow.
+
+- **Kind:** query
+- **Source system:** [Marketo](/systems/marketo.md)
+
+## Inputs
+
+- lookup_key
+- date_range
+
+## Outputs
+
+- campaigns_records
+- campaigns_summary
+
+## Side Effects
+
+- No mutation is declared by the spec for this tool.
+
+## Idempotency
+
+No idempotency key declared; no mutation is declared by the spec for this tool.
+
+## Confirmation
+
+No write confirmation policy is derivable from the spec.
+
+## Permissions
+
+No explicit permission scopes declared; source-system access is tied to [Marketo](/systems/marketo.md).
+
+## Failure Modes
+
+No explicit failure modes are declared in the spec; rely on refusal/escalation policies for unsafe or incomplete evidence.
+
+## Used By
+
+- [audience_assembly](/workflow/audience-assembly.md)
+- [quality_scoring](/workflow/quality-scoring.md)
+- [sync_activation](/workflow/sync-activation.md)
+
+## Evals
+
+- [Run the List Management & Segmentation Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/list-management-segmentation-agent-end-to-end.md)
+
+## Evidence emitted
+
+- source_system_record
+
+## Required inputs
+
+- lookup_key
+- date_range
+
+## Produces
+
+- campaigns_records
+- campaigns_summary
+
+# Examples
+
+```
+query_marketo_campaigns(lookup_key=<lookup_key>, date_range=<date_range>)
+```
+
+# Citations
+
+- [Marketo](/systems/marketo.md)

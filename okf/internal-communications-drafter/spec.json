@@ -1,0 +1,932 @@
+{
+  "id": "internal-communications-drafter",
+  "title": "Internal Communications Drafter",
+  "department": "marketing",
+  "sourcePath": "../presentation/src/components/slides/use-cases/marketing/InternalCommsDrafter.tsx",
+  "subtitle": "A-3506 • Brand & Communications",
+  "persona": "VP Marketing",
+  "layer": "Layer 1: OOTB",
+  "triggerType": "event",
+  "domainId": "domain-35",
+  "systems": [
+    "Google Workspace",
+    "Slack",
+    "Salesforce",
+    "Vertex AI"
+  ],
+  "kpis": [
+    {
+      "label": "Drafting time",
+      "before": "4-6 hours",
+      "after": "30 minutes"
+    },
+    {
+      "label": "Read rate",
+      "before": "45% average",
+      "after": "72% with optimization"
+    },
+    {
+      "label": "Audience-specific versions",
+      "before": "One-size-fits-all",
+      "after": "Tailored per team"
+    }
+  ],
+  "statusQuo": [
+    "Internal communications drafted by committee with 4-6 hour turnaround for simple announcements.",
+    "One-size-fits-all messaging means engineering ignores marketing announcements and vice versa.",
+    "No tracking of read rates or engagement — no idea if critical messages are being read."
+  ],
+  "agentification": [
+    "Gemini drafts audience-specific variations explaining why each team should care about the announcement.",
+    "LLM adapts tone for announcement type — celebratory for wins, empathetic for changes, direct for urgent.",
+    "Optimizes distribution timing and channel based on historical engagement patterns per audience segment."
+  ],
+  "architecture": {
+    "connections": [
+      {
+        "system": "Google Workspace",
+        "description": "Communication drafts, distribution lists, company context"
+      },
+      {
+        "system": "Slack",
+        "description": "Channel-based distribution, read tracking, feedback collection"
+      },
+      {
+        "system": "Vertex AI (Gemini)",
+        "description": "Communication drafting, audience adaptation, narrative framing"
+      },
+      {
+        "system": "BigQuery",
+        "description": "Employee segment data, read rate analytics, communication history"
+      },
+      {
+        "system": "Salesforce",
+        "description": "Company updates, organizational data for context"
+      },
+      {
+        "system": "Google Analytics 4",
+        "description": "Intranet page engagement, communication click tracking"
+      }
+    ],
+    "pipeline": [
+      {
+        "label": "Context Assembly",
+        "description": "Parse communication request to understand announcement type (reorg, product launch, policy change), affected teams, and urgency. Pull organizational context from Salesforce and communication history."
+      },
+      {
+        "label": "Engagement Optimization",
+        "description": "Analyze historical read rates and click-through by communication type, audience segment, and distribution channel to optimize timing and format."
+      },
+      {
+        "label": "Audience-Aware Drafting",
+        "description": "Gemini drafts internal communications that inform and align — not just announcements but narratives explaining the 'why' tailored to each audience. Engineering cares about reporting lines, marketing about campaign ownership, sales about territory alignment."
+      },
+      {
+        "label": "Distribution & Tracking",
+        "description": "After VP Marketing approval, distribute via optimal channels (email, Slack, intranet). Track read rates, click-through, and feedback responses."
+      }
+    ]
+  },
+  "generationSpec": {
+    "version": 1,
+    "rowPolicy": {
+      "defaultRowsPerEntity": 50,
+      "minimumRowsPerEntity": 25,
+      "seed": 42,
+      "rationale": "Row counts sized for Internal Communications Drafter so the agent can demonstrate the workflow against realistic transactional volume without simulating a production warehouse."
+    },
+    "sourceSystems": [
+      {
+        "id": "google_workspace",
+        "name": "Google Workspace",
+        "owns": [
+          "accounts",
+          "group_memberships",
+          "license_assignments"
+        ],
+        "protocol": "Workspace API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_google_workspace_accounts",
+          "query_google_workspace_group_memberships",
+          "query_google_workspace_license_assignments"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "slack",
+        "name": "Slack",
+        "owns": [
+          "messages",
+          "channels",
+          "thread_replies"
+        ],
+        "protocol": "Slack API",
+        "localBacking": [
+          "json-api"
+        ],
+        "toolNames": [
+          "query_slack_messages",
+          "query_slack_channels",
+          "query_slack_thread_replies"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      },
+      {
+        "id": "salesforce",
+        "name": "Salesforce",
+        "owns": [
+          "accounts",
+          "opportunities",
+          "campaign_influence"
+        ],
+        "protocol": "REST API",
+        "localBacking": [
+          "alloydb"
+        ],
+        "toolNames": [
+          "query_salesforce_accounts",
+          "query_salesforce_opportunities",
+          "query_salesforce_campaign_influence"
+        ],
+        "evidence": [
+          "source_system_record",
+          "generated_audit_trail"
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "name": "accounts",
+        "sourceSystemId": "google_workspace",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "account_name",
+            "type": "company.name",
+            "required": true
+          },
+          {
+            "name": "amount",
+            "type": "number",
+            "min": 5000,
+            "max": 1000000,
+            "required": true
+          },
+          {
+            "name": "stage",
+            "type": "enum",
+            "values": [
+              "prospecting",
+              "qualification",
+              "proposal",
+              "negotiation",
+              "closed_won",
+              "closed_lost"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "close_date",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "group_memberships",
+        "sourceSystemId": "google_workspace",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "license_assignments",
+        "sourceSystemId": "google_workspace",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "messages",
+        "sourceSystemId": "slack",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "author",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "body",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "sentiment",
+            "type": "enum",
+            "values": [
+              "positive",
+              "neutral",
+              "negative"
+            ],
+            "weights": [
+              0.4,
+              0.4,
+              0.2
+            ],
+            "required": true
+          },
+          {
+            "name": "sent_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "channels",
+        "sourceSystemId": "slack",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "thread_replies",
+        "sourceSystemId": "slack",
+        "datastore": "json-api",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "lorem.words",
+            "required": true
+          },
+          {
+            "name": "author",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "body",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "sentiment",
+            "type": "enum",
+            "values": [
+              "positive",
+              "neutral",
+              "negative"
+            ],
+            "weights": [
+              0.4,
+              0.4,
+              0.2
+            ],
+            "required": true
+          },
+          {
+            "name": "sent_at",
+            "type": "date",
+            "required": true
+          }
+        ]
+      },
+      {
+        "name": "opportunities",
+        "sourceSystemId": "salesforce",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "source_record_id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "values": [
+              "active",
+              "pending",
+              "closed"
+            ],
+            "required": true
+          },
+          {
+            "name": "owner",
+            "type": "person.fullName",
+            "required": true
+          },
+          {
+            "name": "created_at",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "notes",
+            "type": "lorem.sentence"
+          }
+        ]
+      },
+      {
+        "name": "campaign_influence",
+        "sourceSystemId": "salesforce",
+        "datastore": "alloydb",
+        "rowCount": 60,
+        "primaryKey": "id",
+        "columns": [
+          {
+            "name": "id",
+            "type": "seq",
+            "required": true
+          },
+          {
+            "name": "name",
+            "type": "lorem.sentence",
+            "required": true
+          },
+          {
+            "name": "channel",
+            "type": "enum",
+            "values": [
+              "email",
+              "social",
+              "search",
+              "display",
+              "content",
+              "events"
+            ],
+            "required": true
+          },
+          {
+            "name": "segment",
+            "type": "enum",
+            "values": [
+              "enterprise",
+              "mid_market",
+              "smb"
+            ],
+            "required": true
+          },
+          {
+            "name": "impressions",
+            "type": "number",
+            "min": 1000,
+            "max": 500000,
+            "required": true
+          },
+          {
+            "name": "conversions",
+            "type": "number",
+            "min": 0,
+            "max": 5000,
+            "required": true
+          },
+          {
+            "name": "spend",
+            "type": "number",
+            "min": 1000,
+            "max": 200000,
+            "required": true
+          },
+          {
+            "name": "ctr",
+            "type": "float",
+            "min": 0.1,
+            "max": 9.5,
+            "decimals": 2,
+            "required": true
+          },
+          {
+            "name": "launched_on",
+            "type": "date",
+            "required": true
+          }
+        ]
+      }
+    ],
+    "relationships": [],
+    "documents": [
+      {
+        "id": "internal-communications-drafter-playbook",
+        "sourceSystemId": "google_workspace",
+        "type": "playbook",
+        "title": "Internal Communications Drafter Playbook",
+        "requiredSections": [
+          "Audience guidelines",
+          "Brand voice rules",
+          "Channel-specific guardrails",
+          "Measurement framework",
+          "Approval thresholds"
+        ],
+        "linkedEntities": [
+          "accounts",
+          "group_memberships",
+          "license_assignments"
+        ],
+        "minimumWordCount": 500,
+        "citationAnchors": [
+          "audience",
+          "brand-voice",
+          "channels",
+          "approvals"
+        ]
+      }
+    ],
+    "apis": [
+      {
+        "id": "google_workspace_draft_api",
+        "sourceSystemId": "google_workspace",
+        "method": "POST",
+        "path": "/api/google_workspace/draft",
+        "description": "Synchronous endpoint the agent calls to draft in Google Workspace after evidence gating.",
+        "requestSchema": {
+          "target_id": "string",
+          "rationale": "string",
+          "metadata": "object"
+        },
+        "responseSchema": {
+          "action_id": "string",
+          "status": "string",
+          "audit_record_id": "string"
+        },
+        "idempotencyKey": "target_id+rationale"
+      }
+    ],
+    "anomalies": [
+      {
+        "id": "internal-communications-drafter-baseline-gap",
+        "description": "Seed a realistic gap where Drafting time sits between 4-6 hours and 30 minutes, so the agent can detect, narrate, and recommend remediation.",
+        "affectedEntities": [
+          "accounts",
+          "group_memberships"
+        ],
+        "discoveryPath": [
+          "Inspect Google Workspace records for the affected entities",
+          "Compare against Slack historical baseline",
+          "Generate a citation-backed recommendation"
+        ],
+        "expectedEvidence": [
+          "source-system record",
+          "historical baseline metric",
+          "generated audit trail"
+        ],
+        "expectedRecommendation": "Explain the gap, cite supporting evidence, and propose the next VP Marketing action."
+      }
+    ],
+    "datastorePackaging": {
+      "alloydb": {
+        "database": "internal_communications_drafter",
+        "schemas": [
+          "google_workspace",
+          "slack",
+          "salesforce"
+        ]
+      },
+      "bigquery": {
+        "dataset": "marketing_internal_communications_drafter",
+        "tables": [
+          "kpi_summary",
+          "evidence_index"
+        ]
+      },
+      "cloudStorage": {
+        "bucketSuffix": "internal-communications-drafter-evidence",
+        "prefixes": [
+          "documents",
+          "audit-trails",
+          "exports"
+        ]
+      },
+      "apis": {
+        "serviceName": "internal-communications-drafter-source-adapters",
+        "deploymentTarget": "cloud_run"
+      }
+    },
+    "validation": {
+      "smokePrompt": "Run the Internal Communications Drafter workflow and cite source-system evidence for every claim.",
+      "expectedAnswer": [
+        "uses canonical source-system tools",
+        "cites the governing document",
+        "names the next operator action"
+      ],
+      "assertions": [
+        "canonical source-system tool names",
+        "minimum row policy met",
+        "audit trail emitted on actions",
+        "evidence_lookup invoked before recommendations"
+      ]
+    },
+    "behaviorContract": {
+      "role": "VP Marketing agent for the Internal Communications Drafter workflow",
+      "primaryObjective": "Gemini drafts audience-specific variations explaining why each team should care about the announcement. LLM adapts tone for announcement type — celebratory for wins, empathetic for changes, direct for urgent. so the VP Marketing can move the Drafting time KPI.",
+      "inScope": [
+        "Gemini drafts audience-specific variations explaining why each team should care about the announcement",
+        "LLM adapts tone for announcement type — celebratory for wins, empathetic for changes, direct for urgent",
+        "Optimizes distribution timing and channel based on historical engagement patterns per audience segment"
+      ],
+      "outOfScope": [
+        "Final approval of paid spend reallocations above the governance threshold",
+        "Trademark, legal, or regulated-industry claim approval",
+        "Crisis communications without comms-team sign-off"
+      ],
+      "toolIntents": [
+        {
+          "name": "query_google_workspace_accounts",
+          "kind": "query",
+          "sourceSystemId": "google_workspace",
+          "description": "Retrieve accounts from Google Workspace for the Internal Communications Drafter workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "accounts_records",
+            "accounts_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_slack_messages",
+          "kind": "query",
+          "sourceSystemId": "slack",
+          "description": "Retrieve messages from Slack for the Internal Communications Drafter workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "messages_records",
+            "messages_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_salesforce_accounts",
+          "kind": "query",
+          "sourceSystemId": "salesforce",
+          "description": "Retrieve accounts from Salesforce for the Internal Communications Drafter workflow.",
+          "requiredInputs": [
+            "lookup_key",
+            "date_range"
+          ],
+          "produces": [
+            "accounts_records",
+            "accounts_summary"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_internal_communications_drafter_playbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "google_workspace",
+          "description": "Look up sections of the Internal Communications Drafter Playbook to cite in narrative output, escalation rationale, and audit evidence.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
+        },
+        {
+          "name": "action_google_workspace_draft",
+          "kind": "action",
+          "sourceSystemId": "google_workspace",
+          "description": "Execute the draft step in Google Workspace after the agent has gathered evidence and validated escalation gates.",
+          "requiredInputs": [
+            "target_id",
+            "rationale"
+          ],
+          "produces": [
+            "action_id",
+            "audit_record_id"
+          ],
+          "evidenceEmitted": [
+            "api_response",
+            "generated_audit_trail"
+          ]
+        }
+      ],
+      "workflow": {
+        "mode": "sequential",
+        "steps": [
+          {
+            "id": "context_assembly",
+            "label": "Context Assembly",
+            "description": "Parse communication request to understand announcement type (reorg, product launch, policy change), affected teams, and urgency. Pull organizational context from Salesforce and communication history.",
+            "tools": [
+              "query_salesforce_accounts"
+            ]
+          },
+          {
+            "id": "audience_aware_drafting",
+            "label": "Audience-Aware Drafting",
+            "description": "Gemini drafts internal communications that inform and align — not just announcements but narratives explaining the 'why' tailored to each audience. Engineering cares about reporting lines, marketing about campaign ownership, sales about territory alignment.",
+            "tools": [
+              "lookup_internal_communications_drafter_playbook",
+              "action_google_workspace_draft"
+            ]
+          },
+          {
+            "id": "distribution_tracking",
+            "label": "Distribution & Tracking",
+            "description": "After VP Marketing approval, distribute via optimal channels (email, Slack, intranet). Track read rates, click-through, and feedback responses.",
+            "tools": [
+              "query_slack_messages"
+            ]
+          }
+        ]
+      },
+      "evidenceRequirements": [
+        {
+          "claim": "Drafting time moved from 4-6 hours toward 30 minutes",
+          "mustCite": [
+            "google_workspace.accounts",
+            "slack.messages"
+          ],
+          "sourceSystemIds": [
+            "google_workspace",
+            "slack"
+          ]
+        },
+        {
+          "claim": "Read rate moved from 45% average toward 72% with optimization",
+          "mustCite": [
+            "google_workspace.accounts",
+            "slack.messages"
+          ],
+          "sourceSystemIds": [
+            "google_workspace",
+            "slack"
+          ]
+        }
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Drafting time regresses past the 4-6 hours baseline by more than 20%",
+          "action": "escalate_to_human",
+          "handoffTarget": "VP Marketing",
+          "rationale": "Significant regressions need human judgment before automated remediation runs against production records."
+        },
+        {
+          "trigger": "Source-system evidence is incomplete or stale (>24h) for any required entity",
+          "action": "request_more_info",
+          "rationale": "Recommendations grounded in stale evidence misrepresent current state and undermine audit defensibility."
+        },
+        {
+          "trigger": "Proposed draft action lacks supporting evidence from at least two systems",
+          "action": "refuse",
+          "rationale": "Single-system evidence is insufficient to authorize external state changes without manual review."
+        }
+      ],
+      "refusalRules": [
+        "Never fabricate metric values; only publish numbers derived from Google Workspace (and other named systems) entities.",
+        "Never bypass VP Marketing approval on escalation triggers, even when confidence is high.",
+        "Never expose individual personal data (PII) in summaries; aggregate or pseudonymise before output.",
+        "Never act on data older than the staleness threshold defined in the runbook without a fresh re-query."
+      ],
+      "goldenEvals": [
+        {
+          "id": "internal-communications-drafter-end-to-end",
+          "prompt": "Run the Internal Communications Drafter workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.",
+          "expectedToolCalls": [
+            "query_google_workspace_accounts",
+            "query_slack_messages",
+            "query_salesforce_accounts",
+            "lookup_internal_communications_drafter_playbook",
+            "action_google_workspace_draft"
+          ],
+          "mustReferenceEntities": [
+            "accounts",
+            "messages",
+            "accounts"
+          ],
+          "mustCiteDocuments": [
+            "internal-communications-drafter-playbook"
+          ],
+          "expectedActionOutcome": "Action draft executed against Google Workspace, with audit-trail entry and VP Marketing notified of outcomes.",
+          "forbiddenBehaviors": [
+            "do not invent KPI numbers",
+            "do not skip the evidence_lookup step before any recommendation",
+            "do not execute draft without two-system evidence"
+          ]
+        }
+      ]
+    }
+  },
+  "hasBehaviorContract": true,
+  "registry": {
+    "schemaVersion": 1,
+    "sourceKind": "slide",
+    "sourcePath": "../presentation/src/components/slides/use-cases/marketing/InternalCommsDrafter.tsx",
+    "familyId": "internal-communications-drafter",
+    "variant": {
+      "familyId": "internal-communications-drafter",
+      "variantId": "internal-communications-drafter",
+      "variantOf": "",
+      "label": "Canonical",
+      "dimensions": {
+        "logic": [],
+        "systems": [],
+        "persona": [],
+        "jurisdiction": [],
+        "dataShape": [],
+        "policy": []
+      },
+      "invariants": [],
+      "changeSummary": []
+    },
+    "lineage": {
+      "baseUseCaseId": "",
+      "baseSpecVersion": null,
+      "refinementMethod": "original_authoring",
+      "refinementPromptPath": null,
+      "sourceDiffPath": null,
+      "compatibility": {
+        "preserveBehaviorContract": false,
+        "preserveEvalIds": false,
+        "preserveSourceSystemIds": false
+      }
+    },
+    "registeredAt": null,
+    "build": {
+      "enabled": true,
+      "reason": "production spec passed registry quality gates"
+    },
+    "quality": {
+      "ok": true,
+      "maturity": "factory_grade_catalog_spec",
+      "gaps": []
+    },
+    "provenance": {
+      "interviewId": null,
+      "author": null,
+      "sourceArtifact": null
+    }
+  }
+}
