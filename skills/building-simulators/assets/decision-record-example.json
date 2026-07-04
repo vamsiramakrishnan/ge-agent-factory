@@ -11,7 +11,7 @@
     "offer approval needs a state-changing tool plus approval blockers, so realism is enterprise rather than starter"
   ],
   "commands": [
-    "npm run generator:new-simulator -- --id lever --name \"Lever\" --archetype recruiting --realism enterprise",
+    "npm run generator:scaffold-simulator -- --id lever --name \"Lever\" --archetype recruiting --realism enterprise",
     "npm run generator:validate-simulators -- --system lever",
     "bun tools/ge.mjs pipeline run --scenario InterviewScheduling --systems lever --target-stage preview"
   ]

@@ -491,7 +491,7 @@ export const GE_COMMANDS = {
     path: "/api/ge/okf/customize",
     cli: "ge okf customize",
     label: "Customize an agent",
-    summary: "Scaffold a variant OKF bundle from a base agent (system swaps, terminology rewrites, vertical policy overlay) and compile it against the base",
+    summary: "Customize a base agent into a new variant OKF bundle (system swaps, terminology rewrites, vertical policy overlay) and compile it against the base",
     guide: {
       when: "an existing agent should be adapted — same behavior contract, different source systems, vocabulary, or vertical policy",
       next: ["ge agents register --bundle <id>", "ge okf compile --from bundle --to spec --bundle <dir> --out <spec.json>"],
@@ -502,7 +502,7 @@ export const GE_COMMANDS = {
     requirements: { bins: ["node"], config: [] },
     mcp: {
       tool: "factory_okf_customize",
-      description: "Local, deterministic: scaffold a variant OKF bundle from a base agent's bundle. Writes the minimal variant (root index.md declaring variant_of/variant_kind + a Variant Binding concept) under the OKF corpus root, then immediately compiles it against the base with full variant resolution — a bad swap target or unknown term comes back as a structured error, never a silent no-op. base/id are agent ids under okf/ (or explicit paths). Register the result with factory_agents_register.",
+      description: "Local, deterministic: customize a base agent's bundle into a new variant OKF bundle. Writes the minimal variant (root index.md declaring variant_of/variant_kind + a Variant Binding concept) under the OKF corpus root, then immediately compiles it against the base with full variant resolution — a bad swap target or unknown term comes back as a structured error, never a silent no-op. base/id are agent ids under okf/ (or explicit paths). Register the result with factory_agents_register.",
       params: {
         base: { type: "string", description: "Base agent id (under the OKF corpus root) or bundle directory" },
         id: { type: "string", description: "New agent id for the variant" },
