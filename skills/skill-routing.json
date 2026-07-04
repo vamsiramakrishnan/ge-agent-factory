@@ -15,6 +15,18 @@
       ],
       "composes": [
         "interviewing-specs"
+      ],
+      "commands": [
+        "okf.customize",
+        "agents.register",
+        "agents.track"
+      ],
+      "engines": [
+        "@ge/okf"
+      ],
+      "docs": [
+        "docs/reference/okf.md",
+        "docs/reference/agent-lifecycle.md"
       ]
     },
     "building-simulators": {
@@ -27,8 +39,42 @@
         "simulator.validate",
         "materialize simulator",
         "source-system simulator",
-        "scenario data"
+        "scenario data",
+        "synthetic data",
+        "data synth",
+        "synthkit",
+        "seed data",
+        "realism profile"
+      ],
+      "commands": [
+        "data.synth",
+        "pipeline.run",
+        "daemon.start"
+      ],
+      "engines": [
+        "@ge/synthkit"
+      ],
+      "docs": [
+        "docs/reference/synthetic-data.md",
+        "docs/reference/simulator-systems.md"
       ]
+    },
+    "checking-workspaces": {
+      "triggers": [
+        "workspace readiness",
+        "validate the workspace",
+        "repair the workspace",
+        "workspace doctor",
+        "spec-code trace",
+        "preview gate",
+        "promotion gate"
+      ],
+      "composes": [],
+      "commands": [],
+      "engines": [
+        "@ge/agent-workspace"
+      ],
+      "docs": []
     },
     "deploying-the-control-plane": {
       "triggers": [
@@ -45,6 +91,11 @@
       "composes": [
         "guarding-the-factory",
         "managing-access"
+      ],
+      "commands": [],
+      "engines": [],
+      "docs": [
+        "docs/reference/architecture.md"
       ]
     },
     "driving-live-proof": {
@@ -58,11 +109,32 @@
         "ttft",
         "responder identity",
         "live transcript",
-        "evalset replay"
+        "evalset replay",
+        "evalkit",
+        "behavioral evals",
+        "evals compile",
+        "behavioral compiler",
+        "adversarial cases",
+        "perturbation"
       ],
       "composes": [
         "running-release",
         "guarding-the-factory"
+      ],
+      "commands": [
+        "evals.compile",
+        "drive",
+        "prove.live",
+        "bench"
+      ],
+      "engines": [
+        "@ge/evalkit"
+      ],
+      "docs": [
+        "docs/reference/evaluation-generation.md",
+        "docs/reference/metric-applicability.md",
+        "docs/reference/live-transcript.md",
+        "docs/reference/live-budgets.md"
       ]
     },
     "grounding-interviews-with-documents": {
@@ -77,6 +149,13 @@
       ],
       "composes": [
         "interviewing-specs"
+      ],
+      "commands": [
+        "capture"
+      ],
+      "engines": [],
+      "docs": [
+        "docs/reference/spec-schema.md"
       ]
     },
     "guarding-the-factory": {
@@ -90,7 +169,10 @@
         "needs approval",
         "escalate"
       ],
-      "composes": []
+      "composes": [],
+      "commands": [],
+      "engines": [],
+      "docs": []
     },
     "installing-the-factory": {
       "triggers": [
@@ -109,6 +191,36 @@
       ],
       "composes": [
         "operating-the-factory"
+      ],
+      "commands": [
+        "doctor",
+        "prove"
+      ],
+      "engines": [],
+      "docs": [
+        "docs/start/getting-started.md"
+      ]
+    },
+    "interviewing-specs": {
+      "triggers": [
+        "spec interview",
+        "capture a contract",
+        "use-case spec",
+        "agent spec",
+        "spec completeness",
+        "normalized spec",
+        "register the spec"
+      ],
+      "composes": [],
+      "commands": [
+        "capture",
+        "agents.register"
+      ],
+      "engines": [
+        "@ge/agent-spec"
+      ],
+      "docs": [
+        "docs/reference/spec-schema.md"
       ]
     },
     "managing-access": {
@@ -125,6 +237,43 @@
       ],
       "composes": [
         "guarding-the-factory"
+      ],
+      "commands": [],
+      "engines": [],
+      "docs": []
+    },
+    "navigating-factory-line": {
+      "triggers": [
+        "factory line",
+        "assembly line",
+        "which skill",
+        "next station",
+        "station map",
+        "line overview"
+      ],
+      "composes": [],
+      "commands": [],
+      "engines": [],
+      "docs": [
+        "docs/reference/architecture.md",
+        "docs/reference/atomic-capabilities.md"
+      ]
+    },
+    "operating-console": {
+      "triggers": [
+        "console command registry",
+        "persisted jobs",
+        "activity stream",
+        "run drawer",
+        "api route sentinel"
+      ],
+      "composes": [],
+      "commands": [
+        "daemon.start"
+      ],
+      "engines": [],
+      "docs": [
+        "docs/reference/console-and-apis.md"
       ]
     },
     "operating-the-factory": {
@@ -151,12 +300,108 @@
         "triaging-runs",
         "managing-access",
         "recording-evidence"
+      ],
+      "commands": [
+        "status",
+        "doctor",
+        "usecases.list"
+      ],
+      "engines": [],
+      "docs": [
+        "docs/reference/agent-operability.md",
+        "docs/reference/cli.md"
       ]
+    },
+    "planning-missions": {
+      "triggers": [
+        "mission plan",
+        "plan the mission",
+        "mission contract",
+        "local vs remote",
+        "build ownership",
+        "target gate",
+        "resumability"
+      ],
+      "composes": [],
+      "commands": [],
+      "engines": [],
+      "docs": []
+    },
+    "recording-evidence": {
+      "triggers": [
+        "evidence ledger",
+        "ledger event",
+        "record evidence",
+        "provenance",
+        "artifact provenance",
+        "upstream fix",
+        "run ledger"
+      ],
+      "composes": [],
+      "commands": [],
+      "engines": [
+        "@ge/run-ledger"
+      ],
+      "docs": []
+    },
+    "running-factory": {
+      "triggers": [
+        "factory plan",
+        "factory run",
+        "workspace generation",
+        "generate the workspace",
+        "package data",
+        "harness refine",
+        "pipeline run"
+      ],
+      "composes": [
+        "checking-workspaces"
+      ],
+      "commands": [
+        "pipeline.run",
+        "daemon.start",
+        "prove",
+        "agents.build",
+        "agents.build.local",
+        "agents.sync",
+        "evals.compile"
+      ],
+      "engines": [
+        "@ge/evalkit"
+      ],
+      "docs": [
+        "docs/reference/agent-generation.md",
+        "docs/reference/evaluation-generation.md"
+      ]
+    },
+    "running-release": {
+      "triggers": [
+        "release the agent",
+        "deploy the agent",
+        "handoff",
+        "publish the agent",
+        "gemini enterprise",
+        "load data",
+        "register tools",
+        "verify live"
+      ],
+      "composes": [
+        "guarding-the-factory",
+        "driving-live-proof"
+      ],
+      "commands": [
+        "handoff",
+        "status",
+        "logs"
+      ],
+      "engines": [],
+      "docs": []
     },
     "standing-up-the-platform": {
       "triggers": [
         "ge doctor",
-        "readiness",
+        "platform readiness",
+        "readiness failure",
         "plane is down",
         "not deployed",
         "stand up the platform",
@@ -168,6 +413,18 @@
       "composes": [
         "guarding-the-factory",
         "triaging-runs"
+      ],
+      "commands": [
+        "up",
+        "data.up",
+        "mcp.deploy",
+        "doctor",
+        "mcp.doctor"
+      ],
+      "engines": [],
+      "docs": [
+        "docs/reference/config.md",
+        "docs/reference/architecture.md"
       ]
     },
     "triaging-runs": {
@@ -183,7 +440,13 @@
       "composes": [
         "recording-evidence",
         "operating-console"
-      ]
+      ],
+      "commands": [
+        "status",
+        "logs"
+      ],
+      "engines": [],
+      "docs": []
     }
   }
 }

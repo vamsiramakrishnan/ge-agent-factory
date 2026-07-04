@@ -20,6 +20,37 @@ Each skill is a directory with a `SKILL.md` (+ optional `references/`, `scripts/
   `grounding-interviews-with-documents`, `managing-access`, `triaging-runs`,
   and the shared safety rail `guarding-the-factory`.
 
+## The factory-line matrix
+
+Each skill maps to the `ge` commands it drives, the engine packages behind
+those commands, and the reference docs that explain them — rendered from
+`skills/skill-routing.json`, `FACTORY_SKILL_BINDINGS`, and the shared command
+registry, so the table cannot drift from those sources:
+
+<!-- BEGIN GENERATED: skill-matrix — do not edit; run `bun run docs:skill-matrix` -->
+| Station skill | Capability | `ge` commands | Engine packages | Reference docs |
+|---|---|---|---|---|
+| [`installing-the-factory`](installing-the-factory/) | `factory_install` | `ge doctor`, `ge prove` | — | [`getting-started.md`](../docs/start/getting-started.md) |
+| [`navigating-factory-line`](navigating-factory-line/) | `factory_line` | — | — | [`architecture.md`](../docs/reference/architecture.md), [`atomic-capabilities.md`](../docs/reference/atomic-capabilities.md) |
+| [`interviewing-specs`](interviewing-specs/) | `spec_interview` | `ge capture`, `ge agents register` | [`@ge/agent-spec`](../packages/agent-spec/) | [`spec-schema.md`](../docs/reference/spec-schema.md) |
+| [`planning-missions`](planning-missions/) | `mission_planning` | — | — | — |
+| [`running-factory`](running-factory/) | `factory_run` | `ge pipeline run`, `ge daemon start`, `ge prove`, `ge agents build`, `ge agents build --local`, `ge agents sync`, `ge evals compile` | [`@ge/evalkit`](../packages/evalkit/) | [`agent-generation.md`](../docs/reference/agent-generation.md), [`evaluation-generation.md`](../docs/reference/evaluation-generation.md) |
+| [`building-simulators`](building-simulators/) | `simulator_build` | `ge data synth`, `ge pipeline run`, `ge daemon start` | [`@ge/synthkit`](../packages/synthkit/) | [`synthetic-data.md`](../docs/reference/synthetic-data.md), [`simulator-systems.md`](../docs/reference/simulator-systems.md) |
+| [`checking-workspaces`](checking-workspaces/) | `workspace_check` | — | [`@ge/agent-workspace`](../packages/agent-workspace/) | — |
+| [`running-release`](running-release/) | `release_run` | `ge handoff`, `ge agents status`, `ge agents logs` | — | — |
+| [`driving-live-proof`](driving-live-proof/) | `live_proof` | `ge evals compile`, `ge drive`, `ge prove --live`, `ge bench` | [`@ge/evalkit`](../packages/evalkit/) | [`evaluation-generation.md`](../docs/reference/evaluation-generation.md), [`metric-applicability.md`](../docs/reference/metric-applicability.md), [`live-transcript.md`](../docs/reference/live-transcript.md), [`live-budgets.md`](../docs/reference/live-budgets.md) |
+| [`operating-console`](operating-console/) | `console_operation` | `ge daemon start` | — | [`console-and-apis.md`](../docs/reference/console-and-apis.md) |
+| [`recording-evidence`](recording-evidence/) | `evidence_recording` | — | [`@ge/run-ledger`](../packages/run-ledger/) | — |
+| [`operating-the-factory`](operating-the-factory/) | `factory_operation` | `ge agents status`, `ge doctor`, `factory list-usecases` | — | [`agent-operability.md`](../docs/reference/agent-operability.md), [`cli.md`](../docs/reference/cli.md) |
+| [`standing-up-the-platform`](standing-up-the-platform/) | `platform_readiness` | `ge up`, `ge data up`, `ge mcp deploy`, `ge doctor`, `ge mcp doctor` | — | [`config.md`](../docs/reference/config.md), [`architecture.md`](../docs/reference/architecture.md) |
+| [`deploying-the-control-plane`](deploying-the-control-plane/) | `control_plane_deploy` | — | — | [`architecture.md`](../docs/reference/architecture.md) |
+| [`grounding-interviews-with-documents`](grounding-interviews-with-documents/) | `document_grounding` | `ge capture` | — | [`spec-schema.md`](../docs/reference/spec-schema.md) |
+| [`managing-access`](managing-access/) | `access_control` | — | — | — |
+| [`triaging-runs`](triaging-runs/) | `run_triage` | `ge agents status`, `ge agents logs` | — | — |
+| [`guarding-the-factory`](guarding-the-factory/) | `factory_safety` | — | — | — |
+| [`authoring-okf-specs`](authoring-okf-specs/) | `knowledge_format` | `ge okf customize`, `ge agents register`, `ge agents track` | [`@ge/okf`](../packages/okf/) | [`okf.md`](../docs/reference/okf.md), [`agent-lifecycle.md`](../docs/reference/agent-lifecycle.md) |
+<!-- END GENERATED: skill-matrix -->
+
 ## Composition
 
 Machine routing lives in `skills/skill-routing.json`, not portable `SKILL.md`
@@ -95,7 +126,11 @@ earns it. The quality auditor
 1. Create `skills/<verb-phrase>/SKILL.md` with spec-portable frontmatter `name` and
    `description` (must contain "Use when …" — the quality auditor enforces it).
    Add GE-specific trigger keywords and composed sub-skills to
-   `skills/skill-routing.json`, not to `SKILL.md` frontmatter. Body: `## Assembly-Line Slot`
+   `skills/skill-routing.json`, not to `SKILL.md` frontmatter — and declare the
+   skill's `commands` (command-registry ids), `engines` (`@ge/*` packages), and
+   `docs` there too, then regenerate the matrix above with
+   `bun run docs:skill-matrix` (validated + drift-checked by `docs:gate`).
+   Body: `## Assembly-Line Slot`
    (First step / Plays a role in / Input / Output / Next step), `## Workflow`,
    `## Common mistakes`, `## Done when`. Keep it tight (single responsibility).
 2. Bind it in `apps/factory/src/skill-registry.js` (`FACTORY_SKILL_BINDINGS`

@@ -29,7 +29,7 @@ use [Core Concepts](../concepts/).
 | [Synthetic data](synthetic-data.html) | How seed data is synthesized: the recipe model, the Snowfakery and offline realization tiers, the statistical realism profile, determinism guarantees, and `ge data synth`. |
 | [Console & APIs](console-and-apis.html) | The server API endpoints under `/api/ge/*`, `/api/runtime/*`, `/api/systems/*`, and `/api/interviews/:id/*` — the mutating route table is generated from the command registry. |
 | [Config](config.html) | `.ge.json`, the flag → env → file → default precedence, and `ge config explain`. |
-| [Architecture](architecture.html) | The three planes, local vs remote mode, the durable control plane (ADR 0001), the run ledger, and the request/auth flow. |
+| [Architecture](architecture.html) | The three planes, local vs remote mode, the durable control plane (ADR 0001), the run ledger, the request/auth flow, and the skill matrix (station → skill → `ge` command → engine package → doc, generated from source). |
 | [Live transcript](live-transcript.html) | The LiveTranscript artifact every live surface produces and consumes — fields, where it is written, who reads it. |
 | [Live budgets and gates](live-budgets.html) | Every `live.budgets` key, the `live.bench` hard guard rails, and the `promotion.gates.live` policy. |
 | [Evaluation generation](evaluation-generation.html) | The behavioral compiler pipeline (graph → expansion → set-cover → emitters), the `--perturb`/`--adversarial` hardening flags, and the statistics (Wilson intervals, lexical similarity). |
@@ -54,6 +54,7 @@ use [Core Concepts](../concepts/).
 | Wire a UI or automation against the backend | [Console & APIs](console-and-apis.html) |
 | Understand where a config value came from | [Config](config.html) |
 | Explain local vs remote mode or the three planes | [Architecture](architecture.html) |
+| Map a pipeline station to its skill, `ge` command, and engine package | [Architecture](architecture.html) |
 | Navigate the operator UI | [Console](../console/) |
 
 ## JSON output and error surfaces
@@ -75,7 +76,8 @@ hand-maintained drift:
 
 - Prefer source-linked facts over prose-only explanations.
 - Generated regions are never hand-edited — regenerate with
-  `bun run docs:cli`, `bun run docs:spec-ref`, `bun run docs:console-api`.
+  `bun run docs:cli`, `bun run docs:spec-ref`, `bun run docs:console-api`,
+  `bun run docs:skill-matrix`.
 - Keep command examples copyable from the repo root.
 - State whether a command is local-only, cloud-only, read-only, or mutating.
 - Link to the guide when a reference page describes a full workflow.
