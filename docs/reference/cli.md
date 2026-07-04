@@ -829,6 +829,14 @@ Reconcile actual → desired platform + fleet from a manifest (ge.manifest.json)
 |---|---|---|
 | `--yes` | boolean | Execute the plan in dependency order (default: plan only) |
 | `--manifest` | string | Path to a manifest JSON (default ge.manifest.json) |
+
+### `ge completions`
+
+Emit a shell completion script for `ge` (bash|zsh|fish) — subcommand names only, not flags
+
+| Flag | Type | Description |
+|---|---|---|
+| `<shell>` | positional (required) | bash, zsh, or fish |
 <!-- END GENERATED: ge-command-tree -->
 
 ### Examples
