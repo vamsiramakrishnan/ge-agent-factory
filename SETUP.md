@@ -128,7 +128,7 @@ Or build one agent locally, up to the preview/build boundary:
 
 ```bash
 mise run mode-local
-CANARY=1 mise run provision-local
+CANARY=1 mise run build-agents-local
 ```
 
 Or run the fast DevEx gate / one-command local proof:

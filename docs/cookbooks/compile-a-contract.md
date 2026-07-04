@@ -85,8 +85,8 @@ importable in `.venv` (verified by `mise run deps` / `mise run doctor-local`).
    Equivalent `mise` shortcuts:
 
    ```bash
-   CANARY=1 mise run provision-local   # ge agents build --local --canary
-   CANARY=1 mise run provision         # ge agents build --canary  (active mode)
+   CANARY=1 mise run build-agents-local   # ge agents build --local --canary
+   CANARY=1 mise run build-agents         # ge agents build --canary  (active mode)
    ```
 
    > Always canary first. `--canary` proves the whole compile path on one

@@ -596,7 +596,7 @@ export const GE_COMMANDS = {
       toolPlane: true,
     },
     mcp: {
-      tool: "factory_provision",
+      tool: "factory_agents_build",
       description: "Mutating: build agents. local=true runs on-machine via the Antigravity harness (stops at the local build boundary; use factory_handoff to hand off to the cloud afterwards); otherwise submits directly to the cloud gateway end-to-end. scope: 'canary' | 'all'; or dept/ids. Poll cloud submissions with factory_status.",
       params: {
         scope: { type: "string", enum: ["canary", "all"], optional: true },
@@ -789,7 +789,7 @@ export const GE_COMMANDS = {
     requirements: { bins: [], config: [] },
     mcp: {
       tool: "factory_status",
-      description: "Read-only: poll already-submitted CLOUD runs (from a prior factory_provision without local=true) and return the stage tally + per-run status. Does not track local harness builds — see factory_provision's local mode for those.",
+      description: "Read-only: poll already-submitted CLOUD runs (from a prior factory_agents_build without local=true) and return the stage tally + per-run status. Does not track local harness builds — see factory_agents_build's local mode for those.",
       params: {
         noProxy: { type: "boolean", optional: true },
       },

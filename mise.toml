@@ -36,7 +36,7 @@ echo "Setup done."
 echo "Next:"
 echo "  mise run doctor-local              # confirm local tools are ready"
 echo "  mise run console                   # open the Pipeline/Fleet/Activity UI"
-echo "  mise run mode-local && CANARY=1 mise run provision-local"
+echo "  mise run mode-local && CANARY=1 mise run build-agents-local"
 echo "                                     # build one agent locally up to preview"
 """
 
@@ -64,7 +64,7 @@ if [ -n "${CANARY:-}" ]; then
   bun tools/ge.mjs agents build --canary
 fi
 echo ""
-echo "✓ Bootstrap complete. Next: ge agents build --all   ·   console: mise run console   ·   local-only: mise run mode-local && CANARY=1 mise run provision-local"
+echo "✓ Bootstrap complete. Next: ge agents build --all   ·   console: mise run console   ·   local-only: mise run mode-local && CANARY=1 mise run build-agents-local"
 """
 
 [tasks.bootstrap]
@@ -280,13 +280,23 @@ run = "bun tools/ge.mjs mode local"
 description = "Switch to remote mode (cloud factory builds + deploys)"
 run = "bun tools/ge.mjs mode remote"
 
-[tasks.provision]
+[tasks.build-agents]
 description = "Build agents in the active mode (CANARY=1 for one, else --all)"
 run = 'bun tools/ge.mjs agents build ${CANARY:+--canary} ${CANARY:---all}'
 
-[tasks.provision-local]
+[tasks.build-agents-local]
 description = "Build agents on this machine via the Antigravity harness (LLM spec-fidelity review; CANARY=1 builds just one agent)"
 run = 'bun tools/ge.mjs agents build --local ${CANARY:+--canary} ${CANARY:---all}'
+
+[tasks.provision]
+description = "Alias for build-agents ('provision' collided with apps/factory/src/cli.js's unrelated infra-plan meaning; prefer build-agents)"
+depends = ["build-agents"]
+run = "true"
+
+[tasks.provision-local]
+description = "Alias for build-agents-local ('provision' collided with apps/factory/src/cli.js's unrelated infra-plan meaning; prefer build-agents-local)"
+depends = ["build-agents-local"]
+run = "true"
 
 [tasks.sync]
 description = "Sync generated agent code → git (active mode; GCS in remote, workspaces in local)"
@@ -351,7 +361,7 @@ printf "  Local health check:               \\033[36mmise run doctor-local\\033[
 printf "  Fast DevEx gate:                  \\033[36mmise run devex-check\\033[0m\\n"
 printf "  One-command local proof:          \\033[36mmise run prove\\033[0m  (or: ge prove)\\n"
 printf "  Open the main UI:                 \\033[36mmise run console\\033[0m  (http://localhost:18260)\\n"
-printf "  Build one agent locally:          \\033[36mmise run mode-local && CANARY=1 mise run provision-local\\033[0m\\n"
+printf "  Build one agent locally:          \\033[36mmise run mode-local && CANARY=1 mise run build-agents-local\\033[0m\\n"
 printf "  Watch runs and blockers:          \\033[36mmise run console\\033[0m  then open Activity, or run \\033[36mge agents status --watch\\033[0m\\n"
 printf "  Cloud install / deploy path:      \\033[36mGEMINI_ENTERPRISE_APP_ID=... CANARY=1 mise run bootstrap-cloud\\033[0m\\n"
 printf "  Before pushing code:              \\033[36mmise run ci\\033[0m\\n"
@@ -385,7 +395,7 @@ printf "  \\033[36mmise run doctor-local\\033[0m          Check local tools: Bun
 printf "  \\033[36mmise run devex-check\\033[0m           Fast gate: local doctor, docs links, workspace manifest contracts\\n"
 printf "  \\033[36mmise run prove\\033[0m                Prove the local path: health check → one validated agent workspace\\n"
 printf "  \\033[36mmise run console\\033[0m               Open the operator UI for Pipeline, Fleet, Activity, Doctor, and generated specs\\n"
-printf "  \\033[36mCANARY=1 mise run provision-local\\033[0m Build one generated agent locally up to the preview/build boundary\\n"
+printf "  \\033[36mCANARY=1 mise run build-agents-local\\033[0m Build one generated agent locally up to the preview/build boundary\\n"
 printf "\\n\\033[1mWhich local app should I run?\\033[0m\\n"
 printf "  \\033[36mconsole\\033[0m       The day-to-day developer/operator UI: choose specs, run Pipeline, inspect runs and blockers\\n"
 printf "  \\033[36mpresentation\\033[0m  The transformation deck and source use-case catalog used to explain the system\\n"

@@ -202,7 +202,7 @@ skills, caches, and the daemon.
 
 Under the hood local mode delegates to `ge-harness factory plan` + `factory run
 --vertex` (Antigravity SDK harness). Both surfaces — CLI and the MCP tools
-(`factory_provision`/`factory_sync` with `local: true`) — share `factory-core`.
+(`factory_agents_build`/`factory_sync` with `local: true`) — share `factory-core`.
 
 ## Deploy contract (who builds, who deploys)
 
