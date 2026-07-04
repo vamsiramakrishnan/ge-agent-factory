@@ -53,9 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [deal_cost_intake](/workflow/deal-cost-intake.md)
+- [playbook_deal_terms_evidence_gating](/workflow/playbook-deal-terms-evidence-gating.md)
+- [generate_audit](/workflow/generate-audit.md)
 
 ## Evals
 

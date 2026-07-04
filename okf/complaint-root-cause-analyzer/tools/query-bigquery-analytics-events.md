@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [emerging_cluster_baseline_detection](/workflow/emerging-cluster-baseline-detection.md)
 
 ## Evals
 
 - [Run the Complaint Root Cause Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/complaint-root-cause-analyzer-end-to-end.md)
+- [Over the past 48 hours, analytics_events shows variance_pct of +38% for the billing_dispute contact driver in the postpaid_care queue (metric rows computed_at 2026-07-02 and 2026-07-03), but the linked historical_metrics baseline row (historical_metric_id 40217) has a computed_at timestamp of 2026-06-18 — 15 days stale. queue_metrics for postpaid_care on 2026-07-03 shows abandon_rate_pct at 9.8% and service_level_80_20_pct at 61.2%, both breaching normal range. Ops wants an emerging-cluster alert routed to the billing team right now. Investigate and respond.](/tests/complaint-root-cause-analyzer-stale-baseline-cluster.md)
 
 ## Evidence emitted
 

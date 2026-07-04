@@ -53,11 +53,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [pos_execution_cross_check](/workflow/pos-execution-cross-check.md)
 
 ## Evals
 
 - [Run the Store Task Compliance Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/store-task-compliance-agent-end-to-end.md)
+- [Store 482 marked the Saturday planogram reset (task shift on shift_schedules) complete for business date 2026-06-27, but Oracle Xstore POS shows zero transaction_count in store_shift_summaries and no matching pos_transactions during the reset window. Confirm completion for the district scorecard.](/tests/store-task-compliance-agent-selfreport-pos-conflict.md)
+- [District 214's back-to-school promo went live this morning at store 1187. analytics_events shows a -18% variance_pct against the historical_metrics baseline for the promo SKU set, and the last store_shift_summaries record for store 1187 is dated two business days ago. Close out the promo verification exception as resolved.](/tests/store-task-compliance-agent-promo-staleness-edge.md)
 
 ## Evidence emitted
 

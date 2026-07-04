@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: B2B Quote Configuration Agent
-description: "The agent assembles a validated multi-site quote from the opportunity record, applying current price books and approved discount bands automatically. It checks serviceability and access technology per site against network inventory before any line item is priced. so the B2B Sales Engineer can move the Quote turnaround time KPI."
+description: "The agent assembles a validated multi-site quote from service_quotes and subscriber_accounts, gating every line on serviceability_confirmed and credit_check_status and applying discount_pct within the approved band, so Quote turnaround time falls from 4.5 days to 6 hours and configuration error rate drops from 12% to 2%."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/b2b-quote-configura
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:30.747Z"
+provenance_created_at: "2026-07-04T06:18:39.592Z"
 ---
 
 # B2B Quote Configuration Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:30.747Z"
 
 - **Persona:** B2B Sales Engineer
 - **Department:** telco
-- **Objective:** The agent assembles a validated multi-site quote from the opportunity record, applying current price books and approved discount bands automatically. It checks serviceability and access technology per site against network inventory before any line item is priced. so the B2B Sales Engineer can move the Quote turnaround time KPI.
+- **Objective:** The agent assembles a validated multi-site quote from service_quotes and subscriber_accounts, gating every line on serviceability_confirmed and credit_check_status and applying discount_pct within the approved band, so Quote turnaround time falls from 4.5 days to 6 hours and configuration error rate drops from 12% to 2%.
 
 ## KPI summary
 

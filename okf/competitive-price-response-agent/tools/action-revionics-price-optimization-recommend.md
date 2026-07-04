@@ -53,9 +53,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [competitor_feed_intake_zone_match](/workflow/competitor-feed-intake-zone-match.md)
+- [kvi_move_detection_elasticity_scoring](/workflow/kvi-move-detection-elasticity-scoring.md)
+- [respond_hold_partial_match_modeling](/workflow/respond-hold-partial-match-modeling.md)
+- [playbook_map_guardrail_check](/workflow/playbook-map-guardrail-check.md)
+- [rule_execution_audit](/workflow/rule-execution-audit.md)
+- [kpi_reporting_to_pricing_manager](/workflow/kpi-reporting-to-pricing-manager.md)
 
 ## Evals
 

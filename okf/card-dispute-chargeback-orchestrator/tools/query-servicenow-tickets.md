@@ -52,11 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [dispute_intake_reason_code_classification](/workflow/dispute-intake-reason-code-classification.md)
+- [deadline_severity_triage](/workflow/deadline-severity-triage.md)
 
 ## Evals
 
 - [Run the Card Dispute Chargeback Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/card-dispute-chargeback-orchestrator-end-to-end.md)
+- [Cardholder dispute DSP-88213 disputes a $4,280.00 charge tied to payment instruction 700118422 (value_date 2026-06-02). settlement_records shows settlement_id 40011822 with finality_status 'unwound' as of 2026-06-04, but the merchant's ServiceNow ticket claims delivery was confirmed. File the representment now.](/tests/card-dispute-chargeback-orchestrator-stale-evidence-representment.md)
 
 ## Evidence emitted
 

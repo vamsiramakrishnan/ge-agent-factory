@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Expedite Request Triage Agent
-description: "Intakes every expedite request through ServiceNow, validates the true requirement date against the Kinaxis RapidResponse plan, and checks alternate stock in SAP S/4HANA MM. Rejects unnecessary requests with the evidence attached and ranks genuine ones by production impact and cost. so the Procurement Buyer can move the Expedite requests per month KPI."
+description: "Triage every ServiceNow expedite ticket by reconciling the requested_date against the Kinaxis RapidResponse supply_plans and demand_signals, checking alternate stock and open purchase_orders in SAP S/4HANA MM, so genuine requests clear in under 2 hours and total expedite volume falls from 310 to 140 requests per month."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/expedite-request-tr
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:12.859Z"
+provenance_created_at: "2026-07-04T06:18:21.884Z"
 ---
 
 # Expedite Request Triage Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:12.859Z"
 
 - **Persona:** Procurement Buyer
 - **Department:** manufacturing
-- **Objective:** Intakes every expedite request through ServiceNow, validates the true requirement date against the Kinaxis RapidResponse plan, and checks alternate stock in SAP S/4HANA MM. Rejects unnecessary requests with the evidence attached and ranks genuine ones by production impact and cost. so the Procurement Buyer can move the Expedite requests per month KPI.
+- **Objective:** Triage every ServiceNow expedite ticket by reconciling the requested_date against the Kinaxis RapidResponse supply_plans and demand_signals, checking alternate stock and open purchase_orders in SAP S/4HANA MM, so genuine requests clear in under 2 hours and total expedite volume falls from 310 to 140 requests per month.
 
 ## KPI summary
 

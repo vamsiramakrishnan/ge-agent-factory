@@ -53,9 +53,10 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [agency_book_scan_baseline_pull](/workflow/agency-book-scan-baseline-pull.md)
+- [authority_guide_validation](/workflow/authority-guide-validation.md)
+- [briefing_pack_talking_point_assembly](/workflow/briefing-pack-talking-point-assembly.md)
+- [recommend_re_engagement_execution](/workflow/recommend-re-engagement-execution.md)
 
 ## Evals
 

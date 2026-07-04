@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Inventory Rebalancing Orchestrator
-description: "Scans multi-site stock positions and projected demand in Kinaxis RapidResponse and SAP S/4HANA MM data in BigQuery every night for surplus-deficit pairs. Recommends specific inter-site transfers with freight cost versus expedite cost trade-offs quantified. so the Inventory Analyst can move the Excess and obsolete inventory KPI."
+description: "Every night, reconcile supply_plans and demand_signals across plants in Kinaxis RapidResponse against SAP S/4HANA MM purchase_orders and material_movements to surface surplus-deficit pairs, then recommend costed inter-site stock transport orders that cut inter-site transfer cycle time from 12 days to 4 days and shrink excess and obsolete inventory from $4.8M toward $2.6M."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/inventory-rebalanci
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:12.424Z"
+provenance_created_at: "2026-07-04T06:18:21.473Z"
 ---
 
 # Inventory Rebalancing Orchestrator
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:12.424Z"
 
 - **Persona:** Inventory Analyst
 - **Department:** manufacturing
-- **Objective:** Scans multi-site stock positions and projected demand in Kinaxis RapidResponse and SAP S/4HANA MM data in BigQuery every night for surplus-deficit pairs. Recommends specific inter-site transfers with freight cost versus expedite cost trade-offs quantified. so the Inventory Analyst can move the Excess and obsolete inventory KPI.
+- **Objective:** Every night, reconcile supply_plans and demand_signals across plants in Kinaxis RapidResponse against SAP S/4HANA MM purchase_orders and material_movements to surface surplus-deficit pairs, then recommend costed inter-site stock transport orders that cut inter-site transfer cycle time from 12 days to 4 days and shrink excess and obsolete inventory from $4.8M toward $2.6M.
 
 ## KPI summary
 

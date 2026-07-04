@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [changeover_log_correlation](/workflow/changeover-log-correlation.md)
+- [family_aware_resequencing_recommendation](/workflow/family-aware-resequencing-recommendation.md)
+- [route_audit](/workflow/route-audit.md)
 
 ## Evals
 

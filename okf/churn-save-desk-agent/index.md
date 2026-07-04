@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Churn Save Desk Agent
-description: "The agent surfaces the customer's likely churn driver, lifetime value, and network-experience history to the rep the moment the call connects. It recommends the minimum-cost save offer ranked by predicted acceptance, from plan right-sizing to device credits to a service fix. so the Retention Marketing Manager can move the Save rate on cancellation contacts KPI."
+description: "Give the Retention Marketing Manager a single call-time view of the customer's churn driver, lifetime value, and network-experience history from Genesys Cloud CX customer_interactions and queue_metrics, then rank the minimum-cost save offer against the Retention Offer Rate Card so the save rate on cancellation contacts moves from 24% to 42% while average retention discount given falls from $18/month to $9/month."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/churn-save-desk-age
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:39.366Z"
+provenance_created_at: "2026-07-04T06:18:48.014Z"
 ---
 
 # Churn Save Desk Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:39.366Z"
 
 - **Persona:** Retention Marketing Manager
 - **Department:** telco
-- **Objective:** The agent surfaces the customer's likely churn driver, lifetime value, and network-experience history to the rep the moment the call connects. It recommends the minimum-cost save offer ranked by predicted acceptance, from plan right-sizing to device credits to a service fix. so the Retention Marketing Manager can move the Save rate on cancellation contacts KPI.
+- **Objective:** Give the Retention Marketing Manager a single call-time view of the customer's churn driver, lifetime value, and network-experience history from Genesys Cloud CX customer_interactions and queue_metrics, then rank the minimum-cost save offer against the Retention Offer Rate Card so the save rate on cancellation contacts moves from 24% to 42% while average retention discount given falls from $18/month to $9/month.
 
 ## KPI summary
 

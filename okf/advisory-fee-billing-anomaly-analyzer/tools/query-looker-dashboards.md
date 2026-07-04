@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [attestation_publish_looker_reporting](/workflow/attestation-publish-looker-reporting.md)
 
 ## Evals
 

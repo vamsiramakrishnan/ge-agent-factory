@@ -15,7 +15,7 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 ## Validates
 
-- [retrieve-records](/queries/retrieve-records.md)
+- [fnol-intake-loss-fact-extraction](/queries/fnol-intake-loss-fact-extraction.md)
 
 ## Mechanisms to call
 

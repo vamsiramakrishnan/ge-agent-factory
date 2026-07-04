@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [conservation_action_publish_dashboard_refresh](/workflow/conservation-action-publish-dashboard-refresh.md)
 
 ## Evals
 

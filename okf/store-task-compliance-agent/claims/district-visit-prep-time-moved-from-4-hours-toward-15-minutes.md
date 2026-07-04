@@ -37,3 +37,4 @@ Must cite: ukg_dimensions.shift_schedules, oracle_xstore_pos.pos_transactions
 # Citations
 
 - [Store Task Compliance Agent Retail Execution Playbook](/documents/store-task-compliance-agent-execution-playbook.md)
+- [Store Task Verification & Evidence Sufficiency Standard](/documents/store-task-compliance-agent-verification-evidence-standard.md)

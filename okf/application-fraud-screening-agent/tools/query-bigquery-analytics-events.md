@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [network_link_producer_cluster_analysis](/workflow/network-link-producer-cluster-analysis.md)
 
 ## Evals
 

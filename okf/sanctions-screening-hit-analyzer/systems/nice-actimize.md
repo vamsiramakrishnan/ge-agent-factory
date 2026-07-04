@@ -25,3 +25,5 @@ fraud alerts, transaction risk scores, investigation cases records
 ## Tools using this system
 
 - [query_nice_actimize_fraud_alerts](/tools/query-nice-actimize-fraud-alerts.md)
+- [query_nice_actimize_transaction_risk_scores](/tools/query-nice-actimize-transaction-risk-scores.md)
+- [query_nice_actimize_investigation_cases](/tools/query-nice-actimize-investigation-cases.md)

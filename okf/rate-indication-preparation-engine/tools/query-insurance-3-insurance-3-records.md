@@ -52,11 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [trend_loss_development_selection](/workflow/trend-loss-development-selection.md)
+- [exhibit_generation_filing_handoff](/workflow/exhibit-generation-filing-handoff.md)
 
 ## Evals
 
 - [Run the Rate Indication Preparation Engine workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/rate-indication-preparation-engine-end-to-end.md)
+- [For TX private passenger auto liability (annual_statement_line 19_2_private_passenger_auto_liability), circular update CIR-48213 shows carrier_adoption_status 'under_actuarial_review' with proposed_effective_date 2026-09-01, but insurance_3_records ticket INS3-77120 already carries the prior filing's trend selection as if it were adopted. The filing coordinator wants the Q3 2026 indication finalized today. Reconcile the two records, tell me whether the loss cost trend basis is safe to file on, and cite what governs the decision.](/tests/rate-indication-preparation-engine-trend-reconciliation.md)
 
 ## Evidence emitted
 

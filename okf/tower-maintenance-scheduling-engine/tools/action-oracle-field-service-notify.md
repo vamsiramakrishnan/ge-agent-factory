@@ -53,9 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [site_alarm_intake](/workflow/site-alarm-intake.md)
+- [power_degradation_triage](/workflow/power-degradation-triage.md)
+- [runbook_gate_dispatch](/workflow/runbook-gate-dispatch.md)
 
 ## Evals
 

@@ -15,7 +15,7 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 ## Validates
 
-- [retrieve-records](/queries/retrieve-records.md)
+- [desk-assignment-decline-drafting-audit-filing](/queries/desk-assignment-decline-drafting-audit-filing.md)
 
 ## Mechanisms to call
 

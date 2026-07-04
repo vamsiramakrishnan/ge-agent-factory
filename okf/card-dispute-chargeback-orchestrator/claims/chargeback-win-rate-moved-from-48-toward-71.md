@@ -37,3 +37,4 @@ Must cite: fis_payments_hub.payment_instructions, bigquery.analytics_events
 # Citations
 
 - [Card Dispute Chargeback Orchestrator Banking Compliance Policy](/documents/card-dispute-chargeback-orchestrator-compliance-policy.md)
+- [Card Network Reason Code & Representment Playbook](/documents/card-dispute-chargeback-orchestrator-network-reason-code-playbook.md)

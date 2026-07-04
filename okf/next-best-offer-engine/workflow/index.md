@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Member Signal Unification](/workflow/member-signal-unification.md)
+2. [Propensity & Price-Sensitivity Scoring](/workflow/propensity-price-sensitivity-scoring.md)
+3. [Offer Selection Under Guardrails](/workflow/offer-selection-under-guardrails.md)
+4. [Audience Decisioning & Publish](/workflow/audience-decisioning-publish.md)
+5. [Holdout Measurement & Escalation](/workflow/holdout-measurement-escalation.md)

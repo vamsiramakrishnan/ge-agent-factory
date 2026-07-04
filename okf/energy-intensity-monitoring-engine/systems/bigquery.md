@@ -25,3 +25,4 @@ Historical baselines, analytics events, and KPI aggregates
 ## Tools using this system
 
 - [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
+- [lookup_site_utility_rate_and_demand_charge_schedule](/tools/lookup-site-utility-rate-and-demand-charge-schedule.md)

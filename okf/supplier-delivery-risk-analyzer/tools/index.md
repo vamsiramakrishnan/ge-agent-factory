@@ -12,3 +12,6 @@ timestamp: "2026-07-04T00:00:00.000Z"
 - [query_looker_dashboards](/tools/query-looker-dashboards.md)
 - [lookup_supplier_delivery_risk_analyzer_sop](/tools/lookup-supplier-delivery-risk-analyzer-sop.md)
 - [action_sap_s_4hana_mm_publish](/tools/action-sap-s-4hana-mm-publish.md)
+- [query_kinaxis_rapidresponse_demand_signals](/tools/query-kinaxis-rapidresponse-demand-signals.md)
+- [query_kinaxis_rapidresponse_scenario_runs](/tools/query-kinaxis-rapidresponse-scenario-runs.md)
+- [lookup_supplier_delivery_risk_analyzer_vendor_screening_policy](/tools/lookup-supplier-delivery-risk-analyzer-vendor-screening-policy.md)

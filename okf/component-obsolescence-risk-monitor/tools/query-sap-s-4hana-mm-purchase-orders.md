@@ -52,11 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [eol_signal_bom_correlation](/workflow/eol-signal-bom-correlation.md)
+- [disposition_recommendation_change_control_routing](/workflow/disposition-recommendation-change-control-routing.md)
 
 ## Evals
 
 - [Run the Component Obsolescence Risk Monitor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/component-obsolescence-risk-monitor-end-to-end.md)
+- [ECO 24417 supersedes bom_revision C on parent material 412980 with immediate_use_up effectivity dated 2026-06-28, but purchase_orders shows a row for vendor 'Keller Fasteners' still in 'approved' status with a due_date of 2026-07-10 against the prior revision. Reconcile whether we can cut in immediately or need a use-up/rework plan, and tell me the last-time-buy quantity if one is needed.](/tests/component-obsolescence-risk-monitor-effectivity-conflict.md)
 
 ## Evidence emitted
 

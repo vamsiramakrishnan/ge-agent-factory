@@ -11,3 +11,6 @@ timestamp: "2026-07-04T00:00:00.000Z"
 - [query_looker_dashboards](/tools/query-looker-dashboards.md)
 - [lookup_reserve_development_early_warning_monitor_authority_guide](/tools/lookup-reserve-development-early-warning-monitor-authority-guide.md)
 - [action_guidewire_claimcenter_file](/tools/action-guidewire-claimcenter-file.md)
+- [query_guidewire_claimcenter_claim_exposures](/tools/query-guidewire-claimcenter-claim-exposures.md)
+- [query_guidewire_claimcenter_reserve_lines](/tools/query-guidewire-claimcenter-reserve-lines.md)
+- [lookup_reserve_diary_stairstep_prevention_runbook](/tools/lookup-reserve-diary-stairstep-prevention-runbook.md)

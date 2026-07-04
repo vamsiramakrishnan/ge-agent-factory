@@ -11,3 +11,6 @@ timestamp: "2026-07-04T00:00:00.000Z"
 - [query_looker_dashboards](/tools/query-looker-dashboards.md)
 - [lookup_field_job_closure_quality_analyzer_assurance_runbook](/tools/lookup-field-job-closure-quality-analyzer-assurance-runbook.md)
 - [action_oracle_field_service_recommend](/tools/action-oracle-field-service-recommend.md)
+- [query_oracle_field_service_technician_schedules](/tools/query-oracle-field-service-technician-schedules.md)
+- [query_oracle_field_service_service_appointments](/tools/query-oracle-field-service-service-appointments.md)
+- [lookup_closure_evidence_as_built_documentation_playbook](/tools/lookup-closure-evidence-as-built-documentation-playbook.md)

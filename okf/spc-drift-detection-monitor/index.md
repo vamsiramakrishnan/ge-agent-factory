@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: SPC Drift Detection Monitor
-description: "Streams inspection results from SAP QM and in-line measurements from MES into BigQuery and evaluates every point against SPC run rules in near real time. Distinguishes true process drift from measurement noise using historical process capability baselines per characteristic. so the Quality Engineer can move the First-pass yield KPI."
+description: "Continuously score quality_checks measurements against control limits and BigQuery historical_metrics baselines per characteristic across inspection_lots and production_orders, distinguishing true drift from measurement noise so the Quality Engineer catches an out-of-control condition before defects ship, moving that capture rate from 55% to 94% while lifting first-pass yield from 91.2% to 96.5%."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/spc-drift-detection
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:07.390Z"
+provenance_created_at: "2026-07-04T06:18:16.379Z"
 ---
 
 # SPC Drift Detection Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:07.390Z"
 
 - **Persona:** Quality Engineer
 - **Department:** manufacturing
-- **Objective:** Streams inspection results from SAP QM and in-line measurements from MES into BigQuery and evaluates every point against SPC run rules in near real time. Distinguishes true process drift from measurement noise using historical process capability baselines per characteristic. so the Quality Engineer can move the First-pass yield KPI.
+- **Objective:** Continuously score quality_checks measurements against control limits and BigQuery historical_metrics baselines per characteristic across inspection_lots and production_orders, distinguishing true drift from measurement noise so the Quality Engineer catches an out-of-control condition before defects ship, moving that capture rate from 55% to 94% while lifting first-pass yield from 91.2% to 96.5%.
 
 ## KPI summary
 

@@ -52,7 +52,8 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [root_cause_trend_analysis](/workflow/root-cause-trend-analysis.md)
+- [publish_audit](/workflow/publish-audit.md)
 
 ## Evals
 

@@ -25,3 +25,4 @@ tickets, change requests, incidents records
 ## Tools using this system
 
 - [query_servicenow_tickets](/tools/query-servicenow-tickets.md)
+- [lookup_proactive_outage_notification_orchestrator_regulatory_notification_policy](/tools/lookup-proactive-outage-notification-orchestrator-regulatory-notification-policy.md)

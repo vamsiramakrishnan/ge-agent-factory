@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [post_event_scorecard_build](/workflow/post-event-scorecard-build.md)
 
 ## Evals
 

@@ -53,10 +53,10 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [exception_intake_severity_triage](/workflow/exception-intake-severity-triage.md)
+- [cure_evidence_correlation](/workflow/cure-evidence-correlation.md)
+- [compliance_cure_runbook_gating](/workflow/compliance-cure-runbook-gating.md)
+- [cure_dispatch_ticketing_escalation](/workflow/cure-dispatch-ticketing-escalation.md)
 
 ## Evals
 

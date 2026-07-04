@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: SIM Swap Fraud Detection Monitor
-description: "The monitor scores every SIM swap in real time against behavioral signals like recent credential resets, dormancy, and channel anomalies. It automatically holds high-risk swaps pending step-up verification and applies temporary blocks on premium and international routing. so the Fraud Operations Analyst can move the Fraudulent SIM swap interception rate KPI."
+description: "Detect and hold high-risk SIM swaps in Amdocs CES Billing before account-takeover fraud completes, lifting the fraudulent SIM swap interception rate from 31% to 88%, cutting average fraud loss per incident from $4,200 to $600, and holding false-positive customer friction to 1.5% of legitimate swaps."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/sim-swap-fraud-dete
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:38.529Z"
+provenance_created_at: "2026-07-04T06:18:47.184Z"
 ---
 
 # SIM Swap Fraud Detection Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:38.529Z"
 
 - **Persona:** Fraud Operations Analyst
 - **Department:** telco
-- **Objective:** The monitor scores every SIM swap in real time against behavioral signals like recent credential resets, dormancy, and channel anomalies. It automatically holds high-risk swaps pending step-up verification and applies temporary blocks on premium and international routing. so the Fraud Operations Analyst can move the Fraudulent SIM swap interception rate KPI.
+- **Objective:** Detect and hold high-risk SIM swaps in Amdocs CES Billing before account-takeover fraud completes, lifting the fraudulent SIM swap interception rate from 31% to 88%, cutting average fraud loss per incident from $4,200 to $600, and holding false-positive customer friction to 1.5% of legitimate swaps.
 
 ## KPI summary
 

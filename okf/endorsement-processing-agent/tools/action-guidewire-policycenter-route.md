@@ -53,8 +53,10 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [change_request_intake_ticket_triage](/workflow/change-request-intake-ticket-triage.md)
+- [endorsement_transaction_coverage_mapping](/workflow/endorsement-transaction-coverage-mapping.md)
+- [straight_through_rating_document_issuance](/workflow/straight-through-rating-document-issuance.md)
+- [audit_trail_turnaround_reconciliation](/workflow/audit-trail-turnaround-reconciliation.md)
 
 ## Evals
 

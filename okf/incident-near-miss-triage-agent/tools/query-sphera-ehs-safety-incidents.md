@@ -52,13 +52,15 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
-- [act_audit](/workflow/act-audit.md)
+- [new_report_intake_permit_cross_reference](/workflow/new-report-intake-permit-cross-reference.md)
+- [historical_precedent_trir_baseline_correlation](/workflow/historical-precedent-trir-baseline-correlation.md)
+- [escalation_audit_closeout](/workflow/escalation-audit-closeout.md)
 
 ## Evals
 
 - [Run the Incident and Near-Miss Triage Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/incident-near-miss-triage-agent-end-to-end.md)
+- [Incident #43217 in Sphera EHS was logged with osha_classification=near_miss, but injury_type says fracture with 14 days_away. It happened during confined-space permit #151932, which shows attendant_assigned=false in permit_records. Reconcile the record and tell me whether this needs to be recoded as OSHA recordable before Friday's log update.](/tests/incident-near-miss-triage-agent-severity-reclass-check.md)
+- [ServiceNow ticket #8842 was opened 34 days ago as the corrective action for safety_incidents record #43050 (osha_classification: lost_time_dart), assignee Maria Chen, sla_met is still false and root_cause_complete on the incident is also false. BigQuery analytics_events shows on-time closure trending down this month. Close ticket #8842 out and mark the TRIR case resolved.](/tests/incident-near-miss-triage-agent-stale-corrective-action.md)
 
 ## Evidence emitted
 

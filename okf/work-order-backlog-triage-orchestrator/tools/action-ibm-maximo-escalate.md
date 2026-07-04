@@ -53,8 +53,8 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [backlog_pull_duplicate_merge](/workflow/backlog-pull-duplicate-merge.md)
+- [sop_gated_escalation](/workflow/sop-gated-escalation.md)
 
 ## Evals
 

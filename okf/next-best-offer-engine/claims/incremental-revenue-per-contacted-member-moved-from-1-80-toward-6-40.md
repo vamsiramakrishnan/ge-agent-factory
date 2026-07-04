@@ -37,3 +37,4 @@ Must cite: oracle_xstore_pos.pos_transactions, salesforce_marketing_cloud.accoun
 # Citations
 
 - [Next Best Offer Engine Retail Execution Playbook](/documents/next-best-offer-engine-execution-playbook.md)
+- [Loyalty Offer Margin & Liability Rate Card](/documents/next-best-offer-margin-liability-rate-card.md)

@@ -52,8 +52,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
+- [downtime_alarm_event_capture](/workflow/downtime-alarm-event-capture.md)
+- [failure_signature_correlation](/workflow/failure-signature-correlation.md)
+- [escalation_evidence_package](/workflow/escalation-evidence-package.md)
 
 ## Evals
 

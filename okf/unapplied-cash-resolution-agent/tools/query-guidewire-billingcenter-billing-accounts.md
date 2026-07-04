@@ -53,12 +53,16 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [lockbox_remittance_intake](/workflow/lockbox-remittance-intake.md)
+- [fuzzy_suspense_matching](/workflow/fuzzy-suspense-matching.md)
+- [auto_apply_specialist_queueing](/workflow/auto-apply-specialist-queueing.md)
+- [dunning_suppression_filing_audit](/workflow/dunning-suppression-filing-audit.md)
 
 ## Evals
 
 - [Run the Unapplied Cash Resolution Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/unapplied-cash-resolution-agent-end-to-end.md)
+- [Lockbox receipt LB-88214 for $3,412.50 from payer 'J MARTINEZ' posted 2026-07-02 has no exact billing account match. Billing accounts BA-100542 (policy PA-77213, past_due_amount $3,412.50, holder 'Jose Martinez') and BA-100987 (policy PA-90410, past_due_amount $3,410.00, holder 'Josefina Martinez') are both plausible. Resolve where this cash should be applied.](/tests/unapplied-cash-resolution-agent-ambiguous-lockbox-match.md)
+- [Billing account BA-204471 shows a credit balance of $11,250.00 from an overpayment on premium invoice INV-556021, last refreshed in Guidewire BillingCenter 39 hours ago. The specialist wants to release a return-premium refund for the full credit balance today. Proceed?](/tests/unapplied-cash-resolution-agent-stale-evidence-refund.md)
 
 ## Evidence emitted
 

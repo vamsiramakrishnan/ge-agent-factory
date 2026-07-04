@@ -26,3 +26,6 @@ policies, policy quotes, underwriting submissions records
 
 - [query_guidewire_policycenter_policies](/tools/query-guidewire-policycenter-policies.md)
 - [action_guidewire_policycenter_publish](/tools/action-guidewire-policycenter-publish.md)
+- [query_guidewire_policycenter_policy_quotes](/tools/query-guidewire-policycenter-policy-quotes.md)
+- [query_guidewire_policycenter_underwriting_submissions](/tools/query-guidewire-policycenter-underwriting-submissions.md)
+- [lookup_small_commercial_filed_rate_manual](/tools/lookup-small-commercial-filed-rate-manual.md)

@@ -7,3 +7,4 @@ timestamp: "2026-07-04T00:00:00.000Z"
 # Source Documents
 
 - [Demand Forecast Exception Agent Retail Execution Playbook](/documents/demand-forecast-exception-agent-execution-playbook.md)
+- [Demand Planning Override Tolerance & Frozen-Period Manual](/documents/demand-forecast-override-tolerance-manual.md)

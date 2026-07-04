@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Fraud Alert Triage Agent
-description: "Enriches each Actimize alert with device, transaction, and customer-history context from BigQuery and drafts a disposition summary. Auto-closes alerts matching well-understood benign patterns with a documented rationale and full audit trail. so the Fraud Operations Analyst can move the False-positive alert rate KPI."
+description: "Triage NICE Actimize fraud_alerts and transaction_risk_scores against BigQuery historical baselines and analytics_events so the Fraud Operations Analyst cuts the false-positive alert rate from 94% to 68% and average alert handling time from 18 minutes to 4 minutes, while routing confirmed-fraud alerts to ServiceNow with a pre-built case file."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/fraud-alert-triage-
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:44.057Z"
+provenance_created_at: "2026-07-04T06:17:52.457Z"
 ---
 
 # Fraud Alert Triage Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:44.057Z"
 
 - **Persona:** Fraud Operations Analyst
 - **Department:** banking
-- **Objective:** Enriches each Actimize alert with device, transaction, and customer-history context from BigQuery and drafts a disposition summary. Auto-closes alerts matching well-understood benign patterns with a documented rationale and full audit trail. so the Fraud Operations Analyst can move the False-positive alert rate KPI.
+- **Objective:** Triage NICE Actimize fraud_alerts and transaction_risk_scores against BigQuery historical baselines and analytics_events so the Fraud Operations Analyst cuts the false-positive alert rate from 94% to 68% and average alert handling time from 18 minutes to 4 minutes, while routing confirmed-fraud alerts to ServiceNow with a pre-built case file.
 
 ## KPI summary
 

@@ -37,3 +37,4 @@ Must cite: salesforce_communications_cloud.subscriber_accounts, bigquery.analyti
 # Citations
 
 - [Site Serviceability Qualification Agent Service Assurance Runbook](/documents/site-serviceability-qualification-agent-assurance-runbook.md)
+- [Near-Net Lateral Build-Cost & Serviceability Determination Rate Manual](/documents/site-serviceability-near-net-build-cost-rate-manual.md)

@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [leakage_scoring_audit_queue_prioritization](/workflow/leakage-scoring-audit-queue-prioritization.md)
 
 ## Evals
 

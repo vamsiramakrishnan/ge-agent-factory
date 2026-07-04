@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Planogram Compliance Analyzer
-description: "Analyzes shelf images and POS sales-rate deviations against the planogram of record after every reset window. Flags facings, position, and missing-item violations store by store with photo evidence. so the Planogram Manager can move the Planogram compliance rate KPI."
+description: "Detect and close facing, position, and missing-item planogram deviations across every store's reset window by reconciling Oracle Xstore POS sales-rate signals against the planogram of record, lifting the Planogram compliance rate from 72% to 93% and reset audit coverage from 8% to 100% of stores."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/planogram-complianc
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:18.346Z"
+provenance_created_at: "2026-07-04T06:18:27.322Z"
 ---
 
 # Planogram Compliance Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:18.346Z"
 
 - **Persona:** Planogram Manager
 - **Department:** retail
-- **Objective:** Analyzes shelf images and POS sales-rate deviations against the planogram of record after every reset window. Flags facings, position, and missing-item violations store by store with photo evidence. so the Planogram Manager can move the Planogram compliance rate KPI.
+- **Objective:** Detect and close facing, position, and missing-item planogram deviations across every store's reset window by reconciling Oracle Xstore POS sales-rate signals against the planogram of record, lifting the Planogram compliance rate from 72% to 93% and reset audit coverage from 8% to 100% of stores.
 
 ## KPI summary
 

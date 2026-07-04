@@ -37,3 +37,4 @@ Must cite: kinaxis_rapidresponse.supply_plans, sap_s_4hana_mm.purchase_orders
 # Citations
 
 - [Supplier Delivery Risk Analyzer Standard Operating Procedure](/documents/supplier-delivery-risk-analyzer-sop.md)
+- [Approved Vendor List & Denied-Party Screening Policy](/documents/supplier-delivery-risk-analyzer-vendor-screening-policy.md)

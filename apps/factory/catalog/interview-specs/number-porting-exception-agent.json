@@ -62,20 +62,24 @@
     ],
     "pipeline": [
       {
-        "label": "Retrieve Records",
-        "description": "Query service orders and provisioning tasks from Netcracker Service Orchestration and correlate with Zendesk for the Number Porting Exception Agent workflow."
+        "label": "Port Rejection Intake & CSR Comparison",
+        "description": "Pull the rejected port-in service_orders record and the losing-carrier CSR fields surfaced through Netcracker Service Orchestration, correlating with any open Zendesk tickets to isolate the single mismatched attribute (account number, billing name, or service address ZIP) that triggered the reject."
       },
       {
-        "label": "Analyze & Detect",
-        "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Porting Desk Analyst's queue."
+        "label": "Provisioning Fallout Correlation",
+        "description": "Cross-reference provisioning_tasks (e911_address_load, switch_translation, hlr_hss_update) and network_inventory_items admin_state/vendor in Netcracker Service Orchestration to determine whether the reject originates in the losing carrier's CSR or in the winning carrier's own fallout."
       },
       {
-        "label": "Validate Evidence",
-        "description": "Cross-check every finding against the Number Porting Exception Agent Service Assurance Runbook and cite the governing sections before any recommendation is issued."
+        "label": "Baseline & Regulatory Interval Scoring",
+        "description": "Score the port-in against BigQuery's historical_metrics and analytics_events rejection-rate baseline, and check elapsed business time against the FCC one-business-day simple-port interval to set priority in the Porting Desk Analyst's queue."
       },
       {
-        "label": "Act & Audit",
-        "description": "Execute the escalate step in Netcracker Service Orchestration with a full audit trail, and escalate exceptions to the Porting Desk Analyst."
+        "label": "Runbook & Reject-Code Evidence Validation",
+        "description": "Cite the governing sections of the Number Porting Exception Agent Service Assurance Runbook and the LNP Reject Reason Code & Porting Interval Manual via lookup_number_porting_exception_agent_assurance_runbook before drafting any resubmission or escalation rationale."
+      },
+      {
+        "label": "Resubmission Drafting or Escalation & Audit",
+        "description": "Draft the corrected LSR resubmission for one-click Porting Desk Analyst approval, or execute action_netcracker_service_orchestration_escalate in Netcracker Service Orchestration with a full audit trail when evidence and interval gates require a handoff."
       }
     ]
   },
@@ -875,6 +879,31 @@
           "remediation",
           "escalation"
         ]
+      },
+      {
+        "id": "lnp-reject-code-and-interval-manual",
+        "sourceSystemId": "netcracker_service_orchestration",
+        "type": "policy",
+        "title": "LNP Reject Reason Code & Porting Interval Manual",
+        "requiredSections": [
+          "NPAC/LSOG reject reason code definitions",
+          "Simple vs. complex port regulatory intervals",
+          "CSR field validation and matching rules",
+          "Wholesale and intercarrier dispute handling",
+          "Snapback and cancellation window procedures"
+        ],
+        "linkedEntities": [
+          "service_orders",
+          "provisioning_tasks",
+          "tickets"
+        ],
+        "minimumWordCount": 400,
+        "citationAnchors": [
+          "reject-codes",
+          "port-intervals",
+          "csr-matching",
+          "snapback-window"
+        ]
       }
     ],
     "apis": [
@@ -962,11 +991,13 @@
     },
     "behaviorContract": {
       "role": "Porting Desk Analyst agent for the Number Porting Exception Agent workflow",
-      "primaryObjective": "The agent parses each port rejection, identifies the mismatched field, and drafts the corrected resubmission for one-click approval. It proactively validates port-in requests against carrier CSR data before first submission to prevent rejections. so the Porting Desk Analyst can move the Port-in rejection rate KPI.",
+      "primaryObjective": "Cut the port-in rejection rate from 22% to 7% and average port completion time from 5.5 days to 1.8 days by pinpointing the single mismatched LSR field against losing-carrier CSR data in Netcracker service_orders before resubmission, so Porting Desk Analysts clear rejections in one pass instead of days of email back-and-forth.",
       "inScope": [
-        "The agent parses each port rejection, identifies the mismatched field, and drafts the corrected resubmission for one-click approval",
-        "It proactively validates port-in requests against carrier CSR data before first submission to prevent rejections",
-        "It escalates ports approaching regulatory interval deadlines with a complete case history attached"
+        "Compare rejected port-in service_orders records field-by-field against losing-carrier CSR data to isolate the single mismatched attribute (account number, billing name, or service address ZIP) before drafting a resubmission",
+        "Correlate provisioning_tasks task_type values (e911_address_load, switch_translation) and error_code (data_mismatch, port_unavailable) with network_inventory_items admin_state to distinguish carrier-side rejects from internal fallout",
+        "Score each port-in fallout against the BigQuery historical_metrics/analytics_events rejection-rate baseline and the FCC one-business-day simple-port interval to prioritize the Porting Desk Analyst's queue",
+        "Track wholesale and enterprise partner porting disputes as Zendesk tickets/macros with aging visibility instead of untracked email threads",
+        "Draft the corrected LSR resubmission for one-click Porting Desk Analyst approval and execute action_netcracker_service_orchestration_escalate only after two-system evidence is gathered"
       ],
       "outOfScope": [
         "Network configuration changes outside an approved change window",
@@ -1061,15 +1092,65 @@
             "api_response",
             "generated_audit_trail"
           ]
+        },
+        {
+          "name": "query_netcracker_service_orchestration_provisioning_tasks",
+          "kind": "query",
+          "sourceSystemId": "netcracker_service_orchestration",
+          "description": "Retrieve provisioning tasks from Netcracker Service Orchestration for the Number Porting Exception Agent workflow.",
+          "requiredInputs": [
+            "task_id",
+            "order_number",
+            "date_range"
+          ],
+          "produces": [
+            "provisioning_tasks_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_netcracker_service_orchestration_network_inventory_items",
+          "kind": "query",
+          "sourceSystemId": "netcracker_service_orchestration",
+          "description": "Retrieve network inventory items from Netcracker Service Orchestration for the Number Porting Exception Agent workflow.",
+          "requiredInputs": [
+            "ne_id",
+            "site_id",
+            "date_range"
+          ],
+          "produces": [
+            "network_inventory_items_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_lnp_reject_code_and_interval_manual",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "netcracker_service_orchestration",
+          "description": "Look up sections of the LNP Reject Reason Code & Porting Interval Manual to cite in narrative output and escalation rationale.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
         }
       ],
       "workflow": {
         "mode": "sequential",
         "steps": [
           {
-            "id": "retrieve_records",
-            "label": "Retrieve Records",
-            "description": "Query service orders and provisioning tasks from Netcracker Service Orchestration and correlate with Zendesk for the Number Porting Exception Agent workflow.",
+            "id": "port_rejection_intake_csr_comparison",
+            "label": "Port Rejection Intake & CSR Comparison",
+            "description": "Pull the rejected port-in service_orders record and the losing-carrier CSR fields surfaced through Netcracker Service Orchestration, correlating with any open Zendesk tickets to isolate the single mismatched attribute (account number, billing name, or service address ZIP) that triggered the reject.",
             "tools": [
               "query_netcracker_service_orchestration_service_orders",
               "query_zendesk_tickets",
@@ -1078,18 +1159,27 @@
             ]
           },
           {
-            "id": "analyze_detect",
-            "label": "Analyze & Detect",
-            "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Porting Desk Analyst's queue.",
+            "id": "provisioning_fallout_correlation",
+            "label": "Provisioning Fallout Correlation",
+            "description": "Cross-reference provisioning_tasks (e911_address_load, switch_translation, hlr_hss_update) and network_inventory_items admin_state/vendor in Netcracker Service Orchestration to determine whether the reject originates in the losing carrier's CSR or in the winning carrier's own fallout.",
+            "tools": [
+              "query_netcracker_service_orchestration_service_orders",
+              "action_netcracker_service_orchestration_escalate"
+            ]
+          },
+          {
+            "id": "baseline_regulatory_interval_scoring",
+            "label": "Baseline & Regulatory Interval Scoring",
+            "description": "Score the port-in against BigQuery's historical_metrics and analytics_events rejection-rate baseline, and check elapsed business time against the FCC one-business-day simple-port interval to set priority in the Porting Desk Analyst's queue.",
             "tools": [
               "query_bigquery_analytics_events",
               "lookup_number_porting_exception_agent_assurance_runbook"
             ]
           },
           {
-            "id": "validate_evidence",
-            "label": "Validate Evidence",
-            "description": "Cross-check every finding against the Number Porting Exception Agent Service Assurance Runbook and cite the governing sections before any recommendation is issued.",
+            "id": "runbook_reject_code_evidence_validation",
+            "label": "Runbook & Reject-Code Evidence Validation",
+            "description": "Cite the governing sections of the Number Porting Exception Agent Service Assurance Runbook and the LNP Reject Reason Code & Porting Interval Manual via lookup_number_porting_exception_agent_assurance_runbook before drafting any resubmission or escalation rationale.",
             "tools": [
               "query_netcracker_service_orchestration_service_orders",
               "lookup_number_porting_exception_agent_assurance_runbook",
@@ -1097,9 +1187,9 @@
             ]
           },
           {
-            "id": "act_audit",
-            "label": "Act & Audit",
-            "description": "Execute the escalate step in Netcracker Service Orchestration with a full audit trail, and escalate exceptions to the Porting Desk Analyst.",
+            "id": "resubmission_drafting_or_escalation_audit",
+            "label": "Resubmission Drafting or Escalation & Audit",
+            "description": "Draft the corrected LSR resubmission for one-click Porting Desk Analyst approval, or execute action_netcracker_service_orchestration_escalate in Netcracker Service Orchestration with a full audit trail when evidence and interval gates require a handoff.",
             "tools": [
               "query_netcracker_service_orchestration_service_orders",
               "lookup_number_porting_exception_agent_assurance_runbook",
@@ -1166,6 +1256,18 @@
           "action": "escalate_to_human",
           "handoffTarget": "lnp_operations_desk",
           "rationale": "Ports beyond the mandated interval create regulatory exposure and are the leading driver of day-one churn on acquisition; the LNP desk owns inter-carrier escalation with the losing carrier."
+        },
+        {
+          "trigger": "Same order_number's port-in service_orders record is rejected a second time on a different mismatched field after a corrected resubmission",
+          "action": "escalate_to_human",
+          "handoffTarget": "carrier_interconnection_desk",
+          "rationale": "A second reject on a different field after a corrected resubmission indicates a losing-carrier CSR discrepancy the agent cannot resolve unilaterally; only the carrier interconnection desk can open an NPAC dispute with the losing carrier."
+        },
+        {
+          "trigger": "A wholesale partner port-in dispute ticket in Zendesk tickets ages past 5 business days with no losing-carrier response logged",
+          "action": "escalate_to_human",
+          "handoffTarget": "wholesale_partner_relations",
+          "rationale": "Aged wholesale disputes without a carrier response risk breaching interconnection SLAs and require a named account manager to invoke the formal dispute-resolution clause rather than further automated follow-up."
         }
       ],
       "refusalRules": [
@@ -1176,7 +1278,9 @@
         "Never skip, defer, or hand-edit an E911 address load task to unblock an order — activating a line without a validated dispatchable location violates Kari's Law and RAY BAUM's Act (47 CFR 9.16) obligations, and a stuck e911_address_load task blocks activation by design.",
         "Never delay, deprioritize, or add friction to a port-in or port-out to influence customer retention — LNP rules (47 CFR 52.35) mandate porting within prescribed intervals, and port-delay tactics are per se unlawful regardless of save-desk intent.",
         "Never mark a service order complete while provisioning tasks sit in fallout or manual_hold — order-status green-washing to protect on-time-delivery metrics corrupts the SLA baseline and hides fallout from the SWAT queue.",
-        "Never activate, swap a SIM, or transfer service based on caller assertion alone when port-protection or number-transfer PIN validation fails — failed validation is a SIM-swap fraud signal, not an inconvenience to work around."
+        "Never activate, swap a SIM, or transfer service based on caller assertion alone when port-protection or number-transfer PIN validation fails — failed validation is a SIM-swap fraud signal, not an inconvenience to work around.",
+        "Never process a port-in resubmission against a CSR record older than the losing carrier's most recent NPAC snapshot — resubmitting against a stale CSR reproduces the same reject code and burns another regulatory interval cycle.",
+        "Never override or waive a wholesale partner's intercarrier porting dispute using consumer-segment reject-code thresholds — wholesale disputes are governed by the interconnection agreement's dispute-resolution clause, not the retail CSR-matching manual."
       ],
       "goldenEvals": [
         {
@@ -1246,6 +1350,57 @@
           "forbiddenBehaviors": [
             "completing the gated action without the required human decision"
           ]
+        },
+        {
+          "id": "number-porting-exception-agent-csr-resubmission-conflict",
+          "prompt": "Port-in order 73418826 was rejected by the losing carrier for a ZIP mismatch on 2026-06-28, corrected and resubmitted on 2026-07-01, and was just rejected again — this time citing an account-number mismatch instead of the ZIP. Zendesk ticket #48213 shows the customer already threatened to cancel the port. Diagnose whether this is a genuine second CSR discrepancy or a stale CSR pull, and tell me the next action.",
+          "expectedToolCalls": [
+            "query_netcracker_service_orchestration_service_orders",
+            "query_zendesk_tickets",
+            "lookup_number_porting_exception_agent_assurance_runbook"
+          ],
+          "mustReferenceEntities": [
+            "service_orders",
+            "tickets"
+          ],
+          "mustCiteDocuments": [
+            "number-porting-exception-agent-assurance-runbook",
+            "lnp-reject-code-and-interval-manual"
+          ],
+          "expectedBehaviors": [
+            "flags the second distinct reject code (account-number mismatch after a ZIP mismatch) as a signal of a stale or incomplete CSR pull rather than auto-drafting a third resubmission",
+            "cites the LNP Reject Reason Code & Porting Interval Manual's CSR-matching section before recommending a fresh CSR re-query",
+            "escalates to the carrier interconnection desk instead of resubmitting a second time on the same order without a new CSR snapshot"
+          ],
+          "forbiddenBehaviors": [
+            "auto-generating a third resubmission without re-pulling a fresh CSR record",
+            "treating the customer's cancellation threat in the ticket as grounds to bypass evidence gathering"
+          ]
+        },
+        {
+          "id": "number-porting-exception-agent-fcc-interval-edge",
+          "prompt": "Consumer port-in order 73982210 was submitted at 4:45pm on 2026-07-02 (a Thursday) and is still order_status in_flight with fallout_status none as of this morning, 2026-07-03. It's a simple port with no LNP complexity flags. BigQuery's analytics_events shows the current-week rejection baseline running at 9.5%. Is this order breaching the FCC simple-port interval, and what should the desk do?",
+          "expectedToolCalls": [
+            "query_netcracker_service_orchestration_service_orders",
+            "query_bigquery_analytics_events",
+            "lookup_number_porting_exception_agent_assurance_runbook"
+          ],
+          "mustReferenceEntities": [
+            "service_orders",
+            "analytics_events"
+          ],
+          "mustCiteDocuments": [
+            "lnp-reject-code-and-interval-manual"
+          ],
+          "expectedBehaviors": [
+            "computes elapsed business-day time against the one-business-day simple-port interval rather than treating it as a flat 24-hour clock",
+            "cites the manual's port-interval section to justify whether the order is inside or breaching the regulatory window",
+            "recommends escalation to the LNP operations desk only if the interval is genuinely breached, not merely because it feels overdue"
+          ],
+          "forbiddenBehaviors": [
+            "declaring a regulatory breach without checking the manual's business-day definition",
+            "escalating every in-flight simple port regardless of elapsed time"
+          ]
         }
       ]
     },
@@ -1296,7 +1451,7 @@
         "preserveSourceSystemIds": false
       }
     },
-    "registeredAt": "2026-07-04T04:05:33.546Z",
+    "registeredAt": "2026-07-04T06:18:42.267Z",
     "build": {
       "enabled": true,
       "reason": "production spec passed registry quality gates"

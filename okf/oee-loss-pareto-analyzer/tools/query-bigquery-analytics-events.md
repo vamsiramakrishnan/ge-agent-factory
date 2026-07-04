@@ -52,12 +52,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
+- [shift_line_data_pull](/workflow/shift-line-data-pull.md)
+- [baseline_variance_comparison](/workflow/baseline-variance-comparison.md)
 
 ## Evals
 
 - [Run the OEE Loss Pareto Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/oee-loss-pareto-analyzer-end-to-end.md)
+- [Production order 1483221 at plant 1020 shows a scrap_qty of 92 against a planned_qty of 640 for the July 2 day shift, but the BigQuery historical_metrics baseline for that line still shows quality-loss variance_pct at only -4% versus last month. Before you publish the loss Pareto to Looker, tell me which number governs and what the OEE Loss Classification and Calculation Standard says about dollarizing it.](/tests/oee-loss-pareto-analyzer-conflicting-baseline.md)
+- [Quality check 5108842 for characteristic fastener_torque on production order 1477850 shows a cpk of 0.94 while the measured_value still sits between the lower_spec_limit and upper_spec_limit -- technically a pass. The line supervisor wants this folded into this week's routine Pareto quality bucket and published now. Handle it.](/tests/oee-loss-pareto-analyzer-capability-edge.md)
 
 ## Evidence emitted
 

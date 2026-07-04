@@ -26,3 +26,4 @@ Historical baselines, analytics events, and KPI aggregates
 
 - [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
 - [lookup_returns_abuse_analyzer_execution_playbook](/tools/lookup-returns-abuse-analyzer-execution-playbook.md)
+- [lookup_returns_abuse_analyzer_restocking_chargeback_bulletin](/tools/lookup-returns-abuse-analyzer-restocking-chargeback-bulletin.md)

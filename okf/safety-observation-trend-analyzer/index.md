@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Safety Observation Trend Analyzer
-description: "Mines Sphera EHS observation free-text weekly in BigQuery to cluster emerging unsafe conditions and behaviors by area, shift, and task type. Correlates observation clusters with incident history to surface the leading indicators that historically precede recordables. so the Plant Safety Coordinator can move the Leading-indicator coverage of incidents KPI."
+description: "Cluster emerging unsafe conditions and behaviors from weekly Sphera EHS safety_incidents observation text in BigQuery, correlate the clusters against historical_metrics incident baselines, and move leading-indicator coverage of incidents from 20% to 75% while cutting the observation-to-insight cycle from quarterly to weekly."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/safety-observation-
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:17.487Z"
+provenance_created_at: "2026-07-04T06:18:26.471Z"
 ---
 
 # Safety Observation Trend Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:17.487Z"
 
 - **Persona:** Plant Safety Coordinator
 - **Department:** manufacturing
-- **Objective:** Mines Sphera EHS observation free-text weekly in BigQuery to cluster emerging unsafe conditions and behaviors by area, shift, and task type. Correlates observation clusters with incident history to surface the leading indicators that historically precede recordables. so the Plant Safety Coordinator can move the Leading-indicator coverage of incidents KPI.
+- **Objective:** Cluster emerging unsafe conditions and behaviors from weekly Sphera EHS safety_incidents observation text in BigQuery, correlate the clusters against historical_metrics incident baselines, and move leading-indicator coverage of incidents from 20% to 75% while cutting the observation-to-insight cycle from quarterly to weekly.
 
 ## KPI summary
 

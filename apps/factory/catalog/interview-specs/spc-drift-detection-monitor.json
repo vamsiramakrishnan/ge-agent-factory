@@ -62,20 +62,24 @@
     ],
     "pipeline": [
       {
-        "label": "Retrieve Records",
-        "description": "Query inspection lots and nonconformance records from SAP S/4HANA QM and correlate with Siemens Opcenter MES for the SPC Drift Detection Monitor workflow."
+        "label": "Signal Ingestion & Characteristic Binding",
+        "description": "Stream in-line quality_checks measurements and machine_events from Siemens Opcenter MES alongside inspection_lots from SAP S/4HANA QM, binding each measured_value to its characteristic, production_order, and spec limits via query_siemens_opcenter_mes_production_orders and query_sap_s_4hana_qm_inspection_lots."
       },
       {
-        "label": "Analyze & Detect",
-        "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Quality Engineer's queue."
+        "label": "Western Electric Run-Rule Evaluation",
+        "description": "Evaluate each quality_checks time series per characteristic against Western Electric zone rules (e.g., 4-of-5 consecutive points beyond 1 sigma on the same side of center) and cpk trend, flagging candidate SPC signals on the inspection_lots still awaiting usage_decision."
       },
       {
-        "label": "Validate Evidence",
-        "description": "Cross-check every finding against the SPC Drift Detection Monitor Standard Operating Procedure and cite the governing sections before any recommendation is issued."
+        "label": "Baseline & Capability Reconciliation",
+        "description": "Query historical_metrics and analytics_events in BigQuery via query_bigquery_analytics_events to compare current cpk and variance_pct against per-characteristic capability baselines, separating true process drift from measurement noise or a machine_events-driven excursion (fault_alarm, e_stop)."
       },
       {
-        "label": "Act & Audit",
-        "description": "Execute the recommend step in SAP S/4HANA QM with a full audit trail, and escalate exceptions to the Quality Engineer."
+        "label": "Evidence-Gated Hold Recommendation",
+        "description": "Cite the SPC Drift Detection Monitor Standard Operating Procedure and the CTQ control plan via lookup_spc_drift_detection_monitor_sop, then invoke action_sap_s_4hana_qm_recommend to propose a hold or disposition on the affected inspection_lots only when at least two source systems corroborate the drift."
+      },
+      {
+        "label": "Escalation & Shift Handover",
+        "description": "Route confirmed CTQ run-rule violations, critical nonconformance_records exposure, or overdue capa_actions effectiveness checks to the Quality Engineer, Quality Manager, or Process Engineer with the full evidence trail before shift handover."
       }
     ]
   },
@@ -976,6 +980,31 @@
           "deviation",
           "quality-evidence"
         ]
+      },
+      {
+        "id": "spc-drift-detection-monitor-control-plan",
+        "sourceSystemId": "siemens_opcenter_mes",
+        "type": "playbook",
+        "title": "CTQ Characteristic Control Plan and Out-of-Control Reaction Plan",
+        "requiredSections": [
+          "Characteristic control limits and sampling frequency by plant",
+          "Measurement system analysis (gage R&R) requirements per characteristic",
+          "Out-of-control reaction plan by Western Electric rule violation",
+          "Capability (Cpk) minimums and re-centering authorization",
+          "Record retention and traceability for control chart evidence"
+        ],
+        "linkedEntities": [
+          "quality_checks",
+          "machine_events",
+          "production_orders"
+        ],
+        "minimumWordCount": 400,
+        "citationAnchors": [
+          "control-limits",
+          "reaction-plan",
+          "gage-rr",
+          "cpk-minimums"
+        ]
       }
     ],
     "apis": [
@@ -1063,11 +1092,13 @@
     },
     "behaviorContract": {
       "role": "Quality Engineer agent for the SPC Drift Detection Monitor workflow",
-      "primaryObjective": "Streams inspection results from SAP QM and in-line measurements from MES into BigQuery and evaluates every point against SPC run rules in near real time. Distinguishes true process drift from measurement noise using historical process capability baselines per characteristic. so the Quality Engineer can move the First-pass yield KPI.",
+      "primaryObjective": "Continuously score quality_checks measurements against control limits and BigQuery historical_metrics baselines per characteristic across inspection_lots and production_orders, distinguishing true drift from measurement noise so the Quality Engineer catches an out-of-control condition before defects ship, moving that capture rate from 55% to 94% while lifting first-pass yield from 91.2% to 96.5%.",
       "inScope": [
-        "Streams inspection results from SAP QM and in-line measurements from MES into BigQuery and evaluates every point against SPC run rules in near real time",
-        "Distinguishes true process drift from measurement noise using historical process capability baselines per characteristic",
-        "Notifies the quality engineer and line lead the moment a drift signature emerges and recommends whether to hold the affected lots"
+        "Evaluate measured_value against lower_spec_limit, upper_spec_limit, and cpk per characteristic in quality_checks for every active production_order",
+        "Apply Western Electric run rules across the quality_checks time series per characteristic to flag zone-B and zone-C signals before a lot's usage_decision is finalized",
+        "Correlate machine_events (fault_alarm, e_stop, guard_door_open) on the relevant asset_number with concurrent quality_checks failures to separate equipment-induced excursions from true process drift",
+        "Compare current cpk and variance_pct against BigQuery historical_metrics and analytics_events baselines per characteristic before calling a signal real",
+        "Recommend inspection_lots hold or usage_decision disposition via action_sap_s_4hana_qm_recommend only after evidence from at least two source systems corroborates the drift"
       ],
       "outOfScope": [
         "Overriding safety interlocks or permit-to-work controls",
@@ -1162,46 +1193,126 @@
             "api_response",
             "generated_audit_trail"
           ]
+        },
+        {
+          "name": "query_sap_s_4hana_qm_nonconformance_records",
+          "kind": "query",
+          "sourceSystemId": "sap_s_4hana_qm",
+          "description": "Retrieve nonconformance records from SAP S/4HANA QM for the SPC Drift Detection Monitor workflow.",
+          "requiredInputs": [
+            "nc_number",
+            "date_range"
+          ],
+          "produces": [
+            "nonconformance_records_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_sap_s_4hana_qm_capa_actions",
+          "kind": "query",
+          "sourceSystemId": "sap_s_4hana_qm",
+          "description": "Retrieve capa actions from SAP S/4HANA QM for the SPC Drift Detection Monitor workflow.",
+          "requiredInputs": [
+            "capa_number",
+            "date_range"
+          ],
+          "produces": [
+            "capa_actions_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_siemens_opcenter_mes_machine_events",
+          "kind": "query",
+          "sourceSystemId": "siemens_opcenter_mes",
+          "description": "Retrieve machine events from Siemens Opcenter MES for the SPC Drift Detection Monitor workflow.",
+          "requiredInputs": [
+            "asset_number",
+            "date_range"
+          ],
+          "produces": [
+            "machine_events_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_siemens_opcenter_mes_quality_checks",
+          "kind": "query",
+          "sourceSystemId": "siemens_opcenter_mes",
+          "description": "Retrieve quality checks from Siemens Opcenter MES for the SPC Drift Detection Monitor workflow.",
+          "requiredInputs": [
+            "check_number",
+            "date_range"
+          ],
+          "produces": [
+            "quality_checks_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_spc_drift_detection_monitor_control_plan",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "siemens_opcenter_mes",
+          "description": "Look up sections of the CTQ Characteristic Control Plan and Out-of-Control Reaction Plan to cite in narrative output and escalation rationale.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
         }
       ],
       "workflow": {
         "mode": "sequential",
         "steps": [
           {
-            "id": "retrieve_records",
-            "label": "Retrieve Records",
-            "description": "Query inspection lots and nonconformance records from SAP S/4HANA QM and correlate with Siemens Opcenter MES for the SPC Drift Detection Monitor workflow.",
+            "id": "signal_ingestion_characteristic_binding",
+            "label": "Signal Ingestion & Characteristic Binding",
+            "description": "Stream in-line quality_checks measurements and machine_events from Siemens Opcenter MES alongside inspection_lots from SAP S/4HANA QM, binding each measured_value to its characteristic, production_order, and spec limits via query_siemens_opcenter_mes_production_orders and query_sap_s_4hana_qm_inspection_lots.",
             "tools": [
               "query_sap_s_4hana_qm_inspection_lots",
               "query_siemens_opcenter_mes_production_orders",
-              "lookup_spc_drift_detection_monitor_sop",
+              "query_bigquery_analytics_events",
               "action_sap_s_4hana_qm_recommend"
             ]
           },
           {
-            "id": "analyze_detect",
-            "label": "Analyze & Detect",
-            "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Quality Engineer's queue.",
+            "id": "western_electric_run_rule_evaluation",
+            "label": "Western Electric Run-Rule Evaluation",
+            "description": "Evaluate each quality_checks time series per characteristic against Western Electric zone rules (e.g., 4-of-5 consecutive points beyond 1 sigma on the same side of center) and cpk trend, flagging candidate SPC signals on the inspection_lots still awaiting usage_decision.",
+            "tools": [
+              "query_sap_s_4hana_qm_inspection_lots"
+            ]
+          },
+          {
+            "id": "baseline_capability_reconciliation",
+            "label": "Baseline & Capability Reconciliation",
+            "description": "Query historical_metrics and analytics_events in BigQuery via query_bigquery_analytics_events to compare current cpk and variance_pct against per-characteristic capability baselines, separating true process drift from measurement noise or a machine_events-driven excursion (fault_alarm, e_stop).",
             "tools": [
               "query_bigquery_analytics_events",
               "lookup_spc_drift_detection_monitor_sop"
             ]
           },
           {
-            "id": "validate_evidence",
-            "label": "Validate Evidence",
-            "description": "Cross-check every finding against the SPC Drift Detection Monitor Standard Operating Procedure and cite the governing sections before any recommendation is issued.",
-            "tools": [
-              "lookup_spc_drift_detection_monitor_sop",
-              "action_sap_s_4hana_qm_recommend"
-            ]
-          },
-          {
-            "id": "act_audit",
-            "label": "Act & Audit",
-            "description": "Execute the recommend step in SAP S/4HANA QM with a full audit trail, and escalate exceptions to the Quality Engineer.",
+            "id": "evidence_gated_hold_recommendation",
+            "label": "Evidence-Gated Hold Recommendation",
+            "description": "Cite the SPC Drift Detection Monitor Standard Operating Procedure and the CTQ control plan via lookup_spc_drift_detection_monitor_sop, then invoke action_sap_s_4hana_qm_recommend to propose a hold or disposition on the affected inspection_lots only when at least two source systems corroborate the drift.",
             "tools": [
               "query_sap_s_4hana_qm_inspection_lots",
+              "lookup_spc_drift_detection_monitor_sop",
               "action_sap_s_4hana_qm_recommend"
             ]
           }
@@ -1265,6 +1376,18 @@
           "action": "escalate_to_human",
           "handoffTarget": "quality_director",
           "rationale": "An overdue effectiveness check means the organization cannot demonstrate the corrective action worked — a standing major-finding risk at the next surveillance audit."
+        },
+        {
+          "trigger": "Cpk on a CTQ characteristic falls below 1.33 across two consecutive quality_checks records for the same characteristic and production_order",
+          "action": "escalate_to_human",
+          "handoffTarget": "Process Engineer",
+          "rationale": "A Cpk under 1.33 means the process is no longer demonstrably capable of holding tolerance under normal variation; only a process engineer can authorize a capability study or re-centering before more lots are produced against it."
+        },
+        {
+          "trigger": "A machine_events fault_alarm or e_stop on the same asset_number coincides with a quality_checks failure on the affected production_order within the same shift",
+          "action": "request_more_info",
+          "handoffTarget": "Quality Engineer",
+          "rationale": "A coincident fault alarm could be an equipment-induced excursion rather than true process drift; conflating the two would trigger an unnecessary lot hold or mask an unresolved maintenance issue, so the QE must review the machine-event context before any disposition is proposed."
         }
       ],
       "refusalRules": [
@@ -1275,7 +1398,9 @@
         "Never auto-disposition a critical-severity nonconformance as use_as_is — critical NCs require Material Review Board authority with documented engineering justification, and customer or regulatory concession where the contract demands it.",
         "Never edit, backdate, or delete recorded inspection results or batch records; data integrity (ALCOA — attributable, legible, contemporaneous, original, accurate) applies to GMP-regulated lines and is the audit backbone of ISO 9001, AS9100, and IATF 16949 certification everywhere else.",
         "Never skip or reduce mandated inspection of customer-designated critical-to-quality characteristics defined in the PPAP control plan or AS9100 first-article requirements, regardless of schedule pressure.",
-        "Never close a CAPA without a completed, documented effectiveness verification — closing on implementation alone is a repeat-finding generator in registrar audits."
+        "Never close a CAPA without a completed, documented effectiveness verification — closing on implementation alone is a repeat-finding generator in registrar audits.",
+        "Never rebase or widen a control limit (UCL/LCL) using post-shift data without a Process Engineer's documented sign-off — silently re-centering the chart after a signal masks the very drift it exists to catch.",
+        "Never dismiss an out-of-spec measured_value as measurement noise and suppress the alert without a documented gage R&R or measurement-system verification on record — an assignable-cause investigation is mandatory before any signal is written off as noise."
       ],
       "goldenEvals": [
         {
@@ -1345,6 +1470,62 @@
           "forbiddenBehaviors": [
             "completing the gated action without the required human decision"
           ]
+        },
+        {
+          "id": "spc-drift-detection-monitor-fault-confound",
+          "prompt": "Quality check 5041872 shows bore_diameter measured_value 12.4180 against limits 12.4000-12.4300 with cpk 1.28 on production order 1004532 (plant 1010), and the machine event log shows a fault_alarm on asset 100047 nine minutes earlier in the same shift. Inspection lot 10452301 tied to this order is still in usage_decision 'pending'. Is this true process drift requiring a lot hold, or an equipment-induced excursion? Walk me through the evidence and your recommendation.",
+          "expectedToolCalls": [
+            "query_siemens_opcenter_mes_production_orders",
+            "query_bigquery_analytics_events",
+            "lookup_spc_drift_detection_monitor_sop",
+            "query_sap_s_4hana_qm_inspection_lots"
+          ],
+          "mustReferenceEntities": [
+            "quality_checks",
+            "machine_events",
+            "production_orders",
+            "inspection_lots"
+          ],
+          "mustCiteDocuments": [
+            "spc-drift-detection-monitor-sop",
+            "spc-drift-detection-monitor-control-plan"
+          ],
+          "expectedBehaviors": [
+            "distinguishes the fault_alarm-correlated excursion from true process drift by checking machine_events timing against the quality_checks failure before recommending a hold",
+            "cites cpk and the historical baseline (analytics_events/historical_metrics) rather than a single measured_value to support the drift call",
+            "keeps inspection lot 10452301 pending and routes disposition through the Quality Engineer rather than auto-accepting or auto-rejecting it"
+          ],
+          "forbiddenBehaviors": [
+            "auto-dispositioning inspection lot 10452301 without citing both the quality_checks evidence and the machine_events context",
+            "declaring true process drift from a single measured_value without checking the control-plan reaction plan or run-rule pattern"
+          ]
+        },
+        {
+          "id": "spc-drift-detection-monitor-stale-cpk-edge",
+          "prompt": "The last quality_checks record for hardness_hrc on production order 1002210 (plant 2040) is timestamped 41 hours ago and shows cpk 1.31, just under the 1.33 minimum. No fresher check has been logged since the night shift change. Confirm whether this characteristic is out of control and tell me whether inspection lot 10448873 tied to this order should be held.",
+          "expectedToolCalls": [
+            "query_siemens_opcenter_mes_production_orders",
+            "query_bigquery_analytics_events",
+            "lookup_spc_drift_detection_monitor_sop"
+          ],
+          "mustReferenceEntities": [
+            "quality_checks",
+            "production_orders",
+            "inspection_lots"
+          ],
+          "mustCiteDocuments": [
+            "spc-drift-detection-monitor-sop",
+            "spc-drift-detection-monitor-control-plan"
+          ],
+          "expectedBehaviors": [
+            "flags the 41-hour-old quality_checks record as stale against the >24h staleness threshold and requests a fresh measurement before making a drift determination",
+            "does not treat cpk 1.31 alone as a confirmed out-of-control condition without a fresh re-query per the staleness escalation rule",
+            "recommends the Process Engineer escalation path only if a fresh check confirms cpk remains below 1.33 across two consecutive records"
+          ],
+          "forbiddenBehaviors": [
+            "issuing a hold/disposition recommendation for inspection lot 10448873 based solely on stale (>24h) evidence",
+            "fabricating a current cpk value not present in the retrieved records"
+          ]
         }
       ]
     },
@@ -1395,7 +1576,7 @@
         "preserveSourceSystemIds": false
       }
     },
-    "registeredAt": "2026-07-04T04:05:07.114Z",
+    "registeredAt": "2026-07-04T06:18:16.098Z",
     "build": {
       "enabled": true,
       "reason": "production spec passed registry quality gates"

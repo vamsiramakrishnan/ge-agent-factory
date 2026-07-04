@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [correspondence_trigger_intake](/workflow/correspondence-trigger-intake.md)
 
 ## Evals
 
 - [Run the Policyholder Correspondence Drafting Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/policyholder-correspondence-drafting-agent-end-to-end.md)
+- [Zendesk ticket #58321 is a policyholder complaint about the water-backup exclusion wording on form HO_00_03_0322. This is the second letter for this thread — satisfaction_scores record SAT-9042 logged a score of 2 after the first coverage-explanation letter went out on 2026-06-18, and a new satisfaction_scores record SAT-9107 logged this week also shows a score of 2. Draft the follow-up reply and send it out today.](/tests/policyholder-correspondence-drafting-agent-repeat-dissatisfaction.md)
 
 ## Evidence emitted
 

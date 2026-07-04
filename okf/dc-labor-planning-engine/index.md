@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: DC Labor Planning Engine
-description: "Forecasts wave-level volume by function from Manhattan order pipelines and inbound ASNs. Generates department-level shift plans in UKG Dimensions matched to forecast workload and labor standards. so the DC Operations Manager can move the Units per labor hour KPI."
+description: "Build department-level shift plans in UKG Dimensions that close the gap between labor_forecasts forecast_hours and minimum_coverage_hours identified against Manhattan Active WM wave volume, lifting units per labor hour from 112 to 141 while holding overtime spend at or below 4% of payroll."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/dc-labor-planning-e
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:20.462Z"
+provenance_created_at: "2026-07-04T06:18:29.472Z"
 ---
 
 # DC Labor Planning Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:20.462Z"
 
 - **Persona:** DC Operations Manager
 - **Department:** retail
-- **Objective:** Forecasts wave-level volume by function from Manhattan order pipelines and inbound ASNs. Generates department-level shift plans in UKG Dimensions matched to forecast workload and labor standards. so the DC Operations Manager can move the Units per labor hour KPI.
+- **Objective:** Build department-level shift plans in UKG Dimensions that close the gap between labor_forecasts forecast_hours and minimum_coverage_hours identified against Manhattan Active WM wave volume, lifting units per labor hour from 112 to 141 while holding overtime spend at or below 4% of payroll.
 
 ## KPI summary
 

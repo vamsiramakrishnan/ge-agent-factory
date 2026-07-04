@@ -26,3 +26,6 @@ billing accounts, premium invoices, payment plans records
 
 - [query_guidewire_billingcenter_billing_accounts](/tools/query-guidewire-billingcenter-billing-accounts.md)
 - [action_guidewire_billingcenter_publish](/tools/action-guidewire-billingcenter-publish.md)
+- [query_guidewire_billingcenter_premium_invoices](/tools/query-guidewire-billingcenter-premium-invoices.md)
+- [query_guidewire_billingcenter_payment_plans](/tools/query-guidewire-billingcenter-payment-plans.md)
+- [lookup_agent_commission_reconciliation_engine_chargeback_rate_runbook](/tools/lookup-agent-commission-reconciliation-engine-chargeback-rate-runbook.md)

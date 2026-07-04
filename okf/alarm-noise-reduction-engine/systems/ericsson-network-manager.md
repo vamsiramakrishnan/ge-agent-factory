@@ -27,3 +27,6 @@ network alarms, cell sites, performance counters records
 - [query_ericsson_network_manager_network_alarms](/tools/query-ericsson-network-manager-network-alarms.md)
 - [lookup_alarm_noise_reduction_engine_assurance_runbook](/tools/lookup-alarm-noise-reduction-engine-assurance-runbook.md)
 - [action_ericsson_network_manager_route](/tools/action-ericsson-network-manager-route.md)
+- [query_ericsson_network_manager_cell_sites](/tools/query-ericsson-network-manager-cell-sites.md)
+- [query_ericsson_network_manager_performance_counters](/tools/query-ericsson-network-manager-performance-counters.md)
+- [lookup_part4_outage_reporting_e911_exemption_policy](/tools/lookup-part4-outage-reporting-e911-exemption-policy.md)

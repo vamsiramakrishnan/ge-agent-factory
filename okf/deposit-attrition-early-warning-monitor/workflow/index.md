@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Weekly Balance Velocity & Outflow Scan](/workflow/weekly-balance-velocity-outflow-scan.md)
+2. [Baseline & Rate-Spread Reconciliation](/workflow/baseline-rate-spread-reconciliation.md)
+3. [Risk Scoring & Retention Worklist Ranking](/workflow/risk-scoring-retention-worklist-ranking.md)
+4. [Segment Heatmap Publication to Looker](/workflow/segment-heatmap-publication-to-looker.md)
+5. [Evidence-Gated Publish & Escalation](/workflow/evidence-gated-publish-escalation.md)

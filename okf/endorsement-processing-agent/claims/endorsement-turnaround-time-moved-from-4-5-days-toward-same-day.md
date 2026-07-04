@@ -37,3 +37,4 @@ Must cite: guidewire_policycenter.policies, zendesk.tickets
 # Citations
 
 - [Endorsement Processing Agent Authority & Referral Guide](/documents/endorsement-processing-agent-authority-guide.md)
+- [Endorsement Forms, Rating & SLA Manual](/documents/endorsement-forms-rating-sla-manual.md)

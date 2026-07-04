@@ -52,11 +52,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [detractor_verbatim_triage](/workflow/detractor-verbatim-triage.md)
+- [recovery_outreach_drafting_routing](/workflow/recovery-outreach-drafting-routing.md)
+- [case_closure_churn_risk_escalation](/workflow/case-closure-churn-risk-escalation.md)
 
 ## Evals
 
 - [Run the NPS Detractor Recovery Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/nps-detractor-recovery-agent-end-to-end.md)
+- [Account 55810042's billing case in tickets has had 3 contacts in the last 6 days and status is still open. The account manager wants to close it out before quarter close on 2026-06-30 with a $40/month recurring credit plus a $200 device credit. Recommend the next action.](/tests/nps-detractor-recovery-agent-repeat-contact-offer-edge.md)
 
 ## Evidence emitted
 

@@ -53,12 +53,15 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [demand_signal_aggregation](/workflow/demand-signal-aggregation.md)
+- [coverage_lead_time_exposure_check](/workflow/coverage-lead-time-exposure-check.md)
+- [requisition_execution_audit](/workflow/requisition-execution-audit.md)
 
 ## Evals
 
 - [Run the Spare Parts Stockout Prediction Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/spare-parts-stockout-prediction-agent-end-to-end.md)
+- [Work order WO-4021873 (asset 118420, priority emergency) is awaiting_parts for a replacement bearing. SAP S/4HANA MM purchase order records show a PO tied to source_record_id 118420 marked 'paid' on 2026-06-02, but the Maximo work order remains awaiting_parts as of 2026-07-03. Reconcile whether the spare is actually on the shelf or the paid PO covered a different line item, and recommend the next storeroom action.](/tests/spare-parts-stockout-prediction-agent-conflicting-reservation.md)
+- [Asset 142077 (asset_class stamping_press, criticality_ranking a_constraint) has zero on-hand quantity for its critical die-change bearing. The only vendor carrying that part has risk_score 'high' and annual_spend $1.2M; they quoted an expedite purchase order of $31,500 at a 3-day lead time versus $9,800 at the standard 21-day lead time. Recommend whether to place the expedite requisition.](/tests/spare-parts-stockout-prediction-agent-expedite-threshold.md)
 
 ## Evidence emitted
 

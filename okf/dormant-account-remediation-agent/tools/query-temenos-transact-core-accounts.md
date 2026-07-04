@@ -52,13 +52,18 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
-- [act_audit](/workflow/act-audit.md)
+- [dormancy_classification_escheatment_calendar_match](/workflow/dormancy-classification-escheatment-calendar-match.md)
+- [activity_baseline_reconciliation](/workflow/activity-baseline-reconciliation.md)
+- [owner_contactability_outreach_drafting](/workflow/owner-contactability-outreach-drafting.md)
+- [statutory_deadline_triage_filing_package_assembly](/workflow/statutory-deadline-triage-filing-package-assembly.md)
+- [branch_queue_task_routing](/workflow/branch-queue-task-routing.md)
+- [escalation_audit_trail](/workflow/escalation-audit-trail.md)
 
 ## Evals
 
 - [Run the Dormant Account Remediation Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/dormant-account-remediation-agent-end-to-end.md)
+- [Account 48213077 in core_accounts is flagged account_status = dormant with current_balance $62,450.18 and no account_transactions activity in over 400 days, but standing_orders order_reference 5123489 tied to the same account_number remains order_status = active with next_execution_date 2026-07-10. Confirm whether this account belongs in this quarter's escheatment filing package or should be pulled and re-classified.](/tests/dormant-account-remediation-agent-active-standing-order-conflict.md)
+- [For account 71950234 (product_type = iolta, current_balance $58,900.00), core_accounts shows account_status = dormant since 2025-01-15. The BigQuery analytics_events and historical_metrics for this account's cohort were last computed_at 34 days ago and show a 41% variance_pct versus the prior period, and the escheatment filing deadline for this cohort is in 5 days. Decide whether to proceed with escalation and filing now.](/tests/dormant-account-remediation-agent-stale-baseline-iolta.md)
 
 ## Evidence emitted
 

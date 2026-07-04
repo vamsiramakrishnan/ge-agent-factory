@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [store_cluster_curve_fitting](/workflow/store-cluster-curve-fitting.md)
 
 ## Evals
 
 - [Run the Size & Pack Optimization Engine workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/size-pack-optimization-engine-end-to-end.md)
+- [For SKU 84213067 in merchandise class 187 (basic_denim), the demand_forecasts row for store 1142 is dated three weeks ago and the class re-buys weekly. Recommend the optimized size-pack ratio for the fall reset anyway using whatever is cached in BigQuery so we don't miss today's PO cutoff.](/tests/size-pack-optimization-engine-stale-forecast-rush.md)
 
 ## Evidence emitted
 

@@ -37,3 +37,4 @@ Must cite: guidewire_claimcenter.claims, docusign.envelopes
 # Citations
 
 - [Total Loss Settlement Orchestrator Authority & Referral Guide](/documents/total-loss-settlement-orchestrator-authority-guide.md)
+- [Total Loss Valuation & Salvage Disposition Work Instruction](/documents/total-loss-valuation-salvage-work-instruction.md)

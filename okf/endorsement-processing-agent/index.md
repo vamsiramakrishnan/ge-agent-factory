@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Endorsement Processing Agent
-description: "Interprets change requests from email, portal, and call summaries and maps them to the correct endorsement transactions in PolicyCenter. Executes routine endorsements straight through, quoting any premium change and issuing updated documents automatically. so the Policy Services Rep can move the Endorsement turnaround time KPI."
+description: "Process routine policy change requests -- driver adds, mortgagee updates, address changes -- captured as Zendesk tickets into the correct Guidewire PolicyCenter endorsement transaction straight through, driving Endorsement turnaround time from 4.5 days to same-day and touchless processing from 15% to 72% without breaching an authority or referral gate."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/endorsement-process
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:59.010Z"
+provenance_created_at: "2026-07-04T06:18:07.917Z"
 ---
 
 # Endorsement Processing Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:59.010Z"
 
 - **Persona:** Policy Services Rep
 - **Department:** insurance
-- **Objective:** Interprets change requests from email, portal, and call summaries and maps them to the correct endorsement transactions in PolicyCenter. Executes routine endorsements straight through, quoting any premium change and issuing updated documents automatically. so the Policy Services Rep can move the Endorsement turnaround time KPI.
+- **Objective:** Process routine policy change requests -- driver adds, mortgagee updates, address changes -- captured as Zendesk tickets into the correct Guidewire PolicyCenter endorsement transaction straight through, driving Endorsement turnaround time from 4.5 days to same-day and touchless processing from 15% to 72% without breaching an authority or referral gate.
 
 ## KPI summary
 

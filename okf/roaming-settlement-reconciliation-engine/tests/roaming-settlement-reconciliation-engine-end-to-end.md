@@ -15,7 +15,7 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 ## Validates
 
-- [retrieve-records](/queries/retrieve-records.md)
+- [tap-bce-file-intake-mediation-batch-validation](/queries/tap-bce-file-intake-mediation-batch-validation.md)
 
 ## Mechanisms to call
 

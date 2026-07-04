@@ -26,3 +26,6 @@ subscriber accounts, service quotes, order captures records
 
 - [query_salesforce_communications_cloud_subscriber_accounts](/tools/query-salesforce-communications-cloud-subscriber-accounts.md)
 - [action_salesforce_communications_cloud_route](/tools/action-salesforce-communications-cloud-route.md)
+- [query_salesforce_communications_cloud_service_quotes](/tools/query-salesforce-communications-cloud-service-quotes.md)
+- [query_salesforce_communications_cloud_order_captures](/tools/query-salesforce-communications-cloud-order-captures.md)
+- [lookup_enterprise_rfp_response_agent_bid_pricing_manual](/tools/lookup-enterprise-rfp-response-agent-bid-pricing-manual.md)

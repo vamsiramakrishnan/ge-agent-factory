@@ -37,3 +37,4 @@ Must cite: revionics_price_optimization.price_recommendations, oracle_xstore_pos
 # Citations
 
 - [Price Execution Audit Monitor Retail Execution Playbook](/documents/price-execution-audit-monitor-execution-playbook.md)
+- [Scanner Price Accuracy & Weights-and-Measures Compliance Bulletin](/documents/price-execution-audit-monitor-scan-accuracy-compliance-bulletin.md)

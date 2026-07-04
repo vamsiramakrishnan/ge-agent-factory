@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [historical_precedent_matching](/workflow/historical-precedent-matching.md)
 
 ## Evals
 
 - [Run the CAPA Orchestration Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/capa-orchestration-agent-end-to-end.md)
+- [CAPA-71822 (defect_code: dimensional, material_number 412908) closed on 2026-04-02 with effectiveness_verified=true. This morning nonconformance record NC-648831 was raised on the same material_number 412908 with defect_code dimensional and severity major, detected 2026-06-30. The BigQuery analytics_events feed shows dimensional-defect variance_pct has been trending outside the historical baseline for that material for three straight weeks. Owner_name Priya Raghunathan wants to open a brand-new CAPA rather than touch the closed one. What should the agent do?](/tests/capa-orchestration-agent-recurrence-reopen.md)
 
 ## Evidence emitted
 

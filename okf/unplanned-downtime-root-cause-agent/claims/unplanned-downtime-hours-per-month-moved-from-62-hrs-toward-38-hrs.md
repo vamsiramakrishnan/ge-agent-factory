@@ -37,3 +37,4 @@ Must cite: siemens_opcenter_mes.production_orders, osisoft_pi_system.sensor_read
 # Citations
 
 - [Unplanned Downtime Root-Cause Agent Standard Operating Procedure](/documents/unplanned-downtime-root-cause-agent-sop.md)
+- [Downtime Reason Code & OEE Loss Attribution Standard](/documents/downtime-reason-code-oee-standard.md)

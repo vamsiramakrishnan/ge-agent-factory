@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Renewal Risk Requalification Agent
-description: "Requalifies every renewal 90 days out by comparing current exposures, claims activity, and LexisNexis risk signals against the expiring terms. Recommends renew-as-is, re-rate, or non-renew treatment for each account and routes only changed risks to the underwriter queue. so the Underwriter can move the Renewals reviewed before expiration KPI."
+description: "Requalifies every in-force renewal 90 days before expiration_date by reconciling current risk_reports, mvr_records, and prefill_datasets against the expiring policies terms, lifting renewals reviewed before expiration from 61% to 98% and premium retention on target accounts from 84% to 91% while cutting mispriced renewals carried forward from 13% to 3%."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/renewal-risk-requal
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:54.346Z"
+provenance_created_at: "2026-07-04T06:18:03.022Z"
 ---
 
 # Renewal Risk Requalification Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:54.346Z"
 
 - **Persona:** Underwriter
 - **Department:** insurance
-- **Objective:** Requalifies every renewal 90 days out by comparing current exposures, claims activity, and LexisNexis risk signals against the expiring terms. Recommends renew-as-is, re-rate, or non-renew treatment for each account and routes only changed risks to the underwriter queue. so the Underwriter can move the Renewals reviewed before expiration KPI.
+- **Objective:** Requalifies every in-force renewal 90 days before expiration_date by reconciling current risk_reports, mvr_records, and prefill_datasets against the expiring policies terms, lifting renewals reviewed before expiration from 61% to 98% and premium retention on target accounts from 84% to 91% while cutting mispriced renewals carried forward from 13% to 3%.
 
 ## KPI summary
 

@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [FNOL & Fraud-Score Intake](/workflow/fnol-fraud-score-intake.md)
+2. [Network Link & Prior-Referral Review](/workflow/network-link-prior-referral-review.md)
+3. [Coverage & Reserve Cross-Check](/workflow/coverage-reserve-cross-check.md)
+4. [Baseline & Precision Trend Scoring](/workflow/baseline-precision-trend-scoring.md)
+5. [Authority-Gated Referral & Route Decision](/workflow/authority-gated-referral-route-decision.md)

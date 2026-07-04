@@ -26,3 +26,6 @@ policy forms, rating worksheets, endorsement records records
 
 - [query_duck_creek_policy_policy_forms](/tools/query-duck-creek-policy-policy-forms.md)
 - [action_duck_creek_policy_publish](/tools/action-duck-creek-policy-publish.md)
+- [query_duck_creek_policy_rating_worksheets](/tools/query-duck-creek-policy-rating-worksheets.md)
+- [query_duck_creek_policy_endorsement_records](/tools/query-duck-creek-policy-endorsement-records.md)
+- [lookup_broker_submission_intake_orchestrator_producer_appointment_sla](/tools/lookup-broker-submission-intake-orchestrator-producer-appointment-sla.md)

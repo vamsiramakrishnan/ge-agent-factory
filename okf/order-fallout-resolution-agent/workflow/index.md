@@ -9,7 +9,9 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Fallout Queue Intake & Correlation](/workflow/fallout-queue-intake-correlation.md)
+2. [Error Signature Classification](/workflow/error-signature-classification.md)
+3. [Baseline Benchmarking](/workflow/baseline-benchmarking.md)
+4. [Auto-Remediation & Replay](/workflow/auto-remediation-replay.md)
+5. [Runbook-Gated Escalation Review](/workflow/runbook-gated-escalation-review.md)
+6. [Escalate & Audit](/workflow/escalate-audit.md)

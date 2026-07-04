@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Returns Abuse Analyzer
-description: "Builds a cross-channel return-behavior graph per customer spanning web orders, store returns, and care tickets. Scores each return claim in real time and routes only high-risk claims to manual review with evidence. so the Fraud Analyst can move the Return fraud loss KPI."
+description: "Cut Return fraud loss from 1.9% of online sales to 0.7% by building a real-time cross-channel return-behavior graph across online_orders, cart_events, and Zendesk tickets that scores every claim and routes only high-risk cases to the Fraud Analyst, while holding the false-positive rate on return blocks to 3%."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/returns-abuse-analy
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:25.882Z"
+provenance_created_at: "2026-07-04T06:18:34.912Z"
 ---
 
 # Returns Abuse Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:25.882Z"
 
 - **Persona:** Fraud Analyst
 - **Department:** retail
-- **Objective:** Builds a cross-channel return-behavior graph per customer spanning web orders, store returns, and care tickets. Scores each return claim in real time and routes only high-risk claims to manual review with evidence. so the Fraud Analyst can move the Return fraud loss KPI.
+- **Objective:** Cut Return fraud loss from 1.9% of online sales to 0.7% by building a real-time cross-channel return-behavior graph across online_orders, cart_events, and Zendesk tickets that scores every claim and routes only high-risk cases to the Fraud Analyst, while holding the false-positive rate on return blocks to 3%.
 
 ## KPI summary
 

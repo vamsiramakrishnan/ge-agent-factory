@@ -37,3 +37,4 @@ Must cite: guidewire_claimcenter.claims, bigquery.analytics_events
 # Citations
 
 - [Subrogation Opportunity Analyzer Authority & Referral Guide](/documents/subrogation-opportunity-analyzer-authority-guide.md)
+- [Subrogation Statute-of-Limitations & Inter-Company Arbitration Work Instruction](/documents/subrogation-sol-arbitration-work-instruction.md)

@@ -37,3 +37,4 @@ Must cite: temenos_transact.core_accounts, bigquery.analytics_events
 # Citations
 
 - [Account Opening Document Follow-Up Agent Banking Compliance Policy](/documents/account-opening-doc-followup-agent-compliance-policy.md)
+- [Account Opening Required Document Checklist & Cure Cadence Runbook](/documents/account-opening-required-document-checklist-runbook.md)

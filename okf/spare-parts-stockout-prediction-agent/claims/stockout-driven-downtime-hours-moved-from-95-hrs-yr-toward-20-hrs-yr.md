@@ -37,3 +37,4 @@ Must cite: ibm_maximo.maintenance_work_orders, sap_s_4hana_mm.purchase_orders
 # Citations
 
 - [Spare Parts Stockout Prediction Agent Standard Operating Procedure](/documents/spare-parts-stockout-prediction-agent-sop.md)
+- [Reorder Point and Safety Stock Policy](/documents/reorder-point-safety-stock-policy.md)

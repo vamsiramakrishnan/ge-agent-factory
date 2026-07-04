@@ -52,11 +52,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [member_signal_unification](/workflow/member-signal-unification.md)
+- [propensity_price_sensitivity_scoring](/workflow/propensity-price-sensitivity-scoring.md)
+- [holdout_measurement_escalation](/workflow/holdout-measurement-escalation.md)
 
 ## Evals
 
 - [Run the Next Best Offer Engine workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/next-best-offer-engine-end-to-end.md)
+- [Loyalty segment 'mid_market winback' has run three publish cycles. The latest analytics_events row for metric_name 'offer_redemption_rate' has computed_at of 2026-06-20 -- 14 days ago -- while historical_metrics for the same holdout cohort was last computed 2026-07-03. Determine whether to retire the offer against its holdout and publish the next cycle.](/tests/next-best-offer-engine-holdout-stale-eval.md)
 
 ## Evidence emitted
 

@@ -11,3 +11,6 @@ timestamp: "2026-07-04T00:00:00.000Z"
 - [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
 - [lookup_regulatory_complaint_response_agent_authority_guide](/tools/lookup-regulatory-complaint-response-agent-authority-guide.md)
 - [action_guidewire_policycenter_publish](/tools/action-guidewire-policycenter-publish.md)
+- [query_guidewire_policycenter_policy_quotes](/tools/query-guidewire-policycenter-policy-quotes.md)
+- [query_guidewire_policycenter_underwriting_submissions](/tools/query-guidewire-policycenter-underwriting-submissions.md)
+- [lookup_doi_statutory_deadline_matrix](/tools/lookup-doi-statutory-deadline-matrix.md)

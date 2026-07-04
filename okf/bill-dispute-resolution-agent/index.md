@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Bill Dispute Resolution Agent
-description: "The agent adjudicates each dispute by comparing the contested charge against contract terms, rate plans, and metered usage. It drafts a customer-facing resolution letter with line-item evidence for approval or auto-sends within policy thresholds. so the Billing Operations Manager can move the Average dispute resolution time KPI."
+description: "Adjudicate each contested charge against billing_accounts, rated_events, and usage_records evidence and resolve it within roughly 1.5 days of intake, driving dispute-driven credits down toward the $380K/month target while holding repeat disputes per account at or below 6%."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/bill-dispute-resolu
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:37.685Z"
+provenance_created_at: "2026-07-04T06:18:46.320Z"
 ---
 
 # Bill Dispute Resolution Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:37.685Z"
 
 - **Persona:** Billing Operations Manager
 - **Department:** telco
-- **Objective:** The agent adjudicates each dispute by comparing the contested charge against contract terms, rate plans, and metered usage. It drafts a customer-facing resolution letter with line-item evidence for approval or auto-sends within policy thresholds. so the Billing Operations Manager can move the Average dispute resolution time KPI.
+- **Objective:** Adjudicate each contested charge against billing_accounts, rated_events, and usage_records evidence and resolve it within roughly 1.5 days of intake, driving dispute-driven credits down toward the $380K/month target while holding repeat disputes per account at or below 6%.
 
 ## KPI summary
 

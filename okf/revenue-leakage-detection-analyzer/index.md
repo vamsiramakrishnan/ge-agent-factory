@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Revenue Leakage Detection Analyzer
-description: "The analyzer reconciles usage records end to end from network mediation through rating to invoice, every night, at full volume. It detects unbilled active services by cross-matching provisioning inventory against the billing catalog. so the Revenue Assurance Analyst can move the Revenue leakage as % of billed revenue KPI."
+description: "Reconcile usage_records, rated_events, and billing_accounts nightly at full volume so the Revenue Assurance Analyst can cut revenue leakage as a percent of billed revenue from 1.9% to 0.4% and shrink detection lag from 60-90 days to 24 hours."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/revenue-leakage-det
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:37.267Z"
+provenance_created_at: "2026-07-04T06:18:45.884Z"
 ---
 
 # Revenue Leakage Detection Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:37.267Z"
 
 - **Persona:** Revenue Assurance Analyst
 - **Department:** telco
-- **Objective:** The analyzer reconciles usage records end to end from network mediation through rating to invoice, every night, at full volume. It detects unbilled active services by cross-matching provisioning inventory against the billing catalog. so the Revenue Assurance Analyst can move the Revenue leakage as % of billed revenue KPI.
+- **Objective:** Reconcile usage_records, rated_events, and billing_accounts nightly at full volume so the Revenue Assurance Analyst can cut revenue leakage as a percent of billed revenue from 1.9% to 0.4% and shrink detection lag from 60-90 days to 24 hours.
 
 ## KPI summary
 

@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Vendor Performance Scorecard Analyzer
-description: "Computes fill rate, on-time delivery, lead-time variance, and invoice accuracy per vendor weekly in BigQuery. Drafts the quarterly business review deck with trend narratives and benchmark comparisons per vendor. so the Vendor Performance Manager can move the Vendor fill rate KPI."
+description: "Reconcile weekly Oracle Retail MFCS item_master, merchandise_hierarchy, and cost_changes against BigQuery analytics_events and historical_metrics baselines to score every vendor's fill rate, on-time delivery, lead-time variance, and invoice accuracy, lifting vendor fill rate from 88% to 96% and recovering up to $3.4M/yr in chargeback-eligible compliance claims."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/vendor-scorecard-an
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:19.617Z"
+provenance_created_at: "2026-07-04T06:18:28.640Z"
 ---
 
 # Vendor Performance Scorecard Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:19.617Z"
 
 - **Persona:** Vendor Performance Manager
 - **Department:** retail
-- **Objective:** Computes fill rate, on-time delivery, lead-time variance, and invoice accuracy per vendor weekly in BigQuery. Drafts the quarterly business review deck with trend narratives and benchmark comparisons per vendor. so the Vendor Performance Manager can move the Vendor fill rate KPI.
+- **Objective:** Reconcile weekly Oracle Retail MFCS item_master, merchandise_hierarchy, and cost_changes against BigQuery analytics_events and historical_metrics baselines to score every vendor's fill rate, on-time delivery, lead-time variance, and invoice accuracy, lifting vendor fill rate from 88% to 96% and recovering up to $3.4M/yr in chargeback-eligible compliance claims.
 
 ## KPI summary
 

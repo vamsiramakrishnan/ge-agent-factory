@@ -12,3 +12,6 @@ timestamp: "2026-07-04T00:00:00.000Z"
 - [query_splunk_log_events](/tools/query-splunk-log-events.md)
 - [lookup_fiber_cut_triage_agent_assurance_runbook](/tools/lookup-fiber-cut-triage-agent-assurance-runbook.md)
 - [action_servicenow_route](/tools/action-servicenow-route.md)
+- [query_ericsson_network_manager_cell_sites](/tools/query-ericsson-network-manager-cell-sites.md)
+- [query_ericsson_network_manager_performance_counters](/tools/query-ericsson-network-manager-performance-counters.md)
+- [lookup_fiber_cut_triage_agent_locate_damage_prevention_policy](/tools/lookup-fiber-cut-triage-agent-locate-damage-prevention-policy.md)

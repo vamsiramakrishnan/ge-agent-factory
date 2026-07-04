@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Inbound PO ETA Monitor
-description: "Ingests ASN, carrier tracking, and port milestone events to predict arrival slippage per PO. Updates ETAs in Manhattan Active WM and rebalances dock appointments when a delay is confirmed. so the Inventory Control Analyst can move the Late-PO detection lead time KPI."
+description: "Predict inbound PO arrival slippage from Manhattan Active WM warehouse_orders, pick_tasks, and inventory_snapshots evidence, cite the Execution Playbook and Routing Guide before acting, and move Late-PO detection lead time from 2 days after due to 9 days before due while cutting expedite freight spend from $620K/qtr to $210K/qtr."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/inbound-po-eta-moni
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:20.874Z"
+provenance_created_at: "2026-07-04T06:18:29.885Z"
 ---
 
 # Inbound PO ETA Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:20.874Z"
 
 - **Persona:** Inventory Control Analyst
 - **Department:** retail
-- **Objective:** Ingests ASN, carrier tracking, and port milestone events to predict arrival slippage per PO. Updates ETAs in Manhattan Active WM and rebalances dock appointments when a delay is confirmed. so the Inventory Control Analyst can move the Late-PO detection lead time KPI.
+- **Objective:** Predict inbound PO arrival slippage from Manhattan Active WM warehouse_orders, pick_tasks, and inventory_snapshots evidence, cite the Execution Playbook and Routing Guide before acting, and move Late-PO detection lead time from 2 days after due to 9 days before due while cutting expedite freight spend from $620K/qtr to $210K/qtr.
 
 ## KPI summary
 

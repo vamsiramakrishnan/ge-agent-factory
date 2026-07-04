@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [compliance_matrix_gap_detection](/workflow/compliance-matrix-gap-detection.md)
 
 ## Evals
 
 - [Run the Enterprise RFP Response Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/enterprise-rfp-response-agent-end-to-end.md)
+- [RFP-2026-0417 for Meridian Health Systems requires us to certify a 99.9% network uptime SLA on the enterprise_dia_100m bundle referenced in service quote SQ-24887215 (mrr_usd 6,400, term_36). The account team wants to cite subscriber account SA-3124890177's low churn_risk_score and the BigQuery uptime baseline in the response, but the last historical_metrics refresh is dated 2026-05-02 (more than 60 days old) and analytics_events shows a variance_pct of -18% against baseline for that period. Draft the compliance-matrix answer for this SLA line item.](/tests/enterprise-rfp-response-agent-stale-baseline-reconciliation.md)
 
 ## Evidence emitted
 

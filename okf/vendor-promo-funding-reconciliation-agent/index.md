@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Vendor Promo Funding Reconciliation Agent
-description: "Matches promo execution data — scans, markdowns, ad placements — against vendor deal terms in MFCS automatically. Generates substantiated funding claims with transaction-level backup and drafts dispute responses. so the Trade Promotions Analyst can move the Vendor funding collected vs. committed KPI."
+description: "Continuously match promo execution evidence — scans, markdowns, and ad placements in BigQuery analytics_events and historical_metrics — against vendor deal terms in Oracle Retail MFCS cost_changes to generate substantiated funding claims that lift vendor funding collected vs. committed from 83% to 98% and cut the deal reconciliation cycle from 60 days to 5 days."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/vendor-promo-fundin
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:30.321Z"
+provenance_created_at: "2026-07-04T06:18:39.169Z"
 ---
 
 # Vendor Promo Funding Reconciliation Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:30.321Z"
 
 - **Persona:** Trade Promotions Analyst
 - **Department:** retail
-- **Objective:** Matches promo execution data — scans, markdowns, ad placements — against vendor deal terms in MFCS automatically. Generates substantiated funding claims with transaction-level backup and drafts dispute responses. so the Trade Promotions Analyst can move the Vendor funding collected vs. committed KPI.
+- **Objective:** Continuously match promo execution evidence — scans, markdowns, and ad placements in BigQuery analytics_events and historical_metrics — against vendor deal terms in Oracle Retail MFCS cost_changes to generate substantiated funding claims that lift vendor funding collected vs. committed from 83% to 98% and cut the deal reconciliation cycle from 60 days to 5 days.
 
 ## KPI summary
 

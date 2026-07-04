@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [competitive_pricing_signal_scan](/workflow/competitive-pricing-signal-scan.md)
 
 ## Evals
 
 - [Run the Competitive Win-Loss Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/competitive-win-loss-analyzer-end-to-end.md)
+- [This week's briefing is due today (2026-07-04). The BigQuery analytics_events record for the fiber_1gig_wifi-vs-cable-overbuilder segment shows computed_at of 2026-06-29 — five days stale — while historical_metrics for the same period refreshed today. The computed competitive win rate for that segment lands at exactly 47.0%, right at the KPI target. Decide whether to publish the win-rate finding in this week's briefing or hold it, and document the evidence basis for your decision.](/tests/competitive-win-loss-analyzer-stale-evidence-threshold.md)
 
 ## Evidence emitted
 

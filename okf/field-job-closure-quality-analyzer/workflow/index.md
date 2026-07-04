@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Closure Intake & Evidence Capture](/workflow/closure-intake-evidence-capture.md)
+2. [Workmanship Standards Check](/workflow/workmanship-standards-check.md)
+3. [Repeat-Dispatch & Technician Trend Scoring](/workflow/repeat-dispatch-technician-trend-scoring.md)
+4. [As-Built Reconciliation](/workflow/as-built-reconciliation.md)
+5. [Coaching, Correction & Audit](/workflow/coaching-correction-audit.md)

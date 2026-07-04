@@ -26,3 +26,6 @@ billing accounts, premium invoices, payment plans records
 
 - [query_guidewire_billingcenter_billing_accounts](/tools/query-guidewire-billingcenter-billing-accounts.md)
 - [action_guidewire_billingcenter_send](/tools/action-guidewire-billingcenter-send.md)
+- [query_guidewire_billingcenter_premium_invoices](/tools/query-guidewire-billingcenter-premium-invoices.md)
+- [query_guidewire_billingcenter_payment_plans](/tools/query-guidewire-billingcenter-payment-plans.md)
+- [lookup_premium_delinquency_outreach_agent_cancellation_notice_dunning_playbook](/tools/lookup-premium-delinquency-outreach-agent-cancellation-notice-dunning-playbook.md)

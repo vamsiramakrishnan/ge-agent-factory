@@ -53,10 +53,11 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [ticket_to_work_order_correlation](/workflow/ticket-to-work-order-correlation.md)
+- [remote_diagnostic_battery](/workflow/remote-diagnostic-battery.md)
+- [no_fault_found_risk_scoring](/workflow/no-fault-found-risk-scoring.md)
+- [runbook_gated_remediation_decision](/workflow/runbook-gated-remediation-decision.md)
+- [dispatch_filing_technician_brief](/workflow/dispatch-filing-technician-brief.md)
 
 ## Evals
 

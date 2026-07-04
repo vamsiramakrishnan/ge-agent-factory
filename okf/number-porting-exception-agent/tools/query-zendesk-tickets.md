@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [port_rejection_intake_csr_comparison](/workflow/port-rejection-intake-csr-comparison.md)
 
 ## Evals
 
 - [Run the Number Porting Exception Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/number-porting-exception-agent-end-to-end.md)
+- [Port-in order 73418826 was rejected by the losing carrier for a ZIP mismatch on 2026-06-28, corrected and resubmitted on 2026-07-01, and was just rejected again — this time citing an account-number mismatch instead of the ZIP. Zendesk ticket #48213 shows the customer already threatened to cancel the port. Diagnose whether this is a genuine second CSR discrepancy or a stale CSR pull, and tell me the next action.](/tests/number-porting-exception-agent-csr-resubmission-conflict.md)
 
 ## Evidence emitted
 

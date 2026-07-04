@@ -37,3 +37,4 @@ Must cite: oracle_retail_mfcs.item_master, bigquery.analytics_events
 # Citations
 
 - [Assortment Rationalization Engine Retail Execution Playbook](/documents/assortment-rationalization-engine-execution-playbook.md)
+- [Vendor Trade-Funds, Allowances & SKU Discontinuation Policy](/documents/vendor-trade-funds-discontinuation-policy.md)

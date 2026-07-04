@@ -37,3 +37,4 @@ Must cite: manhattan_active_wm.warehouse_orders, oracle_retail_mfcs.item_master
 # Citations
 
 - [Inbound PO ETA Monitor Retail Execution Playbook](/documents/inbound-po-eta-monitor-execution-playbook.md)
+- [Inbound Vendor Compliance & Routing Guide](/documents/inbound-vendor-compliance-routing-guide.md)

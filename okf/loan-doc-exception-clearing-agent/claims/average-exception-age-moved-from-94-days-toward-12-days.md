@@ -37,3 +37,4 @@ Must cite: ncino_loan_origination.loan_applications, bigquery.analytics_events
 # Citations
 
 - [Loan Documentation Exception Clearing Agent Banking Compliance Policy](/documents/loan-doc-exception-clearing-agent-compliance-policy.md)
+- [Collateral Perfection & Lien Documentation Cure Runbook](/documents/collateral-perfection-lien-documentation-cure-runbook.md)

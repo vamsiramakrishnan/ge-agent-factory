@@ -37,3 +37,4 @@ Must cite: netcracker_service_orchestration.service_orders, bigquery.analytics_e
 # Citations
 
 - [Legacy Service Migration Orchestrator Service Assurance Runbook](/documents/legacy-service-migration-orchestrator-assurance-runbook.md)
+- [Copper Retirement & TDM Decommissioning Compliance Bulletin](/documents/legacy-service-migration-orchestrator-copper-retirement-bulletin.md)

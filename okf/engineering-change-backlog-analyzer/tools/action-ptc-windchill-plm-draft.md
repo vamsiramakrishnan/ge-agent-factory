@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [backlog_ingestion_duplicate_clustering](/workflow/backlog-ingestion-duplicate-clustering.md)
+- [effectivity_configuration_conflict_check](/workflow/effectivity-configuration-conflict-check.md)
+- [change_board_agenda_drafting_audit](/workflow/change-board-agenda-drafting-audit.md)
 
 ## Evals
 

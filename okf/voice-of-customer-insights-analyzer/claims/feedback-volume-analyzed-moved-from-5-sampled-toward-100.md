@@ -37,3 +37,4 @@ Must cite: salesforce_commerce_cloud.online_orders, zendesk.tickets
 # Citations
 
 - [Voice of Customer Insights Analyzer Retail Execution Playbook](/documents/voice-of-customer-insights-analyzer-execution-playbook.md)
+- [Product Quality & Vendor Defect Escalation Runbook](/documents/voice-of-customer-insights-analyzer-vendor-defect-escalation-runbook.md)

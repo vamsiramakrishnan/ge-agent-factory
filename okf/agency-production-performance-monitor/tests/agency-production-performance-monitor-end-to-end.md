@@ -15,7 +15,7 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 ## Validates
 
-- [retrieve-records](/queries/retrieve-records.md)
+- [agency-book-scan-baseline-pull](/queries/agency-book-scan-baseline-pull.md)
 
 ## Mechanisms to call
 

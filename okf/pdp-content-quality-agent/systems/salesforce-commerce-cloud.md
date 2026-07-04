@@ -26,3 +26,6 @@ online orders, product catalog entries, cart events records
 
 - [query_salesforce_commerce_cloud_online_orders](/tools/query-salesforce-commerce-cloud-online-orders.md)
 - [action_salesforce_commerce_cloud_publish](/tools/action-salesforce-commerce-cloud-publish.md)
+- [query_salesforce_commerce_cloud_product_catalog_entries](/tools/query-salesforce-commerce-cloud-product-catalog-entries.md)
+- [query_salesforce_commerce_cloud_cart_events](/tools/query-salesforce-commerce-cloud-cart-events.md)
+- [lookup_supplier_content_feed_sla](/tools/lookup-supplier-content-feed-sla.md)

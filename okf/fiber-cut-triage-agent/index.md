@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Fiber Cut Triage Agent
-description: "The agent triangulates the break location from OTDR distance readings mapped onto GIS fiber routes and splice-point records. It computes the full service-impact blast radius, triggers automatic traffic reroutes where protection paths exist, and opens the master incident. so the NOC Engineer can move the Time to locate fiber break KPI."
+description: "Triangulate the backbone fiber break location from network_alarms and performance_counters, size the blast radius across cell_sites, and cut Time to locate fiber break from 95 minutes to 12 minutes while opening the ServiceNow master incident and rerouting protected traffic within the same pass."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/fiber-cut-triage-ag
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:36.027Z"
+provenance_created_at: "2026-07-04T06:18:44.643Z"
 ---
 
 # Fiber Cut Triage Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:36.027Z"
 
 - **Persona:** NOC Engineer
 - **Department:** telco
-- **Objective:** The agent triangulates the break location from OTDR distance readings mapped onto GIS fiber routes and splice-point records. It computes the full service-impact blast radius, triggers automatic traffic reroutes where protection paths exist, and opens the master incident. so the NOC Engineer can move the Time to locate fiber break KPI.
+- **Objective:** Triangulate the backbone fiber break location from network_alarms and performance_counters, size the blast radius across cell_sites, and cut Time to locate fiber break from 95 minutes to 12 minutes while opening the ServiceNow master incident and rerouting protected traffic within the same pass.
 
 ## KPI summary
 

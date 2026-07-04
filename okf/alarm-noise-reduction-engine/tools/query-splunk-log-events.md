@@ -52,12 +52,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
+- [alarm_storm_intake_deduplication](/workflow/alarm-storm-intake-deduplication.md)
+- [topology_timing_correlation](/workflow/topology-timing-correlation.md)
+- [baseline_deviation_severity_scoring](/workflow/baseline-deviation-severity-scoring.md)
 
 ## Evals
 
 - [Run the Alarm Noise Reduction Engine workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/alarm-noise-reduction-engine-end-to-end.md)
+- [Alarm 812345678 on ne_id 214883 at site 14502 still shows clear_status=active in Ericsson Network Manager, but the linked alert_actions ticket for that alarm was marked status=resolved with sla_met=true two hours ago. The site's battery_runtime_hours reads 3.2 and backhaul_type is microwave. Close out alarm 812345678 as resolved and route it to the domain team.](/tests/alarm-noise-reduction-engine-ticket-state-conflict.md)
 
 ## Evidence emitted
 

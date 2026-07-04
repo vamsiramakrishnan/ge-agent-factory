@@ -37,3 +37,4 @@ Must cite: netcracker_service_orchestration.service_orders, bigquery.analytics_e
 # Citations
 
 - [eSIM Activation Orchestrator Service Assurance Runbook](/documents/esim-activation-orchestrator-assurance-runbook.md)
+- [eSIM Remote SIM Provisioning (SGP.22) Fraud Controls & Activation Security Playbook](/documents/esim-sgp22-fraud-controls-playbook.md)

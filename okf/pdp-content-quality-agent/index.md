@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: PDP Content Quality Agent
-description: "Scans every PDP in Commerce Cloud for missing attributes, weak copy, image gaps, and broken cross-sells. Drafts SEO-aware descriptions and bullet copy from supplier data for merchandiser approval. so the E-Commerce Merchandiser can move the PDP content completeness score KPI."
+description: "Lift PDP content completeness score from 67% to 96% and PDP conversion rate from 2.1% to 3.0% by scanning every product_catalog_entries record in Salesforce Commerce Cloud for missing attributes, image gaps, and broken cross-sells, then publishing merchandiser-approved enrichments back to the site within 20 minutes of detection."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/pdp-content-quality
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:24.220Z"
+provenance_created_at: "2026-07-04T06:18:33.235Z"
 ---
 
 # PDP Content Quality Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:24.220Z"
 
 - **Persona:** E-Commerce Merchandiser
 - **Department:** retail
-- **Objective:** Scans every PDP in Commerce Cloud for missing attributes, weak copy, image gaps, and broken cross-sells. Drafts SEO-aware descriptions and bullet copy from supplier data for merchandiser approval. so the E-Commerce Merchandiser can move the PDP content completeness score KPI.
+- **Objective:** Lift PDP content completeness score from 67% to 96% and PDP conversion rate from 2.1% to 3.0% by scanning every product_catalog_entries record in Salesforce Commerce Cloud for missing attributes, image gaps, and broken cross-sells, then publishing merchandiser-approved enrichments back to the site within 20 minutes of detection.
 
 ## KPI summary
 

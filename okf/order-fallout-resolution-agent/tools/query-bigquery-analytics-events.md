@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [baseline_benchmarking](/workflow/baseline-benchmarking.md)
 
 ## Evals
 
 - [Run the Order Fallout Resolution Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/order-fallout-resolution-agent-end-to-end.md)
+- [Order 74215560 (enterprise, port_in) has shown fallout_status = inventory_shortfall in Netcracker Service Orchestration since Monday, but ServiceNow ticket INC0043211 tied to it was marked resolved yesterday afternoon. The latest inventory_shortfall baseline in BigQuery analytics_events was computed 30 hours ago. Reconcile the discrepancy and tell me whether it's safe to escalate this order for manual dispatch.](/tests/order-fallout-resolution-agent-stale-evidence-reconciliation.md)
 
 ## Evidence emitted
 

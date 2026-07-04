@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Price Execution Audit Monitor
-description: "Reconciles every POS transaction price against the Revionics price of record in near real time. Detects stale promo prices, missed activations, and unit-of-measure errors by store and item. so the Pricing Operations Manager can move the Shelf-to-POS price match rate KPI."
+description: "Continuously reconcile Oracle Xstore POS pos_transactions against the Revionics price_recommendations price of record by store_number and sku, closing the Shelf-to-POS price match rate gap from 94.1% to 99.6% and cutting scan-error margin leakage from $4.2M/yr toward $0.6M/yr within the 2-hour detection window."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/price-execution-aud
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:29.779Z"
+provenance_created_at: "2026-07-04T06:18:38.753Z"
 ---
 
 # Price Execution Audit Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:29.779Z"
 
 - **Persona:** Pricing Operations Manager
 - **Department:** retail
-- **Objective:** Reconciles every POS transaction price against the Revionics price of record in near real time. Detects stale promo prices, missed activations, and unit-of-measure errors by store and item. so the Pricing Operations Manager can move the Shelf-to-POS price match rate KPI.
+- **Objective:** Continuously reconcile Oracle Xstore POS pos_transactions against the Revionics price_recommendations price of record by store_number and sku, closing the Shelf-to-POS price match rate gap from 94.1% to 99.6% and cutting scan-error margin leakage from $4.2M/yr toward $0.6M/yr within the 2-hour detection window.
 
 ## KPI summary
 

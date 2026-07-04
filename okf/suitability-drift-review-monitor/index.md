@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Suitability Drift Review Monitor
-description: "Scores every account monthly for drift between documented risk tolerance, investment objectives, and actual portfolio composition. Creates ServiceNow review cases for material mismatches with the evidence and the applicable suitability rule cited. so the Wealth Compliance Officer can move the Accounts screened for suitability monthly KPI."
+description: "Screen 100% of client_households and financial_accounts every month for drift between documented risk_tolerance/investment_objective and actual portfolio composition, cutting time to detect a suitability mismatch from 9 months to 5 days and supervisory review hours from 200 to 60 per month."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/suitability-drift-r
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:48.769Z"
+provenance_created_at: "2026-07-04T06:17:57.122Z"
 ---
 
 # Suitability Drift Review Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:48.769Z"
 
 - **Persona:** Wealth Compliance Officer
 - **Department:** banking
-- **Objective:** Scores every account monthly for drift between documented risk tolerance, investment objectives, and actual portfolio composition. Creates ServiceNow review cases for material mismatches with the evidence and the applicable suitability rule cited. so the Wealth Compliance Officer can move the Accounts screened for suitability monthly KPI.
+- **Objective:** Screen 100% of client_households and financial_accounts every month for drift between documented risk_tolerance/investment_objective and actual portfolio composition, cutting time to detect a suitability mismatch from 9 months to 5 days and supervisory review hours from 200 to 60 per month.
 
 ## KPI summary
 

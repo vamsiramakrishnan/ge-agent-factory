@@ -12,3 +12,6 @@ timestamp: "2026-07-04T00:00:00.000Z"
 - [query_looker_dashboards](/tools/query-looker-dashboards.md)
 - [lookup_agency_production_performance_monitor_authority_guide](/tools/lookup-agency-production-performance-monitor-authority-guide.md)
 - [action_duck_creek_policy_recommend](/tools/action-duck-creek-policy-recommend.md)
+- [query_duck_creek_policy_rating_worksheets](/tools/query-duck-creek-policy-rating-worksheets.md)
+- [query_duck_creek_policy_endorsement_records](/tools/query-duck-creek-policy-endorsement-records.md)
+- [lookup_agency_segmentation_reengagement_playbook](/tools/lookup-agency-segmentation-reengagement-playbook.md)

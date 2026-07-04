@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: NPI Launch Readiness Orchestrator
-description: "Continuously reconciles gate deliverables against actual state — released drawings and documents in PTC Windchill PLM, task completion in Jira, and tooling and qualification records in BigQuery. Predicts gate readiness from current burn-down trends and flags deliverables that will miss the date while there is still time to recover. so the NPI Program Manager can move the On-time production launches KPI."
+description: "Continuously reconcile engineering_change_orders, bom_revisions, and cad_document_records in PTC Windchill PLM against Jira issues and BigQuery burn-down trends so the NPI Program Manager raises on-time production launches from 58% to 88% and cuts deliverables discovered missing at gate review from 14 to 2 per launch."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/npi-launch-readines
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:14.537Z"
+provenance_created_at: "2026-07-04T06:18:23.546Z"
 ---
 
 # NPI Launch Readiness Orchestrator
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:14.537Z"
 
 - **Persona:** NPI Program Manager
 - **Department:** manufacturing
-- **Objective:** Continuously reconciles gate deliverables against actual state — released drawings and documents in PTC Windchill PLM, task completion in Jira, and tooling and qualification records in BigQuery. Predicts gate readiness from current burn-down trends and flags deliverables that will miss the date while there is still time to recover. so the NPI Program Manager can move the On-time production launches KPI.
+- **Objective:** Continuously reconcile engineering_change_orders, bom_revisions, and cad_document_records in PTC Windchill PLM against Jira issues and BigQuery burn-down trends so the NPI Program Manager raises on-time production launches from 58% to 88% and cuts deliverables discovered missing at gate review from 14 to 2 per launch.
 
 ## KPI summary
 

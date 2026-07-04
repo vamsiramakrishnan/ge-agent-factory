@@ -26,3 +26,6 @@ shift schedules, timecards, labor forecasts records
 
 - [query_ukg_dimensions_shift_schedules](/tools/query-ukg-dimensions-shift-schedules.md)
 - [action_ukg_dimensions_recommend](/tools/action-ukg-dimensions-recommend.md)
+- [query_ukg_dimensions_timecards](/tools/query-ukg-dimensions-timecards.md)
+- [query_ukg_dimensions_labor_forecasts](/tools/query-ukg-dimensions-labor-forecasts.md)
+- [lookup_fair_workweek_scheduling_compliance_manual](/tools/lookup-fair-workweek-scheduling-compliance-manual.md)

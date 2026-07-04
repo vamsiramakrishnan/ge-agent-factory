@@ -53,9 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [batch_closure_intake](/workflow/batch-closure-intake.md)
+- [nc_capa_cross_reference](/workflow/nc-capa-cross-reference.md)
+- [sop_gated_release_audit](/workflow/sop-gated-release-audit.md)
 
 ## Evals
 

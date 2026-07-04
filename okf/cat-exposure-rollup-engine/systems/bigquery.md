@@ -25,3 +25,4 @@ Historical baselines, analytics events, and KPI aggregates
 ## Tools using this system
 
 - [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
+- [lookup_cat_exposure_rollup_engine_zone_appetite_manual](/tools/lookup-cat-exposure-rollup-engine-zone-appetite-manual.md)

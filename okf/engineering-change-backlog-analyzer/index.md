@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Engineering Change Backlog Analyzer
-description: "Clusters the open change request backlog in PTC Windchill PLM by affected part and problem description, merging duplicates and linking related Jira issues. Scores each request on cost impact, quality risk, and affected production volume from BigQuery data. so the Design Engineer can move the Open change requests older than 90 days KPI."
+description: "Cluster and de-duplicate the open engineering_change_orders backlog in PTC Windchill PLM against linked Jira issues and epics, score each request's cost impact, quality risk, and affected_item_count from BigQuery analytics_events and historical_metrics, and rank the change board agenda so Open change requests older than 90 days falls from 170 to 35 while change board throughput rises from 8 to 20 CRs per session."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/engineering-change-
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:14.957Z"
+provenance_created_at: "2026-07-04T06:18:23.965Z"
 ---
 
 # Engineering Change Backlog Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:14.957Z"
 
 - **Persona:** Design Engineer
 - **Department:** manufacturing
-- **Objective:** Clusters the open change request backlog in PTC Windchill PLM by affected part and problem description, merging duplicates and linking related Jira issues. Scores each request on cost impact, quality risk, and affected production volume from BigQuery data. so the Design Engineer can move the Open change requests older than 90 days KPI.
+- **Objective:** Cluster and de-duplicate the open engineering_change_orders backlog in PTC Windchill PLM against linked Jira issues and epics, score each request's cost impact, quality risk, and affected_item_count from BigQuery analytics_events and historical_metrics, and rank the change board agenda so Open change requests older than 90 days falls from 170 to 35 while change board throughput rises from 8 to 20 CRs per session.
 
 ## KPI summary
 

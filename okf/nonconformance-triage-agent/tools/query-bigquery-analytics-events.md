@@ -52,7 +52,8 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [mes_genealogy_correlation](/workflow/mes-genealogy-correlation.md)
+- [severity_mrb_exposure_scoring](/workflow/severity-mrb-exposure-scoring.md)
 
 ## Evals
 

@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Shrink Anomaly Analyzer
-description: "Scores every transaction stream nightly for void, refund, no-sale, and discount anomalies at cashier and store level. Builds ranked case files linking POS events, timeclock data, and inventory adjustments for each anomaly cluster. so the Loss Prevention Manager can move the Shrink rate KPI."
+description: "Detect and rank void, refund, no-sale, and discount anomalies across every Oracle Xstore POS pos_transactions and tender_records row each night, attributing each cluster to a cashier and shift via store_shift_summaries, so the Loss Prevention Manager can drive the shrink rate from 2.3% of sales to 1.4% of sales and lift LP investigation hit rate from 22% to 61%."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/shrink-anomaly-anal
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:22.105Z"
+provenance_created_at: "2026-07-04T06:18:31.137Z"
 ---
 
 # Shrink Anomaly Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:22.105Z"
 
 - **Persona:** Loss Prevention Manager
 - **Department:** retail
-- **Objective:** Scores every transaction stream nightly for void, refund, no-sale, and discount anomalies at cashier and store level. Builds ranked case files linking POS events, timeclock data, and inventory adjustments for each anomaly cluster. so the Loss Prevention Manager can move the Shrink rate KPI.
+- **Objective:** Detect and rank void, refund, no-sale, and discount anomalies across every Oracle Xstore POS pos_transactions and tender_records row each night, attributing each cluster to a cashier and shift via store_shift_summaries, so the Loss Prevention Manager can drive the shrink rate from 2.3% of sales to 1.4% of sales and lift LP investigation hit rate from 22% to 61%.
 
 ## KPI summary
 

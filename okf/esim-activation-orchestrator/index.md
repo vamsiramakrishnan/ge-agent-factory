@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: eSIM Activation Orchestrator
-description: "The orchestrator watches every activation flow end to end and retries or re-sequences failed profile downloads automatically. It reconciles subscriber state across HSS, entitlement, and billing before declaring an activation complete. so the Provisioning Engineer can move the eSIM activation success rate KPI."
+description: "Reconcile HSS, entitlement, and billing state for every eSIM activation order moving through Netcracker Service Orchestration so the eSIM activation success rate climbs from 91% to 99.2% and average activation time drops from 45 minutes to under 90 seconds, clearing provisioning_tasks fallout before it reaches the care queue."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/esim-activation-orc
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:33.409Z"
+provenance_created_at: "2026-07-04T06:18:42.128Z"
 ---
 
 # eSIM Activation Orchestrator
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:33.409Z"
 
 - **Persona:** Provisioning Engineer
 - **Department:** telco
-- **Objective:** The orchestrator watches every activation flow end to end and retries or re-sequences failed profile downloads automatically. It reconciles subscriber state across HSS, entitlement, and billing before declaring an activation complete. so the Provisioning Engineer can move the eSIM activation success rate KPI.
+- **Objective:** Reconcile HSS, entitlement, and billing state for every eSIM activation order moving through Netcracker Service Orchestration so the eSIM activation success rate climbs from 91% to 99.2% and average activation time drops from 45 minutes to under 90 seconds, clearing provisioning_tasks fallout before it reaches the care queue.
 
 ## KPI summary
 

@@ -9,7 +9,9 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Submission Intake & ACORD Triage](/workflow/submission-intake-acord-triage.md)
+2. [Eligibility & Appetite Screening](/workflow/eligibility-appetite-screening.md)
+3. [Automated Risk Scoring & STP Eligibility](/workflow/automated-risk-scoring-stp-eligibility.md)
+4. [Authority & Referral Gate Check](/workflow/authority-referral-gate-check.md)
+5. [Bind & Policy Issuance](/workflow/bind-policy-issuance.md)
+6. [STP Performance & Threshold Tuning](/workflow/stp-performance-threshold-tuning.md)

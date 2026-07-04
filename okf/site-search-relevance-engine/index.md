@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Site Search Relevance Engine
-description: "Mines full search-log tails in BigQuery to detect null, low-click, and misrouted queries daily. Generates synonym, redirect, and boost-and-bury rules and ships winners through automated A/B tests. so the Digital Merchandising Manager can move the Null search result rate KPI."
+description: "Cut the null search result rate from 14% to 2.5% and lift search-led conversion from 3.8% to 5.6% by mining BigQuery analytics_events and GA4 session_events for zero-result and misrouted queries, drafting synonym/redirect/boost-and-bury rules against product_catalog_entries, and publishing only A/B-tested winners back to Salesforce Commerce Cloud."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/site-search-relevan
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:24.635Z"
+provenance_created_at: "2026-07-04T06:18:33.661Z"
 ---
 
 # Site Search Relevance Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:24.635Z"
 
 - **Persona:** Digital Merchandising Manager
 - **Department:** retail
-- **Objective:** Mines full search-log tails in BigQuery to detect null, low-click, and misrouted queries daily. Generates synonym, redirect, and boost-and-bury rules and ships winners through automated A/B tests. so the Digital Merchandising Manager can move the Null search result rate KPI.
+- **Objective:** Cut the null search result rate from 14% to 2.5% and lift search-led conversion from 3.8% to 5.6% by mining BigQuery analytics_events and GA4 session_events for zero-result and misrouted queries, drafting synonym/redirect/boost-and-bury rules against product_catalog_entries, and publishing only A/B-tested winners back to Salesforce Commerce Cloud.
 
 ## KPI summary
 

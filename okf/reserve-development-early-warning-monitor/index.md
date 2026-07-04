@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Reserve Development Early Warning Monitor
-description: "Monitors new documents, medical bills, and attorney correspondence on every open claim for facts that change expected ultimate cost. Compares posted reserves against model-predicted severity for similar historical claims in BigQuery and flags gaps above threshold. so the Claims Operations Manager can move the Claims with late reserve strengthening KPI."
+description: "Cut the share of claims with late reserve strengthening from 23% to 7% of open inventory by detecting reserve-adequacy gaps within 5 days of new medical, legal, or attorney-correspondence evidence landing on claim_exposures and reserve_lines, instead of waiting for the 90-day diary review to surface an under-reserved file."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/reserve-development
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:55.601Z"
+provenance_created_at: "2026-07-04T06:18:04.357Z"
 ---
 
 # Reserve Development Early Warning Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:55.601Z"
 
 - **Persona:** Claims Operations Manager
 - **Department:** insurance
-- **Objective:** Monitors new documents, medical bills, and attorney correspondence on every open claim for facts that change expected ultimate cost. Compares posted reserves against model-predicted severity for similar historical claims in BigQuery and flags gaps above threshold. so the Claims Operations Manager can move the Claims with late reserve strengthening KPI.
+- **Objective:** Cut the share of claims with late reserve strengthening from 23% to 7% of open inventory by detecting reserve-adequacy gaps within 5 days of new medical, legal, or attorney-correspondence evidence landing on claim_exposures and reserve_lines, instead of waiting for the 90-day diary review to surface an under-reserved file.
 
 ## KPI summary
 

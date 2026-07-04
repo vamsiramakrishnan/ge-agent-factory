@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Port Rejection Intake & CSR Comparison](/workflow/port-rejection-intake-csr-comparison.md)
+2. [Provisioning Fallout Correlation](/workflow/provisioning-fallout-correlation.md)
+3. [Baseline & Regulatory Interval Scoring](/workflow/baseline-regulatory-interval-scoring.md)
+4. [Runbook & Reject-Code Evidence Validation](/workflow/runbook-reject-code-evidence-validation.md)
+5. [Resubmission Drafting or Escalation & Audit](/workflow/resubmission-drafting-or-escalation-audit.md)

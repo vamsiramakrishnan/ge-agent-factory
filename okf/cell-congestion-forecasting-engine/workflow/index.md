@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Alarm & Counter Intake](/workflow/alarm-counter-intake.md)
+2. [Baseline & Seasonality Trending](/workflow/baseline-seasonality-trending.md)
+3. [Sector Demand Forecasting & Backlog Ranking](/workflow/sector-demand-forecasting-backlog-ranking.md)
+4. [Remedy Selection & Runbook Validation](/workflow/remedy-selection-runbook-validation.md)
+5. [Capacity Board Publish & Audit](/workflow/capacity-board-publish-audit.md)

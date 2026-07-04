@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Vendor Item Setup Intake](/workflow/vendor-item-setup-intake.md)
+2. [Attribute & Cost Validation Gate](/workflow/attribute-cost-validation-gate.md)
+3. [Hierarchy Placement & GMROI Fit Check](/workflow/hierarchy-placement-gmroi-fit-check.md)
+4. [First Allocation & Price Activation Publish](/workflow/first-allocation-price-activation-publish.md)
+5. [Launch Readiness Scorecard & Escalation](/workflow/launch-readiness-scorecard-escalation.md)

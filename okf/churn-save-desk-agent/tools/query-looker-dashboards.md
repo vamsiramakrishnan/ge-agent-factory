@@ -52,7 +52,8 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [churn_driver_clv_triangulation](/workflow/churn-driver-clv-triangulation.md)
+- [fix_verification_follow_up](/workflow/fix-verification-follow-up.md)
 
 ## Evals
 

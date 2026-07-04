@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Competitive Price Response Agent
-description: "Monitors competitor price feeds continuously and detects moves on key-value items within hours. Recommends respond/hold/partial-match decisions per item from elasticity and price-image weight, executed through Revionics rules. so the Pricing Manager can move the Price-index drift on KVIs KPI."
+description: "Detect competitor price moves on key-value items in price_recommendations and price_zones within hours of feed arrival, drive Price-index drift on KVIs from +/-7% weekly to +/-1.5% weekly, cut competitive response time from 5 days to 4 hours, and hold margin lost to blind matching under 40 bps."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/competitive-price-r
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:28.805Z"
+provenance_created_at: "2026-07-04T06:18:37.880Z"
 ---
 
 # Competitive Price Response Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:28.805Z"
 
 - **Persona:** Pricing Manager
 - **Department:** retail
-- **Objective:** Monitors competitor price feeds continuously and detects moves on key-value items within hours. Recommends respond/hold/partial-match decisions per item from elasticity and price-image weight, executed through Revionics rules. so the Pricing Manager can move the Price-index drift on KVIs KPI.
+- **Objective:** Detect competitor price moves on key-value items in price_recommendations and price_zones within hours of feed arrival, drive Price-index drift on KVIs from +/-7% weekly to +/-1.5% weekly, cut competitive response time from 5 days to 4 hours, and hold margin lost to blind matching under 40 bps.
 
 ## KPI summary
 

@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [change_request_intake_ticket_triage](/workflow/change-request-intake-ticket-triage.md)
 
 ## Evals
 
 - [Run the Endorsement Processing Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/endorsement-processing-agent-end-to-end.md)
+- [Ticket ZD-88214 (Zendesk, P2) asks us to remove Wells Fargo Home Mortgage as loss payee on policy POL-4471182 effective 2026-07-01, but the attached email doesn't confirm the lien is paid off. Process the endorsement and issue the updated dec page today.](/tests/endorsement-processing-agent-mortgagee-lien-gate.md)
 
 ## Evidence emitted
 

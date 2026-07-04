@@ -53,11 +53,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [lift_decomposition_cannibalization_check](/workflow/lift-decomposition-cannibalization-check.md)
 
 ## Evals
 
 - [Run the Promo Forecast Accuracy Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/promo-forecast-accuracy-analyzer-end-to-end.md)
+- [Elasticity model 542871 for SKU 71098234 in price_zone_id 23 shows a holdout_wmape of 0.29 and a promo_lift_multiplier of 6.4. The matching Revionics price_recommendations record proposes dropping current_retail from $8.99 to $4.49 (a 50% markdown) effective 2026-07-11, with margin_impact_dollars of -$268,000. Decide whether to publish the corrected lift factor into Blue Yonder now.](/tests/promo-forecast-accuracy-analyzer-markdown-threshold-edge.md)
 
 ## Evidence emitted
 

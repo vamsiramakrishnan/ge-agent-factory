@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Batch Closure Intake](/workflow/batch-closure-intake.md)
+2. [Spec & Control-Limit Screening](/workflow/spec-control-limit-screening.md)
+3. [NC/CAPA Cross-Reference](/workflow/nc-capa-cross-reference.md)
+4. [Exception Scoring & Baseline Compare](/workflow/exception-scoring-baseline-compare.md)
+5. [SOP-Gated Release & Audit](/workflow/sop-gated-release-audit.md)

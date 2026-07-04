@@ -26,3 +26,6 @@ safety incidents, permit records, emissions readings records
 
 - [query_sphera_ehs_safety_incidents](/tools/query-sphera-ehs-safety-incidents.md)
 - [action_sphera_ehs_generate](/tools/action-sphera-ehs-generate.md)
+- [query_sphera_ehs_permit_records](/tools/query-sphera-ehs-permit-records.md)
+- [query_sphera_ehs_emissions_readings](/tools/query-sphera-ehs-emissions-readings.md)
+- [lookup_confined_space_hot_work_issuance_policy](/tools/lookup-confined-space-hot-work-issuance-policy.md)

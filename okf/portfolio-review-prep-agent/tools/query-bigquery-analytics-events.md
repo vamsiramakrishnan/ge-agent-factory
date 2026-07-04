@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [performance_drift_fee_analysis](/workflow/performance-drift-fee-analysis.md)
 
 ## Evals
 

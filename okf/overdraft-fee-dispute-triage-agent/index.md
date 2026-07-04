@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Overdraft Fee Dispute Triage Agent
-description: "Reconstructs the posting sequence and fee history from Temenos Transact and BigQuery for each incoming dispute ticket. Recommends a refund or denial with a written rationale based on fee policy, prior waivers, and relationship depth. so the Retail Banking Service Manager can move the Average dispute resolution time KPI."
+description: "Reconstruct the posting sequence from Temenos Transact account_transactions and standing_orders, score each overdraft-fee ticket in ServiceNow against BigQuery fee-waiver history, and issue a policy-cited refund or denial so the Retail Banking Service Manager cuts average dispute resolution time from 5.5 days to 6 hours while holding refund decision consistency across branches at 96%."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/overdraft-fee-dispu
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:40.740Z"
+provenance_created_at: "2026-07-04T06:17:48.971Z"
 ---
 
 # Overdraft Fee Dispute Triage Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:40.740Z"
 
 - **Persona:** Retail Banking Service Manager
 - **Department:** banking
-- **Objective:** Reconstructs the posting sequence and fee history from Temenos Transact and BigQuery for each incoming dispute ticket. Recommends a refund or denial with a written rationale based on fee policy, prior waivers, and relationship depth. so the Retail Banking Service Manager can move the Average dispute resolution time KPI.
+- **Objective:** Reconstruct the posting sequence from Temenos Transact account_transactions and standing_orders, score each overdraft-fee ticket in ServiceNow against BigQuery fee-waiver history, and issue a policy-cited refund or denial so the Retail Banking Service Manager cuts average dispute resolution time from 5.5 days to 6 hours while holding refund decision consistency across branches at 96%.
 
 ## KPI summary
 

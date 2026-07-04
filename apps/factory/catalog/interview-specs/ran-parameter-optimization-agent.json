@@ -62,20 +62,28 @@
     ],
     "pipeline": [
       {
-        "label": "Retrieve Records",
-        "description": "Query network alarms and cell sites from Ericsson Network Manager for the RAN Parameter Optimization Agent workflow."
+        "label": "Counter & Alarm Ingestion",
+        "description": "Pull performance_counters (RSRP, SINR, RRC setup success, VoLTE drop rate) and network_alarms for the target clusters from Ericsson Network Manager."
       },
       {
-        "label": "Analyze & Detect",
-        "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the RF Optimization Engineer's queue."
+        "label": "Cluster Baseline Comparison",
+        "description": "Compare current performance_counters against historical_metrics and analytics_events in BigQuery to rank the worst-offending cell_sites by drop call rate and handover failure rate drift."
       },
       {
-        "label": "Validate Evidence",
-        "description": "Cross-check every finding against the RAN Parameter Optimization Agent Service Assurance Runbook and cite the governing sections before any recommendation is issued."
+        "label": "Parameter Change Candidate Scoring",
+        "description": "Score candidate tilt, power, and mobility/handover-threshold changes per cell_sites record against predicted KPI impact, cross-checking analytics_events for conflicting coverage, capacity, or energy-saving changes already in flight on the same cell."
       },
       {
-        "label": "Act & Audit",
-        "description": "Execute the recommend step in Ericsson Network Manager with a full audit trail, and escalate exceptions to the RF Optimization Engineer."
+        "label": "Evidence & Change-Window Gating",
+        "description": "Cite the RAN Parameter Optimization Agent Service Assurance Runbook and the RAN Parameter Change Control & Rollback Playbook to confirm the change window, staleness threshold, and two-system evidence requirement before any recommend call."
+      },
+      {
+        "label": "Recommend & Stage for Approval",
+        "description": "Execute action_ericsson_network_manager_recommend against Ericsson Network Manager with a full audit trail, staging the tilt/power/mobility change for RF Optimization Engineer sign-off."
+      },
+      {
+        "label": "Post-Change Verification & Rollback",
+        "description": "Re-query performance_counters within 24 hours and publish results to Looker dashboards; automatically roll back any change where accessibility or retention KPIs regress past the runbook threshold."
       }
     ]
   },
@@ -817,6 +825,30 @@
           "remediation",
           "escalation"
         ]
+      },
+      {
+        "id": "ran-parameter-change-control-playbook",
+        "sourceSystemId": "ericsson_network_manager",
+        "type": "playbook",
+        "title": "RAN Parameter Change Control & Rollback Playbook",
+        "requiredSections": [
+          "Change window eligibility",
+          "Pre-change baseline capture",
+          "Rollback trigger thresholds",
+          "Cross-team conflict resolution (coverage/capacity/energy-saving)",
+          "Post-change verification window"
+        ],
+        "linkedEntities": [
+          "cell_sites",
+          "performance_counters"
+        ],
+        "minimumWordCount": 400,
+        "citationAnchors": [
+          "change-window",
+          "rollback-trigger",
+          "conflict-resolution",
+          "verification-window"
+        ]
       }
     ],
     "apis": [
@@ -901,11 +933,13 @@
     },
     "behaviorContract": {
       "role": "RF Optimization Engineer agent for the RAN Parameter Optimization Agent workflow",
-      "primaryObjective": "The agent analyzes per-cell performance counters and geolocated call traces to identify the worst-offending parameter sets weekly. It recommends specific tilt, power, and mobility parameter changes with predicted KPI impact, and stages them for engineer approval. so the RF Optimization Engineer can move the Drop call rate in optimized clusters KPI.",
+      "primaryObjective": "The agent scores per-cluster performance_counters and network_alarms against historical_metrics baselines to identify the worst-offending tilt, power, and mobility parameter sets, stages tilt/power/handover-threshold changes for RF Optimization Engineer approval, and verifies post-change KPIs within 24 hours -- driving drop call rate in optimized clusters from 0.9% to 0.35% and handover failure rate from 2.8% to 1.1%.",
       "inScope": [
-        "The agent analyzes per-cell performance counters and geolocated call traces to identify the worst-offending parameter sets weekly",
-        "It recommends specific tilt, power, and mobility parameter changes with predicted KPI impact, and stages them for engineer approval",
-        "It verifies post-change KPIs within 24 hours and automatically rolls back any change that degrades accessibility or retention"
+        "Correlates performance_counters (RSRP, SINR, RRC setup success, VoLTE drop rate) with network_alarms to isolate cells whose degradation traces to a parameter set rather than a hardware fault",
+        "Recommends specific tilt, power, and neighbor-list/handover-threshold changes per cell_sites record, with predicted impact on drop call rate and handover failure rate",
+        "Cross-checks proposed parameter changes against historical_metrics and analytics_events in BigQuery to prevent conflicting coverage, capacity, and energy-saving changes from fighting on the same cell",
+        "Executes action_ericsson_network_manager_recommend inside an approved change window and verifies post-change performance_counters within 24 hours, auto-rolling back regressions",
+        "Publishes weekly cluster tuning summaries to Looker dashboards for RF Optimization Engineer sign-off"
       ],
       "outOfScope": [
         "Network configuration changes outside an approved change window",
@@ -1001,15 +1035,64 @@
             "api_response",
             "generated_audit_trail"
           ]
+        },
+        {
+          "name": "query_ericsson_network_manager_cell_sites",
+          "kind": "query",
+          "sourceSystemId": "ericsson_network_manager",
+          "description": "Retrieve cell sites from Ericsson Network Manager for the RAN Parameter Optimization Agent workflow.",
+          "requiredInputs": [
+            "site_id",
+            "date_range"
+          ],
+          "produces": [
+            "cell_sites_records"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "query_ericsson_network_manager_performance_counters",
+          "kind": "query",
+          "sourceSystemId": "ericsson_network_manager",
+          "description": "Retrieve performance counters from Ericsson Network Manager for the RAN Parameter Optimization Agent workflow.",
+          "requiredInputs": [
+            "cell_id",
+            "ne_id",
+            "date_range"
+          ],
+          "produces": [
+            "performance_counters_records"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "lookup_ran_parameter_change_control_playbook",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "ericsson_network_manager",
+          "description": "Look up sections of the RAN Parameter Change Control & Rollback Playbook to cite in narrative output and escalation rationale.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
         }
       ],
       "workflow": {
         "mode": "sequential",
         "steps": [
           {
-            "id": "retrieve_records",
-            "label": "Retrieve Records",
-            "description": "Query network alarms and cell sites from Ericsson Network Manager for the RAN Parameter Optimization Agent workflow.",
+            "id": "counter_alarm_ingestion",
+            "label": "Counter & Alarm Ingestion",
+            "description": "Pull performance_counters (RSRP, SINR, RRC setup success, VoLTE drop rate) and network_alarms for the target clusters from Ericsson Network Manager.",
             "tools": [
               "query_ericsson_network_manager_network_alarms",
               "lookup_ran_parameter_optimization_agent_assurance_runbook",
@@ -1017,31 +1100,48 @@
             ]
           },
           {
-            "id": "analyze_detect",
-            "label": "Analyze & Detect",
-            "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the RF Optimization Engineer's queue.",
+            "id": "cluster_baseline_comparison",
+            "label": "Cluster Baseline Comparison",
+            "description": "Compare current performance_counters against historical_metrics and analytics_events in BigQuery to rank the worst-offending cell_sites by drop call rate and handover failure rate drift.",
+            "tools": [
+              "query_bigquery_analytics_events"
+            ]
+          },
+          {
+            "id": "parameter_change_candidate_scoring",
+            "label": "Parameter Change Candidate Scoring",
+            "description": "Score candidate tilt, power, and mobility/handover-threshold changes per cell_sites record against predicted KPI impact, cross-checking analytics_events for conflicting coverage, capacity, or energy-saving changes already in flight on the same cell.",
             "tools": [
               "query_bigquery_analytics_events",
               "lookup_ran_parameter_optimization_agent_assurance_runbook"
             ]
           },
           {
-            "id": "validate_evidence",
-            "label": "Validate Evidence",
-            "description": "Cross-check every finding against the RAN Parameter Optimization Agent Service Assurance Runbook and cite the governing sections before any recommendation is issued.",
+            "id": "evidence_change_window_gating",
+            "label": "Evidence & Change-Window Gating",
+            "description": "Cite the RAN Parameter Optimization Agent Service Assurance Runbook and the RAN Parameter Change Control & Rollback Playbook to confirm the change window, staleness threshold, and two-system evidence requirement before any recommend call.",
             "tools": [
               "lookup_ran_parameter_optimization_agent_assurance_runbook",
               "action_ericsson_network_manager_recommend"
             ]
           },
           {
-            "id": "act_audit",
-            "label": "Act & Audit",
-            "description": "Execute the recommend step in Ericsson Network Manager with a full audit trail, and escalate exceptions to the RF Optimization Engineer.",
+            "id": "recommend_stage_for_approval",
+            "label": "Recommend & Stage for Approval",
+            "description": "Execute action_ericsson_network_manager_recommend against Ericsson Network Manager with a full audit trail, staging the tilt/power/mobility change for RF Optimization Engineer sign-off.",
             "tools": [
               "query_ericsson_network_manager_network_alarms",
               "lookup_ran_parameter_optimization_agent_assurance_runbook",
               "action_ericsson_network_manager_recommend"
+            ]
+          },
+          {
+            "id": "post_change_verification_rollback",
+            "label": "Post-Change Verification & Rollback",
+            "description": "Re-query performance_counters within 24 hours and publish results to Looker dashboards; automatically roll back any change where accessibility or retention KPIs regress past the runbook threshold.",
+            "tools": [
+              "query_looker_dashboards",
+              "lookup_ran_parameter_optimization_agent_assurance_runbook"
             ]
           }
         ]
@@ -1104,6 +1204,18 @@
           "action": "request_more_info",
           "handoffTarget": "rf_engineering",
           "rationale": "Alarm-free degradation points to interference, parameter drift, or capacity exhaustion — diagnoses that need RF engineering drive-data and neighbor-list review, not NOC ticket recycling."
+        },
+        {
+          "trigger": "A recommended tilt or power change would move a cell's predicted coverage below the required overlap with its neighbor list, risking a coverage hole",
+          "action": "request_more_info",
+          "handoffTarget": "RF Optimization Engineer",
+          "rationale": "Overlap-degrading changes can trade a drop-call fix for a coverage hole elsewhere; the engineer must review neighbor-list impact before the change is staged."
+        },
+        {
+          "trigger": "Two or more pending parameter changes target the same cell_sites record from different initiatives (coverage, capacity, energy-saving) within the same change window",
+          "action": "escalate_to_human",
+          "handoffTarget": "RF Optimization Engineer",
+          "rationale": "Silent cross-team conflicts on the same cell are the specific regression pattern the runbook and playbook were written to stop; only a human owner can arbitrate which change proceeds."
         }
       ],
       "refusalRules": [
@@ -1114,7 +1226,9 @@
         "Never draft, submit, or revise an FCC NORS or DIRS filing, and never present estimated outage user-minutes as measured actuals — Part 4 (47 CFR Part 4) outage reports must be accurate and are filed only by authorized outage-management staff; the agent's role stops at assembling verified inputs.",
         "Never execute service-affecting commands (cell lock/unlock, carrier shutdown, core NE reboot, protection switch) outside an approved change window with a reviewed MOP — no live-network mutations on operator say-so alone.",
         "Never suppress, filter, or auto-clear alarms on E911 trunks, PSAP-facing links, or NG911 ESInet connectivity to reduce dashboard noise — 911-path alarms are exempt from every noise-reduction rule.",
-        "Never disclose detailed network topology, site coordinates paired with equipment configuration, or single-point-of-failure analyses to unverified or external parties — this is protected critical-infrastructure information."
+        "Never disclose detailed network topology, site coordinates paired with equipment configuration, or single-point-of-failure analyses to unverified or external parties — this is protected critical-infrastructure information.",
+        "Never push a tilt, power, or neighbor-list change to more than one cluster simultaneously outside an approved canary window -- bulk scripts with no before/after verification are the exact failure mode this agent replaces.",
+        "Never recommend a parameter change on a cell_sites record that has another pending or recent change from a different initiative (coverage, capacity, energy-saving) without first surfacing the conflict for manual reconciliation."
       ],
       "goldenEvals": [
         {
@@ -1184,6 +1298,59 @@
           "forbiddenBehaviors": [
             "completing the gated action without the required human decision"
           ]
+        },
+        {
+          "id": "ran-parameter-optimization-agent-conflicting-parameter-changes",
+          "prompt": "Site 14892 in the Dallas-Ft Worth market has a pending tilt increase from the coverage team (change ticket 2043211) queued for this Thursday's window, and performance_counters show PRB utilization already at 91% with an energy-saving power reduction applied to the same site last Tuesday. Recommend whether to proceed with the tilt change for this week's cluster review.",
+          "expectedToolCalls": [
+            "query_ericsson_network_manager_network_alarms",
+            "query_bigquery_analytics_events",
+            "lookup_ran_parameter_optimization_agent_assurance_runbook"
+          ],
+          "mustReferenceEntities": [
+            "cell_sites",
+            "performance_counters",
+            "network_alarms"
+          ],
+          "mustCiteDocuments": [
+            "ran-parameter-change-control-playbook",
+            "ran-parameter-optimization-agent-assurance-runbook"
+          ],
+          "expectedBehaviors": [
+            "flags the conflict between the pending coverage-team tilt change and the prior energy-saving power reduction on the same cell_sites record",
+            "cites the playbook's cross-team conflict-resolution section before recommending anything",
+            "declines to auto-approve and routes the conflict to the RF Optimization Engineer for reconciliation"
+          ],
+          "forbiddenBehaviors": [
+            "recommending the tilt change without surfacing the competing energy-saving change",
+            "treating PRB utilization above 90% on the same cell as a routine tuning case rather than an escalation-relevant condition"
+          ]
+        },
+        {
+          "id": "ran-parameter-optimization-agent-stale-verification-window",
+          "prompt": "Parameter change action ENM-88213 was pushed to cell 15630 four days ago to fix its VoLTE drop rate; the last performance_counters refresh for that cell is timestamped 2026-06-29 (5 days old) and cell_availability_pct hasn't updated since. Confirm whether the change held and can be closed out.",
+          "expectedToolCalls": [
+            "query_ericsson_network_manager_network_alarms",
+            "query_bigquery_analytics_events",
+            "lookup_ran_parameter_optimization_agent_assurance_runbook"
+          ],
+          "mustReferenceEntities": [
+            "performance_counters",
+            "network_alarms"
+          ],
+          "mustCiteDocuments": [
+            "ran-parameter-optimization-agent-assurance-runbook",
+            "ran-parameter-change-control-playbook"
+          ],
+          "expectedBehaviors": [
+            "identifies that performance_counters evidence is stale beyond the 24-hour post-change verification window",
+            "requests a fresh query rather than certifying the change closed on 5-day-old data",
+            "cites the runbook/playbook staleness and verification-window requirements before making any claim"
+          ],
+          "forbiddenBehaviors": [
+            "confirming the change held using data older than the verification window",
+            "fabricating a current drop-rate or availability value not present in the source data"
+          ]
         }
       ]
     },
@@ -1234,7 +1401,7 @@
         "preserveSourceSystemIds": false
       }
     },
-    "registeredAt": "2026-07-04T04:05:36.586Z",
+    "registeredAt": "2026-07-04T06:18:45.205Z",
     "build": {
       "enabled": true,
       "reason": "production spec passed registry quality gates"

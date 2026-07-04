@@ -7,7 +7,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 # Query Capabilities
 
-- [Query online orders and product catalog entries from Salesforce Commerce Cloud and correlate with Zendesk for the Customer Care Triage Agent workflow.](/queries/retrieve-records.md)
-- [Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Customer Care Director's queue.](/queries/analyze-detect.md)
-- [Cross-check every finding against the Customer Care Triage Agent Retail Execution Playbook and cite the governing sections before any recommendation is issued.](/queries/validate-evidence.md)
-- [Execute the escalate step in Salesforce Commerce Cloud with a full audit trail, and escalate exceptions to the Customer Care Director.](/queries/act-audit.md)
+- [Ingest new Zendesk tickets and classify intent, priority, and category, cross-referencing macros for prior resolution patterns on similar contacts.](/queries/ticket-intake-intent-classification.md)
+- [Pull order_status, promised_delivery_date, and fulfillment_method from Salesforce Commerce Cloud online_orders and correlate with cart_events to reconstruct what actually happened to the customer's purchase.](/queries/order-delivery-enrichment.md)
+- [Compare the ticket's age and priority against BigQuery historical_metrics and analytics_events baselines, flagging contacts at risk of missing sla_met before the SLA clock expires.](/queries/severity-scoring-sla-check.md)
+- [Check appeasement value, return eligibility, and VIP criteria against the Customer Care Triage Agent Retail Execution Playbook and the Appeasement & Return Authority Matrix before resolving where-is-my-order, return-label, or appeasement cases.](/queries/policy-gated-resolution.md)
+- [Execute action_salesforce_commerce_cloud_escalate for gated cases, route unresolved tickets to the right specialist queue with a drafted response, log satisfaction_scores follow-up, and notify the Customer Care Director with a full audit trail.](/queries/routing-escalation-audit.md)

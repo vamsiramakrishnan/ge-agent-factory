@@ -52,11 +52,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [criticality_failure_history_scoring](/workflow/criticality-failure-history-scoring.md)
+- [parts_crew_feasibility_check](/workflow/parts-crew-feasibility-check.md)
+- [weekly_schedule_proposal_audit_publish](/workflow/weekly-schedule-proposal-audit-publish.md)
 
 ## Evals
 
 - [Run the Work Order Backlog Triage Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/work-order-backlog-triage-orchestrator-end-to-end.md)
+- [Work order WO-4187650 against asset 158340 (stamping_press, criticality_ranking a_constraint) has been priority emergency and work_order_status awaiting_parts since 2026-06-20 — 14 days as of today's run. The BigQuery analytics_events record backing the parts-lead-time variance was last computed_at 2026-06-15, three weeks stale. Give me the escalation call and whether we can commit this into next week's schedule.](/tests/work-order-backlog-triage-orchestrator-stale-baseline-aging-parts.md)
 
 ## Evidence emitted
 

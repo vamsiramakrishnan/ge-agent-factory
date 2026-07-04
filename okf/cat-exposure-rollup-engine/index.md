@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Catastrophe Exposure Rollup Engine
-description: "Geocodes and aggregates the full in-force book daily in BigQuery, enriched with Verisk hazard and construction data. Monitors accumulation against zone appetite limits and escalates any county or coastal band approaching capacity before new business breaches it. so the Portfolio Manager can move the Exposure rollup refresh cycle KPI."
+description: "Aggregate the full in-force book daily against Verisk ISO ERC territory_factors and loss_cost_benchmarks in BigQuery so the Portfolio Manager can shrink the exposure rollup refresh cycle from quarterly to daily, hold PML estimate variance vs. modeled within ±5%, and catch any county or coastal band approaching its zone appetite limit before new business binds."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/cat-exposure-rollup
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:01.089Z"
+provenance_created_at: "2026-07-04T06:18:10.012Z"
 ---
 
 # Catastrophe Exposure Rollup Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:01.089Z"
 
 - **Persona:** Portfolio Manager
 - **Department:** insurance
-- **Objective:** Geocodes and aggregates the full in-force book daily in BigQuery, enriched with Verisk hazard and construction data. Monitors accumulation against zone appetite limits and escalates any county or coastal band approaching capacity before new business breaches it. so the Portfolio Manager can move the Exposure rollup refresh cycle KPI.
+- **Objective:** Aggregate the full in-force book daily against Verisk ISO ERC territory_factors and loss_cost_benchmarks in BigQuery so the Portfolio Manager can shrink the exposure rollup refresh cycle from quarterly to daily, hold PML estimate variance vs. modeled within ±5%, and catch any county or coastal band approaching its zone appetite limit before new business binds.
 
 ## KPI summary
 

@@ -12,3 +12,6 @@ timestamp: "2026-07-04T00:00:00.000Z"
 - [query_servicenow_tickets](/tools/query-servicenow-tickets.md)
 - [lookup_wealth_client_onboarding_orchestrator_compliance_policy](/tools/lookup-wealth-client-onboarding-orchestrator-compliance-policy.md)
 - [action_salesforce_financial_services_cloud_publish](/tools/action-salesforce-financial-services-cloud-publish.md)
+- [query_salesforce_financial_services_cloud_financial_accounts](/tools/query-salesforce-financial-services-cloud-financial-accounts.md)
+- [query_salesforce_financial_services_cloud_advisory_referrals](/tools/query-salesforce-financial-services-cloud-advisory-referrals.md)
+- [lookup_wealth_client_onboarding_orchestrator_acat_nigo_runbook](/tools/lookup-wealth-client-onboarding-orchestrator-acat-nigo-runbook.md)

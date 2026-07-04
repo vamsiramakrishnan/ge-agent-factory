@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Reserve Adequacy Analyzer
-description: "Builds clean, reconciled loss triangles from ClaimCenter transactional data in BigQuery continuously rather than quarterly. Runs multiple development methods per segment, detects diagnostics drifting outside expected ranges, and flags case-reserving pattern shifts. so the Actuary can move the Quarterly reserve review preparation time KPI."
+description: "Continuously reconcile claims, claim_exposures, and reserve_lines from Guidewire ClaimCenter into BigQuery loss triangles, score chain-ladder and Bornhuggter-Ferguson diagnostics against historical_metrics, and flag case-reserving pattern shifts so the Actuary compresses quarterly reserve review preparation time from 3 weeks to 4 days while narrowing the IBNR estimate range from plus-or-minus 12% to plus-or-minus 6%."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/reserve-adequacy-an
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:01.516Z"
+provenance_created_at: "2026-07-04T06:18:10.434Z"
 ---
 
 # Reserve Adequacy Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:01.516Z"
 
 - **Persona:** Actuary
 - **Department:** insurance
-- **Objective:** Builds clean, reconciled loss triangles from ClaimCenter transactional data in BigQuery continuously rather than quarterly. Runs multiple development methods per segment, detects diagnostics drifting outside expected ranges, and flags case-reserving pattern shifts. so the Actuary can move the Quarterly reserve review preparation time KPI.
+- **Objective:** Continuously reconcile claims, claim_exposures, and reserve_lines from Guidewire ClaimCenter into BigQuery loss triangles, score chain-ladder and Bornhuggter-Ferguson diagnostics against historical_metrics, and flag case-reserving pattern shifts so the Actuary compresses quarterly reserve review preparation time from 3 weeks to 4 days while narrowing the IBNR estimate range from plus-or-minus 12% to plus-or-minus 6%.
 
 ## KPI summary
 

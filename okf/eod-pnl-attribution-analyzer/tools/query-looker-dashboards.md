@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [sign_off_publish_desk_escalation](/workflow/sign-off-publish-desk-escalation.md)
 
 ## Evals
 

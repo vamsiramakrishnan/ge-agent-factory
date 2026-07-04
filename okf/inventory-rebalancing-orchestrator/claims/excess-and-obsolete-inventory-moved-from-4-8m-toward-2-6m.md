@@ -37,3 +37,4 @@ Must cite: kinaxis_rapidresponse.supply_plans, sap_s_4hana_mm.purchase_orders
 # Citations
 
 - [Inventory Rebalancing Orchestrator Standard Operating Procedure](/documents/inventory-rebalancing-orchestrator-sop.md)
+- [Inter-Site Transfer Authorization Matrix](/documents/inter-site-transfer-authorization-matrix.md)

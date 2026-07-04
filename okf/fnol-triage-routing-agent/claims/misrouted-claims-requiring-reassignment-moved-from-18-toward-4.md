@@ -37,3 +37,4 @@ Must cite: guidewire_claimcenter.claims, zendesk.tickets
 # Citations
 
 - [FNOL Triage & Routing Agent Authority & Referral Guide](/documents/fnol-triage-routing-agent-authority-guide.md)
+- [State Adjuster Licensing & CAT Deployment Routing Matrix](/documents/fnol-triage-routing-agent-licensing-routing-matrix.md)

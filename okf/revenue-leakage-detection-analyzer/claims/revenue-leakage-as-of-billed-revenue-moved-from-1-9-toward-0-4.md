@@ -37,3 +37,4 @@ Must cite: amdocs_ces_billing.billing_accounts, bigquery.analytics_events
 # Citations
 
 - [Revenue Leakage Detection Analyzer Service Assurance Runbook](/documents/revenue-leakage-detection-analyzer-assurance-runbook.md)
+- [Revenue Assurance Adjustment & Write-Off Delegation of Authority Policy](/documents/revenue-assurance-adjustment-authority-matrix.md)

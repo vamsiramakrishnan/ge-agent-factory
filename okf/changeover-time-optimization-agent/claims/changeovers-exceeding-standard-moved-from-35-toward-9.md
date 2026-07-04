@@ -37,3 +37,4 @@ Must cite: sap_s_4hana_pp.process_orders, siemens_opcenter_mes.production_orders
 # Citations
 
 - [Changeover Time Optimization Agent Standard Operating Procedure](/documents/changeover-time-optimization-agent-sop.md)
+- [Changeover Standard Time & Crew Rating Manual](/documents/changeover-standard-time-rate-manual.md)

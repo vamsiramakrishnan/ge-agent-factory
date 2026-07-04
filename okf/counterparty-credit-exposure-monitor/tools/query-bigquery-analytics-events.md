@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [market_signal_wrong_way_risk_screening](/workflow/market-signal-wrong-way-risk-screening.md)
 
 ## Evals
 

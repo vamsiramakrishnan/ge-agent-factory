@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Wealth Client Onboarding Orchestrator
-description: "Validates account applications against custodian requirements before submission and routes corrected forms through DocuSign. Tracks every onboarding milestone including ACAT transfers, publishing live status to Salesforce for the advisor and client portal. so the Wealth Operations Specialist can move the Days from signed agreement to funded account KPI."
+description: "Compress the signed-agreement-to-funded-account cycle from 18 days toward the 4-day target by validating client_households and financial_accounts applications against custodian NIGO requirements before DocuSign submission, tracking every ACAT transfer milestone against BigQuery baselines, and cutting onboarding status inquiries to the service desk from 450 to 70 per month."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/wealth-client-onboa
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:49.715Z"
+provenance_created_at: "2026-07-04T06:17:57.994Z"
 ---
 
 # Wealth Client Onboarding Orchestrator
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:49.715Z"
 
 - **Persona:** Wealth Operations Specialist
 - **Department:** banking
-- **Objective:** Validates account applications against custodian requirements before submission and routes corrected forms through DocuSign. Tracks every onboarding milestone including ACAT transfers, publishing live status to Salesforce for the advisor and client portal. so the Wealth Operations Specialist can move the Days from signed agreement to funded account KPI.
+- **Objective:** Compress the signed-agreement-to-funded-account cycle from 18 days toward the 4-day target by validating client_households and financial_accounts applications against custodian NIGO requirements before DocuSign submission, tracking every ACAT transfer milestone against BigQuery baselines, and cutting onboarding status inquiries to the service desk from 450 to 70 per month.
 
 ## KPI summary
 

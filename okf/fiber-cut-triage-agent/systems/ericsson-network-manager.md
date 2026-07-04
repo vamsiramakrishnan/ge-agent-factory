@@ -26,3 +26,5 @@ network alarms, cell sites, performance counters records
 
 - [query_ericsson_network_manager_network_alarms](/tools/query-ericsson-network-manager-network-alarms.md)
 - [lookup_fiber_cut_triage_agent_assurance_runbook](/tools/lookup-fiber-cut-triage-agent-assurance-runbook.md)
+- [query_ericsson_network_manager_cell_sites](/tools/query-ericsson-network-manager-cell-sites.md)
+- [query_ericsson_network_manager_performance_counters](/tools/query-ericsson-network-manager-performance-counters.md)

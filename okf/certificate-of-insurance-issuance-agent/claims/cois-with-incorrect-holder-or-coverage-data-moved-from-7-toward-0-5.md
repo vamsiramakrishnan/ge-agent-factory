@@ -37,3 +37,4 @@ Must cite: duck_creek_policy.policy_forms, docusign.envelopes
 # Citations
 
 - [Certificate of Insurance Issuance Agent Authority & Referral Guide](/documents/certificate-of-insurance-issuance-agent-authority-guide.md)
+- [COI Wording & ACORD Forms Rate Manual](/documents/coi-wording-acord-forms-rate-manual.md)

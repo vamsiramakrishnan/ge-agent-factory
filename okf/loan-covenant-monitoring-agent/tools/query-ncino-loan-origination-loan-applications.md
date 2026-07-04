@@ -52,13 +52,15 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [covenant_calendar_extraction](/workflow/covenant-calendar-extraction.md)
+- [financials_intake_ratio_computation](/workflow/financials-intake-ratio-computation.md)
+- [policy_runbook_evidence_gating](/workflow/policy-runbook-evidence-gating.md)
+- [escalation_waiver_memo_drafting](/workflow/escalation-waiver-memo-drafting.md)
 
 ## Evals
 
 - [Run the Loan Covenant Monitoring Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/loan-covenant-monitoring-agent-end-to-end.md)
+- [Covenant covenant_id 612044 tied to application_number 30441892 tested most_recent_test_value 1.28 against a threshold_value of 1.25 on a minimum_dscr covenant on 2026-06-30, so covenant_records shows compliance_status in_compliance. But credit_memo 812077 for the same application_number, dated 2026-06-15, lists global_cash_flow of -85,000, guarantor_strength unsupported, and policy_exception_count 4. Reconcile the covenant test result against the credit memo and tell me whether to close this facility's review.](/tests/loan-covenant-monitoring-agent-covenant-credit-memo-conflict.md)
 
 ## Evidence emitted
 

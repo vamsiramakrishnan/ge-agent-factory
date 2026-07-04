@@ -37,3 +37,4 @@ Must cite: amdocs_ces_billing.billing_accounts, bigquery.analytics_events
 # Citations
 
 - [Roaming Settlement Reconciliation Engine Service Assurance Runbook](/documents/roaming-settlement-reconciliation-engine-assurance-runbook.md)
+- [GSMA IOT Rate & Roaming Settlement Manual](/documents/roaming-iot-rate-settlement-manual.md)

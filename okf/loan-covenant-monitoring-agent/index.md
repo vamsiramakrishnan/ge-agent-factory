@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Loan Covenant Monitoring Agent
-description: "Extracts covenant terms from executed loan agreements in nCino and builds a per-facility testing calendar automatically. Computes leverage, coverage, and liquidity ratios from incoming borrower financials and records pass/fail results in BigQuery. so the Credit Risk Officer can move the Covenant tests completed on time KPI."
+description: "Test every active covenant_records entry against loan_applications and credit_memos financial data on its scheduled test_frequency, raising Covenant tests completed on time from 71% to 99% and cutting days from financials received to covenant result from 18 days to 1 day so undetected covenant breaches fall from 9 per year to zero."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/loan-covenant-monit
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:41.964Z"
+provenance_created_at: "2026-07-04T06:17:50.248Z"
 ---
 
 # Loan Covenant Monitoring Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:41.964Z"
 
 - **Persona:** Credit Risk Officer
 - **Department:** banking
-- **Objective:** Extracts covenant terms from executed loan agreements in nCino and builds a per-facility testing calendar automatically. Computes leverage, coverage, and liquidity ratios from incoming borrower financials and records pass/fail results in BigQuery. so the Credit Risk Officer can move the Covenant tests completed on time KPI.
+- **Objective:** Test every active covenant_records entry against loan_applications and credit_memos financial data on its scheduled test_frequency, raising Covenant tests completed on time from 71% to 99% and cutting days from financials received to covenant result from 18 days to 1 day so undetected covenant breaches fall from 9 per year to zero.
 
 ## KPI summary
 

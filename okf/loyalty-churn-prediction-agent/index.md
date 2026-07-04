@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Loyalty Churn Prediction Agent
-description: "Scores every member weekly on lapse risk from purchase cadence decay, engagement, and browse signals. Recommends the retention treatment per member — points bonus, category offer, or concierge outreach — by predicted incrementality. so the Loyalty Program Manager can move the 12-month member retention KPI."
+description: "Score every active loyalty member weekly against online_orders purchase-cadence decay, cart_events browsing signals, and segment_records engagement history to identify at-risk members before lapse, lifting 12-month member retention from 58% toward 73% and at-risk identification from 12% toward 78% while raising win-back campaign ROI from 1.4x to 4.2x."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/loyalty-churn-predi
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:26.305Z"
+provenance_created_at: "2026-07-04T06:18:35.327Z"
 ---
 
 # Loyalty Churn Prediction Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:26.305Z"
 
 - **Persona:** Loyalty Program Manager
 - **Department:** retail
-- **Objective:** Scores every member weekly on lapse risk from purchase cadence decay, engagement, and browse signals. Recommends the retention treatment per member — points bonus, category offer, or concierge outreach — by predicted incrementality. so the Loyalty Program Manager can move the 12-month member retention KPI.
+- **Objective:** Score every active loyalty member weekly against online_orders purchase-cadence decay, cart_events browsing signals, and segment_records engagement history to identify at-risk members before lapse, lifting 12-month member retention from 58% toward 73% and at-risk identification from 12% toward 78% while raising win-back campaign ROI from 1.4x to 4.2x.
 
 ## KPI summary
 

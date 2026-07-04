@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Markdown Optimization Engine
-description: "Models price elasticity per item-location and simulates markdown ladders against sell-through targets. Recommends localized markdown depth and timing into Revionics with projected margin recovery per decision. so the Pricing Analyst can move the Season-end sell-through KPI."
+description: "Drive season-end sell-through from 78% to a 94% target by simulating localized markdown ladders per SKU-zone against elasticity_models and price_zones, recommending markdown depth and timing into Revionics before aging item_master SKUs breach their clearance-exit weeks_of_supply threshold, while holding markdown spend at or below 6.2% of sales."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/markdown-optimizati
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:28.382Z"
+provenance_created_at: "2026-07-04T06:18:37.455Z"
 ---
 
 # Markdown Optimization Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:28.382Z"
 
 - **Persona:** Pricing Analyst
 - **Department:** retail
-- **Objective:** Models price elasticity per item-location and simulates markdown ladders against sell-through targets. Recommends localized markdown depth and timing into Revionics with projected margin recovery per decision. so the Pricing Analyst can move the Season-end sell-through KPI.
+- **Objective:** Drive season-end sell-through from 78% to a 94% target by simulating localized markdown ladders per SKU-zone against elasticity_models and price_zones, recommending markdown depth and timing into Revionics before aging item_master SKUs breach their clearance-exit weeks_of_supply threshold, while holding markdown spend at or below 6.2% of sales.
 
 ## KPI summary
 

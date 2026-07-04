@@ -37,3 +37,4 @@ Must cite: siemens_opcenter_mes.production_orders, bigquery.analytics_events
 # Citations
 
 - [OEE Loss Pareto Analyzer Standard Operating Procedure](/documents/oee-loss-pareto-analyzer-sop.md)
+- [OEE Loss Classification and Calculation Standard](/documents/oee-loss-classification-standard.md)

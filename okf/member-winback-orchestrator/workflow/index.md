@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Lapse Detection & Reason Inference](/workflow/lapse-detection-reason-inference.md)
+2. [Reactivation Value & Offer-Depth Scoring](/workflow/reactivation-value-offer-depth-scoring.md)
+3. [Playbook & Loyalty-Terms Guardrail Gating](/workflow/playbook-loyalty-terms-guardrail-gating.md)
+4. [Marketing Cloud Journey Dispatch](/workflow/marketing-cloud-journey-dispatch.md)
+5. [Reactivation Confirmation & Nurture Audit](/workflow/reactivation-confirmation-nurture-audit.md)

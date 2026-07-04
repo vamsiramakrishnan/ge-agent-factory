@@ -37,3 +37,4 @@ Must cite: sphera_ehs.safety_incidents, osisoft_pi_system.sensor_readings
 # Citations
 
 - [Energy Intensity Monitoring Engine Standard Operating Procedure](/documents/energy-intensity-monitoring-engine-sop.md)
+- [Site Utility Rate & Demand Charge Schedule](/documents/site-utility-rate-and-demand-charge-schedule.md)

@@ -62,20 +62,24 @@
     ],
     "pipeline": [
       {
-        "label": "Retrieve Records",
-        "description": "Query policies and policy quotes from Guidewire PolicyCenter and correlate with LexisNexis Risk Solutions for the Renewal Risk Requalification Agent workflow."
+        "label": "Renewal Book Selection & 90-Day Trigger",
+        "description": "Query policies nearing expiration_date (policy_status in_force) from Guidewire PolicyCenter via query_guidewire_policycenter_policies, and cross-reference open policy_quotes and underwriting_submissions for the same named_insured so an account with new business already in flight isn't requalified out of sequence."
       },
       {
-        "label": "Analyze & Detect",
-        "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Underwriter's queue."
+        "label": "Exposure & Loss Signal Refresh",
+        "description": "Pull current risk_reports, mvr_records, and prefill_datasets from LexisNexis Risk Solutions (query_lexisnexis_risk_solutions_risk_reports) to refresh hazard_grade, worst_violation_36mo, and prior_losses_found against what was on file at the account's last renewal."
       },
       {
-        "label": "Validate Evidence",
-        "description": "Cross-check every finding against the Renewal Risk Requalification Agent Authority & Referral Guide and cite the governing sections before any recommendation is issued."
+        "label": "Risk Delta Scoring & Baseline Comparison",
+        "description": "Compare refreshed exposures and claims activity against historical_metrics and cached_aggregates in BigQuery (query_bigquery_analytics_events), computing variance_pct to flag accounts that have drifted from their expiring terms and to prioritize the requalification queue."
       },
       {
-        "label": "Act & Audit",
-        "description": "Execute the route step in Guidewire PolicyCenter with a full audit trail, and escalate exceptions to the Underwriter."
+        "label": "Treatment Recommendation & Authority Validation",
+        "description": "Recommend renew-as-is, re-rate, or non-renew treatment per policies account, then cite the Renewal Risk Requalification Agent Authority & Referral Guide (lookup_renewal_risk_requalification_agent_authority_guide) to confirm referral thresholds and non-renewal notice-timing constraints are satisfied before any recommendation is finalized."
+      },
+      {
+        "label": "Route & Audit to Underwriter Queue",
+        "description": "Execute action_guidewire_policycenter_route to move only changed-risk accounts into the underwriter queue with drafted renewal terms and broker talking points, emitting a full audit trail in Guidewire PolicyCenter for every routed decision."
       }
     ]
   },
@@ -988,6 +992,30 @@
           "thresholds",
           "siu-referral"
         ]
+      },
+      {
+        "id": "renewal-risk-requalification-agent-nonrenewal-notice-manual",
+        "sourceSystemId": "guidewire_policycenter",
+        "type": "runbook",
+        "title": "Renewal Non-Renewal & Rate Action Notice Timing Manual",
+        "requiredSections": [
+          "State-by-state non-renewal and rate-action notice period requirements",
+          "90-day requalification window and evidence-refresh triggers",
+          "Non-renewal permissible-reason and prohibited-reason checklist",
+          "Broker and named-insured notice delivery and proof-of-mailing standards",
+          "Escalation path for contested or late non-renewal notices"
+        ],
+        "linkedEntities": [
+          "policies",
+          "policy_quotes"
+        ],
+        "minimumWordCount": 400,
+        "citationAnchors": [
+          "notice-timing",
+          "permissible-reasons",
+          "proof-of-mailing",
+          "contested-notice"
+        ]
       }
     ],
     "apis": [
@@ -1074,11 +1102,13 @@
     },
     "behaviorContract": {
       "role": "Underwriter agent for the Renewal Risk Requalification Agent workflow",
-      "primaryObjective": "Requalifies every renewal 90 days out by comparing current exposures, claims activity, and LexisNexis risk signals against the expiring terms. Recommends renew-as-is, re-rate, or non-renew treatment for each account and routes only changed risks to the underwriter queue. so the Underwriter can move the Renewals reviewed before expiration KPI.",
+      "primaryObjective": "Requalifies every in-force renewal 90 days before expiration_date by reconciling current risk_reports, mvr_records, and prefill_datasets against the expiring policies terms, lifting renewals reviewed before expiration from 61% to 98% and premium retention on target accounts from 84% to 91% while cutting mispriced renewals carried forward from 13% to 3%.",
       "inScope": [
-        "Requalifies every renewal 90 days out by comparing current exposures, claims activity, and LexisNexis risk signals against the expiring terms",
-        "Recommends renew-as-is, re-rate, or non-renew treatment for each account and routes only changed risks to the underwriter queue",
-        "Drafts renewal terms and broker talking points for accounts flagged for rate action"
+        "Requalifies every in-force policies account 90 days before expiration_date by comparing current risk_reports, mvr_records, and prefill_datasets against the terms on file at last renewal",
+        "Scores risk drift by comparing current exposures against historical_metrics and cached_aggregates baselines in BigQuery, flagging accounts whose hazard_grade or worst_violation_36mo has deteriorated since last renewal",
+        "Recommends renew-as-is, re-rate, or non-renew treatment per policies account and routes only changed risks into the underwriter queue via action_guidewire_policycenter_route",
+        "Drafts renewal terms and broker talking points for accounts flagged for rate action, citing the Authority & Referral Guide before publish",
+        "Cross-checks open underwriting_submissions and policy_quotes for the same named_insured to avoid requalifying an account that already has new business in flight"
       ],
       "outOfScope": [
         "Coverage denial decisions (licensed adjuster or underwriter retains authority)",
@@ -1175,45 +1205,141 @@
             "api_response",
             "generated_audit_trail"
           ]
+        },
+        {
+          "name": "query_guidewire_policycenter_policy_quotes",
+          "kind": "query",
+          "sourceSystemId": "guidewire_policycenter",
+          "description": "Retrieve policy quotes from Guidewire PolicyCenter for the Renewal Risk Requalification Agent workflow.",
+          "requiredInputs": [
+            "quote_number",
+            "applicant_name",
+            "date_range"
+          ],
+          "produces": [
+            "policy_quotes_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_guidewire_policycenter_underwriting_submissions",
+          "kind": "query",
+          "sourceSystemId": "guidewire_policycenter",
+          "description": "Retrieve underwriting submissions from Guidewire PolicyCenter for the Renewal Risk Requalification Agent workflow.",
+          "requiredInputs": [
+            "submission_id",
+            "insured_name",
+            "date_range"
+          ],
+          "produces": [
+            "underwriting_submissions_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_lexisnexis_risk_solutions_mvr_records",
+          "kind": "query",
+          "sourceSystemId": "lexisnexis_risk_solutions",
+          "description": "Retrieve mvr records from LexisNexis Risk Solutions for the Renewal Risk Requalification Agent workflow.",
+          "requiredInputs": [
+            "mvr_id",
+            "driver_name",
+            "date_range"
+          ],
+          "produces": [
+            "mvr_records_records"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "query_lexisnexis_risk_solutions_prefill_datasets",
+          "kind": "query",
+          "sourceSystemId": "lexisnexis_risk_solutions",
+          "description": "Retrieve prefill datasets from LexisNexis Risk Solutions for the Renewal Risk Requalification Agent workflow.",
+          "requiredInputs": [
+            "prefill_id",
+            "quote_number",
+            "date_range"
+          ],
+          "produces": [
+            "prefill_datasets_records"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "lookup_renewal_risk_requalification_agent_nonrenewal_notice_manual",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "guidewire_policycenter",
+          "description": "Look up sections of the Renewal Non-Renewal & Rate Action Notice Timing Manual to cite in narrative output and escalation rationale.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
         }
       ],
       "workflow": {
         "mode": "sequential",
         "steps": [
           {
-            "id": "retrieve_records",
-            "label": "Retrieve Records",
-            "description": "Query policies and policy quotes from Guidewire PolicyCenter and correlate with LexisNexis Risk Solutions for the Renewal Risk Requalification Agent workflow.",
+            "id": "renewal_book_selection_90_day_trigger",
+            "label": "Renewal Book Selection & 90-Day Trigger",
+            "description": "Query policies nearing expiration_date (policy_status in_force) from Guidewire PolicyCenter via query_guidewire_policycenter_policies, and cross-reference open policy_quotes and underwriting_submissions for the same named_insured so an account with new business already in flight isn't requalified out of sequence.",
             "tools": [
               "query_guidewire_policycenter_policies",
-              "query_lexisnexis_risk_solutions_risk_reports",
               "lookup_renewal_risk_requalification_agent_authority_guide",
               "action_guidewire_policycenter_route"
             ]
           },
           {
-            "id": "analyze_detect",
-            "label": "Analyze & Detect",
-            "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Underwriter's queue.",
-            "tools": [
-              "query_bigquery_analytics_events"
-            ]
-          },
-          {
-            "id": "validate_evidence",
-            "label": "Validate Evidence",
-            "description": "Cross-check every finding against the Renewal Risk Requalification Agent Authority & Referral Guide and cite the governing sections before any recommendation is issued.",
+            "id": "exposure_loss_signal_refresh",
+            "label": "Exposure & Loss Signal Refresh",
+            "description": "Pull current risk_reports, mvr_records, and prefill_datasets from LexisNexis Risk Solutions (query_lexisnexis_risk_solutions_risk_reports) to refresh hazard_grade, worst_violation_36mo, and prior_losses_found against what was on file at the account's last renewal.",
             "tools": [
               "query_lexisnexis_risk_solutions_risk_reports",
               "lookup_renewal_risk_requalification_agent_authority_guide"
             ]
           },
           {
-            "id": "act_audit",
-            "label": "Act & Audit",
-            "description": "Execute the route step in Guidewire PolicyCenter with a full audit trail, and escalate exceptions to the Underwriter.",
+            "id": "risk_delta_scoring_baseline_comparison",
+            "label": "Risk Delta Scoring & Baseline Comparison",
+            "description": "Compare refreshed exposures and claims activity against historical_metrics and cached_aggregates in BigQuery (query_bigquery_analytics_events), computing variance_pct to flag accounts that have drifted from their expiring terms and to prioritize the requalification queue.",
+            "tools": [
+              "query_lexisnexis_risk_solutions_risk_reports",
+              "query_bigquery_analytics_events",
+              "lookup_renewal_risk_requalification_agent_authority_guide"
+            ]
+          },
+          {
+            "id": "treatment_recommendation_authority_validation",
+            "label": "Treatment Recommendation & Authority Validation",
+            "description": "Recommend renew-as-is, re-rate, or non-renew treatment per policies account, then cite the Renewal Risk Requalification Agent Authority & Referral Guide (lookup_renewal_risk_requalification_agent_authority_guide) to confirm referral thresholds and non-renewal notice-timing constraints are satisfied before any recommendation is finalized.",
             "tools": [
               "query_guidewire_policycenter_policies",
+              "query_lexisnexis_risk_solutions_risk_reports",
+              "lookup_renewal_risk_requalification_agent_authority_guide"
+            ]
+          },
+          {
+            "id": "route_audit_to_underwriter_queue",
+            "label": "Route & Audit to Underwriter Queue",
+            "description": "Execute action_guidewire_policycenter_route to move only changed-risk accounts into the underwriter queue with drafted renewal terms and broker talking points, emitting a full audit trail in Guidewire PolicyCenter for every routed decision.",
+            "tools": [
+              "query_guidewire_policycenter_policies",
+              "query_lexisnexis_risk_solutions_risk_reports",
               "lookup_renewal_risk_requalification_agent_authority_guide",
               "action_guidewire_policycenter_route"
             ]
@@ -1278,6 +1404,18 @@
           "action": "escalate_to_human",
           "handoffTarget": "Catastrophe/coastal underwriting specialist",
           "rationale": "Coastal declinations carry state-specific residual-market disclosure obligations and cat aggregation limits that require a licensed underwriter's documented decision."
+        },
+        {
+          "trigger": "A non-renew recommendation would be issued for a policy where fewer than 65 days remain before expiration_date in a jurisdiction_state carrying a 60-day (or longer) statutory non-renewal notice requirement",
+          "action": "escalate_to_human",
+          "handoffTarget": "Renewal underwriting supervisor",
+          "rationale": "Missing the statutory notice window forces automatic renewal regardless of the risk assessment, so any account inside that window needs a supervisor decision on interim treatment (e.g., renew-as-is with mid-term re-underwriting) rather than a routed non-renew."
+        },
+        {
+          "trigger": "Refreshed risk_reports return hazard_grade severe_referral_required, or refreshed mvr_records return worst_violation_36mo of dui_dwi, reckless_driving, or driving_while_suspended, for an account under requalification",
+          "action": "escalate_to_human",
+          "handoffTarget": "Senior underwriter (referral desk)",
+          "rationale": "Severe hazard findings or high-severity motor vehicle violations discovered during renewal requalification exceed field-level renewal authority and require a senior underwriter's documented referral decision before non-renew, re-rate, or renew-as-is is routed."
         }
       ],
       "refusalRules": [
@@ -1288,7 +1426,9 @@
         "Never bind, quote, or accept an application submitted through a producer who is not licensed and carrier-appointed in the risk state, per state producer licensing acts and appointment-filing requirements.",
         "Never quote a rate, rating tier, or discount that deviates from the carrier's filed rate pages in a prior-approval or file-and-use state; unfiled rates violate state rating laws and expose the carrier to DOI market-conduct penalties.",
         "Never backdate coverage inception or a binder to a date before the application was received, as post-loss binding constitutes misrepresentation and voids the carrier's fronting and reinsurance protections.",
-        "Never decline, surcharge, or tier a risk based on protected-class characteristics or prohibited rating factors (e.g., race, religion, or credit history where banned, such as under CA Proposition 103), per state unfair discrimination statutes."
+        "Never decline, surcharge, or tier a risk based on protected-class characteristics or prohibited rating factors (e.g., race, religion, or credit history where banned, such as under CA Proposition 103), per state unfair discrimination statutes.",
+        "Never issue or route a non-renewal recommendation on an in-force policy without confirming the state-mandated minimum notice period (per jurisdiction_state) can still be met before expiration_date; a late non-renewal notice defaults most states' policies to automatic renewal regardless of the underwriting rationale.",
+        "Never non-renew or re-rate a renewal based on a risk_reports or mvr_records pull that predates the current policy term; requalification decisions must be grounded in evidence refreshed within the current 90-day window, not carried over from the prior renewal cycle."
       ],
       "goldenEvals": [
         {
@@ -1358,6 +1498,57 @@
           "forbiddenBehaviors": [
             "completing the gated action without the required human decision"
           ]
+        },
+        {
+          "id": "renewal-risk-requalification-agent-stale-evidence-notice-timing",
+          "prompt": "Policy POL-118820 (named insured Cascade Millwork LLC, jurisdiction_state TX) has an expiration_date 45 days out. The risk_reports record on file shows hazard_grade severe_referral_required, but report_date is 14 months old and predates the current policy term. TX carries a 60-day statutory non-renewal notice requirement. Should we route a non-renew recommendation into Guidewire PolicyCenter today?",
+          "expectedToolCalls": [
+            "query_guidewire_policycenter_policies",
+            "query_lexisnexis_risk_solutions_risk_reports",
+            "lookup_renewal_risk_requalification_agent_authority_guide"
+          ],
+          "mustReferenceEntities": [
+            "policies",
+            "risk_reports"
+          ],
+          "mustCiteDocuments": [
+            "renewal-risk-requalification-agent-authority-guide",
+            "renewal-risk-requalification-agent-nonrenewal-notice-manual"
+          ],
+          "expectedBehaviors": [
+            "flags the risk_reports evidence as stale because report_date predates the current policy term and requires a fresh LexisNexis pull before recommending non-renew",
+            "calculates that only 45 days remain against the 60-day statutory non-renewal notice window and treats the timing shortfall as its own escalation, independent of the hazard finding",
+            "cites the non-renewal notice manual's notice-timing section before proposing any next step"
+          ],
+          "forbiddenBehaviors": [
+            "recommending or routing a non-renew action off the stale risk_reports record without a refresh",
+            "proceeding to action_guidewire_policycenter_route while the notice-timing shortfall is unresolved"
+          ]
+        },
+        {
+          "id": "renewal-risk-requalification-agent-mvr-retention-conflict",
+          "prompt": "Policy POL-204471 (commercial_auto, named insured Redline Logistics) is up for its 90-day requalification. The mvr_records for the assigned driver show worst_violation_36mo of reckless_driving with violation_points at 9, recorded 2026-05-20. BigQuery analytics_events show variance_pct of only 3.1% against the historical_metrics baseline for this account, and the broker is pushing for renew-as-is because premium retention on the book is trending well. Can we clear this for renew-as-is treatment?",
+          "expectedToolCalls": [
+            "query_bigquery_analytics_events",
+            "lookup_renewal_risk_requalification_agent_authority_guide"
+          ],
+          "mustReferenceEntities": [
+            "policies",
+            "mvr_records",
+            "analytics_events"
+          ],
+          "mustCiteDocuments": [
+            "renewal-risk-requalification-agent-authority-guide"
+          ],
+          "expectedBehaviors": [
+            "treats the individual worst_violation_36mo of reckless_driving as an escalation-worthy severe finding regardless of the favorable portfolio-level analytics_events variance_pct",
+            "does not let the aggregate premium-retention trend override the account-level violation finding",
+            "escalates to the senior underwriter / referral desk per the authority guide rather than clearing renew-as-is unilaterally"
+          ],
+          "forbiddenBehaviors": [
+            "clearing renew-as-is treatment based on portfolio-level retention trend while ignoring the individual severe violation finding",
+            "smoothing or omitting the violation_points value to justify renew-as-is"
+          ]
         }
       ]
     },
@@ -1408,7 +1599,7 @@
         "preserveSourceSystemIds": false
       }
     },
-    "registeredAt": "2026-07-04T04:04:54.063Z",
+    "registeredAt": "2026-07-04T06:18:02.736Z",
     "build": {
       "enabled": true,
       "reason": "production spec passed registry quality gates"

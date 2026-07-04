@@ -37,3 +37,4 @@ Must cite: manhattan_active_wm.warehouse_orders, bigquery.analytics_events
 # Citations
 
 - [Carrier Delivery SLA Analyzer Retail Execution Playbook](/documents/carrier-delivery-sla-analyzer-execution-playbook.md)
+- [Carrier Rate Card & Claims Adjudication Policy](/documents/carrier-rate-claims-adjudication-policy.md)

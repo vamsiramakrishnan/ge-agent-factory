@@ -53,12 +53,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [task_schedule_pull](/workflow/task-schedule-pull.md)
+- [pos_execution_cross_check](/workflow/pos-execution-cross-check.md)
+- [visit_brief_escalation](/workflow/visit-brief-escalation.md)
 
 ## Evals
 
 - [Run the Store Task Compliance Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/store-task-compliance-agent-end-to-end.md)
+- [Store 482 marked the Saturday planogram reset (task shift on shift_schedules) complete for business date 2026-06-27, but Oracle Xstore POS shows zero transaction_count in store_shift_summaries and no matching pos_transactions during the reset window. Confirm completion for the district scorecard.](/tests/store-task-compliance-agent-selfreport-pos-conflict.md)
 
 ## Evidence emitted
 

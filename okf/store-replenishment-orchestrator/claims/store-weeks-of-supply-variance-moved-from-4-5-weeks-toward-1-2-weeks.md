@@ -37,3 +37,4 @@ Must cite: blue_yonder_demand_planning.demand_forecasts, oracle_retail_mfcs.item
 # Citations
 
 - [Store Replenishment Orchestrator Retail Execution Playbook](/documents/store-replenishment-orchestrator-execution-playbook.md)
+- [Presentation Minimums & Case-Pack Rounding Rate Manual](/documents/store-replenishment-orchestrator-presentation-minimum-rate-manual.md)

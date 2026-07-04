@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [zero_sales_anomaly_sweep](/workflow/zero-sales-anomaly-sweep.md)
+- [sell_rate_baseline_reconciliation](/workflow/sell-rate-baseline-reconciliation.md)
+- [chain_scorecard_publish_recovery_action](/workflow/chain-scorecard-publish-recovery-action.md)
 
 ## Evals
 

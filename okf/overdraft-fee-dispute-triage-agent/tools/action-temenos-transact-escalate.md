@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [dispute_intake_account_match](/workflow/dispute-intake-account-match.md)
+- [posting_sequence_reconstruction](/workflow/posting-sequence-reconstruction.md)
+- [disposition_refund_posting_audit](/workflow/disposition-refund-posting-audit.md)
 
 ## Evals
 

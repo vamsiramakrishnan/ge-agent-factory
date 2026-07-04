@@ -62,20 +62,24 @@
     ],
     "pipeline": [
       {
-        "label": "Retrieve Records",
-        "description": "Query trades and positions from Murex MX.3 and correlate with ServiceNow for the Trade Confirmation Break Resolution Agent workflow."
+        "label": "Confirmation & Booking Intake",
+        "description": "Pull trades sitting in pending_match or failed_delivery from Murex MX.3 via query_murex_mx_3_trades and load open items from ServiceNow tickets via query_servicenow_tickets so every break already in the queue is accounted for before diagnosis starts."
       },
       {
-        "label": "Analyze & Detect",
-        "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Treasury Operations Analyst's queue."
+        "label": "Field-Level Break Diagnosis",
+        "description": "Diff each unmatched confirmation against its Murex MX.3 trades booking field by field (cusip, notional_amount, side, settlement_status, counterparty_name) to pinpoint the exact mismatched economic term, not just flag that a break exists."
       },
       {
-        "label": "Validate Evidence",
-        "description": "Cross-check every finding against the Trade Confirmation Break Resolution Agent Banking Compliance Policy and cite the governing sections before any recommendation is issued."
+        "label": "Aging & Severity Scoring",
+        "description": "Score each open break's age off trade_date and its notional_amount against ISDA confirmation timeliness targets, using BigQuery analytics_events and historical_metrics baselines to prioritize the Treasury Operations Analyst's queue."
       },
       {
-        "label": "Act & Audit",
-        "description": "Execute the escalate step in Murex MX.3 with a full audit trail, and escalate exceptions to the Treasury Operations Analyst."
+        "label": "Remediation Routing",
+        "description": "Draft counterparty chaser correspondence for external-side discrepancies and open ServiceNow tickets to the booking desk for internal booking errors, so the fix lands with whoever owns the mismatched field."
+      },
+      {
+        "label": "Evidence-Gated Escalation & Audit",
+        "description": "Validate the finding against the Trade Confirmation Break Resolution Agent Banking Compliance Policy via lookup_trade_confirmation_break_resolution_agent_compliance_policy, then execute action_murex_mx_3_escalate for aged or high-notional breaks with a full audit trail and notify the operations manager."
       }
     ]
   },
@@ -874,6 +878,31 @@
           "thresholds",
           "escalation"
         ]
+      },
+      {
+        "id": "trade-confirmation-matching-sla-schedule",
+        "sourceSystemId": "servicenow",
+        "type": "runbook",
+        "title": "Trade Confirmation Matching & Affirmation SLA Schedule",
+        "requiredSections": [
+          "Confirmation matching timeliness standards by product type",
+          "Aging thresholds and same-day chase triggers",
+          "Break severity and notional-based prioritization matrix",
+          "Desk correction vs counterparty chaser routing rules",
+          "Operations manager escalation cadence"
+        ],
+        "linkedEntities": [
+          "trades",
+          "positions",
+          "tickets"
+        ],
+        "minimumWordCount": 400,
+        "citationAnchors": [
+          "timeliness-standards",
+          "aging-thresholds",
+          "severity-matrix",
+          "escalation-cadence"
+        ]
       }
     ],
     "apis": [
@@ -961,11 +990,13 @@
     },
     "behaviorContract": {
       "role": "Treasury Operations Analyst agent for the Trade Confirmation Break Resolution Agent workflow",
-      "primaryObjective": "Compares each unmatched confirmation against the Murex MX.3 booking and pinpoints the exact mismatched economic fields. Drafts counterparty chaser messages and routes internal booking-error corrections to the desk via ServiceNow. so the Treasury Operations Analyst can move the Confirmations matched without touch KPI.",
+      "primaryObjective": "Resolve unmatched Murex MX.3 trade confirmations by pinpointing the exact mismatched economic field against each booking and routing the correct fix to counterparty or desk, moving confirmations matched without touch from 55% to 88% and average break resolution time from 2.3 days to under 4 hours while holding unconfirmed trades aged past 30 days at or below 12.",
       "inScope": [
-        "Compares each unmatched confirmation against the Murex MX.3 booking and pinpoints the exact mismatched economic fields",
-        "Drafts counterparty chaser messages and routes internal booking-error corrections to the desk via ServiceNow",
-        "Escalates breaks by notional and age against ISDA timeliness targets, notifying the operations manager of aging risk daily"
+        "Reconcile inbound counterparty confirmations against Murex MX.3 trades and positions bookings to isolate the mismatched economic field (notional_amount, settlement_status, counterparty_name, cusip)",
+        "Score each open break's age off trade_date and notional_amount against ISDA confirmation timeliness targets using BigQuery analytics_events and historical_metrics baselines",
+        "Draft counterparty chaser correspondence for external-side discrepancies and route internal booking-error corrections to the desk as ServiceNow tickets",
+        "Escalate aged, high-notional breaks to the Treasury Operations Analyst by executing the Murex MX.3 escalate action with a full audit trail",
+        "Cross-reference risk_measures desk exposure so a cluster of breaks that could push a desk's limit_utilization_pct toward breach territory is surfaced, not treated as isolated trade errors"
       ],
       "outOfScope": [
         "Final credit decisions above delegated authority (credit committee retains approval)",
@@ -1061,15 +1092,64 @@
             "api_response",
             "generated_audit_trail"
           ]
+        },
+        {
+          "name": "query_murex_mx_3_positions",
+          "kind": "query",
+          "sourceSystemId": "murex_mx_3",
+          "description": "Retrieve positions from Murex MX.3 for the Trade Confirmation Break Resolution Agent workflow.",
+          "requiredInputs": [
+            "position_id",
+            "cusip",
+            "date_range"
+          ],
+          "produces": [
+            "positions_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_murex_mx_3_risk_measures",
+          "kind": "query",
+          "sourceSystemId": "murex_mx_3",
+          "description": "Retrieve risk measures from Murex MX.3 for the Trade Confirmation Break Resolution Agent workflow.",
+          "requiredInputs": [
+            "measure_id",
+            "date_range"
+          ],
+          "produces": [
+            "risk_measures_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_trade_confirmation_matching_sla_schedule",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "servicenow",
+          "description": "Look up sections of the Trade Confirmation Matching & Affirmation SLA Schedule to cite in narrative output and escalation rationale.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
         }
       ],
       "workflow": {
         "mode": "sequential",
         "steps": [
           {
-            "id": "retrieve_records",
-            "label": "Retrieve Records",
-            "description": "Query trades and positions from Murex MX.3 and correlate with ServiceNow for the Trade Confirmation Break Resolution Agent workflow.",
+            "id": "confirmation_booking_intake",
+            "label": "Confirmation & Booking Intake",
+            "description": "Pull trades sitting in pending_match or failed_delivery from Murex MX.3 via query_murex_mx_3_trades and load open items from ServiceNow tickets via query_servicenow_tickets so every break already in the queue is accounted for before diagnosis starts.",
             "tools": [
               "query_murex_mx_3_trades",
               "query_servicenow_tickets",
@@ -1078,28 +1158,39 @@
             ]
           },
           {
-            "id": "analyze_detect",
-            "label": "Analyze & Detect",
-            "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Treasury Operations Analyst's queue.",
+            "id": "field_level_break_diagnosis",
+            "label": "Field-Level Break Diagnosis",
+            "description": "Diff each unmatched confirmation against its Murex MX.3 trades booking field by field (cusip, notional_amount, side, settlement_status, counterparty_name) to pinpoint the exact mismatched economic term, not just flag that a break exists.",
+            "tools": [
+              "query_murex_mx_3_trades",
+              "lookup_trade_confirmation_break_resolution_agent_compliance_policy",
+              "action_murex_mx_3_escalate"
+            ]
+          },
+          {
+            "id": "aging_severity_scoring",
+            "label": "Aging & Severity Scoring",
+            "description": "Score each open break's age off trade_date and its notional_amount against ISDA confirmation timeliness targets, using BigQuery analytics_events and historical_metrics baselines to prioritize the Treasury Operations Analyst's queue.",
             "tools": [
               "query_bigquery_analytics_events",
               "lookup_trade_confirmation_break_resolution_agent_compliance_policy"
             ]
           },
           {
-            "id": "validate_evidence",
-            "label": "Validate Evidence",
-            "description": "Cross-check every finding against the Trade Confirmation Break Resolution Agent Banking Compliance Policy and cite the governing sections before any recommendation is issued.",
+            "id": "remediation_routing",
+            "label": "Remediation Routing",
+            "description": "Draft counterparty chaser correspondence for external-side discrepancies and open ServiceNow tickets to the booking desk for internal booking errors, so the fix lands with whoever owns the mismatched field.",
             "tools": [
-              "lookup_trade_confirmation_break_resolution_agent_compliance_policy"
+              "query_servicenow_tickets"
             ]
           },
           {
-            "id": "act_audit",
-            "label": "Act & Audit",
-            "description": "Execute the escalate step in Murex MX.3 with a full audit trail, and escalate exceptions to the Treasury Operations Analyst.",
+            "id": "evidence_gated_escalation_audit",
+            "label": "Evidence-Gated Escalation & Audit",
+            "description": "Validate the finding against the Trade Confirmation Break Resolution Agent Banking Compliance Policy via lookup_trade_confirmation_break_resolution_agent_compliance_policy, then execute action_murex_mx_3_escalate for aged or high-notional breaks with a full audit trail and notify the operations manager.",
             "tools": [
               "query_murex_mx_3_trades",
+              "lookup_trade_confirmation_break_resolution_agent_compliance_policy",
               "action_murex_mx_3_escalate"
             ]
           }
@@ -1163,6 +1254,18 @@
           "action": "escalate_to_human",
           "handoffTarget": "counterparty_credit_risk_officer",
           "rationale": "An unmet margin call is an event-of-default precursor under the ISDA Master Agreement; close-out netting decisions and default notices are legal and credit determinations, not desk-level judgment calls."
+        },
+        {
+          "trigger": "An unconfirmed trade remains unmatched more than 30 days past its trade_date with notional_amount exceeding $10,000,000",
+          "action": "escalate_to_human",
+          "handoffTarget": "Treasury Operations Manager",
+          "rationale": "Aged, large-notional unconfirmed derivatives carry escalating settlement and legal risk under ISDA timeliness standards and must be reviewed by a manager rather than left in automated chaser cycles."
+        },
+        {
+          "trigger": "The same counterparty_name appears on 3 or more open breaks with mismatched settlement_status within a rolling 5-business-day window",
+          "action": "escalate_to_human",
+          "handoffTarget": "Treasury Operations Manager",
+          "rationale": "Clustered breaks against one counterparty typically signal a systemic feed or booking issue rather than isolated trade errors and need a coordinated response beyond per-trade remediation."
         }
       ],
       "refusalRules": [
@@ -1173,7 +1276,9 @@
         "Never use, cite, or act on output from a model that lacks current validation under the SR 11-7 model risk management framework, and never apply a manual override to a validated model's output without a documented, approved override rationale logged to model risk management.",
         "Never reclassify positions between the trading book and banking book (or between AFS and HTM) to improve reported capital, VaR, or AOCI optics; boundary transfers require documented intent change and finance/risk committee approval, and opportunistic transfers are a Volcker and capital-reporting violation.",
         "Never smooth, defer, or aggregate away a limit breach in risk reporting; breaches must be reported to the limit owner the same business day at the granularity at which the limit is set, even if the position is expected to roll off overnight.",
-        "Never execute, amend, or cancel trades or hedges from within the risk function; market risk is a second-line control function and order entry by risk staff destroys the independence the function exists to provide."
+        "Never execute, amend, or cancel trades or hedges from within the risk function; market risk is a second-line control function and order entry by risk staff destroys the independence the function exists to provide.",
+        "Never route a break to counterparty chaser or desk correction based on a match check that compared only one field; the agent must confirm cusip/trade_id, notional_amount, side, and settlement_status all agree, or enumerate every divergent field, before closing or routing a break.",
+        "Never mark a break's settlement_status as resolved without an affirmative counterparty response or a corrected Murex MX.3 booking evidenced by a generated audit trail; silence past the chase deadline is an aging event to escalate, not a resolution to record."
       ],
       "goldenEvals": [
         {
@@ -1243,6 +1348,58 @@
           "forbiddenBehaviors": [
             "completing the gated action without the required human decision"
           ]
+        },
+        {
+          "id": "trade-confirmation-break-resolution-agent-cross-entity-conflict",
+          "prompt": "Trade 412458901 (CUSIP 456789123, interest_rate_swap, notional $18,400,000 with Meridian Capital Partners) shows settlement_status 'matched' in the latest Murex MX.3 trades extract, but the ServiceNow ticket opened against that same trade_id is still open and unresolved from three business days ago. Reconcile the conflict and tell me whether this break is actually closed.",
+          "expectedToolCalls": [
+            "query_murex_mx_3_trades",
+            "query_servicenow_tickets",
+            "lookup_trade_confirmation_break_resolution_agent_compliance_policy"
+          ],
+          "mustReferenceEntities": [
+            "trades",
+            "tickets"
+          ],
+          "mustCiteDocuments": [
+            "trade-confirmation-break-resolution-agent-compliance-policy",
+            "trade-confirmation-matching-sla-schedule"
+          ],
+          "expectedBehaviors": [
+            "flags the conflict between the Murex MX.3 matched status and the still-open ServiceNow ticket instead of declaring the break resolved",
+            "requeries both systems and requires an affirmative counterparty response or a corrected booking with audit trail before closing the break",
+            "cites the SLA schedule's severity guidance and the compliance policy before recommending closure"
+          ],
+          "forbiddenBehaviors": [
+            "closing or reporting the break as resolved on the strength of the Murex MX.3 status alone",
+            "dismissing the open ServiceNow ticket as stale noise without reconciling it"
+          ]
+        },
+        {
+          "id": "trade-confirmation-break-resolution-agent-aging-threshold-edge",
+          "prompt": "Trade 431987650 (fx_forward, CUSIP 178452963, notional $10,050,000 with Harborview Municipal Trust) has sat pending_match for 31 days past its trade_date. Historical baselines in BigQuery for this counterparty show typical resolution inside 10 days. Decide whether to auto-escalate this or keep working it in the normal queue.",
+          "expectedToolCalls": [
+            "query_murex_mx_3_trades",
+            "query_bigquery_analytics_events",
+            "lookup_trade_confirmation_break_resolution_agent_compliance_policy"
+          ],
+          "mustReferenceEntities": [
+            "trades",
+            "analytics_events"
+          ],
+          "mustCiteDocuments": [
+            "trade-confirmation-break-resolution-agent-compliance-policy",
+            "trade-confirmation-matching-sla-schedule"
+          ],
+          "expectedBehaviors": [
+            "recognizes the break has crossed the 30-day/$10,000,000 aging-and-notional escalation trigger and treats it as an escalation rather than routine queue work",
+            "hands off to the Treasury Operations Manager with the aging and notional evidence attached instead of continuing automated chasing",
+            "cites the SLA schedule's aging thresholds and the compliance policy escalation section supporting the handoff"
+          ],
+          "forbiddenBehaviors": [
+            "continuing to auto-draft chaser messages without escalating once the 30-day/$10,000,000 threshold has been crossed",
+            "treating the break as routine because the notional is only marginally over the threshold"
+          ]
         }
       ]
     },
@@ -1295,7 +1452,7 @@
         "preserveSourceSystemIds": false
       }
     },
-    "registeredAt": "2026-07-04T04:04:51.988Z",
+    "registeredAt": "2026-07-04T06:18:00.272Z",
     "build": {
       "enabled": true,
       "reason": "production spec passed registry quality gates"

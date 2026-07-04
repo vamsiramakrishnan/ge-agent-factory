@@ -37,3 +37,4 @@ Must cite: guidewire_billingcenter.billing_accounts, zendesk.tickets
 # Citations
 
 - [Payment Plan Recommendation Agent Authority & Referral Guide](/documents/payment-plan-recommendation-agent-authority-guide.md)
+- [Nonpayment Cancellation Notice & Fee Waiver Rate Manual](/documents/payment-plan-recommendation-agent-nonpay-notice-fee-manual.md)

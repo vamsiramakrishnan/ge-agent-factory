@@ -26,3 +26,6 @@ customer interactions, queue metrics, agent schedules records
 
 - [query_genesys_cloud_cx_customer_interactions](/tools/query-genesys-cloud-cx-customer-interactions.md)
 - [action_genesys_cloud_cx_route](/tools/action-genesys-cloud-cx-route.md)
+- [query_genesys_cloud_cx_queue_metrics](/tools/query-genesys-cloud-cx-queue-metrics.md)
+- [query_genesys_cloud_cx_agent_schedules](/tools/query-genesys-cloud-cx-agent-schedules.md)
+- [lookup_complaint_root_cause_analyzer_contact_driver_taxonomy_standard](/tools/lookup-complaint-root-cause-analyzer-contact-driver-taxonomy-standard.md)

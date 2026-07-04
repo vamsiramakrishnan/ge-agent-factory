@@ -52,11 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [baseline_variance_analysis](/workflow/baseline-variance-analysis.md)
+- [runbook_evidence_validation](/workflow/runbook-evidence-validation.md)
 
 ## Evals
 
 - [Run the 5G Network Slice SLA Monitor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/network-slice-sla-monitor-end-to-end.md)
+- [For cell_id 5188342 (ne_id 214477) the latest performance_counters interval shows cell_availability_pct at exactly 99.00% for the rolling market-day and volte_drop_rate_pct at 1.9%, with no active alarm on that NE in network_alarms. The customer's account rep is asking whether this trips the chronic-breach escalation and whether we owe a credit under the SLA Credit Schedule.](/tests/network-slice-sla-monitor-availability-threshold-edge.md)
 
 ## Evidence emitted
 

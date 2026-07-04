@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Book Due-Date & Household Triage](/workflow/book-due-date-household-triage.md)
+2. [Account & Holdings Retrieval](/workflow/account-holdings-retrieval.md)
+3. [Performance, Drift & Fee Analysis](/workflow/performance-drift-fee-analysis.md)
+4. [Suitability & Concentration Compliance Check](/workflow/suitability-concentration-compliance-check.md)
+5. [Agenda Assembly & Advisor Handoff](/workflow/agenda-assembly-advisor-handoff.md)

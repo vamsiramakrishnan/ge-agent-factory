@@ -26,3 +26,5 @@ fraud alerts, transaction risk scores, investigation cases records
 
 - [query_nice_actimize_fraud_alerts](/tools/query-nice-actimize-fraud-alerts.md)
 - [action_nice_actimize_recommend](/tools/action-nice-actimize-recommend.md)
+- [query_nice_actimize_transaction_risk_scores](/tools/query-nice-actimize-transaction-risk-scores.md)
+- [query_nice_actimize_investigation_cases](/tools/query-nice-actimize-investigation-cases.md)

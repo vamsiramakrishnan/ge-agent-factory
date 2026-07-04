@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [risk_run_breach_detection](/workflow/risk-run-breach-detection.md)
+- [trade_position_decomposition](/workflow/trade-position-decomposition.md)
+- [escalation_audit_trail](/workflow/escalation-audit-trail.md)
 
 ## Evals
 

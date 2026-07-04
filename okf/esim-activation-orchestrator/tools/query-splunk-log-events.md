@@ -52,12 +52,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
+- [profile_download_triage](/workflow/profile-download-triage.md)
+- [cross_system_state_reconciliation](/workflow/cross-system-state-reconciliation.md)
+- [escalation_customer_notification_handoff](/workflow/escalation-customer-notification-handoff.md)
 
 ## Evals
 
 - [Run the eSIM Activation Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/esim-activation-orchestrator-end-to-end.md)
+- [Order 74213890 shows order_status = completed in service_orders, but the linked provisioning_task 954102233 still reports task_status = failed with error_code = data_mismatch and retry_count = 4. Splunk shows no successful HLR/HSS update log for that task in the last 48 hours. Reconcile the record and tell me whether it's safe to close the ticket.](/tests/esim-activation-orchestrator-status-fallout-mismatch.md)
 
 ## Evidence emitted
 

@@ -37,3 +37,4 @@ Must cite: netcracker_service_orchestration.service_orders, bigquery.analytics_e
 # Citations
 
 - [Number Porting Exception Agent Service Assurance Runbook](/documents/number-porting-exception-agent-assurance-runbook.md)
+- [LNP Reject Reason Code & Porting Interval Manual](/documents/lnp-reject-code-and-interval-manual.md)

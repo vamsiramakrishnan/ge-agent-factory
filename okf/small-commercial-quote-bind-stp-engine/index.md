@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: "Small Commercial Quote-Bind STP Engine"
-description: "Evaluates small commercial quotes against underwriting guidelines and historical loss data in BigQuery to clear routine risks for automatic bind. Escalates only genuinely non-standard exposures to a human underwriter with a pre-built referral summary. so the Underwriting Manager can move the Straight-through processing rate KPI."
+description: "Clear routine small commercial BOP and workers' comp policy_quotes for automatic bind in Guidewire PolicyCenter by scoring underwriting_submissions against historical_metrics and analytics_events in BigQuery, lifting straight-through processing from 22% toward the 68% target while routing only genuinely non-standard exposures to a human underwriter."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/small-commercial-qu
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:53.517Z"
+provenance_created_at: "2026-07-04T06:18:01.852Z"
 ---
 
 # Small Commercial Quote-Bind STP Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:53.517Z"
 
 - **Persona:** Underwriting Manager
 - **Department:** insurance
-- **Objective:** Evaluates small commercial quotes against underwriting guidelines and historical loss data in BigQuery to clear routine risks for automatic bind. Escalates only genuinely non-standard exposures to a human underwriter with a pre-built referral summary. so the Underwriting Manager can move the Straight-through processing rate KPI.
+- **Objective:** Clear routine small commercial BOP and workers' comp policy_quotes for automatic bind in Guidewire PolicyCenter by scoring underwriting_submissions against historical_metrics and analytics_events in BigQuery, lifting straight-through processing from 22% toward the 68% target while routing only genuinely non-standard exposures to a human underwriter.
 
 ## KPI summary
 

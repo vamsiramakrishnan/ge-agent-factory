@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: PM Schedule Optimization Engine
-description: "Cross-references every PM task in IBM Maximo against failure history and runtime data from the PI System in BigQuery quarterly. Recommends interval extensions for zero-finding PMs and tightened or condition-based triggers for failure-prone assets, with the evidence attached. so the Maintenance Planner can move the PM labor hours with no findings KPI."
+description: "Cross-reference every preventive maintenance task in IBM Maximo's maintenance_work_orders and asset_registry_entries against failure_codes and OSIsoft PI System sensor_readings so the Maintenance Planner can cut PM labor hours with no findings from 44% to 18% and failures occurring between PMs from 9 to 3 per month, without ever recommending an interval change that isn't backed by two-system evidence."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/pm-schedule-optimiz
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:09.883Z"
+provenance_created_at: "2026-07-04T06:18:18.923Z"
 ---
 
 # PM Schedule Optimization Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:09.883Z"
 
 - **Persona:** Maintenance Planner
 - **Department:** manufacturing
-- **Objective:** Cross-references every PM task in IBM Maximo against failure history and runtime data from the PI System in BigQuery quarterly. Recommends interval extensions for zero-finding PMs and tightened or condition-based triggers for failure-prone assets, with the evidence attached. so the Maintenance Planner can move the PM labor hours with no findings KPI.
+- **Objective:** Cross-reference every preventive maintenance task in IBM Maximo's maintenance_work_orders and asset_registry_entries against failure_codes and OSIsoft PI System sensor_readings so the Maintenance Planner can cut PM labor hours with no findings from 44% to 18% and failures occurring between PMs from 9 to 3 per month, without ever recommending an interval change that isn't backed by two-system evidence.
 
 ## KPI summary
 

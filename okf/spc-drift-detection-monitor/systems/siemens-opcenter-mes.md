@@ -25,3 +25,6 @@ production orders, machine events, quality checks records
 ## Tools using this system
 
 - [query_siemens_opcenter_mes_production_orders](/tools/query-siemens-opcenter-mes-production-orders.md)
+- [query_siemens_opcenter_mes_machine_events](/tools/query-siemens-opcenter-mes-machine-events.md)
+- [query_siemens_opcenter_mes_quality_checks](/tools/query-siemens-opcenter-mes-quality-checks.md)
+- [lookup_spc_drift_detection_monitor_control_plan](/tools/lookup-spc-drift-detection-monitor-control-plan.md)

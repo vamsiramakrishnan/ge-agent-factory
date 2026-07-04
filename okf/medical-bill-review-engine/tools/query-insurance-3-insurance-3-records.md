@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [bill_intake_line_item_extraction](/workflow/bill-intake-line-item-extraction.md)
 
 ## Evals
 

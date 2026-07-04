@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Cancellation Notice Compliance Agent
-description: "Validates every pending cancellation against the current state-specific notice period, format, and lienholder-copy requirements before release. Generates the compliant notice, dispatches it with tracked delivery, and files proof-of-mailing evidence against the policy record. so the Billing Supervisor can move the Statutorily defective cancellation notices KPI."
+description: "Ensure every pending_cancel_nonpay or in_statutory_grace_period billing_accounts record receives a state-compliant cancellation notice - correct notice period, format, and lienholder copy - dispatched via DocuSign envelopes and filed with proof-of-mailing audit_trails in Guidewire BillingCenter, driving statutorily defective cancellation notices from 3.2% to 0.1% and reinstatement disputes from 45 to 4 per quarter."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/cancellation-notice
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:57.728Z"
+provenance_created_at: "2026-07-04T06:18:06.583Z"
 ---
 
 # Cancellation Notice Compliance Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:57.728Z"
 
 - **Persona:** Billing Supervisor
 - **Department:** insurance
-- **Objective:** Validates every pending cancellation against the current state-specific notice period, format, and lienholder-copy requirements before release. Generates the compliant notice, dispatches it with tracked delivery, and files proof-of-mailing evidence against the policy record. so the Billing Supervisor can move the Statutorily defective cancellation notices KPI.
+- **Objective:** Ensure every pending_cancel_nonpay or in_statutory_grace_period billing_accounts record receives a state-compliant cancellation notice - correct notice period, format, and lienholder copy - dispatched via DocuSign envelopes and filed with proof-of-mailing audit_trails in Guidewire BillingCenter, driving statutorily defective cancellation notices from 3.2% to 0.1% and reinstatement disputes from 45 to 4 per quarter.
 
 ## KPI summary
 

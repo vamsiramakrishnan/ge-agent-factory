@@ -52,12 +52,16 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [batch_closure_intake](/workflow/batch-closure-intake.md)
+- [spec_control_limit_screening](/workflow/spec-control-limit-screening.md)
+- [nc_capa_cross_reference](/workflow/nc-capa-cross-reference.md)
+- [sop_gated_release_audit](/workflow/sop-gated-release-audit.md)
 
 ## Evals
 
 - [Run the Batch Record Review Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/batch-record-review-analyzer-end-to-end.md)
+- [Inspection lot 14582061 (material 452891) is running under skip-lot sampling. Quality check 5183042 on characteristic bore_diameter for that lot just came back at measured_value 12.4188 against limits 12.4000-12.4150 -- a fail -- but the lot's usage_decision in SAP S/4HANA QM is still showing accepted from Tuesday's run. Can we ship it?](/tests/batch-record-review-analyzer-skip-lot-fail-conflict.md)
+- [Nonconformance NC 642187 (severity critical, mrb_required true) was detected against material 452216 eleven days ago. The linked CAPA 74381 is still sitting in containment status and effectiveness_verified is false. Production wants inspection lot 14577903, same material, released today -- walk me through whether it's clear.](/tests/batch-record-review-analyzer-capa-effectiveness-gap.md)
 
 ## Evidence emitted
 

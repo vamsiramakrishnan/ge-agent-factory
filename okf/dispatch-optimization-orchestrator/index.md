@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Dispatch Optimization Orchestrator
-description: "The orchestrator builds optimized daily routes balancing skills, parts inventory, SLA clocks, and traffic, and re-optimizes continuously as the day unfolds. It absorbs emergency work by recommending the insertion that minimizes total appointment breakage. so the Field Operations Supervisor can move the Jobs completed per technician per day KPI."
+description: "Continuously re-optimize the daily route board across field_work_orders and technician_schedules so completed jobs per technician per day rises from 4.2 to 6.1 and appointment window compliance reaches 94%, while holding drive-time share at or below 18% of the workday."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/dispatch-optimizati
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:41.462Z"
+provenance_created_at: "2026-07-04T06:18:50.087Z"
 ---
 
 # Dispatch Optimization Orchestrator
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:41.462Z"
 
 - **Persona:** Field Operations Supervisor
 - **Department:** telco
-- **Objective:** The orchestrator builds optimized daily routes balancing skills, parts inventory, SLA clocks, and traffic, and re-optimizes continuously as the day unfolds. It absorbs emergency work by recommending the insertion that minimizes total appointment breakage. so the Field Operations Supervisor can move the Jobs completed per technician per day KPI.
+- **Objective:** Continuously re-optimize the daily route board across field_work_orders and technician_schedules so completed jobs per technician per day rises from 4.2 to 6.1 and appointment window compliance reaches 94%, while holding drive-time share at or below 18% of the workday.
 
 ## KPI summary
 

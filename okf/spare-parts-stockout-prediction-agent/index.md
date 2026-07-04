@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Spare Parts Stockout Prediction Agent
-description: "Forecasts part-level demand from IBM Maximo work order history, upcoming PM schedules, and asset criticality in BigQuery. Predicts stockout risk against on-hand and on-order quantities in SAP S/4HANA MM, accounting for current supplier lead times. so the MRO Storeroom Manager can move the Stockout-driven downtime hours KPI."
+description: "Predict stockout risk for critical spares by fusing IBM Maximo work-order demand signals with SAP S/4HANA MM on-hand and on-order quantities, cutting stockout-driven downtime from 95 to 20 hours per year while lowering spare parts inventory value from $6.4M to $5.1M and lifting critical spares service level to 99%."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/spare-parts-stockou
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:10.290Z"
+provenance_created_at: "2026-07-04T06:18:19.343Z"
 ---
 
 # Spare Parts Stockout Prediction Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:10.290Z"
 
 - **Persona:** MRO Storeroom Manager
 - **Department:** manufacturing
-- **Objective:** Forecasts part-level demand from IBM Maximo work order history, upcoming PM schedules, and asset criticality in BigQuery. Predicts stockout risk against on-hand and on-order quantities in SAP S/4HANA MM, accounting for current supplier lead times. so the MRO Storeroom Manager can move the Stockout-driven downtime hours KPI.
+- **Objective:** Predict stockout risk for critical spares by fusing IBM Maximo work-order demand signals with SAP S/4HANA MM on-hand and on-order quantities, cutting stockout-driven downtime from 95 to 20 hours per year while lowering spare parts inventory value from $6.4M to $5.1M and lifting critical spares service level to 99%.
 
 ## KPI summary
 

@@ -53,12 +53,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [closed_opportunity_intake_loss_coding](/workflow/closed-opportunity-intake-loss-coding.md)
+- [recommend_escalate](/workflow/recommend-escalate.md)
 
 ## Evals
 
 - [Run the Competitive Win-Loss Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/competitive-win-loss-analyzer-end-to-end.md)
+- [Quote #24681095 in service_quotes shows a discount_pct of 22.5% on a term_36 contract, but the matching order_captures record (capture_id 412987650) logs sales_channel as dealer_indirect with device_financing eip_36_month and no note of deal-desk approval on file. Reconcile whether this closed-won deal should be coded as a discount-authority breach or a legitimate indirect-channel promotion before it goes into this week's win-loss briefing, and cite your basis.](/tests/competitive-win-loss-analyzer-discount-reconciliation.md)
 
 ## Evidence emitted
 

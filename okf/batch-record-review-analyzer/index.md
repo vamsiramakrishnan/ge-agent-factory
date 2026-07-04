@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Batch Record Review Analyzer
-description: "Screens the full batch record against specifications, procedure limits, and e-signature completeness the moment production closes the order in MES. Generates a review-by-exception summary listing only the entries that deviate, with links to the source records in SAP QM. so the Quality Systems Lead can move the Batch record review time KPI."
+description: "Screen every inspection_lots and quality_checks record against spec limits, AQL sampling rules, and e-signature completeness the moment Siemens Opcenter MES closes a production order, cutting batch record review time from 6 hours to 45 minutes per batch and release cycle time from 5 days to 1.5 days, while driving review findings missed until audit from 12 per year down to 2."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/batch-record-review
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:09.049Z"
+provenance_created_at: "2026-07-04T06:18:18.073Z"
 ---
 
 # Batch Record Review Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:09.049Z"
 
 - **Persona:** Quality Systems Lead
 - **Department:** manufacturing
-- **Objective:** Screens the full batch record against specifications, procedure limits, and e-signature completeness the moment production closes the order in MES. Generates a review-by-exception summary listing only the entries that deviate, with links to the source records in SAP QM. so the Quality Systems Lead can move the Batch record review time KPI.
+- **Objective:** Screen every inspection_lots and quality_checks record against spec limits, AQL sampling rules, and e-signature completeness the moment Siemens Opcenter MES closes a production order, cutting batch record review time from 6 hours to 45 minutes per batch and release cycle time from 5 days to 1.5 days, while driving review findings missed until audit from 12 per year down to 2.
 
 ## KPI summary
 

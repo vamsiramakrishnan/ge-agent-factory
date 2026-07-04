@@ -53,8 +53,10 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [mediation_to_rating_reconciliation](/workflow/mediation-to-rating-reconciliation.md)
+- [unbilled_service_detection_provisioning_vs_catalog](/workflow/unbilled-service-detection-provisioning-vs-catalog.md)
+- [runbook_gated_evidence_validation](/workflow/runbook-gated-evidence-validation.md)
+- [recovery_action_escalation_audit_trail](/workflow/recovery-action-escalation-audit-trail.md)
 
 ## Evals
 

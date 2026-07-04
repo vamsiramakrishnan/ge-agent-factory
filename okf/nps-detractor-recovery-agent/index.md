@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: NPS Detractor Recovery Agent
-description: "The agent triages every detractor response within minutes, matching the verbatim against the account's incident, billing, and contact history. It drafts a personalized recovery outreach with a concrete remedy and routes it to the right owner with a response-time SLA. so the Customer Experience Manager can move the Detractor follow-up rate KPI."
+description: "Lift the detractor follow-up rate from 8% to 92% and grow detractor-to-passive/promoter conversion from 11% to 34% by matching every low satisfaction_scores verbatim to the account's customer_interactions, queue_metrics, and agent_schedules history within minutes, then routing a governance-checked recovery outreach before the response-time SLA lapses."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/nps-detractor-recov
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:41.037Z"
+provenance_created_at: "2026-07-04T06:18:49.678Z"
 ---
 
 # NPS Detractor Recovery Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:41.037Z"
 
 - **Persona:** Customer Experience Manager
 - **Department:** telco
-- **Objective:** The agent triages every detractor response within minutes, matching the verbatim against the account's incident, billing, and contact history. It drafts a personalized recovery outreach with a concrete remedy and routes it to the right owner with a response-time SLA. so the Customer Experience Manager can move the Detractor follow-up rate KPI.
+- **Objective:** Lift the detractor follow-up rate from 8% to 92% and grow detractor-to-passive/promoter conversion from 11% to 34% by matching every low satisfaction_scores verbatim to the account's customer_interactions, queue_metrics, and agent_schedules history within minutes, then routing a governance-checked recovery outreach before the response-time SLA lapses.
 
 ## KPI summary
 

@@ -37,3 +37,4 @@ Must cite: guidewire_policycenter.policies, bigquery.analytics_events
 # Citations
 
 - [Small Commercial Quote-Bind STP Engine Authority & Referral Guide](/documents/small-commercial-quote-bind-stp-engine-authority-guide.md)
+- [Small Commercial Filed Rate Manual & Rating Plan](/documents/small-commercial-filed-rate-manual.md)

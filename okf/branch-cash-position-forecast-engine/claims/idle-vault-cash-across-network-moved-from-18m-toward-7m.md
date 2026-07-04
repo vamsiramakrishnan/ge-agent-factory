@@ -37,3 +37,4 @@ Must cite: temenos_transact.core_accounts, bigquery.analytics_events
 # Citations
 
 - [Branch Cash Position Forecast Engine Banking Compliance Policy](/documents/branch-cash-position-forecast-engine-compliance-policy.md)
+- [Cash-in-Transit Carrier Manifest & Insurance Limits Schedule](/documents/cash-in-transit-carrier-manifest-insurance-schedule.md)

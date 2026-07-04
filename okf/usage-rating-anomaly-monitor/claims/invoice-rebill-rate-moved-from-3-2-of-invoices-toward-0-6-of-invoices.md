@@ -37,3 +37,4 @@ Must cite: amdocs_ces_billing.billing_accounts, bigquery.analytics_events
 # Citations
 
 - [Usage Rating Anomaly Monitor Service Assurance Runbook](/documents/usage-rating-anomaly-monitor-assurance-runbook.md)
+- [Rerate & Bill-Cycle Hold Governance Policy](/documents/usage-rating-anomaly-monitor-rerate-billhold-policy.md)

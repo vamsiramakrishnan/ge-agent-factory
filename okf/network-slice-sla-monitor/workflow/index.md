@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Slice Telemetry & Alarm Intake](/workflow/slice-telemetry-alarm-intake.md)
+2. [Baseline & Variance Analysis](/workflow/baseline-variance-analysis.md)
+3. [Breach Scoring & Credit Exposure](/workflow/breach-scoring-credit-exposure.md)
+4. [Runbook Evidence Validation](/workflow/runbook-evidence-validation.md)
+5. [Escalation, Ticketing & Audit Close-out](/workflow/escalation-ticketing-audit-close-out.md)

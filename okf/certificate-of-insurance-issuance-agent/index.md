@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Certificate of Insurance Issuance Agent
-description: "Generates ACORD certificates directly from live Duck Creek policy data the moment a request arrives, eliminating transcription. Validates requested holder wording against approved language and auto-issues standard certificates with delivery via DocuSign. so the Policy Services Rep can move the COI issuance turnaround KPI."
+description: "Generate ACORD certificates of insurance directly from live Duck Creek Policy coverage data the instant a holder request arrives and deliver them via DocuSign, cutting COI issuance turnaround from 24 hours to 10 minutes and reducing certificates issued with incorrect holder or coverage data from 7% to 0.5%."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/certificate-of-insu
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:59.430Z"
+provenance_created_at: "2026-07-04T06:18:08.335Z"
 ---
 
 # Certificate of Insurance Issuance Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:59.430Z"
 
 - **Persona:** Policy Services Rep
 - **Department:** insurance
-- **Objective:** Generates ACORD certificates directly from live Duck Creek policy data the moment a request arrives, eliminating transcription. Validates requested holder wording against approved language and auto-issues standard certificates with delivery via DocuSign. so the Policy Services Rep can move the COI issuance turnaround KPI.
+- **Objective:** Generate ACORD certificates of insurance directly from live Duck Creek Policy coverage data the instant a holder request arrives and deliver them via DocuSign, cutting COI issuance turnaround from 24 hours to 10 minutes and reducing certificates issued with incorrect holder or coverage data from 7% to 0.5%.
 
 ## KPI summary
 

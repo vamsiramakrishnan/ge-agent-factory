@@ -37,3 +37,4 @@ Must cite: genesys_cloud_cx.customer_interactions, bigquery.analytics_events
 # Citations
 
 - [Churn Save Desk Agent Service Assurance Runbook](/documents/churn-save-desk-agent-assurance-runbook.md)
+- [Retention Offer Rate Card & Approval Authority Schedule](/documents/retention-offer-rate-schedule.md)

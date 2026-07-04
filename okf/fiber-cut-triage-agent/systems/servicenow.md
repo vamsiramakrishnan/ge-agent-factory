@@ -26,3 +26,4 @@ tickets, change requests, incidents records
 
 - [query_servicenow_tickets](/tools/query-servicenow-tickets.md)
 - [action_servicenow_route](/tools/action-servicenow-route.md)
+- [lookup_fiber_cut_triage_agent_locate_damage_prevention_policy](/tools/lookup-fiber-cut-triage-agent-locate-damage-prevention-policy.md)

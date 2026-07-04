@@ -37,3 +37,4 @@ Must cite: murex_mx_3.trades, bigquery.analytics_events
 # Citations
 
 - [End-of-Day P&L Attribution Analyzer Banking Compliance Policy](/documents/eod-pnl-attribution-analyzer-compliance-policy.md)
+- [Daily P&L Substantiation and Break Escalation Runbook](/documents/eod-pnl-attribution-analyzer-substantiation-runbook.md)

@@ -26,3 +26,5 @@ sensor readings, asset tag hierarchies, downtime events records
 
 - [query_osisoft_pi_system_sensor_readings](/tools/query-osisoft-pi-system-sensor-readings.md)
 - [lookup_energy_intensity_monitoring_engine_sop](/tools/lookup-energy-intensity-monitoring-engine-sop.md)
+- [query_osisoft_pi_system_asset_tag_hierarchies](/tools/query-osisoft-pi-system-asset-tag-hierarchies.md)
+- [query_osisoft_pi_system_downtime_events](/tools/query-osisoft-pi-system-downtime-events.md)

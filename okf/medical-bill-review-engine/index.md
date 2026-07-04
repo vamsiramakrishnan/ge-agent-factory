@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Medical Bill Review Engine
-description: "Extracts line items from incoming medical bills and validates codes against fee schedules, treatment guidelines, and the claim's injury profile. Detects duplicates, upcoding, and unbundling by comparing against the claimant's full billing history in BigQuery. so the Claims Adjuster can move the Bill review turnaround KPI."
+description: "Cut medical bill review turnaround from 12 days to 1 day and lift duplicate/unbundled-charge catch rate from 62% to 96% by validating every CMS-1500/UB-04 line item in claims and claim_exposures against fee-schedule and coding rules before recommending pay, reduce, or deny."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/medical-bill-review
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:56.004Z"
+provenance_created_at: "2026-07-04T06:18:04.774Z"
 ---
 
 # Medical Bill Review Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:56.004Z"
 
 - **Persona:** Claims Adjuster
 - **Department:** insurance
-- **Objective:** Extracts line items from incoming medical bills and validates codes against fee schedules, treatment guidelines, and the claim's injury profile. Detects duplicates, upcoding, and unbundling by comparing against the claimant's full billing history in BigQuery. so the Claims Adjuster can move the Bill review turnaround KPI.
+- **Objective:** Cut medical bill review turnaround from 12 days to 1 day and lift duplicate/unbundled-charge catch rate from 62% to 96% by validating every CMS-1500/UB-04 line item in claims and claim_exposures against fee-schedule and coding rules before recommending pay, reduce, or deny.
 
 ## KPI summary
 

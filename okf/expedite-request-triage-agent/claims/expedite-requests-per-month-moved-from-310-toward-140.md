@@ -37,3 +37,4 @@ Must cite: kinaxis_rapidresponse.supply_plans, sap_s_4hana_mm.purchase_orders
 # Citations
 
 - [Expedite Request Triage Agent Standard Operating Procedure](/documents/expedite-request-triage-agent-sop.md)
+- [Premium Freight & Expedite Rate Schedule](/documents/expedite-request-triage-agent-rate-schedule.md)

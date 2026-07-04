@@ -11,3 +11,6 @@ timestamp: "2026-07-04T00:00:00.000Z"
 - [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
 - [lookup_pos_exception_triage_agent_execution_playbook](/tools/lookup-pos-exception-triage-agent-execution-playbook.md)
 - [action_oracle_xstore_pos_escalate](/tools/action-oracle-xstore-pos-escalate.md)
+- [query_oracle_xstore_pos_tender_records](/tools/query-oracle-xstore-pos-tender-records.md)
+- [query_oracle_xstore_pos_store_shift_summaries](/tools/query-oracle-xstore-pos-store-shift-summaries.md)
+- [lookup_emv_fallback_offline_auth_bulletin](/tools/lookup-emv-fallback-offline-auth-bulletin.md)

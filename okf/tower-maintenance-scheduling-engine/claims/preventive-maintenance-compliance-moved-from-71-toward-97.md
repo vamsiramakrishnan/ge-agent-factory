@@ -37,3 +37,4 @@ Must cite: oracle_field_service.field_work_orders, bigquery.analytics_events
 # Citations
 
 - [Tower Maintenance Scheduling Engine Service Assurance Runbook](/documents/tower-maintenance-scheduling-engine-assurance-runbook.md)
+- [Tower Climb & RF Power-Down Safety Work Instruction](/documents/tower-climb-rf-safety-work-instruction.md)

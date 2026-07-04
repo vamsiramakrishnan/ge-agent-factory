@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Scenario Intake & Assumption Framing](/workflow/scenario-intake-assumption-framing.md)
+2. [Scenario Execution in RapidResponse](/workflow/scenario-execution-in-rapid-response.md)
+3. [Gap Attribution & Financial Translation](/workflow/gap-attribution-financial-translation.md)
+4. [SOP & Rate-Schedule Evidence Gating](/workflow/sop-rate-schedule-evidence-gating.md)
+5. [Executive Briefing Publish & Escalation](/workflow/executive-briefing-publish-escalation.md)

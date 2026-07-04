@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: CAPA Orchestration Agent
-description: "Opens a structured CAPA workspace when a qualifying notification is raised in SAP QM, drafts the problem statement, and proposes similar historical CAPAs from BigQuery. Creates and routes containment, root-cause, and corrective-action tasks in ServiceNow with due dates, and escalates stalled tasks to the quality manager. so the Quality Manager can move the Average CAPA cycle time KPI."
+description: "Cut average CAPA cycle time from 84 days to 31 days and overdue CAPA actions from 38% to 6% by opening a structured CAPA workspace off qualifying nonconformance_records in SAP S/4HANA QM, routing containment, root-cause, and corrective-action tickets through ServiceNow with due_date tracking, and reopening any capa_actions record whose post-closure effectiveness check fails to catch a recurring defect_code."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/capa-orchestration-
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:07.801Z"
+provenance_created_at: "2026-07-04T06:18:16.812Z"
 ---
 
 # CAPA Orchestration Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:07.801Z"
 
 - **Persona:** Quality Manager
 - **Department:** manufacturing
-- **Objective:** Opens a structured CAPA workspace when a qualifying notification is raised in SAP QM, drafts the problem statement, and proposes similar historical CAPAs from BigQuery. Creates and routes containment, root-cause, and corrective-action tasks in ServiceNow with due dates, and escalates stalled tasks to the quality manager. so the Quality Manager can move the Average CAPA cycle time KPI.
+- **Objective:** Cut average CAPA cycle time from 84 days to 31 days and overdue CAPA actions from 38% to 6% by opening a structured CAPA workspace off qualifying nonconformance_records in SAP S/4HANA QM, routing containment, root-cause, and corrective-action tickets through ServiceNow with due_date tracking, and reopening any capa_actions record whose post-closure effectiveness check fails to catch a recurring defect_code.
 
 ## KPI summary
 

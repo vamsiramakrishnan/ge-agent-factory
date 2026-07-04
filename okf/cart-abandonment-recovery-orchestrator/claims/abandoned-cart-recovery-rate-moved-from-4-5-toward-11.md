@@ -37,3 +37,4 @@ Must cite: salesforce_commerce_cloud.online_orders, salesforce_marketing_cloud.a
 # Citations
 
 - [Cart Abandonment Recovery Orchestrator Retail Execution Playbook](/documents/cart-abandonment-recovery-orchestrator-execution-playbook.md)
+- [Cart Recovery Incentive & Consumer Protection Compliance Policy](/documents/cart-abandonment-recovery-orchestrator-incentive-compliance-policy.md)

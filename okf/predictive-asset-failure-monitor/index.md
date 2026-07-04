@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Predictive Asset Failure Monitor
-description: "Continuously scores critical-asset sensor streams from the PI System in BigQuery against learned degradation signatures. Raises an early-warning alert with estimated remaining useful life when an asset's signature departs from its healthy baseline. so the Reliability Engineer can move the Unplanned downtime hours KPI."
+description: "Continuously score vibration_mm_s, temperature_c, and pressure_bar sensor_readings against historical_metrics baselines to catch developing failure modes on critical assets before functional loss, cutting Unplanned downtime hours from 540 hrs/yr to 210 hrs/yr and raising failures predicted before functional loss from 12% to 68%."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/predictive-asset-fa
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:09.466Z"
+provenance_created_at: "2026-07-04T06:18:18.500Z"
 ---
 
 # Predictive Asset Failure Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:09.466Z"
 
 - **Persona:** Reliability Engineer
 - **Department:** manufacturing
-- **Objective:** Continuously scores critical-asset sensor streams from the PI System in BigQuery against learned degradation signatures. Raises an early-warning alert with estimated remaining useful life when an asset's signature departs from its healthy baseline. so the Reliability Engineer can move the Unplanned downtime hours KPI.
+- **Objective:** Continuously score vibration_mm_s, temperature_c, and pressure_bar sensor_readings against historical_metrics baselines to catch developing failure modes on critical assets before functional loss, cutting Unplanned downtime hours from 540 hrs/yr to 210 hrs/yr and raising failures predicted before functional loss from 12% to 68%.
 
 ## KPI summary
 

@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Indication Data Assembly](/workflow/indication-data-assembly.md)
+2. [Trend & Loss Development Selection](/workflow/trend-loss-development-selection.md)
+3. [Territory & Relativity Review](/workflow/territory-relativity-review.md)
+4. [Indication Calculation & Authority Gate](/workflow/indication-calculation-authority-gate.md)
+5. [Exhibit Generation & Filing Handoff](/workflow/exhibit-generation-filing-handoff.md)

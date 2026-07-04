@@ -53,12 +53,15 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
+- [elasticity_zone_intake](/workflow/elasticity-zone-intake.md)
+- [aging_inventory_detection](/workflow/aging-inventory-detection.md)
+- [playbook_guardrail_validation](/workflow/playbook-guardrail-validation.md)
+- [escalate_audit](/workflow/escalate-audit.md)
 
 ## Evals
 
 - [Run the Markdown Optimization Engine workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/markdown-optimization-engine-end-to-end.md)
+- [SKU 48213076 in price_zone 17 shows a recommended_retail of $6.49 in price_recommendations dated 2026-06-28, but Oracle Retail MFCS logged a cost_changes record effective 2026-07-01 raising new_unit_cost from $4.10 to $6.85 for the same SKU due to a tariff_adjustment. Reconcile whether the markdown can still go out, and if not, tell me what to do.](/tests/markdown-optimization-engine-cost-vs-markdown-conflict.md)
 
 ## Evidence emitted
 

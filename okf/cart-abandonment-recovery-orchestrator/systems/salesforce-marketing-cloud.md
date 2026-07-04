@@ -25,3 +25,4 @@ accounts, opportunities, campaign influence records
 ## Tools using this system
 
 - [query_salesforce_marketing_cloud_accounts](/tools/query-salesforce-marketing-cloud-accounts.md)
+- [lookup_cart_abandonment_recovery_orchestrator_incentive_compliance_policy](/tools/lookup-cart-abandonment-recovery-orchestrator-incentive-compliance-policy.md)

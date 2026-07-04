@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Changeover Time Optimization Agent
-description: "Analyzes every changeover recorded in Opcenter MES weekly and benchmarks duration by crew, product family, and sequence. Recommends changeover-family-aware sequencing adjustments to the SAP S/4HANA PP planned order sequence. so the Production Supervisor can move the Average changeover time KPI."
+description: "Cut average changeover time from 47 minutes to 28 minutes and reduce changeovers exceeding standard from 35% to 9% by correlating Siemens Opcenter MES machine_events and SAP S/4HANA PP work_center_confirmations against crew- and product-family-level benchmarks in BigQuery, then recommending changeover-family-aware resequencing of the SAP S/4HANA PP planned process_orders sequence."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/changeover-time-opt
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:06.548Z"
+provenance_created_at: "2026-07-04T06:18:15.537Z"
 ---
 
 # Changeover Time Optimization Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:06.548Z"
 
 - **Persona:** Production Supervisor
 - **Department:** manufacturing
-- **Objective:** Analyzes every changeover recorded in Opcenter MES weekly and benchmarks duration by crew, product family, and sequence. Recommends changeover-family-aware sequencing adjustments to the SAP S/4HANA PP planned order sequence. so the Production Supervisor can move the Average changeover time KPI.
+- **Objective:** Cut average changeover time from 47 minutes to 28 minutes and reduce changeovers exceeding standard from 35% to 9% by correlating Siemens Opcenter MES machine_events and SAP S/4HANA PP work_center_confirmations against crew- and product-family-level benchmarks in BigQuery, then recommending changeover-family-aware resequencing of the SAP S/4HANA PP planned process_orders sequence.
 
 ## KPI summary
 

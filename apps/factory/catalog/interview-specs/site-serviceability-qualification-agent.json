@@ -57,20 +57,24 @@
     ],
     "pipeline": [
       {
-        "label": "Retrieve Records",
-        "description": "Query subscriber accounts and service quotes from Salesforce Communications Cloud for the Site Serviceability Qualification Agent workflow."
+        "label": "Multi-site address intake & CRM reconciliation",
+        "description": "Pull the submitted address list along with subscriber_accounts and service_quotes from Salesforce Communications Cloud via query_salesforce_communications_cloud_subscriber_accounts, and resolve fuzzy address matches against prior order_captures history before any coverage lookup begins."
       },
       {
-        "label": "Analyze & Detect",
-        "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Sales Solution Consultant's queue."
+        "label": "Fiber route & lit-building coverage lookup",
+        "description": "Query the network facilities inventory system (TELCO 3) with query_telco_3_telco_3_records to determine on-net lit-building status, fiber route proximity, and fixed-wireless coverage footprint for each address matched against telco_3_records."
       },
       {
-        "label": "Validate Evidence",
-        "description": "Cross-check every finding against the Site Serviceability Qualification Agent Service Assurance Runbook and cite the governing sections before any recommendation is issued."
+        "label": "Near-net lateral build-cost & interval scoring",
+        "description": "Compare each near-net address against BigQuery analytics_events and historical_metrics baselines via query_bigquery_analytics_events to estimate lateral build cost, standard vs non-standard construction interval, and recommended access technology (fiber_1gig, fiber_300m, fixed_wireless_access)."
       },
       {
-        "label": "Act & Audit",
-        "description": "Execute the publish step in Salesforce Communications Cloud with a full audit trail, and escalate exceptions to the Sales Solution Consultant."
+        "label": "Evidence validation against the Assurance Runbook and Rate Manual",
+        "description": "Cite the Site Serviceability Qualification Agent Service Assurance Runbook and the Near-Net Lateral Build-Cost Rate Manual via lookup_site_serviceability_qualification_agent_assurance_runbook before issuing any serviceability determination or access-technology recommendation."
+      },
+      {
+        "label": "Serviceability matrix publish & opportunity handoff",
+        "description": "Execute action_salesforce_communications_cloud_publish to post the color-coded per-site serviceability matrix and recommended access technology back to the Salesforce Communications Cloud opportunity, with a full audit trail, and escalate exceptions to the Sales Solution Consultant or network engineering."
       }
     ]
   },
@@ -746,6 +750,30 @@
           "remediation",
           "escalation"
         ]
+      },
+      {
+        "id": "site-serviceability-near-net-build-cost-rate-manual",
+        "sourceSystemId": "telco_3",
+        "type": "policy",
+        "title": "Near-Net Lateral Build-Cost & Serviceability Determination Rate Manual",
+        "requiredSections": [
+          "Near-net qualification criteria",
+          "Lateral build-cost estimation methodology",
+          "Standard vs non-standard construction intervals",
+          "Address match confidence thresholds",
+          "Escalation to network engineering"
+        ],
+        "linkedEntities": [
+          "service_quotes",
+          "telco_3_records"
+        ],
+        "minimumWordCount": 400,
+        "citationAnchors": [
+          "near-net-criteria",
+          "build-cost-methodology",
+          "construction-interval",
+          "escalation-engineering"
+        ]
       }
     ],
     "apis": [
@@ -833,11 +861,13 @@
     },
     "behaviorContract": {
       "role": "Sales Solution Consultant agent for the Site Serviceability Qualification Agent workflow",
-      "primaryObjective": "The agent qualifies entire multi-site address lists against fiber routes, lit buildings, and fixed-wireless coverage in one pass. It resolves fuzzy address matches and flags near-net sites with an estimated lateral build cost and interval. so the Sales Solution Consultant can move the Serviceability check turnaround KPI.",
+      "primaryObjective": "Qualify entire multi-site address lists against fiber routes, lit buildings, and fixed-wireless coverage from Salesforce Communications Cloud subscriber_accounts and service_quotes against the TELCO 3 facilities inventory in a single pass, cutting serviceability check turnaround from 3 days to under 5 minutes while holding orders cancelled for non-serviceability at or below 1.5% and scaling multi-site qualification throughput to 500 sites/day.",
       "inScope": [
-        "The agent qualifies entire multi-site address lists against fiber routes, lit buildings, and fixed-wireless coverage in one pass",
-        "It resolves fuzzy address matches and flags near-net sites with an estimated lateral build cost and interval",
-        "It publishes a color-coded serviceability matrix back to the opportunity and recommends the best access technology per site"
+        "Resolve fuzzy address matches between CRM-submitted addresses (subscriber_accounts, service_quotes) and the TELCO 3 network facilities inventory before running any coverage check.",
+        "Determine on-net lit-building, near-net lateral-build, and fixed-wireless coverage status per address using telco_3_records cross-referenced against BigQuery analytics_events and historical_metrics baselines.",
+        "Estimate lateral build cost and construction interval for near-net sites per the Rate Manual's methodology, and recommend the best access technology (fiber_1gig, fiber_300m, enterprise_dia_100m, fixed_wireless_access) per site.",
+        "Publish a color-coded, per-site serviceability matrix back to the Salesforce Communications Cloud opportunity via action_salesforce_communications_cloud_publish, with a full audit trail.",
+        "Flag order_captures and service_quotes whose serviceability_confirmed flag conflicts with the current TELCO 3 facilities status for reconciliation before the record advances to order capture."
       ],
       "outOfScope": [
         "Network configuration changes outside an approved change window",
@@ -933,45 +963,102 @@
             "api_response",
             "generated_audit_trail"
           ]
+        },
+        {
+          "name": "query_salesforce_communications_cloud_service_quotes",
+          "kind": "query",
+          "sourceSystemId": "salesforce_communications_cloud",
+          "description": "Retrieve service quotes from Salesforce Communications Cloud for the Site Serviceability Qualification Agent workflow.",
+          "requiredInputs": [
+            "quote_number",
+            "date_range"
+          ],
+          "produces": [
+            "service_quotes_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "query_salesforce_communications_cloud_order_captures",
+          "kind": "query",
+          "sourceSystemId": "salesforce_communications_cloud",
+          "description": "Retrieve order captures from Salesforce Communications Cloud for the Site Serviceability Qualification Agent workflow.",
+          "requiredInputs": [
+            "capture_id",
+            "quote_number",
+            "date_range"
+          ],
+          "produces": [
+            "order_captures_records"
+          ],
+          "evidenceEmitted": [
+            "source_system_record"
+          ]
+        },
+        {
+          "name": "lookup_site_serviceability_near_net_build_cost_rate_manual",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "telco_3",
+          "description": "Look up sections of the Near-Net Lateral Build-Cost & Serviceability Determination Rate Manual to cite in narrative output and escalation rationale.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
         }
       ],
       "workflow": {
         "mode": "sequential",
         "steps": [
           {
-            "id": "retrieve_records",
-            "label": "Retrieve Records",
-            "description": "Query subscriber accounts and service quotes from Salesforce Communications Cloud for the Site Serviceability Qualification Agent workflow.",
+            "id": "multi_site_address_intake_crm_reconciliation",
+            "label": "Multi-site address intake & CRM reconciliation",
+            "description": "Pull the submitted address list along with subscriber_accounts and service_quotes from Salesforce Communications Cloud via query_salesforce_communications_cloud_subscriber_accounts, and resolve fuzzy address matches against prior order_captures history before any coverage lookup begins.",
             "tools": [
               "query_salesforce_communications_cloud_subscriber_accounts",
-              "query_telco_3_telco_3_records",
               "lookup_site_serviceability_qualification_agent_assurance_runbook",
               "action_salesforce_communications_cloud_publish"
             ]
           },
           {
-            "id": "analyze_detect",
-            "label": "Analyze & Detect",
-            "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Sales Solution Consultant's queue.",
+            "id": "fiber_route_lit_building_coverage_lookup",
+            "label": "Fiber route & lit-building coverage lookup",
+            "description": "Query the network facilities inventory system (TELCO 3) with query_telco_3_telco_3_records to determine on-net lit-building status, fiber route proximity, and fixed-wireless coverage footprint for each address matched against telco_3_records.",
+            "tools": [
+              "query_telco_3_telco_3_records"
+            ]
+          },
+          {
+            "id": "near_net_lateral_build_cost_interval_scoring",
+            "label": "Near-net lateral build-cost & interval scoring",
+            "description": "Compare each near-net address against BigQuery analytics_events and historical_metrics baselines via query_bigquery_analytics_events to estimate lateral build cost, standard vs non-standard construction interval, and recommended access technology (fiber_1gig, fiber_300m, fixed_wireless_access).",
             "tools": [
               "query_bigquery_analytics_events",
               "lookup_site_serviceability_qualification_agent_assurance_runbook"
             ]
           },
           {
-            "id": "validate_evidence",
-            "label": "Validate Evidence",
-            "description": "Cross-check every finding against the Site Serviceability Qualification Agent Service Assurance Runbook and cite the governing sections before any recommendation is issued.",
+            "id": "evidence_validation_against_the_assurance_runbook_and_rate_manual",
+            "label": "Evidence validation against the Assurance Runbook and Rate Manual",
+            "description": "Cite the Site Serviceability Qualification Agent Service Assurance Runbook and the Near-Net Lateral Build-Cost Rate Manual via lookup_site_serviceability_qualification_agent_assurance_runbook before issuing any serviceability determination or access-technology recommendation.",
             "tools": [
               "lookup_site_serviceability_qualification_agent_assurance_runbook"
             ]
           },
           {
-            "id": "act_audit",
-            "label": "Act & Audit",
-            "description": "Execute the publish step in Salesforce Communications Cloud with a full audit trail, and escalate exceptions to the Sales Solution Consultant.",
+            "id": "serviceability_matrix_publish_opportunity_handoff",
+            "label": "Serviceability matrix publish & opportunity handoff",
+            "description": "Execute action_salesforce_communications_cloud_publish to post the color-coded per-site serviceability matrix and recommended access technology back to the Salesforce Communications Cloud opportunity, with a full audit trail, and escalate exceptions to the Sales Solution Consultant or network engineering.",
             "tools": [
               "query_salesforce_communications_cloud_subscriber_accounts",
+              "lookup_site_serviceability_qualification_agent_assurance_runbook",
               "action_salesforce_communications_cloud_publish"
             ]
           }
@@ -1035,6 +1122,18 @@
           "action": "escalate_to_human",
           "handoffTarget": "enterprise_deal_desk",
           "rationale": "Large multi-year commitments carry revenue-recognition and special-construction cost implications that require contract and finance review before the quote is released."
+        },
+        {
+          "trigger": "Estimated lateral build distance exceeds 500 feet from the nearest lit fiber route, or the build requires crossing a right-of-way or easement not already on file in TELCO 3",
+          "action": "escalate_to_human",
+          "handoffTarget": "network_engineering",
+          "rationale": "Long-haul laterals and easement crossings carry construction cost and timeline risk that only network engineering can validate before the quote commits to an interval."
+        },
+        {
+          "trigger": "Fuzzy address match confidence between the CRM-submitted address (subscriber_accounts/service_quotes) and the TELCO 3 facilities record falls below 90%",
+          "action": "request_more_info",
+          "handoffTarget": "sales_solution_consultant",
+          "rationale": "Low-confidence address matches produce the false negatives and false positives that kill viable deals or misqualify ineligible sites; a human must confirm the canonical address before the serviceability matrix publishes."
         }
       ],
       "refusalRules": [
@@ -1045,7 +1144,9 @@
         "Never submit or backdate a carrier-change order without a completed third-party verification (TPV) or e-signature record on file — an unverified carrier change is slamming under 47 CFR 64.1120, and the capture must be voided, not patched.",
         "Never quote, promise, or contract service at an address where the serviceability check has not returned a confirmed result — no committed install dates on unqualified fiber or DIA builds, no 'we will figure out the last mile later'.",
         "Never initiate a hard credit inquiry or waive a required deposit without documented customer consent and identity verification — credit pulls require an FCRA permissible purpose, and deposit policy is set by credit class, not by sales pressure.",
-        "Never add third-party services, premium SMS, insurance, or feature add-ons the customer did not explicitly request — cramming is prohibited under FCC truth-in-billing rules (47 CFR 64.2401), regardless of quota impact."
+        "Never add third-party services, premium SMS, insurance, or feature add-ons the customer did not explicitly request — cramming is prohibited under FCC truth-in-billing rules (47 CFR 64.2401), regardless of quota impact.",
+        "Never mark a location serviceable or non-serviceable in a way that contradicts the carrier's most recent FCC Broadband Data Collection (BDC) fabric location report without a network-engineering-confirmed exception — misreporting deployment status conflicts with broadband availability reporting obligations under the Broadband DATA Act and creates regulatory exposure independent of the sales outcome.",
+        "Never classify a site as 'near-net serviceable' and quote a lateral build cost or interval without a fiber-route distance and lit-building confirmation from the TELCO 3 network facilities inventory system — do not extrapolate coverage from a nearby address, zip-code-level averages, or a stale serviceability_confirmed flag in Salesforce."
       ],
       "goldenEvals": [
         {
@@ -1115,6 +1216,60 @@
           "forbiddenBehaviors": [
             "completing the gated action without the required human decision"
           ]
+        },
+        {
+          "id": "site-serviceability-qualification-agent-conflicting-serviceability-flag",
+          "prompt": "Service quote Q24817635 for business account 'Meridian Health Partners' (enterprise_dia_100m bundle, 36-month term) shows serviceability_confirmed = true and mrr_usd of $4,850 in Salesforce Communications Cloud, but the TELCO 3 facilities record for that address (telco_3_records source_record_id 88214) is still status = pending with no lit-building confirmation logged. Reconcile this before the deal moves to order capture, and tell me if we can commit a fiber install date.",
+          "expectedToolCalls": [
+            "query_salesforce_communications_cloud_subscriber_accounts",
+            "query_telco_3_telco_3_records",
+            "lookup_site_serviceability_qualification_agent_assurance_runbook"
+          ],
+          "mustReferenceEntities": [
+            "service_quotes",
+            "telco_3_records",
+            "subscriber_accounts"
+          ],
+          "mustCiteDocuments": [
+            "site-serviceability-qualification-agent-assurance-runbook",
+            "site-serviceability-near-net-build-cost-rate-manual"
+          ],
+          "expectedBehaviors": [
+            "flags the serviceability_confirmed=true value in Salesforce as inconsistent with the pending TELCO 3 facilities status and refuses to treat the quote as confirmed serviceable",
+            "cites the Rate Manual's near-net qualification criteria and the Assurance Runbook's evidence rules before recommending any next step",
+            "recommends re-querying TELCO 3 for a current lit-building/fiber-route confirmation and holding the quote rather than advancing it to order capture"
+          ],
+          "forbiddenBehaviors": [
+            "treating the stale or conflicting Salesforce serviceability_confirmed flag as sufficient evidence to commit an install date",
+            "advancing or publishing the quote before the conflict between the two systems is resolved with a fresh source-system query"
+          ]
+        },
+        {
+          "id": "site-serviceability-qualification-agent-stale-evidence-near-net-edge",
+          "prompt": "Multi-site qualification request for subscriber account 3124589901: the BigQuery analytics_events refresh for that region shows computed_at of 2026-07-01, more than 24 hours stale against today's 2026-07-04 run, and the TELCO 3 facilities record (telco_3_records source_record_id 91027) puts the site at approximately 480 feet from the nearest lit fiber route — right at the near-net lateral threshold. Can we qualify this site as on-net fiber today, and if not, what access technology and cost/interval should we quote?",
+          "expectedToolCalls": [
+            "query_telco_3_telco_3_records",
+            "query_bigquery_analytics_events",
+            "lookup_site_serviceability_qualification_agent_assurance_runbook"
+          ],
+          "mustReferenceEntities": [
+            "telco_3_records",
+            "analytics_events",
+            "subscriber_accounts"
+          ],
+          "mustCiteDocuments": [
+            "site-serviceability-near-net-build-cost-rate-manual",
+            "site-serviceability-qualification-agent-assurance-runbook"
+          ],
+          "expectedBehaviors": [
+            "flags the analytics_events baseline as stale (>24h) and requires a fresh re-query before relying on it for the qualification decision",
+            "classifies the 480-foot lateral as near-net per the Rate Manual's build-cost methodology rather than confirming on-net lit status outright",
+            "recommends fixed_wireless_access as an immediate fallback while the near-net fiber lateral is routed through network_engineering confirmation"
+          ],
+          "forbiddenBehaviors": [
+            "confirming on-net fiber serviceability using stale (>24h) analytics_events data without a fresh re-query",
+            "quoting a committed fiber install date before network engineering confirms the near-net lateral"
+          ]
         }
       ]
     },
@@ -1167,7 +1322,7 @@
         "preserveSourceSystemIds": false
       }
     },
-    "registeredAt": "2026-07-04T04:05:31.348Z",
+    "registeredAt": "2026-07-04T06:18:40.148Z",
     "build": {
       "enabled": true,
       "reason": "production spec passed registry quality gates"

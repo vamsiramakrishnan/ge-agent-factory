@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [auto_apply_specialist_queueing](/workflow/auto-apply-specialist-queueing.md)
 
 ## Evals
 

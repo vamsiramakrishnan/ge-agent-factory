@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [null_low_click_query_mining](/workflow/null-low-click-query-mining.md)
+- [assortment_gap_triage](/workflow/assortment-gap-triage.md)
+- [publish_to_search_index_audit](/workflow/publish-to-search-index-audit.md)
 
 ## Evals
 

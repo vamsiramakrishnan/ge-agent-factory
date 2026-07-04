@@ -52,12 +52,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [exposure_aggregation](/workflow/exposure-aggregation.md)
+- [pipeline_deal_simulation](/workflow/pipeline-deal-simulation.md)
+- [escalation_board_reporting](/workflow/escalation-board-reporting.md)
 
 ## Evals
 
 - [Run the Credit Portfolio Concentration Monitor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/credit-portfolio-concentration-monitor-end-to-end.md)
+- [Loan application 34821009 requests an $8.2M CRE mortgage for Meridian Logistics Partners LLC. credit_memos records show the same obligor group already carries $2.1M outstanding under memo #812044, and covenant_records shows covenant 614532 (minimum_dscr) reported breached on 2026-05-28, still not cured or waived as of today, 2026-07-04. Determine whether booking the new application would push aggregate obligor-group exposure past the $10,000,000 house limit, and separately assess whether the uncured covenant breach independently requires escalation.](/tests/credit-portfolio-concentration-monitor-obligor-aggregation-edge.md)
 
 ## Evidence emitted
 

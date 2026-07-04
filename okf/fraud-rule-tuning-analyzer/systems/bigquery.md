@@ -26,3 +26,4 @@ Historical baselines, analytics events, and KPI aggregates
 
 - [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
 - [lookup_fraud_rule_tuning_analyzer_compliance_policy](/tools/lookup-fraud-rule-tuning-analyzer-compliance-policy.md)
+- [lookup_fraud_rule_tuning_analyzer_model_risk_backtesting_standard](/tools/lookup-fraud-rule-tuning-analyzer-model-risk-backtesting-standard.md)

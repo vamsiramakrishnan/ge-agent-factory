@@ -37,3 +37,4 @@ Must cite: sphera_ehs.safety_incidents, osisoft_pi_system.sensor_readings
 # Citations
 
 - [Regulatory Emissions Reporting Agent Standard Operating Procedure](/documents/regulatory-emissions-reporting-agent-sop.md)
+- [Title V Deviation Reporting & Emission Factor Rate Manual](/documents/title-v-deviation-reporting-rate-manual.md)

@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [break_pattern_matching_against_historical_library](/workflow/break-pattern-matching-against-historical-library.md)
 
 ## Evals
 
 - [Run the End-of-Day P&L Attribution Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/eod-pnl-attribution-analyzer-end-to-end.md)
+- [Desk 'rates' is showing an unexplained P&L break against trade_id 412873650 (cusip 912828XG4) for the third straight business day (2026-07-01 through 2026-07-03), and the corresponding analytics_events variance_pct hasn't moved across those runs. Investigate whether this is a genuine market move or a booking-model issue, and tell me whether we can sign off by 10am today (2026-07-04).](/tests/eod-pnl-attribution-analyzer-recurring-break-desk-rates.md)
 
 ## Evidence emitted
 

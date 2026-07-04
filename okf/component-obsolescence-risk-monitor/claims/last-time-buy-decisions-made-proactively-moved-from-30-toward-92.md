@@ -37,3 +37,4 @@ Must cite: ptc_windchill_plm.engineering_change_orders, sap_s_4hana_mm.purchase_
 # Citations
 
 - [Component Obsolescence Risk Monitor Standard Operating Procedure](/documents/component-obsolescence-risk-monitor-sop.md)
+- [Export Control Classification & ITAR/EAR Technical Data Handling Policy](/documents/export-control-technical-data-handling-policy.md)

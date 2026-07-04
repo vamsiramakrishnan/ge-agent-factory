@@ -37,3 +37,4 @@ Must cite: kinaxis_rapidresponse.supply_plans, sap_s_4hana_mm.purchase_orders
 # Citations
 
 - [Material Shortage Early Warning Monitor Standard Operating Procedure](/documents/material-shortage-early-warning-monitor-sop.md)
+- [Expedite & Allocation Authority Matrix](/documents/expedite-allocation-authority-matrix.md)

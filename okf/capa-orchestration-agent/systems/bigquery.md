@@ -26,3 +26,4 @@ Historical baselines, analytics events, and KPI aggregates
 
 - [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
 - [lookup_capa_orchestration_agent_sop](/tools/lookup-capa-orchestration-agent-sop.md)
+- [lookup_nonconformance_disposition_mrb_authority_matrix](/tools/lookup-nonconformance-disposition-mrb-authority-matrix.md)

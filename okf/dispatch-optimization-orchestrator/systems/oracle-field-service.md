@@ -26,3 +26,6 @@ field work orders, technician schedules, service appointments records
 
 - [query_oracle_field_service_field_work_orders](/tools/query-oracle-field-service-field-work-orders.md)
 - [action_oracle_field_service_route](/tools/action-oracle-field-service-route.md)
+- [query_oracle_field_service_technician_schedules](/tools/query-oracle-field-service-technician-schedules.md)
+- [query_oracle_field_service_service_appointments](/tools/query-oracle-field-service-service-appointments.md)
+- [lookup_field_technician_certification_safety_work_instruction](/tools/lookup-field-technician-certification-safety-work-instruction.md)

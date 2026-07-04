@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Benchmark & Circular Intake](/workflow/benchmark-circular-intake.md)
+2. [Segment Loss Ratio Decomposition](/workflow/segment-loss-ratio-decomposition.md)
+3. [Credibility-Weighted Trend Confirmation](/workflow/credibility-weighted-trend-confirmation.md)
+4. [Authority & Referral Gate](/workflow/authority-referral-gate.md)
+5. [Escalation & Rate-Review Fast-Track](/workflow/escalation-rate-review-fast-track.md)

@@ -37,3 +37,4 @@ Must cite: nice_actimize.fraud_alerts, bigquery.analytics_events
 # Citations
 
 - [Fraud Alert Triage Agent Banking Compliance Policy](/documents/fraud-alert-triage-agent-compliance-policy.md)
+- [BSA/AML Suspicious Activity Report Filing & Deadline Playbook](/documents/sar-filing-deadline-playbook.md)

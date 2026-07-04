@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Care Call Resolution Copilot Agent
-description: "The copilot assembles a unified customer context panel with billing, outage, device, and order status before the agent says hello. It suggests the next-best troubleshooting step in real time based on the live conversation and known-issue signatures. so the Care Team Lead can move the First-call resolution KPI."
+description: "Give the Care Team Lead a single, CPNI-authenticated view of customer_interactions, queue_metrics, and Zendesk tickets/satisfaction_scores so front-line agents resolve billing, network, and retention contacts on the first call, lifting first-call resolution from 62% to 81% and cutting average handle time from 11.5 minutes to 7 minutes."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/care-call-resolutio
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:39.793Z"
+provenance_created_at: "2026-07-04T06:18:48.444Z"
 ---
 
 # Care Call Resolution Copilot Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:39.793Z"
 
 - **Persona:** Care Team Lead
 - **Department:** telco
-- **Objective:** The copilot assembles a unified customer context panel with billing, outage, device, and order status before the agent says hello. It suggests the next-best troubleshooting step in real time based on the live conversation and known-issue signatures. so the Care Team Lead can move the First-call resolution KPI.
+- **Objective:** Give the Care Team Lead a single, CPNI-authenticated view of customer_interactions, queue_metrics, and Zendesk tickets/satisfaction_scores so front-line agents resolve billing, network, and retention contacts on the first call, lifting first-call resolution from 62% to 81% and cutting average handle time from 11.5 minutes to 7 minutes.
 
 ## KPI summary
 

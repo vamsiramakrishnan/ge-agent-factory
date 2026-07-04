@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Enterprise RFP Response Agent
-description: "The agent drafts responses to each RFP question from a curated, version-controlled answer library and current product specs. It builds the compliance matrix automatically and flags mandatory requirements the standard portfolio cannot meet. so the Bid Manager can move the RFP first-draft time KPI."
+description: "The agent qualifies inbound carrier RFPs against subscriber_accounts and service_quotes, auto-builds the compliance matrix from BigQuery historical_metrics and analytics_events baselines, and routes gaps for SME sign-off, so RFP first-draft time falls from 10 days to 1 day and participation rate rises from 55% to 85% of qualified bids."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/enterprise-rfp-resp
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:32.521Z"
+provenance_created_at: "2026-07-04T06:18:41.269Z"
 ---
 
 # Enterprise RFP Response Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:32.521Z"
 
 - **Persona:** Bid Manager
 - **Department:** telco
-- **Objective:** The agent drafts responses to each RFP question from a curated, version-controlled answer library and current product specs. It builds the compliance matrix automatically and flags mandatory requirements the standard portfolio cannot meet. so the Bid Manager can move the RFP first-draft time KPI.
+- **Objective:** The agent qualifies inbound carrier RFPs against subscriber_accounts and service_quotes, auto-builds the compliance matrix from BigQuery historical_metrics and analytics_events baselines, and routes gaps for SME sign-off, so RFP first-draft time falls from 10 days to 1 day and participation rate rises from 55% to 85% of qualified bids.
 
 ## KPI summary
 

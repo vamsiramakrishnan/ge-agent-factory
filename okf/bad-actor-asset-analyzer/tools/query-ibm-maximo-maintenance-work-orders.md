@@ -53,12 +53,16 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [bad_actor_candidate_pull](/workflow/bad-actor-candidate-pull.md)
+- [composite_index_scoring](/workflow/composite-index-scoring.md)
+- [failure_mode_clustering](/workflow/failure-mode-clustering.md)
+- [defect_elimination_briefing_and_publish](/workflow/defect-elimination-briefing-and-publish.md)
 
 ## Evals
 
 - [Run the Bad Actor Asset Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/bad-actor-asset-analyzer-end-to-end.md)
+- [Asset 148203 is ranked #1 by repair cost this quarter in maintenance_work_orders ($142,500 across 6 work orders) but shows only 40 minutes of downtime_events in OSIsoft PI System for the same period, while asset 151877 has 2,340 minutes of downtime but only $18,000 in work order cost. Reconcile which one is the real top bad actor and explain the discrepancy before publishing the ranking to Looker.](/tests/bad-actor-asset-analyzer-index-reconciliation.md)
+- [Work order WO-4512207 alone cost $86,000 on asset 162044, an air_compressor with only 2 total maintenance_work_orders and no failure_codes on record this year. That single work order is enough to push asset 162044 into the top-10 bad-actor ranking. Should we include it in this week's defect-elimination briefing going to Looker?](/tests/bad-actor-asset-analyzer-thin-history-flag.md)
 
 ## Evidence emitted
 

@@ -25,3 +25,4 @@ tickets, macros, satisfaction scores records
 ## Tools using this system
 
 - [query_zendesk_tickets](/tools/query-zendesk-tickets.md)
+- [lookup_voice_of_customer_insights_analyzer_vendor_defect_escalation_runbook](/tools/lookup-voice-of-customer-insights-analyzer-vendor-defect-escalation-runbook.md)

@@ -53,12 +53,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [forecast_override_intake](/workflow/forecast-override-intake.md)
+- [parameter_push_audit](/workflow/parameter-push-audit.md)
 
 ## Evals
 
 - [Run the Store Replenishment Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/store-replenishment-orchestrator-end-to-end.md)
+- [Store 1417, SKU 48213207: the forecast_overrides record shows override_units of 640 approved by planner Jordan Reyes for override_week 2026-06-29, but the matching demand_forecasts row for that sku/store/forecast_week has wmape 0.58 and frozen_period_flag = true. Should we push this override into next week's Blue Yonder replenishment parameters?](/tests/store-replenishment-orchestrator-frozen-period-conflict.md)
 
 ## Evidence emitted
 

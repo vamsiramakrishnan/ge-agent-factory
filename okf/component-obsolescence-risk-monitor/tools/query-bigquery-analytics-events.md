@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [exposure_last_time_buy_quantification](/workflow/exposure-last-time-buy-quantification.md)
 
 ## Evals
 
 - [Run the Component Obsolescence Risk Monitor workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/component-obsolescence-risk-monitor-end-to-end.md)
+- [Engineering change order ECO 24583 (class_1_form_fit_function, supplier_obsolescence, affected_item_count 214) is at risk. The most recent BigQuery analytics_events refresh for remaining-demand metrics is timestamped 2026-07-02 14:00 (38 hours old) and the affected part's vendor carries risk_score 'high'. Recommend whether to issue a last-time-buy order for 5,000 units before the supplier's EOL cutoff on 2026-07-06.](/tests/component-obsolescence-risk-monitor-stale-evidence-threshold.md)
 
 ## Evidence emitted
 

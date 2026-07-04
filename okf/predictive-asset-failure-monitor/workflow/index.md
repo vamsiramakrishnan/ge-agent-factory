@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Condition Signal Intake](/workflow/condition-signal-intake.md)
+2. [Degradation Scoring & RUL Estimation](/workflow/degradation-scoring-rul-estimation.md)
+3. [Failure Mode Triage](/workflow/failure-mode-triage.md)
+4. [SOP & Severity Gate](/workflow/sop-severity-gate.md)
+5. [Work Order Issuance & Escalation](/workflow/work-order-issuance-escalation.md)

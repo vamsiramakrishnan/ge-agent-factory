@@ -37,3 +37,4 @@ Must cite: salesforce_commerce_cloud.online_orders, manhattan_active_wm.warehous
 # Citations
 
 - [Click-and-Collect SLA Monitor Retail Execution Playbook](/documents/click-and-collect-sla-monitor-execution-playbook.md)
+- [Curbside & BOPIS Fulfillment SLA Service Schedule](/documents/curbside-bopis-sla-service-schedule.md)

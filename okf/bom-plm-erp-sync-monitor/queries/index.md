@@ -7,7 +7,9 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 # Query Capabilities
 
-- [Query engineering change orders and bom revisions from PTC Windchill PLM and correlate with SAP S/4HANA PP for the BOM PLM-ERP Sync Monitor workflow.](/queries/retrieve-records.md)
-- [Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the PLM Administrator's queue.](/queries/analyze-detect.md)
-- [Cross-check every finding against the BOM PLM-ERP Sync Monitor Standard Operating Procedure and cite the governing sections before any recommendation is issued.](/queries/validate-evidence.md)
-- [Execute the escalate step in PTC Windchill PLM with a full audit trail, and escalate exceptions to the PLM Administrator.](/queries/act-audit.md)
+- [Pull released engineering_change_orders, bom_revisions, and cad_document_records from PTC Windchill PLM's overnight change queue for every material touched since the last successful sync.](/queries/nightly-eco-bom-extract.md)
+- [Match Windchill bom_revisions component structures against SAP S/4HANA PP process_orders, work_center_confirmations, and material_stagings by material_number and order_number to find where the ERP structure has drifted.](/queries/erp-bom-correlation.md)
+- [Classify each mismatch as failed interface transfer, manual ERP override, or pending change, cross-referencing BigQuery historical_metrics and analytics_events baselines to separate real drift from timing noise.](/queries/root-cause-classification.md)
+- [Compare engineering_change_orders effectivity_date and effectivity_type against process_orders scheduled_start and material_stagings staging_due to flag parts with an imminent planned order still staged against a superseded bom_revisions record.](/queries/effectivity-build-risk-scoring.md)
+- [Cite the BOM PLM-ERP Sync Monitor SOP and the CCB Effectivity & BOM Cut-In Policy via lookup_bom_plm_erp_sync_monitor_sop before any fix or disposition is recommended to the PLM Administrator.](/queries/sop-and-policy-evidence-gate.md)
+- [Execute action_ptc_windchill_plm_escalate against PTC Windchill PLM with a full audit trail, routing unresolved effectivity or class-1 cases to change_analyst or chief_engineer.](/queries/escalate-audit-in-windchill.md)

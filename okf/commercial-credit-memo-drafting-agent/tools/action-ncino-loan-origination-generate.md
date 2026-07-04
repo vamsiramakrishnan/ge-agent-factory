@@ -53,8 +53,10 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [deal_intake_financial_spread_assembly](/workflow/deal-intake-financial-spread-assembly.md)
+- [global_exposure_covenant_aggregation](/workflow/global-exposure-covenant-aggregation.md)
+- [narrative_drafting_via_vertex_ai](/workflow/narrative-drafting-via-vertex-ai.md)
+- [memo_generation_audit_trail](/workflow/memo-generation-audit-trail.md)
 
 ## Evals
 

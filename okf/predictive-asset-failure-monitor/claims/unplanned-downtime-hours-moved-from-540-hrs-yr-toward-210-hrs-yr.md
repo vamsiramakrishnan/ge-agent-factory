@@ -37,3 +37,4 @@ Must cite: osisoft_pi_system.sensor_readings, ibm_maximo.maintenance_work_orders
 # Citations
 
 - [Predictive Asset Failure Monitor Standard Operating Procedure](/documents/predictive-asset-failure-monitor-sop.md)
+- [Vibration Severity Zone Classification & Response Time Matrix (ISO 10816/20816)](/documents/vibration-severity-response-matrix.md)

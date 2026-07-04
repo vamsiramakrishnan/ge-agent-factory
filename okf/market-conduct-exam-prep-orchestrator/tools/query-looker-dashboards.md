@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [exception_scoring_queue_prioritization](/workflow/exception-scoring-queue-prioritization.md)
 
 ## Evals
 

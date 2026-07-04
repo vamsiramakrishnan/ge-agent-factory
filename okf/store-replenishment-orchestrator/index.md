@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Store Replenishment Orchestrator
-description: "Tunes item-store replenishment parameters continuously from sell-through, lead time, and presentation minimums. Rebalances constrained inventory across stores by predicted lost-sales impact rather than fair-share splits. so the Allocation Analyst can move the Out-of-stock rate KPI."
+description: "Continuously retune item-store min/max and presentation-minimum parameters across demand_forecasts, forecast_overrides, and item_master so out-of-stock rate falls from 8.2% to 3.1% and store weeks-of-supply variance tightens from +/-4.5 to +/-1.2 weeks, while cutting manual allocation touches per week from 1,900 to 220."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/store-replenishment
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:21.275Z"
+provenance_created_at: "2026-07-04T06:18:30.306Z"
 ---
 
 # Store Replenishment Orchestrator
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:21.275Z"
 
 - **Persona:** Allocation Analyst
 - **Department:** retail
-- **Objective:** Tunes item-store replenishment parameters continuously from sell-through, lead time, and presentation minimums. Rebalances constrained inventory across stores by predicted lost-sales impact rather than fair-share splits. so the Allocation Analyst can move the Out-of-stock rate KPI.
+- **Objective:** Continuously retune item-store min/max and presentation-minimum parameters across demand_forecasts, forecast_overrides, and item_master so out-of-stock rate falls from 8.2% to 3.1% and store weeks-of-supply variance tightens from +/-4.5 to +/-1.2 weeks, while cutting manual allocation touches per week from 1,900 to 220.
 
 ## KPI summary
 

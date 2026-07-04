@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Plan-vs-confirmation pull](/workflow/plan-vs-confirmation-pull.md)
+2. [Staging and constraint check](/workflow/staging-and-constraint-check.md)
+3. [Variance scoring against baseline](/workflow/variance-scoring-against-baseline.md)
+4. [SOP-gated recommendation](/workflow/sop-gated-recommendation.md)
+5. [Publish and shift handover](/workflow/publish-and-shift-handover.md)

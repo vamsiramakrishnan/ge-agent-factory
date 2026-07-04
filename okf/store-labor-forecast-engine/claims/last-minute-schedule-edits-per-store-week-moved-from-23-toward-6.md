@@ -37,3 +37,4 @@ Must cite: ukg_dimensions.shift_schedules, oracle_xstore_pos.pos_transactions
 # Citations
 
 - [Store Labor Forecast Engine Retail Execution Playbook](/documents/store-labor-forecast-engine-execution-playbook.md)
+- [Fair Workweek & Predictive Scheduling Compliance Manual](/documents/fair-workweek-scheduling-compliance-manual.md)

@@ -37,3 +37,4 @@ Must cite: salesforce_financial_services_cloud.client_households, bigquery.analy
 # Citations
 
 - [Advisor Next Best Action Engine Banking Compliance Policy](/documents/advisor-next-best-action-engine-compliance-policy.md)
+- [Reg BI Rollover Suitability & Concentration Playbook](/documents/reg-bi-rollover-suitability-playbook.md)

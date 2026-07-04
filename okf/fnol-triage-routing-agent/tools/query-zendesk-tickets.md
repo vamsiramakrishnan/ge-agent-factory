@@ -52,11 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [fnol_intake_loss_fact_extraction](/workflow/fnol-intake-loss-fact-extraction.md)
+- [adjuster_assignment_claimant_notification](/workflow/adjuster-assignment-claimant-notification.md)
 
 ## Evals
 
 - [Run the FNOL Triage & Routing Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/fnol-triage-routing-agent-end-to-end.md)
+- [Claim CLM-2026-114409 was just reported with line_of_business workers_comp and jurisdiction_state TX. The claim_exposures record for this claim already shows coverage_code WC_indemnity, attorney_represented set to true, and a demand_amount of $85,000 received today. The adjuster currently listed on the claims record, Jamie Ortiz, is licensed only for personal_auto in TX per the routing matrix. Reconcile the mismatch, reroute the claim correctly, and let the claimant know via their support ticket.](/tests/fnol-triage-routing-agent-attorney-represented-reroute.md)
 
 ## Evidence emitted
 

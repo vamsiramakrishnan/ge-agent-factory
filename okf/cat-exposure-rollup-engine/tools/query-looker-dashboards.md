@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [publish_reinsurer_schedule_distribution](/workflow/publish-reinsurer-schedule-distribution.md)
 
 ## Evals
 

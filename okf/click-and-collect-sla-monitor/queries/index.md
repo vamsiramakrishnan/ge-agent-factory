@@ -7,7 +7,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 # Query Capabilities
 
-- [Query online orders and product catalog entries from Salesforce Commerce Cloud and correlate with Manhattan Active WM for the Click-and-Collect SLA Monitor workflow.](/queries/retrieve-records.md)
-- [Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Fulfillment Operations Manager's queue.](/queries/analyze-detect.md)
-- [Cross-check every finding against the Click-and-Collect SLA Monitor Retail Execution Playbook and cite the governing sections before any recommendation is issued.](/queries/validate-evidence.md)
-- [Execute the escalate step in Salesforce Commerce Cloud with a full audit trail, and escalate exceptions to the Fulfillment Operations Manager.](/queries/act-audit.md)
+- [Pull online_orders from Salesforce Commerce Cloud filtered to fulfillment_method of bopis or curbside and start the 2-hour SLA clock off order_date, using query_salesforce_commerce_cloud_online_orders.](/queries/bopis-curbside-order-intake-sla-clock-start.md)
+- [Correlate each order against its Manhattan Active WM pick_tasks record -- pick_status, cases_per_hour, wave_id, and pick_zone -- via query_manhattan_active_wm_pick_tasks and query_manhattan_active_wm_warehouse_orders to see where the pick actually stands.](/queries/pick-task-telemetry-correlation.md)
+- [Compare current pick-rate telemetry against BigQuery historical_metrics and analytics_events (query_bigquery_historical_metrics, query_bigquery_analytics_events) to predict which orders will miss the 2-hour SLA before the picker finishes.](/queries/breach-risk-scoring-against-historical-baselines.md)
+- [Check inventory_snapshots on_hand_units and negative_on_hand_flag in Manhattan Active WM (query_manhattan_active_wm_inventory_snapshots) against product_catalog_entries catalog_status in Salesforce Commerce Cloud (query_salesforce_commerce_cloud_product_catalog_entries) to find a live substitute for any short-picked SKU.](/queries/inventory-substitution-validation.md)
+- [Cite the Click-and-Collect SLA Monitor Retail Execution Playbook (lookup_click_and_collect_sla_monitor_execution_playbook) before escalating at-risk orders to store leadership or rerouting overflow via action_salesforce_commerce_cloud_escalate, then notify the customer of the accurate ready time.](/queries/playbook-gated-escalation-customer-notification.md)

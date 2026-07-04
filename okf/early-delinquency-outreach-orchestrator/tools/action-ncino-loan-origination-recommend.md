@@ -53,9 +53,11 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [nightly_delinquency_extraction](/workflow/nightly-delinquency-extraction.md)
+- [cure_probability_segmentation](/workflow/cure-probability-segmentation.md)
+- [contact_cadence_compliance_gate](/workflow/contact-cadence-compliance-gate.md)
+- [hardship_pre_qualification_message_drafting](/workflow/hardship-pre-qualification-message-drafting.md)
+- [worklist_assignment_recommend](/workflow/worklist-assignment-recommend.md)
 
 ## Evals
 

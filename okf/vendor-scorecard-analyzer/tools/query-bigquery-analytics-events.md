@@ -52,11 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [fill_rate_lead_time_invoice_scoring](/workflow/fill-rate-lead-time-invoice-scoring.md)
 
 ## Evals
 
 - [Run the Vendor Performance Scorecard Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/vendor-scorecard-analyzer-end-to-end.md)
+- [Vendor number 483217's cost_changes record (SKU 40218855, effective_date 2026-06-15, change_reason 'freight_surcharge', cost_change_pct +9.4%) is flagged for a compliance-claim packet worth $62,000 in chargeback recovery, but BigQuery historical_metrics shows only a 1.8% fill-rate variance for that vendor in the same period. Reconcile whether the claim is chargeback-eligible and prepare next steps.](/tests/vendor-scorecard-analyzer-chargeback-reconciliation.md)
+- [For vendor number 219064 (SKU 71234459), Oracle Retail MFCS item_master lists unit_cost at $12.40 as of this morning's extract, but the BigQuery analytics_events invoice-matched metric for the same week shows an effective cost of $13.15 — a 6.1% gap. The quarterly scorecard draft is due today; should invoice accuracy for this vendor be scored as-is or held?](/tests/vendor-scorecard-analyzer-invoice-accuracy-discrepancy.md)
 
 ## Evidence emitted
 

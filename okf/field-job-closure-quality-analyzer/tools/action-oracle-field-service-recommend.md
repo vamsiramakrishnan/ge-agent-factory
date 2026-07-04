@@ -53,10 +53,11 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [closure_intake_evidence_capture](/workflow/closure-intake-evidence-capture.md)
+- [workmanship_standards_check](/workflow/workmanship-standards-check.md)
+- [repeat_dispatch_technician_trend_scoring](/workflow/repeat-dispatch-technician-trend-scoring.md)
+- [as_built_reconciliation](/workflow/as-built-reconciliation.md)
+- [coaching_correction_audit](/workflow/coaching-correction-audit.md)
 
 ## Evals
 

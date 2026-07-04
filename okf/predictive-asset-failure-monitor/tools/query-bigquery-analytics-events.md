@@ -52,7 +52,8 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [degradation_scoring_rul_estimation](/workflow/degradation-scoring-rul-estimation.md)
+- [failure_mode_triage](/workflow/failure-mode-triage.md)
 
 ## Evals
 

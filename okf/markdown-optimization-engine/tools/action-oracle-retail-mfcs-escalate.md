@@ -53,9 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [elasticity_zone_intake](/workflow/elasticity-zone-intake.md)
+- [playbook_guardrail_validation](/workflow/playbook-guardrail-validation.md)
+- [escalate_audit](/workflow/escalate-audit.md)
 
 ## Evals
 

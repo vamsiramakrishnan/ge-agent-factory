@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Store Labor Forecast Engine
-description: "Forecasts 15-minute interval workload per store from POS transactions, traffic, weather, and event calendars. Generates draft schedules in UKG Dimensions honoring skills, availability, and labor-law constraints. so the Store Workforce Planner can move the Schedule-to-demand fit KPI."
+description: "Lift schedule-to-demand fit from 71% to 91% and cut last-minute schedule edits from 23 to 6 per store per week by forecasting 15-minute interval workload from Oracle Xstore POS pos_transactions and BigQuery historical baselines, then publishing UKG Dimensions shift_schedules that satisfy labor_forecasts minimum_coverage_hours without breaching timecards-derived overtime or fair-workweek constraints."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/store-labor-forecas
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:22.529Z"
+provenance_created_at: "2026-07-04T06:18:31.558Z"
 ---
 
 # Store Labor Forecast Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:22.529Z"
 
 - **Persona:** Store Workforce Planner
 - **Department:** retail
-- **Objective:** Forecasts 15-minute interval workload per store from POS transactions, traffic, weather, and event calendars. Generates draft schedules in UKG Dimensions honoring skills, availability, and labor-law constraints. so the Store Workforce Planner can move the Schedule-to-demand fit KPI.
+- **Objective:** Lift schedule-to-demand fit from 71% to 91% and cut last-minute schedule edits from 23 to 6 per store per week by forecasting 15-minute interval workload from Oracle Xstore POS pos_transactions and BigQuery historical baselines, then publishing UKG Dimensions shift_schedules that satisfy labor_forecasts minimum_coverage_hours without breaching timecards-derived overtime or fair-workweek constraints.
 
 ## KPI summary
 

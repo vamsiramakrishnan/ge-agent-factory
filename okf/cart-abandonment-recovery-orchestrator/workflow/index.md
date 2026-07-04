@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Cart & Session Signal Capture](/workflow/cart-session-signal-capture.md)
+2. [Intent, Margin & Stock-Risk Scoring](/workflow/intent-margin-stock-risk-scoring.md)
+3. [Recovery Play & Incentive Guardrail Selection](/workflow/recovery-play-incentive-guardrail-selection.md)
+4. [Marketing Cloud Journey Orchestration & Suppression](/workflow/marketing-cloud-journey-orchestration-suppression.md)
+5. [Evidence-Gated Send & Audit](/workflow/evidence-gated-send-audit.md)

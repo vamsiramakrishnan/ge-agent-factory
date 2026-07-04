@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Monthly Household & Account Roster Pull](/workflow/monthly-household-account-roster-pull.md)
+2. [Risk-Tolerance vs. Portfolio Drift Scoring](/workflow/risk-tolerance-vs-portfolio-drift-scoring.md)
+3. [Reg BI / Suitability Policy Citation Check](/workflow/reg-bi-suitability-policy-citation-check.md)
+4. [ServiceNow Review Case Triage & Assignment](/workflow/service-now-review-case-triage-assignment.md)
+5. [Advisor Re-Profiling Outreach Draft & Audit Log](/workflow/advisor-re-profiling-outreach-draft-audit-log.md)

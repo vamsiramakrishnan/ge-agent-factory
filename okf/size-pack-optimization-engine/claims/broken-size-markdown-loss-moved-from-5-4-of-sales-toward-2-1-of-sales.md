@@ -37,3 +37,4 @@ Must cite: oracle_retail_mfcs.item_master, blue_yonder_demand_planning.demand_fo
 # Citations
 
 - [Size & Pack Optimization Engine Retail Execution Playbook](/documents/size-pack-optimization-engine-execution-playbook.md)
+- [Case-Pack Rounding & Minimum-Pack Standards Manual](/documents/size-pack-optimization-engine-pack-rounding-standards.md)

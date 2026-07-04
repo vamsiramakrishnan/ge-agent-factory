@@ -52,7 +52,8 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [portfolio_serviceability_feasibility_check](/workflow/portfolio-serviceability-feasibility-check.md)
+- [exception_routing_sme_sign_off](/workflow/exception-routing-sme-sign-off.md)
 
 ## Evals
 

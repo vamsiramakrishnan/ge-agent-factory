@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: "Mid-Term Cancellation Retention Agent"
-description: "Detects cancellation intent the moment a request or competitor-comparison inquiry hits PolicyCenter and scores the account's retention value. Generates a personalized save offer — eligible discounts, coverage rebalancing, payment plan changes — priced against the live policy. so the Retention Specialist can move the Mid-term cancellation save rate KPI."
+description: "Detect pending-cancellation and competitor-comparison signals in Guidewire PolicyCenter policies the moment they appear, score each account's retention value against Salesforce Marketing Cloud opportunities and BigQuery historical baselines, and generate an authority-gated save offer that lifts the mid-term cancellation save rate from 12% to 34% while cutting cancel-to-contact time from 3 days to under 1 hour."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/midterm-cancellatio
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:00.679Z"
+provenance_created_at: "2026-07-04T06:18:09.597Z"
 ---
 
 # Mid-Term Cancellation Retention Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:00.679Z"
 
 - **Persona:** Retention Specialist
 - **Department:** insurance
-- **Objective:** Detects cancellation intent the moment a request or competitor-comparison inquiry hits PolicyCenter and scores the account's retention value. Generates a personalized save offer — eligible discounts, coverage rebalancing, payment plan changes — priced against the live policy. so the Retention Specialist can move the Mid-term cancellation save rate KPI.
+- **Objective:** Detect pending-cancellation and competitor-comparison signals in Guidewire PolicyCenter policies the moment they appear, score each account's retention value against Salesforce Marketing Cloud opportunities and BigQuery historical baselines, and generate an authority-gated save offer that lifts the mid-term cancellation save rate from 12% to 34% while cutting cancel-to-contact time from 3 days to under 1 hour.
 
 ## KPI summary
 

@@ -37,3 +37,4 @@ Must cite: oracle_retail_mfcs.item_master, bigquery.analytics_events
 # Citations
 
 - [Vendor Promo Funding Reconciliation Agent Retail Execution Playbook](/documents/vendor-promo-funding-reconciliation-agent-execution-playbook.md)
+- [Vendor Deal Terms & Claim Substantiation Manual](/documents/vendor-deal-terms-claim-substantiation-manual.md)

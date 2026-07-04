@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Lead Intake & Serviceability Check](/workflow/lead-intake-serviceability-check.md)
+2. [Firmographic & Usage-Intent Scoring](/workflow/firmographic-usage-intent-scoring.md)
+3. [Historical Benchmark & Conversion Analytics](/workflow/historical-benchmark-conversion-analytics.md)
+4. [Policy & Discount Gate](/workflow/policy-discount-gate.md)
+5. [Territory Routing & Talk-Track Handoff](/workflow/territory-routing-talk-track-handoff.md)

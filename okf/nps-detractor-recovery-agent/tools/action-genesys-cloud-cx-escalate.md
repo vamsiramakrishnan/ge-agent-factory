@@ -53,8 +53,10 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [detractor_verbatim_triage](/workflow/detractor-verbatim-triage.md)
+- [service_history_correlation](/workflow/service-history-correlation.md)
+- [recovery_outreach_drafting_routing](/workflow/recovery-outreach-drafting-routing.md)
+- [case_closure_churn_risk_escalation](/workflow/case-closure-churn-risk-escalation.md)
 
 ## Evals
 

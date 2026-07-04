@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [qbr_publish_sourcing_handoff](/workflow/qbr-publish-sourcing-handoff.md)
 
 ## Evals
 

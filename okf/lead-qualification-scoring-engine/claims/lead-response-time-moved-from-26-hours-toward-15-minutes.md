@@ -37,3 +37,4 @@ Must cite: salesforce_communications_cloud.subscriber_accounts, bigquery.analyti
 # Citations
 
 - [Lead Qualification Scoring Engine Service Assurance Runbook](/documents/lead-qualification-scoring-engine-assurance-runbook.md)
+- [Retail Rate Card & Discount Delegation-of-Authority Matrix](/documents/lead-qualification-scoring-engine-rate-card-doa-matrix.md)

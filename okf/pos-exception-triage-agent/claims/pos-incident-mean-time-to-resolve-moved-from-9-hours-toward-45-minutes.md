@@ -37,3 +37,4 @@ Must cite: oracle_xstore_pos.pos_transactions, zendesk.tickets
 # Citations
 
 - [POS Exception Triage Agent Retail Execution Playbook](/documents/pos-exception-triage-agent-execution-playbook.md)
+- [Card Network EMV Fallback & Offline Authorization Risk Bulletin](/documents/emv-fallback-offline-auth-bulletin.md)

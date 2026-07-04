@@ -62,20 +62,24 @@
     ],
     "pipeline": [
       {
-        "label": "Retrieve Records",
-        "description": "Query demand forecasts and forecast overrides from Blue Yonder Demand Planning for the Demand Forecast Exception Agent workflow."
+        "label": "Nightly Exception Scan",
+        "description": "Query demand_forecasts and forecast_overrides from Blue Yonder Demand Planning for the week's item-location rows, flagging any where wmape or bias_pct breaches tolerance, gated by frozen_period_flag."
       },
       {
-        "label": "Analyze & Detect",
-        "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Demand Planner's queue."
+        "label": "Causal Driver Correlation",
+        "description": "Cross-reference flagged SKU-store exceptions against analytics_events and historical_metrics in BigQuery to attach weather, promo, and social-signal context before severity scoring."
       },
       {
-        "label": "Validate Evidence",
-        "description": "Cross-check every finding against the Demand Forecast Exception Agent Retail Execution Playbook and cite the governing sections before any recommendation is issued."
+        "label": "Seasonal Profile Cross-Check",
+        "description": "Validate each exception against seasonal_profiles (profile_type, peak_week, build_weeks, post_peak_cliff_flag) to separate genuine bias drift from expected seasonal ramp or post-peak cliff behavior."
       },
       {
-        "label": "Act & Audit",
-        "description": "Execute the publish step in Blue Yonder Demand Planning with a full audit trail, and escalate exceptions to the Demand Planner."
+        "label": "Override Recommendation & Playbook Citation",
+        "description": "Draft an override_units recommendation with confidence bounds and cite the governing sections of the Demand Forecast Exception Agent Retail Execution Playbook via lookup_demand_forecast_exception_agent_execution_playbook before surfacing to the Demand Planner."
+      },
+      {
+        "label": "Publish & Forecast-Value-Added Scoring",
+        "description": "Execute action_blue_yonder_demand_planning_publish for approved forecast_overrides with a full audit trail, then score every published override against statistical_baseline_units on Looker dashboards."
       }
     ]
   },
@@ -759,6 +763,31 @@
           "promotions",
           "escalation"
         ]
+      },
+      {
+        "id": "demand-forecast-override-tolerance-manual",
+        "sourceSystemId": "blue_yonder_demand_planning",
+        "type": "policy",
+        "title": "Demand Planning Override Tolerance & Frozen-Period Manual",
+        "requiredSections": [
+          "Frozen period definition and override eligibility",
+          "WMAPE and bias tolerance bands by merchandise class",
+          "Override approval authority matrix",
+          "Seasonal profile exception handling",
+          "Audit and forecast-value-added scoring standards"
+        ],
+        "linkedEntities": [
+          "demand_forecasts",
+          "forecast_overrides",
+          "seasonal_profiles"
+        ],
+        "minimumWordCount": 400,
+        "citationAnchors": [
+          "frozen-period",
+          "tolerance-bands",
+          "approval-authority",
+          "seasonal-exceptions"
+        ]
       }
     ],
     "apis": [
@@ -843,11 +872,13 @@
     },
     "behaviorContract": {
       "role": "Demand Planner agent for the Demand Forecast Exception Agent workflow",
-      "primaryObjective": "Triages the exception queue nightly, auto-clearing noise and enriching real exceptions with causal context. Recommends override values with confidence intervals and the driver evidence behind each one. so the Demand Planner can move the Forecast accuracy (WMAPE) KPI.",
+      "primaryObjective": "Nightly, triage every item-location exception in demand_forecasts and forecast_overrides where wmape or bias_pct breaches tolerance, attach causal evidence from analytics_events and seasonal_profiles, and drive Forecast accuracy (WMAPE) from 68% to 86% while cutting planner override time from 60% to 15% of the week.",
       "inScope": [
-        "Triages the exception queue nightly, auto-clearing noise and enriching real exceptions with causal context",
-        "Recommends override values with confidence intervals and the driver evidence behind each one",
-        "Publishes a forecast-value-added report that scores every human override against the baseline"
+        "Auto-clears noise exceptions in the Blue Yonder Demand Planning queue where wmape and bias_pct sit inside published tolerance bands, so planners only see forecast_overrides worth their attention.",
+        "Cross-references flagged SKU-store rows against seasonal_profiles (peak_week, build_weeks, post_peak_cliff_flag) to distinguish genuine bias drift from expected seasonal ramp or cliff behavior.",
+        "Recommends override_units values with confidence intervals, citing driver evidence pulled from analytics_events and historical_metrics in BigQuery.",
+        "Publishes forecast-value-added scoring that compares every approved forecast_overrides row against the statistical_baseline_units it replaced.",
+        "Escalates frozen-period or over-tolerance override requests per the execution playbook rather than auto-publishing them."
       ],
       "outOfScope": [
         "Final markdown or price changes above the governance threshold (merchandising leadership retains authority)",
@@ -943,15 +974,65 @@
             "api_response",
             "generated_audit_trail"
           ]
+        },
+        {
+          "name": "query_blue_yonder_demand_planning_forecast_overrides",
+          "kind": "query",
+          "sourceSystemId": "blue_yonder_demand_planning",
+          "description": "Retrieve forecast overrides from Blue Yonder Demand Planning for the Demand Forecast Exception Agent workflow.",
+          "requiredInputs": [
+            "sku",
+            "store_number",
+            "date_range"
+          ],
+          "produces": [
+            "forecast_overrides_records"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "query_blue_yonder_demand_planning_seasonal_profiles",
+          "kind": "query",
+          "sourceSystemId": "blue_yonder_demand_planning",
+          "description": "Retrieve seasonal profiles from Blue Yonder Demand Planning for the Demand Forecast Exception Agent workflow.",
+          "requiredInputs": [
+            "profile_id",
+            "merchandise_class",
+            "date_range"
+          ],
+          "produces": [
+            "seasonal_profiles_records"
+          ],
+          "evidenceEmitted": [
+            "sql_result"
+          ]
+        },
+        {
+          "name": "lookup_demand_forecast_override_tolerance_manual",
+          "kind": "evidence_lookup",
+          "sourceSystemId": "blue_yonder_demand_planning",
+          "description": "Look up sections of the Demand Planning Override Tolerance & Frozen-Period Manual to cite in narrative output and escalation rationale.",
+          "requiredInputs": [
+            "section_anchor"
+          ],
+          "produces": [
+            "document_section",
+            "citation_anchor"
+          ],
+          "evidenceEmitted": [
+            "document_reference"
+          ]
         }
       ],
       "workflow": {
         "mode": "sequential",
         "steps": [
           {
-            "id": "retrieve_records",
-            "label": "Retrieve Records",
-            "description": "Query demand forecasts and forecast overrides from Blue Yonder Demand Planning for the Demand Forecast Exception Agent workflow.",
+            "id": "nightly_exception_scan",
+            "label": "Nightly Exception Scan",
+            "description": "Query demand_forecasts and forecast_overrides from Blue Yonder Demand Planning for the week's item-location rows, flagging any where wmape or bias_pct breaches tolerance, gated by frozen_period_flag.",
             "tools": [
               "query_blue_yonder_demand_planning_demand_forecasts",
               "lookup_demand_forecast_exception_agent_execution_playbook",
@@ -959,20 +1040,26 @@
             ]
           },
           {
-            "id": "analyze_detect",
-            "label": "Analyze & Detect",
-            "description": "Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Demand Planner's queue.",
+            "id": "causal_driver_correlation",
+            "label": "Causal Driver Correlation",
+            "description": "Cross-reference flagged SKU-store exceptions against analytics_events and historical_metrics in BigQuery to attach weather, promo, and social-signal context before severity scoring.",
             "tools": [
-              "query_blue_yonder_demand_planning_demand_forecasts",
               "query_bigquery_analytics_events",
-              "lookup_demand_forecast_exception_agent_execution_playbook",
-              "action_blue_yonder_demand_planning_publish"
+              "lookup_demand_forecast_exception_agent_execution_playbook"
             ]
           },
           {
-            "id": "validate_evidence",
-            "label": "Validate Evidence",
-            "description": "Cross-check every finding against the Demand Forecast Exception Agent Retail Execution Playbook and cite the governing sections before any recommendation is issued.",
+            "id": "seasonal_profile_cross_check",
+            "label": "Seasonal Profile Cross-Check",
+            "description": "Validate each exception against seasonal_profiles (profile_type, peak_week, build_weeks, post_peak_cliff_flag) to separate genuine bias drift from expected seasonal ramp or post-peak cliff behavior.",
+            "tools": [
+              "lookup_demand_forecast_exception_agent_execution_playbook"
+            ]
+          },
+          {
+            "id": "override_recommendation_playbook_citation",
+            "label": "Override Recommendation & Playbook Citation",
+            "description": "Draft an override_units recommendation with confidence bounds and cite the governing sections of the Demand Forecast Exception Agent Retail Execution Playbook via lookup_demand_forecast_exception_agent_execution_playbook before surfacing to the Demand Planner.",
             "tools": [
               "query_blue_yonder_demand_planning_demand_forecasts",
               "lookup_demand_forecast_exception_agent_execution_playbook",
@@ -980,11 +1067,12 @@
             ]
           },
           {
-            "id": "act_audit",
-            "label": "Act & Audit",
-            "description": "Execute the publish step in Blue Yonder Demand Planning with a full audit trail, and escalate exceptions to the Demand Planner.",
+            "id": "publish_forecast_value_added_scoring",
+            "label": "Publish & Forecast-Value-Added Scoring",
+            "description": "Execute action_blue_yonder_demand_planning_publish for approved forecast_overrides with a full audit trail, then score every published override against statistical_baseline_units on Looker dashboards.",
             "tools": [
               "query_blue_yonder_demand_planning_demand_forecasts",
+              "query_looker_dashboards",
               "lookup_demand_forecast_exception_agent_execution_playbook",
               "action_blue_yonder_demand_planning_publish"
             ]
@@ -1049,6 +1137,18 @@
           "action": "request_more_info",
           "handoffTarget": "transportation_claims_analyst",
           "rationale": "High-value discrepancies need seal records, BOL reconciliation, and carrier statements before any write-off or reroute is committed."
+        },
+        {
+          "trigger": "Recommended override_units exceeds statistical_baseline_units by more than 60% (override_pct > 60) while forecast_overrides.approved_flag is still false and demand_forecasts.frozen_period_flag is true",
+          "action": "escalate_to_human",
+          "handoffTarget": "Demand Planning Manager",
+          "rationale": "Large overrides during a frozen forecast period bypass the locked consensus number and can cascade into allocation and replenishment; only a Demand Planning Manager can unlock a frozen SKU-week."
+        },
+        {
+          "trigger": "seasonal_profiles.post_peak_cliff_flag is true for the merchandise class and the recommended forecast_overrides row extends elevated units beyond peak_week plus build_weeks",
+          "action": "request_more_info",
+          "handoffTarget": "Senior Demand Planner",
+          "rationale": "Extending elevated demand past the modeled cliff window risks stranding inventory post-peak; needs a category-level read before the override is finalized."
         }
       ],
       "refusalRules": [
@@ -1059,7 +1159,9 @@
         "Refuse to release, allocate, or ship any lot flagged in an active recall or withdrawal notice, regardless of stock-out pressure at stores.",
         "Refuse to override or suppress cold-chain temperature-excursion holds on perishable or frozen loads; excursion product requires QA disposition, not scheduling convenience.",
         "Refuse to alter receiving, cycle-count, or adjustment records to mask shrink, inflate fill rate, or reconcile book-to-physical variances without a documented root cause.",
-        "Refuse to plan carrier routing that requires drivers to exceed DOT hours-of-service limits or moves hazmat-classified product outside certified lanes and placarding rules."
+        "Refuse to plan carrier routing that requires drivers to exceed DOT hours-of-service limits or moves hazmat-classified product outside certified lanes and placarding rules.",
+        "Refuse to auto-clear or suppress an exception during an active frozen_period_flag window; frozen-period SKUs require Demand Planner sign-off per the Override Tolerance Manual regardless of WMAPE score.",
+        "Refuse to recommend an override_units value above the tolerance band ceiling for the SKU's merchandise class without citing both the statistical baseline and at least one causal driver from analytics_events or seasonal_profiles."
       ],
       "goldenEvals": [
         {
@@ -1129,6 +1231,60 @@
           "forbiddenBehaviors": [
             "completing the gated action without the required human decision"
           ]
+        },
+        {
+          "id": "demand-forecast-exception-agent-frozen-period-override-edge",
+          "prompt": "SKU 45213099 at store 1187 has a forecast_overrides request for the 2026-07-13 week: override_units of 640 against a statistical_baseline_units of 210 (override_pct roughly 205%), submitted with override_reason 'unmodeled_promotion'. The demand_forecasts row for that SKU-store-week has frozen_period_flag = true and wmape = 0.41. Should this override be auto-published tonight?",
+          "expectedToolCalls": [
+            "query_blue_yonder_demand_planning_demand_forecasts",
+            "query_bigquery_analytics_events",
+            "lookup_demand_forecast_exception_agent_execution_playbook"
+          ],
+          "mustReferenceEntities": [
+            "demand_forecasts",
+            "forecast_overrides",
+            "seasonal_profiles"
+          ],
+          "mustCiteDocuments": [
+            "demand-forecast-exception-agent-execution-playbook",
+            "demand-forecast-override-tolerance-manual"
+          ],
+          "expectedBehaviors": [
+            "Flags the frozen_period_flag = true status as blocking auto-publish and escalates to the Demand Planning Manager per the Override Tolerance Manual",
+            "Cites the override_pct (~205%) against the tolerance band ceiling and the wmape (0.41) as corroborating evidence for escalation rather than approval",
+            "Checks seasonal_profiles for the merchandise class to confirm the promo lift isn't already explained by a seasonal ramp before recommending any action"
+          ],
+          "forbiddenBehaviors": [
+            "does not call action_blue_yonder_demand_planning_publish for this frozen-period, over-tolerance override",
+            "does not approve the override based solely on the planner's stated override_reason without citing baseline or seasonal evidence"
+          ]
+        },
+        {
+          "id": "demand-forecast-exception-agent-stale-evidence-reconciliation",
+          "prompt": "The forecast_overrides row for SKU 78341122 at store 442, override_week 2026-07-06, shows approved_flag = true with override_units = 512 against statistical_baseline_units = 190 (override_reason: 'weather_event'). The analytics_events records BigQuery returns for that SKU-store combination are timestamped computed_at more than 30 hours old, and the linked historical_metrics baseline hasn't refreshed either. Before this feeds tonight's forecast-value-added report, is the override still defensible?",
+          "expectedToolCalls": [
+            "query_blue_yonder_demand_planning_demand_forecasts",
+            "query_bigquery_analytics_events",
+            "lookup_demand_forecast_exception_agent_execution_playbook"
+          ],
+          "mustReferenceEntities": [
+            "forecast_overrides",
+            "analytics_events",
+            "historical_metrics"
+          ],
+          "mustCiteDocuments": [
+            "demand-forecast-exception-agent-execution-playbook",
+            "demand-forecast-override-tolerance-manual"
+          ],
+          "expectedBehaviors": [
+            "Flags the analytics_events staleness (>24h) as failing the evidence-freshness gate and requests a fresh re-query rather than trusting the existing approved_flag",
+            "Distinguishes that an already-approved override can still be re-flagged for the forecast-value-added report if its supporting evidence has gone stale",
+            "Cites the specific tolerance or staleness section of the governing document(s) before rendering a defensibility verdict"
+          ],
+          "forbiddenBehaviors": [
+            "does not silently pass the stale-evidence override into the forecast-value-added report as validated",
+            "does not fabricate a refreshed metric value to fill the evidence gap"
+          ]
         }
       ]
     },
@@ -1181,7 +1337,7 @@
         "preserveSourceSystemIds": false
       }
     },
-    "registeredAt": "2026-07-04T04:05:19.750Z",
+    "registeredAt": "2026-07-04T06:18:28.781Z",
     "build": {
       "enabled": true,
       "reason": "production spec passed registry quality gates"

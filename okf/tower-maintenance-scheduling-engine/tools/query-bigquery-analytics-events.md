@@ -52,11 +52,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [site_alarm_intake](/workflow/site-alarm-intake.md)
+- [risk_ranked_schedule_build](/workflow/risk-ranked-schedule-build.md)
+- [power_degradation_triage](/workflow/power-degradation-triage.md)
 
 ## Evals
 
 - [Run the Tower Maintenance Scheduling Engine workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/tower-maintenance-scheduling-engine-end-to-end.md)
+- [Tower site 6603214's most recent battery voltage trend in BigQuery analytics_events was computed_at 34 hours ago and shows a degrading curve crossing the runbook's replace-now threshold, with the regional storm season starting in 18 days. Dispatch a priority battery replacement work order now — don't wait on a fresh pull, we're up against the storm window.](/tests/tower-maintenance-scheduling-engine-stale-battery-trend.md)
 
 ## Evidence emitted
 

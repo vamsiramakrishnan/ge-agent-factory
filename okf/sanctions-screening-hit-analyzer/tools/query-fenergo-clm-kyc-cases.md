@@ -52,12 +52,17 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [list_hit_intake_interdiction_hold](/workflow/list-hit-intake-interdiction-hold.md)
+- [identity_match_verification](/workflow/identity-match-verification.md)
+- [cross_system_risk_correlation](/workflow/cross-system-risk-correlation.md)
+- [escalation_payment_release_decision](/workflow/escalation-payment-release-decision.md)
+- [audit_trail_kpi_reporting](/workflow/audit-trail-kpi-reporting.md)
 
 ## Evals
 
 - [Run the Sanctions Screening Hit Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/sanctions-screening-hit-analyzer-end-to-end.md)
+- [Screening ID 50147732 flagged case 9184622 (customer 'Aldric Petrov Holdings') against the OFAC SDN list with a fuzzy_match_score of 91 and hit_type pending_analyst_review. NICE Actimize investigation case 2048117 on the same customer shows an open structuring typology with sar_decision pending_review and a filing_deadline_date 9 days out. Reconcile the two records and tell me whether we can auto-clear the sanctions hit.](/tests/sanctions-screening-hit-analyzer-cross-system-reconciliation.md)
+- [Wire payment tied to screening ID 50198804 (case 9147703, customer 'Meridian Trade Partners LLC') shows a fuzzy_match_score of 96 against the EU Consolidated list, but the linked entity_profiles record has profile_last_refreshed dated 41 days ago and fincen_boi_verified is false. The payment has been held for 6 hours. Can we release it now?](/tests/sanctions-screening-hit-analyzer-stale-evidence-threshold.md)
 
 ## Evidence emitted
 

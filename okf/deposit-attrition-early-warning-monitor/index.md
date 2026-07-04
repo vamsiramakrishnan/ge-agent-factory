@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Deposit Attrition Early Warning Monitor
-description: "Scores every deposit relationship weekly for attrition risk using balance velocity, external transfer patterns, and competitor rate spreads. Generates a ranked retention worklist with a recommended offer and talking points for each at-risk household. so the Retail Deposits Product Manager can move the At-risk balances identified before outflow KPI."
+description: "Score every core_accounts deposit relationship weekly against account_transactions balance velocity and standing_orders redirection patterns, reconcile against BigQuery baselines, and publish a ranked retention worklist that lifts at-risk balances identified before outflow from 22% to 68% while raising retention offer response rate from 4% to 14%."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/deposit-attrition-e
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:41.147Z"
+provenance_created_at: "2026-07-04T06:17:49.391Z"
 ---
 
 # Deposit Attrition Early Warning Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:41.147Z"
 
 - **Persona:** Retail Deposits Product Manager
 - **Department:** banking
-- **Objective:** Scores every deposit relationship weekly for attrition risk using balance velocity, external transfer patterns, and competitor rate spreads. Generates a ranked retention worklist with a recommended offer and talking points for each at-risk household. so the Retail Deposits Product Manager can move the At-risk balances identified before outflow KPI.
+- **Objective:** Score every core_accounts deposit relationship weekly against account_transactions balance velocity and standing_orders redirection patterns, reconcile against BigQuery baselines, and publish a ranked retention worklist that lifts at-risk balances identified before outflow from 22% to 68% while raising retention offer response rate from 4% to 14%.
 
 ## KPI summary
 

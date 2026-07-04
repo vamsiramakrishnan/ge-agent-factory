@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [price_book_discount_band_application](/workflow/price-book-discount-band-application.md)
 
 ## Evals
 
 - [Run the B2B Quote Configuration Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/b2b-quote-configuration-agent-end-to-end.md)
+- [Quote #20456218 for 'Anchor Point Manufacturing' is an enterprise_dia_100m bundle across three sites. valid_until was 2026-06-20 and serviceability_confirmed was last recorded true on 2026-05-01. The customer wants to sign today, 2026-07-04, at the original quoted price. Reconcile and issue the order capture.](/tests/b2b-quote-configuration-agent-stale-multisite-serviceability.md)
 
 ## Evidence emitted
 

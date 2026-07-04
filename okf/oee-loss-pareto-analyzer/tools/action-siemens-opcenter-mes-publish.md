@@ -53,8 +53,8 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [shift_line_data_pull](/workflow/shift-line-data-pull.md)
+- [pareto_publish_kaizen_handoff](/workflow/pareto-publish-kaizen-handoff.md)
 
 ## Evals
 

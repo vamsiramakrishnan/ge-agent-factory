@@ -25,3 +25,4 @@ accounts, opportunities, campaign influence records
 ## Tools using this system
 
 - [query_salesforce_marketing_cloud_accounts](/tools/query-salesforce-marketing-cloud-accounts.md)
+- [lookup_agency_segmentation_reengagement_playbook](/tools/lookup-agency-segmentation-reengagement-playbook.md)

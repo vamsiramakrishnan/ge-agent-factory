@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Tower Maintenance Scheduling Engine
-description: "The engine builds risk-ranked maintenance schedules from equipment age, alarm trends, environmental telemetry, and storm-season timing. It bundles compatible work orders per site visit and matches them to certified climb crews and required equipment. so the Infrastructure Maintenance Planner can move the Preventive maintenance compliance KPI."
+description: "Build risk-ranked preventive maintenance schedules from field_work_orders history, technician_schedules certifications, and BigQuery telemetry baselines so climb crews bundle compatible tower site visits, raising preventive maintenance compliance from 71% to 97% and cutting unplanned tower site visits from 480 to 170 per quarter."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/tower-maintenance-s
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:42.699Z"
+provenance_created_at: "2026-07-04T06:18:51.313Z"
 ---
 
 # Tower Maintenance Scheduling Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:42.699Z"
 
 - **Persona:** Infrastructure Maintenance Planner
 - **Department:** telco
-- **Objective:** The engine builds risk-ranked maintenance schedules from equipment age, alarm trends, environmental telemetry, and storm-season timing. It bundles compatible work orders per site visit and matches them to certified climb crews and required equipment. so the Infrastructure Maintenance Planner can move the Preventive maintenance compliance KPI.
+- **Objective:** Build risk-ranked preventive maintenance schedules from field_work_orders history, technician_schedules certifications, and BigQuery telemetry baselines so climb crews bundle compatible tower site visits, raising preventive maintenance compliance from 71% to 97% and cutting unplanned tower site visits from 480 to 170 per quarter.
 
 ## KPI summary
 

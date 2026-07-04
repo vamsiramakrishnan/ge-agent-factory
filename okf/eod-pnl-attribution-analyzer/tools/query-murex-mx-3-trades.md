@@ -53,12 +53,15 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [flash_to_final_p_l_capture](/workflow/flash-to-final-p-l-capture.md)
+- [risk_based_attribution_decomposition](/workflow/risk-based-attribution-decomposition.md)
+- [sign_off_publish_desk_escalation](/workflow/sign-off-publish-desk-escalation.md)
 
 ## Evals
 
 - [Run the End-of-Day P&L Attribution Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/eod-pnl-attribution-analyzer-end-to-end.md)
+- [Desk 'rates' is showing an unexplained P&L break against trade_id 412873650 (cusip 912828XG4) for the third straight business day (2026-07-01 through 2026-07-03), and the corresponding analytics_events variance_pct hasn't moved across those runs. Investigate whether this is a genuine market move or a booking-model issue, and tell me whether we can sign off by 10am today (2026-07-04).](/tests/eod-pnl-attribution-analyzer-recurring-break-desk-rates.md)
+- [For the treasury_alm desk, risk_measures record measure_id 512045 shows limit_utilization_pct at 103.5% against approved_limit_value, but its as_of_date is 2026-07-02 — two days stale relative to today's run (2026-07-04). Positions record position_id 3041220 (cusip 934567AB1) shows a $6.2M unrealized_gain_loss swing since that snapshot. Attribute the move and publish today's sign-off.](/tests/eod-pnl-attribution-analyzer-stale-evidence-treasury-alm.md)
 
 ## Evidence emitted
 

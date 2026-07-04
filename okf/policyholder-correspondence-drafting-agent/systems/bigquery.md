@@ -26,3 +26,4 @@ Historical baselines, analytics events, and KPI aggregates
 
 - [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
 - [lookup_policyholder_correspondence_drafting_agent_authority_guide](/tools/lookup-policyholder-correspondence-drafting-agent-authority-guide.md)
+- [lookup_state_doi_complaint_response_plain_language_standard](/tools/lookup-state-doi-complaint-response-plain-language-standard.md)

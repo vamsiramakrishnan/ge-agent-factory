@@ -37,3 +37,4 @@ Must cite: temenos_transact.core_accounts, bigquery.analytics_events
 # Citations
 
 - [Overdraft Fee Dispute Triage Agent Banking Compliance Policy](/documents/overdraft-fee-dispute-triage-agent-compliance-policy.md)
+- [Courtesy Overdraft Fee Waiver Authority & Approval Limits Playbook](/documents/overdraft-courtesy-waiver-authority-matrix.md)

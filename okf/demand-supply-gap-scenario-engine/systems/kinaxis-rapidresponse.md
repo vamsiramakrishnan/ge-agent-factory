@@ -27,3 +27,6 @@ supply plans, demand signals, scenario runs records
 - [query_kinaxis_rapidresponse_supply_plans](/tools/query-kinaxis-rapidresponse-supply-plans.md)
 - [lookup_demand_supply_gap_scenario_engine_sop](/tools/lookup-demand-supply-gap-scenario-engine-sop.md)
 - [action_kinaxis_rapidresponse_publish](/tools/action-kinaxis-rapidresponse-publish.md)
+- [query_kinaxis_rapidresponse_demand_signals](/tools/query-kinaxis-rapidresponse-demand-signals.md)
+- [query_kinaxis_rapidresponse_scenario_runs](/tools/query-kinaxis-rapidresponse-scenario-runs.md)
+- [lookup_s_op_service_level_rate_schedule](/tools/lookup-s-op-service-level-rate-schedule.md)

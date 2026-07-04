@@ -37,3 +37,4 @@ Must cite: salesforce_communications_cloud.subscriber_accounts, bigquery.analyti
 # Citations
 
 - [Competitive Win-Loss Analyzer Service Assurance Runbook](/documents/competitive-win-loss-analyzer-assurance-runbook.md)
+- [Consumer & SMB Discount Authority Matrix](/documents/competitive-win-loss-analyzer-discount-authority-matrix.md)

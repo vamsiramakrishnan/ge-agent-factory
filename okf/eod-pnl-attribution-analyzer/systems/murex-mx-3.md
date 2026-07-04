@@ -26,3 +26,6 @@ trades, positions, risk measures records
 
 - [query_murex_mx_3_trades](/tools/query-murex-mx-3-trades.md)
 - [action_murex_mx_3_publish](/tools/action-murex-mx-3-publish.md)
+- [query_murex_mx_3_positions](/tools/query-murex-mx-3-positions.md)
+- [query_murex_mx_3_risk_measures](/tools/query-murex-mx-3-risk-measures.md)
+- [lookup_eod_pnl_attribution_analyzer_substantiation_runbook](/tools/lookup-eod-pnl-attribution-analyzer-substantiation-runbook.md)

@@ -26,3 +26,6 @@ billing accounts, usage records, rated events records
 
 - [query_amdocs_ces_billing_billing_accounts](/tools/query-amdocs-ces-billing-billing-accounts.md)
 - [action_amdocs_ces_billing_escalate](/tools/action-amdocs-ces-billing-escalate.md)
+- [query_amdocs_ces_billing_usage_records](/tools/query-amdocs-ces-billing-usage-records.md)
+- [query_amdocs_ces_billing_rated_events](/tools/query-amdocs-ces-billing-rated-events.md)
+- [lookup_sim_swap_cpni_port_authentication_policy](/tools/lookup-sim-swap-cpni-port-authentication-policy.md)

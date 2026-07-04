@@ -37,3 +37,4 @@ Must cite: duck_creek_policy.policy_forms, docusign.envelopes
 # Citations
 
 - [Broker Submission Intake Orchestrator Authority & Referral Guide](/documents/broker-submission-intake-orchestrator-authority-guide.md)
+- [Producer Licensing, Appointment & Submission SLA Standard](/documents/broker-submission-intake-orchestrator-producer-appointment-sla.md)

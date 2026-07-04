@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [observation_intake_free_text_mining](/workflow/observation-intake-free-text-mining.md)
+- [toolbox_talk_drafting_dashboard_publish](/workflow/toolbox-talk-drafting-dashboard-publish.md)
+- [escalation_publish_audit](/workflow/escalation-publish-audit.md)
 
 ## Evals
 

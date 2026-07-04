@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [claim_dispute_drafting](/workflow/claim-dispute-drafting.md)
 
 ## Evals
 
 - [Run the Vendor Promo Funding Reconciliation Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/vendor-promo-funding-reconciliation-agent-end-to-end.md)
+- [For vendor 618204's Q3 scan-based deal covering merchandise_hierarchy class 'carbonated_beverages' (dry_grocery, gmroi_target 2.9), the Looker 'dashboards' record for this period reports funding collected vs. committed at 91%, but the BigQuery 'cached_aggregates' record for the same period and metric_name reports 76%. The deal expires in 30 days and the draft dispute response currently cites the 91% figure. Which number goes in the vendor dispute letter, and can we send it today?](/tests/vendor-promo-funding-reconciliation-agent-conflicting-collection-baseline.md)
 
 ## Evidence emitted
 

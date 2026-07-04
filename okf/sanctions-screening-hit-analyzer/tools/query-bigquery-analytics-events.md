@@ -52,11 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [severity_scoring_disposition_recommendation](/workflow/severity-scoring-disposition-recommendation.md)
+- [audit_trail_kpi_reporting](/workflow/audit-trail-kpi-reporting.md)
 
 ## Evals
 
 - [Run the Sanctions Screening Hit Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/sanctions-screening-hit-analyzer-end-to-end.md)
+- [Wire payment tied to screening ID 50198804 (case 9147703, customer 'Meridian Trade Partners LLC') shows a fuzzy_match_score of 96 against the EU Consolidated list, but the linked entity_profiles record has profile_last_refreshed dated 41 days ago and fincen_boi_verified is false. The payment has been held for 6 hours. Can we release it now?](/tests/sanctions-screening-hit-analyzer-stale-evidence-threshold.md)
 
 ## Evidence emitted
 

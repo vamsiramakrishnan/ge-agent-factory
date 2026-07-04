@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Periodic KYC Review Orchestrator
-description: "Orchestrates the review pipeline by risk tier and due date, pre-building each case file with activity-versus-profile comparisons from BigQuery. Auto-completes low-risk reviews with no material changes and generates a documented rationale for QA sampling. so the KYC Operations Manager can move the Overdue periodic reviews KPI."
+description: "Clear the periodic KYC review backlog in Fenergo CLM by risk tier and due date, auto-completing evidenced no-change reviews and escalating profile or risk-rating mismatches, taking overdue periodic reviews from 3,100 to 180 and driving high-risk reviews past due date from 240 to zero."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/periodic-kyc-review
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:47.530Z"
+provenance_created_at: "2026-07-04T06:17:55.850Z"
 ---
 
 # Periodic KYC Review Orchestrator
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:47.530Z"
 
 - **Persona:** KYC Operations Manager
 - **Department:** banking
-- **Objective:** Orchestrates the review pipeline by risk tier and due date, pre-building each case file with activity-versus-profile comparisons from BigQuery. Auto-completes low-risk reviews with no material changes and generates a documented rationale for QA sampling. so the KYC Operations Manager can move the Overdue periodic reviews KPI.
+- **Objective:** Clear the periodic KYC review backlog in Fenergo CLM by risk tier and due date, auto-completing evidenced no-change reviews and escalating profile or risk-rating mismatches, taking overdue periodic reviews from 3,100 to 180 and driving high-risk reviews past due date from 240 to zero.
 
 ## KPI summary
 

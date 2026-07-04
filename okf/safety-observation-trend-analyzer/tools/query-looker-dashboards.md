@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-_Not bound to a workflow stage._
+- [toolbox_talk_drafting_dashboard_publish](/workflow/toolbox-talk-drafting-dashboard-publish.md)
 
 ## Evals
 

@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Component Obsolescence Risk Monitor
-description: "Cross-references supplier end-of-life and lifecycle-risk signals against active PTC Windchill PLM BOM usage and remaining demand from SAP S/4HANA MM in BigQuery weekly. Quantifies exposure per affected product — remaining demand, current stock, and last-time-buy quantity required. so the Component Engineer can move the Line-down events from obsolete components KPI."
+description: "Correlate supplier end-of-life and lifecycle-risk signals against active PTC Windchill PLM bom_revisions usage and remaining SAP S/4HANA MM demand every week, quantify exposure per affected product, and drive last-time-buy decisions made proactively from 30% to 92% while cutting line-down events from obsolete components from 4 per year toward zero."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/component-obsolesce
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:15.371Z"
+provenance_created_at: "2026-07-04T06:18:24.373Z"
 ---
 
 # Component Obsolescence Risk Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:15.371Z"
 
 - **Persona:** Component Engineer
 - **Department:** manufacturing
-- **Objective:** Cross-references supplier end-of-life and lifecycle-risk signals against active PTC Windchill PLM BOM usage and remaining demand from SAP S/4HANA MM in BigQuery weekly. Quantifies exposure per affected product — remaining demand, current stock, and last-time-buy quantity required. so the Component Engineer can move the Line-down events from obsolete components KPI.
+- **Objective:** Correlate supplier end-of-life and lifecycle-risk signals against active PTC Windchill PLM bom_revisions usage and remaining SAP S/4HANA MM demand every week, quantify exposure per affected product, and drive last-time-buy decisions made proactively from 30% to 92% while cutting line-down events from obsolete components from 4 per year toward zero.
 
 ## KPI summary
 

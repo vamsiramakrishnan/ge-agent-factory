@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Account & Billing Status Pull](/workflow/account-billing-status-pull.md)
+2. [Payment History & Default Risk Scoring](/workflow/payment-history-default-risk-scoring.md)
+3. [Plan Option Re-Rating & Ranking](/workflow/plan-option-re-rating-ranking.md)
+4. [Authority & Notice-Period Gate](/workflow/authority-notice-period-gate.md)
+5. [Plan Application & Interaction Logging](/workflow/plan-application-interaction-logging.md)

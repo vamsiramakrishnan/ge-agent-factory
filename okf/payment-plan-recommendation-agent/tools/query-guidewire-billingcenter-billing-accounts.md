@@ -53,12 +53,15 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [account_billing_status_pull](/workflow/account-billing-status-pull.md)
+- [plan_option_re_rating_ranking](/workflow/plan-option-re-rating-ranking.md)
+- [plan_application_interaction_logging](/workflow/plan-application-interaction-logging.md)
 
 ## Evals
 
 - [Run the Payment Plan Recommendation Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/payment-plan-recommendation-agent-end-to-end.md)
+- [Billing account BAC-004821 (policy POL-7723190) shows past_due_amount of $842.16 and account_status pending_cancel_nonpay, with a next_installment_date of 2026-06-18 already past. The customer called today, 2026-07-04, insisting they mailed a check on 2026-06-25 that BillingCenter hasn't posted. Recommend a payment plan and say whether the account can be saved from cancellation.](/tests/payment-plan-recommendation-agent-stale-payment-dispute.md)
+- [Billing account BAC-011932 (policy POL-8804417) has nsf_returns_last_12mo = 2, current_balance of $6,140.00, and autopay_eft_enrolled = false. The policyholder is requesting the ten_pay plan with an 8.33% down_payment_pct and wants the $10 per-installment fee waived on all ten installments. Determine whether this is within your recommendation authority and present the plan.](/tests/payment-plan-recommendation-agent-nsf-fee-waiver-edge.md)
 
 ## Evidence emitted
 

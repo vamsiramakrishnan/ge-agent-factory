@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Nightly Exception Scan](/workflow/nightly-exception-scan.md)
+2. [Causal Driver Correlation](/workflow/causal-driver-correlation.md)
+3. [Seasonal Profile Cross-Check](/workflow/seasonal-profile-cross-check.md)
+4. [Override Recommendation & Playbook Citation](/workflow/override-recommendation-playbook-citation.md)
+5. [Publish & Forecast-Value-Added Scoring](/workflow/publish-forecast-value-added-scoring.md)

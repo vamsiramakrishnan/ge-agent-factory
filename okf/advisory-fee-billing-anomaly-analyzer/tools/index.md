@@ -11,3 +11,6 @@ timestamp: "2026-07-04T00:00:00.000Z"
 - [query_looker_dashboards](/tools/query-looker-dashboards.md)
 - [lookup_advisory_fee_billing_anomaly_analyzer_compliance_policy](/tools/lookup-advisory-fee-billing-anomaly-analyzer-compliance-policy.md)
 - [action_salesforce_financial_services_cloud_publish](/tools/action-salesforce-financial-services-cloud-publish.md)
+- [query_salesforce_financial_services_cloud_financial_accounts](/tools/query-salesforce-financial-services-cloud-financial-accounts.md)
+- [query_salesforce_financial_services_cloud_advisory_referrals](/tools/query-salesforce-financial-services-cloud-advisory-referrals.md)
+- [lookup_advisory_fee_schedule_breakpoint_rate_manual](/tools/lookup-advisory-fee-schedule-breakpoint-rate-manual.md)

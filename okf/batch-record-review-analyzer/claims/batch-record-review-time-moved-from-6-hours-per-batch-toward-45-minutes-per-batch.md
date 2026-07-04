@@ -37,3 +37,4 @@ Must cite: sap_s_4hana_qm.inspection_lots, siemens_opcenter_mes.production_order
 # Citations
 
 - [Batch Record Review Analyzer Standard Operating Procedure](/documents/batch-record-review-analyzer-sop.md)
+- [Electronic Batch Record & e-Signature Data Integrity Policy](/documents/batch-record-ebr-data-integrity-policy.md)

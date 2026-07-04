@@ -53,9 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [closed_opportunity_intake_loss_coding](/workflow/closed-opportunity-intake-loss-coding.md)
+- [segment_ranking_counter_play_briefing](/workflow/segment-ranking-counter-play-briefing.md)
+- [recommend_escalate](/workflow/recommend-escalate.md)
 
 ## Evals
 

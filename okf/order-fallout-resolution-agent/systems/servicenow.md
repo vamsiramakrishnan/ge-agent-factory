@@ -25,3 +25,4 @@ tickets, change requests, incidents records
 ## Tools using this system
 
 - [query_servicenow_tickets](/tools/query-servicenow-tickets.md)
+- [lookup_order_fallout_resolution_agent_lnp_e911_compliance_bulletin](/tools/lookup-order-fallout-resolution-agent-lnp-e911-compliance-bulletin.md)

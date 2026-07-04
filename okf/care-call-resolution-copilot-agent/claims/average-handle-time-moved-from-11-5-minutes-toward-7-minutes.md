@@ -37,3 +37,4 @@ Must cite: genesys_cloud_cx.customer_interactions, bigquery.analytics_events
 # Citations
 
 - [Care Call Resolution Copilot Agent Service Assurance Runbook](/documents/care-call-resolution-copilot-agent-assurance-runbook.md)
+- [CPNI Verification & Retention Offer Authorization Policy](/documents/care-call-resolution-copilot-agent-cpni-retention-offer-policy.md)

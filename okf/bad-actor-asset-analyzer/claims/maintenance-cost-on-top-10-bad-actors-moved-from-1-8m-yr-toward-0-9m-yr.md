@@ -37,3 +37,4 @@ Must cite: ibm_maximo.maintenance_work_orders, osisoft_pi_system.sensor_readings
 # Citations
 
 - [Bad Actor Asset Analyzer Standard Operating Procedure](/documents/bad-actor-asset-analyzer-sop.md)
+- [Asset Criticality Ranking & ISO 10816/20816 Vibration Severity Playbook](/documents/bad-actor-asset-analyzer-criticality-vibration-playbook.md)

@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Unapplied Cash Resolution Agent
-description: "Matches suspense payments to open receivables using fuzzy matching across payer name, amount, bank data, and agency remittance files in BigQuery. Applies high-confidence matches automatically and queues ambiguous ones with ranked candidates for one-click specialist review. so the Cash Applications Specialist can move the Unapplied cash balance KPI."
+description: "Resolve lockbox and agency-bulk suspense payments sitting against Guidewire BillingCenter billing_accounts and premium_invoices by fuzzy-matching payer name, amount, and bank data against BigQuery analytics_events history, driving the unapplied cash balance from a $4.7M average down to a $0.6M average while lifting the lockbox auto-match rate to 96%."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/unapplied-cash-reso
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:58.596Z"
+provenance_created_at: "2026-07-04T06:18:07.487Z"
 ---
 
 # Unapplied Cash Resolution Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:58.596Z"
 
 - **Persona:** Cash Applications Specialist
 - **Department:** insurance
-- **Objective:** Matches suspense payments to open receivables using fuzzy matching across payer name, amount, bank data, and agency remittance files in BigQuery. Applies high-confidence matches automatically and queues ambiguous ones with ranked candidates for one-click specialist review. so the Cash Applications Specialist can move the Unapplied cash balance KPI.
+- **Objective:** Resolve lockbox and agency-bulk suspense payments sitting against Guidewire BillingCenter billing_accounts and premium_invoices by fuzzy-matching payer name, amount, and bank data against BigQuery analytics_events history, driving the unapplied cash balance from a $4.7M average down to a $0.6M average while lifting the lockbox auto-match rate to 96%.
 
 ## KPI summary
 

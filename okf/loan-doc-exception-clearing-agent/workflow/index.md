@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Exception Intake & Severity Triage](/workflow/exception-intake-severity-triage.md)
+2. [Cure Evidence Correlation](/workflow/cure-evidence-correlation.md)
+3. [Aging Waterfall & Baseline Comparison](/workflow/aging-waterfall-baseline-comparison.md)
+4. [Compliance & Cure-Runbook Gating](/workflow/compliance-cure-runbook-gating.md)
+5. [Cure Dispatch, Ticketing & Escalation](/workflow/cure-dispatch-ticketing-escalation.md)

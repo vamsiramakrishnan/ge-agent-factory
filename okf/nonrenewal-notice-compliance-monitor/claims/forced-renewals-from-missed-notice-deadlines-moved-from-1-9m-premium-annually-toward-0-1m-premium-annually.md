@@ -37,3 +37,4 @@ Must cite: guidewire_policycenter.policies, bigquery.analytics_events
 # Citations
 
 - [Non-Renewal Notice Compliance Monitor Authority & Referral Guide](/documents/nonrenewal-notice-compliance-monitor-authority-guide.md)
+- [State Non-Renewal Notice Deadline & Delivery Method Matrix](/documents/state-nonrenewal-notice-deadline-matrix.md)

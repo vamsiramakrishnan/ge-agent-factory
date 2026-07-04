@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [publish_intake_analytics](/workflow/publish-intake-analytics.md)
 
 ## Evals
 

@@ -37,3 +37,4 @@ Must cite: guidewire_billingcenter.billing_accounts, docusign.envelopes
 # Citations
 
 - [Cancellation Notice Compliance Agent Authority & Referral Guide](/documents/cancellation-notice-compliance-agent-authority-guide.md)
+- [State Cancellation & Nonrenewal Notice Period Manual](/documents/state-cancellation-notice-period-manual.md)

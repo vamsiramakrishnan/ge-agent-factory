@@ -37,3 +37,4 @@ Must cite: duck_creek_policy.policy_forms, zendesk.tickets
 # Citations
 
 - [Policyholder Correspondence Drafting Agent Authority & Referral Guide](/documents/policyholder-correspondence-drafting-agent-authority-guide.md)
+- [State DOI Complaint-Response Timeliness & Plain-Language Correspondence Standard](/documents/state-doi-complaint-response-plain-language-standard.md)

@@ -37,3 +37,4 @@ Must cite: guidewire_policycenter.policies, zendesk.tickets
 # Citations
 
 - [Regulatory Complaint Response Agent Authority & Referral Guide](/documents/regulatory-complaint-response-agent-authority-guide.md)
+- [DOI Statutory Complaint Response Deadline Matrix](/documents/doi-statutory-deadline-matrix.md)

@@ -37,3 +37,4 @@ Must cite: ncino_loan_origination.loan_applications, bigquery.analytics_events
 # Citations
 
 - [Commercial Credit Memo Drafting Agent Banking Compliance Policy](/documents/commercial-credit-memo-drafting-agent-compliance-policy.md)
+- [Delegated Lending Authority & House Hold-Limit Matrix](/documents/commercial-credit-memo-drafting-agent-delegated-authority-matrix.md)

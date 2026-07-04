@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Alarm Intake & Ticket Correlation](/workflow/alarm-intake-ticket-correlation.md)
+2. [Blast-Radius & Severity Scoring](/workflow/blast-radius-severity-scoring.md)
+3. [Diagnostic History & Prior-Work Check](/workflow/diagnostic-history-prior-work-check.md)
+4. [Runbook Validation & Citation](/workflow/runbook-validation-citation.md)
+5. [Reroute, Route & Notify](/workflow/reroute-route-notify.md)

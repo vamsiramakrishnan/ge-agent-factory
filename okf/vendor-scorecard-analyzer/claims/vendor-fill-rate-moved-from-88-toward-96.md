@@ -37,3 +37,4 @@ Must cite: oracle_retail_mfcs.item_master, bigquery.analytics_events
 # Citations
 
 - [Vendor Performance Scorecard Analyzer Retail Execution Playbook](/documents/vendor-scorecard-analyzer-execution-playbook.md)
+- [Vendor Chargeback & Compliance Claims Rate Schedule](/documents/vendor-chargeback-compliance-rate-schedule.md)

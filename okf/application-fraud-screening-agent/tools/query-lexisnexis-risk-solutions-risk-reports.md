@@ -53,11 +53,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [lexis_nexis_household_mvr_verification](/workflow/lexis-nexis-household-mvr-verification.md)
 
 ## Evals
 
 - [Run the Application Fraud Screening Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/application-fraud-screening-agent-end-to-end.md)
+- [Quote CLM-88213 shows a fraud_screening_scores score_band of 'high_700_849' with top_indicator 'coverage_increased_before_loss', but the LexisNexis prefill_datasets record for the same applicant (match_confidence 0.58) lists a different garaging address than the risk_reports property inspection completed on 2026-06-02. Reconcile the discrepancy and tell me whether we can bind by end of day.](/tests/application-fraud-screening-agent-garaging-conflict.md)
 
 ## Evidence emitted
 

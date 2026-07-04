@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Loss Ratio Trend Monitor
-description: "Continuously scans loss ratios across hundreds of state, class, tier, and cohort combinations in BigQuery, benchmarked against Verisk industry trends. Distinguishes credible deterioration from noise using severity, frequency, and large-loss decomposition. so the Chief Actuary can move the Time to detect a deteriorating segment KPI."
+description: "Detect deteriorating state/class/tier cells in loss_cost_benchmarks and analytics_events within 3 weeks of onset - down from the current 4-6 month blind spot - by continuously monitoring 400+ granular segments in BigQuery and escalating only credibility-weighted, two-system evidence-backed deterioration to the Chief Actuary for rate-review fast-tracking."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/loss-ratio-trend-mo
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:01.919Z"
+provenance_created_at: "2026-07-04T06:18:10.852Z"
 ---
 
 # Loss Ratio Trend Monitor
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:01.919Z"
 
 - **Persona:** Chief Actuary
 - **Department:** insurance
-- **Objective:** Continuously scans loss ratios across hundreds of state, class, tier, and cohort combinations in BigQuery, benchmarked against Verisk industry trends. Distinguishes credible deterioration from noise using severity, frequency, and large-loss decomposition. so the Chief Actuary can move the Time to detect a deteriorating segment KPI.
+- **Objective:** Detect deteriorating state/class/tier cells in loss_cost_benchmarks and analytics_events within 3 weeks of onset - down from the current 4-6 month blind spot - by continuously monitoring 400+ granular segments in BigQuery and escalating only credibility-weighted, two-system evidence-backed deterioration to the Chief Actuary for rate-review fast-tracking.
 
 ## KPI summary
 

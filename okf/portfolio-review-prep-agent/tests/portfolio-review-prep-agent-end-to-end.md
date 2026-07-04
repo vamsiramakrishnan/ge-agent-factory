@@ -15,7 +15,7 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 ## Validates
 
-- [analyze-detect](/queries/analyze-detect.md)
+- [agenda-assembly-advisor-handoff](/queries/agenda-assembly-advisor-handoff.md)
 
 ## Mechanisms to call
 

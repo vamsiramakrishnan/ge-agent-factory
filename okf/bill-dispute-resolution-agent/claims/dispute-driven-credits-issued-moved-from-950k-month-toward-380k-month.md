@@ -37,3 +37,4 @@ Must cite: amdocs_ces_billing.billing_accounts, bigquery.analytics_events
 # Citations
 
 - [Bill Dispute Resolution Agent Service Assurance Runbook](/documents/bill-dispute-resolution-agent-assurance-runbook.md)
+- [Consumer & Enterprise Credit Adjustment Delegation of Authority Policy](/documents/bill-dispute-resolution-agent-credit-adjustment-doa-policy.md)

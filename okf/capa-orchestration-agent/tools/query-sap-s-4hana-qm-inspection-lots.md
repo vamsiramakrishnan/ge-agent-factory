@@ -52,12 +52,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [capa_notification_intake](/workflow/capa-notification-intake.md)
+- [stalled_task_escalation](/workflow/stalled-task-escalation.md)
+- [effectiveness_verification_reopen_gate](/workflow/effectiveness-verification-reopen-gate.md)
 
 ## Evals
 
 - [Run the CAPA Orchestration Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/capa-orchestration-agent-end-to-end.md)
+- [CAPA-73408 (source: customer_complaint, root_cause_method: fishbone) is sitting in status 'effectiveness_check' with effectiveness_verified still false and a due_date of 2026-05-20 -- that's 45 days past due today. The linked nonconformance record NC-641207 (defect_code: contamination, severity: major) shows containment_complete=true but mrb_required=true with no MRB disposition attached in SAP QM. The owner wants to close it out today. Walk me through whether this can close.](/tests/capa-orchestration-agent-mrb-disposition-hold.md)
 
 ## Evidence emitted
 

@@ -52,13 +52,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [analyze_detect](/workflow/analyze-detect.md)
-- [act_audit](/workflow/act-audit.md)
+- [changeover_log_correlation](/workflow/changeover-log-correlation.md)
+- [family_aware_resequencing_recommendation](/workflow/family-aware-resequencing-recommendation.md)
+- [route_audit](/workflow/route-audit.md)
 
 ## Evals
 
 - [Run the Changeover Time Optimization Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/changeover-time-optimization-agent-end-to-end.md)
+- [Process order 7412093 (batch 812204) on REACTOR-01 has a scheduled_start of 2026-06-28, but the linked production order 1482391 in Opcenter MES still shows order_status 'in_process' with no confirmed_qty as of this morning -- that record is now more than 24 hours old. Before you recommend any resequencing swap around this changeover, tell me whether this evidence is fresh enough to act on and what the SOP says to do with stale changeover evidence.](/tests/changeover-time-optimization-agent-stale-confirmation-reconciliation.md)
 
 ## Evidence emitted
 

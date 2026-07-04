@@ -52,12 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [tap_bce_file_intake_mediation_batch_validation](/workflow/tap-bce-file-intake-mediation-batch-validation.md)
+- [dispute_filing_partner_settlement_tracking](/workflow/dispute-filing-partner-settlement-tracking.md)
 
 ## Evals
 
 - [Run the Roaming Settlement Reconciliation Engine workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/roaming-settlement-reconciliation-engine-end-to-end.md)
+- [Roaming partner Vodafone's inbound TAP file for mediation_batch 40417 shows subscriber_key 3124481192 rated under rate_plan_code UNL_BASIC in rated_events at rated_amount_usd 12.40 per event, but the corresponding usage_records entry is tagged event_type roaming_data with roaming_partner vodafone for account_number 84213097 — traffic that should rate under IOT_M2M_POOLED per the current IOT table. Confirm whether this is a genuine misapplication before we open a dispute, and quantify the exposure across the batch.](/tests/roaming-settlement-reconciliation-engine-iot-misrate-crosscheck.md)
 
 ## Evidence emitted
 

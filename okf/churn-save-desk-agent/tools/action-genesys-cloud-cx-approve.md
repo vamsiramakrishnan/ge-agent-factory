@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [cpni_authentication_call_intercept](/workflow/cpni-authentication-call-intercept.md)
+- [churn_driver_clv_triangulation](/workflow/churn-driver-clv-triangulation.md)
+- [offer_approval_audit_trail](/workflow/offer-approval-audit-trail.md)
 
 ## Evals
 

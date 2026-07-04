@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [ppm_capa_trend_compute](/workflow/ppm-capa-trend-compute.md)
 
 ## Evals
 
 - [Run the Supplier Quality Scorecard Engine workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/supplier-quality-scorecard-engine-end-to-end.md)
+- [Vendor 'Meridian Fasteners Inc.' inspection lot #14032871 was rejected on 2026-06-18 for a dimensional nonconformance (NC #612044, severity: major), but the BigQuery historical_metrics baseline used for that vendor's PPM was last computed on 2026-05-20 (46 days ago). Finalize this vendor's Q2 risk scorecard and publish it to SAP S/4HANA QM.](/tests/supplier-quality-scorecard-engine-stale-evidence-reconciliation.md)
 
 ## Evidence emitted
 

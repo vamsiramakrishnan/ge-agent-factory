@@ -37,3 +37,4 @@ Must cite: blue_yonder_demand_planning.demand_forecasts, bigquery.analytics_even
 # Citations
 
 - [Demand Forecast Exception Agent Retail Execution Playbook](/documents/demand-forecast-exception-agent-execution-playbook.md)
+- [Demand Planning Override Tolerance & Frozen-Period Manual](/documents/demand-forecast-override-tolerance-manual.md)

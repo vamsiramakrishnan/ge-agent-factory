@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Premium Leakage Detection Analyzer
-description: "Cross-references declared exposures against LexisNexis business intelligence, public filings, and telematics-derived signals in BigQuery. Scores every policy for leakage probability and expected recovery, and recommends which audits to prioritize each month. so the Premium Audit Manager can move the Leakage rate on audited book KPI."
+description: "Continuously cross-reference risk_reports, mvr_records, and prefill_datasets against BigQuery historical_metrics, analytics_events, and cached_aggregates to detect undisclosed exposure and misclassified risk, driving leakage rate on the audited book from 3.9% of written premium to 1.2% while lifting audit hit rate from 18% to 57%."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/premium-leakage-det
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:02.765Z"
+provenance_created_at: "2026-07-04T06:18:11.741Z"
 ---
 
 # Premium Leakage Detection Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:02.765Z"
 
 - **Persona:** Premium Audit Manager
 - **Department:** insurance
-- **Objective:** Cross-references declared exposures against LexisNexis business intelligence, public filings, and telematics-derived signals in BigQuery. Scores every policy for leakage probability and expected recovery, and recommends which audits to prioritize each month. so the Premium Audit Manager can move the Leakage rate on audited book KPI.
+- **Objective:** Continuously cross-reference risk_reports, mvr_records, and prefill_datasets against BigQuery historical_metrics, analytics_events, and cached_aggregates to detect undisclosed exposure and misclassified risk, driving leakage rate on the audited book from 3.9% of written premium to 1.2% while lifting audit hit rate from 18% to 57%.
 
 ## KPI summary
 

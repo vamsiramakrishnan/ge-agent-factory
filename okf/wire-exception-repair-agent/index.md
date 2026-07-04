@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Wire Exception Repair Agent
-description: "Diagnoses each repair-queue wire in the FIS Payments Hub and proposes corrected beneficiary fields from payment history and bank directories. Applies high-confidence repairs automatically and routes ambiguous cases to a clerk with the top candidate fixes ranked. so the Payments Operations Manager can move the Wires repaired without manual touch KPI."
+description: "Repair malformed payment_instructions in the FIS Payments Hub before each clearing_batches settlement_window cutoff, lifting the straight-through repair rate from 12% to 74% and cutting average repair turnaround from 3.5 hours to 20 minutes while holding every BEC- and sanctions-flagged wire for human disposition."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/wire-exception-repa
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:44.497Z"
+provenance_created_at: "2026-07-04T06:17:52.875Z"
 ---
 
 # Wire Exception Repair Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:44.497Z"
 
 - **Persona:** Payments Operations Manager
 - **Department:** banking
-- **Objective:** Diagnoses each repair-queue wire in the FIS Payments Hub and proposes corrected beneficiary fields from payment history and bank directories. Applies high-confidence repairs automatically and routes ambiguous cases to a clerk with the top candidate fixes ranked. so the Payments Operations Manager can move the Wires repaired without manual touch KPI.
+- **Objective:** Repair malformed payment_instructions in the FIS Payments Hub before each clearing_batches settlement_window cutoff, lifting the straight-through repair rate from 12% to 74% and cutting average repair turnaround from 3.5 hours to 20 minutes while holding every BEC- and sanctions-flagged wire for human disposition.
 
 ## KPI summary
 

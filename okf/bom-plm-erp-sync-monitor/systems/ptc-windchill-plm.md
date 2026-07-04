@@ -26,3 +26,6 @@ engineering change orders, bom revisions, cad document records records
 
 - [query_ptc_windchill_plm_engineering_change_orders](/tools/query-ptc-windchill-plm-engineering-change-orders.md)
 - [action_ptc_windchill_plm_escalate](/tools/action-ptc-windchill-plm-escalate.md)
+- [query_ptc_windchill_plm_bom_revisions](/tools/query-ptc-windchill-plm-bom-revisions.md)
+- [query_ptc_windchill_plm_cad_document_records](/tools/query-ptc-windchill-plm-cad-document-records.md)
+- [lookup_eco_effectivity_change_control_policy](/tools/lookup-eco-effectivity-change-control-policy.md)

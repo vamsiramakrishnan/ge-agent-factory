@@ -26,3 +26,6 @@ policies, policy quotes, underwriting submissions records
 
 - [query_guidewire_policycenter_policies](/tools/query-guidewire-policycenter-policies.md)
 - [action_guidewire_policycenter_route](/tools/action-guidewire-policycenter-route.md)
+- [query_guidewire_policycenter_policy_quotes](/tools/query-guidewire-policycenter-policy-quotes.md)
+- [query_guidewire_policycenter_underwriting_submissions](/tools/query-guidewire-policycenter-underwriting-submissions.md)
+- [lookup_renewal_risk_requalification_agent_nonrenewal_notice_manual](/tools/lookup-renewal-risk-requalification-agent-nonrenewal-notice-manual.md)

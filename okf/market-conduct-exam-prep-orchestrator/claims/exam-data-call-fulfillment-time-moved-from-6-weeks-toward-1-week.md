@@ -37,3 +37,4 @@ Must cite: guidewire_policycenter.policies, bigquery.analytics_events
 # Citations
 
 - [Market Conduct Exam Prep Orchestrator Authority & Referral Guide](/documents/market-conduct-exam-prep-orchestrator-authority-guide.md)
+- [NAIC Market Conduct Data Call Response Playbook](/documents/naic-market-conduct-data-call-response-playbook.md)

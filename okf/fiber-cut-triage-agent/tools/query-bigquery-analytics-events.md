@@ -52,7 +52,8 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [blast_radius_severity_scoring](/workflow/blast-radius-severity-scoring.md)
+- [diagnostic_history_prior_work_check](/workflow/diagnostic-history-prior-work-check.md)
 
 ## Evals
 

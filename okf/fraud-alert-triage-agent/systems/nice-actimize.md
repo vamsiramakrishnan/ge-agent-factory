@@ -26,3 +26,6 @@ fraud alerts, transaction risk scores, investigation cases records
 
 - [query_nice_actimize_fraud_alerts](/tools/query-nice-actimize-fraud-alerts.md)
 - [action_nice_actimize_file](/tools/action-nice-actimize-file.md)
+- [query_nice_actimize_transaction_risk_scores](/tools/query-nice-actimize-transaction-risk-scores.md)
+- [query_nice_actimize_investigation_cases](/tools/query-nice-actimize-investigation-cases.md)
+- [lookup_sar_filing_deadline_playbook](/tools/lookup-sar-filing-deadline-playbook.md)

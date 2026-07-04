@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Dispute Intake & Reason Code Classification](/workflow/dispute-intake-reason-code-classification.md)
+2. [Reg E/Reg Z Deadline Clock](/workflow/reg-e-reg-z-deadline-clock.md)
+3. [Evidence Packet Assembly](/workflow/evidence-packet-assembly.md)
+4. [Deadline & Severity Triage](/workflow/deadline-severity-triage.md)
+5. [Representment Filing & Audit](/workflow/representment-filing-audit.md)

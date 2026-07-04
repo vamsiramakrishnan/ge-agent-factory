@@ -52,7 +52,8 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [order_delivery_enrichment](/workflow/order-delivery-enrichment.md)
+- [severity_scoring_sla_check](/workflow/severity-scoring-sla-check.md)
 
 ## Evals
 

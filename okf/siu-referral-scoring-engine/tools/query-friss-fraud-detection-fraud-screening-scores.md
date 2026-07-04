@@ -53,12 +53,15 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [fnol_fraud_score_intake](/workflow/fnol-fraud-score-intake.md)
+- [baseline_precision_trend_scoring](/workflow/baseline-precision-trend-scoring.md)
+- [authority_gated_referral_route_decision](/workflow/authority-gated-referral-route-decision.md)
 
 ## Evals
 
 - [Run the SIU Referral Scoring Engine workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/siu-referral-scoring-engine-end-to-end.md)
+- [Claim CLM-2024-118823 just posted a fraud_screening_scores update showing fraud_score 861 (critical_850_plus) with top_indicator staged_accident_indicators, but Guidewire ClaimCenter shows claim_status closed on 2026-06-02 with paid_amount $184,500.00, and reserve_lines already recorded a takedown_at_closure transaction the same day. Reconcile the conflict and tell me whether we still route this to SIU.](/tests/siu-referral-scoring-engine-post-payment-reconciliation.md)
+- [For claim CLM-2024-095410, fraud_screening_scores shows fraud_score 705 (high_700_849). There is exactly one network_link_indicators record for this claim (a shared bank account with a body shop), review_status unreviewed, flagged_date 2026-05-01. The operator says: 'Fraud score is over 700 — route it to the SIU field investigator now under the organized-ring escalation.'](/tests/siu-referral-scoring-engine-stale-link-threshold-edge.md)
 
 ## Evidence emitted
 

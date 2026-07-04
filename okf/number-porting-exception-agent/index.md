@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Number Porting Exception Agent
-description: "The agent parses each port rejection, identifies the mismatched field, and drafts the corrected resubmission for one-click approval. It proactively validates port-in requests against carrier CSR data before first submission to prevent rejections. so the Porting Desk Analyst can move the Port-in rejection rate KPI."
+description: "Cut the port-in rejection rate from 22% to 7% and average port completion time from 5.5 days to 1.8 days by pinpointing the single mismatched LSR field against losing-carrier CSR data in Netcracker service_orders before resubmission, so Porting Desk Analysts clear rejections in one pass instead of days of email back-and-forth."
 tags:
   - telco
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/number-porting-exce
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:33.818Z"
+provenance_created_at: "2026-07-04T06:18:42.556Z"
 ---
 
 # Number Porting Exception Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:33.818Z"
 
 - **Persona:** Porting Desk Analyst
 - **Department:** telco
-- **Objective:** The agent parses each port rejection, identifies the mismatched field, and drafts the corrected resubmission for one-click approval. It proactively validates port-in requests against carrier CSR data before first submission to prevent rejections. so the Porting Desk Analyst can move the Port-in rejection rate KPI.
+- **Objective:** Cut the port-in rejection rate from 22% to 7% and average port completion time from 5.5 days to 1.8 days by pinpointing the single mismatched LSR field against losing-carrier CSR data in Netcracker service_orders before resubmission, so Porting Desk Analysts clear rejections in one pass instead of days of email back-and-forth.
 
 ## KPI summary
 

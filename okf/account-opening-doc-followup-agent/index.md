@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: "Account Opening Document Follow-Up Agent"
-description: "Detects new-account document exceptions in Temenos Transact the moment an account is booked and matches them against required-document checklists. Routes missing agreements to DocuSign and drafts customer reminder messages on a cadence until the packet is complete. so the Branch Operations Manager can move the Accounts opened with incomplete documents KPI."
+description: Cut the share of accounts opened with incomplete documentation from 18% to 3% and the average days to cure a document exception from 12 days to 2.5 days by matching every newly booked core_accounts record against DocuSign envelope and recipient status and escalating aged exceptions to the Branch Operations Manager.
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/account-opening-doc
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:40.339Z"
+provenance_created_at: "2026-07-04T06:17:48.538Z"
 ---
 
 # Account Opening Document Follow-Up Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:40.339Z"
 
 - **Persona:** Branch Operations Manager
 - **Department:** banking
-- **Objective:** Detects new-account document exceptions in Temenos Transact the moment an account is booked and matches them against required-document checklists. Routes missing agreements to DocuSign and drafts customer reminder messages on a cadence until the packet is complete. so the Branch Operations Manager can move the Accounts opened with incomplete documents KPI.
+- **Objective:** Cut the share of accounts opened with incomplete documentation from 18% to 3% and the average days to cure a document exception from 12 days to 2.5 days by matching every newly booked core_accounts record against DocuSign envelope and recipient status and escalating aged exceptions to the Branch Operations Manager.
 
 ## KPI summary
 

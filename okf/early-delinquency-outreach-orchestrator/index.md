@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Early Delinquency Outreach Orchestrator
-description: "Segments early-stage delinquencies nightly by cure probability and recommends the contact channel and time most likely to reach each borrower. Drafts compliant outreach messages with pre-qualified hardship options based on the borrower's loan terms and payment history. so the Collections Supervisor can move the Roll rate from 30 to 60 days past due KPI."
+description: "Cut the roll rate from 30 to 60 days past due from 28% toward the 16% target by nightly segmenting loan_applications by cure probability in BigQuery, suppressing tickets-flagged promise-to-pay accounts, and routing right-party-contact-optimized outreach to collectors, lifting right-party contact rate from 22% to 41%."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/early-delinquency-o
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:43.210Z"
+provenance_created_at: "2026-07-04T06:17:51.578Z"
 ---
 
 # Early Delinquency Outreach Orchestrator
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:43.210Z"
 
 - **Persona:** Collections Supervisor
 - **Department:** banking
-- **Objective:** Segments early-stage delinquencies nightly by cure probability and recommends the contact channel and time most likely to reach each borrower. Drafts compliant outreach messages with pre-qualified hardship options based on the borrower's loan terms and payment history. so the Collections Supervisor can move the Roll rate from 30 to 60 days past due KPI.
+- **Objective:** Cut the roll rate from 30 to 60 days past due from 28% toward the 16% target by nightly segmenting loan_applications by cure probability in BigQuery, suppressing tickets-flagged promise-to-pay accounts, and routing right-party-contact-optimized outreach to collectors, lifting right-party contact rate from 22% to 41%.
 
 ## KPI summary
 

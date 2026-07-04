@@ -53,8 +53,9 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [exposure_intake_baseline_pull](/workflow/exposure-intake-baseline-pull.md)
+- [pre_audit_findings_drafting](/workflow/pre-audit-findings-drafting.md)
+- [recovery_publication_audit_trail](/workflow/recovery-publication-audit-trail.md)
 
 ## Evals
 

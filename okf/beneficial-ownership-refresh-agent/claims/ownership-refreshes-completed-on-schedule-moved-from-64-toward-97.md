@@ -37,3 +37,4 @@ Must cite: fenergo_clm.kyc_cases, bigquery.analytics_events
 # Citations
 
 - [Beneficial Ownership Refresh Agent Banking Compliance Policy](/documents/beneficial-ownership-refresh-agent-compliance-policy.md)
+- [Beneficial Ownership Certification & FinCEN BOI Verification Runbook](/documents/beneficial-ownership-boi-verification-runbook.md)

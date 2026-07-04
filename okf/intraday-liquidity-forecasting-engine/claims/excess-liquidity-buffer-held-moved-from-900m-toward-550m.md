@@ -37,3 +37,4 @@ Must cite: murex_mx_3.trades, bigquery.analytics_events
 # Citations
 
 - [Intraday Liquidity Forecasting Engine Banking Compliance Policy](/documents/intraday-liquidity-forecasting-engine-compliance-policy.md)
+- [Nostro Correspondent Cutoff Times & Contingency Funding Plan](/documents/nostro-cutoff-contingency-funding-plan.md)

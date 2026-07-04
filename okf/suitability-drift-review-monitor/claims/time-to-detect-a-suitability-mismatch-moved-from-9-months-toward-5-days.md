@@ -37,3 +37,4 @@ Must cite: salesforce_financial_services_cloud.client_households, bigquery.analy
 # Citations
 
 - [Suitability Drift Review Monitor Banking Compliance Policy](/documents/suitability-drift-review-monitor-compliance-policy.md)
+- [Suitability Exception Remediation & Reg BI Rollover Playbook](/documents/suitability-exception-remediation-playbook.md)

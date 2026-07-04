@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [compliance_scoring_against_historical_baseline](/workflow/compliance-scoring-against-historical-baseline.md)
 
 ## Evals
 
 - [Run the Planogram Compliance Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/planogram-compliance-analyzer-end-to-end.md)
+- [Store #0873, merchandise_hierarchy class_number 214 (salty snacks), has posted a planogram compliance rate of exactly 79% for reset windows dated 2026-05-04, 2026-05-25, and 2026-06-15 -- three consecutive resets -- with recurring missing-item violations tied to that same class. The store manager says the reset team fixed it after the last visit and asks to log it as a routine corrective task instead of an escalation. How should the agent proceed?](/tests/planogram-compliance-analyzer-chronic-noncompliance-threshold.md)
 
 ## Evidence emitted
 

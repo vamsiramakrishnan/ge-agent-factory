@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Fraud Ring Network Analyzer
-description: "Builds entity-resolution graphs across claims, providers, and participants nightly in BigQuery, enriched with LexisNexis identity data. Detects suspicious clusters — shared identifiers, provider billing patterns, choreographed loss sequences — and scores them for organized activity. so the SIU Manager can move the Organized fraud rings identified per year KPI."
+description: "Correlate FRISS network_link_indicators and fraud_screening_scores with LexisNexis identity data to detect and substantiate organized fraud rings before consolidation, lifting organized fraud rings identified per year from 3 to 14 and cutting average ring exposure at detection from $2.1M to $0.5M."
 tags:
   - insurance
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/fraud-ring-network-
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:03.595Z"
+provenance_created_at: "2026-07-04T06:18:12.572Z"
 ---
 
 # Fraud Ring Network Analyzer
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:03.595Z"
 
 - **Persona:** SIU Manager
 - **Department:** insurance
-- **Objective:** Builds entity-resolution graphs across claims, providers, and participants nightly in BigQuery, enriched with LexisNexis identity data. Detects suspicious clusters — shared identifiers, provider billing patterns, choreographed loss sequences — and scores them for organized activity. so the SIU Manager can move the Organized fraud rings identified per year KPI.
+- **Objective:** Correlate FRISS network_link_indicators and fraud_screening_scores with LexisNexis identity data to detect and substantiate organized fraud rings before consolidation, lifting organized fraud rings identified per year from 3 to 14 and cutting average ring exposure at detection from $2.1M to $0.5M.
 
 ## KPI summary
 

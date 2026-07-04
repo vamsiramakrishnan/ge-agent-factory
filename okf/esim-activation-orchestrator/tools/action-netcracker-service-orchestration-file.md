@@ -53,9 +53,10 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [validate_evidence](/workflow/validate-evidence.md)
-- [act_audit](/workflow/act-audit.md)
+- [profile_download_triage](/workflow/profile-download-triage.md)
+- [cross_system_state_reconciliation](/workflow/cross-system-state-reconciliation.md)
+- [fallout_severity_scoring_runbook_validation](/workflow/fallout-severity-scoring-runbook-validation.md)
+- [guarded_retry_provisioning_action](/workflow/guarded-retry-provisioning-action.md)
 
 ## Evals
 

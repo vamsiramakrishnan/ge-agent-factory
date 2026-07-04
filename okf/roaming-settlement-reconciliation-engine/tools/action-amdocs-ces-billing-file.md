@@ -53,8 +53,10 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [tap_bce_file_intake_mediation_batch_validation](/workflow/tap-bce-file-intake-mediation-batch-validation.md)
+- [partner_baseline_reconciliation](/workflow/partner-baseline-reconciliation.md)
+- [discrepancy_quantification_dispute_evidence_assembly](/workflow/discrepancy-quantification-dispute-evidence-assembly.md)
+- [dispute_filing_partner_settlement_tracking](/workflow/dispute-filing-partner-settlement-tracking.md)
 
 ## Evals
 

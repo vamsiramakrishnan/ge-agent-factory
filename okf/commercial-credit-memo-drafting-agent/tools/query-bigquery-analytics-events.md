@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [narrative_drafting_via_vertex_ai](/workflow/narrative-drafting-via-vertex-ai.md)
 
 ## Evals
 
 - [Run the Commercial Credit Memo Drafting Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/commercial-credit-memo-drafting-agent-end-to-end.md)
+- [Draft the first-cut credit memo for application 30184552 (Meridian Fabricators Inc., requested $3,250,000 term loan). loan_applications shows DSCR 1.32, but credit_memos memo #812044 for the same application_number lists global_cash_flow of $410,000 against roughly $525,000 of annual debt service -- that implies a DSCR closer to 0.78. Reconcile the discrepancy and tell me whether this memo is ready to route to committee.](/tests/commercial-credit-memo-drafting-agent-dscr-reconciliation.md)
 
 ## Evidence emitted
 

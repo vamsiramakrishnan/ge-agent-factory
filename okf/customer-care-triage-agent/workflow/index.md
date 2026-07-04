@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Ticket Intake & Intent Classification](/workflow/ticket-intake-intent-classification.md)
+2. [Order & Delivery Enrichment](/workflow/order-delivery-enrichment.md)
+3. [Severity Scoring & SLA Check](/workflow/severity-scoring-sla-check.md)
+4. [Policy-Gated Resolution](/workflow/policy-gated-resolution.md)
+5. [Routing, Escalation & Audit](/workflow/routing-escalation-audit.md)

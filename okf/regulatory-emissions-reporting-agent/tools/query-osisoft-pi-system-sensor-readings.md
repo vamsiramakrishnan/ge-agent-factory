@@ -52,11 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [continuous_emissions_permit_data_pull](/workflow/continuous-emissions-permit-data-pull.md)
+- [exceedance_downtime_reconciliation](/workflow/exceedance-downtime-reconciliation.md)
 
 ## Evals
 
 - [Run the Regulatory Emissions Reporting Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/regulatory-emissions-reporting-agent-end-to-end.md)
+- [The CEMS analyzer on asset #148820 (boiler_stack) last posted a sensor_reading at 2026-06-30T22:00:00Z, and the OSIsoft PI System shows a downtime_event on the same asset starting 2026-07-01T06:00:00Z for 'breakdown' lasting 640 minutes. BigQuery's cached_aggregates for the June monthly period already report full CO2e coverage for that source. Should June's boiler_stack emissions go into the report as-is?](/tests/regulatory-emissions-reporting-agent-stale-cems-evidence-gap.md)
 
 ## Evidence emitted
 

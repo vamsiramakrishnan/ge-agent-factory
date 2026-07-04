@@ -37,3 +37,4 @@ Must cite: guidewire_policycenter.policies, lexisnexis_risk_solutions.risk_repor
 # Citations
 
 - [Submission Appetite Screening Agent Authority & Referral Guide](/documents/submission-appetite-screening-agent-authority-guide.md)
+- [Coastal Wind & Catastrophe Aggregation Referral Playbook](/documents/coastal-wind-cat-referral-playbook.md)

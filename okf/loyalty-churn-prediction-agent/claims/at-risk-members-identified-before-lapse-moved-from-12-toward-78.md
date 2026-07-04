@@ -37,3 +37,4 @@ Must cite: salesforce_commerce_cloud.online_orders, salesforce_marketing_cloud.a
 # Citations
 
 - [Loyalty Churn Prediction Agent Retail Execution Playbook](/documents/loyalty-churn-prediction-agent-execution-playbook.md)
+- [Loyalty Points Liability & Redemption Policy](/documents/loyalty-points-liability-redemption-policy.md)

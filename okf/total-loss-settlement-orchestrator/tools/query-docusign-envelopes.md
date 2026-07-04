@@ -52,11 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [coverage_lienholder_verification](/workflow/coverage-lienholder-verification.md)
+- [e_signature_dispatch_milestone_tracking](/workflow/e-signature-dispatch-milestone-tracking.md)
 
 ## Evals
 
 - [Run the Total Loss Settlement Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/total-loss-settlement-orchestrator-end-to-end.md)
+- [Claim CLM-2026-04471 (vehicle declared a total loss) shows a lienholder payoff of $18,250.00 recorded in reserve_lines, but the DocuSign envelope ENV-77201 sent to the lienholder confirms a payoff of $19,100.00. Reconcile the discrepancy and tell me whether we can release the settlement check and title today.](/tests/total-loss-settlement-orchestrator-lienholder-payoff-mismatch.md)
 
 ## Evidence emitted
 

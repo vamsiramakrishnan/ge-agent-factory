@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [variance_scoring_trend_baseline](/workflow/variance-scoring-trend-baseline.md)
 
 ## Evals
 

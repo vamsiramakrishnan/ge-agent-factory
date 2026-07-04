@@ -37,3 +37,4 @@ Must cite: ibm_maximo.maintenance_work_orders, osisoft_pi_system.sensor_readings
 # Citations
 
 - [PM Schedule Optimization Engine Standard Operating Procedure](/documents/pm-schedule-optimization-engine-sop.md)
+- [PM Interval Revision & OEM Warranty Compliance Policy](/documents/pm-interval-warranty-policy.md)

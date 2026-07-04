@@ -25,3 +25,4 @@ Historical baselines, analytics events, and KPI aggregates
 ## Tools using this system
 
 - [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
+- [lookup_cell_congestion_augment_prioritization_playbook](/tools/lookup-cell-congestion-augment-prioritization-playbook.md)

@@ -15,7 +15,7 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 ## Validates
 
-- [retrieve-records](/queries/retrieve-records.md)
+- [alert-intake-queue-prioritization](/queries/alert-intake-queue-prioritization.md)
 
 ## Mechanisms to call
 

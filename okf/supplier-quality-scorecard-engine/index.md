@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Supplier Quality Scorecard Engine
-description: "Refreshes supplier PPM, lot rejection rate, deviation history, and 8D closure speed weekly from SAP QM and SAP S/4HANA MM data in BigQuery. Generates a ranked risk scorecard per supplier and drafts the quarterly business review pack automatically. so the Supplier Quality Engineer can move the Incoming inspection PPM KPI."
+description: "Refresh supplier risk scorecards weekly by correlating inspection_lots and nonconformance_records from SAP S/4HANA QM against purchase_orders and vendors from SAP S/4HANA MM, driving Incoming inspection PPM from 4,200 down to 1,600 and cutting scorecard preparation effort from 3 weeks to under 2 hours per quarter."
 tags:
   - manufacturing
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/supplier-quality-sc
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:08.223Z"
+provenance_created_at: "2026-07-04T06:18:17.232Z"
 ---
 
 # Supplier Quality Scorecard Engine
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:08.223Z"
 
 - **Persona:** Supplier Quality Engineer
 - **Department:** manufacturing
-- **Objective:** Refreshes supplier PPM, lot rejection rate, deviation history, and 8D closure speed weekly from SAP QM and SAP S/4HANA MM data in BigQuery. Generates a ranked risk scorecard per supplier and drafts the quarterly business review pack automatically. so the Supplier Quality Engineer can move the Incoming inspection PPM KPI.
+- **Objective:** Refresh supplier risk scorecards weekly by correlating inspection_lots and nonconformance_records from SAP S/4HANA QM against purchase_orders and vendors from SAP S/4HANA MM, driving Incoming inspection PPM from 4,200 down to 1,600 and cutting scorecard preparation effort from 3 weeks to under 2 hours per quarter.
 
 ## KPI summary
 

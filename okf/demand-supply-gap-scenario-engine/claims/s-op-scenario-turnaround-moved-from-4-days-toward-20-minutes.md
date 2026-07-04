@@ -37,3 +37,4 @@ Must cite: kinaxis_rapidresponse.supply_plans, bigquery.analytics_events
 # Citations
 
 - [Demand-Supply Gap Scenario Engine Standard Operating Procedure](/documents/demand-supply-gap-scenario-engine-sop.md)
+- [Customer Service-Level Commitment & ATP/CTP Rate Schedule](/documents/s-op-service-level-rate-schedule.md)

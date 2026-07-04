@@ -52,7 +52,8 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [cancellation_signal_intake](/workflow/cancellation-signal-intake.md)
+- [save_offer_execution_win_back_dispatch](/workflow/save-offer-execution-win-back-dispatch.md)
 
 ## Evals
 

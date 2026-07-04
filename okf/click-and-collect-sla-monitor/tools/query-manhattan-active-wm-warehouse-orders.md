@@ -53,7 +53,11 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [bopis_curbside_order_intake_sla_clock_start](/workflow/bopis-curbside-order-intake-sla-clock-start.md)
+- [pick_task_telemetry_correlation](/workflow/pick-task-telemetry-correlation.md)
+- [breach_risk_scoring_against_historical_baselines](/workflow/breach-risk-scoring-against-historical-baselines.md)
+- [inventory_substitution_validation](/workflow/inventory-substitution-validation.md)
+- [playbook_gated_escalation_customer_notification](/workflow/playbook-gated-escalation-customer-notification.md)
 
 ## Evals
 

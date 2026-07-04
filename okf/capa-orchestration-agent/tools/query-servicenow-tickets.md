@@ -52,7 +52,8 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [root_cause_task_routing](/workflow/root-cause-task-routing.md)
+- [stalled_task_escalation](/workflow/stalled-task-escalation.md)
 
 ## Evals
 

@@ -52,11 +52,12 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [baseline_variance_scoring](/workflow/baseline-variance-scoring.md)
 
 ## Evals
 
 - [Run the Store Task Compliance Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/store-task-compliance-agent-end-to-end.md)
+- [District 214's back-to-school promo went live this morning at store 1187. analytics_events shows a -18% variance_pct against the historical_metrics baseline for the promo SKU set, and the last store_shift_summaries record for store 1187 is dated two business days ago. Close out the promo verification exception as resolved.](/tests/store-task-compliance-agent-promo-staleness-edge.md)
 
 ## Evidence emitted
 

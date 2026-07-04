@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Shift & Line Data Pull](/workflow/shift-line-data-pull.md)
+2. [Baseline & Variance Comparison](/workflow/baseline-variance-comparison.md)
+3. [Loss Bucket Decomposition & Dollarization](/workflow/loss-bucket-decomposition-dollarization.md)
+4. [SOP & Classification Standard Evidence Gate](/workflow/sop-classification-standard-evidence-gate.md)
+5. [Pareto Publish & Kaizen Handoff](/workflow/pareto-publish-kaizen-handoff.md)

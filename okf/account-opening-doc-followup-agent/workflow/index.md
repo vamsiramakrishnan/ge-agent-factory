@@ -9,7 +9,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [New-Account Document Exception Detection](/workflow/new-account-document-exception-detection.md)
+2. [DocuSign Envelope & Recipient Reconciliation](/workflow/docu-sign-envelope-recipient-reconciliation.md)
+3. [Exception Aging & Severity Scoring](/workflow/exception-aging-severity-scoring.md)
+4. [Compliance & Checklist Evidence Validation](/workflow/compliance-checklist-evidence-validation.md)
+5. [Customer Cure Cadence, Escalation & Audit](/workflow/customer-cure-cadence-escalation-audit.md)

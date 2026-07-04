@@ -9,7 +9,7 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 - **Mode:** sequential
 
-1. [Retrieve Records](/workflow/retrieve-records.md)
-2. [Analyze & Detect](/workflow/analyze-detect.md)
-3. [Validate Evidence](/workflow/validate-evidence.md)
-4. [Act & Audit](/workflow/act-audit.md)
+1. [Signal Ingestion & Characteristic Binding](/workflow/signal-ingestion-characteristic-binding.md)
+2. [Western Electric Run-Rule Evaluation](/workflow/western-electric-run-rule-evaluation.md)
+3. [Baseline & Capability Reconciliation](/workflow/baseline-capability-reconciliation.md)
+4. [Evidence-Gated Hold Recommendation](/workflow/evidence-gated-hold-recommendation.md)

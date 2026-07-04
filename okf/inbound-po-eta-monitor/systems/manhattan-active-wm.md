@@ -26,3 +26,6 @@ warehouse orders, pick tasks, inventory snapshots records
 
 - [query_manhattan_active_wm_warehouse_orders](/tools/query-manhattan-active-wm-warehouse-orders.md)
 - [action_manhattan_active_wm_escalate](/tools/action-manhattan-active-wm-escalate.md)
+- [query_manhattan_active_wm_pick_tasks](/tools/query-manhattan-active-wm-pick-tasks.md)
+- [query_manhattan_active_wm_inventory_snapshots](/tools/query-manhattan-active-wm-inventory-snapshots.md)
+- [lookup_inbound_vendor_compliance_routing_guide](/tools/lookup-inbound-vendor-compliance-routing-guide.md)

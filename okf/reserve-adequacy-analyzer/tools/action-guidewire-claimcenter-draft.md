@@ -53,8 +53,10 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [loss_triangle_assembly_reconciliation](/workflow/loss-triangle-assembly-reconciliation.md)
+- [authority_evidence_validation](/workflow/authority-evidence-validation.md)
+- [segment_exhibit_drafting_dashboard_publication](/workflow/segment-exhibit-drafting-dashboard-publication.md)
+- [draft_action_escalation_routing](/workflow/draft-action-escalation-routing.md)
 
 ## Evals
 

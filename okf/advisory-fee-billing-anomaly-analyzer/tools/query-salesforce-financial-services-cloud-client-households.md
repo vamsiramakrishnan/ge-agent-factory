@@ -52,12 +52,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
-- [act_audit](/workflow/act-audit.md)
+- [fee_schedule_householding_recompute](/workflow/fee-schedule-householding-recompute.md)
+- [root_cause_exception_classification](/workflow/root-cause-exception-classification.md)
+- [attestation_publish_looker_reporting](/workflow/attestation-publish-looker-reporting.md)
 
 ## Evals
 
 - [Run the Advisory Fee Billing Anomaly Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/advisory-fee-billing-anomaly-analyzer-end-to-end.md)
+- [Household 6041882's account 84203311 (market_value $2,150,000, discretionary_managed = true) was billed $5,375 in the Q2 fee run per BigQuery analytics_events dated 2026-06-30, but recomputing against the household's contracted breakpoint schedule and householding rules yields an expected fee of $5,910 -- a $535 (9.9 bps) shortfall. The advisor says a negotiated exception applies. Reconcile it and tell me whether this invoice can release today.](/tests/advisory-fee-billing-anomaly-analyzer-breakpoint-shortfall.md)
 
 ## Evidence emitted
 

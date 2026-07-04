@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Store Task Compliance Agent
-description: "Cross-checks reported task completion against POS signals, labor punches, and photo evidence. Drafts each District Manager's store-visit brief with exceptions, trends, and coaching points per location. so the District Manager can move the Corporate task on-time completion KPI."
+description: "Verify store-reported corporate task and promo-setup completion against UKG Dimensions shift_schedules and timecards, Oracle Xstore POS pos_transactions and store_shift_summaries, and BigQuery historical baselines, so the District Manager can raise on-time task completion from 64% to 92%, cut Sunday-night visit-prep time from 4 hours to 15 minutes, and verify 100% of promo events."
 tags:
   - retail
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/store-task-complian
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:05:23.378Z"
+provenance_created_at: "2026-07-04T06:18:32.412Z"
 ---
 
 # Store Task Compliance Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:05:23.378Z"
 
 - **Persona:** District Manager
 - **Department:** retail
-- **Objective:** Cross-checks reported task completion against POS signals, labor punches, and photo evidence. Drafts each District Manager's store-visit brief with exceptions, trends, and coaching points per location. so the District Manager can move the Corporate task on-time completion KPI.
+- **Objective:** Verify store-reported corporate task and promo-setup completion against UKG Dimensions shift_schedules and timecards, Oracle Xstore POS pos_transactions and store_shift_summaries, and BigQuery historical baselines, so the District Manager can raise on-time task completion from 64% to 92%, cut Sunday-night visit-prep time from 4 hours to 15 minutes, and verify 100% of promo events.
 
 ## KPI summary
 

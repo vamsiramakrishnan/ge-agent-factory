@@ -7,7 +7,8 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 # Query Capabilities
 
-- [Query inspection lots and nonconformance records from SAP S/4HANA QM and correlate with Siemens Opcenter MES for the Batch Record Review Analyzer workflow.](/queries/retrieve-records.md)
-- [Compare current state against historical baselines and analytics events in BigQuery to detect gaps, score exceptions, and prioritize the Quality Systems Lead's queue.](/queries/analyze-detect.md)
-- [Cross-check every finding against the Batch Record Review Analyzer Standard Operating Procedure and cite the governing sections before any recommendation is issued.](/queries/validate-evidence.md)
-- [Execute the recommend step in SAP S/4HANA QM with a full audit trail, and escalate exceptions to the Quality Systems Lead.](/queries/act-audit.md)
+- [Trigger the moment a production_orders record moves to teco or confirmed in Siemens Opcenter MES (query_siemens_opcenter_mes_production_orders); pull the matching inspection_lots and quality_checks records for that material_number from SAP S/4HANA QM (query_sap_s_4hana_qm_inspection_lots).](/queries/batch-closure-intake.md)
+- [Compare each quality_checks measured_value and cpk against lower_spec_limit/upper_spec_limit, and check the inspection_lots aql_level, sample_size, and skip_lot flag, to isolate any characteristic reading outside its control limit before touching usage_decision.](/queries/spec-control-limit-screening.md)
+- [Cross-check open nonconformance_records (severity, disposition, containment_complete) and capa_actions (status, effectiveness_verified) for the same material_number in SAP S/4HANA QM so a stale accepted usage_decision can't mask an unresolved deviation.](/queries/nc-capa-cross-reference.md)
+- [Rank surfaced deviations against BigQuery historical_metrics and analytics_events variance_pct baselines (query_bigquery_historical_metrics, query_bigquery_analytics_events) to build the review-by-exception queue instead of re-checking clean entries.](/queries/exception-scoring-baseline-compare.md)
+- [Cite the governing batch-record-review-analyzer-sop and EBR data-integrity policy sections (lookup_batch_record_review_analyzer_sop), then execute action_sap_s_4hana_qm_recommend with a full audit_record_id trail, escalating per the escalation rules instead of auto-releasing.](/queries/sop-gated-release-audit.md)

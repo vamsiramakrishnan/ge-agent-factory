@@ -2,7 +2,7 @@
 okf_version: "0.1"
 type: Knowledge Bundle
 title: Portfolio Review Preparation Agent
-description: "Generates a complete review packet with performance versus benchmark, allocation drift, fee summary, and cash-flow analysis for each upcoming meeting. Drafts a personalized agenda from Salesforce interaction history, flagged life events, and open service items. so the Financial Advisor can move the Prep time per client review KPI."
+description: "Cut portfolio review prep time from 2.5 hours to 15 minutes per client_households record by assembling a performance-versus-benchmark, allocation-drift, and fee-summary packet from Salesforce Financial Services Cloud financial_accounts and BigQuery historical_metrics ahead of each scheduled annual review, lifting on-schedule completion from 58% to 95%."
 tags:
   - banking
   - okf
@@ -13,7 +13,7 @@ provenance_source_ref: "apps/factory/catalog/interview-specs/portfolio-review-pr
 provenance_version: "1"
 provenance_status: registered
 provenance_owner: "vamsiramakrishnan@gmail.com"
-provenance_created_at: "2026-07-04T04:04:48.352Z"
+provenance_created_at: "2026-07-04T06:17:56.700Z"
 ---
 
 # Portfolio Review Preparation Agent
@@ -24,7 +24,7 @@ provenance_created_at: "2026-07-04T04:04:48.352Z"
 
 - **Persona:** Financial Advisor
 - **Department:** banking
-- **Objective:** Generates a complete review packet with performance versus benchmark, allocation drift, fee summary, and cash-flow analysis for each upcoming meeting. Drafts a personalized agenda from Salesforce interaction history, flagged life events, and open service items. so the Financial Advisor can move the Prep time per client review KPI.
+- **Objective:** Cut portfolio review prep time from 2.5 hours to 15 minutes per client_households record by assembling a performance-versus-benchmark, allocation-drift, and fee-summary packet from Salesforce Financial Services Cloud financial_accounts and BigQuery historical_metrics ahead of each scheduled annual review, lifting on-schedule completion from 58% to 95%.
 
 ## KPI summary
 

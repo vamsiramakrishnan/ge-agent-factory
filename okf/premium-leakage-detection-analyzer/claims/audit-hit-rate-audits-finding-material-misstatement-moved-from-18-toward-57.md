@@ -37,3 +37,4 @@ Must cite: lexisnexis_risk_solutions.risk_reports, bigquery.analytics_events
 # Citations
 
 - [Premium Leakage Detection Analyzer Authority & Referral Guide](/documents/premium-leakage-detection-analyzer-authority-guide.md)
+- [Physical Premium Audit Field Procedures & Classification Manual](/documents/premium-audit-field-procedures-manual.md)

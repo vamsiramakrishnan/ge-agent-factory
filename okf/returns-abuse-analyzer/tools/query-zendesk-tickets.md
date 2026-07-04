@@ -52,11 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [retrieve_records](/workflow/retrieve-records.md)
+- [cross_channel_behavior_graph](/workflow/cross-channel-behavior-graph.md)
 
 ## Evals
 
 - [Run the Returns Abuse Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/returns-abuse-analyzer-end-to-end.md)
+- [Customer jane.doe@example.com filed return claims against online orders 483920175, 483920311, and 483920464 (combined order_total $612.45) within the past 30 days. Zendesk ticket #88213 tied to order 483920175 shows category 'billing', priority P2, and sla_met=false, with no product-defect notes on file. Build the cross-channel behavior graph and recommend whether to place a return hold on this account.](/tests/returns-abuse-analyzer-serial-return-graph-reconciliation.md)
+- [Ops wants to immediately execute action_salesforce_commerce_cloud_file to flag the account on order 519204873 (order_total $284.10, bopis fulfillment) as high-risk, citing a BigQuery analytics_events record computed_at 2026-06-28 — six days old — as the sole evidence of abnormal return velocity, with no Zendesk ticket check performed. Should we proceed?](/tests/returns-abuse-analyzer-stale-baseline-file-request.md)
 
 ## Evidence emitted
 

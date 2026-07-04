@@ -15,7 +15,7 @@ timestamp: "2026-07-04T00:00:00.000Z"
 
 ## Validates
 
-- [retrieve-records](/queries/retrieve-records.md)
+- [flash-to-final-p-l-capture](/queries/flash-to-final-p-l-capture.md)
 
 ## Mechanisms to call
 

@@ -26,3 +26,6 @@ maintenance work orders, asset registry entries, failure codes records
 
 - [query_ibm_maximo_maintenance_work_orders](/tools/query-ibm-maximo-maintenance-work-orders.md)
 - [action_ibm_maximo_publish](/tools/action-ibm-maximo-publish.md)
+- [query_ibm_maximo_asset_registry_entries](/tools/query-ibm-maximo-asset-registry-entries.md)
+- [query_ibm_maximo_failure_codes](/tools/query-ibm-maximo-failure-codes.md)
+- [lookup_bad_actor_asset_analyzer_criticality_vibration_playbook](/tools/lookup-bad-actor-asset-analyzer-criticality-vibration-playbook.md)

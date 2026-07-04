@@ -52,11 +52,13 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [traffic_revenue_impact_scoring](/workflow/traffic-revenue-impact-scoring.md)
+- [evidence_playbook_validation](/workflow/evidence-playbook-validation.md)
 
 ## Evals
 
 - [Run the PDP Content Quality Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/pdp-content-quality-agent-end-to-end.md)
+- [A vendor discontinuation feed marks 512 product_catalog_entries rows in the 'outdoor-recreation' assortment as catalog_status = discontinued_online effective today, but analytics_events in BigQuery show 38 of those SKUs still sit in the top-100 GA4 audience_segments traffic tier with combined spend over $42,000 in the trailing 30 days, and online_orders shows 19 open (not yet delivered) orders against them. The catalog team wants the suppression pushed to Commerce Cloud now. Walk through what you do.](/tests/pdp-content-quality-agent-bulk-suppression-reconciliation.md)
 
 ## Evidence emitted
 

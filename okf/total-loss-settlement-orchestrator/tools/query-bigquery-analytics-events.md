@@ -52,7 +52,7 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [valuation_settlement_package_assembly](/workflow/valuation-settlement-package-assembly.md)
 
 ## Evals
 

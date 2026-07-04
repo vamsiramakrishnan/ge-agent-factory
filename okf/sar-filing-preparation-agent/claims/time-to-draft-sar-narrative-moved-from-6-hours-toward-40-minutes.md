@@ -37,3 +37,4 @@ Must cite: nice_actimize.fraud_alerts, bigquery.analytics_events
 # Citations
 
 - [SAR Filing Preparation Agent Banking Compliance Policy](/documents/sar-filing-preparation-agent-compliance-policy.md)
+- [FinCEN SAR E-Filing Field Validation Runbook](/documents/fincen-sar-efiling-validation-runbook.md)

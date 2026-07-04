@@ -52,11 +52,14 @@ No explicit failure modes are declared in the spec; rely on refusal/escalation p
 
 ## Used By
 
-- [analyze_detect](/workflow/analyze-detect.md)
+- [cluster_baseline_comparison](/workflow/cluster-baseline-comparison.md)
+- [parameter_change_candidate_scoring](/workflow/parameter-change-candidate-scoring.md)
 
 ## Evals
 
 - [Run the RAN Parameter Optimization Agent workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/ran-parameter-optimization-agent-end-to-end.md)
+- [Site 14892 in the Dallas-Ft Worth market has a pending tilt increase from the coverage team (change ticket 2043211) queued for this Thursday's window, and performance_counters show PRB utilization already at 91% with an energy-saving power reduction applied to the same site last Tuesday. Recommend whether to proceed with the tilt change for this week's cluster review.](/tests/ran-parameter-optimization-agent-conflicting-parameter-changes.md)
+- [Parameter change action ENM-88213 was pushed to cell 15630 four days ago to fix its VoLTE drop rate; the last performance_counters refresh for that cell is timestamped 2026-06-29 (5 days old) and cell_availability_pct hasn't updated since. Confirm whether the change held and can be closed out.](/tests/ran-parameter-optimization-agent-stale-verification-window.md)
 
 ## Evidence emitted
 

@@ -37,3 +37,4 @@ Must cite: genesys_cloud_cx.customer_interactions, bigquery.analytics_events
 # Citations
 
 - [Proactive Outage Notification Orchestrator Service Assurance Runbook](/documents/proactive-outage-notification-orchestrator-assurance-runbook.md)
+- [Network Outage Regulatory & Customer Notification Policy](/documents/proactive-outage-notification-orchestrator-regulatory-notification-policy.md)

@@ -11,3 +11,6 @@ timestamp: "2026-07-04T00:00:00.000Z"
 - [query_looker_dashboards](/tools/query-looker-dashboards.md)
 - [lookup_b2b_quote_configuration_agent_assurance_runbook](/tools/lookup-b2b-quote-configuration-agent-assurance-runbook.md)
 - [action_salesforce_communications_cloud_route](/tools/action-salesforce-communications-cloud-route.md)
+- [query_salesforce_communications_cloud_service_quotes](/tools/query-salesforce-communications-cloud-service-quotes.md)
+- [query_salesforce_communications_cloud_order_captures](/tools/query-salesforce-communications-cloud-order-captures.md)
+- [lookup_b2b_quote_configuration_agent_rate_discount_manual](/tools/lookup-b2b-quote-configuration-agent-rate-discount-manual.md)
