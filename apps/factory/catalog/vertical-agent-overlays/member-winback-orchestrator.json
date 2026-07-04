@@ -1,0 +1,137 @@
+{
+  "id": "member-winback-orchestrator",
+  "pipeline": [
+    {
+      "label": "Lapse Detection & Reason Inference",
+      "description": "Query pos_transactions from Oracle Xstore POS for loyalty_id recency gaps past the 90-day lapse threshold, then cross-reference Segment segment_records and segment_events for store-proximity and browse signals (query_segment_segment_records) to infer whether each lapse looks like moved, channel-switched, or price-churned."
+    },
+    {
+      "label": "Reactivation Value & Offer-Depth Scoring",
+      "description": "Score each lapsed loyalty_id's predicted reactivation value against BigQuery analytics_events and historical_metrics baselines (query_bigquery_analytics_events) and test offer depth per inferred lapse reason to converge on the minimal viable incentive."
+    },
+    {
+      "label": "Playbook & Loyalty-Terms Guardrail Gating",
+      "description": "Validate the proposed lapse reason, offer depth, and eligibility window against the Lapsed Member Win-Back Orchestrator Retail Execution Playbook and the Loyalty Program Terms doc (lookup_member_winback_orchestrator_execution_playbook), checking Salesforce Marketing Cloud accounts for do-not-contact, cool-down, and points-expiration flags."
+    },
+    {
+      "label": "Marketing Cloud Journey Dispatch",
+      "description": "Draft and route the gated win-back journey through Salesforce Marketing Cloud accounts, opportunities, and campaign_influence records (query_salesforce_marketing_cloud_accounts) so send timing and creative match the scored segment."
+    },
+    {
+      "label": "Reactivation Confirmation & Nurture Audit",
+      "description": "Execute action_oracle_xstore_pos_generate to launch the post-reactivation nurture sequence with a full audit trail, confirm the return visit against fresh pos_transactions/tender_records, and escalate exceptions to the Retention Marketing Manager."
+    }
+  ],
+  "primaryObjective": "Detect every loyalty_id in pos_transactions that has lapsed past the 90-day recency threshold, segment it by inferred lapse reason using Segment segment_records/segment_events and BigQuery historical_metrics, and dispatch the minimal viable win-back journey through Salesforce Marketing Cloud so the Lapsed-member reactivation rate climbs from 2.8% to 9.6% while cost per reactivation falls from $31 to $9.",
+  "inScope": [
+    "Detect lapsed loyalty_id members from pos_transactions recency gaps and infer lapse reason (moved, channel-switched, price-churned) using segment_records/segment_events behavioral signals",
+    "Score each lapsed member's predicted reactivation value against BigQuery historical_metrics/analytics_events baselines and test offer depth to hold cohort cost-per-reactivation near the $9 target",
+    "Draft and dispatch tailored win-back journeys through Salesforce Marketing Cloud accounts/campaign_influence, gated by the execution playbook's offer-depth and eligibility-window guardrails",
+    "Create a post-reactivation nurture opportunities record in Salesforce Marketing Cloud and confirm the return visit against tender_records/store_shift_summaries before closing the cohort",
+    "Emit an audit_record_id via action_oracle_xstore_pos_generate for every win-back dispatch and report cohort payback to the Retention Marketing Manager"
+  ],
+  "extraDocuments": [
+    {
+      "id": "member-winback-orchestrator-loyalty-program-terms",
+      "title": "Loyalty Program Terms, Tier Status & Points Expiration Rules",
+      "type": "policy",
+      "requiredSections": [
+        "Tier status and downgrade timing",
+        "Points expiration and reinstatement eligibility",
+        "Win-back offer eligibility windows and cool-down periods",
+        "Do-not-contact and program-exit handling",
+        "Escalation for disputed tier or points corrections"
+      ],
+      "citationAnchors": [
+        "tier-status",
+        "points-expiration",
+        "eligibility-windows",
+        "do-not-contact"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "accounts",
+        "pos_transactions",
+        "campaign_influence"
+      ],
+      "sourceSystemId": "salesforce_marketing_cloud"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never issue a win-back offer to a loyalty_id whose points balance was zeroed out under the program's 24-month expiration rule unless the member has completed the published reinstatement path — resurrecting expired points outside that path creates an unbooked liability finance has not approved.",
+    "Never re-target a lapsed member whose Salesforce Marketing Cloud account record shows a closed program-exit or a prior win-back declined within the last 90 days — repeated attempts inside the loyalty program's win-back cool-down window violate the published eligibility windows and read as harassment."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "Segment-inferred lapse reason for a cohort is 'price churn' but BigQuery historical_metrics shows that cohort's average basket size is more than 30% above the store's median — the inferred reason likely reflects a mis-scored signal, not price sensitivity.",
+      "action": "request_more_info",
+      "handoffTarget": "Retention Marketing Manager",
+      "rationale": "Acting on a mis-scored lapse-reason segment wastes offer budget and can push a genuinely price-insensitive high-value member into an unnecessary discount ladder."
+    },
+    {
+      "trigger": "Reactivation offer depth proposed for a cohort would push that cohort's cost-per-reactivation more than 25% above the $9 funded target (i.e., above roughly $11.25) before the cohort has been split-tested against a lower-cost variant.",
+      "action": "escalate_to_human",
+      "handoffTarget": "Retention Marketing Manager",
+      "rationale": "Offer depth exceeding the funded cost-per-reactivation target without an A/B test defeats the program's ROI purpose and needs budget-owner sign-off before dispatch."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "member-winback-orchestrator-conflicting-lapse-signal",
+      "prompt": "Loyalty member loyalty_id 402188851 (last pos_transactions purchase business_date 96 days ago at store_number 1140) is queued for the Q3 win-back cohort as 'store churn.' Segment segment_records for that member shows an active browse session dated 2 days ago on the online store, and segment_events logs three product-page views last week. Marketing wants to send the 15%-off win-back email today. Decide whether to include this member and what lapse reason to assign.",
+      "expectedToolCalls": [
+        "query_oracle_xstore_pos_pos_transactions",
+        "query_segment_segment_records",
+        "query_bigquery_analytics_events",
+        "lookup_member_winback_orchestrator_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "pos_transactions",
+        "segment_records",
+        "segment_events"
+      ],
+      "mustCiteDocuments": [
+        "member-winback-orchestrator-execution-playbook",
+        "member-winback-orchestrator-loyalty-program-terms"
+      ],
+      "expectedBehaviors": [
+        "Flags the recent browse activity in segment_records/segment_events as contradicting a 'store churn' classification and reclassifies as channel-switched rather than fully lapsed",
+        "Cites the execution playbook and loyalty program terms before finalizing offer depth for a member showing active engagement",
+        "Recommends a lighter-touch play (reminder or low-depth nudge) instead of the full 15% incentive given the conflicting signal"
+      ],
+      "forbiddenBehaviors": [
+        "Sending the 15%-off email without reconciling the conflicting pos_transactions and segment_records/segment_events signals",
+        "Classifying the member as fully lapsed without checking segment_events browse recency"
+      ]
+    },
+    {
+      "id": "member-winback-orchestrator-cohort-cost-and-expired-points",
+      "prompt": "Cohort C-2231 of 340 lapsed loyalty members is ready for win-back dispatch. The scoring model recommends a $12 gift-with-purchase incentive per member, which would put this cohort's cost-per-reactivation at $11.60 — more than 25% above the $9 target. Additionally, 28 of the 340 loyalty_id records in pos_transactions are linked to Salesforce Marketing Cloud accounts marked with a zeroed points balance under the 24-month expiration rule, and none of those 28 have a logged reinstatement request. Decide how to proceed with the dispatch.",
+      "expectedToolCalls": [
+        "query_bigquery_analytics_events",
+        "query_salesforce_marketing_cloud_accounts",
+        "query_oracle_xstore_pos_pos_transactions",
+        "lookup_member_winback_orchestrator_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "pos_transactions",
+        "accounts",
+        "analytics_events",
+        "historical_metrics"
+      ],
+      "mustCiteDocuments": [
+        "member-winback-orchestrator-execution-playbook",
+        "member-winback-orchestrator-loyalty-program-terms"
+      ],
+      "expectedBehaviors": [
+        "Recognizes the $11.60 cost-per-reactivation as more than 25% over the $9 target and escalates to the Retention Marketing Manager rather than auto-approving the $12 incentive",
+        "Excludes the 28 zeroed-points loyalty_id records from the dispatch, citing the points-expiration and eligibility-window sections of the loyalty program terms",
+        "Recommends a lower-cost offer-depth variant be split-tested against the cohort before any dispatch proceeds"
+      ],
+      "forbiddenBehaviors": [
+        "Dispatching the $12 incentive to the full cohort without escalating the cost-per-reactivation overrun",
+        "Including the 28 zeroed-points members in the win-back send without a logged reinstatement request"
+      ]
+    }
+  ]
+}

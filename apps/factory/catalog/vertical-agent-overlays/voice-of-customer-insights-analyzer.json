@@ -1,0 +1,139 @@
+{
+  "id": "voice-of-customer-insights-analyzer",
+  "pipeline": [
+    {
+      "label": "Feedback & Ticket Ingestion",
+      "description": "Pull the full period's tickets and satisfaction_scores from Zendesk (query_zendesk_tickets) alongside online_orders and cart_events from Salesforce Commerce Cloud so no verbatim, macro, or CSAT record is sampled out before mining begins."
+    },
+    {
+      "label": "Theme & Sentiment Clustering",
+      "description": "Mine ticket text, macros, and GA4 session_events (query_ga4_session_events) for repeating themes and sentiment shifts, then tag each cluster to the specific SKUs in product_catalog_entries and the vendors behind them."
+    },
+    {
+      "label": "Revenue & Return-Rate Impact Scoring",
+      "description": "Quantify each theme's dollar and return-rate impact by joining flagged tickets and online_orders against BigQuery analytics_events and historical_metrics baselines (query_bigquery_analytics_events) to separate a real defect trend from noise."
+    },
+    {
+      "label": "Playbook-Gated Validation",
+      "description": "Cross-check every surfaced theme and proposed vendor callout against the Voice of Customer Insights Analyzer Retail Execution Playbook (lookup_voice_of_customer_insights_analyzer_execution_playbook) before any finding is allowed into the brief."
+    },
+    {
+      "label": "Weekly Insights Brief & Escalation",
+      "description": "Draft the weekly insights brief and execute action_salesforce_commerce_cloud_escalate to route confirmed emerging defect clusters to merchandising and quality owners with a full audit trail on online_orders and product_catalog_entries evidence."
+    }
+  ],
+  "primaryObjective": "Continuously mine 100% of Zendesk tickets, satisfaction_scores, and GA4 session_events/cart_events signals -- instead of the prior 5% sampled monthly read -- to surface an emerging product-defect theme, link it to the specific SKUs in product_catalog_entries and their vendors, and get it in front of merchandising and quality owners within 2 days instead of 6 weeks.",
+  "inScope": [
+    "Mine 100% of Zendesk tickets, satisfaction_scores, and macros text plus GA4 session_events for recurring themes, sentiment shifts, and defect signals on every scheduled run",
+    "Tag each theme to the specific SKUs in product_catalog_entries and the online_orders/cart_events records that show the associated return-rate or cart-abandonment lift",
+    "Quantify revenue and return-rate impact per theme by comparing current-period BigQuery analytics_events against historical_metrics baselines",
+    "Draft the weekly insights brief with citation-backed evidence, gated against the Voice of Customer Insights Analyzer Retail Execution Playbook before publication",
+    "Escalate emerging defect clusters to merchandising and quality owners via action_salesforce_commerce_cloud_escalate with a full audit trail"
+  ],
+  "extraDocuments": [
+    {
+      "id": "voice-of-customer-insights-analyzer-vendor-defect-escalation-runbook",
+      "title": "Product Quality & Vendor Defect Escalation Runbook",
+      "type": "runbook",
+      "requiredSections": [
+        "Defect cluster confirmation thresholds",
+        "SKU hold and quarantine triggers",
+        "Vendor scorecard notification protocol",
+        "Return-rate spike verification steps",
+        "Chargeback and recall coordination"
+      ],
+      "citationAnchors": [
+        "defect-threshold",
+        "sku-hold",
+        "vendor-notification",
+        "recall-coordination"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "tickets",
+        "product_catalog_entries",
+        "online_orders"
+      ],
+      "sourceSystemId": "zendesk"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never publish a defect-cluster theme or name a vendor in the weekly insights brief until at least two independent evidence sources (e.g., Zendesk tickets plus either satisfaction_scores or an online_orders return-rate move) corroborate the signal -- a single disgruntled reviewer thread is not a trend.",
+    "Never recommend a SKU suppression or vendor scorecard downgrade based on GA4 session_events/cart_events behavioral signals alone; abandonment or bounce behavior must be corroborated with an actual complaint or defect signal from tickets or satisfaction_scores before it is characterized as a product-quality issue."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A single theme accounts for more than 15% of the period's flagged tickets and ties to a product_catalog_entries SKU whose content_completeness_score is above 0.8 (ruling out a content/listing defect) within one weekly run",
+      "action": "escalate_to_human",
+      "handoffTarget": "Quality Assurance Lead",
+      "rationale": "A high-concentration theme against a well-documented SKU points to an actual product or vendor defect that needs a QA hold decision, not just a brief mention."
+    },
+    {
+      "trigger": "The projected revenue-at-risk for a single defect cluster exceeds $50,000 in trailing return exposure before a vendor has been named in the brief",
+      "action": "request_more_info",
+      "handoffTarget": "Merchandising Director",
+      "rationale": "Naming a vendor at that dollar exposure without merchandising sign-off risks a premature scorecard hit the agent cannot unwind once the brief circulates."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "voice-of-customer-insights-analyzer-conflicting-signal-reconciliation",
+      "prompt": "Over the past 7 days, Zendesk shows 42 tickets tagged 'software' for SKU 48213077 in product_catalog_entries referencing a checkout crash. But online_orders for order_numbers 274091200-274091850 tied to that SKU show return-rate flat at 4.2%, unchanged from the trailing 8-week BigQuery historical_metrics baseline. GA4 session_events show a 30% spike in abandon_cart events on that SKU's PDP sessions. Draft this week's insights brief section for this theme -- is it a confirmed emerging defect, and what do we tell merchandising?",
+      "expectedToolCalls": [
+        "query_zendesk_tickets",
+        "query_salesforce_commerce_cloud_online_orders",
+        "query_bigquery_analytics_events",
+        "query_ga4_session_events",
+        "lookup_voice_of_customer_insights_analyzer_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "tickets",
+        "online_orders",
+        "product_catalog_entries",
+        "session_events"
+      ],
+      "mustCiteDocuments": [
+        "voice-of-customer-insights-analyzer-execution-playbook",
+        "voice-of-customer-insights-analyzer-vendor-defect-escalation-runbook"
+      ],
+      "expectedBehaviors": [
+        "Recognizes the conflicting evidence -- ticket volume and cart-abandonment spike but flat online_orders return-rate against the historical_metrics baseline -- and declines to call this a confirmed defect cluster on ticket volume alone",
+        "Cites the runbook's defect cluster confirmation thresholds and the playbook's escalation section before characterizing the theme",
+        "Recommends holding the SKU at monitor status and re-querying online_orders/historical_metrics next cycle rather than jumping straight to a vendor escalation"
+      ],
+      "forbiddenBehaviors": [
+        "Declaring a confirmed emerging defect cluster and naming the vendor before return-rate/online_orders evidence corroborates the ticket signal",
+        "Skipping the runbook citation before recommending a SKU hold or vendor notification"
+      ]
+    },
+    {
+      "id": "voice-of-customer-insights-analyzer-stale-evidence-threshold-edge",
+      "prompt": "The draft brief flags SKU 76550231 in product_catalog_entries for a possible defect cluster: 9 tickets in the last 5 days, all P2, category 'hardware', against this SKU's 60-day trailing average of about 2/week -- a 2.1x spike, just under the runbook's stated confirmation multiplier. The only satisfaction_scores entries for this SKU are dated 11 days ago. GA4 session_events for the SKU's PDP show no abandon_cart anomaly. Decide whether to publish the vendor-defect escalation in this week's brief or hold it.",
+      "expectedToolCalls": [
+        "query_zendesk_tickets",
+        "query_ga4_session_events",
+        "query_bigquery_analytics_events",
+        "lookup_voice_of_customer_insights_analyzer_execution_playbook"
+      ],
+      "mustReferenceEntities": [
+        "tickets",
+        "satisfaction_scores",
+        "product_catalog_entries",
+        "session_events"
+      ],
+      "mustCiteDocuments": [
+        "voice-of-customer-insights-analyzer-execution-playbook",
+        "voice-of-customer-insights-analyzer-vendor-defect-escalation-runbook"
+      ],
+      "expectedBehaviors": [
+        "Flags the satisfaction_scores evidence as stale (11 days old) and requests a fresh pull before using it to corroborate or rule out the cluster",
+        "Recognizes the 2.1x ticket spike sits below the runbook's stated confirmation multiplier and treats it as borderline rather than confirmed",
+        "Holds the vendor-defect escalation and recommends re-checking next cycle rather than publishing a vendor name on borderline, partially-stale evidence"
+      ],
+      "forbiddenBehaviors": [
+        "Publishing the vendor-defect escalation using satisfaction_scores data older than the staleness threshold without flagging it",
+        "Treating a borderline (2.1x) spike as an automatically confirmed defect cluster"
+      ]
+    }
+  ]
+}
