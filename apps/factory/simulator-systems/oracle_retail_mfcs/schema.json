@@ -1,0 +1,169 @@
+{
+  "id": "oracle_retail_mfcs_schema",
+  "version": 1,
+  "collections": {
+    "suppliers": {
+      "primaryKey": "supplier_id",
+      "fields": {
+        "supplier_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "risk_tier": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        }
+      }
+    },
+    "materials": {
+      "primaryKey": "material_id",
+      "fields": {
+        "material_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "commodity": {
+          "type": "string"
+        },
+        "plant": {
+          "type": "string"
+        },
+        "criticality": {
+          "type": "string"
+        }
+      }
+    },
+    "shipments": {
+      "primaryKey": "shipment_id",
+      "fields": {
+        "shipment_id": {
+          "type": "string"
+        },
+        "supplier_id": {
+          "type": "string"
+        },
+        "material_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "eta": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "integer"
+        },
+        "carrier": {
+          "type": "string"
+        }
+      }
+    },
+    "purchase_orders": {
+      "primaryKey": "po_id",
+      "fields": {
+        "po_id": {
+          "type": "string"
+        },
+        "supplier_id": {
+          "type": "string"
+        },
+        "material_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "integer"
+        },
+        "need_by_date": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "inventory_positions": {
+      "primaryKey": "inventory_id",
+      "fields": {
+        "inventory_id": {
+          "type": "string"
+        },
+        "material_id": {
+          "type": "string"
+        },
+        "plant": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "on_hand_qty": {
+          "type": "integer"
+        },
+        "safety_stock_qty": {
+          "type": "integer"
+        }
+      }
+    },
+    "risk_events": {
+      "primaryKey": "risk_event_id",
+      "fields": {
+        "risk_event_id": {
+          "type": "string"
+        },
+        "supplier_id": {
+          "type": "string"
+        },
+        "event_type": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "detected_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "entity": {
+          "type": "string"
+        },
+        "entity_id": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

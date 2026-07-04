@@ -1,0 +1,70 @@
+{
+  "workers": [
+    {
+      "worker_id": "WORKER-001",
+      "employee_id": "EMPLOYEE-001",
+      "name": "Name 1",
+      "email": "worker.1@example.com",
+      "status": "active",
+      "worker_type": "employee",
+      "position_id": "POSITION-001",
+      "manager_id": "MANAGER-001",
+      "supervisory_org_id": "SUPERVISORY-ORG-001",
+      "cost_center": "CC-4100",
+      "location": "Cincinnati, OH",
+      "country": "US"
+    }
+  ],
+  "positions": [
+    {
+      "position_id": "POSITION-001",
+      "title": "Positions",
+      "job_profile": "Job Profile 1",
+      "status": "active",
+      "supervisory_org_id": "SUPERVISORY-ORG-001",
+      "cost_center": "CC-4100",
+      "location": "Cincinnati, OH",
+      "worker_id": "WORKER-001"
+    }
+  ],
+  "supervisory_orgs": [
+    {
+      "org_id": "SUPERVISORY-ORG-001",
+      "name": "Name 1",
+      "manager_id": "MANAGER-001",
+      "parent_org_id": null,
+      "cost_center": "CC-4100",
+      "company": "GE Aerospace"
+    }
+  ],
+  "job_requisitions": [
+    {
+      "requisition_id": "REQUISITION-001",
+      "position_id": "POSITION-001",
+      "status": "active",
+      "recruiter": "Recruiter 1",
+      "hiring_manager_id": "HIRING-MANAGER-001",
+      "target_start_date": "2026-03-15"
+    }
+  ],
+  "worker_events": [
+    {
+      "event_id": "EVENT-001",
+      "worker_id": "WORKER-001",
+      "event_type": "life_event",
+      "status": "active",
+      "reason": "Quarterly business review",
+      "effective_date": "2026-03-15"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APPROVAL-001",
+      "source_record_id": "SOURCE-RECORD-001",
+      "approver": "Approver 1",
+      "state": "active",
+      "reason": "Quarterly business review"
+    }
+  ],
+  "audit_events": []
+}

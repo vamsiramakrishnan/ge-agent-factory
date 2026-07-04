@@ -1,0 +1,39 @@
+{
+  "id": "oracle_field_service_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into oracle_field_service collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "ticket"
+      ],
+      "realizedObjects": [
+        "tickets",
+        "changes",
+        "slas"
+      ],
+      "simulatorCollection": "tickets",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "cmdb"
+      ],
+      "realizedObjects": [
+        "cmdb_items"
+      ],
+      "simulatorCollection": "cmdb_items",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "approval"
+      ],
+      "realizedObjects": [
+        "approvals"
+      ],
+      "simulatorCollection": "approvals",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

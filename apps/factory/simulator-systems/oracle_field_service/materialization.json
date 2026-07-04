@@ -1,0 +1,231 @@
+{
+  "id": "oracle_field_service_materialization",
+  "version": 1,
+  "collections": {
+    "tickets": {
+      "primaryKey": "ticket_id",
+      "fieldAliases": {
+        "ticket_id": [
+          "ticket_id",
+          "id",
+          "source_record_id"
+        ],
+        "type": [
+          "type",
+          "id",
+          "source_record_id"
+        ],
+        "short_description": [
+          "short_description",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "priority": [
+          "priority",
+          "id",
+          "source_record_id"
+        ],
+        "assignment_group": [
+          "assignment_group",
+          "id",
+          "source_record_id"
+        ],
+        "requester": [
+          "requester",
+          "id",
+          "source_record_id"
+        ],
+        "configuration_item": [
+          "configuration_item",
+          "id",
+          "source_record_id"
+        ],
+        "sla": [
+          "sla",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "active"
+      }
+    },
+    "cmdb_items": {
+      "primaryKey": "ci_id",
+      "fieldAliases": {
+        "ci_id": [
+          "ci_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "type": [
+          "type",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "owner": [
+          "owner",
+          "id",
+          "source_record_id"
+        ],
+        "criticality": [
+          "criticality",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "changes": {
+      "primaryKey": "change_id",
+      "fieldAliases": {
+        "change_id": [
+          "change_id",
+          "id",
+          "source_record_id"
+        ],
+        "ticket_id": [
+          "ticket_id",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "risk": [
+          "risk",
+          "id",
+          "source_record_id"
+        ],
+        "planned_start": [
+          "planned_start",
+          "id",
+          "source_record_id"
+        ],
+        "planned_end": [
+          "planned_end",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "active"
+      }
+    },
+    "slas": {
+      "primaryKey": "sla_id",
+      "fieldAliases": {
+        "sla_id": [
+          "sla_id",
+          "id",
+          "source_record_id"
+        ],
+        "ticket_id": [
+          "ticket_id",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "target_time": [
+          "target_time",
+          "id",
+          "source_record_id"
+        ],
+        "breach_risk": [
+          "breach_risk",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "active"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fieldAliases": {
+        "approval_id": [
+          "approval_id",
+          "id",
+          "source_record_id"
+        ],
+        "source_record_id": [
+          "source_record_id",
+          "id"
+        ],
+        "approver": [
+          "approver",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "reason": [
+          "reason",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "active"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "ptc_windchill_plm_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into ptc_windchill_plm collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "project"
+      ],
+      "realizedObjects": [
+        "projects",
+        "issues",
+        "tasks"
+      ],
+      "simulatorCollection": "issues",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "release"
+      ],
+      "realizedObjects": [
+        "releases",
+        "approvals"
+      ],
+      "simulatorCollection": "releases",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

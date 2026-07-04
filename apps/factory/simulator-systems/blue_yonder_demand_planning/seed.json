@@ -1,0 +1,51 @@
+{
+  "planning_models": [
+    {
+      "model_id": "MODEL-001",
+      "name": "Name 1",
+      "status": "active",
+      "period": "2026-Q1",
+      "currency": "USD"
+    }
+  ],
+  "scenarios": [
+    {
+      "scenario_id": "SCENARIO-001",
+      "model_id": "MODEL-001",
+      "name": "Name 1",
+      "status": "active",
+      "version": "2026.1",
+      "owner": "Jordan Rivera"
+    }
+  ],
+  "forecast_lines": [
+    {
+      "forecast_line_id": "FORECAST-LINE-001",
+      "scenario_id": "SCENARIO-001",
+      "cost_center": "CC-4100",
+      "account": "Operating Expense",
+      "amount": 125000,
+      "currency": "USD",
+      "status": "active"
+    }
+  ],
+  "budget_owners": [
+    {
+      "owner_id": "OWNER-001",
+      "name": "Name 1",
+      "email": "budget.owner.1@example.com",
+      "cost_center": "CC-4100",
+      "status": "active"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APPROVAL-001",
+      "source_record_id": "SOURCE-RECORD-001",
+      "approver": "Approver 1",
+      "state": "active",
+      "reason": "Quarterly business review"
+    }
+  ],
+  "audit_events": []
+}

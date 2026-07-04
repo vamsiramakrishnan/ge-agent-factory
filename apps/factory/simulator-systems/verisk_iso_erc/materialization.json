@@ -1,0 +1,212 @@
+{
+  "id": "verisk_iso_erc_materialization",
+  "version": 1,
+  "collections": {
+    "companies": {
+      "primaryKey": "company_id",
+      "fieldAliases": {
+        "company_id": [
+          "company_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "country": [
+          "country",
+          "id",
+          "source_record_id"
+        ],
+        "industry": [
+          "industry",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "signals": {
+      "primaryKey": "signal_id",
+      "fieldAliases": {
+        "signal_id": [
+          "signal_id",
+          "id",
+          "source_record_id"
+        ],
+        "company_id": [
+          "company_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "signal_type": [
+          "signal_type",
+          "id",
+          "source_record_id"
+        ],
+        "severity": [
+          "severity",
+          "id",
+          "source_record_id"
+        ],
+        "detected_at": [
+          "detected_at",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "watchlists": {
+      "primaryKey": "watchlist_id",
+      "fieldAliases": {
+        "watchlist_id": [
+          "watchlist_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "owner": [
+          "owner",
+          "id",
+          "source_record_id"
+        ],
+        "domain": [
+          "domain",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "risk_scores": {
+      "primaryKey": "score_id",
+      "fieldAliases": {
+        "score_id": [
+          "score_id",
+          "id",
+          "source_record_id"
+        ],
+        "company_id": [
+          "company_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "score": [
+          "score",
+          "id",
+          "source_record_id"
+        ],
+        "model_version": [
+          "model_version",
+          "id",
+          "source_record_id"
+        ],
+        "as_of_date": [
+          "as_of_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "source_feeds": {
+      "primaryKey": "feed_id",
+      "fieldAliases": {
+        "feed_id": [
+          "feed_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "provider": [
+          "provider",
+          "id",
+          "source_record_id"
+        ],
+        "last_refresh_at": [
+          "last_refresh_at",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

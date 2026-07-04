@@ -1,6 +1,8 @@
 // ── System metadata library ──────────────────────────────────────────────────
 
 export const PROTOCOL_BY_SYSTEM = [
+  // Vertical-industry systems (retail, banking, insurance, telco, manufacturing)
+  [/osisoft|pi system/i, "PI Web API"],
   [/sap s\/4hana|sap erp|sap fi|sap co|sap mm|sap sd|sap bpc|sap grc|sap successfactors/i, "RFC/BAPI"],
   [/sap ariba/i, "REST API"],
   [/sap concur/i, "REST API"],
@@ -61,6 +63,10 @@ export const DATASTORE_BY_CATEGORY = {
 };
 
 export const SYSTEM_CATEGORY = [
+  // Vertical-industry systems: analytics/forecast platforms back onto BigQuery,
+  // telemetry/alarm platforms are observability; the rest fall through to erp.
+  [/blue yonder|revionics|verisk|lexisnexis|kinaxis|osisoft|pi system/i, "analytics"],
+  [/ericsson network manager/i, "observability"],
   [/sap|workday|oracle|netsuite|servicenow|coupa|ariba|greenhouse|lever|highradius|kyriba|blackline|anaplan|salesforce|hubspot|marketo|jira|icertis|docusign|jaggaer|benefitfocus|lattice|culture amp|qualtrics|zendesk|freshdesk|intercom/i, "erp"],
   [/bigquery|snowflake|databricks|redshift|looker|tableau|powerbi|adobe analytics|google analytics|ga4|amplitude|mixpanel|segment/i, "analytics"],
   [/google drive|google docs|google slides|google sheets|sharepoint|confluence|notion|box|dropbox|bynder|frame\.io|figma|canva|wordpress|contentful|drupal/i, "doc"],
@@ -72,6 +78,50 @@ export const SYSTEM_CATEGORY = [
 ];
 
 export const SYSTEM_ENTITIES = [
+  // ── Vertical-industry systems ─────────────────────────────────────────────
+  // These regexes are deliberately vendor-specific so they can never hijack a
+  // horizontal system name below (order matters: first match wins).
+  // Retail
+  [/oracle retail/i, ["item_master", "merchandise_hierarchy", "cost_changes"]],
+  [/oracle xstore/i, ["pos_transactions", "tender_records", "store_shift_summaries"]],
+  [/blue yonder/i, ["demand_forecasts", "forecast_overrides", "seasonal_profiles"]],
+  [/manhattan/i, ["warehouse_orders", "pick_tasks", "inventory_snapshots"]],
+  [/commerce cloud/i, ["online_orders", "product_catalog_entries", "cart_events"]],
+  [/ukg/i, ["shift_schedules", "timecards", "labor_forecasts"]],
+  [/revionics/i, ["price_recommendations", "price_zones", "elasticity_models"]],
+  // Banking
+  [/temenos/i, ["core_accounts", "account_transactions", "standing_orders"]],
+  [/fis payments/i, ["payment_instructions", "clearing_batches", "settlement_records"]],
+  [/ncino/i, ["loan_applications", "credit_memos", "covenant_records"]],
+  [/fenergo/i, ["kyc_cases", "entity_profiles", "screening_results"]],
+  [/actimize/i, ["fraud_alerts", "transaction_risk_scores", "investigation_cases"]],
+  [/murex/i, ["trades", "positions", "risk_measures"]],
+  [/financial services cloud/i, ["client_households", "financial_accounts", "advisory_referrals"]],
+  // Insurance
+  [/guidewire policycenter/i, ["policies", "policy_quotes", "underwriting_submissions"]],
+  [/guidewire claimcenter/i, ["claims", "claim_exposures", "reserve_lines"]],
+  [/guidewire billingcenter/i, ["billing_accounts", "premium_invoices", "payment_plans"]],
+  [/duck creek/i, ["policy_forms", "rating_worksheets", "endorsement_records"]],
+  [/verisk/i, ["loss_cost_benchmarks", "circular_updates", "territory_factors"]],
+  [/lexisnexis risk/i, ["risk_reports", "mvr_records", "prefill_datasets"]],
+  [/friss/i, ["fraud_screening_scores", "network_link_indicators", "siu_referrals"]],
+  // Telco
+  [/amdocs/i, ["billing_accounts", "usage_records", "rated_events"]],
+  [/netcracker/i, ["service_orders", "provisioning_tasks", "network_inventory_items"]],
+  [/ericsson/i, ["network_alarms", "cell_sites", "performance_counters"]],
+  [/genesys/i, ["customer_interactions", "queue_metrics", "agent_schedules"]],
+  [/oracle field service/i, ["field_work_orders", "technician_schedules", "service_appointments"]],
+  [/communications cloud/i, ["subscriber_accounts", "service_quotes", "order_captures"]],
+  // Manufacturing
+  [/opcenter/i, ["production_orders", "machine_events", "quality_checks"]],
+  [/sap s\/4hana pp/i, ["process_orders", "work_center_confirmations", "material_stagings"]],
+  [/sap s\/4hana qm/i, ["inspection_lots", "nonconformance_records", "capa_actions"]],
+  [/ibm maximo/i, ["maintenance_work_orders", "asset_registry_entries", "failure_codes"]],
+  [/osisoft|pi system/i, ["sensor_readings", "asset_tag_hierarchies", "downtime_events"]],
+  [/windchill/i, ["engineering_change_orders", "bom_revisions", "cad_document_records"]],
+  [/kinaxis/i, ["supply_plans", "demand_signals", "scenario_runs"]],
+  [/sphera/i, ["safety_incidents", "permit_records", "emissions_readings"]],
+  // ── Horizontal systems ────────────────────────────────────────────────────
   [/workday/i, ["employees", "positions", "compensation_records"]],
   [/sap successfactors/i, ["employee_records", "performance_reviews", "talent_pool"]],
   [/greenhouse|lever|workable|smartrecruiters/i, ["candidates", "job_requisitions", "interview_stages"]],

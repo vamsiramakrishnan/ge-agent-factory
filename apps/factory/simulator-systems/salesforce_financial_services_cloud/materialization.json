@@ -1,0 +1,167 @@
+{
+  "id": "salesforce_financial_services_cloud_materialization",
+  "version": 1,
+  "collections": {
+    "accounts": {
+      "primaryKey": "account_id",
+      "fieldAliases": {
+        "account_id": [
+          "account_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "industry": [
+          "industry",
+          "id",
+          "source_record_id"
+        ],
+        "segment": [
+          "segment",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "contacts": {
+      "primaryKey": "contact_id",
+      "fieldAliases": {
+        "contact_id": [
+          "contact_id",
+          "id",
+          "source_record_id"
+        ],
+        "account_id": [
+          "account_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "email": [
+          "email",
+          "id",
+          "source_record_id"
+        ],
+        "role": [
+          "role",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    },
+    "opportunities": {
+      "primaryKey": "opportunity_id",
+      "fieldAliases": {
+        "opportunity_id": [
+          "opportunity_id",
+          "id",
+          "source_record_id"
+        ],
+        "account_id": [
+          "account_id",
+          "id",
+          "source_record_id"
+        ],
+        "stage": [
+          "stage",
+          "id",
+          "source_record_id"
+        ],
+        "amount": [
+          "amount",
+          "id",
+          "source_record_id"
+        ],
+        "close_date": [
+          "close_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "stage": "active"
+      }
+    },
+    "activities": {
+      "primaryKey": "activity_id",
+      "fieldAliases": {
+        "activity_id": [
+          "activity_id",
+          "id",
+          "source_record_id"
+        ],
+        "account_id": [
+          "account_id",
+          "id",
+          "source_record_id"
+        ],
+        "type": [
+          "type",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "created_at": [
+          "created_at",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

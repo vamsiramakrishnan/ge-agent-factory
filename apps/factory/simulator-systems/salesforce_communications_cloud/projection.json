@@ -1,0 +1,38 @@
+{
+  "id": "salesforce_communications_cloud_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into salesforce_communications_cloud collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "account"
+      ],
+      "realizedObjects": [
+        "accounts",
+        "contacts"
+      ],
+      "simulatorCollection": "accounts",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "opportunity"
+      ],
+      "realizedObjects": [
+        "opportunities"
+      ],
+      "simulatorCollection": "opportunities",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "activity"
+      ],
+      "realizedObjects": [
+        "activities"
+      ],
+      "simulatorCollection": "activities",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

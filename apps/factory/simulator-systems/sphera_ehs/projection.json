@@ -1,0 +1,40 @@
+{
+  "id": "sphera_ehs_projection",
+  "version": 1,
+  "materialization": "Project scenario graph concepts into sphera_ehs collections; Snowfakery realizes large row sets from the same graph.",
+  "collectionMappings": [
+    {
+      "graphKinds": [
+        "risk"
+      ],
+      "realizedObjects": [
+        "risks",
+        "controls",
+        "issues"
+      ],
+      "simulatorCollection": "risks",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "policy"
+      ],
+      "realizedObjects": [
+        "policies",
+        "assessments"
+      ],
+      "simulatorCollection": "policies",
+      "mergeMode": "merge-records-by-primary-key"
+    },
+    {
+      "graphKinds": [
+        "approval"
+      ],
+      "realizedObjects": [
+        "approvals"
+      ],
+      "simulatorCollection": "approvals",
+      "mergeMode": "merge-records-by-primary-key"
+    }
+  ]
+}

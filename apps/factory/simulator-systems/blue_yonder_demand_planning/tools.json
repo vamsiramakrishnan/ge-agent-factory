@@ -1,0 +1,87 @@
+{
+  "id": "blue_yonder_demand_planning_tools",
+  "version": 1,
+  "tools": [
+    {
+      "name": "search_planning_models",
+      "description": "Search planning_models in blue_yonder_demand_planning.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    {
+      "name": "get_planning_model",
+      "description": "Get one planning_model in blue_yonder_demand_planning.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "model_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "model_id"
+        ]
+      }
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List pending blue_yonder_demand_planning approvals.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "source_record_id": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "submit_planning_model_update",
+      "description": "Submit an update to one planning_model in blue_yonder_demand_planning.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "model_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "model_id"
+        ]
+      }
+    },
+    {
+      "name": "list_audit_events",
+      "description": "List blue_yonder_demand_planning simulator audit events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  ]
+}

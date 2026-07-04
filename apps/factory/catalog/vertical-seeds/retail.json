@@ -1,0 +1,703 @@
+{
+  "industry": "retail",
+  "department": "retail",
+  "code": "R",
+  "valueStreams": [
+    {
+      "code": "R-11",
+      "name": "Merchandising & Assortment",
+      "useCases": [
+        {
+          "id": "assortment-rationalization-engine",
+          "title": "Assortment Rationalization Engine",
+          "persona": "Category Manager",
+          "triggerType": "on-demand",
+          "systems": ["Oracle Retail MFCS", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "SKU productivity (sales per SKU)", "before": "$8,200/yr", "after": "$11,900/yr"},
+            {"label": "Tail-SKU share of assortment", "before": "31%", "after": "14%"},
+            {"label": "Category review cycle time", "before": "6 weeks", "after": "5 days"}
+          ],
+          "statusQuo": [
+            "Category managers pull item-level sales into 40-tab spreadsheets and manually rank SKUs each quarter.",
+            "Transferable-demand effects are guessed at, so delist decisions routinely strand loyal shoppers.",
+            "Line reviews slip by weeks because MFCS extracts, syndicated data, and margin files must be stitched by hand."
+          ],
+          "agentification": [
+            "Continuously scores every SKU in BigQuery on productivity, incrementality, and transferable demand.",
+            "Generates a ranked keep/delist/swap recommendation deck for each category ahead of line review.",
+            "Drafts the delist and space-reallocation proposal in Looker and routes it to the Category Manager for approval."
+          ]
+        },
+        {
+          "id": "planogram-compliance-analyzer",
+          "title": "Planogram Compliance Analyzer",
+          "persona": "Planogram Manager",
+          "triggerType": "event-driven",
+          "systems": ["Oracle Retail MFCS", "Oracle Xstore POS", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Planogram compliance rate", "before": "72%", "after": "93%"},
+            {"label": "Reset audit coverage", "before": "8% of stores", "after": "100% of stores"},
+            {"label": "Days to detect non-compliant reset", "before": "21 days", "after": "1 day"}
+          ],
+          "statusQuo": [
+            "Field teams photograph shelves and email images that sit unreviewed for weeks.",
+            "Compliance is inferred from a 5% store sample walked by third-party auditors twice a year.",
+            "Sales dips from botched resets are discovered only after the category post-mortem."
+          ],
+          "agentification": [
+            "Analyzes shelf images and POS sales-rate deviations against the planogram of record after every reset window.",
+            "Flags facings, position, and missing-item violations store by store with photo evidence.",
+            "Creates corrective tasks for store teams and escalates chronic non-compliance to the Planogram Manager."
+          ]
+        },
+        {
+          "id": "size-pack-optimization-engine",
+          "title": "Size & Pack Optimization Engine",
+          "persona": "Merchandise Planner",
+          "triggerType": "on-demand",
+          "systems": ["Oracle Retail MFCS", "Blue Yonder Demand Planning", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Size-level sell-through", "before": "61%", "after": "82%"},
+            {"label": "Broken-size markdown loss", "before": "5.4% of sales", "after": "2.1% of sales"},
+            {"label": "Pre-season size-curve build time", "before": "3 weeks", "after": "2 days"}
+          ],
+          "statusQuo": [
+            "Planners apply last year's chain-average size curve to every store cluster in a spreadsheet.",
+            "Store-level size selling patterns live in BigQuery but never make it into the buy sheet.",
+            "Fragmented size runs force early markdowns while top sizes stock out in week three."
+          ],
+          "agentification": [
+            "Learns store-cluster size curves from transaction history and localizes pack configurations per program.",
+            "Recommends optimized size-pack ratios directly into the MFCS buy plan before purchase orders cut.",
+            "Notifies the Merchandise Planner when in-season selling diverges from the planned curve beyond tolerance."
+          ]
+        },
+        {
+          "id": "new-item-launch-orchestrator",
+          "title": "New Item Launch Orchestrator",
+          "persona": "Category Manager",
+          "triggerType": "event-driven",
+          "systems": ["Oracle Retail MFCS", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Item setup cycle time", "before": "12 days", "after": "36 hours"},
+            {"label": "Launch-week on-shelf availability", "before": "77%", "after": "96%"},
+            {"label": "Item data error rate at setup", "before": "9%", "after": "0.8%"}
+          ],
+          "statusQuo": [
+            "New-item forms bounce between vendor, merchandising, and data teams over email for two weeks.",
+            "Attribute gaps and wrong cost/retail entries are caught only when stores can't scan the item.",
+            "No one tracks whether first allocation actually landed before the ad breaks."
+          ],
+          "agentification": [
+            "Validates vendor-submitted item attributes, costs, and hierarchy placement before MFCS entry.",
+            "Orchestrates setup, first allocation, and price activation as a tracked launch runbook with owners and SLAs.",
+            "Escalates blocked steps and publishes a launch-readiness scorecard to Looker for every new item."
+          ]
+        },
+        {
+          "id": "vendor-scorecard-analyzer",
+          "title": "Vendor Performance Scorecard Analyzer",
+          "persona": "Vendor Performance Manager",
+          "triggerType": "scheduled",
+          "systems": ["Oracle Retail MFCS", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Vendor fill rate", "before": "88%", "after": "96%"},
+            {"label": "Scorecard preparation time per vendor", "before": "6 hours", "after": "10 minutes"},
+            {"label": "Cost recovery from compliance claims", "before": "$1.1M/yr", "after": "$3.4M/yr"}
+          ],
+          "statusQuo": [
+            "Analysts assemble quarterly vendor scorecards by exporting PO, receipt, and invoice data into Excel.",
+            "Fill-rate and lead-time misses surface a quarter late, long after negotiation leverage is gone.",
+            "Chargeback-eligible violations go unclaimed because nobody has time to document them."
+          ],
+          "agentification": [
+            "Computes fill rate, on-time delivery, lead-time variance, and invoice accuracy per vendor weekly in BigQuery.",
+            "Drafts the quarterly business review deck with trend narratives and benchmark comparisons per vendor.",
+            "Generates compliance-claim packets with PO-level evidence and routes them to the Vendor Performance Manager."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "R-12",
+      "name": "Supply Chain & Fulfillment",
+      "useCases": [
+        {
+          "id": "demand-forecast-exception-agent",
+          "title": "Demand Forecast Exception Agent",
+          "persona": "Demand Planner",
+          "triggerType": "scheduled",
+          "systems": ["Blue Yonder Demand Planning", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Forecast accuracy (WMAPE)", "before": "68%", "after": "86%"},
+            {"label": "Planner time on manual overrides", "before": "60% of week", "after": "15% of week"},
+            {"label": "Forecast exceptions resolved per day", "before": "40", "after": "300"}
+          ],
+          "statusQuo": [
+            "Planners eyeball thousands of item-location forecast exceptions in Blue Yonder queues each Monday.",
+            "Override decisions rely on gut feel because weather, promo, and social signals live in separate tools.",
+            "Value-destroying overrides are never measured against what the statistical forecast would have done."
+          ],
+          "agentification": [
+            "Triages the exception queue nightly, auto-clearing noise and enriching real exceptions with causal context.",
+            "Recommends override values with confidence intervals and the driver evidence behind each one.",
+            "Publishes a forecast-value-added report that scores every human override against the baseline."
+          ]
+        },
+        {
+          "id": "dc-labor-planning-engine",
+          "title": "DC Labor Planning Engine",
+          "persona": "DC Operations Manager",
+          "triggerType": "scheduled",
+          "systems": ["Manhattan Active WM", "UKG Dimensions", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Units per labor hour", "before": "112", "after": "141"},
+            {"label": "Overtime spend", "before": "11% of payroll", "after": "4% of payroll"},
+            {"label": "Shift plan build time", "before": "5 hours/day", "after": "20 minutes/day"}
+          ],
+          "statusQuo": [
+            "Shift supervisors size tomorrow's waves from yesterday's volumes in a whiteboard-and-spreadsheet ritual.",
+            "Inbound surges force same-day scramble calls for temps at premium rates.",
+            "Labor standards in Manhattan and schedules in UKG are reconciled manually and disagree constantly."
+          ],
+          "agentification": [
+            "Forecasts wave-level volume by function from Manhattan order pipelines and inbound ASNs.",
+            "Generates department-level shift plans in UKG Dimensions matched to forecast workload and labor standards.",
+            "Notifies the DC Operations Manager of projected capacity gaps 72 hours out with flex-labor options."
+          ]
+        },
+        {
+          "id": "inbound-po-eta-monitor",
+          "title": "Inbound PO ETA Monitor",
+          "persona": "Inventory Control Analyst",
+          "triggerType": "event-driven",
+          "systems": ["Manhattan Active WM", "Oracle Retail MFCS", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Late-PO detection lead time", "before": "2 days after due", "after": "9 days before due"},
+            {"label": "Expedite freight spend", "before": "$620K/qtr", "after": "$210K/qtr"},
+            {"label": "Receiving dock schedule adherence", "before": "74%", "after": "92%"}
+          ],
+          "statusQuo": [
+            "Analysts chase carrier portals and vendor emails one PO at a time to learn a shipment slipped.",
+            "Late inbound is discovered at the dock, blowing up appointment schedules for the whole day.",
+            "Downstream allocation plans assume on-time arrival because nobody updates ETAs in the system."
+          ],
+          "agentification": [
+            "Ingests ASN, carrier tracking, and port milestone events to predict arrival slippage per PO.",
+            "Updates ETAs in Manhattan Active WM and rebalances dock appointments when a delay is confirmed.",
+            "Escalates at-risk POs feeding promotions or ad items to the Inventory Control Analyst with expedite options."
+          ]
+        },
+        {
+          "id": "store-replenishment-orchestrator",
+          "title": "Store Replenishment Orchestrator",
+          "persona": "Allocation Analyst",
+          "triggerType": "scheduled",
+          "systems": ["Blue Yonder Demand Planning", "Oracle Retail MFCS", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Out-of-stock rate", "before": "8.2%", "after": "3.1%"},
+            {"label": "Store weeks-of-supply variance", "before": "±4.5 weeks", "after": "±1.2 weeks"},
+            {"label": "Manual allocation touches per week", "before": "1,900", "after": "220"}
+          ],
+          "statusQuo": [
+            "Allocators override system replenishment for hundreds of stores using static min/max rules from 2021.",
+            "Fast stores starve while slow stores drown because parameters are set at chain level.",
+            "Weekend demand spikes trigger Monday firefighting instead of Friday prevention."
+          ],
+          "agentification": [
+            "Tunes item-store replenishment parameters continuously from sell-through, lead time, and presentation minimums.",
+            "Rebalances constrained inventory across stores by predicted lost-sales impact rather than fair-share splits.",
+            "Recommends parameter changes with projected in-stock lift and applies approved ones back into Blue Yonder."
+          ]
+        },
+        {
+          "id": "carrier-delivery-sla-analyzer",
+          "title": "Carrier Delivery SLA Analyzer",
+          "persona": "Transportation Manager",
+          "triggerType": "scheduled",
+          "systems": ["Manhattan Active WM", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "On-time delivery rate", "before": "89%", "after": "97%"},
+            {"label": "Carrier claim recovery cycle", "before": "45 days", "after": "7 days"},
+            {"label": "Cost per package variance vs. contract", "before": "+6.5%", "after": "+0.9%"}
+          ],
+          "statusQuo": [
+            "Carrier scorecards are built monthly from CSV invoice dumps and are stale on arrival.",
+            "Invoice overcharges against contracted rates are spot-checked on a 2% sample.",
+            "Lane-level performance problems persist for quarters because no one connects tracking data to tenders."
+          ],
+          "agentification": [
+            "Audits every carrier invoice against contract rate cards and delivery scans in BigQuery.",
+            "Drafts dispute claims for late deliveries and overbilling with shipment-level evidence attached.",
+            "Recommends lane reassignments to the Transportation Manager when a carrier trends below SLA."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "R-13",
+      "name": "Store Operations",
+      "useCases": [
+        {
+          "id": "shrink-anomaly-analyzer",
+          "title": "Shrink Anomaly Analyzer",
+          "persona": "Loss Prevention Manager",
+          "triggerType": "scheduled",
+          "systems": ["Oracle Xstore POS", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Shrink rate", "before": "2.3% of sales", "after": "1.4% of sales"},
+            {"label": "Time to flag suspicious register activity", "before": "3 weeks", "after": "same day"},
+            {"label": "LP investigation hit rate", "before": "22%", "after": "61%"}
+          ],
+          "statusQuo": [
+            "LP analysts run canned exception reports and manually cross-reference refunds, voids, and discounts per cashier.",
+            "Sweethearting and refund fraud patterns emerge only at cycle-count time, months after the loss.",
+            "Field LP visits are scheduled by rotation, not by risk, so high-shrink stores go unvisited."
+          ],
+          "agentification": [
+            "Scores every transaction stream nightly for void, refund, no-sale, and discount anomalies at cashier and store level.",
+            "Builds ranked case files linking POS events, timeclock data, and inventory adjustments for each anomaly cluster.",
+            "Routes high-confidence cases to the Loss Prevention Manager and prioritizes store visits by predicted shrink risk."
+          ]
+        },
+        {
+          "id": "store-labor-forecast-engine",
+          "title": "Store Labor Forecast Engine",
+          "persona": "Store Workforce Planner",
+          "triggerType": "scheduled",
+          "systems": ["UKG Dimensions", "Oracle Xstore POS", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Schedule-to-demand fit", "before": "71%", "after": "91%"},
+            {"label": "Last-minute schedule edits per store/week", "before": "23", "after": "6"},
+            {"label": "Sales per labor hour", "before": "$168", "after": "$194"}
+          ],
+          "statusQuo": [
+            "Store managers copy last week's schedule forward and tweak it from memory.",
+            "Traffic, weather, and local-event drivers never reach the labor forecast in UKG.",
+            "Understaffed peak hours produce walkouts while overstaffed mornings burn payroll."
+          ],
+          "agentification": [
+            "Forecasts 15-minute interval workload per store from POS transactions, traffic, weather, and event calendars.",
+            "Generates draft schedules in UKG Dimensions honoring skills, availability, and labor-law constraints.",
+            "Notifies managers of coverage gaps and recommends shift swaps before the schedule posts."
+          ]
+        },
+        {
+          "id": "on-shelf-availability-monitor",
+          "title": "On-Shelf Availability Monitor",
+          "persona": "Store Operations Director",
+          "triggerType": "event-driven",
+          "systems": ["Oracle Xstore POS", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "On-shelf availability", "before": "91%", "after": "97.5%"},
+            {"label": "Phantom-inventory positions detected/week", "before": "0 (untracked)", "after": "4,800"},
+            {"label": "Recovered sales from OSA fixes", "before": "$0 baseline", "after": "$2.6M/qtr"}
+          ],
+          "statusQuo": [
+            "Out-of-stocks are found by shoppers and associates walking aisles, not by any system.",
+            "Phantom inventory shows on-hand in the system while the shelf sits empty for weeks.",
+            "Zone managers print gap-scan lists that are outdated before the shift ends."
+          ],
+          "agentification": [
+            "Detects zero-sales anomalies against expected sell rates to infer empty shelves despite positive on-hand.",
+            "Creates prioritized shelf-recovery and cycle-count tasks on store devices, sequenced by lost-sales value.",
+            "Publishes a chain OSA scorecard to Looker and escalates stores trending below threshold to the Store Operations Director."
+          ]
+        },
+        {
+          "id": "store-task-compliance-agent",
+          "title": "Store Task Compliance Agent",
+          "persona": "District Manager",
+          "triggerType": "scheduled",
+          "systems": ["UKG Dimensions", "Oracle Xstore POS", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Corporate task on-time completion", "before": "64%", "after": "92%"},
+            {"label": "District visit prep time", "before": "4 hours", "after": "15 minutes"},
+            {"label": "Promo setup verification rate", "before": "30% of events", "after": "100% of events"}
+          ],
+          "statusQuo": [
+            "Task completion is self-reported by stores, and district managers have no way to verify it.",
+            "DMs spend Sunday nights compiling store dashboards from five systems before their weekly route.",
+            "Promo displays that never went up are discovered when the event's sales miss plan."
+          ],
+          "agentification": [
+            "Cross-checks reported task completion against POS signals, labor punches, and photo evidence.",
+            "Drafts each District Manager's store-visit brief with exceptions, trends, and coaching points per location.",
+            "Escalates unverified promo setups to the district before the event's first weekend."
+          ]
+        },
+        {
+          "id": "pos-exception-triage-agent",
+          "title": "POS Exception Triage Agent",
+          "persona": "Store Manager",
+          "triggerType": "event-driven",
+          "systems": ["Oracle Xstore POS", "Zendesk", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Register downtime per store/month", "before": "6.5 hours", "after": "1.2 hours"},
+            {"label": "POS incident mean time to resolve", "before": "9 hours", "after": "45 minutes"},
+            {"label": "Repeat incidents from known causes", "before": "38%", "after": "8%"}
+          ],
+          "statusQuo": [
+            "Associates call the help desk and wait on hold while a lane sits dark during peak.",
+            "The same tender, printer, and sync failures are re-diagnosed from scratch at every store.",
+            "Incident tickets carry no device telemetry, so triage starts with twenty questions."
+          ],
+          "agentification": [
+            "Detects failing registers from Xstore telemetry and opens enriched Zendesk tickets before the store calls.",
+            "Recommends the proven fix from historical resolution patterns and walks the associate through it.",
+            "Escalates hardware-replacement cases with diagnostics attached and notifies the Store Manager of lane status."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "R-14",
+      "name": "E-Commerce & Digital",
+      "useCases": [
+        {
+          "id": "pdp-content-quality-agent",
+          "title": "PDP Content Quality Agent",
+          "persona": "E-Commerce Merchandiser",
+          "triggerType": "event-driven",
+          "systems": ["Salesforce Commerce Cloud", "GA4", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "PDP content completeness score", "before": "67%", "after": "96%"},
+            {"label": "PDP conversion rate", "before": "2.1%", "after": "3.0%"},
+            {"label": "Time to enrich a new product page", "before": "4 days", "after": "20 minutes"}
+          ],
+          "statusQuo": [
+            "Merchandisers audit product pages one at a time against a checklist in a shared doc.",
+            "Thin descriptions and missing size charts are found via customer complaints, not monitoring.",
+            "Copywriting backlogs delay long-tail items from ever getting proper content."
+          ],
+          "agentification": [
+            "Scans every PDP in Commerce Cloud for missing attributes, weak copy, image gaps, and broken cross-sells.",
+            "Drafts SEO-aware descriptions and bullet copy from supplier data for merchandiser approval.",
+            "Prioritizes fixes by GA4 traffic and revenue impact and publishes approved content back to the site."
+          ]
+        },
+        {
+          "id": "site-search-relevance-engine",
+          "title": "Site Search Relevance Engine",
+          "persona": "Digital Merchandising Manager",
+          "triggerType": "scheduled",
+          "systems": ["Salesforce Commerce Cloud", "GA4", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Null search result rate", "before": "14%", "after": "2.5%"},
+            {"label": "Search-led conversion rate", "before": "3.8%", "after": "5.6%"},
+            {"label": "Synonym/redirect rules maintained", "before": "400 manual", "after": "9,000 automated"}
+          ],
+          "statusQuo": [
+            "The team reviews a top-50 null-results report monthly and hand-writes synonym rules.",
+            "Seasonal vocabulary shifts (e.g. 'puffer' vs 'quilted jacket') lag customer language by months.",
+            "Nobody knows which search rules help or hurt because there is no per-rule measurement."
+          ],
+          "agentification": [
+            "Mines full search-log tails in BigQuery to detect null, low-click, and misrouted queries daily.",
+            "Generates synonym, redirect, and boost-and-bury rules and ships winners through automated A/B tests.",
+            "Notifies the Digital Merchandising Manager when trending queries have no matching assortment."
+          ]
+        },
+        {
+          "id": "cart-abandonment-recovery-orchestrator",
+          "title": "Cart Abandonment Recovery Orchestrator",
+          "persona": "Digital Marketing Manager",
+          "triggerType": "event-driven",
+          "systems": ["Salesforce Commerce Cloud", "Salesforce Marketing Cloud", "Segment", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Abandoned cart recovery rate", "before": "4.5%", "after": "11%"},
+            {"label": "Discount given per recovered order", "before": "12%", "after": "5%"},
+            {"label": "Time from abandonment to first touch", "before": "24 hours", "after": "35 minutes"}
+          ],
+          "statusQuo": [
+            "One static abandon email fires 24 hours later with a blanket 15%-off code for everyone.",
+            "High-intent shoppers get the same treatment as bots and price-checkers.",
+            "Inventory sells out before the reminder sends, driving frustrated 'it's gone' sessions."
+          ],
+          "agentification": [
+            "Scores each abandoned cart on purchase intent, margin, and stock risk from Segment and Commerce Cloud signals.",
+            "Chooses the recovery play per shopper — reminder, social proof, low-stock nudge, or minimal viable incentive.",
+            "Drafts and sends personalized journeys through Marketing Cloud and suppresses carts that self-recover."
+          ]
+        },
+        {
+          "id": "click-and-collect-sla-monitor",
+          "title": "Click-and-Collect SLA Monitor",
+          "persona": "Fulfillment Operations Manager",
+          "triggerType": "event-driven",
+          "systems": ["Salesforce Commerce Cloud", "Manhattan Active WM", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "BOPIS orders ready within 2-hour SLA", "before": "81%", "after": "97%"},
+            {"label": "Pickup order cancellation rate", "before": "7.2%", "after": "2.0%"},
+            {"label": "Curbside wait time", "before": "11 minutes", "after": "3 minutes"}
+          ],
+          "statusQuo": [
+            "Store pick queues are monitored by whoever remembers to check the tablet between customers.",
+            "Orders silently age past SLA and customers arrive to unpicked baskets.",
+            "Substitution decisions wait on a manager who is usually on the sales floor."
+          ],
+          "agentification": [
+            "Tracks every BOPIS order against its SLA clock and predicts breaches from store pick-rate telemetry.",
+            "Escalates at-risk orders to store leadership and reroutes overflow to nearby locations with inventory.",
+            "Recommends substitutions from live availability and notifies the customer with accurate ready times."
+          ]
+        },
+        {
+          "id": "returns-abuse-analyzer",
+          "title": "Returns Abuse Analyzer",
+          "persona": "Fraud Analyst",
+          "triggerType": "event-driven",
+          "systems": ["Salesforce Commerce Cloud", "Zendesk", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Return fraud loss", "before": "1.9% of online sales", "after": "0.7% of online sales"},
+            {"label": "False-positive rate on return blocks", "before": "18%", "after": "3%"},
+            {"label": "Wardrobing/bracketing detection lead time", "before": "90 days", "after": "real time"}
+          ],
+          "statusQuo": [
+            "Return decisions are made per transaction with no view of the customer's cross-channel history.",
+            "Serial wardrobers and empty-box claimants are identified quarterly, after losses accumulate.",
+            "Blanket tightening of the return policy punishes loyal customers along with abusers."
+          ],
+          "agentification": [
+            "Builds a cross-channel return-behavior graph per customer spanning web orders, store returns, and care tickets.",
+            "Scores each return claim in real time and routes only high-risk claims to manual review with evidence.",
+            "Recommends tiered policy actions — from receipt checks to account flags — and drafts case files for the Fraud Analyst."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "R-15",
+      "name": "Customer & Loyalty",
+      "useCases": [
+        {
+          "id": "loyalty-churn-prediction-agent",
+          "title": "Loyalty Churn Prediction Agent",
+          "persona": "Loyalty Program Manager",
+          "triggerType": "scheduled",
+          "systems": ["Salesforce Commerce Cloud", "Salesforce Marketing Cloud", "Segment", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "12-month member retention", "before": "58%", "after": "73%"},
+            {"label": "At-risk members identified before lapse", "before": "12%", "after": "78%"},
+            {"label": "Win-back campaign ROI", "before": "1.4x", "after": "4.2x"}
+          ],
+          "statusQuo": [
+            "Churn is defined as 12 months of silence, so intervention starts a year too late.",
+            "Save offers go to a static 'lapsed' segment refreshed monthly by an analyst.",
+            "High-value members quietly defect to competitors with no early-warning signal."
+          ],
+          "agentification": [
+            "Scores every member weekly on lapse risk from purchase cadence decay, engagement, and browse signals.",
+            "Recommends the retention treatment per member — points bonus, category offer, or concierge outreach — by predicted incrementality.",
+            "Creates triggered save journeys in Marketing Cloud and reports saved-revenue attribution to the Loyalty Program Manager."
+          ]
+        },
+        {
+          "id": "next-best-offer-engine",
+          "title": "Next Best Offer Engine",
+          "persona": "CRM Manager",
+          "triggerType": "event-driven",
+          "systems": ["Oracle Xstore POS", "Salesforce Marketing Cloud", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Offer redemption rate", "before": "3.2%", "after": "12.5%"},
+            {"label": "Incremental revenue per contacted member", "before": "$1.80", "after": "$6.40"},
+            {"label": "Campaign audience build time", "before": "3 days", "after": "minutes"}
+          ],
+          "statusQuo": [
+            "Everyone in a segment gets the same monthly coupon regardless of what they actually buy.",
+            "In-store purchase history and online behavior sit in separate systems and are never joined for targeting.",
+            "Offer fatigue grows as members receive irrelevant categories week after week."
+          ],
+          "agentification": [
+            "Unifies POS and digital signals in BigQuery to model each member's category propensities and price sensitivity.",
+            "Selects the next best offer per member per channel under budget and margin guardrails.",
+            "Publishes decisioned audiences to Marketing Cloud daily and retires offers that underperform their holdout."
+          ]
+        },
+        {
+          "id": "customer-care-triage-agent",
+          "title": "Customer Care Triage Agent",
+          "persona": "Customer Care Director",
+          "triggerType": "event-driven",
+          "systems": ["Salesforce Commerce Cloud", "Zendesk", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "First response time", "before": "9 hours", "after": "4 minutes"},
+            {"label": "Contacts resolved without agent touch", "before": "8%", "after": "44%"},
+            {"label": "CSAT", "before": "3.6/5", "after": "4.5/5"}
+          ],
+          "statusQuo": [
+            "Every ticket lands in one Zendesk queue and waits for a human to read, tag, and route it.",
+            "Agents swivel between order systems and the ticket to reconstruct what happened.",
+            "VIP customers with delivery failures wait behind password-reset requests."
+          ],
+          "agentification": [
+            "Classifies inbound tickets by intent and urgency, enriched with live order and delivery status from Commerce Cloud.",
+            "Resolves where-is-my-order, return-label, and appeasement cases end to end under policy limits.",
+            "Routes complex cases to the right specialist queue with a drafted response and escalates VIP incidents to the Customer Care Director."
+          ]
+        },
+        {
+          "id": "voice-of-customer-insights-analyzer",
+          "title": "Voice of Customer Insights Analyzer",
+          "persona": "CX Insights Manager",
+          "triggerType": "scheduled",
+          "systems": ["Salesforce Commerce Cloud", "Zendesk", "GA4", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Time to surface an emerging product issue", "before": "6 weeks", "after": "2 days"},
+            {"label": "Feedback volume analyzed", "before": "5% sampled", "after": "100%"},
+            {"label": "Insight-to-action items adopted per quarter", "before": "3", "after": "21"}
+          ],
+          "statusQuo": [
+            "An analyst reads a sample of reviews and tickets monthly and pastes quotes into a slide deck.",
+            "Sizing-runs-small complaints, defect clusters, and courier problems blur into one anecdote pile.",
+            "Merchants hear about product issues after the return-rate spike, not before."
+          ],
+          "agentification": [
+            "Mines all reviews, care tickets, chat logs, and survey verbatims for themes, sentiment shifts, and defect signals.",
+            "Quantifies each theme's revenue and return-rate impact and links it to specific SKUs and vendors.",
+            "Drafts a weekly insights brief and escalates emerging defect clusters to merchandising and quality owners."
+          ]
+        },
+        {
+          "id": "member-winback-orchestrator",
+          "title": "Lapsed Member Win-Back Orchestrator",
+          "persona": "Retention Marketing Manager",
+          "triggerType": "scheduled",
+          "systems": ["Oracle Xstore POS", "Salesforce Marketing Cloud", "Segment", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Lapsed-member reactivation rate", "before": "2.8%", "after": "9.6%"},
+            {"label": "Cost per reactivation", "before": "$31", "after": "$9"},
+            {"label": "Second-purchase rate post win-back", "before": "19%", "after": "41%"}
+          ],
+          "statusQuo": [
+            "One generic 'we miss you' blast goes to the entire lapsed file twice a year.",
+            "No distinction is made between members who moved, switched channels, or churned on price.",
+            "Reactivated members get no follow-up journey and immediately lapse again."
+          ],
+          "agentification": [
+            "Segments lapsed members by inferred lapse reason using last-purchase context, store proximity, and browse signals.",
+            "Generates tailored win-back journeys per segment and tests offer depth against predicted reactivation value.",
+            "Creates a post-reactivation nurture sequence and reports cohort payback to the Retention Marketing Manager."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "R-16",
+      "name": "Pricing & Promotions",
+      "useCases": [
+        {
+          "id": "markdown-optimization-engine",
+          "title": "Markdown Optimization Engine",
+          "persona": "Pricing Analyst",
+          "triggerType": "scheduled",
+          "systems": ["Revionics Price Optimization", "Oracle Retail MFCS", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Season-end sell-through", "before": "78%", "after": "94%"},
+            {"label": "Markdown spend as % of sales", "before": "9.1%", "after": "6.2%"},
+            {"label": "Clearance cadence planning time", "before": "2 days/week", "after": "2 hours/week"}
+          ],
+          "statusQuo": [
+            "Markdowns follow a fixed 25/50/75 cadence applied chain-wide regardless of local sell-through.",
+            "Analysts rebuild clearance ladders in spreadsheets every Friday from stale inventory extracts.",
+            "Aged inventory is discovered when the warehouse flags space, deep into its value decay."
+          ],
+          "agentification": [
+            "Models price elasticity per item-location and simulates markdown ladders against sell-through targets.",
+            "Recommends localized markdown depth and timing into Revionics with projected margin recovery per decision.",
+            "Escalates aging inventory pockets to the Pricing Analyst before they breach the clearance-exit date."
+          ]
+        },
+        {
+          "id": "competitive-price-response-agent",
+          "title": "Competitive Price Response Agent",
+          "persona": "Pricing Manager",
+          "triggerType": "event-driven",
+          "systems": ["Revionics Price Optimization", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Price-index drift on KVIs", "before": "±7% weekly", "after": "±1.5% weekly"},
+            {"label": "Competitive response time", "before": "5 days", "after": "4 hours"},
+            {"label": "Margin lost to blind price matching", "before": "180 bps", "after": "40 bps"}
+          ],
+          "statusQuo": [
+            "Competitor price files arrive weekly and are reviewed in a spreadsheet on Wednesdays.",
+            "Every competitor move on a key item triggers a reflexive match, even on inelastic SKUs.",
+            "Price changes queue behind manual approval chains and land after the competitor's promo ends."
+          ],
+          "agentification": [
+            "Monitors competitor price feeds continuously and detects moves on key-value items within hours.",
+            "Recommends respond/hold/partial-match decisions per item from elasticity and price-image weight, executed through Revionics rules.",
+            "Notifies the Pricing Manager of margin-material moves with the modeled impact of each response option."
+          ]
+        },
+        {
+          "id": "promo-forecast-accuracy-analyzer",
+          "title": "Promo Forecast Accuracy Analyzer",
+          "persona": "Promotions Manager",
+          "triggerType": "scheduled",
+          "systems": ["Blue Yonder Demand Planning", "Revionics Price Optimization", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Promo lift forecast error", "before": "42%", "after": "16%"},
+            {"label": "Promo events with post-event analysis", "before": "10%", "after": "100%"},
+            {"label": "Ad-item in-stock during events", "before": "84%", "after": "96%"}
+          ],
+          "statusQuo": [
+            "Lift assumptions are copied from last year's event even when depth, timing, and competition changed.",
+            "Post-promo analysis happens for a handful of headline events, months later, in slideware.",
+            "Cannibalization and pantry-loading effects are ignored, inflating perceived promo ROI."
+          ],
+          "agentification": [
+            "Forecasts event-level lift with decomposition into true incremental, cannibalized, and pulled-forward volume.",
+            "Publishes an automated post-event scorecard for every promotion within 72 hours of event close.",
+            "Recommends corrected lift factors into Blue Yonder and flags repeatedly unprofitable event types to the Promotions Manager."
+          ]
+        },
+        {
+          "id": "price-execution-audit-monitor",
+          "title": "Price Execution Audit Monitor",
+          "persona": "Pricing Operations Manager",
+          "triggerType": "event-driven",
+          "systems": ["Revionics Price Optimization", "Oracle Xstore POS", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Shelf-to-POS price match rate", "before": "94.1%", "after": "99.6%"},
+            {"label": "Scan-error margin leakage", "before": "$4.2M/yr", "after": "$0.6M/yr"},
+            {"label": "Time to detect a mis-scanned price", "before": "2 weeks", "after": "2 hours"}
+          ],
+          "statusQuo": [
+            "Price audits are quarterly store walks with a scan gun on a 200-item sample.",
+            "Expired promo prices keep ringing for days after events end, silently eroding margin.",
+            "Customers discover mismatches at the register, forcing overrides and eroding trust."
+          ],
+          "agentification": [
+            "Reconciles every POS transaction price against the Revionics price of record in near real time.",
+            "Detects stale promo prices, missed activations, and unit-of-measure errors by store and item.",
+            "Creates fix-it tasks for store teams and escalates systemic feed failures to the Pricing Operations Manager."
+          ]
+        },
+        {
+          "id": "vendor-promo-funding-reconciliation-agent",
+          "title": "Vendor Promo Funding Reconciliation Agent",
+          "persona": "Trade Promotions Analyst",
+          "triggerType": "scheduled",
+          "systems": ["Oracle Retail MFCS", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Vendor funding collected vs. committed", "before": "83%", "after": "98%"},
+            {"label": "Deal reconciliation cycle time", "before": "60 days", "after": "5 days"},
+            {"label": "Disputed claim rate", "before": "17%", "after": "4%"}
+          ],
+          "statusQuo": [
+            "Deal sheets live in email attachments and are re-keyed into MFCS with frequent errors.",
+            "Scan-based funding claims are computed quarterly in a giant workbook nobody else can open.",
+            "Millions in committed co-op and markdown support expire unclaimed every year."
+          ],
+          "agentification": [
+            "Matches promo execution data — scans, markdowns, ad placements — against vendor deal terms in MFCS automatically.",
+            "Generates substantiated funding claims with transaction-level backup and drafts dispute responses.",
+            "Notifies the Trade Promotions Analyst of expiring commitments and under-collected deals before quarter close."
+          ]
+        }
+      ]
+    }
+  ]
+}

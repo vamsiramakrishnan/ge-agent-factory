@@ -1,0 +1,199 @@
+{
+  "id": "duck_creek_policy_materialization",
+  "version": 1,
+  "collections": {
+    "agreements": {
+      "primaryKey": "agreement_id",
+      "fieldAliases": {
+        "agreement_id": [
+          "agreement_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "counterparty": [
+          "counterparty",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "effective_date": [
+          "effective_date",
+          "id",
+          "source_record_id"
+        ],
+        "expiration_date": [
+          "expiration_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "clauses": {
+      "primaryKey": "clause_id",
+      "fieldAliases": {
+        "clause_id": [
+          "clause_id",
+          "id",
+          "source_record_id"
+        ],
+        "agreement_id": [
+          "agreement_id",
+          "id",
+          "source_record_id"
+        ],
+        "clause_type": [
+          "clause_type",
+          "id",
+          "source_record_id"
+        ],
+        "risk_level": [
+          "risk_level",
+          "id",
+          "source_record_id"
+        ],
+        "text": [
+          "text",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    },
+    "obligations": {
+      "primaryKey": "obligation_id",
+      "fieldAliases": {
+        "obligation_id": [
+          "obligation_id",
+          "id",
+          "source_record_id"
+        ],
+        "agreement_id": [
+          "agreement_id",
+          "id",
+          "source_record_id"
+        ],
+        "owner": [
+          "owner",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "due_date": [
+          "due_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "amendments": {
+      "primaryKey": "amendment_id",
+      "fieldAliases": {
+        "amendment_id": [
+          "amendment_id",
+          "id",
+          "source_record_id"
+        ],
+        "agreement_id": [
+          "agreement_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "effective_date": [
+          "effective_date",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fieldAliases": {
+        "approval_id": [
+          "approval_id",
+          "id",
+          "source_record_id"
+        ],
+        "source_record_id": [
+          "source_record_id",
+          "id"
+        ],
+        "approver": [
+          "approver",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "reason": [
+          "reason",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "active"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

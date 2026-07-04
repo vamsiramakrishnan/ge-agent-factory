@@ -14,9 +14,54 @@ import { readFile, readdir, writeFile } from "node:fs/promises";
 import { join, basename, resolve } from "node:path";
 
 const SLIDES_ROOT = resolve(import.meta.dirname, "..", "..", "presentation", "src", "components", "slides", "domains");
+const VERTICAL_SEEDS_ROOT = join(import.meta.dirname, "..", "catalog", "vertical-seeds");
 const OUTPUT = join(import.meta.dirname, "..", "src", "domains.generated.js");
 
 const DEPARTMENTS = ["hr", "finance", "it", "marketing", "procurement"];
+
+// Vertical industries contribute value streams as domains; their catalog
+// source is the tracked seed files, not presentation slides.
+const VERTICAL_COLORS = {
+  retail: "#f59e0b",
+  banking: "#10b981",
+  insurance: "#6366f1",
+  telco: "#06b6d4",
+  manufacturing: "#ef4444",
+};
+
+async function extractVerticalDomains() {
+  let files;
+  try {
+    files = (await readdir(VERTICAL_SEEDS_ROOT)).filter((f) => f.endsWith(".json")).sort();
+  } catch {
+    return [];
+  }
+  const domains = [];
+  for (const file of files) {
+    const seed = JSON.parse(await readFile(join(VERTICAL_SEEDS_ROOT, file), "utf8"));
+    for (const stream of seed.valueStreams || []) {
+      const slug = stream.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      domains.push({
+        id: `${seed.department}-${slug}`,
+        slug,
+        department: seed.department,
+        title: stream.name,
+        subtitle: `${stream.code} • ${seed.industry[0].toUpperCase()}${seed.industry.slice(1)} Value Stream`,
+        description: `${stream.name} value stream for the ${seed.industry} vertical — ${stream.useCases.length} agentified workflows.`,
+        color: VERTICAL_COLORS[seed.department] || "#666",
+        domainNumber: Number(String(stream.code).replace(/^[A-Z]+-/, "")) || 0,
+        useCases: (stream.useCases || []).map((uc) => ({
+          id: uc.id,
+          title: uc.title,
+          description: (uc.agentification || [])[0] || "",
+        })),
+        useCaseCount: (stream.useCases || []).length,
+        sourceFile: `catalog/vertical-seeds/${file}`,
+      });
+    }
+  }
+  return domains;
+}
 
 function extractProps(tsx) {
   const props = {};
@@ -96,11 +141,19 @@ async function main() {
     summary[dept] = { domains: domains.length, useCases: domains.reduce((s, d) => s + d.useCaseCount, 0) };
   }
 
-  const totalUseCases = allDomains.reduce((s, d) => s + d.useCaseCount, 0);
+  const verticalDomains = await extractVerticalDomains();
+  for (const dept of [...new Set(verticalDomains.map((d) => d.department))]) {
+    const domains = verticalDomains.filter((d) => d.department === dept);
+    allDomains.push(...domains);
+    summary[dept] = { domains: domains.length, useCases: domains.reduce((s, d) => s + d.useCaseCount, 0) };
+  }
 
-  const output = `// Auto-generated from slide domain catalogs. Do not edit manually.
+  const totalUseCases = allDomains.reduce((s, d) => s + d.useCaseCount, 0);
+  const departmentCount = Object.keys(summary).length;
+
+  const output = `// Auto-generated from slide domain catalogs and vertical value-stream seeds. Do not edit manually.
 // Run: node scripts/sync-domains-from-slides.mjs
-// ${allDomains.length} domains, ${totalUseCases} use cases across ${DEPARTMENTS.length} departments.
+// ${allDomains.length} domains, ${totalUseCases} use cases across ${departmentCount} departments.
 
 export const DOMAIN_CATALOG = ${JSON.stringify(allDomains, null, 2)};
 
