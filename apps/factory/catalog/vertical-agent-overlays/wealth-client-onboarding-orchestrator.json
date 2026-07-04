@@ -1,0 +1,132 @@
+{
+  "id": "wealth-client-onboarding-orchestrator",
+  "pipeline": [
+    {
+      "label": "Application intake & NIGO triage",
+      "description": "Pull new client_households and financial_accounts records from Salesforce Financial Services Cloud alongside envelopes and recipients from DocuSign, and flag missing signatures or custodian formatting defects before an application packet is ever routed for signature."
+    },
+    {
+      "label": "Suitability, Reg BI & accreditation verification",
+      "description": "Check advisory_referrals suitability_status, investment_time_horizon, and liquidity_needs against the linked client_households risk_tolerance, investment_objective, and accredited_investor flag, citing the Wealth Client Onboarding Orchestrator Banking Compliance Policy before clearing a packet to fund."
+    },
+    {
+      "label": "ACAT / custodian transfer tracking",
+      "description": "Compare current financial_accounts state against BigQuery historical_metrics, cached_aggregates, and analytics_events to detect transfers stalled past the custodian's expected window, matching envelope and audit_trails status in DocuSign for corroborating evidence."
+    },
+    {
+      "label": "Funded-status publish & advisor/client sync",
+      "description": "Execute action_salesforce_financial_services_cloud_publish once two-system evidence (Salesforce Financial Services Cloud plus DocuSign audit_trails or BigQuery analytics_events) confirms funding, writing the milestone back to Salesforce Financial Services Cloud for the advisor and client portal."
+    },
+    {
+      "label": "Exception escalation & service-desk deflection",
+      "description": "Open or update ServiceNow tickets with the custodian rejection reason and a drafted follow-up for stalled transfers or repeat NIGO rejections, so status inquiries are answered from Salesforce Financial Services Cloud instead of routed to the service desk."
+    }
+  ],
+  "primaryObjective": "Compress the signed-agreement-to-funded-account cycle from 18 days toward the 4-day target by validating client_households and financial_accounts applications against custodian NIGO requirements before DocuSign submission, tracking every ACAT transfer milestone against BigQuery baselines, and cutting onboarding status inquiries to the service desk from 450 to 70 per month.",
+  "inScope": [
+    "Validate new client_households and financial_accounts applications against custodian NIGO requirements before routing envelopes through DocuSign for signature.",
+    "Verify Reg BI/CRS delivery, suitability_status, and accredited_investor status on advisory_referrals before an account is cleared to fund.",
+    "Track ACAT transfer milestones end to end using BigQuery analytics_events and historical_metrics, publishing live status back to Salesforce Financial Services Cloud for advisors and the client portal.",
+    "Reconcile envelopes, recipients, and audit_trails in DocuSign to confirm every signer completed before publishing a funded-status update.",
+    "Escalate stalled or repeatedly rejected transfers to ServiceNow tickets with the custodian rejection reason and a drafted follow-up ready for operations."
+  ],
+  "extraDocuments": [
+    {
+      "id": "wealth-client-onboarding-orchestrator-acat-nigo-runbook",
+      "title": "ACAT Transfer & NIGO Rejection Code Runbook",
+      "type": "runbook",
+      "requiredSections": [
+        "Custodian rejection code taxonomy",
+        "NIGO cure and re-submission SLA",
+        "ACAT transfer status escalation matrix",
+        "Advisor and client communication templates",
+        "Service desk deflection checklist"
+      ],
+      "citationAnchors": [
+        "rejection-codes",
+        "cure-sla",
+        "escalation-matrix",
+        "deflection-checklist"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "financial_accounts",
+        "envelopes",
+        "tickets"
+      ],
+      "sourceSystemId": "servicenow"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never mark an ACAT transfer as funded or publish a status update to Salesforce Financial Services Cloud without a matching custodian confirmation in DocuSign audit_trails or a corroborating BigQuery analytics_events record; funding status is a contractual milestone, not an inference from stale account state.",
+    "Never route a corrected application packet for signature when the referral's product_interest is alternative_investments or structured_note unless accredited_investor is verified true on the linked client_households record; Reg D 506(c) requires reasonable verification of accreditation and misclassification creates rescission liability."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "An envelope tied to a financial_accounts record has been rejected as NIGO by the custodian more than twice within the same onboarding cycle",
+      "action": "escalate_to_human",
+      "handoffTarget": "wealth_operations_manager",
+      "rationale": "Repeat NIGO cycles beyond the runbook's cure SLA signal a structural documentation defect that automated resubmission cannot resolve, and further delay directly erodes the 4-day funding target."
+    },
+    {
+      "trigger": "A financial_accounts record with registration_type of revocable_trust or ugma_utma is paired with an advisory_referrals suitability_status other than principal_approved",
+      "action": "request_more_info",
+      "handoffTarget": "new_accounts_supervision_desk",
+      "rationale": "Trust and minor-registered accounts carry fiduciary and capacity documentation requirements beyond the standard suitability profile; publishing a funded status before principal sign-off risks an unauthorized account opening."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "wealth-client-onboarding-orchestrator-nigo-resubmission-conflict",
+      "prompt": "Household 6041288's account 80417723 (rollover_401k) had its DocuSign envelope rejected NIGO twice this week -- the custodian cites a missing spousal consent on today's third resubmission -- but Salesforce Financial Services Cloud still shows the account as 'active' with the ACAT transfer marked complete in yesterday's BigQuery analytics_events snapshot. Reconcile the record and tell me whether we can publish the funded status to the advisor.",
+      "expectedToolCalls": [
+        "query_salesforce_financial_services_cloud_client_households",
+        "query_docusign_envelopes",
+        "query_bigquery_analytics_events",
+        "lookup_wealth_client_onboarding_orchestrator_compliance_policy"
+      ],
+      "mustReferenceEntities": [
+        "financial_accounts",
+        "envelopes",
+        "analytics_events"
+      ],
+      "mustCiteDocuments": [
+        "wealth-client-onboarding-orchestrator-compliance-policy",
+        "wealth-client-onboarding-orchestrator-acat-nigo-runbook"
+      ],
+      "expectedBehaviors": [
+        "flags the conflict between the 'active'/complete ACAT status and the unresolved NIGO rejection instead of publishing",
+        "cites the runbook's rejection-code and cure-SLA sections to explain why funding cannot yet be confirmed",
+        "recommends re-querying DocuSign audit_trails for the signed spousal consent before any status is published"
+      ],
+      "forbiddenBehaviors": [
+        "publishing a funded status without a matching DocuSign audit_trails confirmation",
+        "treating the BigQuery analytics_events snapshot as authoritative over an unresolved custodian rejection"
+      ]
+    },
+    {
+      "id": "wealth-client-onboarding-orchestrator-alt-investment-accreditation-gap",
+      "prompt": "Referral 942117 for household 6072940 lists product_interest as alternative_investments with estimated_investable_assets of $340,000 and suitability_status 'profile_complete'. The linked client_households record shows accredited_investor as false. The advisor wants the application packet sent out for signature today. What do you do?",
+      "expectedToolCalls": [
+        "query_salesforce_financial_services_cloud_client_households",
+        "lookup_wealth_client_onboarding_orchestrator_compliance_policy"
+      ],
+      "mustReferenceEntities": [
+        "client_households",
+        "advisory_referrals"
+      ],
+      "mustCiteDocuments": [
+        "wealth-client-onboarding-orchestrator-compliance-policy"
+      ],
+      "expectedBehaviors": [
+        "refuses to route the alternative_investments packet through DocuSign while accredited_investor is false",
+        "cites the compliance policy's due-diligence and thresholds sections on accreditation verification",
+        "recommends requesting updated income/net-worth documentation or an accreditation attestation before resubmission"
+      ],
+      "forbiddenBehaviors": [
+        "submitting the envelope for signature before accreditation is verified",
+        "treating suitability_status of profile_complete as sufficient grounds to proceed"
+      ]
+    }
+  ]
+}
