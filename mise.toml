@@ -40,8 +40,8 @@ echo "  mise run mode-local && CANARY=1 mise run provision-local"
 echo "                                     # build one agent locally up to preview"
 """
 
-[tasks.bootstrap]
-description = "END-TO-END: toolchain + `ge init` + `ge up` (factory+data+tool planes — the three infrastructure layers → doctor). Needs GEMINI_ENTERPRISE_APP_ID + gcloud auth. CANARY=1 also builds one agent."
+[tasks.bootstrap-cloud]
+description = "END-TO-END: toolchain + `ge init` + `ge up` (factory+data+tool planes — the three infrastructure layers → doctor). Needs GEMINI_ENTERPRISE_APP_ID + gcloud auth. CANARY=1 also builds one agent. (Cloned-repo cloud stand-up — for bootstrapping a brand-new project from scratch, see `bunx create-ge-agent-factory`.)"
 run = """#!/usr/bin/env bash
 set -euo pipefail
 if [ -z "${GEMINI_ENTERPRISE_APP_ID:-}" ] && [ ! -f .ge.json ]; then
@@ -67,9 +67,14 @@ echo ""
 echo "✓ Bootstrap complete. Next: ge agents build --all   ·   console: mise run console   ·   local-only: mise run mode-local && CANARY=1 mise run provision-local"
 """
 
+[tasks.bootstrap]
+description = "Alias for bootstrap-cloud (kept for muscle memory; prefer bootstrap-cloud — the name doesn't collide with bunx create-ge-agent-factory's from-scratch \"bootstrap\")"
+depends = ["bootstrap-cloud"]
+run = "true"
+
 [tasks.all]
-description = "Alias for bootstrap"
-depends = ["bootstrap"]
+description = "Alias for bootstrap-cloud"
+depends = ["bootstrap-cloud"]
 run = "true"
 
 [tasks.catalog]
@@ -348,7 +353,7 @@ printf "  One-command local proof:          \\033[36mmise run prove\\033[0m  (or
 printf "  Open the main UI:                 \\033[36mmise run console\\033[0m  (http://localhost:18260)\\n"
 printf "  Build one agent locally:          \\033[36mmise run mode-local && CANARY=1 mise run provision-local\\033[0m\\n"
 printf "  Watch runs and blockers:          \\033[36mmise run console\\033[0m  then open Activity, or run \\033[36mge agents status --watch\\033[0m\\n"
-printf "  Cloud install / deploy path:      \\033[36mGEMINI_ENTERPRISE_APP_ID=... CANARY=1 mise run bootstrap\\033[0m\\n"
+printf "  Cloud install / deploy path:      \\033[36mGEMINI_ENTERPRISE_APP_ID=... CANARY=1 mise run bootstrap-cloud\\033[0m\\n"
 printf "  Before pushing code:              \\033[36mmise run ci\\033[0m\\n"
 printf "\\n\\033[1mCurrent factory status\\033[0m\\n"
 command -v bun >/dev/null 2>&1 && bun tools/ge.mjs || printf "  Bun is not available yet. Run 'mise run setup' first.\\n"
@@ -387,7 +392,7 @@ printf "  \\033[36mpresentation\\033[0m  The transformation deck and source use-
 printf "  \\033[36mgenerator\\033[0m     Lower-level generator workbench for mock data, harness runs, and generated workspaces\\n"
 printf "\\n\\033[1mIf you are deploying to a cloud project\\033[0m\\n"
 printf "  export GEMINI_ENTERPRISE_APP_ID=projects/<num>/locations/global/collections/default_collection/engines/<app>\\n"
-printf "  \\033[36mCANARY=1 mise run bootstrap\\033[0m     Stand up planes and prove one agent end to end\\n"
+printf "  \\033[36mCANARY=1 mise run bootstrap-cloud\\033[0m     Stand up planes and prove one agent end to end\\n"
 printf "\\n\\033[1mNeed a status-based recommendation?\\033[0m  Run \\033[36mmise run next\\033[0m\\n"
 printf "\\n\\033[1mFull task list with descriptions:\\033[0m  \\033[36mmise tasks\\033[0m\\n"
 """

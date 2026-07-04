@@ -50,7 +50,7 @@ For cloud release work:
 
 ```bash
 export GEMINI_ENTERPRISE_APP_ID=projects/<num>/locations/global/collections/default_collection/engines/<app>
-CANARY=1 mise run bootstrap
+CANARY=1 mise run bootstrap-cloud
 ```
 
 ## Repo map

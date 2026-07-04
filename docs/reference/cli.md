@@ -935,7 +935,7 @@ the handful that collide with a built-in mise command name (`doctor`, `install`,
 | `mise run setup` | Install JS + Python/uv deps, sync catalog/skills, put `ge` on PATH, start the daemon |
 | `mise run devex-check` | Run `ge devex check`: local doctor + docs links + workspace manifest contracts |
 | `mise run prove` | Run `ge prove`: local doctor → local mode → one validated canary workspace |
-| `mise run bootstrap [CANARY=1]` | End-to-end: toolchain + `ge init` + `ge up`. `CANARY=1` also builds one agent. Needs `GEMINI_ENTERPRISE_APP_ID` + gcloud auth |
+| `mise run bootstrap-cloud [CANARY=1]` | End-to-end: toolchain + `ge init` + `ge up`. `CANARY=1` also builds one agent. Needs `GEMINI_ENTERPRISE_APP_ID` + gcloud auth |
 | `mise run all` | Alias for `bootstrap` |
 | `mise run deps` / `mise run data-runtime` / `mise run deps-terraform` | Toolchain pieces: uv + agents-cli + `.venv` (google-antigravity); Snowfakery runtime; terraform |
 | `mise run install` / `mise run uninstall` | Install / remove the `ge` command |

@@ -132,7 +132,7 @@ former on your machine and stops at the boundary.
 shared uv cache, Vertex auth, git. remote: gcloud auth + network (the cloud
 builder image carries the toolchain).
 
-`mise run deps` (run by `mise run bootstrap`) creates a repo-local **`.venv`** via uv and
+`mise run deps` (run by `mise run bootstrap-cloud`) creates a repo-local **`.venv`** via uv and
 installs the Antigravity SDK into it — no `pip --break-system-packages` into a
 PEP-668 system Python (the "airlock"). The harness driver auto-resolves its
 interpreter to `.venv/bin/python` (override: `GE_HARNESS_PYTHON`; falls back to

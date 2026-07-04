@@ -279,7 +279,7 @@ authenticated checkout:
 
 ```bash
 export GEMINI_ENTERPRISE_APP_ID=projects/<num>/locations/global/collections/default_collection/engines/<app>
-CANARY=1 mise run bootstrap   # toolchain → ge init → ge up (all three planes) → prove one agent
+CANARY=1 mise run bootstrap-cloud   # toolchain → ge init → ge up (all three planes) → prove one agent
 ```
 
 ## Monorepo layout
