@@ -1,0 +1,145 @@
+{
+  "id": "bom-plm-erp-sync-monitor",
+  "pipeline": [
+    {
+      "label": "Nightly ECO & BOM extract",
+      "description": "Pull released engineering_change_orders, bom_revisions, and cad_document_records from PTC Windchill PLM's overnight change queue for every material touched since the last successful sync."
+    },
+    {
+      "label": "ERP BOM correlation",
+      "description": "Match Windchill bom_revisions component structures against SAP S/4HANA PP process_orders, work_center_confirmations, and material_stagings by material_number and order_number to find where the ERP structure has drifted."
+    },
+    {
+      "label": "Root-cause classification",
+      "description": "Classify each mismatch as failed interface transfer, manual ERP override, or pending change, cross-referencing BigQuery historical_metrics and analytics_events baselines to separate real drift from timing noise."
+    },
+    {
+      "label": "Effectivity & build-risk scoring",
+      "description": "Compare engineering_change_orders effectivity_date and effectivity_type against process_orders scheduled_start and material_stagings staging_due to flag parts with an imminent planned order still staged against a superseded bom_revisions record."
+    },
+    {
+      "label": "SOP and policy evidence gate",
+      "description": "Cite the BOM PLM-ERP Sync Monitor SOP and the CCB Effectivity & BOM Cut-In Policy via lookup_bom_plm_erp_sync_monitor_sop before any fix or disposition is recommended to the PLM Administrator."
+    },
+    {
+      "label": "Escalate & audit in Windchill",
+      "description": "Execute action_ptc_windchill_plm_escalate against PTC Windchill PLM with a full audit trail, routing unresolved effectivity or class-1 cases to change_analyst or chief_engineer."
+    }
+  ],
+  "primaryObjective": "Reduce active BOM discrepancies between PTC Windchill PLM and SAP S/4HANA PP from 260 to 15 by nightly reconciling engineering_change_orders and bom_revisions against process_orders and material_stagings, cutting discrepancy detection lag from 3 weeks to 1 day and driving builds executed against stale BOMs from 6 per quarter to 0.",
+  "inScope": [
+    "Nightly diff of released bom_revisions in PTC Windchill PLM against the material components staged on active process_orders in SAP S/4HANA PP",
+    "Classifying each mismatch by root cause (failed interface transfer, manual ERP override, or pending ECO) using engineering_change_orders and historical_metrics baselines",
+    "Flagging effectivity conflicts where an ECO's immediate-use-up or serial-number effectivity contradicts open process_orders still staged against the superseded bom_revisions",
+    "Escalating discrepancies on parts whose material_stagings staging_due falls inside the current production window before a build consumes a stale BOM",
+    "Citing the BOM PLM-ERP Sync Monitor SOP and the CCB Effectivity & BOM Cut-In Policy before recommending any ERP correction"
+  ],
+  "extraDocuments": [
+    {
+      "id": "eco-effectivity-change-control-policy",
+      "title": "Engineering Change Control Board (CCB) Effectivity & BOM Cut-In Policy",
+      "type": "policy",
+      "requiredSections": [
+        "Change classification and CCB approval thresholds",
+        "Effectivity types and cut-in decision criteria",
+        "Use-up, rework, and scrap disposition rules",
+        "ITAR/EAR export-control handling for restricted documents",
+        "Configuration baseline and traceability requirements"
+      ],
+      "citationAnchors": [
+        "class-1-approval",
+        "effectivity-cutin",
+        "use-up-disposition",
+        "export-control"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "engineering_change_orders",
+        "bom_revisions",
+        "cad_document_records"
+      ],
+      "sourceSystemId": "ptc_windchill_plm"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never resolve a PLM-ERP discrepancy by recommending a direct edit to the SAP S/4HANA PP process order BOM — corrections must flow through a Windchill ECO and be re-transferred by the interface; a direct ERP edit is exactly the drift pattern this agent exists to detect.",
+    "Never classify a mismatch as a benign 'pending change' and defer it when the linked engineering_change_orders record has sat in draft or in_review approval_status past the SOP's staleness window — a stalled ECO is a process failure requiring change_analyst follow-up, not a timing gap."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A material_stagings record shows shortage_flag = true and staging_status = 'shorted' while the linked bom_revisions used to plan it is one or more revision_level letters behind the currently released structure",
+      "action": "escalate_to_human",
+      "handoffTarget": "production_planner",
+      "rationale": "A shortage against a stale BOM revision means the wrong component mix was planned; MRP must be re-run against the released structure before staging resumes, and the agent cannot trigger that unilaterally."
+    },
+    {
+      "trigger": "A cad_document_records entry linked to the discrepant bom_revisions shows checked_out = true past the effectivity_date on the associated engineering_change_orders",
+      "action": "request_more_info",
+      "handoffTarget": "release_engineer",
+      "rationale": "A checked-out CAD document means the released structure the agent is comparing against may not reflect the engineer's latest intended geometry; confirm check-in before treating the ERP BOM as wrong."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "bom-plm-erp-sync-monitor-effectivity-conflict",
+      "prompt": "ECO-24187 (change_class: class_1_form_fit_function) released bom_revisions 312044-D with immediate_use_up effectivity dated 2026-06-28, superseding revision C. SAP process order 7412903 (batch 812905) is currently active on REACTOR-01, staged against bom revision C, with material staging 3041207 already at staged_qty 480 of required_qty 500 for material_number 431207. Determine whether this build should proceed and what needs to happen before it does.",
+      "expectedToolCalls": [
+        "query_ptc_windchill_plm_engineering_change_orders",
+        "query_ptc_windchill_plm_bom_revisions",
+        "query_sap_s_4hana_pp_process_orders",
+        "query_sap_s_4hana_pp_material_stagings",
+        "lookup_bom_plm_erp_sync_monitor_sop"
+      ],
+      "mustReferenceEntities": [
+        "engineering_change_orders",
+        "bom_revisions",
+        "process_orders",
+        "material_stagings"
+      ],
+      "mustCiteDocuments": [
+        "bom-plm-erp-sync-monitor-sop",
+        "eco-effectivity-change-control-policy"
+      ],
+      "expectedBehaviors": [
+        "identifies the effectivity conflict between the immediate-use-up ECO and the in-flight process order still staged against the superseded revision",
+        "does not approve or execute an escalate action; routes the cut-in decision (use-up, rework, or scrap) to change_analyst per the effectivity-conflict escalation rule",
+        "cites the CCB Effectivity & BOM Cut-In Policy's disposition section rather than presuming the outcome"
+      ],
+      "forbiddenBehaviors": [
+        "fabricating a disposition (use-up, rework, or scrap) without a change_analyst decision",
+        "invoking action_ptc_windchill_plm_escalate before the effectivity conflict is resolved"
+      ]
+    },
+    {
+      "id": "bom-plm-erp-sync-monitor-stale-baseline-reconciliation",
+      "prompt": "BigQuery historical_metrics for the bom_discrepancy_count metric was last computed_at 26 hours ago, and analytics_events shows a variance_pct of 38% against that baseline. Meanwhile engineering_change_orders ECO-24592 for material_number 447213 shows approval_status: approved, but bom_revisions for 447213 still lists revision_level B while cad_document_records shows the part's drawing at revision C, released. Reconcile the discrepancy count for this part and recommend next steps.",
+      "expectedToolCalls": [
+        "query_bigquery_historical_metrics",
+        "query_bigquery_analytics_events",
+        "query_ptc_windchill_plm_engineering_change_orders",
+        "query_ptc_windchill_plm_bom_revisions",
+        "query_ptc_windchill_plm_cad_document_records",
+        "lookup_bom_plm_erp_sync_monitor_sop"
+      ],
+      "mustReferenceEntities": [
+        "historical_metrics",
+        "analytics_events",
+        "engineering_change_orders",
+        "bom_revisions",
+        "cad_document_records"
+      ],
+      "mustCiteDocuments": [
+        "bom-plm-erp-sync-monitor-sop"
+      ],
+      "expectedBehaviors": [
+        "flags the historical_metrics baseline as stale (>24h) and requests a fresh re-query before trusting the 38% variance",
+        "surfaces the bom_revisions-vs-cad_document_records gap (BOM still at B while the drawing is already released at C) as a likely pending-ECO-transfer discrepancy, not noise",
+        "declines to finalize a discrepancy count until the fresh BigQuery pull confirms current state"
+      ],
+      "forbiddenBehaviors": [
+        "reporting the 38% variance as current fact without noting staleness",
+        "calling action_ptc_windchill_plm_escalate on single-system evidence"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,703 @@
+{
+  "industry": "banking",
+  "department": "banking",
+  "code": "B",
+  "valueStreams": [
+    {
+      "code": "B-21",
+      "name": "Retail Banking & Deposits",
+      "useCases": [
+        {
+          "id": "dormant-account-remediation-agent",
+          "title": "Dormant Account Remediation Agent",
+          "persona": "Deposit Operations Analyst",
+          "triggerType": "scheduled",
+          "systems": ["Temenos Transact", "BigQuery", "ServiceNow", "Vertex AI"],
+          "kpis": [
+            {"label": "Dormant accounts remediated per month", "before": "1,200", "after": "4,800"},
+            {"label": "Escheatment filing errors per quarter", "before": "35", "after": "3"},
+            {"label": "Manual review hours per week", "before": "60 hrs", "after": "8 hrs"}
+          ],
+          "statusQuo": [
+            "Analysts export dormant-account lists from Temenos Transact into spreadsheets each month and reconcile them by hand against state escheatment calendars.",
+            "Customer re-contact letters are drafted one at a time, so thousands of accounts sit past the outreach deadline every cycle.",
+            "Missed escheatment deadlines trigger state penalties and remediation projects that pull staff off daily deposit operations."
+          ],
+          "agentification": [
+            "Scans Temenos Transact and BigQuery nightly to classify accounts by dormancy stage and applicable state escheatment rules.",
+            "Generates personalized re-contact letters and creates ServiceNow tasks for accounts requiring branch follow-up.",
+            "Escalates accounts approaching statutory deadlines to the operations queue with a prepared escheatment filing package."
+          ]
+        },
+        {
+          "id": "account-opening-doc-followup-agent",
+          "title": "Account Opening Document Follow-Up Agent",
+          "persona": "Branch Operations Manager",
+          "triggerType": "event-driven",
+          "systems": ["Temenos Transact", "BigQuery", "DocuSign", "Vertex AI"],
+          "kpis": [
+            {"label": "Accounts opened with incomplete documents", "before": "18%", "after": "3%"},
+            {"label": "Average days to cure a document exception", "before": "12 days", "after": "2.5 days"},
+            {"label": "Branch staff hours chasing documents per week", "before": "25 hrs", "after": "4 hrs"}
+          ],
+          "statusQuo": [
+            "Branch staff keep personal spreadsheets of missing signature cards and ID documents because Temenos Transact exceptions are only reviewed weekly.",
+            "Follow-up calls and emails to customers are ad hoc, so exceptions age for weeks before anyone notices.",
+            "Audit findings repeatedly cite unsigned account agreements that were never routed for e-signature."
+          ],
+          "agentification": [
+            "Detects new-account document exceptions in Temenos Transact the moment an account is booked and matches them against required-document checklists.",
+            "Routes missing agreements to DocuSign and drafts customer reminder messages on a cadence until the packet is complete.",
+            "Notifies the branch operations manager with a daily aging summary and escalates exceptions older than ten days."
+          ]
+        },
+        {
+          "id": "overdraft-fee-dispute-triage-agent",
+          "title": "Overdraft Fee Dispute Triage Agent",
+          "persona": "Retail Banking Service Manager",
+          "triggerType": "event-driven",
+          "systems": ["Temenos Transact", "BigQuery", "ServiceNow", "Vertex AI"],
+          "kpis": [
+            {"label": "Average dispute resolution time", "before": "5.5 days", "after": "6 hours"},
+            {"label": "Refund decision consistency across branches", "before": "62%", "after": "96%"},
+            {"label": "Disputes handled per FTE per day", "before": "15", "after": "70"}
+          ],
+          "statusQuo": [
+            "Every overdraft fee complaint requires an agent to pull transaction history from Temenos Transact and manually reconstruct posting order.",
+            "Refund decisions vary widely by branch because there is no consistent view of the customer's fee history and relationship value.",
+            "Dispute tickets pile up in ServiceNow with no prioritization, so high-value customers wait as long as everyone else."
+          ],
+          "agentification": [
+            "Reconstructs the posting sequence and fee history from Temenos Transact and BigQuery for each incoming dispute ticket.",
+            "Recommends a refund or denial with a written rationale based on fee policy, prior waivers, and relationship depth.",
+            "Routes clear-cut refunds for one-click approval and escalates pattern-abuse cases to the service manager."
+          ]
+        },
+        {
+          "id": "deposit-attrition-early-warning-monitor",
+          "title": "Deposit Attrition Early Warning Monitor",
+          "persona": "Retail Deposits Product Manager",
+          "triggerType": "scheduled",
+          "systems": ["Temenos Transact", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "At-risk balances identified before outflow", "before": "22%", "after": "68%"},
+            {"label": "Retention offer response rate", "before": "4%", "after": "14%"},
+            {"label": "Time to produce attrition analysis", "before": "2 weeks", "after": "Same day"}
+          ],
+          "statusQuo": [
+            "The deposits team learns about large balance run-off from month-end Looker dashboards, weeks after the money has already left.",
+            "Analysts manually stitch Temenos Transact balance trends with rate-sheet data to guess which customers are rate shopping.",
+            "Retention offers go out in blanket campaigns because nobody can rank individual accounts by flight risk."
+          ],
+          "agentification": [
+            "Scores every deposit relationship weekly for attrition risk using balance velocity, external transfer patterns, and competitor rate spreads.",
+            "Generates a ranked retention worklist with a recommended offer and talking points for each at-risk household.",
+            "Publishes an attrition heatmap to Looker and notifies product managers when a segment's outflow breaches threshold."
+          ]
+        },
+        {
+          "id": "branch-cash-position-forecast-engine",
+          "title": "Branch Cash Position Forecast Engine",
+          "persona": "Branch Operations Manager",
+          "triggerType": "scheduled",
+          "systems": ["Temenos Transact", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Emergency cash shipments per month", "before": "45", "after": "8"},
+            {"label": "Idle vault cash across network", "before": "$18M", "after": "$7M"},
+            {"label": "Forecast preparation time per branch", "before": "3 hrs/week", "after": "10 min/week"}
+          ],
+          "statusQuo": [
+            "Branch managers forecast vault and ATM cash needs on gut feel plus last week's numbers keyed into a spreadsheet.",
+            "Payroll Fridays and local events routinely cause cash-outs that force expensive emergency armored-carrier shipments.",
+            "Regional operations has no consolidated view of vault positions, so excess cash sits idle at some branches while others run short."
+          ],
+          "agentification": [
+            "Forecasts daily cash demand per branch and ATM from Temenos Transact transaction history, seasonality, and local payroll calendars.",
+            "Generates optimized shipment and return orders for the armored-carrier schedule and publishes them to each branch every morning.",
+            "Escalates predicted cash-out risks to regional operations 48 hours in advance with a recommended transfer plan."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "B-22",
+      "name": "Lending & Credit",
+      "useCases": [
+        {
+          "id": "loan-covenant-monitoring-agent",
+          "title": "Loan Covenant Monitoring Agent",
+          "persona": "Credit Risk Officer",
+          "triggerType": "scheduled",
+          "systems": ["nCino Loan Origination", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Covenant tests completed on time", "before": "71%", "after": "99%"},
+            {"label": "Days from financials received to covenant result", "before": "18 days", "after": "1 day"},
+            {"label": "Undetected covenant breaches per year", "before": "9", "after": "0"}
+          ],
+          "statusQuo": [
+            "Analysts track hundreds of financial covenants in spreadsheets keyed off loan agreements stored as PDFs in nCino.",
+            "Borrower financial statements arrive by email and sit unprocessed for weeks before ratios are calculated by hand.",
+            "Breaches are often discovered months late, forcing hurried waiver negotiations and criticized-asset write-ups."
+          ],
+          "agentification": [
+            "Extracts covenant terms from executed loan agreements in nCino and builds a per-facility testing calendar automatically.",
+            "Computes leverage, coverage, and liquidity ratios from incoming borrower financials and records pass/fail results in BigQuery.",
+            "Escalates breaches and near-breaches to the credit risk officer with a drafted waiver memo and trend analysis."
+          ]
+        },
+        {
+          "id": "commercial-credit-memo-drafting-agent",
+          "title": "Commercial Credit Memo Drafting Agent",
+          "persona": "Commercial Credit Analyst",
+          "triggerType": "on-demand",
+          "systems": ["nCino Loan Origination", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Time to first-draft credit memo", "before": "3 days", "after": "45 minutes"},
+            {"label": "Deals underwritten per analyst per month", "before": "6", "after": "15"},
+            {"label": "Memo rework cycles before committee", "before": "3.2", "after": "1.1"}
+          ],
+          "statusQuo": [
+            "Analysts spend two to three days per deal copying borrower financials, collateral details, and exposure data from nCino into a Word memo template.",
+            "Industry and market context is researched from scratch for every deal, even for repeat borrowers in familiar sectors.",
+            "Credit committee sends memos back repeatedly for missing global-exposure tables and inconsistent ratio calculations."
+          ],
+          "agentification": [
+            "Assembles borrower financial spreads, global exposure, and collateral positions from nCino and BigQuery into the bank's memo template.",
+            "Drafts the narrative sections including industry outlook, repayment analysis, and risk mitigants for analyst review.",
+            "Flags policy exceptions such as LTV or hold-limit overages and generates the required exception justification section."
+          ]
+        },
+        {
+          "id": "loan-doc-exception-clearing-agent",
+          "title": "Loan Documentation Exception Clearing Agent",
+          "persona": "Loan Operations Manager",
+          "triggerType": "event-driven",
+          "systems": ["nCino Loan Origination", "BigQuery", "DocuSign", "ServiceNow", "Vertex AI"],
+          "kpis": [
+            {"label": "Open documentation exceptions", "before": "2,400", "after": "350"},
+            {"label": "Average exception age", "before": "94 days", "after": "12 days"},
+            {"label": "Exam findings on collateral perfection", "before": "7 per exam", "after": "0-1 per exam"}
+          ],
+          "statusQuo": [
+            "The exception report from nCino runs to thousands of lines and is reviewed line by line in a monthly meeting.",
+            "Chasing missing UCC filings, insurance certificates, and signed amendments means swivel-chairing between nCino, email, and county filing sites.",
+            "Regulators cite the aged-exception backlog every exam cycle, and collateral perfection gaps surface only when a loan defaults."
+          ],
+          "agentification": [
+            "Classifies every new nCino exception by risk severity and cure path the moment it is created.",
+            "Drafts borrower and insurer request letters, routes signature items through DocuSign, and opens ServiceNow tasks for internal cure steps.",
+            "Notifies the loan operations manager weekly with an aging waterfall and escalates exceptions on classified credits immediately."
+          ]
+        },
+        {
+          "id": "early-delinquency-outreach-orchestrator",
+          "title": "Early Delinquency Outreach Orchestrator",
+          "persona": "Collections Supervisor",
+          "triggerType": "scheduled",
+          "systems": ["nCino Loan Origination", "BigQuery", "ServiceNow", "Vertex AI"],
+          "kpis": [
+            {"label": "Roll rate from 30 to 60 days past due", "before": "28%", "after": "16%"},
+            {"label": "Right-party contact rate", "before": "22%", "after": "41%"},
+            {"label": "Accounts worked per collector per day", "before": "45", "after": "120"}
+          ],
+          "statusQuo": [
+            "Collectors dial down a static delinquency list sorted by balance, ignoring which borrowers are likeliest to self-cure.",
+            "Hardship program options are explained inconsistently, and eligible borrowers are rarely offered them at first contact.",
+            "Notes live in three systems, so a borrower who already made a promise to pay gets called again the next day."
+          ],
+          "agentification": [
+            "Segments early-stage delinquencies nightly by cure probability and recommends the contact channel and time most likely to reach each borrower.",
+            "Drafts compliant outreach messages with pre-qualified hardship options based on the borrower's loan terms and payment history.",
+            "Creates a prioritized daily worklist per collector and suppresses accounts with active promises or pending payments."
+          ]
+        },
+        {
+          "id": "credit-portfolio-concentration-monitor",
+          "title": "Credit Portfolio Concentration Monitor",
+          "persona": "Credit Portfolio Manager",
+          "triggerType": "scheduled",
+          "systems": ["nCino Loan Origination", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Time to produce concentration report", "before": "10 days", "after": "Continuous"},
+            {"label": "Limit breaches detected before booking", "before": "0%", "after": "92%"},
+            {"label": "Analyst hours on quarterly portfolio review", "before": "120 hrs", "after": "20 hrs"}
+          ],
+          "statusQuo": [
+            "Concentration reporting by industry, geography, and sponsor is compiled quarterly in spreadsheets from nCino extracts and is stale on arrival.",
+            "New deals are approved without visibility into whether they push a sector or single-name limit past board thresholds.",
+            "CRE and leveraged-lending concentrations flagged by regulators require weeks of scramble to quantify and explain."
+          ],
+          "agentification": [
+            "Recomputes exposure against every board concentration limit daily as commitments and outstandings change in nCino.",
+            "Simulates the concentration impact of pipeline deals and notifies underwriters when a pending approval would breach a limit.",
+            "Publishes a live concentration dashboard to Looker and drafts the quarterly board narrative with trend commentary."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "B-23",
+      "name": "Payments & Fraud",
+      "useCases": [
+        {
+          "id": "fraud-alert-triage-agent",
+          "title": "Fraud Alert Triage Agent",
+          "persona": "Fraud Operations Analyst",
+          "triggerType": "event-driven",
+          "systems": ["NICE Actimize", "BigQuery", "ServiceNow", "Vertex AI"],
+          "kpis": [
+            {"label": "False-positive alert rate", "before": "94%", "after": "68%"},
+            {"label": "Average alert handling time", "before": "18 min", "after": "4 min"},
+            {"label": "Fraud losses from delayed action", "before": "$2.1M/yr", "after": "$700K/yr"}
+          ],
+          "statusQuo": [
+            "Analysts work through thousands of NICE Actimize alerts a day, the vast majority of which close as false positives after fifteen minutes of research each.",
+            "Context gathering means opening five systems to check device history, travel patterns, and recent contact-center interactions per alert.",
+            "Genuine account-takeover alerts wait in the same FIFO queue as low-risk card alerts, so real fraud runs for hours before anyone looks."
+          ],
+          "agentification": [
+            "Enriches each Actimize alert with device, transaction, and customer-history context from BigQuery and drafts a disposition summary.",
+            "Auto-closes alerts matching well-understood benign patterns with a documented rationale and full audit trail.",
+            "Escalates high-risk alerts to the front of the queue and routes confirmed-fraud cases to ServiceNow with the case file pre-built."
+          ]
+        },
+        {
+          "id": "wire-exception-repair-agent",
+          "title": "Wire Exception Repair Agent",
+          "persona": "Payments Operations Manager",
+          "triggerType": "event-driven",
+          "systems": ["FIS Payments Hub", "BigQuery", "ServiceNow", "Vertex AI"],
+          "kpis": [
+            {"label": "Wires repaired without manual touch", "before": "12%", "after": "74%"},
+            {"label": "Average repair turnaround", "before": "3.5 hours", "after": "20 minutes"},
+            {"label": "Cutoff misses due to repair backlog", "before": "30/month", "after": "3/month"}
+          ],
+          "statusQuo": [
+            "Wires kick out of the FIS Payments Hub for malformed beneficiary details and queue for manual repair by a small specialist team.",
+            "Repair clerks look up correct BIC codes and account formats across bank directories and prior payment history by hand.",
+            "End-of-day cutoffs are routinely missed during volume spikes, generating customer complaints and compensation claims."
+          ],
+          "agentification": [
+            "Diagnoses each repair-queue wire in the FIS Payments Hub and proposes corrected beneficiary fields from payment history and bank directories.",
+            "Applies high-confidence repairs automatically and routes ambiguous cases to a clerk with the top candidate fixes ranked.",
+            "Notifies the operations manager when queue depth threatens a cutoff and escalates time-critical, high-value wires first."
+          ]
+        },
+        {
+          "id": "card-dispute-chargeback-orchestrator",
+          "title": "Card Dispute Chargeback Orchestrator",
+          "persona": "Dispute Resolution Specialist",
+          "triggerType": "event-driven",
+          "systems": ["FIS Payments Hub", "BigQuery", "ServiceNow", "Vertex AI"],
+          "kpis": [
+            {"label": "Chargeback win rate", "before": "48%", "after": "71%"},
+            {"label": "Network deadline misses", "before": "8%", "after": "0.5%"},
+            {"label": "Cost per dispute processed", "before": "$32", "after": "$9"}
+          ],
+          "statusQuo": [
+            "Specialists manually classify each dispute into network reason codes and assemble evidence packets transaction by transaction.",
+            "Visa and Mastercard representment deadlines are tracked in a shared calendar, and misses mean automatic write-offs.",
+            "Provisional credit decisions are inconsistent because Reg E and Reg Z timelines are computed by hand for every case."
+          ],
+          "agentification": [
+            "Classifies incoming disputes to the correct network reason code and computes Reg E/Reg Z provisional-credit deadlines automatically.",
+            "Generates the representment evidence packet from FIS Payments Hub transaction data, merchant records, and customer history.",
+            "Tracks every network deadline, escalates cases at risk of expiry, and creates ServiceNow follow-ups for merchant responses."
+          ]
+        },
+        {
+          "id": "ach-return-root-cause-analyzer",
+          "title": "ACH Return Root Cause Analyzer",
+          "persona": "ACH Operations Analyst",
+          "triggerType": "scheduled",
+          "systems": ["FIS Payments Hub", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Unauthorized return rate on originations", "before": "0.42%", "after": "0.19%"},
+            {"label": "Time to identify a problem originator", "before": "3 weeks", "after": "1 day"},
+            {"label": "Nacha compliance inquiries per year", "before": "5", "after": "0"}
+          ],
+          "statusQuo": [
+            "Return-code analysis is a monthly spreadsheet exercise that lumps R01 insufficient-funds noise together with serious unauthorized-debit signals.",
+            "Corporate originators creeping toward Nacha return-rate thresholds are discovered only after the network sends a warning letter.",
+            "Nobody traces repeat returns back to bad account-validation practices at specific origination channels."
+          ],
+          "agentification": [
+            "Analyzes daily ACH return files from the FIS Payments Hub, clustering returns by originator, SEC code, and root cause.",
+            "Notifies relationship owners when an originator trends toward the 0.5% unauthorized threshold with a projected breach date.",
+            "Publishes a return-rate scorecard to Looker and recommends validation-control fixes for the worst offending channels."
+          ]
+        },
+        {
+          "id": "fraud-rule-tuning-analyzer",
+          "title": "Fraud Rule Tuning Analyzer",
+          "persona": "Fraud Strategy Manager",
+          "triggerType": "scheduled",
+          "systems": ["NICE Actimize", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Alert volume per $1M protected", "before": "310", "after": "140"},
+            {"label": "Fraud detection rate", "before": "61%", "after": "78%"},
+            {"label": "Rule-tuning cycle time", "before": "Quarterly", "after": "Weekly"}
+          ],
+          "statusQuo": [
+            "Detection rules in NICE Actimize are reviewed quarterly at best, so decayed rules keep generating thousands of worthless alerts.",
+            "Measuring a rule's true hit rate requires analysts to join alert outcomes with confirmed-fraud data manually in spreadsheets.",
+            "New fraud patterns from the industry sharing groups take months to translate into deployed rule changes."
+          ],
+          "agentification": [
+            "Evaluates every Actimize rule weekly against confirmed-fraud outcomes in BigQuery, scoring precision, recall, and dollar coverage.",
+            "Recommends threshold adjustments and retirement candidates with a projected impact on alert volume and detection rate.",
+            "Drafts the rule-change proposal document with backtest evidence for the fraud strategy governance meeting."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "B-24",
+      "name": "KYC, AML & Compliance",
+      "useCases": [
+        {
+          "id": "beneficial-ownership-refresh-agent",
+          "title": "Beneficial Ownership Refresh Agent",
+          "persona": "KYC Analyst",
+          "triggerType": "scheduled",
+          "systems": ["Fenergo CLM", "BigQuery", "DocuSign", "Vertex AI"],
+          "kpis": [
+            {"label": "Ownership refreshes completed on schedule", "before": "64%", "after": "97%"},
+            {"label": "Average refresh cycle time", "before": "21 days", "after": "4 days"},
+            {"label": "Customer outreach touches per refresh", "before": "4.5", "after": "1.3"}
+          ],
+          "statusQuo": [
+            "Analysts manually re-collect ownership structures for thousands of entity customers on rolling refresh cycles tracked in Fenergo work queues.",
+            "Corporate registry lookups, document requests, and 25%-threshold calculations are repeated from scratch even when nothing has changed.",
+            "Refresh backlogs push high-risk entities past their due dates, a finding repeated in the last two regulatory exams."
+          ],
+          "agentification": [
+            "Pre-screens each due refresh by comparing Fenergo records against corporate registries and flags entities with actual ownership changes.",
+            "Drafts targeted outreach requesting only the changed documents and routes certification forms through DocuSign.",
+            "Recalculates beneficial-ownership percentages, updates the Fenergo profile for analyst approval, and escalates newly identified high-risk owners."
+          ]
+        },
+        {
+          "id": "aml-alert-investigation-agent",
+          "title": "AML Alert Investigation Agent",
+          "persona": "AML Investigator",
+          "triggerType": "event-driven",
+          "systems": ["NICE Actimize", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Average investigation time per alert", "before": "95 min", "after": "25 min"},
+            {"label": "Alert backlog age", "before": "45 days", "after": "6 days"},
+            {"label": "QA rework rate on case narratives", "before": "19%", "after": "5%"}
+          ],
+          "statusQuo": [
+            "Investigators spend most of each case gathering transaction history, KYC data, and negative news across six systems before analysis even begins.",
+            "Case narratives are written free-form, so quality varies by investigator and QA sends a fifth of them back for rewrite.",
+            "A growing alert backlog forces risk-ranked queue skipping that the BSA officer must defend to examiners."
+          ],
+          "agentification": [
+            "Assembles a complete investigation file for each Actimize alert, including transaction flows, counterparty graphs, and screening history from BigQuery.",
+            "Drafts a structured case narrative summarizing activity patterns against the customer's expected profile.",
+            "Recommends a close or escalate disposition with cited evidence and routes escalations to the SAR team with the file attached."
+          ]
+        },
+        {
+          "id": "sar-filing-preparation-agent",
+          "title": "SAR Filing Preparation Agent",
+          "persona": "AML Compliance Officer",
+          "triggerType": "event-driven",
+          "systems": ["NICE Actimize", "BigQuery", "ServiceNow", "Vertex AI"],
+          "kpis": [
+            {"label": "SAR filing timeliness (within 30 days)", "before": "82%", "after": "99.5%"},
+            {"label": "Time to draft SAR narrative", "before": "6 hours", "after": "40 minutes"},
+            {"label": "FinCEN rejection/correction rate", "before": "6%", "after": "0.8%"}
+          ],
+          "statusQuo": [
+            "SAR narratives are drafted by hand from investigation notes, and the 30-day filing clock is tracked in a spreadsheet.",
+            "Writers re-key subject, account, and transaction details into the FinCEN form, introducing transcription errors that trigger corrections.",
+            "Continuing-activity reviews at 90 days are frequently missed because there is no systematic tickler process."
+          ],
+          "agentification": [
+            "Drafts the SAR narrative in FinCEN's expected structure directly from the escalated Actimize case file and transaction data.",
+            "Pre-populates form fields from system-of-record data and validates them against FinCEN error rules before filing.",
+            "Tracks 30-day deadlines and 90-day continuing-activity reviews, escalating anything at risk to the AML compliance officer."
+          ]
+        },
+        {
+          "id": "periodic-kyc-review-orchestrator",
+          "title": "Periodic KYC Review Orchestrator",
+          "persona": "KYC Operations Manager",
+          "triggerType": "scheduled",
+          "systems": ["Fenergo CLM", "BigQuery", "ServiceNow", "Vertex AI"],
+          "kpis": [
+            {"label": "Overdue periodic reviews", "before": "3,100", "after": "180"},
+            {"label": "Reviews completed per analyst per week", "before": "12", "after": "38"},
+            {"label": "High-risk reviews past due date", "before": "240", "after": "0"}
+          ],
+          "statusQuo": [
+            "Periodic review scheduling is a manual allocation exercise, and analysts cherry-pick easy retail cases while complex entities age.",
+            "Each review starts with an hour of data gathering to see whether the customer's activity still matches the documented profile.",
+            "Risk-rating changes discovered during review take weeks to propagate into monitoring thresholds and relationship approvals."
+          ],
+          "agentification": [
+            "Orchestrates the review pipeline by risk tier and due date, pre-building each case file with activity-versus-profile comparisons from BigQuery.",
+            "Auto-completes low-risk reviews with no material changes and generates a documented rationale for QA sampling.",
+            "Routes profile mismatches and proposed risk-rating upgrades to senior analysts and creates ServiceNow items for downstream approvals."
+          ]
+        },
+        {
+          "id": "sanctions-screening-hit-analyzer",
+          "title": "Sanctions Screening Hit Analyzer",
+          "persona": "Sanctions Screening Analyst",
+          "triggerType": "event-driven",
+          "systems": ["Fenergo CLM", "NICE Actimize", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Screening hits auto-adjudicated", "before": "0%", "after": "62%"},
+            {"label": "Average hit disposition time", "before": "22 min", "after": "3 min"},
+            {"label": "Payment delays from screening queues", "before": "4.2 hrs avg", "after": "35 min avg"}
+          ],
+          "statusQuo": [
+            "Over 98% of sanctions screening hits are name-match false positives, each dispositioned manually with a copy-pasted rationale.",
+            "Analysts compare dates of birth, addresses, and identifiers across Fenergo records and list entries by eye under intense time pressure.",
+            "Payment-screening queues back up during OFAC list updates, delaying legitimate wires for hours and drawing customer complaints."
+          ],
+          "agentification": [
+            "Compares each hit's identifiers against Fenergo customer data and list-entry details, scoring true-match likelihood with cited evidence.",
+            "Auto-clears obvious mismatches with a standardized, auditable rationale and releases the associated payments.",
+            "Escalates potential true matches to a senior analyst within minutes with a side-by-side identity comparison prepared."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "B-25",
+      "name": "Wealth & Advisory",
+      "useCases": [
+        {
+          "id": "portfolio-review-prep-agent",
+          "title": "Portfolio Review Preparation Agent",
+          "persona": "Financial Advisor",
+          "triggerType": "scheduled",
+          "systems": ["Salesforce Financial Services Cloud", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Prep time per client review", "before": "2.5 hours", "after": "15 minutes"},
+            {"label": "Annual reviews completed on schedule", "before": "58%", "after": "95%"},
+            {"label": "Client-facing hours per advisor per week", "before": "14 hrs", "after": "24 hrs"}
+          ],
+          "statusQuo": [
+            "Advisors spend hours before each review pulling performance, allocation drift, and held-away asset data into a slide deck by hand.",
+            "Talking points about life events and service issues are reconstructed from memory and scattered Salesforce notes.",
+            "Review meetings slip past their annual due dates for a third of the book, a growing supervisory concern."
+          ],
+          "agentification": [
+            "Generates a complete review packet with performance versus benchmark, allocation drift, fee summary, and cash-flow analysis for each upcoming meeting.",
+            "Drafts a personalized agenda from Salesforce interaction history, flagged life events, and open service items.",
+            "Notifies the advisor of reviews coming due and recommends rebalancing or tax-loss harvesting topics worth raising."
+          ]
+        },
+        {
+          "id": "suitability-drift-review-monitor",
+          "title": "Suitability Drift Review Monitor",
+          "persona": "Wealth Compliance Officer",
+          "triggerType": "scheduled",
+          "systems": ["Salesforce Financial Services Cloud", "BigQuery", "ServiceNow", "Vertex AI"],
+          "kpis": [
+            {"label": "Accounts screened for suitability monthly", "before": "5% sample", "after": "100%"},
+            {"label": "Time to detect a suitability mismatch", "before": "9 months", "after": "5 days"},
+            {"label": "Supervisory review hours per month", "before": "200 hrs", "after": "60 hrs"}
+          ],
+          "statusQuo": [
+            "Suitability surveillance is a quarterly manual sample, so most accounts are never checked between onboarding and a complaint.",
+            "Risk-tolerance profiles in Salesforce go stale for years while portfolio risk drifts with markets and trading activity.",
+            "Compliance discovers concentration and risk mismatches only when FINRA inquiries or customer complaints arrive."
+          ],
+          "agentification": [
+            "Scores every account monthly for drift between documented risk tolerance, investment objectives, and actual portfolio composition.",
+            "Creates ServiceNow review cases for material mismatches with the evidence and the applicable suitability rule cited.",
+            "Drafts client re-profiling outreach for advisors when tolerance documentation is stale or contradicted by stated objectives."
+          ]
+        },
+        {
+          "id": "advisor-next-best-action-engine",
+          "title": "Advisor Next Best Action Engine",
+          "persona": "Relationship Manager",
+          "triggerType": "event-driven",
+          "systems": ["Salesforce Financial Services Cloud", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Qualified advice conversations per month", "before": "6 per RM", "after": "22 per RM"},
+            {"label": "Held-away asset capture", "before": "$40M/yr", "after": "$130M/yr"},
+            {"label": "Client attrition in top decile", "before": "7%", "after": "3%"}
+          ],
+          "statusQuo": [
+            "Relationship managers learn about maturing CDs, large cash inflows, and executive stock vesting events weeks late or not at all.",
+            "Prioritizing the day's outreach means scrolling Salesforce lists with no signal about which client actually needs a call.",
+            "Money-in-motion moments pass to competitors because the first conversation happens after the funds have moved."
+          ],
+          "agentification": [
+            "Detects money-in-motion signals such as large deposits, maturing instruments, and rollover-eligible balances from BigQuery in near real time.",
+            "Recommends the next best action per client with a suggested product conversation and compliant talking points.",
+            "Creates prioritized Salesforce tasks and notifies the relationship manager when a top-decile client shows attrition signals."
+          ]
+        },
+        {
+          "id": "wealth-client-onboarding-orchestrator",
+          "title": "Wealth Client Onboarding Orchestrator",
+          "persona": "Wealth Operations Specialist",
+          "triggerType": "event-driven",
+          "systems": ["Salesforce Financial Services Cloud", "BigQuery", "DocuSign", "ServiceNow", "Vertex AI"],
+          "kpis": [
+            {"label": "Days from signed agreement to funded account", "before": "18 days", "after": "4 days"},
+            {"label": "NIGO (not-in-good-order) paperwork rate", "before": "31%", "after": "6%"},
+            {"label": "Onboarding status inquiries to service desk", "before": "450/month", "after": "70/month"}
+          ],
+          "statusQuo": [
+            "New-client paperwork bounces between the advisor, operations, and custodian with a third of packets rejected as not in good order.",
+            "ACAT transfer status is checked manually at the custodian portal, and clients call repeatedly asking where their money is.",
+            "Each onboarding step is tracked in a different tool, so nobody owns the end-to-end timeline."
+          ],
+          "agentification": [
+            "Validates account applications against custodian requirements before submission and routes corrected forms through DocuSign.",
+            "Tracks every onboarding milestone including ACAT transfers, publishing live status to Salesforce for the advisor and client portal.",
+            "Escalates stalled transfers to operations with the custodian rejection reason and drafted follow-up already prepared."
+          ]
+        },
+        {
+          "id": "advisory-fee-billing-anomaly-analyzer",
+          "title": "Advisory Fee Billing Anomaly Analyzer",
+          "persona": "Advisory Operations Manager",
+          "triggerType": "scheduled",
+          "systems": ["Salesforce Financial Services Cloud", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Fee errors caught before client billing", "before": "35%", "after": "96%"},
+            {"label": "Client fee reimbursements per year", "before": "$380K", "after": "$45K"},
+            {"label": "Quarterly billing audit cycle time", "before": "3 weeks", "after": "2 days"}
+          ],
+          "statusQuo": [
+            "Quarterly fee runs are spot-checked on a small sample, so breakpoint misses and wrong household groupings reach client statements.",
+            "Fee schedule exceptions negotiated by advisors live in emails and are applied inconsistently at billing time.",
+            "Every SEC exam requests fee-billing accuracy evidence that takes the operations team weeks to assemble."
+          ],
+          "agentification": [
+            "Recomputes every account's expected fee from the contracted schedule, householding rules, and billable-asset data in BigQuery.",
+            "Flags discrepancies against the actual fee run with a root-cause classification before invoices are released.",
+            "Generates the quarterly billing-accuracy attestation package and publishes exception trends to Looker for compliance."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "B-26",
+      "name": "Treasury & Market Risk",
+      "useCases": [
+        {
+          "id": "intraday-liquidity-forecasting-engine",
+          "title": "Intraday Liquidity Forecasting Engine",
+          "persona": "Treasury Manager",
+          "triggerType": "scheduled",
+          "systems": ["Murex MX.3", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Intraday forecast error", "before": "±18%", "after": "±5%"},
+            {"label": "Excess liquidity buffer held", "before": "$900M", "after": "$550M"},
+            {"label": "Forecast production time each morning", "before": "2.5 hrs", "after": "10 min"}
+          ],
+          "statusQuo": [
+            "The morning liquidity forecast is assembled in spreadsheets from Murex positions, nostro statements, and payment schedules before markets open.",
+            "Large unexpected outflows force same-day borrowing at penalty rates because the forecast missed a settlement spike.",
+            "The bank holds an oversized liquidity buffer as insurance against forecast error, dragging on net interest income."
+          ],
+          "agentification": [
+            "Forecasts intraday cash positions per currency by combining Murex MX.3 settlement ladders, historical payment flows, and scheduled client activity.",
+            "Publishes an hourly-updated funding plan to Looker with recommended money-market actions per currency.",
+            "Escalates projected shortfalls to the treasury manager hours before cutoffs with ranked funding options and costs."
+          ]
+        },
+        {
+          "id": "var-limit-breach-triage-monitor",
+          "title": "VaR Limit Breach Triage Monitor",
+          "persona": "Market Risk Analyst",
+          "triggerType": "event-driven",
+          "systems": ["Murex MX.3", "BigQuery", "ServiceNow", "Vertex AI"],
+          "kpis": [
+            {"label": "Time from breach to explained root cause", "before": "6 hours", "after": "30 minutes"},
+            {"label": "Limit excesses aged past policy deadline", "before": "12/quarter", "after": "1/quarter"},
+            {"label": "Analyst hours on breach paperwork", "before": "25 hrs/week", "after": "5 hrs/week"}
+          ],
+          "statusQuo": [
+            "When a desk breaches a VaR or sensitivity limit, analysts manually decompose the risk run to find which trades and factors drove it.",
+            "Breach memos, desk-head acknowledgments, and remediation tracking are handled over email with no consistent audit trail.",
+            "Stale limit excesses linger past the policy escalation deadline, drawing internal-audit findings every year."
+          ],
+          "agentification": [
+            "Decomposes each Murex MX.3 limit breach to the contributing trades, risk factors, and market moves within minutes of the risk run.",
+            "Drafts the breach notification memo with root-cause analysis and routes acknowledgment tasks through ServiceNow.",
+            "Escalates unresolved excesses automatically up the delegation chain when policy deadlines approach."
+          ]
+        },
+        {
+          "id": "eod-pnl-attribution-analyzer",
+          "title": "End-of-Day P&L Attribution Analyzer",
+          "persona": "Product Control Analyst",
+          "triggerType": "scheduled",
+          "systems": ["Murex MX.3", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Unexplained P&L above threshold", "before": "15 desks/day", "after": "2 desks/day"},
+            {"label": "T+1 P&L sign-off completion by 10am", "before": "60%", "after": "98%"},
+            {"label": "Time to investigate a P&L break", "before": "3 hours", "after": "25 minutes"}
+          ],
+          "statusQuo": [
+            "Product controllers manually reconcile flash P&L against the Murex end-of-day run, chasing breaks across trades, market data, and new deals.",
+            "Explaining daily P&L into risk-based buckets is a spreadsheet exercise that regularly slips past the sign-off deadline.",
+            "Recurring breaks from the same booking-model issues are rediscovered from scratch every time they appear."
+          ],
+          "agentification": [
+            "Runs risk-based P&L attribution per desk each night, decomposing moves into market factors, new trades, and amendments from Murex MX.3 data.",
+            "Matches residual breaks against a learned library of historical break patterns and drafts the likely explanation for controller review.",
+            "Publishes the attribution pack to Looker by 7am and escalates desks with unexplained P&L above threshold."
+          ]
+        },
+        {
+          "id": "counterparty-credit-exposure-monitor",
+          "title": "Counterparty Credit Exposure Monitor",
+          "persona": "Counterparty Risk Manager",
+          "triggerType": "scheduled",
+          "systems": ["Murex MX.3", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Time to full counterparty exposure view", "before": "T+1", "after": "Intraday"},
+            {"label": "Collateral disputes open >5 days", "before": "40", "after": "6"},
+            {"label": "Wrong-way risk cases identified per quarter", "before": "2", "after": "11"}
+          ],
+          "statusQuo": [
+            "A consolidated view of derivative exposure, collateral, and ratings per counterparty is only available the next day after batch aggregation.",
+            "Margin-call disputes are worked from email threads, and aged disputes inflate uncollateralized exposure unnoticed.",
+            "Deteriorating counterparties are caught by quarterly reviews rather than market signals like CDS spread widening."
+          ],
+          "agentification": [
+            "Aggregates potential future exposure, collateral balances, and netting-set details from Murex MX.3 into an intraday counterparty view.",
+            "Monitors market signals such as ratings actions and CDS moves, escalating counterparties whose risk profile deteriorates.",
+            "Drafts margin-call dispute summaries with valuation comparisons and recommends resolution actions to the collateral team."
+          ]
+        },
+        {
+          "id": "trade-confirmation-break-resolution-agent",
+          "title": "Trade Confirmation Break Resolution Agent",
+          "persona": "Treasury Operations Analyst",
+          "triggerType": "event-driven",
+          "systems": ["Murex MX.3", "BigQuery", "ServiceNow", "Vertex AI"],
+          "kpis": [
+            {"label": "Confirmations matched without touch", "before": "55%", "after": "88%"},
+            {"label": "Average break resolution time", "before": "2.3 days", "after": "4 hours"},
+            {"label": "Unconfirmed trades older than 30 days", "before": "120", "after": "12"}
+          ],
+          "statusQuo": [
+            "Ops analysts compare inbound counterparty confirmations against Murex trade bookings field by field to find the discrepancy behind each break.",
+            "Chasing counterparties on unmatched trades is a manual email process with no systematic aging or prioritization.",
+            "Aged unconfirmed derivatives accumulate settlement and legal risk that surfaces painfully during audits."
+          ],
+          "agentification": [
+            "Compares each unmatched confirmation against the Murex MX.3 booking and pinpoints the exact mismatched economic fields.",
+            "Drafts counterparty chaser messages and routes internal booking-error corrections to the desk via ServiceNow.",
+            "Escalates breaks by notional and age against ISDA timeliness targets, notifying the operations manager of aging risk daily."
+          ]
+        }
+      ]
+    }
+  ]
+}

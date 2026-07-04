@@ -1,0 +1,227 @@
+{
+  "id": "osisoft_pi_system_materialization",
+  "version": 1,
+  "collections": {
+    "services": {
+      "primaryKey": "service_id",
+      "fieldAliases": {
+        "service_id": [
+          "service_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "owner": [
+          "owner",
+          "id",
+          "source_record_id"
+        ],
+        "tier": [
+          "tier",
+          "id",
+          "source_record_id"
+        ],
+        "environment": [
+          "environment",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "monitors": {
+      "primaryKey": "monitor_id",
+      "fieldAliases": {
+        "monitor_id": [
+          "monitor_id",
+          "id",
+          "source_record_id"
+        ],
+        "service_id": [
+          "service_id",
+          "id",
+          "source_record_id"
+        ],
+        "name": [
+          "name",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "severity": [
+          "severity",
+          "id",
+          "source_record_id"
+        ],
+        "query": [
+          "query",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "alerts": {
+      "primaryKey": "alert_id",
+      "fieldAliases": {
+        "alert_id": [
+          "alert_id",
+          "id",
+          "source_record_id"
+        ],
+        "monitor_id": [
+          "monitor_id",
+          "id",
+          "source_record_id"
+        ],
+        "state": [
+          "state",
+          "id",
+          "source_record_id"
+        ],
+        "severity": [
+          "severity",
+          "id",
+          "source_record_id"
+        ],
+        "triggered_at": [
+          "triggered_at",
+          "id",
+          "source_record_id"
+        ],
+        "summary": [
+          "summary",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "state": "active"
+      }
+    },
+    "incidents": {
+      "primaryKey": "incident_id",
+      "fieldAliases": {
+        "incident_id": [
+          "incident_id",
+          "id",
+          "source_record_id"
+        ],
+        "service_id": [
+          "service_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "severity": [
+          "severity",
+          "id",
+          "source_record_id"
+        ],
+        "commander": [
+          "commander",
+          "id",
+          "source_record_id"
+        ],
+        "started_at": [
+          "started_at",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "slos": {
+      "primaryKey": "slo_id",
+      "fieldAliases": {
+        "slo_id": [
+          "slo_id",
+          "id",
+          "source_record_id"
+        ],
+        "service_id": [
+          "service_id",
+          "id",
+          "source_record_id"
+        ],
+        "status": [
+          "status",
+          "id",
+          "source_record_id"
+        ],
+        "target": [
+          "target",
+          "id",
+          "source_record_id"
+        ],
+        "window": [
+          "window",
+          "id",
+          "source_record_id"
+        ],
+        "burn_rate": [
+          "burn_rate",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {
+        "status": "active"
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fieldAliases": {
+        "event_id": [
+          "event_id",
+          "id",
+          "source_record_id"
+        ],
+        "action": [
+          "action",
+          "id",
+          "source_record_id"
+        ],
+        "entity": [
+          "entity",
+          "id",
+          "source_record_id"
+        ],
+        "entity_id": [
+          "entity_id",
+          "id",
+          "source_record_id"
+        ],
+        "outcome": [
+          "outcome",
+          "id",
+          "source_record_id"
+        ]
+      },
+      "defaults": {}
+    }
+  }
+}

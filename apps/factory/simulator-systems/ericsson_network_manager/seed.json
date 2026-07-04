@@ -1,0 +1,53 @@
+{
+  "services": [
+    {
+      "service_id": "SERVICE-001",
+      "name": "Name 1",
+      "status": "active",
+      "owner": "Jordan Rivera",
+      "tier": "tier_1",
+      "environment": "production"
+    }
+  ],
+  "monitors": [
+    {
+      "monitor_id": "MONITOR-001",
+      "service_id": "SERVICE-001",
+      "name": "Name 1",
+      "status": "active",
+      "severity": "medium",
+      "query": "status = active"
+    }
+  ],
+  "alerts": [
+    {
+      "alert_id": "ALERT-001",
+      "monitor_id": "MONITOR-001",
+      "state": "active",
+      "severity": "medium",
+      "triggered_at": "2026-03-15T14:30:00Z",
+      "summary": "Pending review for downstream workflow"
+    }
+  ],
+  "incidents": [
+    {
+      "incident_id": "INCIDENT-001",
+      "service_id": "SERVICE-001",
+      "status": "active",
+      "severity": "medium",
+      "commander": "Alex Morgan",
+      "started_at": "2026-03-15T14:30:00Z"
+    }
+  ],
+  "slos": [
+    {
+      "slo_id": "SLO-001",
+      "service_id": "SERVICE-001",
+      "status": "active",
+      "target": 0.95,
+      "window": "30d",
+      "burn_rate": 0.95
+    }
+  ],
+  "audit_events": []
+}

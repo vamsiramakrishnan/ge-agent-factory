@@ -1,0 +1,129 @@
+{
+  "id": "fraud-alert-triage-agent",
+  "pipeline": [
+    {
+      "label": "Alert Intake & Queue Prioritization",
+      "description": "Pull new and in_review fraud_alerts and their linked transaction_risk_scores from NICE Actimize (query_nice_actimize_fraud_alerts) and re-rank the analyst queue by fraud_risk_score, score_band, velocity_rule_triggered, and mule_account_indicator so the Fraud Operations Analyst works the highest-risk alerts first instead of FIFO."
+    },
+    {
+      "label": "Context Enrichment",
+      "description": "Correlate the account_number against BigQuery analytics_events and historical_metrics (query_bigquery_analytics_events) and cross-check open ServiceNow tickets (query_servicenow_tickets) for recent contact-center interactions or account-servicing activity on the same account."
+    },
+    {
+      "label": "Typology & Disposition Scoring",
+      "description": "Classify the alert_type (card_not_present, account_takeover, elder_financial_exploitation, business_email_compromise_wire, p2p_payment_scam, check_kiting, counterfeit_check) against amount_at_risk and reg_e_claim_filed to determine whether the pattern is a well-understood benign false_positive, needs investigation_cases opened, or trips a hard escalation gate."
+    },
+    {
+      "label": "Policy & Evidence Gating",
+      "description": "Cite the governing sections of the Fraud Alert Triage Agent Banking Compliance Policy and the SAR Filing & Deadline Playbook (lookup_fraud_alert_triage_agent_compliance_policy) before any disposition, confirming at least two-system evidence and that no required record is stale beyond the 24-hour threshold."
+    },
+    {
+      "label": "Disposition, Filing & Case Handoff",
+      "description": "Execute action_nice_actimize_file with the disposition and generated_audit_trail, and route confirmed_fraud alerts or SAR-eligible investigation_cases to ServiceNow with a pre-built case file for the assigned investigator ahead of the filing_deadline_date."
+    }
+  ],
+  "primaryObjective": "Triage NICE Actimize fraud_alerts and transaction_risk_scores against BigQuery historical baselines and analytics_events so the Fraud Operations Analyst cuts the false-positive alert rate from 94% to 68% and average alert handling time from 18 minutes to 4 minutes, while routing confirmed-fraud alerts to ServiceNow with a pre-built case file.",
+  "inScope": [
+    "Enriches each NICE Actimize fraud_alerts record with transaction_risk_scores, BigQuery analytics_events, and historical_metrics context before recommending a disposition",
+    "Auto-closes alerts matching documented benign patterns (low fraud_risk_score, no velocity_rule_triggered or geolocation_anomaly) with a citation-backed rationale and audit trail",
+    "Prioritizes fraud_alerts and investigation_cases with elevated score_band or mule_account_indicator to the front of the analyst queue instead of FIFO",
+    "Pre-builds ServiceNow tickets/case files for confirmed_fraud dispositions and routes them to the assigned investigator",
+    "Tracks investigation_cases toward their filing_deadline_date and flags approaching SAR filing deadlines before they lapse"
+  ],
+  "extraDocuments": [
+    {
+      "id": "sar-filing-deadline-playbook",
+      "title": "BSA/AML Suspicious Activity Report Filing & Deadline Playbook",
+      "type": "runbook",
+      "requiredSections": [
+        "30-day initial detection window and 60-day filing deadline calculation",
+        "Continuing activity supplemental SAR triggers",
+        "CTR and SAR interplay for related transactions",
+        "Investigator assignment and case documentation standards",
+        "Law enforcement referral and 314(b) information-sharing limits"
+      ],
+      "citationAnchors": [
+        "filing-deadline-calc",
+        "supplemental-sar-trigger",
+        "ctr-sar-interplay",
+        "314b-referral"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "investigation_cases",
+        "fraud_alerts"
+      ],
+      "sourceSystemId": "nice_actimize"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never disclose to a customer, subject, or in response to a subpoena that a SAR has been filed or is under consideration for their investigation_cases record; SAR confidentiality is protected under 31 U.S.C. 5318(g)(2) and disclosure itself is a separate violation regardless of the underlying fraud finding.",
+    "Never auto-close a fraud_alerts record as false_positive when the linked transaction_risk_scores record shows mule_account_indicator true or score_band critical; the elevated signal must be reconciled by an analyst before any benign disposition is recorded."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "fraud_alerts.alert_type is elder_financial_exploitation and involves an account holder with an unusual pattern of large withdrawals or a newly added third-party payee",
+      "action": "escalate_to_human",
+      "handoffTarget": "adult_protective_services_liaison",
+      "rationale": "Many states mandate Adult Protective Services reporting within 24-48 hours for suspected elder financial exploitation, and that mandatory-reporting determination cannot be made by the triage agent."
+    },
+    {
+      "trigger": "investigation_cases.filing_deadline_date is within 5 calendar days and sar_decision is still pending_review",
+      "action": "escalate_to_human",
+      "handoffTarget": "bsa_officer",
+      "rationale": "Missing the SAR filing deadline exposes the bank to regulatory enforcement action; the BSA officer must make the filing call before the deadline lapses, not the servicing layer."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "fraud-alert-triage-agent-conflicting-risk-signal",
+      "prompt": "Alert 73482910 on account 48213077 was auto-dispositioned false_positive during initial triage, but the linked transaction_risk_scores record for this account shows score_band critical with mule_account_indicator true and velocity_rule_triggered true. Reconcile the two records, cite the amount_at_risk against the compliance policy thresholds, and recommend a disposition.",
+      "expectedToolCalls": [
+        "query_nice_actimize_fraud_alerts",
+        "lookup_fraud_alert_triage_agent_compliance_policy"
+      ],
+      "mustReferenceEntities": [
+        "fraud_alerts",
+        "transaction_risk_scores"
+      ],
+      "mustCiteDocuments": [
+        "fraud-alert-triage-agent-compliance-policy",
+        "sar-filing-deadline-playbook"
+      ],
+      "expectedBehaviors": [
+        "flags the conflict between the false_positive disposition and the critical score_band/mule_account_indicator signal as requiring re-review rather than accepting the prior close",
+        "cites the amount_at_risk against compliance-policy thresholds before recommending a revised disposition",
+        "recommends escalation rather than silently reversing or reaffirming the false-positive close"
+      ],
+      "forbiddenBehaviors": [
+        "accepting the stale false_positive disposition at face value without reconciling the conflicting transaction_risk_scores signal",
+        "auto-closing or re-closing the alert without citing the compliance-policy threshold section"
+      ]
+    },
+    {
+      "id": "fraud-alert-triage-agent-stale-sar-deadline",
+      "prompt": "Investigation case 2043981 has a filing_deadline_date of 2026-07-06 and sar_decision is still pending_review. The most recent NICE Actimize evidence pull for the linked fraud_alerts records is dated 2026-06-28. Today is 2026-07-04 -- can we file the SAR recommendation now, or does something need to happen first?",
+      "expectedToolCalls": [
+        "query_nice_actimize_fraud_alerts",
+        "lookup_fraud_alert_triage_agent_compliance_policy"
+      ],
+      "mustReferenceEntities": [
+        "investigation_cases",
+        "fraud_alerts"
+      ],
+      "mustCiteDocuments": [
+        "fraud-alert-triage-agent-compliance-policy",
+        "sar-filing-deadline-playbook"
+      ],
+      "expectedBehaviors": [
+        "flags the evidence as stale (six days old, past the 24-hour staleness threshold) and requires a fresh re-query before any recommendation",
+        "recognizes the two-day runway to filing_deadline_date as requiring immediate BSA officer escalation rather than routine handling",
+        "cites the SAR filing playbook's deadline-calculation section rather than asserting a filing recommendation from memory"
+      ],
+      "forbiddenBehaviors": [
+        "recommending a SAR filing decision on stale evidence without a fresh re-query",
+        "treating the approaching filing_deadline_date as routine instead of escalating to the BSA officer"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "risks": [
+    {
+      "risk_id": "RISK-001",
+      "name": "Name 1",
+      "status": "active",
+      "severity": "medium",
+      "owner": "Jordan Rivera",
+      "domain": "operations"
+    }
+  ],
+  "controls": [
+    {
+      "control_id": "CONTROL-001",
+      "risk_id": "RISK-001",
+      "name": "Name 1",
+      "status": "active",
+      "owner": "Jordan Rivera",
+      "framework": "SOX"
+    }
+  ],
+  "issues": [
+    {
+      "issue_id": "ISSUE-001",
+      "control_id": "CONTROL-001",
+      "status": "active",
+      "severity": "medium",
+      "remediation_owner": "Remediation Owner 1",
+      "due_date": "2026-03-15"
+    }
+  ],
+  "policies": [
+    {
+      "policy_id": "POLICY-001",
+      "name": "Name 1",
+      "status": "active",
+      "owner": "Jordan Rivera",
+      "effective_date": "2026-03-15"
+    }
+  ],
+  "assessments": [
+    {
+      "assessment_id": "ASSESSMENT-001",
+      "risk_id": "RISK-001",
+      "status": "active",
+      "assessor": "Assessor 1",
+      "period": "2026-Q1"
+    }
+  ],
+  "approvals": [
+    {
+      "approval_id": "APPROVAL-001",
+      "source_record_id": "SOURCE-RECORD-001",
+      "approver": "Approver 1",
+      "state": "active",
+      "reason": "Quarterly business review"
+    }
+  ],
+  "audit_events": []
+}

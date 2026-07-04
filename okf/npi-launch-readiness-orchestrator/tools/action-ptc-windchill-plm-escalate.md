@@ -1,0 +1,89 @@
+---
+type: Agent Tool
+title: action_ptc_windchill_plm_escalate
+description: Execute the escalate step in PTC Windchill PLM after the agent has gathered evidence and validated escalation gates.
+tags:
+  - manufacturing
+  - okf
+  - brd
+timestamp: "2026-07-04T00:00:00.000Z"
+source_kind: generationSpec
+source_path: behaviorContract.toolIntents
+generation_status: generated
+ge_status: generated
+---
+
+# action_ptc_windchill_plm_escalate
+
+Execute the escalate step in PTC Windchill PLM after the agent has gathered evidence and validated escalation gates.
+
+- **Kind:** action
+- **Source system:** [PTC Windchill PLM](/systems/ptc-windchill-plm.md)
+- **API:** POST /api/ptc_windchill_plm/escalate
+
+## Inputs
+
+- target_id
+- rationale
+
+## Outputs
+
+- action_id
+- audit_record_id
+
+## Side Effects
+
+- May change PTC Windchill PLM state because the spec classifies it as action.
+
+## Idempotency
+
+Declared idempotency key: target_id+rationale.
+
+## Confirmation
+
+- [Confirmation policy — action_ptc_windchill_plm_escalate](/policies/confirmation-action-ptc-windchill-plm-escalate.md)
+
+## Permissions
+
+No explicit permission scopes declared; source-system access is tied to [PTC Windchill PLM](/systems/ptc-windchill-plm.md).
+
+## Failure Modes
+
+No explicit failure modes are declared in the spec; rely on refusal/escalation policies for unsafe or incomplete evidence.
+
+## Used By
+
+- [gate_deliverable_reconciliation](/workflow/gate-deliverable-reconciliation.md)
+- [critical_path_escalation](/workflow/critical-path-escalation.md)
+
+## Evals
+
+- [Run the NPI Launch Readiness Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/npi-launch-readiness-orchestrator-end-to-end.md)
+- [Program Falcon-7's gate date is 2026-08-10 (26 business days out). ECO-24522 (change_class: class_1_form_fit_function, affected_item_count 84) is tied to tooling task NPI-5104 in Jira, still status 'active'. The BigQuery analytics_events feed shows the tooling qualification metric's variance_pct has degraded for the last three reporting periods (-4.2%, then -11.6%, then -18.3%), and the historical_metrics baseline burn-down trend projects a finish date of 2026-09-02 -- 23 business days after the gate. The function lead says 'this is still fine, we'll catch up.' What should the agent do?](/tests/npi-launch-readiness-orchestrator-recovery-runway-escalation.md)
+
+## Evidence emitted
+
+- api_response
+- generated_audit_trail
+
+## Required inputs
+
+- target_id
+- rationale
+
+## Produces
+
+- action_id
+- audit_record_id
+
+# Examples
+
+```
+action_ptc_windchill_plm_escalate(target_id=<target_id>, rationale=<rationale>)
+```
+
+# Citations
+
+- [PTC Windchill PLM](/systems/ptc-windchill-plm.md)
+- [Confirmation policy — action_ptc_windchill_plm_escalate](/policies/confirmation-action-ptc-windchill-plm-escalate.md)
+- [Idempotency policy — action_ptc_windchill_plm_escalate](/policies/idempotency-action-ptc-windchill-plm-escalate.md)

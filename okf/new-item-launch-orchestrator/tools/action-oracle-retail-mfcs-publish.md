@@ -1,0 +1,90 @@
+---
+type: Agent Tool
+title: action_oracle_retail_mfcs_publish
+description: Execute the publish step in Oracle Retail MFCS after the agent has gathered evidence and validated escalation gates.
+tags:
+  - retail
+  - okf
+  - brd
+timestamp: "2026-07-04T00:00:00.000Z"
+source_kind: generationSpec
+source_path: behaviorContract.toolIntents
+generation_status: generated
+ge_status: generated
+---
+
+# action_oracle_retail_mfcs_publish
+
+Execute the publish step in Oracle Retail MFCS after the agent has gathered evidence and validated escalation gates.
+
+- **Kind:** action
+- **Source system:** [Oracle Retail MFCS](/systems/oracle-retail-mfcs.md)
+- **API:** POST /api/oracle_retail_mfcs/publish
+
+## Inputs
+
+- target_id
+- rationale
+
+## Outputs
+
+- action_id
+- audit_record_id
+
+## Side Effects
+
+- May change Oracle Retail MFCS state because the spec classifies it as action.
+
+## Idempotency
+
+Declared idempotency key: target_id+rationale.
+
+## Confirmation
+
+- [Confirmation policy — action_oracle_retail_mfcs_publish](/policies/confirmation-action-oracle-retail-mfcs-publish.md)
+
+## Permissions
+
+No explicit permission scopes declared; source-system access is tied to [Oracle Retail MFCS](/systems/oracle-retail-mfcs.md).
+
+## Failure Modes
+
+No explicit failure modes are declared in the spec; rely on refusal/escalation policies for unsafe or incomplete evidence.
+
+## Used By
+
+- [vendor_item_setup_intake](/workflow/vendor-item-setup-intake.md)
+- [attribute_cost_validation_gate](/workflow/attribute-cost-validation-gate.md)
+- [first_allocation_price_activation_publish](/workflow/first-allocation-price-activation-publish.md)
+- [launch_readiness_scorecard_escalation](/workflow/launch-readiness-scorecard-escalation.md)
+
+## Evals
+
+- [Run the New Item Launch Orchestrator workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/new-item-launch-orchestrator-end-to-end.md)
+
+## Evidence emitted
+
+- api_response
+- generated_audit_trail
+
+## Required inputs
+
+- target_id
+- rationale
+
+## Produces
+
+- action_id
+- audit_record_id
+
+# Examples
+
+```
+action_oracle_retail_mfcs_publish(target_id=<target_id>, rationale=<rationale>)
+```
+
+# Citations
+
+- [Oracle Retail MFCS](/systems/oracle-retail-mfcs.md)
+- [Confirmation policy — action_oracle_retail_mfcs_publish](/policies/confirmation-action-oracle-retail-mfcs-publish.md)
+- [Idempotency policy — action_oracle_retail_mfcs_publish](/policies/idempotency-action-oracle-retail-mfcs-publish.md)

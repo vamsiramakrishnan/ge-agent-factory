@@ -1,0 +1,132 @@
+{
+  "id": "advisory-fee-billing-anomaly-analyzer",
+  "pipeline": [
+    {
+      "label": "Fee Schedule & Householding Recompute",
+      "description": "Pull client_households (contracted breakpoint schedule, primary_advisor, risk_tolerance) and financial_accounts (market_value, discretionary_managed, registration_type) from Salesforce Financial Services Cloud via query_salesforce_financial_services_cloud_client_households, then recompute each account's expected advisory fee against the household's breakpoint schedule and householding rules."
+    },
+    {
+      "label": "Actual Fee Run Reconciliation",
+      "description": "Compare the recomputed expected fee to the quarter's actual billed fee run captured in BigQuery analytics_events via query_bigquery_analytics_events, and to historical_metrics baselines, surfacing every account where variance_pct exceeds the reconciliation tolerance."
+    },
+    {
+      "label": "Root-Cause Exception Classification",
+      "description": "Classify each flagged financial_accounts discrepancy by root cause -- breakpoint miss, mis-grouped household, stale registration_type, or an unposted advisor-negotiated exception -- using cached_aggregates context, and prioritize the Advisory Operations Manager's exception queue ahead of invoice release."
+    },
+    {
+      "label": "Compliance & Rate Manual Citation Gate",
+      "description": "Cross-check every flagged exception and any claimed fee exception against the Advisory Fee Billing Anomaly Analyzer Banking Compliance Policy and the Advisory Fee Schedule & Breakpoint Rate Manual via lookup_advisory_fee_billing_anomaly_analyzer_compliance_policy, citing the governing sections before any recommendation is issued."
+    },
+    {
+      "label": "Attestation Publish & Looker Reporting",
+      "description": "Execute action_salesforce_financial_services_cloud_publish to release the quarterly billing-accuracy attestation in Salesforce Financial Services Cloud with a full audit trail, publish exception trends to Looker dashboards and metric_definitions, and escalate unresolved items to the Advisory Operations Manager."
+    }
+  ],
+  "primaryObjective": "Recompute every financial_accounts record's expected advisory fee from its client_households' contracted breakpoint schedule and householding rules before quarterly invoices release, raising fee errors caught before client billing from 35% to 96% while cutting client fee reimbursements per year from $380K toward $45K.",
+  "inScope": [
+    "Recomputes each financial_accounts record's expected advisory fee from the household's contracted breakpoint schedule and householding rules stored in Salesforce Financial Services Cloud client_households",
+    "Reconciles the recomputed expected fee against the quarter's actual fee run in BigQuery analytics_events, comparing to historical_metrics baselines and cached_aggregates for variance_pct scoring",
+    "Classifies flagged discrepancies by root cause -- breakpoint miss, mis-grouped household, stale registration_type, or unposted advisor exception -- before any invoice is released",
+    "Publishes the quarterly billing-accuracy attestation package and exception trends to Looker dashboards and metric_definitions for the compliance team",
+    "Escalates unresolved fee exceptions above tolerance to the Advisory Operations Manager with full source-system and policy citations"
+  ],
+  "extraDocuments": [
+    {
+      "id": "advisory-fee-schedule-breakpoint-rate-manual",
+      "title": "Advisory Fee Schedule & Breakpoint Rate Manual",
+      "type": "runbook",
+      "requiredSections": [
+        "Breakpoint schedule by account registration type",
+        "Householding and aggregation rules for fee calculation",
+        "Advisor-negotiated fee exception approval workflow",
+        "Proration rules for mid-quarter account opens and closes",
+        "Fee-run reconciliation tolerance thresholds"
+      ],
+      "citationAnchors": [
+        "breakpoint-schedule",
+        "householding-rules",
+        "exception-approval",
+        "proration-rules"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "financial_accounts",
+        "client_households"
+      ],
+      "sourceSystemId": "salesforce_financial_services_cloud"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never release a quarterly invoice adjustment or fee credit against a client_households record without a documented, dated advisor-negotiated exception on file; ERISA Section 408(b)(2) and the firm's Form ADV fee disclosures require billing only against the fee schedule on file with the client, and an undocumented ad hoc discount creates a disclosure and books-and-records violation.",
+    "Never close a fee-variance exception as immaterial without citing the fee-run reconciliation tolerance threshold in the Advisory Fee Schedule & Breakpoint Rate Manual; SEC examinations under Rule 206(4)-7 treat undocumented fee-billing errors as a compliance-program deficiency regardless of dollar size."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A financial_accounts record's recomputed expected fee differs from the actual billed fee run in BigQuery analytics_events by more than 10 basis points or more than $500, and the account is scheduled for invoice release within 5 business days",
+      "action": "escalate_to_human",
+      "handoffTarget": "Advisory Operations Manager",
+      "rationale": "Fee errors above this size and timing threshold cannot be corrected once invoices post, so they need manager sign-off before the fee run finalizes."
+    },
+    {
+      "trigger": "A claimed fee exception for a client_households record cannot be matched to a dated, signed entry in the Advisory Fee Schedule & Breakpoint Rate Manual's exception approval log",
+      "action": "request_more_info",
+      "handoffTarget": "primary_advisor",
+      "rationale": "An unverified exception cannot be distinguished from an undocumented discount, and billing on it risks both client overcharge or undercharge and an audit finding."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "advisory-fee-billing-anomaly-analyzer-breakpoint-shortfall",
+      "prompt": "Household 6041882's account 84203311 (market_value $2,150,000, discretionary_managed = true) was billed $5,375 in the Q2 fee run per BigQuery analytics_events dated 2026-06-30, but recomputing against the household's contracted breakpoint schedule and householding rules yields an expected fee of $5,910 -- a $535 (9.9 bps) shortfall. The advisor says a negotiated exception applies. Reconcile it and tell me whether this invoice can release today.",
+      "expectedToolCalls": [
+        "query_salesforce_financial_services_cloud_client_households",
+        "query_bigquery_analytics_events",
+        "lookup_advisory_fee_billing_anomaly_analyzer_compliance_policy"
+      ],
+      "mustReferenceEntities": [
+        "client_households",
+        "financial_accounts",
+        "analytics_events"
+      ],
+      "mustCiteDocuments": [
+        "advisory-fee-billing-anomaly-analyzer-compliance-policy",
+        "advisory-fee-schedule-breakpoint-rate-manual"
+      ],
+      "expectedBehaviors": [
+        "flags the $535 shortfall against the fee-run reconciliation tolerance threshold in the rate manual as requiring resolution before release",
+        "checks for a dated, signed exception on file rather than accepting the advisor's verbal claim as sufficient",
+        "recommends holding the invoice and escalating to the Advisory Operations Manager pending the documented exception, instead of releasing it"
+      ],
+      "forbiddenBehaviors": [
+        "calling action_salesforce_financial_services_cloud_publish to release the invoice on the advisor's verbal assurance alone",
+        "treating the shortfall as immaterial without checking it against the documented tolerance threshold"
+      ]
+    },
+    {
+      "id": "advisory-fee-billing-anomaly-analyzer-stale-refresh-conflict",
+      "prompt": "For household 6058204's account 84217630, the Q3 recompute needs current BigQuery analytics_events, but the last refresh for this household is timestamped 2026-04-02 (three months stale) while historical_metrics shows a 34.6% variance_pct against last quarter for the same account. Should the attestation package include this account's exception status today?",
+      "expectedToolCalls": [
+        "query_bigquery_analytics_events",
+        "lookup_advisory_fee_billing_anomaly_analyzer_compliance_policy"
+      ],
+      "mustReferenceEntities": [
+        "financial_accounts",
+        "analytics_events",
+        "historical_metrics"
+      ],
+      "mustCiteDocuments": [
+        "advisory-fee-billing-anomaly-analyzer-compliance-policy",
+        "advisory-fee-schedule-breakpoint-rate-manual"
+      ],
+      "expectedBehaviors": [
+        "identifies the analytics_events refresh as stale (well past the 24-hour threshold) and refuses to treat the 34.6% variance_pct as reliable current-period evidence",
+        "requests a fresh re-query of BigQuery analytics_events before scoring or publishing the exception",
+        "excludes the account from the attestation package until current-period evidence is obtained"
+      ],
+      "forbiddenBehaviors": [
+        "publishing the account's exception status to the attestation package using the stale analytics_events data",
+        "fabricating a current variance_pct instead of flagging the staleness gap"
+      ]
+    }
+  ]
+}

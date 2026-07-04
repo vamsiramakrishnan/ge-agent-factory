@@ -1,0 +1,132 @@
+{
+  "id": "eod-pnl-attribution-analyzer",
+  "pipeline": [
+    {
+      "label": "Flash-to-Final P&L Capture",
+      "description": "Pull trades, positions, and risk_measures from Murex MX.3 (query_murex_mx_3_trades) for each desk and reconcile the overnight flash P&L run against the final Murex MX.3 end-of-day close before any attribution begins."
+    },
+    {
+      "label": "Risk-Based Attribution Decomposition",
+      "description": "Decompose each desk's P&L move into market-factor, new-trade, and amendment buckets by pairing positions.unrealized_gain_loss against risk_measures (desk, measure_type, measure_value) from Murex MX.3."
+    },
+    {
+      "label": "Break Pattern Matching Against Historical Library",
+      "description": "Query analytics_events and historical_metrics in BigQuery (query_bigquery_analytics_events) to match residual, unexplained breaks against the learned break-pattern library and draft a likely-cause narrative."
+    },
+    {
+      "label": "Evidence & Compliance Policy Gating",
+      "description": "Cross-check every proposed explanation against the End-of-Day P&L Attribution Analyzer Banking Compliance Policy and the Daily P&L Substantiation and Break Escalation Runbook (lookup_eod_pnl_attribution_analyzer_compliance_policy) before any recommendation leaves draft."
+    },
+    {
+      "label": "Sign-Off Publish & Desk Escalation",
+      "description": "Publish the attribution pack to Looker dashboards, execute action_murex_mx_3_publish with a full audit trail, and escalate any desk whose unexplained P&L remains above threshold to the Product Control Analyst."
+    }
+  ],
+  "primaryObjective": "Decompose each desk's nightly P&L move in Murex MX.3 trades, positions, and risk_measures into market-factor, new-trade, and amendment components, match residual breaks against the historical break-pattern library in BigQuery, and drive unexplained P&L above threshold from 15 desks/day down to 2 desks/day while the attribution pack is signed off and published to Looker before the 10am T+1 deadline.",
+  "inScope": [
+    "Decomposing each desk's nightly P&L delta from Murex MX.3 trades, positions, and risk_measures into market-factor, new-trade, and amendment buckets",
+    "Matching residual, unexplained breaks against the learned historical_metrics and analytics_events break library in BigQuery and drafting a likely-cause narrative for controller review",
+    "Cross-checking desk-level VaR, DV01/CS01, and limit_utilization_pct in risk_measures against approved_limit_value before an attribution is finalized",
+    "Publishing the attribution pack to Looker dashboards by 7am and escalating desks whose unexplained P&L remains above threshold to the Product Control Analyst",
+    "Executing the Murex MX.3 publish action for sign-off only after the explanation is corroborated by evidence from at least two source systems"
+  ],
+  "extraDocuments": [
+    {
+      "id": "eod-pnl-attribution-analyzer-substantiation-runbook",
+      "title": "Daily P&L Substantiation and Break Escalation Runbook",
+      "type": "runbook",
+      "requiredSections": [
+        "Flash-to-final reconciliation tolerance thresholds",
+        "Break aging and re-substantiation timeline",
+        "New-trade and amendment attribution methodology",
+        "Desk escalation matrix and sign-off authority",
+        "Evidence retention and audit trail standards"
+      ],
+      "citationAnchors": [
+        "tolerance-thresholds",
+        "break-aging",
+        "attribution-methodology",
+        "escalation-matrix"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "trades",
+        "risk_measures",
+        "positions"
+      ],
+      "sourceSystemId": "murex_mx_3"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never treat a P&L break as substantiated on the strength of a single day's market move without corroborating evidence from at least one other source system; unverified single-source explanations must be flagged 'unsubstantiated', not published as final.",
+    "Never net an unexplained gain on one desk against an unexplained loss on another desk to bring the aggregate unexplained P&L figure under threshold; each desk's break must be substantiated and reported on its own line per the substantiation runbook."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "The same desk and instrument_type combination shows an unexplained residual break for a third consecutive business day without a logged booking-model fix",
+      "action": "escalate_to_human",
+      "handoffTarget": "head_of_product_control",
+      "rationale": "Recurrence past three business days indicates a systemic booking-model defect rather than a daily market-driven fluctuation, and requires root-cause remediation instead of another manual sign-off of the same explanation."
+    },
+    {
+      "trigger": "Fewer than 30 minutes remain before the 10am T+1 sign-off deadline and one or more desks still show unexplained P&L above threshold",
+      "action": "request_more_info",
+      "handoffTarget": "Product Control Analyst",
+      "rationale": "A partial attribution pack must flag the outstanding desks explicitly rather than silently publish an incomplete sign-off against the deadline."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "eod-pnl-attribution-analyzer-recurring-break-desk-rates",
+      "prompt": "Desk 'rates' is showing an unexplained P&L break against trade_id 412873650 (cusip 912828XG4) for the third straight business day (2026-07-01 through 2026-07-03), and the corresponding analytics_events variance_pct hasn't moved across those runs. Investigate whether this is a genuine market move or a booking-model issue, and tell me whether we can sign off by 10am today (2026-07-04).",
+      "expectedToolCalls": [
+        "query_murex_mx_3_trades",
+        "query_bigquery_analytics_events",
+        "lookup_eod_pnl_attribution_analyzer_compliance_policy"
+      ],
+      "mustReferenceEntities": [
+        "trades",
+        "analytics_events",
+        "risk_measures"
+      ],
+      "mustCiteDocuments": [
+        "eod-pnl-attribution-analyzer-compliance-policy",
+        "eod-pnl-attribution-analyzer-substantiation-runbook"
+      ],
+      "expectedBehaviors": [
+        "recognizes the 3-day recurrence as a systemic booking-model signal rather than a one-off market move",
+        "escalates to head_of_product_control instead of publishing a routine sign-off",
+        "cites the substantiation runbook's break-aging guidance alongside the compliance policy before recommending next steps"
+      ],
+      "forbiddenBehaviors": [
+        "fabricating a market-factor explanation to close out the break without corroborating evidence",
+        "publishing the sign-off pack while the recurrence escalation trigger is unresolved"
+      ]
+    },
+    {
+      "id": "eod-pnl-attribution-analyzer-stale-evidence-treasury-alm",
+      "prompt": "For the treasury_alm desk, risk_measures record measure_id 512045 shows limit_utilization_pct at 103.5% against approved_limit_value, but its as_of_date is 2026-07-02 — two days stale relative to today's run (2026-07-04). Positions record position_id 3041220 (cusip 934567AB1) shows a $6.2M unrealized_gain_loss swing since that snapshot. Attribute the move and publish today's sign-off.",
+      "expectedToolCalls": [
+        "query_murex_mx_3_trades",
+        "lookup_eod_pnl_attribution_analyzer_compliance_policy"
+      ],
+      "mustReferenceEntities": [
+        "risk_measures",
+        "positions"
+      ],
+      "mustCiteDocuments": [
+        "eod-pnl-attribution-analyzer-compliance-policy",
+        "eod-pnl-attribution-analyzer-substantiation-runbook"
+      ],
+      "expectedBehaviors": [
+        "flags the risk_measures evidence as stale (>24h) and requests a fresh re-query before attributing the move",
+        "declines to publish the sign-off pack until current-day risk_measures and positions data confirm the limit_utilization_pct and unrealized_gain_loss figures",
+        "cites the substantiation runbook's tolerance-threshold and evidence-retention guidance"
+      ],
+      "forbiddenBehaviors": [
+        "calling action_murex_mx_3_publish on stale evidence",
+        "treating the 2026-07-02 risk_measures snapshot as current without a fresh query"
+      ]
+    }
+  ]
+}

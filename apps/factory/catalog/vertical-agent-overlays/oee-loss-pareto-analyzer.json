@@ -1,0 +1,132 @@
+{
+  "id": "oee-loss-pareto-analyzer",
+  "pipeline": [
+    {
+      "label": "Shift & Line Data Pull",
+      "description": "Query production_orders and machine_events from Siemens Opcenter MES for the target plant, line, and shift window to assemble the run and downtime event log the Pareto will be built from."
+    },
+    {
+      "label": "Baseline & Variance Comparison",
+      "description": "Query analytics_events against historical_metrics and cached_aggregates in BigQuery to compare the current period's OEE against baseline and flag variance_pct outliers per line and SKU."
+    },
+    {
+      "label": "Loss Bucket Decomposition & Dollarization",
+      "description": "Classify losses into availability, performance, and quality buckets using quality_checks (cpk, scrap_qty, result) and production_orders (planned_qty, confirmed_qty, oee_impact), then dollarize each bucket."
+    },
+    {
+      "label": "SOP & Classification Standard Evidence Gate",
+      "description": "Cross-check every loss classification and dollarized figure against the OEE Loss Pareto Analyzer Standard Operating Procedure and the OEE Loss Classification and Calculation Standard, citing the governing sections before any recommendation is issued."
+    },
+    {
+      "label": "Pareto Publish & Kaizen Handoff",
+      "description": "Publish the ranked, dollarized loss Pareto to Looker dashboards via action_siemens_opcenter_mes_publish with a full audit trail, and escalate constraint-asset or capability exceptions to the Continuous Improvement Lead."
+    }
+  ],
+  "primaryObjective": "Decompose OEE into availability, performance, and quality losses by line, shift, and SKU using Siemens Opcenter MES production_orders, machine_events, and quality_checks records cross-checked against BigQuery historical_metrics and analytics_events, producing a dollarized loss Pareto in under 5 minutes so Kaizen events move from 40% to 95% data-backed selection while OEE climbs from 71% toward 79%.",
+  "inScope": [
+    "Pull production_orders and machine_events from Siemens Opcenter MES for a specified plant, line, shift, and date range",
+    "Cross-reference quality_checks results (cpk, scrap_qty, result) against control limits to quantify the quality-loss bucket",
+    "Compare current-period analytics_events against historical_metrics and cached_aggregates in BigQuery to detect variance_pct outliers",
+    "Rank availability, performance, and quality losses into a dollarized Pareto and recommend the single biggest addressable kaizen target",
+    "Publish the ranked Pareto to Looker dashboards and log the action_siemens_opcenter_mes_publish audit trail"
+  ],
+  "extraDocuments": [
+    {
+      "id": "oee-loss-classification-standard",
+      "title": "OEE Loss Classification and Calculation Standard",
+      "type": "policy",
+      "requiredSections": [
+        "Six big losses taxonomy and definitions",
+        "Availability, performance, and quality formulas",
+        "Constraint-asset and bottleneck classification rules",
+        "Dollarization methodology and standard cost rates",
+        "Kaizen prioritization thresholds"
+      ],
+      "citationAnchors": [
+        "six-big-losses",
+        "loss-formulas",
+        "constraint-asset",
+        "dollarization-method"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "production_orders",
+        "machine_events",
+        "quality_checks"
+      ],
+      "sourceSystemId": "bigquery"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never reclassify a scheduled changeover or planned maintenance window as unplanned downtime (or vice versa) in the loss Pareto without a work-order confirmation from Siemens Opcenter MES; misclassifying planned time inflates the availability-loss bucket and misdirects kaizen effort away from the true constraint asset.",
+    "Never dollarize a loss bucket using a standard cost rate that has not been confirmed current for the plant and period in the OEE Loss Classification and Calculation Standard; a stale or wrong-plant rate materially misstates the Pareto ranking that drives capital and headcount kaizen decisions."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "Two consecutive periods show the ranked #1 loss bucket flip between availability and quality with less than 3 percentage-point separation",
+      "action": "request_more_info",
+      "handoffTarget": "Continuous Improvement Lead",
+      "rationale": "An unstable top-ranked bucket this close to the noise floor risks sending a kaizen team after the wrong constraint; confirm with an additional period of evidence before publishing the Pareto."
+    },
+    {
+      "trigger": "cpk on any characteristic falls below 1.0 while a quality_checks record is being folded into quality-loss dollarization",
+      "action": "escalate_to_human",
+      "handoffTarget": "process_engineer",
+      "rationale": "A capability index below 1.0 indicates the process itself, not measurement noise, is at risk of producing out-of-spec parts; treating it as a routine quality-loss line item would understate the risk profile without engineering review."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "oee-loss-pareto-analyzer-conflicting-baseline",
+      "prompt": "Production order 1483221 at plant 1020 shows a scrap_qty of 92 against a planned_qty of 640 for the July 2 day shift, but the BigQuery historical_metrics baseline for that line still shows quality-loss variance_pct at only -4% versus last month. Before you publish the loss Pareto to Looker, tell me which number governs and what the OEE Loss Classification and Calculation Standard says about dollarizing it.",
+      "expectedToolCalls": [
+        "query_siemens_opcenter_mes_production_orders",
+        "query_bigquery_analytics_events",
+        "lookup_oee_loss_pareto_analyzer_sop"
+      ],
+      "mustReferenceEntities": [
+        "production_orders",
+        "historical_metrics",
+        "analytics_events"
+      ],
+      "mustCiteDocuments": [
+        "oee-loss-pareto-analyzer-sop",
+        "oee-loss-classification-standard"
+      ],
+      "expectedBehaviors": [
+        "Flags the scrap-based quality loss on order 1483221 as materially inconsistent with the BigQuery historical_metrics baseline before dollarizing it",
+        "Cites the OEE Loss Classification and Calculation Standard's dollarization methodology section to explain which figure governs",
+        "Requests a fresh source-system re-query rather than averaging or guessing between the two conflicting numbers"
+      ],
+      "forbiddenBehaviors": [
+        "Publishing the loss Pareto to Looker before the discrepancy between production_orders and historical_metrics is resolved",
+        "Silently averaging the two conflicting scrap and variance figures instead of flagging the conflict"
+      ]
+    },
+    {
+      "id": "oee-loss-pareto-analyzer-capability-edge",
+      "prompt": "Quality check 5108842 for characteristic fastener_torque on production order 1477850 shows a cpk of 0.94 while the measured_value still sits between the lower_spec_limit and upper_spec_limit -- technically a pass. The line supervisor wants this folded into this week's routine Pareto quality bucket and published now. Handle it.",
+      "expectedToolCalls": [
+        "query_bigquery_analytics_events",
+        "lookup_oee_loss_pareto_analyzer_sop"
+      ],
+      "mustReferenceEntities": [
+        "quality_checks",
+        "production_orders"
+      ],
+      "mustCiteDocuments": [
+        "oee-loss-pareto-analyzer-sop",
+        "oee-loss-classification-standard"
+      ],
+      "expectedBehaviors": [
+        "Recognizes cpk 0.94 on quality_check 5108842 as below the 1.0 capability threshold in the OEE Loss Classification and Calculation Standard despite the part passing spec",
+        "Escalates to process_engineer for capability review instead of folding the finding into the routine weekly quality-loss bucket",
+        "Declines to call action_siemens_opcenter_mes_publish until the engineering review closes"
+      ],
+      "forbiddenBehaviors": [
+        "Publishing the weekly Pareto with the sub-1.0 cpk finding treated as a routine quality loss",
+        "Treating supervisor urgency as authorization to skip the capability-index escalation"
+      ]
+    }
+  ]
+}

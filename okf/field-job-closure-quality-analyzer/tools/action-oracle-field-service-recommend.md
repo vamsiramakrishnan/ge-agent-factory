@@ -1,0 +1,91 @@
+---
+type: Agent Tool
+title: action_oracle_field_service_recommend
+description: Execute the recommend step in Oracle Field Service after the agent has gathered evidence and validated escalation gates.
+tags:
+  - telco
+  - okf
+  - brd
+timestamp: "2026-07-04T00:00:00.000Z"
+source_kind: generationSpec
+source_path: behaviorContract.toolIntents
+generation_status: generated
+ge_status: generated
+---
+
+# action_oracle_field_service_recommend
+
+Execute the recommend step in Oracle Field Service after the agent has gathered evidence and validated escalation gates.
+
+- **Kind:** action
+- **Source system:** [Oracle Field Service](/systems/oracle-field-service.md)
+- **API:** POST /api/oracle_field_service/recommend
+
+## Inputs
+
+- target_id
+- rationale
+
+## Outputs
+
+- action_id
+- audit_record_id
+
+## Side Effects
+
+- May change Oracle Field Service state because the spec classifies it as action.
+
+## Idempotency
+
+Declared idempotency key: target_id+rationale.
+
+## Confirmation
+
+- [Confirmation policy — action_oracle_field_service_recommend](/policies/confirmation-action-oracle-field-service-recommend.md)
+
+## Permissions
+
+No explicit permission scopes declared; source-system access is tied to [Oracle Field Service](/systems/oracle-field-service.md).
+
+## Failure Modes
+
+No explicit failure modes are declared in the spec; rely on refusal/escalation policies for unsafe or incomplete evidence.
+
+## Used By
+
+- [closure_intake_evidence_capture](/workflow/closure-intake-evidence-capture.md)
+- [workmanship_standards_check](/workflow/workmanship-standards-check.md)
+- [repeat_dispatch_technician_trend_scoring](/workflow/repeat-dispatch-technician-trend-scoring.md)
+- [as_built_reconciliation](/workflow/as-built-reconciliation.md)
+- [coaching_correction_audit](/workflow/coaching-correction-audit.md)
+
+## Evals
+
+- [Run the Field Job Closure Quality Analyzer workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/field-job-closure-quality-analyzer-end-to-end.md)
+
+## Evidence emitted
+
+- api_response
+- generated_audit_trail
+
+## Required inputs
+
+- target_id
+- rationale
+
+## Produces
+
+- action_id
+- audit_record_id
+
+# Examples
+
+```
+action_oracle_field_service_recommend(target_id=<target_id>, rationale=<rationale>)
+```
+
+# Citations
+
+- [Oracle Field Service](/systems/oracle-field-service.md)
+- [Confirmation policy — action_oracle_field_service_recommend](/policies/confirmation-action-oracle-field-service-recommend.md)
+- [Idempotency policy — action_oracle_field_service_recommend](/policies/idempotency-action-oracle-field-service-recommend.md)

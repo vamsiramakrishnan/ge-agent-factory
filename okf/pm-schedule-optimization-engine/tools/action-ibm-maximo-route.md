@@ -1,0 +1,88 @@
+---
+type: Agent Tool
+title: action_ibm_maximo_route
+description: Execute the route step in IBM Maximo after the agent has gathered evidence and validated escalation gates.
+tags:
+  - manufacturing
+  - okf
+  - brd
+timestamp: "2026-07-04T00:00:00.000Z"
+source_kind: generationSpec
+source_path: behaviorContract.toolIntents
+generation_status: generated
+ge_status: generated
+---
+
+# action_ibm_maximo_route
+
+Execute the route step in IBM Maximo after the agent has gathered evidence and validated escalation gates.
+
+- **Kind:** action
+- **Source system:** [IBM Maximo](/systems/ibm-maximo.md)
+- **API:** POST /api/ibm_maximo/route
+
+## Inputs
+
+- target_id
+- rationale
+
+## Outputs
+
+- action_id
+- audit_record_id
+
+## Side Effects
+
+- May change IBM Maximo state because the spec classifies it as action.
+
+## Idempotency
+
+Declared idempotency key: target_id+rationale.
+
+## Confirmation
+
+- [Confirmation policy — action_ibm_maximo_route](/policies/confirmation-action-ibm-maximo-route.md)
+
+## Permissions
+
+No explicit permission scopes declared; source-system access is tied to [IBM Maximo](/systems/ibm-maximo.md).
+
+## Failure Modes
+
+No explicit failure modes are declared in the spec; rely on refusal/escalation policies for unsafe or incomplete evidence.
+
+## Used By
+
+- [pm_failure_history_pull](/workflow/pm-failure-history-pull.md)
+- [route_package_draft_planner_approval](/workflow/route-package-draft-planner-approval.md)
+
+## Evals
+
+- [Run the PM Schedule Optimization Engine workflow for the current period. Cite the relevant source-system evidence and surface any escalations required.](/tests/pm-schedule-optimization-engine-end-to-end.md)
+
+## Evidence emitted
+
+- api_response
+- generated_audit_trail
+
+## Required inputs
+
+- target_id
+- rationale
+
+## Produces
+
+- action_id
+- audit_record_id
+
+# Examples
+
+```
+action_ibm_maximo_route(target_id=<target_id>, rationale=<rationale>)
+```
+
+# Citations
+
+- [IBM Maximo](/systems/ibm-maximo.md)
+- [Confirmation policy — action_ibm_maximo_route](/policies/confirmation-action-ibm-maximo-route.md)
+- [Idempotency policy — action_ibm_maximo_route](/policies/idempotency-action-ibm-maximo-route.md)

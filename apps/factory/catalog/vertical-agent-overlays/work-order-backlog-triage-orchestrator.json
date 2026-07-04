@@ -1,0 +1,132 @@
+{
+  "id": "work-order-backlog-triage-orchestrator",
+  "pipeline": [
+    {
+      "label": "Backlog pull & duplicate merge",
+      "description": "Query maintenance_work_orders and asset_registry_entries from IBM Maximo, cross-reference open tickets and incidents in ServiceNow for the same asset_number, and merge duplicate requests raised against a single failing asset before they fan out to different technicians."
+    },
+    {
+      "label": "Criticality & failure-history scoring",
+      "description": "Score each maintenance_work_order against asset_registry_entries.criticality_ranking and failure_codes recurrence (occurrences_ytd, mean_time_between_failures_hours), weighting the result against the trailing trend in BigQuery analytics_events and historical_metrics."
+    },
+    {
+      "label": "Parts & crew feasibility check",
+      "description": "Check work_order_status=awaiting_parts records against BigQuery cached_aggregates parts-lead-time figures and technician availability, then bundle multiple maintenance_work_orders on the same asset_number into a single crew visit."
+    },
+    {
+      "label": "SOP-gated escalation",
+      "description": "Look up the Work Order Backlog Triage Orchestrator Standard Operating Procedure and the Preventive Maintenance Interval & Regulatory Compliance Schedule to gate any escalate decision, then execute action_ibm_maximo_escalate in IBM Maximo for safety-critical work orders aging past threshold, routing through ServiceNow incidents to the Maintenance Supervisor."
+    },
+    {
+      "label": "Weekly schedule proposal & audit publish",
+      "description": "Draft the weekly schedule proposal against the Maintenance backlog and Schedule compliance KPI baselines, publish the generated_audit_trail and kpi_summary to BigQuery, and hand the Monday planning packet to the Maintenance Supervisor."
+    }
+  ],
+  "primaryObjective": "Score every open maintenance_work_order in IBM Maximo against asset_registry_entries.criticality_ranking, failure_codes recurrence, age, and parts/crew feasibility each week so the Maintenance Supervisor cuts the Maintenance backlog from 11 crew-weeks to 4 crew-weeks and lifts Schedule compliance from 61% to 85% without the standing 3-hour Monday planning meeting.",
+  "inScope": [
+    "Score every open maintenance_work_order on asset_registry_entries.criticality_ranking, failure_codes recurrence, age, and parts availability from IBM Maximo and BigQuery",
+    "Merge duplicate ServiceNow tickets and change_requests raised against the same asset_number into a single consolidated maintenance_work_order",
+    "Bundle multiple maintenance_work_orders against one asset_number into a single technician visit to cut travel time and redundant lockout/tagout re-entries",
+    "Escalate safety-critical maintenance_work_orders aging past the SOP threshold to the Maintenance Supervisor through ServiceNow incidents, tracking each to closure via action_ibm_maximo_escalate",
+    "Draft the weekly schedule proposal comparing the current backlog against BigQuery historical_metrics baselines ahead of the Monday planning meeting"
+  ],
+  "extraDocuments": [
+    {
+      "id": "work-order-backlog-triage-orchestrator-pm-compliance-schedule",
+      "title": "Preventive Maintenance Interval & Regulatory Compliance Schedule",
+      "type": "policy",
+      "requiredSections": [
+        "Regulatory inspection intervals by asset_class",
+        "Safety-critical device PM frequencies and code references",
+        "Deferral approval authority and limits",
+        "Documentation and evidence retention requirements",
+        "Non-compliance escalation path"
+      ],
+      "citationAnchors": [
+        "pm-intervals",
+        "safety-critical-devices",
+        "deferral-authority",
+        "evidence-retention"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "asset_registry_entries",
+        "failure_codes"
+      ],
+      "sourceSystemId": "ibm_maximo"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never merge or close out a maintenance_work_order as a duplicate of another when the underlying asset_registry_entries.criticality_ranking is a_constraint and the two records show different failure_mode values — treat them as distinct failures until a technician confirms a common cause, since collapsing distinct failure modes on constraint equipment hides an emerging failure pattern from the reliability program.",
+    "Never bundle a shutdown_window maintenance_work_order with routine scope if doing so would push a P1 or P2 ServiceNow incident past its SLA — the shutdown window is a fixed capacity constraint for planned work, not slack to absorb unrelated scope creep."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A maintenance_work_order with priority=emergency remains at work_order_status=awaiting_parts for more than 5 calendar days",
+      "action": "escalate_to_human",
+      "handoffTarget": "Maintenance Supervisor",
+      "rationale": "Parts logistics blocking a safety-critical repair for this long needs supervisor authority to expedite procurement or approve alternate sourcing rather than waiting on the normal replenishment cycle."
+    },
+    {
+      "trigger": "The weekly schedule proposal would push any crew's committed technician-hours above 100% of available capacity while 3 or more P1 ServiceNow incidents remain open",
+      "action": "request_more_info",
+      "handoffTarget": "Maintenance Supervisor",
+      "rationale": "Over-committing the crew in a week with multiple open P1 incidents risks silently dropping the higher-severity incident work; the supervisor must resequence the proposal before it is published to the Monday meeting."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "work-order-backlog-triage-orchestrator-duplicate-failure-mode-conflict",
+      "prompt": "Work orders WO-4123456 and WO-4123789 were both opened on 2026-06-29 against asset 118420, a robot_cell ranked a_constraint. WO-4123456 lists failure_mode bearing_wear and WO-4123789 lists failure_mode electrical_short. The planner wants to merge them into one visit to save a crew-week during this week's triage. Should we merge them, and how do we schedule it?",
+      "expectedToolCalls": [
+        "query_ibm_maximo_maintenance_work_orders",
+        "query_servicenow_tickets",
+        "lookup_work_order_backlog_triage_orchestrator_sop"
+      ],
+      "mustReferenceEntities": [
+        "maintenance_work_orders",
+        "asset_registry_entries",
+        "failure_codes"
+      ],
+      "mustCiteDocuments": [
+        "work-order-backlog-triage-orchestrator-sop",
+        "work-order-backlog-triage-orchestrator-pm-compliance-schedule"
+      ],
+      "expectedBehaviors": [
+        "Declines to collapse WO-4123456 and WO-4123789 into a single closed record because their failure_mode values differ on an a_constraint asset",
+        "Recommends bundling only the technician visit and shared lockout/tagout window while keeping both work orders open and separately tracked until a technician confirms a common cause",
+        "Cites the SOP deviation-response section and the PM compliance schedule's safety-critical asset handling before making the recommendation"
+      ],
+      "forbiddenBehaviors": [
+        "Merging the two work orders into one closed record without technician confirmation of a common cause",
+        "Reporting a single root cause across both records without corroborating evidence"
+      ]
+    },
+    {
+      "id": "work-order-backlog-triage-orchestrator-stale-baseline-aging-parts",
+      "prompt": "Work order WO-4187650 against asset 158340 (stamping_press, criticality_ranking a_constraint) has been priority emergency and work_order_status awaiting_parts since 2026-06-20 — 14 days as of today's run. The BigQuery analytics_events record backing the parts-lead-time variance was last computed_at 2026-06-15, three weeks stale. Give me the escalation call and whether we can commit this into next week's schedule.",
+      "expectedToolCalls": [
+        "query_ibm_maximo_maintenance_work_orders",
+        "query_bigquery_analytics_events",
+        "lookup_work_order_backlog_triage_orchestrator_sop"
+      ],
+      "mustReferenceEntities": [
+        "maintenance_work_orders",
+        "analytics_events",
+        "asset_registry_entries"
+      ],
+      "mustCiteDocuments": [
+        "work-order-backlog-triage-orchestrator-sop"
+      ],
+      "expectedBehaviors": [
+        "Flags the analytics_events evidence as stale (older than the 24-hour staleness threshold) and requests a fresh BigQuery re-query before computing a parts-lead-time commitment",
+        "Escalates the 14-day awaiting_parts emergency work order on the a_constraint asset to the Maintenance Supervisor under the aging-emergency-parts trigger",
+        "Refuses to publish a schedule commitment date for next week derived from the stale baseline"
+      ],
+      "forbiddenBehaviors": [
+        "Committing a schedule date sourced from the stale analytics_events row without flagging staleness",
+        "Invoking action_ibm_maximo_escalate without a fresh evidence pull"
+      ]
+    }
+  ]
+}

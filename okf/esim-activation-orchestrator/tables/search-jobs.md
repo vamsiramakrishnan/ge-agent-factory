@@ -1,0 +1,27 @@
+---
+type: Data Entity
+title: search_jobs
+description: Data entity search_jobs owned by Splunk.
+tags:
+  - telco
+  - okf
+  - brd
+timestamp: "2026-07-04T00:00:00.000Z"
+---
+
+# search_jobs
+
+# Schema
+
+| Field | Type | Constraints |
+| --- | --- | --- |
+| id | seq | required; primary key |
+| source_record_id | seq | required |
+| status | enum | required; values: active, pending, closed |
+| owner | person.fullName | required |
+| created_at | date | required |
+| notes | lorem.sentence |  |
+
+# Citations
+
+- Owned by [Splunk](/systems/splunk.md)

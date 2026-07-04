@@ -1,0 +1,530 @@
+{
+  "industry": "insurance",
+  "entities": {
+    "policies": {
+      "lookupKeys": ["policy_number", "named_insured"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "policy_number", "type": "seq", "required": true },
+        { "name": "line_of_business", "type": "enum", "required": true, "values": ["personal_auto", "homeowners", "commercial_property", "workers_comp", "general_liability", "commercial_auto", "bop"], "weights": [30, 25, 10, 10, 10, 8, 7] },
+        { "name": "policy_status", "type": "enum", "required": true, "values": ["in_force", "pending_cancellation_nonpay", "cancelled", "expired", "non_renewed", "reinstated"], "weights": [62, 6, 12, 10, 6, 4] },
+        { "name": "effective_date", "type": "date", "required": true },
+        { "name": "expiration_date", "type": "date", "required": true },
+        { "name": "annual_premium", "type": "float", "required": true, "min": 480, "max": 185000, "decimals": 2 },
+        { "name": "named_insured", "type": "person.fullName", "required": true },
+        { "name": "jurisdiction_state", "type": "enum", "required": true, "values": ["TX", "FL", "CA", "NY", "IL", "GA", "PA", "OH", "NC", "MI"], "weights": [14, 13, 12, 10, 9, 9, 9, 8, 8, 8] },
+        { "name": "agency_of_record", "type": "company.name", "required": true },
+        { "name": "prior_carrier_lapse", "type": "boolean", "required": false, "trueRate": 0.08 }
+      ]
+    },
+    "policy_quotes": {
+      "lookupKeys": ["quote_number", "applicant_name"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "quote_number", "type": "seq", "required": true },
+        { "name": "line_of_business", "type": "enum", "required": true, "values": ["personal_auto", "homeowners", "commercial_property", "workers_comp", "general_liability", "bop"], "weights": [34, 28, 10, 9, 10, 9] },
+        { "name": "quote_status", "type": "enum", "required": true, "values": ["in_progress", "quoted", "bound", "declined_underwriting", "lost_to_competitor", "expired_30_day"], "weights": [15, 30, 22, 8, 15, 10] },
+        { "name": "quoted_annual_premium", "type": "float", "required": true, "min": 420, "max": 96000, "decimals": 2 },
+        { "name": "requested_effective_date", "type": "date", "required": true },
+        { "name": "applicant_name", "type": "person.fullName", "required": true },
+        { "name": "applicant_email", "type": "internet.email", "required": false },
+        { "name": "prior_carrier", "type": "company.name", "required": false },
+        { "name": "underwriting_tier", "type": "enum", "required": true, "values": ["preferred", "standard", "non_standard", "declined"], "weights": [28, 47, 18, 7] },
+        { "name": "multi_policy_discount", "type": "boolean", "required": false, "trueRate": 0.42 }
+      ]
+    },
+    "underwriting_submissions": {
+      "lookupKeys": ["submission_id", "insured_name"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "submission_id", "type": "seq", "required": true },
+        { "name": "acord_application_form", "type": "enum", "required": true, "values": ["ACORD_125_commercial_app", "ACORD_126_gl_section", "ACORD_130_workers_comp", "ACORD_140_property_section", "ACORD_127_business_auto"], "weights": [30, 20, 20, 18, 12] },
+        { "name": "insured_name", "type": "company.name", "required": true },
+        { "name": "producing_broker", "type": "company.name", "required": true },
+        { "name": "naics_code", "type": "number", "required": true, "min": 111110, "max": 928120 },
+        { "name": "total_insured_value", "type": "float", "required": true, "min": 250000, "max": 48000000, "decimals": 2 },
+        { "name": "requested_effective_date", "type": "date", "required": true },
+        { "name": "submission_status", "type": "enum", "required": true, "values": ["received", "in_triage", "with_underwriter", "quoted", "bound", "declined_appetite", "blocked_ofac_review"], "weights": [15, 15, 22, 20, 15, 12, 1] },
+        { "name": "loss_runs_received_5yr", "type": "boolean", "required": true, "trueRate": 0.71 },
+        { "name": "assigned_underwriter", "type": "person.fullName", "required": true }
+      ]
+    },
+    "claims": {
+      "lookupKeys": ["claim_number", "policy_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "claim_number", "type": "seq", "required": true },
+        { "name": "policy_number", "type": "seq", "required": true },
+        { "name": "line_of_business", "type": "enum", "required": true, "values": ["personal_auto", "homeowners", "commercial_property", "workers_comp", "general_liability"], "weights": [38, 27, 12, 13, 10] },
+        { "name": "loss_date", "type": "date", "required": true },
+        { "name": "report_date", "type": "date", "required": true },
+        { "name": "claim_status", "type": "enum", "required": true, "values": ["fnol_received", "open_investigating", "coverage_review", "reserved", "in_litigation", "settled", "closed", "reopened"], "weights": [8, 18, 6, 22, 5, 12, 26, 3] },
+        { "name": "incurred_amount", "type": "float", "required": true, "min": 500, "max": 2500000, "decimals": 2 },
+        { "name": "paid_amount", "type": "float", "required": true, "min": 0, "max": 1800000, "decimals": 2 },
+        { "name": "reserve_amount", "type": "float", "required": true, "min": 0, "max": 950000, "decimals": 2 },
+        { "name": "cat_code", "type": "enum", "required": false, "values": ["none", "PCS_2411_hurricane", "PCS_2418_wind_hail", "PCS_2425_winter_storm", "PCS_2432_wildfire"], "weights": [82, 5, 8, 3, 2] },
+        { "name": "jurisdiction_state", "type": "enum", "required": true, "values": ["TX", "FL", "CA", "NY", "IL", "GA", "PA", "OH", "NC", "MI"], "weights": [14, 13, 12, 10, 9, 9, 9, 8, 8, 8] },
+        { "name": "adjuster", "type": "person.fullName", "required": true }
+      ]
+    },
+    "claim_exposures": {
+      "lookupKeys": ["exposure_id", "claim_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "exposure_id", "type": "seq", "required": true },
+        { "name": "claim_number", "type": "seq", "required": true },
+        { "name": "coverage_code", "type": "enum", "required": true, "values": ["BI_bodily_injury", "PD_property_damage", "COLL_collision", "COMP_comprehensive", "UM_UIM", "MED_PAY", "COV_A_dwelling", "COV_C_contents", "WC_indemnity", "WC_medical"], "weights": [16, 14, 13, 8, 6, 7, 12, 7, 8, 9] },
+        { "name": "claimant_name", "type": "person.fullName", "required": true },
+        { "name": "exposure_status", "type": "enum", "required": true, "values": ["open", "closed_paid", "closed_no_pay", "reopened", "pending_coverage_determination"], "weights": [34, 38, 16, 4, 8] },
+        { "name": "reserve_amount", "type": "float", "required": true, "min": 0, "max": 500000, "decimals": 2 },
+        { "name": "paid_to_date", "type": "float", "required": true, "min": 0, "max": 750000, "decimals": 2 },
+        { "name": "demand_amount", "type": "float", "required": false, "min": 0, "max": 3000000, "decimals": 2 },
+        { "name": "attorney_represented", "type": "boolean", "required": true, "trueRate": 0.22 }
+      ]
+    },
+    "reserve_lines": {
+      "lookupKeys": ["reserve_line_id", "claim_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "reserve_line_id", "type": "seq", "required": true },
+        { "name": "claim_number", "type": "seq", "required": true },
+        { "name": "reserve_type", "type": "enum", "required": true, "values": ["indemnity", "medical", "expense_dcc", "expense_ao", "subrogation_recovery_offset", "salvage_offset"], "weights": [36, 22, 18, 12, 8, 4] },
+        { "name": "transaction_type", "type": "enum", "required": true, "values": ["initial_reserve", "reserve_increase", "reserve_decrease", "takedown_at_closure"], "weights": [34, 26, 16, 24] },
+        { "name": "transaction_amount", "type": "float", "required": true, "min": -250000, "max": 500000, "decimals": 2 },
+        { "name": "transaction_date", "type": "date", "required": true },
+        { "name": "authority_level_used", "type": "enum", "required": true, "values": ["adjuster_25k", "supervisor_75k", "claims_manager_250k", "home_office_unlimited"], "weights": [55, 27, 14, 4] },
+        { "name": "set_by", "type": "person.fullName", "required": true },
+        { "name": "over_authority_referral", "type": "boolean", "required": true, "trueRate": 0.06 }
+      ]
+    },
+    "billing_accounts": {
+      "lookupKeys": ["billing_account_number", "policy_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "billing_account_number", "type": "seq", "required": true },
+        { "name": "policy_number", "type": "seq", "required": true },
+        { "name": "bill_type", "type": "enum", "required": true, "values": ["direct_bill", "agency_bill", "list_bill", "mortgagee_bill"], "weights": [58, 22, 8, 12] },
+        { "name": "account_status", "type": "enum", "required": true, "values": ["current", "past_due", "in_statutory_grace_period", "pending_cancel_nonpay", "cancelled_nonpay", "paid_in_full"], "weights": [48, 12, 6, 5, 6, 23] },
+        { "name": "current_balance", "type": "float", "required": true, "min": 0, "max": 42000, "decimals": 2 },
+        { "name": "past_due_amount", "type": "float", "required": true, "min": 0, "max": 9500, "decimals": 2 },
+        { "name": "autopay_eft_enrolled", "type": "boolean", "required": true, "trueRate": 0.57 },
+        { "name": "nsf_returns_last_12mo", "type": "number", "required": true, "min": 0, "max": 4 },
+        { "name": "last_payment_date", "type": "date", "required": false },
+        { "name": "account_holder", "type": "person.fullName", "required": true }
+      ]
+    },
+    "premium_invoices": {
+      "lookupKeys": ["invoice_number", "billing_account_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "invoice_number", "type": "seq", "required": true },
+        { "name": "billing_account_number", "type": "seq", "required": true },
+        { "name": "installment_number", "type": "number", "required": true, "min": 1, "max": 12 },
+        { "name": "invoice_status", "type": "enum", "required": true, "values": ["issued", "paid", "partially_paid", "past_due", "cancelled_flat", "written_off"], "weights": [18, 52, 6, 14, 6, 4] },
+        { "name": "premium_amount", "type": "float", "required": true, "min": 45, "max": 18500, "decimals": 2 },
+        { "name": "installment_fee", "type": "float", "required": true, "min": 0, "max": 12, "decimals": 2 },
+        { "name": "state_taxes_surcharges", "type": "float", "required": true, "min": 0, "max": 640, "decimals": 2 },
+        { "name": "due_date", "type": "date", "required": true },
+        { "name": "equity_date", "type": "date", "required": false }
+      ]
+    },
+    "payment_plans": {
+      "lookupKeys": ["plan_id", "billing_account_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "plan_id", "type": "seq", "required": true },
+        { "name": "billing_account_number", "type": "seq", "required": true },
+        { "name": "plan_type", "type": "enum", "required": true, "values": ["paid_in_full", "two_pay_50_50", "four_pay_quarterly", "ten_pay", "monthly_eft_12_pay"], "weights": [24, 12, 16, 14, 34] },
+        { "name": "down_payment_pct", "type": "float", "required": true, "min": 8.33, "max": 100, "decimals": 2 },
+        { "name": "per_installment_fee", "type": "float", "required": true, "min": 0, "max": 10, "decimals": 2 },
+        { "name": "installments_remaining", "type": "number", "required": true, "min": 0, "max": 11 },
+        { "name": "next_installment_date", "type": "date", "required": false },
+        { "name": "eft_enrolled", "type": "boolean", "required": true, "trueRate": 0.61 },
+        { "name": "plan_status", "type": "enum", "required": true, "values": ["active", "completed", "defaulted_nonpay", "rewritten_after_reinstatement"], "weights": [56, 30, 9, 5] }
+      ]
+    },
+    "policy_forms": {
+      "lookupKeys": ["form_id", "form_code"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "form_id", "type": "seq", "required": true },
+        { "name": "form_code", "type": "enum", "required": true, "values": ["HO_00_03_0322", "PP_00_01_0918", "CG_00_01_0413", "CP_00_10_1012", "CA_00_01_1120", "WC_00_00_00_C", "IL_00_17_1198"], "weights": [20, 20, 15, 13, 12, 12, 8] },
+        { "name": "form_type", "type": "enum", "required": true, "values": ["coverage_form", "endorsement", "declarations", "conditions", "statutory_notice", "application"], "weights": [30, 34, 10, 8, 12, 6] },
+        { "name": "form_source", "type": "enum", "required": true, "values": ["iso_standard", "iso_modified_deviation", "proprietary", "naic_model", "state_mandated"], "weights": [42, 14, 28, 6, 10] },
+        { "name": "filing_status", "type": "enum", "required": true, "values": ["filed_and_approved", "filed_pending_doi", "file_and_use_effective", "use_and_file_pending", "exempt_surplus_lines"], "weights": [55, 8, 22, 9, 6] },
+        { "name": "edition_date", "type": "date", "required": true },
+        { "name": "filing_state", "type": "enum", "required": true, "values": ["TX", "FL", "CA", "NY", "IL", "GA", "PA", "OH", "NC", "MI", "countrywide_multistate"], "weights": [10, 10, 10, 9, 8, 8, 8, 7, 7, 7, 16] },
+        { "name": "mandatory_attachment", "type": "boolean", "required": true, "trueRate": 0.31 },
+        { "name": "form_description", "type": "lorem.sentence", "required": false }
+      ]
+    },
+    "rating_worksheets": {
+      "lookupKeys": ["worksheet_id", "quote_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "worksheet_id", "type": "seq", "required": true },
+        { "name": "quote_number", "type": "seq", "required": true },
+        { "name": "exposure_base", "type": "enum", "required": true, "values": ["payroll_per_100", "gross_sales_per_1000", "square_footage", "vehicle_count", "amount_of_insurance", "admissions"], "weights": [24, 20, 16, 16, 20, 4] },
+        { "name": "manual_base_rate", "type": "float", "required": true, "min": 0.08, "max": 42.5, "decimals": 4 },
+        { "name": "territory_code", "type": "number", "required": true, "min": 1, "max": 999 },
+        { "name": "experience_mod", "type": "float", "required": true, "min": 0.62, "max": 1.85, "decimals": 2 },
+        { "name": "schedule_mod", "type": "float", "required": true, "min": -0.25, "max": 0.25, "decimals": 2 },
+        { "name": "tier_factor", "type": "float", "required": true, "min": 0.75, "max": 1.6, "decimals": 3 },
+        { "name": "final_developed_premium", "type": "float", "required": true, "min": 380, "max": 94000, "decimals": 2 },
+        { "name": "rate_order_effective_date", "type": "date", "required": true }
+      ]
+    },
+    "endorsement_records": {
+      "lookupKeys": ["endorsement_id", "policy_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "endorsement_id", "type": "seq", "required": true },
+        { "name": "policy_number", "type": "seq", "required": true },
+        { "name": "endorsement_type", "type": "enum", "required": true, "values": ["add_vehicle", "delete_vehicle", "add_driver", "increase_liability_limit", "change_deductible", "add_additional_insured", "add_waiver_of_subrogation", "mailing_address_change", "add_scheduled_property"], "weights": [16, 10, 13, 11, 12, 10, 6, 15, 7] },
+        { "name": "endorsement_effective_date", "type": "date", "required": true },
+        { "name": "pro_rata_premium_change", "type": "float", "required": true, "min": -2400, "max": 5800, "decimals": 2 },
+        { "name": "endorsement_status", "type": "enum", "required": true, "values": ["requested", "quoted", "bound", "issued", "rejected_underwriting"], "weights": [12, 14, 18, 50, 6] },
+        { "name": "out_of_sequence", "type": "boolean", "required": true, "trueRate": 0.05 },
+        { "name": "spans_reported_loss_date", "type": "boolean", "required": true, "trueRate": 0.02 },
+        { "name": "requested_by", "type": "person.fullName", "required": true }
+      ]
+    },
+    "loss_cost_benchmarks": {
+      "lookupKeys": ["benchmark_id", "class_code"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "benchmark_id", "type": "seq", "required": true },
+        { "name": "annual_statement_line", "type": "enum", "required": true, "values": ["19_2_private_passenger_auto_liability", "21_1_auto_physical_damage", "04_homeowners_multi_peril", "05_1_commercial_multi_peril", "16_workers_compensation", "17_1_other_liability_occurrence", "01_fire"], "weights": [22, 14, 20, 12, 14, 12, 6] },
+        { "name": "state", "type": "enum", "required": true, "values": ["TX", "FL", "CA", "NY", "IL", "GA", "PA", "OH", "NC", "MI"], "weights": [12, 12, 11, 10, 10, 9, 9, 9, 9, 9] },
+        { "name": "class_code", "type": "number", "required": true, "min": 5, "max": 99946 },
+        { "name": "advisory_loss_cost", "type": "float", "required": true, "min": 0.04, "max": 38.72, "decimals": 4 },
+        { "name": "loss_cost_multiplier", "type": "float", "required": true, "min": 1.15, "max": 2.35, "decimals": 3 },
+        { "name": "annual_trend_factor", "type": "float", "required": true, "min": 0.97, "max": 1.14, "decimals": 4 },
+        { "name": "credibility_factor", "type": "float", "required": true, "min": 0.05, "max": 1.0, "decimals": 2 },
+        { "name": "loss_cost_effective_date", "type": "date", "required": true }
+      ]
+    },
+    "circular_updates": {
+      "lookupKeys": ["circular_id"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "circular_id", "type": "seq", "required": true },
+        { "name": "circular_type", "type": "enum", "required": true, "values": ["loss_cost_revision", "rules_revision", "forms_revision", "stat_plan_change", "advisory_notice_annual_reporting"], "weights": [34, 20, 24, 10, 12] },
+        { "name": "line_of_business", "type": "enum", "required": true, "values": ["personal_auto", "homeowners", "commercial_property", "workers_comp", "general_liability", "commercial_auto"], "weights": [20, 18, 16, 16, 16, 14] },
+        { "name": "affected_state", "type": "enum", "required": true, "values": ["TX", "FL", "CA", "NY", "IL", "GA", "PA", "OH", "NC", "MI", "multistate"], "weights": [9, 9, 9, 9, 8, 8, 8, 8, 8, 8, 16] },
+        { "name": "release_date", "type": "date", "required": true },
+        { "name": "proposed_effective_date", "type": "date", "required": true },
+        { "name": "carrier_adoption_status", "type": "enum", "required": true, "values": ["adopted_as_filed", "adopted_with_deviation", "not_adopted", "under_actuarial_review"], "weights": [44, 16, 14, 26] },
+        { "name": "doi_filing_required", "type": "boolean", "required": true, "trueRate": 0.68 },
+        { "name": "impact_summary", "type": "lorem.sentence", "required": false },
+        { "name": "actuarial_reviewer", "type": "person.fullName", "required": true }
+      ]
+    },
+    "territory_factors": {
+      "lookupKeys": ["territory_code", "state"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "territory_code", "type": "number", "required": true, "min": 1, "max": 999 },
+        { "name": "state", "type": "enum", "required": true, "values": ["TX", "FL", "CA", "NY", "IL", "GA", "PA", "OH", "NC", "MI"], "weights": [12, 12, 11, 10, 10, 9, 9, 9, 9, 9] },
+        { "name": "line_of_business", "type": "enum", "required": true, "values": ["personal_auto", "homeowners", "commercial_property", "commercial_auto"], "weights": [34, 32, 18, 16] },
+        { "name": "coverage", "type": "enum", "required": true, "values": ["bodily_injury", "property_damage", "collision", "comprehensive", "wind_hail", "fire_ec", "theft"], "weights": [20, 18, 16, 14, 14, 12, 6] },
+        { "name": "territory_relativity", "type": "float", "required": true, "min": 0.55, "max": 2.4, "decimals": 3 },
+        { "name": "cat_load_factor", "type": "float", "required": true, "min": 1.0, "max": 1.85, "decimals": 3 },
+        { "name": "credibility_weighted", "type": "boolean", "required": true, "trueRate": 0.74 },
+        { "name": "filed_effective_date", "type": "date", "required": true }
+      ]
+    },
+    "risk_reports": {
+      "lookupKeys": ["report_id", "policy_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "report_id", "type": "seq", "required": true },
+        { "name": "policy_number", "type": "seq", "required": true },
+        { "name": "report_type", "type": "enum", "required": true, "values": ["property_exterior_inspection", "loss_control_survey", "wind_mitigation_oir_b1_1802", "protection_class_verification", "replacement_cost_valuation", "premium_audit_physical"], "weights": [28, 22, 12, 10, 18, 10] },
+        { "name": "inspection_vendor", "type": "company.name", "required": true },
+        { "name": "iso_public_protection_class", "type": "number", "required": true, "min": 1, "max": 10 },
+        { "name": "hazard_grade", "type": "enum", "required": true, "values": ["low", "moderate", "elevated", "severe_referral_required"], "weights": [38, 40, 17, 5] },
+        { "name": "open_recommendations", "type": "number", "required": true, "min": 0, "max": 9 },
+        { "name": "report_date", "type": "date", "required": true },
+        { "name": "field_inspector", "type": "person.fullName", "required": true },
+        { "name": "condition_narrative", "type": "lorem.sentence", "required": false }
+      ]
+    },
+    "mvr_records": {
+      "lookupKeys": ["mvr_id", "driver_name"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "mvr_id", "type": "seq", "required": true },
+        { "name": "quote_number", "type": "seq", "required": true },
+        { "name": "driver_name", "type": "person.fullName", "required": true },
+        { "name": "license_state", "type": "enum", "required": true, "values": ["TX", "FL", "CA", "NY", "IL", "GA", "PA", "OH", "NC", "MI"], "weights": [12, 12, 11, 10, 10, 9, 9, 9, 9, 9] },
+        { "name": "license_status", "type": "enum", "required": true, "values": ["valid", "suspended", "revoked", "expired", "graduated_permit"], "weights": [86, 5, 2, 4, 3] },
+        { "name": "worst_violation_36mo", "type": "enum", "required": true, "values": ["none", "speeding_1_to_15_over", "speeding_16_plus_over", "at_fault_accident", "dui_dwi", "reckless_driving", "driving_while_suspended", "failure_to_yield"], "weights": [52, 20, 8, 9, 3, 2, 2, 4] },
+        { "name": "violation_points", "type": "number", "required": true, "min": 0, "max": 12 },
+        { "name": "sr22_fr44_required", "type": "boolean", "required": true, "trueRate": 0.04 },
+        { "name": "mvr_order_date", "type": "date", "required": true }
+      ]
+    },
+    "prefill_datasets": {
+      "lookupKeys": ["prefill_id", "quote_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "prefill_id", "type": "seq", "required": true },
+        { "name": "quote_number", "type": "seq", "required": true },
+        { "name": "data_source", "type": "enum", "required": true, "values": ["clue_auto_7yr", "clue_property_7yr", "mvr_vendor_pull", "vin_decode_symbol_lookup", "property_characteristics_360value", "credit_based_insurance_score"], "weights": [22, 18, 20, 14, 12, 14] },
+        { "name": "match_confidence", "type": "float", "required": true, "min": 0.5, "max": 1.0, "decimals": 3 },
+        { "name": "prior_losses_found", "type": "number", "required": true, "min": 0, "max": 7 },
+        { "name": "prior_carrier", "type": "company.name", "required": false },
+        { "name": "insurance_score", "type": "number", "required": false, "min": 200, "max": 997 },
+        { "name": "fcra_adverse_action_triggered", "type": "boolean", "required": true, "trueRate": 0.09 },
+        { "name": "retrieved_date", "type": "date", "required": true }
+      ]
+    },
+    "fraud_screening_scores": {
+      "lookupKeys": ["screening_id", "claim_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "screening_id", "type": "seq", "required": true },
+        { "name": "claim_number", "type": "seq", "required": true },
+        { "name": "model_version", "type": "enum", "required": true, "values": ["fraud_gbm_v4_2", "fraud_gbm_v4_1_legacy", "rules_engine_baseline"], "weights": [68, 22, 10] },
+        { "name": "fraud_score", "type": "number", "required": true, "min": 0, "max": 999 },
+        { "name": "score_band", "type": "enum", "required": true, "values": ["low_0_299", "moderate_300_499", "elevated_500_699", "high_700_849", "critical_850_plus"], "weights": [55, 24, 13, 6, 2] },
+        { "name": "top_indicator", "type": "enum", "required": true, "values": ["none", "late_reporting_over_30_days", "loss_within_60_days_of_inception", "coverage_increased_before_loss", "soft_tissue_injury_minimal_damage", "provider_on_watch_list", "prior_claim_pattern_same_peril", "staged_accident_indicators"], "weights": [42, 12, 10, 8, 9, 6, 8, 5] },
+        { "name": "iso_claimsearch_match_count", "type": "number", "required": true, "min": 0, "max": 14 },
+        { "name": "nicb_referral_flag", "type": "boolean", "required": true, "trueRate": 0.03 },
+        { "name": "scored_date", "type": "date", "required": true },
+        { "name": "triage_analyst", "type": "person.fullName", "required": true }
+      ]
+    },
+    "network_link_indicators": {
+      "lookupKeys": ["link_id", "claim_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "link_id", "type": "seq", "required": true },
+        { "name": "claim_number", "type": "seq", "required": true },
+        { "name": "linked_entity_type", "type": "enum", "required": true, "values": ["medical_provider", "body_shop", "plaintiff_attorney", "claimant_shared_address", "shared_phone_number", "shared_bank_account", "tow_operator"], "weights": [24, 18, 16, 14, 12, 8, 8] },
+        { "name": "linked_entity_name", "type": "company.name", "required": true },
+        { "name": "link_strength", "type": "float", "required": true, "min": 0.1, "max": 1.0, "decimals": 3 },
+        { "name": "claims_sharing_this_entity", "type": "number", "required": true, "min": 2, "max": 48 },
+        { "name": "prior_siu_substantiated_hits", "type": "number", "required": true, "min": 0, "max": 6 },
+        { "name": "review_status", "type": "enum", "required": true, "values": ["unreviewed", "analyst_reviewing", "cleared_benign", "escalated_to_siu"], "weights": [30, 24, 34, 12] },
+        { "name": "flagged_date", "type": "date", "required": true }
+      ]
+    },
+    "siu_referrals": {
+      "lookupKeys": ["referral_id", "claim_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "referral_id", "type": "seq", "required": true },
+        { "name": "claim_number", "type": "seq", "required": true },
+        { "name": "referral_source", "type": "enum", "required": true, "values": ["adjuster_referral", "predictive_model_threshold", "nicb_alert", "iso_claimsearch_hit", "tip_hotline", "doi_fraud_bureau_bulletin"], "weights": [34, 24, 10, 16, 10, 6] },
+        { "name": "suspected_fraud_type", "type": "enum", "required": true, "values": ["staged_accident", "exaggerated_injury_buildup", "provider_billing_fraud", "arson_suspected", "phantom_vehicle_theft", "application_misrepresentation", "contractor_aob_abuse"], "weights": [14, 26, 16, 8, 10, 16, 10] },
+        { "name": "referral_status", "type": "enum", "required": true, "values": ["received", "accepted_for_investigation", "active_investigation", "referred_to_nicb", "reported_to_doi_fraud_bureau", "closed_unfounded", "closed_substantiated"], "weights": [12, 14, 26, 6, 8, 24, 10] },
+        { "name": "state_mandatory_reporting_required", "type": "boolean", "required": true, "trueRate": 0.34 },
+        { "name": "assigned_investigator", "type": "person.fullName", "required": true },
+        { "name": "referral_date", "type": "date", "required": true },
+        { "name": "days_open", "type": "number", "required": true, "min": 0, "max": 540 }
+      ]
+    }
+  },
+  "valueStreams": {
+    "I-31": {
+      "refusalRules": [
+        "Never bind, quote, or accept an application submitted through a producer who is not licensed and carrier-appointed in the risk state, per state producer licensing acts and appointment-filing requirements.",
+        "Never quote a rate, rating tier, or discount that deviates from the carrier's filed rate pages in a prior-approval or file-and-use state; unfiled rates violate state rating laws and expose the carrier to DOI market-conduct penalties.",
+        "Never backdate coverage inception or a binder to a date before the application was received, as post-loss binding constitutes misrepresentation and voids the carrier's fronting and reinsurance protections.",
+        "Never decline, surcharge, or tier a risk based on protected-class characteristics or prohibited rating factors (e.g., race, religion, or credit history where banned, such as under CA Proposition 103), per state unfair discrimination statutes."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Submission with total_insured_value greater than $25,000,000 or requested liability limits above $10,000,000 per occurrence",
+          "action": "escalate_to_human",
+          "handoffTarget": "Home office referral underwriter (large-account authority)",
+          "rationale": "Limits above the underwriter letter-of-authority grid require sign-off from a referral underwriter because they can exceed treaty reinsurance capacity and net retention appetite."
+        },
+        {
+          "trigger": "OFAC SDN or sanctions screening returns a potential match on the applicant, any named insured, or a beneficial owner",
+          "action": "refuse",
+          "handoffTarget": "Corporate sanctions compliance officer",
+          "rationale": "Binding coverage for a sanctioned party violates federal OFAC regulations carrying strict-liability civil penalties; only compliance may clear or block the match."
+        },
+        {
+          "trigger": "Coastal wind property risk in a Tier 1 county where declination would trigger FAIR Plan or wind-pool eligibility disclosure duties",
+          "action": "escalate_to_human",
+          "handoffTarget": "Catastrophe/coastal underwriting specialist",
+          "rationale": "Coastal declinations carry state-specific residual-market disclosure obligations and cat aggregation limits that require a licensed underwriter's documented decision."
+        }
+      ],
+      "outOfScope": [
+        "Placing or pricing surplus-lines business, including diligent-search affidavits and non-admitted market selection",
+        "Appointing, terminating, or modifying producer or MGA agency agreements and commission schedules",
+        "Rendering coverage opinions on manuscript endorsements or unfiled proprietary form language"
+      ]
+    },
+    "I-32": {
+      "refusalRules": [
+        "Never misrepresent policy provisions, coverages, or exclusions to a claimant, per the state Unfair Claims Settlement Practices Acts modeled on NAIC Model 900.",
+        "Never issue a coverage denial, partial denial, or reservation-of-rights position without documented authority from a coverage counsel or claims manager review, since an unauthorized ROR can waive the carrier's coverage defenses.",
+        "Never adjust or negotiate a claim in a state requiring an individual adjuster license (e.g., Texas or Florida) unless the handling adjuster of record holds an active resident or non-resident license there.",
+        "Never settle a bodily injury claim involving a Medicare-eligible claimant without confirming Section 111 MMSEA reporting and resolving Medicare conditional-payment (MSP) obligations, which carry per-day federal civil penalties."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Any single reserve transaction exceeding $50,000 or cumulative incurred crossing $100,000 on one claim",
+          "action": "escalate_to_human",
+          "handoffTarget": "Claims manager with $250K reserve authority",
+          "rationale": "Reserve authority grids are a regulatory and statutory-accounting control; reserves above the desk adjuster's letter of authority must be set by the authority holder of record."
+        },
+        {
+          "trigger": "Bodily injury claim where the claimant becomes attorney-represented or a time-limited demand is received",
+          "action": "escalate_to_human",
+          "handoffTarget": "Litigation specialist / assigned defense counsel",
+          "rationale": "Time-limited demands create bad-faith set-up exposure; response strategy and any communication with a represented party must run through counsel."
+        },
+        {
+          "trigger": "Claim involves a fatality, traumatic brain injury, spinal cord injury, or amputation",
+          "action": "escalate_to_human",
+          "handoffTarget": "Home office major case unit",
+          "rationale": "Catastrophic injury claims require structured-settlement, excess-reporting, and reinsurer-notice obligations that only major case adjusters are authorized to manage."
+        }
+      ],
+      "outOfScope": [
+        "Setting or revising reserves on claims in active litigation or under a reservation of rights",
+        "Drafting or issuing denial letters, reservation-of-rights letters, or examination-under-oath notices",
+        "Evaluating or negotiating Medicare Set-Aside allocations on workers' compensation settlements"
+      ]
+    },
+    "I-33": {
+      "refusalRules": [
+        "Never process or promise a cancellation for nonpayment without the state-mandated advance written notice period (typically 10-30 days, with longer mortgagee notice), per state cancellation and nonrenewal statutes.",
+        "Never accept, store, or repeat a full payment card number, CVV, or bank account number in the conversation channel, per PCI DSS scope restrictions and NACHA rules.",
+        "Never waive, compromise, or write off earned premium beyond the published billing-adjustment authority schedule, since uncollected earned premium adjustments affect statutory accounting and must be authorized.",
+        "Never retain or apply an unclaimed refund past the state escheatment dormancy period instead of remitting it under the state's unclaimed property act."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Refund or premium adjustment request exceeding $10,000 on a single billing account",
+          "action": "escalate_to_human",
+          "handoffTarget": "Premium accounting supervisor",
+          "rationale": "Large return-premium disbursements require dual control and fraud verification before release under the carrier's financial controls (SOX/MAR)."
+        },
+        {
+          "trigger": "Notice of bankruptcy filing received on an account with a past-due balance",
+          "action": "refuse",
+          "handoffTarget": "Recovery counsel / bankruptcy desk",
+          "rationale": "Any collection activity after a bankruptcy petition violates the automatic stay under 11 U.S.C. Section 362 and exposes the carrier to sanctions."
+        },
+        {
+          "trigger": "Pending cancel for nonpayment on a policy with an open claim reserved above $25,000",
+          "action": "escalate_to_human",
+          "handoffTarget": "Underwriting service center lead",
+          "rationale": "Cancelling mid-claim creates coverage-gap and bad-faith exposure; the cancellation-versus-reinstatement decision needs documented underwriting review."
+        }
+      ],
+      "outOfScope": [
+        "Negotiating, restructuring, or releasing third-party premium finance agreements and their notices of intent to cancel",
+        "Reconciling agency-bill commission statements or resolving producer commission disputes",
+        "Settling earned-premium balances that have been referred to outside collections or litigation"
+      ]
+    },
+    "I-34": {
+      "refusalRules": [
+        "Never process a mid-term cancellation initiated by the carrier for reasons outside the state's enumerated permissible grounds (nonpayment, material misrepresentation, substantial change in risk) once the 60-day underwriting period has run.",
+        "Never remove or reduce statutorily mandated coverages (e.g., UM/UIM or PIP) without the state-prescribed signed selection/rejection form executed by the named insured; verbal instruction is insufficient.",
+        "Never issue an endorsement deleting a mortgagee or loss payee without written confirmation that the lien is satisfied, per the mortgagee clause's contractual notice obligations.",
+        "Never interpret ambiguous policy language or advise whether a contemplated activity would be covered; coverage interpretation is reserved to underwriting and coverage counsel."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Requested endorsement produces a mid-term premium change greater than 25% of annual premium or adds a new exposure class",
+          "action": "escalate_to_human",
+          "handoffTarget": "Servicing underwriter",
+          "rationale": "Material mid-term exposure changes require re-underwriting against filed rules and may trigger re-inspection or reinsurance notification."
+        },
+        {
+          "trigger": "Out-of-sequence endorsement request whose effective date is on or before a reported loss date on the same policy",
+          "action": "escalate_to_human",
+          "handoffTarget": "Underwriting referral desk with claims department notification",
+          "rationale": "Retroactive coverage changes spanning a known loss create fraud and detrimental-reliance exposure and must be reviewed jointly by underwriting and claims."
+        },
+        {
+          "trigger": "Insured requests reinstatement more than the state-permitted lapse window (e.g., 30 days) after cancellation effective date",
+          "action": "request_more_info",
+          "handoffTarget": "Underwriting service center lead",
+          "rationale": "Reinstatement after an extended lapse requires a no-loss statement and underwriter approval because coverage cannot be restored over an unreported loss."
+        }
+      ],
+      "outOfScope": [
+        "Rescinding a policy ab initio for material misrepresentation on the application",
+        "Executing UM/UIM or PIP selection and rejection forms on behalf of the insured",
+        "Resolving disputed final premium audits on auditable commercial policies"
+      ]
+    },
+    "I-35": {
+      "refusalRules": [
+        "Never release rate-level indications, reserve ranges, or IBNR estimates externally or to producers before the appointed actuary or chief actuary has signed off, per ASOP No. 41 communication standards.",
+        "Never disclose reserve adequacy analyses, Schedule P development detail, or the Statement of Actuarial Opinion workpapers outside the authorized distribution list, since they are material nonpublic information for a carrier with public debt or equity.",
+        "Never share carrier-specific competitor rate, cost, or planned-filing information obtained outside public filings; McCarran-Ferguson does not shield price-fixing or boycott from Sherman Act liability.",
+        "Never alter selected loss development factors, trend selections, or cat model settings in a production indication without a documented actuarial peer review under ASOP No. 23 (data quality) and No. 43 (unpaid claim estimates)."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Indicated rate change for any state/line combination exceeds plus-or-minus 10% versus the currently filed rate level",
+          "action": "escalate_to_human",
+          "handoffTarget": "Chief actuary and state filings manager",
+          "rationale": "Double-digit indications drive prior-approval filings, SERFF objections, and potential public rate hearings that require the credentialed actuary of record."
+        },
+        {
+          "trigger": "Accident-year incurred development exceeds prior evaluation by more than 8% two quarters in a row for any reserving segment",
+          "action": "escalate_to_human",
+          "handoffTarget": "Appointed actuary",
+          "rationale": "Persistent adverse development threatens the carried-reserve position underlying the Statement of Actuarial Opinion and may require RBC and management-discussion disclosure."
+        },
+        {
+          "trigger": "Catastrophe model version change or exposure refresh moves 100-year PML by more than 15%",
+          "action": "escalate_to_human",
+          "handoffTarget": "Chief risk officer / reinsurance buying committee",
+          "rationale": "PML swings of that size change reinsurance tower adequacy and rating-agency capital adequacy (BCAR) inputs, which are board-level risk decisions."
+        }
+      ],
+      "outOfScope": [
+        "Signing or amending the Statement of Actuarial Opinion or actuarial certification of loss reserves",
+        "Negotiating or placing reinsurance treaties, retentions, or reinstatement premiums",
+        "Preparing statutory annual statement exhibits (Schedule P, Schedule F) for NAIC filing"
+      ]
+    },
+    "I-36": {
+      "refusalRules": [
+        "Never disclose the existence, status, or findings of an active SIU investigation to the insured, claimant, or their representatives; confidentiality is a condition of the state fraud-reporting immunity statutes.",
+        "Never deny, delay, or reduce a claim payment solely on the basis of a predictive fraud score without independent investigation establishing a fabricated or material misrepresentation, per unfair claims practices prohibitions on unreasonable investigation-based delay.",
+        "Never report suspected fraud to any party other than the statutorily designated channels (state DOI fraud bureau, NICB, or law enforcement), since civil immunity under state insurance fraud reporting acts attaches only to those channels.",
+        "Never share policyholder nonpublic personal information with third-party investigators or data vendors outside the GLBA fraud-prevention exception and the carrier's privacy notice disclosures."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Fraud score at or above 700 combined with two or more network link indicators sharing an entity across open claims",
+          "action": "escalate_to_human",
+          "handoffTarget": "SIU field investigator",
+          "rationale": "Organized-ring indicators require licensed investigative work (recorded statements, scene work, EUO recommendation) that state SIU regulations reserve to qualified investigators."
+        },
+        {
+          "trigger": "Evidence implicates a licensed producer, adjuster, or carrier employee in the suspected fraud",
+          "action": "refuse",
+          "handoffTarget": "Internal audit and corporate compliance officer",
+          "rationale": "Insider-fraud allegations create conflicts of interest and producer-license reporting duties to the DOI that must bypass the normal SIU intake path."
+        },
+        {
+          "trigger": "Investigation findings meet a state's mandatory fraud-reporting threshold (e.g., NY Ins. Law 405 or CA Ins. Code 1872.4 sixty-day reporting)",
+          "action": "escalate_to_human",
+          "handoffTarget": "SIU compliance manager (DOI fraud bureau liaison)",
+          "rationale": "Statutory fraud reports have fixed deadlines and prescribed forms (e.g., FD-1/eFD), and late or defective filings expose the carrier to administrative penalties."
+        }
+      ],
+      "outOfScope": [
+        "Conducting or scheduling examinations under oath (EUOs) or authorizing surveillance operations",
+        "Deciding whether to refer a substantiated case for criminal prosecution or negotiating with prosecutors",
+        "Rescinding policies or voiding coverage based on investigation findings"
+      ]
+    }
+  }
+}

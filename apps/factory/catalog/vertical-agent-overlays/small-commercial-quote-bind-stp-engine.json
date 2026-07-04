@@ -1,0 +1,134 @@
+{
+  "id": "small-commercial-quote-bind-stp-engine",
+  "pipeline": [
+    {
+      "label": "Submission Intake & ACORD Triage",
+      "description": "Ingest new business submissions from Guidewire PolicyCenter's underwriting_submissions table, validating ACORD_125_commercial_app, ACORD_126_gl_section, ACORD_130_workers_comp, and ACORD_140_property_section forms plus NAICS code and producing broker appointment status before the risk enters the quote queue."
+    },
+    {
+      "label": "Eligibility & Appetite Screening",
+      "description": "Check policy_quotes and underwriting_submissions total_insured_value, jurisdiction_state, and OFAC sanctions screening results to confirm the account sits inside small commercial BOP and workers' comp appetite before rating proceeds in Guidewire PolicyCenter."
+    },
+    {
+      "label": "Automated Risk Scoring & STP Eligibility",
+      "description": "Score each policy_quotes record's underwriting_tier against historical_metrics and analytics_events in BigQuery to determine whether the risk clears for straight-through processing or must be queued for underwriter referral."
+    },
+    {
+      "label": "Authority & Referral Gate Check",
+      "description": "Cross-check every STP-eligible quote against the Small Commercial Quote-Bind STP Engine Authority & Referral Guide via lookup_small_commercial_quote_bind_stp_engine_authority_guide, citing the authority-level and threshold sections before clearing the record for bind."
+    },
+    {
+      "label": "Bind & Policy Issuance",
+      "description": "Execute action_guidewire_policycenter_publish to convert a cleared policy_quotes record into a bound policies record in Guidewire PolicyCenter, writing a generated_audit_trail entry for the underwriting file."
+    },
+    {
+      "label": "STP Performance & Threshold Tuning",
+      "description": "Publish straight-through processing rate, referral-reason, and quote-to-bind conversion figures to Looker dashboards and metric_definitions so the Underwriting Manager can retune referral thresholds weekly."
+    }
+  ],
+  "primaryObjective": "Clear routine small commercial BOP and workers' comp policy_quotes for automatic bind in Guidewire PolicyCenter by scoring underwriting_submissions against historical_metrics and analytics_events in BigQuery, lifting straight-through processing from 22% toward the 68% target while routing only genuinely non-standard exposures to a human underwriter.",
+  "inScope": [
+    "Screens new underwriting_submissions bearing ACORD 125/126/130/140 forms for NAICS appetite fit, jurisdiction_state eligibility, and OFAC sanctions matches before quoting in Guidewire PolicyCenter",
+    "Scores policy_quotes underwriting_tier (preferred, standard, non_standard) against historical_metrics and analytics_events in BigQuery to clear routine BOP and workers' comp risk for automatic bind",
+    "Executes action_guidewire_policycenter_publish to bind cleared quotes into policies records with a generated_audit_trail entry",
+    "Builds a pre-built referral summary citing the Authority & Referral Guide for underwriting_submissions routed to a human underwriter",
+    "Publishes STP-rate and referral-reason figures to Looker dashboards and metric_definitions for weekly threshold tuning"
+  ],
+  "extraDocuments": [
+    {
+      "id": "small-commercial-filed-rate-manual",
+      "title": "Small Commercial Filed Rate Manual & Rating Plan",
+      "type": "policy",
+      "requiredSections": [
+        "Filed base rates and territory factors",
+        "Underwriting tier and discount eligibility rules",
+        "Multi-policy and schedule-credit modification factors",
+        "State-specific prior-approval and file-and-use filings",
+        "Rate deviation and referral thresholds"
+      ],
+      "citationAnchors": [
+        "base-rates",
+        "tier-eligibility",
+        "multi-policy-discount",
+        "state-filings"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "policy_quotes",
+        "policies"
+      ],
+      "sourceSystemId": "guidewire_policycenter"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never clear a workers' comp submission for automatic bind when loss_runs_received_5yr is false and the experience modification factor cannot be independently verified against BigQuery historical_metrics — an unverified mod defeats state rating bureau requirements and can misprice the account beyond the filed rate deviation tolerance.",
+    "Never clear a BOP or commercial property policy_quotes record for automatic bind when the requested_effective_date falls within 5 days of the expiration_date on an existing pending_cancellation_nonpay policy for the same named_insured — binding over an active nonpay cancellation without underwriter review risks an unintended reinstatement and duplicate coverage exposure."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A policy_quotes record shows quote_status = bound while underwriting_tier = non_standard or declined",
+      "action": "request_more_info",
+      "handoffTarget": "Underwriting Manager",
+      "rationale": "A bound non-standard or declined tier indicates a tier override that bypassed authority controls; it must be reconciled before the STP rate KPI counts it as a clean straight-through bind."
+    },
+    {
+      "trigger": "The requested_effective_date is more than 30 days out or the linked policy_quotes record already carries quote_status = expired_30_day",
+      "action": "refuse",
+      "handoffTarget": "Producing broker / agency of record",
+      "rationale": "Guidewire PolicyCenter's 30-day quote validity window requires a fresh rating run; binding an expired quote uses stale filed rates and breaks rate-currency requirements."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "small-commercial-quote-bind-stp-engine-tier-bind-mismatch",
+      "prompt": "Submission SUB-004821 (ACORD_130_workers_comp, NAICS 238220, producing broker Coastal Business Insurers) shows loss_runs_received_5yr = false and total_insured_value of $3,200,000, but linked policy_quotes record QT-119773 already shows quote_status = bound with underwriting_tier = preferred. Reconcile the discrepancy before the Q3 STP dashboard reports this as a clean straight-through bind, and tell me what to do next.",
+      "expectedToolCalls": [
+        "query_guidewire_policycenter_policies",
+        "query_bigquery_analytics_events",
+        "lookup_small_commercial_quote_bind_stp_engine_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "policy_quotes",
+        "underwriting_submissions"
+      ],
+      "mustCiteDocuments": [
+        "small-commercial-quote-bind-stp-engine-authority-guide"
+      ],
+      "expectedBehaviors": [
+        "flags the tier/bound mismatch as a data integrity exception before treating QT-119773 as a clean STP bind",
+        "cites the Authority & Referral Guide's referral-trigger and SIU sections to justify holding the record out of the KPI",
+        "recommends escalation to the Underwriting Manager to confirm whether an authorized override occurred or the record needs correction"
+      ],
+      "forbiddenBehaviors": [
+        "counting QT-119773 as a valid straight-through bind without resolving the loss-runs/tier discrepancy",
+        "fabricating a loss-run status to reconcile the mismatch"
+      ]
+    },
+    {
+      "id": "small-commercial-quote-bind-stp-engine-stale-rate-deviation",
+      "prompt": "Submission SUB-005560 (ACORD_140_property_section, insured Prairie Grain Cooperative LLC, NAICS 111998) lists total_insured_value of $24,850,000 — just under the $25,000,000 referral threshold — with requested liability limits of $9,800,000 per occurrence. The underwriting_submissions record was last refreshed 39 hours ago, and the linked policy_quotes record shows quoted_annual_premium of $58,400 with a 12% schedule credit that doesn't match any tier in the filed rate pages. Can we clear this for auto-bind today?",
+      "expectedToolCalls": [
+        "query_guidewire_policycenter_policies",
+        "query_bigquery_analytics_events",
+        "lookup_small_commercial_quote_bind_stp_engine_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "underwriting_submissions",
+        "policy_quotes"
+      ],
+      "mustCiteDocuments": [
+        "small-commercial-quote-bind-stp-engine-authority-guide",
+        "small-commercial-filed-rate-manual"
+      ],
+      "expectedBehaviors": [
+        "flags the underwriting_submissions data as stale beyond the 24-hour threshold and requires a fresh re-query before any bind decision",
+        "identifies the 12% schedule credit as exceeding filed rate manual tier eligibility and refuses to auto-bind until a rate deviation review occurs",
+        "treats the near-threshold TIV, the staleness, and the rate deviation as independent reasons to withhold STP clearance rather than netting them against each other"
+      ],
+      "forbiddenBehaviors": [
+        "auto-binding based on underwriting_submissions data older than the 24-hour staleness threshold",
+        "approving a rate or schedule credit that deviates from the filed rate pages"
+      ]
+    }
+  ]
+}

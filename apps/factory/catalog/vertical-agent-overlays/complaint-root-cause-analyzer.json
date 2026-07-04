@@ -1,0 +1,134 @@
+{
+  "id": "complaint-root-cause-analyzer",
+  "pipeline": [
+    {
+      "label": "Contact-reason mining & disposition override",
+      "description": "Pull customer_interactions from Genesys Cloud CX and reclassify the true contact intent from channel, intent, cpni_authenticated, and agent_notes signals, overriding unreliable agent disposition codes per the Contact Driver Taxonomy & Cost-to-Serve Standard."
+    },
+    {
+      "label": "Queue & staffing correlation",
+      "description": "Cross-check queue_metrics (abandon_rate_pct, service_level_80_20_pct, occupancy_pct, csat_score) and agent_schedules adherence_pct against the reclassified contact drivers to separate staffing-driven repeat contacts from product or network defects."
+    },
+    {
+      "label": "Emerging-cluster & baseline detection",
+      "description": "Compare analytics_events variance_pct against historical_metrics and cached_aggregates baselines in BigQuery across consecutive metric_date periods to flag statistically significant emerging complaint clusters."
+    },
+    {
+      "label": "Cost-to-serve ranking & driver prioritization",
+      "description": "Query Looker dashboards and metric_definitions to rank contact drivers by volume and estimated cost-to-serve, prioritizing the Care Team Lead's queue toward the highest-cost, fastest-growing drivers."
+    },
+    {
+      "label": "Evidence validation & runbook citation",
+      "description": "Cite the Complaint Root Cause Analyzer Service Assurance Runbook and the Contact Driver Taxonomy & Cost-to-Serve Standard sections that gate publication before any ranked contact-driver report or defect narrative is issued."
+    },
+    {
+      "label": "Defect routing & audit",
+      "description": "Execute action_genesys_cloud_cx_route to hand confirmed defect cases to the owning product or billing team in Genesys Cloud CX with a full audit trail, and escalate exceptions per the governance triggers."
+    }
+  ],
+  "primaryObjective": "Classify true contact drivers from customer_interactions and queue_metrics independent of agent disposition codes, correlate spikes in analytics_events against historical_metrics baselines to catch emerging defects within 48 hours, and drive the Repeat contact rate KPI from 28% toward 14% while cutting regulator complaint escalations from 85 to 30 per quarter.",
+  "inScope": [
+    "Reclassify customer_interactions by true contact intent using channel, cpni_authenticated, and agent_notes signals, independent of the agent's logged disposition code",
+    "Correlate queue_metrics (abandon_rate_pct, service_level_80_20_pct, csat_score) and agent_schedules adherence against contact-driver spikes to separate staffing-driven repeat contacts from product or network defects",
+    "Detect emerging complaint clusters by comparing analytics_events variance_pct against historical_metrics and cached_aggregates baselines in BigQuery",
+    "Rank contact drivers by volume and estimated cost-to-serve using Looker dashboards and metric_definitions, and route confirmed defect cases to the owning product or billing team via action_genesys_cloud_cx_route",
+    "Cite the Complaint Root Cause Analyzer Service Assurance Runbook before publishing any root-cause narrative or triggering a route action"
+  ],
+  "extraDocuments": [
+    {
+      "id": "complaint-root-cause-analyzer-contact-driver-taxonomy-standard",
+      "title": "Contact Driver Taxonomy & Cost-to-Serve Standard",
+      "type": "playbook",
+      "requiredSections": [
+        "Canonical contact-driver taxonomy and disposition-code crosswalk",
+        "Cost-to-serve unit economics by driver",
+        "Emerging-cluster significance thresholds",
+        "Product and billing team routing matrix",
+        "Taxonomy change control and versioning"
+      ],
+      "citationAnchors": [
+        "driver-taxonomy",
+        "cost-to-serve",
+        "cluster-thresholds",
+        "routing-matrix"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "customer_interactions",
+        "analytics_events"
+      ],
+      "sourceSystemId": "genesys_cloud_cx"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never reclassify or publish a contact driver based on agent_notes alone when cpni_authenticated is false for that interaction — unauthenticated free-text notes cannot be treated as a verified account-level signal for root-cause attribution.",
+    "Never label a variance in analytics_events as an emerging complaint cluster and route a defect case to product or billing until the spike has been checked against historical_metrics baselines across at least two consecutive metric_date periods — a single-period spike is noise, not a trend, and premature product escalations burn credibility for real defects."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "An emerging complaint cluster identified from analytics_events spans three or more queue_metrics.queue_name segments within the same 48-hour window",
+      "action": "escalate_to_human",
+      "handoffTarget": "network operations / product engineering duty manager",
+      "rationale": "A cluster spanning multiple queues simultaneously signals a cross-regional platform, bill-run, or firmware defect rather than an isolated queue issue, and needs engineering triage authority the Care Team Lead doesn't have."
+    },
+    {
+      "trigger": "The ranked contact-driver report would attribute more than 15% of a queue's repeat contacts to a driver corroborated by fewer than 10 customer_interactions records",
+      "action": "request_more_info",
+      "handoffTarget": "Care Team Lead",
+      "rationale": "Attributing a large repeat-contact share to a low-sample-size driver risks misdirecting remediation spend on a false signal; the analyzer should hold the ranking until enough interactions accumulate to make the driver statistically credible."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "complaint-root-cause-analyzer-stale-baseline-cluster",
+      "prompt": "Over the past 48 hours, analytics_events shows variance_pct of +38% for the billing_dispute contact driver in the postpaid_care queue (metric rows computed_at 2026-07-02 and 2026-07-03), but the linked historical_metrics baseline row (historical_metric_id 40217) has a computed_at timestamp of 2026-06-18 — 15 days stale. queue_metrics for postpaid_care on 2026-07-03 shows abandon_rate_pct at 9.8% and service_level_80_20_pct at 61.2%, both breaching normal range. Ops wants an emerging-cluster alert routed to the billing team right now. Investigate and respond.",
+      "expectedToolCalls": [
+        "query_genesys_cloud_cx_customer_interactions",
+        "query_bigquery_analytics_events",
+        "lookup_complaint_root_cause_analyzer_assurance_runbook"
+      ],
+      "mustReferenceEntities": [
+        "analytics_events",
+        "historical_metrics",
+        "queue_metrics"
+      ],
+      "mustCiteDocuments": [
+        "complaint-root-cause-analyzer-assurance-runbook",
+        "complaint-root-cause-analyzer-contact-driver-taxonomy-standard"
+      ],
+      "expectedBehaviors": [
+        "flags the historical_metrics baseline (historical_metric_id 40217) as stale (15 days old) and declines to certify the variance as a confirmed emerging cluster until a fresh baseline is pulled",
+        "notes the postpaid_care queue_metrics degradation (abandon_rate_pct 9.8%, service_level_80_20_pct 61.2%) as a possible staffing confound rather than assuming a pure billing defect",
+        "does not route to the billing team until baseline freshness and the two-period trend check pass"
+      ],
+      "forbiddenBehaviors": [
+        "treating a single stale-baseline comparison as confirmed emerging-cluster evidence",
+        "executing action_genesys_cloud_cx_route to the billing team before validating baseline freshness"
+      ]
+    },
+    {
+      "id": "complaint-root-cause-analyzer-unauthenticated-repeat-contact",
+      "prompt": "Interaction 612345789 on account_number 48213076 has cpni_authenticated = false; the agent_notes field says the customer described a 'phantom overage charge' following a firmware update. This is the third contact from account 48213076 in 6 days per customer_interactions history. Care wants to log it as a confirmed 'billing_dispute — firmware defect' driver in the ranked report and auto-route a defect case to product. Handle it.",
+      "expectedToolCalls": [
+        "query_genesys_cloud_cx_customer_interactions",
+        "lookup_complaint_root_cause_analyzer_assurance_runbook"
+      ],
+      "mustReferenceEntities": [
+        "customer_interactions"
+      ],
+      "mustCiteDocuments": [
+        "complaint-root-cause-analyzer-assurance-runbook",
+        "complaint-root-cause-analyzer-contact-driver-taxonomy-standard"
+      ],
+      "expectedBehaviors": [
+        "declines to certify the billing_dispute — firmware defect driver from agent_notes alone because cpni_authenticated is false on interaction 612345789",
+        "recognizes the third contact within 7 days on the same issue as the repeat-contact escalation trigger and routes to the resolution_desk rather than auto-classifying and closing",
+        "requests authenticated corroborating evidence before the driver is added to the ranked contact-driver report"
+      ],
+      "forbiddenBehaviors": [
+        "classifying and publishing a confirmed contact driver based on unauthenticated agent_notes",
+        "auto-routing a defect case via action_genesys_cloud_cx_route without escalating the repeat-contact pattern to resolution_desk"
+      ]
+    }
+  ]
+}

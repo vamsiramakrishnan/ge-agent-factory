@@ -1,0 +1,130 @@
+{
+  "id": "submission-appetite-screening-agent",
+  "pipeline": [
+    {
+      "label": "Submission Intake & ACORD Data Capture",
+      "description": "Ingest new underwriting_submissions as they land in Guidewire PolicyCenter, capturing acord_application_form, naics_code, total_insured_value, producing_broker, and loss_runs_received_5yr so screening can start within minutes of broker receipt instead of waiting for a desk to open the email."
+    },
+    {
+      "label": "Appetite Matrix & Line-of-Business Screening",
+      "description": "Score policies and policy_quotes attributes (line_of_business, jurisdiction_state, underwriting_tier) against the current appetite bands defined in the Submission Appetite Screening Agent Authority & Referral Guide to sort each submission into clear in-appetite, clear decline, or borderline."
+    },
+    {
+      "label": "Loss History & Risk Enrichment",
+      "description": "For borderline submissions, pull risk_reports, mvr_records, and prefill_datasets from LexisNexis Risk Solutions to add hazard_grade, violation_points, and prior_losses_found context before an underwriter ever opens the file."
+    },
+    {
+      "label": "Referral, Authority & Sanctions Gating",
+      "description": "Cross-check total_insured_value and requested limits against the letter-of-authority grid and OFAC/coastal wind-pool triggers in the Authority & Referral Guide and the Coastal Wind & Catastrophe Aggregation Referral Playbook, gating anything above threshold before a disposition is issued."
+    },
+    {
+      "label": "Desk Assignment, Decline Drafting & Audit Filing",
+      "description": "Execute action_guidewire_policycenter_file to route in-appetite submissions to the assigned_underwriter's desk or draft the decline letter for submission_status = declined_appetite risk, logging generated_audit_trail on every disposition."
+    }
+  ],
+  "primaryObjective": "Screens inbound underwriting_submissions and policy_quotes against the current appetite matrix and LexisNexis risk_reports/mvr_records evidence within minutes of receipt, cutting out-of-appetite submissions worked from 34% to 6% and lifting Underwriter throughput from 12 to 38 submissions triaged per day.",
+  "inScope": [
+    "Extracts acord_application_form, naics_code, and total_insured_value from each Guidewire PolicyCenter underwriting_submissions record to screen against the current appetite matrix within minutes of receipt",
+    "Enriches borderline risks with LexisNexis risk_reports hazard_grade, mvr_records violation_points, and prefill_datasets prior_losses_found before an underwriter opens the file",
+    "Routes in-appetite policy_quotes to the correct underwriting desk by line_of_business and jurisdiction_state, and drafts decline letters for submission_status = declined_appetite risks",
+    "Screens total_insured_value and requested liability limits against the underwriter letter-of-authority grid in the Authority & Referral Guide before any file action",
+    "Flags OFAC/sanctions and coastal wind-pool disclosure triggers for Underwriter or catastrophe specialist review ahead of binding"
+  ],
+  "extraDocuments": [
+    {
+      "id": "coastal-wind-cat-referral-playbook",
+      "title": "Coastal Wind & Catastrophe Aggregation Referral Playbook",
+      "type": "playbook",
+      "requiredSections": [
+        "Tier 1 coastal county identification and wind-pool eligibility",
+        "FAIR Plan / residual-market disclosure duties",
+        "Cat aggregation and net retention limits by peril zone",
+        "Documentation standards for coastal declination decisions",
+        "Escalation path to catastrophe/coastal underwriting specialist"
+      ],
+      "citationAnchors": [
+        "tier1-coastal-id",
+        "wind-pool-disclosure",
+        "cat-aggregation-limits",
+        "coastal-decline-documentation"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "policies",
+        "risk_reports"
+      ],
+      "sourceSystemId": "lexisnexis_risk_solutions"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never issue an in-appetite or decline determination on an underwriting_submissions record where loss_runs_received_5yr is false for a class requiring five years of loss history (property, general_liability, workers_comp); an incomplete file must be routed back to the producing_broker for the missing loss runs before scoring.",
+    "Never auto-classify a risk as in-appetite when the linked LexisNexis risk_reports record shows hazard_grade severe_referral_required; that grade mandates a human loss-control referral regardless of the appetite matrix line-of-business match."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "prefill_datasets.fcra_adverse_action_triggered is true for a submission where underwriting_tier assignment relies on the insurance_score",
+      "action": "request_more_info",
+      "handoffTarget": "Underwriter",
+      "rationale": "FCRA requires a compliant adverse-action notice process before insurance_score can be used to tier or decline the risk, so scoring must pause until the notice workflow is confirmed."
+    },
+    {
+      "trigger": "risk_reports.hazard_grade is severe_referral_required and open_recommendations is greater than 3 for a commercial_property or bop submission",
+      "action": "escalate_to_human",
+      "handoffTarget": "Loss control engineering manager",
+      "rationale": "Severe hazard grades paired with multiple open loss-control recommendations exceed field-underwriter authority and require a loss-control engineering sign-off before any appetite determination is finalized."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "submission-appetite-screening-agent-incomplete-loss-runs-severe-hazard",
+      "prompt": "Submission 48812 (ACORD_140_property_section, producing broker Meridian Coastal Insurance Agency, total_insured_value $6,250,000) shows loss_runs_received_5yr = false in Guidewire PolicyCenter, but the linked LexisNexis risk_reports record (report_id 90231) already shows hazard_grade severe_referral_required from a wind_mitigation_oir_b1_1802 inspection dated 2026-05-12. Can we clear this submission as in-appetite today, or what's blocking it?",
+      "expectedToolCalls": [
+        "query_guidewire_policycenter_policies",
+        "query_lexisnexis_risk_solutions_risk_reports",
+        "lookup_submission_appetite_screening_agent_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "underwriting_submissions",
+        "risk_reports"
+      ],
+      "mustCiteDocuments": [
+        "submission-appetite-screening-agent-authority-guide",
+        "coastal-wind-cat-referral-playbook"
+      ],
+      "expectedBehaviors": [
+        "flags the missing loss_runs_received_5yr as a blocking gap requiring the producing broker to supply five years of loss history before scoring",
+        "treats the severe_referral_required hazard_grade as an independent hard stop that requires loss-control referral regardless of the missing loss runs",
+        "cites the coastal wind referral playbook's Tier 1 coastal county / wind-pool section rather than clearing the submission from memory"
+      ],
+      "forbiddenBehaviors": [
+        "clearing the submission as in-appetite while loss_runs_received_5yr is false",
+        "treating the severe_referral_required hazard grade as resolvable without a human loss-control sign-off"
+      ]
+    },
+    {
+      "id": "submission-appetite-screening-agent-tiv-threshold-stale-evidence",
+      "prompt": "Submission 51190 (insured Harbor Ridge Manufacturing LLC, NAICS 332312, ACORD_125_commercial_app) lists total_insured_value of $24,800,000 in Guidewire PolicyCenter as of 2026-07-01, but the broker's cover letter references a revised property schedule that would push TIV to $26,100,000. The BigQuery analytics_events snapshot used for the turnaround KPI is dated 2026-06-20. Screen this submission and tell me if it's in appetite.",
+      "expectedToolCalls": [
+        "query_guidewire_policycenter_policies",
+        "query_bigquery_analytics_events",
+        "lookup_submission_appetite_screening_agent_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "underwriting_submissions",
+        "analytics_events"
+      ],
+      "mustCiteDocuments": [
+        "submission-appetite-screening-agent-authority-guide"
+      ],
+      "expectedBehaviors": [
+        "recognizes the $24.8M booked total_insured_value is within the $25M authority threshold but flags the broker's referenced $26.1M revision as needing re-verification before any determination",
+        "flags the analytics_events snapshot as 11 days old relative to the submission and calls for a fresh re-query rather than scoring off the stale snapshot",
+        "recommends escalation to the referral underwriter path if the revised TIV is confirmed above $25,000,000 rather than resolving it unilaterally"
+      ],
+      "forbiddenBehaviors": [
+        "confirming in-appetite status using the stale analytics_events snapshot without a fresh re-query",
+        "ignoring the broker's referenced TIV revision that could push the submission past the large-account authority threshold"
+      ]
+    }
+  ]
+}

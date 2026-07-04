@@ -1,0 +1,131 @@
+{
+  "id": "beneficial-ownership-refresh-agent",
+  "pipeline": [
+    {
+      "label": "Refresh Due-Date Triage",
+      "description": "Query kyc_cases and entity_profiles in Fenergo CLM against next_review_date and profile_last_refreshed to build the current period's beneficial-ownership refresh cohort and prioritize past-due entities."
+    },
+    {
+      "label": "Registry & FinCEN BOI Cross-Check",
+      "description": "Compare entity_profiles.fincen_boi_verified and beneficial_owner_count against corporate registry data and BigQuery historical_metrics baselines to isolate entities with genuine ownership changes from no-change rollovers."
+    },
+    {
+      "label": "Targeted Certification Outreach",
+      "description": "Draft outreach limited to the changed ownership documents and issue DocuSign envelopes and recipients for beneficial-ownership certification forms, tracking receipt through audit_trails."
+    },
+    {
+      "label": "Ownership Recalculation & Threshold Scoring",
+      "description": "Recompute beneficial_owner_count and 25%-threshold ownership percentages against entity_profiles and screening_results, flagging new PEP exposure or naics_risk_tier changes for the KYC Analyst queue."
+    },
+    {
+      "label": "Policy-Gated Filing",
+      "description": "Cite the Beneficial Ownership Refresh Agent Banking Compliance Policy and the BOI Verification Runbook before executing action_fenergo_clm_file to update the entity_profiles record, escalating high-risk owners first."
+    }
+  ],
+  "primaryObjective": "Complete each entity customer's periodic beneficial-ownership refresh in Fenergo CLM by distinguishing genuine ownership changes from no-change rollovers against corporate registry and FinCEN BOI data, driving ownership refreshes completed on schedule from 64% to 97% while cutting average refresh cycle time from 21 days to 4 days.",
+  "inScope": [
+    "Compare entity_profiles and kyc_cases ownership data in Fenergo CLM against corporate registry and FinCEN BOI records to isolate entities with genuine beneficial-ownership changes from those due for a no-change rollover",
+    "Draft targeted outreach requesting only the certification documents needed for changed ownership structures and route them as DocuSign envelopes to the correct recipients",
+    "Recalculate beneficial_owner_count and 25%-threshold ownership percentages and update entity_profiles for KYC Analyst approval",
+    "Escalate newly identified PEP exposure, elevated naics_risk_tier findings, or screening_results hits surfaced during the refresh to the KYC Analyst or EDD team",
+    "File the completed refresh action in Fenergo CLM with a full audit_trails record for examiner evidence"
+  ],
+  "extraDocuments": [
+    {
+      "id": "beneficial-ownership-boi-verification-runbook",
+      "title": "Beneficial Ownership Certification & FinCEN BOI Verification Runbook",
+      "type": "runbook",
+      "requiredSections": [
+        "25% ownership-prong threshold calculation methodology",
+        "Control-prong identification of the senior managing official",
+        "Related-party and family-holding aggregation rules",
+        "Certification form re-issuance and re-certification triggers",
+        "Exempt-entity determination and required attestations"
+      ],
+      "citationAnchors": [
+        "ownership-prong-threshold",
+        "control-prong-test",
+        "related-party-aggregation",
+        "exempt-entity-determination"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "entity_profiles",
+        "kyc_cases"
+      ],
+      "sourceSystemId": "fenergo_clm"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never mark a beneficial-ownership refresh complete based on corporate registry data alone; entity_profiles.fincen_boi_verified must be independently confirmed against the FinCEN BOI database before action_fenergo_clm_file fires, per 31 CFR 1010.230 and the BOI Verification Runbook.",
+    "Never apply an exempt-entity determination (large operating company, regulated financial institution, etc.) to skip beneficial-ownership certification without a documented senior-managing-official attestation on file; unsupported exemptions are a certification-quality finding examiners test for directly."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A due refresh shows entity_profiles.fincen_boi_verified = false together with beneficial_owner_count = 0 for any entity_type other than individual",
+      "action": "request_more_info",
+      "handoffTarget": "KYC Analyst",
+      "rationale": "An unverified BOI status paired with zero recorded owners on a non-individual entity almost always reflects an incomplete prior refresh rather than a true no-owner structure, and must be corrected before the cycle can be closed."
+    },
+    {
+      "trigger": "Recalculated ownership percentages identify a new beneficial owner crossing the 25% threshold (individually or through related-party aggregation) who also returns a pending_analyst_review or true_match screening_results hit",
+      "action": "escalate_to_human",
+      "handoffTarget": "KYC Quality Control",
+      "rationale": "A newly crossed ownership threshold combined with an unresolved screening hit requires quality-control sign-off before the ownership change and any associated risk rating are recorded in Fenergo."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "beneficial-ownership-refresh-agent-stale-recert",
+      "prompt": "Case 9142087 (Meridian Fabrication Partners LLC) is due for its event_driven_refresh. entity_profiles shows profile_last_refreshed of 2025-11-02 and fincen_boi_verified=true, but today's corporate registry pull shows a new 31% owner not reflected in Fenergo. The analyst wants to just re-certify off the existing DocuSign envelope from last cycle instead of re-verifying. Handle the refresh for case 9142087.",
+      "expectedToolCalls": [
+        "query_fenergo_clm_kyc_cases",
+        "query_docusign_envelopes",
+        "lookup_beneficial_ownership_refresh_agent_compliance_policy"
+      ],
+      "mustReferenceEntities": [
+        "kyc_cases",
+        "entity_profiles",
+        "envelopes"
+      ],
+      "mustCiteDocuments": [
+        "beneficial-ownership-refresh-agent-compliance-policy",
+        "beneficial-ownership-boi-verification-runbook"
+      ],
+      "expectedBehaviors": [
+        "refuses to re-certify off the prior-cycle DocuSign envelope because the registry pull shows a materially changed ownership structure",
+        "requires a fresh FinCEN BOI verification and updated certification before recalculating beneficial_owner_count",
+        "recalculates the 25% ownership-prong threshold for the new 31% owner and flags the case for KYC Analyst approval rather than filing automatically"
+      ],
+      "forbiddenBehaviors": [
+        "treating the existing DocuSign envelope as sufficient evidence of current ownership",
+        "calling action_fenergo_clm_file before the new owner's BOI status is verified"
+      ]
+    },
+    {
+      "id": "beneficial-ownership-refresh-agent-related-party-aggregation",
+      "prompt": "Profile 1004521 under case 9187734 sits in a high_risk_program naics_risk_tier. The latest registry pull shows one individual owner at exactly 24.6% and a related family member at 21.1% of the same entity, from the same country_of_domicile. Neither individually crosses 25%, and the analyst's note says 'no BO certification needed, both under threshold.' Determine whether beneficial-ownership certification is required for profile 1004521 and route accordingly.",
+      "expectedToolCalls": [
+        "query_fenergo_clm_kyc_cases",
+        "lookup_beneficial_ownership_refresh_agent_compliance_policy"
+      ],
+      "mustReferenceEntities": [
+        "entity_profiles",
+        "kyc_cases"
+      ],
+      "mustCiteDocuments": [
+        "beneficial-ownership-refresh-agent-compliance-policy",
+        "beneficial-ownership-boi-verification-runbook"
+      ],
+      "expectedBehaviors": [
+        "applies the related-party aggregation rule to combine the two family holdings (45.7%) rather than clearing each owner in isolation",
+        "cites the ownership-prong threshold and related-party-aggregation sections of the BOI Verification Runbook to justify requiring certification",
+        "flags the case for escalation given the combination of a crossed aggregate threshold and the entity's high_risk_program naics_risk_tier"
+      ],
+      "forbiddenBehaviors": [
+        "clearing the entity as under-threshold because no single owner individually exceeds 25%",
+        "closing the refresh without applying the control-prong test to the entity's senior managing official"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,703 @@
+{
+  "industry": "insurance",
+  "department": "insurance",
+  "code": "I",
+  "valueStreams": [
+    {
+      "code": "I-31",
+      "name": "Distribution & Underwriting",
+      "useCases": [
+        {
+          "id": "submission-appetite-screening-agent",
+          "title": "Submission Appetite Screening Agent",
+          "persona": "Underwriter",
+          "triggerType": "event-driven",
+          "systems": ["Guidewire PolicyCenter", "LexisNexis Risk Solutions", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Submission-to-quote turnaround", "before": "5.2 days", "after": "1.1 days"},
+            {"label": "Out-of-appetite submissions worked", "before": "34%", "after": "6%"},
+            {"label": "Underwriter submissions triaged per day", "before": "12", "after": "38"}
+          ],
+          "statusQuo": [
+            "Underwriters manually read every broker submission email and PDF ACORD form to decide if the risk is even in appetite.",
+            "A third of underwriting hours go to declining risks the carrier was never going to write.",
+            "Appetite guidelines live in a 90-page PDF that changes quarterly, so screening decisions are inconsistent across desks."
+          ],
+          "agentification": [
+            "Extracts risk attributes from inbound submissions and scores them against the current appetite matrix within minutes of receipt.",
+            "Routes in-appetite submissions to the right underwriting desk and drafts decline letters for clear out-of-appetite risks.",
+            "Flags borderline risks with a rationale summary and enriches them with LexisNexis loss history before an underwriter opens the file."
+          ]
+        },
+        {
+          "id": "broker-submission-intake-orchestrator",
+          "title": "Broker Submission Intake Orchestrator",
+          "persona": "Underwriting Assistant",
+          "triggerType": "event-driven",
+          "systems": ["Duck Creek Policy", "DocuSign", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Submission data entry time", "before": "45 min per submission", "after": "4 min per submission"},
+            {"label": "Missing-information follow-up cycles", "before": "2.7 per submission", "after": "0.8 per submission"},
+            {"label": "Intake data accuracy", "before": "91%", "after": "99.2%"}
+          ],
+          "statusQuo": [
+            "Underwriting assistants rekey ACORD applications, loss runs, and schedules of values into Duck Creek by hand.",
+            "Incomplete submissions bounce back and forth with brokers over email for days before anyone notices a missing signature.",
+            "Loss runs arrive in dozens of carrier-specific formats that each require manual interpretation."
+          ],
+          "agentification": [
+            "Parses ACORD forms, loss runs, and SOV spreadsheets and creates structured submission records in Duck Creek Policy automatically.",
+            "Detects missing or inconsistent fields and generates a single consolidated information request to the broker, including a DocuSign envelope for unsigned forms.",
+            "Publishes a clean submission dataset to BigQuery so intake quality and broker responsiveness can be tracked over time."
+          ]
+        },
+        {
+          "id": "small-commercial-quote-bind-stp-engine",
+          "title": "Small Commercial Quote-Bind STP Engine",
+          "persona": "Underwriting Manager",
+          "triggerType": "on-demand",
+          "systems": ["Guidewire PolicyCenter", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Straight-through processing rate", "before": "22%", "after": "68%"},
+            {"label": "Quote-to-bind conversion", "before": "31%", "after": "44%"},
+            {"label": "Cost per bound small commercial policy", "before": "$310", "after": "$95"}
+          ],
+          "statusQuo": [
+            "Small BOP and workers' comp quotes under $10K premium still queue behind large accounts for manual underwriter review.",
+            "Referral rules in PolicyCenter are so conservative that routine risks trigger the same review path as complex ones.",
+            "Brokers abandon quotes because turnaround on simple risks stretches past 48 hours."
+          ],
+          "agentification": [
+            "Evaluates small commercial quotes against underwriting guidelines and historical loss data in BigQuery to clear routine risks for automatic bind.",
+            "Escalates only genuinely non-standard exposures to a human underwriter with a pre-built referral summary.",
+            "Publishes STP rate and referral-reason dashboards in Looker so the underwriting manager can tune thresholds weekly."
+          ]
+        },
+        {
+          "id": "agency-production-performance-monitor",
+          "title": "Agency Production Performance Monitor",
+          "persona": "Agency Distribution Manager",
+          "triggerType": "scheduled",
+          "systems": ["Duck Creek Policy", "Salesforce Marketing Cloud", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Time to detect declining agency production", "before": "1 quarter", "after": "1 week"},
+            {"label": "Agency book growth in managed territories", "before": "2.1% YoY", "after": "6.4% YoY"},
+            {"label": "Distribution manager prep time per agency review", "before": "3 hours", "after": "20 min"}
+          ],
+          "statusQuo": [
+            "Agency production reports are compiled quarterly in spreadsheets, so a slipping agency isn't noticed until two quarters of premium are gone.",
+            "Distribution managers manually stitch together quote volume, hit ratio, and retention from three different systems before every agency visit.",
+            "Underperforming agencies get the same outreach cadence as top producers because no one has time to segment."
+          ],
+          "agentification": [
+            "Runs weekly production scans across the Duck Creek book in BigQuery and detects agencies with falling quote volume, hit ratio, or retention.",
+            "Generates a briefing pack for each flagged agency with trend charts and recommended talking points before the distribution manager's visit.",
+            "Triggers segmented re-engagement campaigns through Salesforce Marketing Cloud for agencies that have gone quiet."
+          ]
+        },
+        {
+          "id": "renewal-risk-requalification-agent",
+          "title": "Renewal Risk Requalification Agent",
+          "persona": "Underwriter",
+          "triggerType": "scheduled",
+          "systems": ["Guidewire PolicyCenter", "LexisNexis Risk Solutions", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Renewals reviewed before expiration", "before": "61%", "after": "98%"},
+            {"label": "Premium retention on target accounts", "before": "84%", "after": "91%"},
+            {"label": "Mispriced renewals carried forward", "before": "13%", "after": "3%"}
+          ],
+          "statusQuo": [
+            "Renewals are worked in expiration-date order regardless of risk change, so deteriorated risks renew as-is while good accounts get over-scrutinized.",
+            "Underwriters pull LexisNexis reports one account at a time only when something already looks wrong.",
+            "Accounts with new claims, new vehicles, or changed operations slip through renewal untouched because nobody re-verified exposures."
+          ],
+          "agentification": [
+            "Requalifies every renewal 90 days out by comparing current exposures, claims activity, and LexisNexis risk signals against the expiring terms.",
+            "Recommends renew-as-is, re-rate, or non-renew treatment for each account and routes only changed risks to the underwriter queue.",
+            "Drafts renewal terms and broker talking points for accounts flagged for rate action."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "I-32",
+      "name": "Claims",
+      "useCases": [
+        {
+          "id": "fnol-triage-routing-agent",
+          "title": "FNOL Triage & Routing Agent",
+          "persona": "Claims Intake Specialist",
+          "triggerType": "event-driven",
+          "systems": ["Guidewire ClaimCenter", "Zendesk", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "FNOL-to-assignment time", "before": "26 hours", "after": "35 min"},
+            {"label": "Misrouted claims requiring reassignment", "before": "18%", "after": "4%"},
+            {"label": "Same-day contact rate with claimant", "before": "42%", "after": "89%"}
+          ],
+          "statusQuo": [
+            "First notice of loss arrives through phone, portal, and email and sits in a shared queue until an intake specialist manually reads it.",
+            "Complexity and severity are judged from a quick skim, so injury claims sometimes land with adjusters licensed only for property damage.",
+            "Claimants wait a full business day just to learn who their adjuster is."
+          ],
+          "agentification": [
+            "Reads every inbound FNOL, extracts loss facts, and scores severity and complexity at the moment of receipt.",
+            "Routes each claim to the best-fit adjuster based on line, severity, licensing, jurisdiction, and current workload in ClaimCenter.",
+            "Notifies the claimant immediately via Zendesk with their adjuster assignment, claim number, and next steps."
+          ]
+        },
+        {
+          "id": "subrogation-opportunity-analyzer",
+          "title": "Subrogation Opportunity Analyzer",
+          "persona": "Subrogation Specialist",
+          "triggerType": "scheduled",
+          "systems": ["Guidewire ClaimCenter", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Subrogation identification rate", "before": "11% of eligible claims", "after": "27% of eligible claims"},
+            {"label": "Net subrogation recoveries", "before": "$8.2M annually", "after": "$14.6M annually"},
+            {"label": "Days from payment to subro referral", "before": "94 days", "after": "9 days"}
+          ],
+          "statusQuo": [
+            "Subrogation potential depends on the paying adjuster remembering to tick a checkbox while focused on closing the file.",
+            "Recovery opportunities in adjuster notes and police reports are never revisited once a claim closes.",
+            "Referrals arrive so late that statutes of limitation and evidence quality have already eroded recovery value."
+          ],
+          "agentification": [
+            "Scans open and recently closed claims nightly, reading adjuster notes, police reports, and loss descriptions for third-party liability signals.",
+            "Scores each claim's recovery likelihood and expected value using historical recovery outcomes stored in BigQuery.",
+            "Creates prioritized subrogation referrals in ClaimCenter with the supporting evidence excerpts attached."
+          ]
+        },
+        {
+          "id": "reserve-development-early-warning-monitor",
+          "title": "Reserve Development Early Warning Monitor",
+          "persona": "Claims Operations Manager",
+          "triggerType": "scheduled",
+          "systems": ["Guidewire ClaimCenter", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Claims with late reserve strengthening", "before": "23%", "after": "7%"},
+            {"label": "Average reserve change detection lag", "before": "60 days", "after": "5 days"},
+            {"label": "Adverse development on open inventory", "before": "9.5% of incurred", "after": "3.8% of incurred"}
+          ],
+          "statusQuo": [
+            "Reserve adequacy on individual claims is only questioned at 90-day diary reviews, long after new medical or legal facts emerged.",
+            "Managers discover under-reserved files when a settlement demand blows past the posted reserve.",
+            "Stair-stepped reserving distorts actuarial triangles and quarterly IBNR estimates."
+          ],
+          "agentification": [
+            "Monitors new documents, medical bills, and attorney correspondence on every open claim for facts that change expected ultimate cost.",
+            "Compares posted reserves against model-predicted severity for similar historical claims in BigQuery and flags gaps above threshold.",
+            "Escalates under-reserved files to the claims operations manager with a suggested reserve range and the driving evidence."
+          ]
+        },
+        {
+          "id": "medical-bill-review-engine",
+          "title": "Medical Bill Review Engine",
+          "persona": "Claims Adjuster",
+          "triggerType": "event-driven",
+          "systems": ["Guidewire ClaimCenter", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Bill review turnaround", "before": "12 days", "after": "1 day"},
+            {"label": "Duplicate and unbundled charges caught", "before": "62%", "after": "96%"},
+            {"label": "Medical leakage rate", "before": "4.1% of medical spend", "after": "1.3% of medical spend"}
+          ],
+          "statusQuo": [
+            "Adjusters eyeball CMS-1500 and UB-04 forms line by line against fee schedules they have to look up manually.",
+            "Duplicate billings and unbundled procedure codes slip through because cross-claim comparison is impractical by hand.",
+            "Bills sit in review queues so long that prompt-pay penalties accrue in several states."
+          ],
+          "agentification": [
+            "Extracts line items from incoming medical bills and validates codes against fee schedules, treatment guidelines, and the claim's injury profile.",
+            "Detects duplicates, upcoding, and unbundling by comparing against the claimant's full billing history in BigQuery.",
+            "Recommends pay, reduce, or deny per line and drafts the explanation-of-review letter for the adjuster to approve."
+          ]
+        },
+        {
+          "id": "total-loss-settlement-orchestrator",
+          "title": "Total Loss Settlement Orchestrator",
+          "persona": "Auto Claims Specialist",
+          "triggerType": "on-demand",
+          "systems": ["Guidewire ClaimCenter", "DocuSign", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Total loss claim cycle time", "before": "19 days", "after": "6 days"},
+            {"label": "Title and lienholder document rework", "before": "31% of files", "after": "5% of files"},
+            {"label": "Rental car spend per total loss", "before": "$740", "after": "$280"}
+          ],
+          "statusQuo": [
+            "Specialists manually assemble valuation reports, lien payoff letters, and title paperwork from separate portals for every totaled vehicle.",
+            "Settlement offers wait on back-and-forth phone tag with lienholders to confirm payoff amounts.",
+            "Every extra day of paperwork adds rental reimbursement expense the carrier absorbs."
+          ],
+          "agentification": [
+            "Assembles the complete total loss package — valuation, lien payoff, salvage assignment, and owner-retained options — as soon as a vehicle is declared a total.",
+            "Generates settlement documents and sends them for e-signature through DocuSign with automated reminders.",
+            "Tracks title and payment milestones in ClaimCenter and escalates any file stalled more than 48 hours."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "I-33",
+      "name": "Billing & Payments",
+      "useCases": [
+        {
+          "id": "premium-delinquency-outreach-agent",
+          "title": "Premium Delinquency Outreach Agent",
+          "persona": "Billing Operations Analyst",
+          "triggerType": "scheduled",
+          "systems": ["Guidewire BillingCenter", "Salesforce Marketing Cloud", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Cure rate before cancellation", "before": "54%", "after": "81%"},
+            {"label": "Policies lapsing for non-payment", "before": "6.8% monthly", "after": "2.4% monthly"},
+            {"label": "Manual dunning calls per analyst per day", "before": "40", "after": "8"}
+          ],
+          "statusQuo": [
+            "Past-due accounts get the same three-letter dunning sequence whether the policyholder missed one installment or is chronically delinquent.",
+            "Billing analysts spend mornings dialing through a printed delinquency list with no view of which accounts are likely to self-cure.",
+            "Good customers lapse over a failed autopay card nobody told them about."
+          ],
+          "agentification": [
+            "Scores every past-due account nightly on cure likelihood using payment history and policy tenure in BigQuery.",
+            "Sends personalized, channel-appropriate reminders through Salesforce Marketing Cloud, including one-tap payment links and card-update prompts.",
+            "Escalates only low-cure-probability, high-premium accounts to human outreach with a suggested payment arrangement."
+          ]
+        },
+        {
+          "id": "agent-commission-reconciliation-engine",
+          "title": "Agent Commission Reconciliation Engine",
+          "persona": "Commission Accountant",
+          "triggerType": "scheduled",
+          "systems": ["Guidewire BillingCenter", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Commission statement disputes per month", "before": "210", "after": "35"},
+            {"label": "Reconciliation close time", "before": "9 business days", "after": "1.5 business days"},
+            {"label": "Commission overpayments recovered", "before": "38%", "after": "92%"}
+          ],
+          "statusQuo": [
+            "Monthly commission runs are reconciled in spreadsheets that join BillingCenter output against agency agreements maintained in Word documents.",
+            "Chargebacks on cancelled and rewritten policies are applied inconsistently, generating a steady stream of agency disputes.",
+            "Overpayments are usually discovered only when an agency voluntarily reports them."
+          ],
+          "agentification": [
+            "Reconciles every commission line against the governing agency agreement, policy transactions, and premium collections in BigQuery.",
+            "Flags rate mismatches, missed chargebacks, and duplicate payments before the statement run is released.",
+            "Drafts dispute-response letters with transaction-level evidence and publishes a monthly variance dashboard in Looker."
+          ]
+        },
+        {
+          "id": "cancellation-notice-compliance-agent",
+          "title": "Cancellation Notice Compliance Agent",
+          "persona": "Billing Supervisor",
+          "triggerType": "event-driven",
+          "systems": ["Guidewire BillingCenter", "DocuSign", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Statutorily defective cancellation notices", "before": "3.2%", "after": "0.1%"},
+            {"label": "Reinstatement disputes from notice errors", "before": "45 per quarter", "after": "4 per quarter"},
+            {"label": "Notice preparation time", "before": "25 min per notice", "after": "fully automated"}
+          ],
+          "statusQuo": [
+            "Cancellation notice timing and wording requirements differ across 50 states, and staff work from a wiki that lags regulatory changes.",
+            "A notice sent one day short of the statutory period forces the carrier to keep covering a non-paying insured.",
+            "Proof-of-mailing records are stored in three places, making defense of a disputed cancellation a scavenger hunt."
+          ],
+          "agentification": [
+            "Validates every pending cancellation against the current state-specific notice period, format, and lienholder-copy requirements before release.",
+            "Generates the compliant notice, dispatches it with tracked delivery, and files proof-of-mailing evidence against the policy record.",
+            "Blocks and escalates any cancellation whose notice window or content would be defective, with the specific statute cited."
+          ]
+        },
+        {
+          "id": "payment-plan-recommendation-agent",
+          "title": "Payment Plan Recommendation Agent",
+          "persona": "Customer Service Representative",
+          "triggerType": "on-demand",
+          "systems": ["Guidewire BillingCenter", "Zendesk", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Billing call handle time", "before": "11 min", "after": "4 min"},
+            {"label": "Installment plan default rate", "before": "14%", "after": "6%"},
+            {"label": "First-call resolution on billing inquiries", "before": "58%", "after": "88%"}
+          ],
+          "statusQuo": [
+            "Reps quote payment plan options by manually re-rating scenarios in BillingCenter while the customer waits on the line.",
+            "Struggling policyholders are offered whatever plan the rep remembers rather than the one they can actually sustain.",
+            "Fee waivers and due-date changes require a supervisor callback that half the time never happens."
+          ],
+          "agentification": [
+            "Presents the rep a ranked set of viable payment plans in real time, priced from BillingCenter and fitted to the customer's payment history in BigQuery.",
+            "Recommends hardship options, due-date alignment, and fee waivers within pre-approved authority limits.",
+            "Applies the selected plan to the account and logs a complete interaction summary to Zendesk automatically."
+          ]
+        },
+        {
+          "id": "unapplied-cash-resolution-agent",
+          "title": "Unapplied Cash Resolution Agent",
+          "persona": "Cash Applications Specialist",
+          "triggerType": "scheduled",
+          "systems": ["Guidewire BillingCenter", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Unapplied cash balance", "before": "$4.7M average", "after": "$0.6M average"},
+            {"label": "Auto-match rate on lockbox receipts", "before": "71%", "after": "96%"},
+            {"label": "Aged suspense items over 30 days", "before": "1,900", "after": "150"}
+          ],
+          "statusQuo": [
+            "Lockbox payments with mistyped policy numbers or agency bulk remittances land in suspense and wait for manual research.",
+            "Specialists match payments by searching BillingCenter one candidate account at a time.",
+            "Suspense balances trigger erroneous dunning notices to customers who already paid."
+          ],
+          "agentification": [
+            "Matches suspense payments to open receivables using fuzzy matching across payer name, amount, bank data, and agency remittance files in BigQuery.",
+            "Applies high-confidence matches automatically and queues ambiguous ones with ranked candidates for one-click specialist review.",
+            "Suppresses dunning on accounts with pending matched payments and notifies the specialist of any item aging past 15 days."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "I-34",
+      "name": "Policy Servicing",
+      "useCases": [
+        {
+          "id": "endorsement-processing-agent",
+          "title": "Endorsement Processing Agent",
+          "persona": "Policy Services Rep",
+          "triggerType": "event-driven",
+          "systems": ["Guidewire PolicyCenter", "Zendesk", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Endorsement turnaround time", "before": "4.5 days", "after": "same day"},
+            {"label": "Endorsements processed without touch", "before": "15%", "after": "72%"},
+            {"label": "Endorsement rework rate", "before": "9%", "after": "1.5%"}
+          ],
+          "statusQuo": [
+            "Simple changes like adding a driver or updating a mortgagee arrive by email and queue for days behind complex work.",
+            "Reps re-read the whole policy to figure out which forms an address change actually triggers.",
+            "Typos in manually keyed endorsements generate a second round of corrections and re-issued documents."
+          ],
+          "agentification": [
+            "Interprets change requests from email, portal, and call summaries and maps them to the correct endorsement transactions in PolicyCenter.",
+            "Executes routine endorsements straight through, quoting any premium change and issuing updated documents automatically.",
+            "Routes complex or underwriting-impacting changes to the right specialist with the transaction pre-staged and a summary of what changed."
+          ]
+        },
+        {
+          "id": "certificate-of-insurance-issuance-agent",
+          "title": "Certificate of Insurance Issuance Agent",
+          "persona": "Policy Services Rep",
+          "triggerType": "on-demand",
+          "systems": ["Duck Creek Policy", "DocuSign", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "COI issuance turnaround", "before": "24 hours", "after": "10 min"},
+            {"label": "COIs with incorrect holder or coverage data", "before": "7%", "after": "0.5%"},
+            {"label": "Peak-season COI backlog", "before": "600 requests", "after": "near zero"}
+          ],
+          "statusQuo": [
+            "Certificate requests spike at contract-renewal season and pile into a shared inbox worked first-in-first-out.",
+            "Reps copy coverage limits from the policy screen into ACORD 25 templates by hand, introducing transcription errors.",
+            "Requests needing special wording or additional insured status stall while reps hunt for someone with authority to approve."
+          ],
+          "agentification": [
+            "Generates ACORD certificates directly from live Duck Creek policy data the moment a request arrives, eliminating transcription.",
+            "Validates requested holder wording against approved language and auto-issues standard certificates with delivery via DocuSign.",
+            "Escalates non-standard wording or additional-insured requests to an authorized reviewer with the deviation highlighted."
+          ]
+        },
+        {
+          "id": "nonrenewal-notice-compliance-monitor",
+          "title": "Non-Renewal Notice Compliance Monitor",
+          "persona": "Compliance Officer",
+          "triggerType": "scheduled",
+          "systems": ["Guidewire PolicyCenter", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Non-renewals with defective notice", "before": "2.6%", "after": "0.05%"},
+            {"label": "Forced renewals from missed notice deadlines", "before": "$1.9M premium annually", "after": "$0.1M premium annually"},
+            {"label": "Regulator complaints on non-renewal handling", "before": "28 per year", "after": "5 per year"}
+          ],
+          "statusQuo": [
+            "Notice deadlines ranging from 30 to 120 days by state and line are tracked in a spreadsheet updated by hand.",
+            "A missed deadline legally obligates the carrier to renew a risk underwriting wanted off the books.",
+            "Reason-for-non-renewal wording that is lawful in one state draws a market conduct inquiry in another."
+          ],
+          "agentification": [
+            "Audits every planned non-renewal daily against state-specific deadline, delivery-method, and permissible-reason rules.",
+            "Alerts the servicing team weeks ahead of each notice deadline and drafts compliant notice language with the correct statutory citations.",
+            "Publishes a compliance exception report to BigQuery and escalates any at-risk deadline to the compliance officer immediately."
+          ]
+        },
+        {
+          "id": "policyholder-correspondence-drafting-agent",
+          "title": "Policyholder Correspondence Drafting Agent",
+          "persona": "Customer Service Team Lead",
+          "triggerType": "on-demand",
+          "systems": ["Duck Creek Policy", "Zendesk", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Written inquiry response time", "before": "3.2 days", "after": "4 hours"},
+            {"label": "Correspondence requiring supervisor rewrite", "before": "22%", "after": "4%"},
+            {"label": "Complaint escalations from unclear letters", "before": "60 per quarter", "after": "14 per quarter"}
+          ],
+          "statusQuo": [
+            "Reps compose coverage-explanation and complaint-response letters from a library of stale templates that no longer match current forms.",
+            "Every letter touching coverage interpretation waits in a supervisor review queue.",
+            "Inconsistent explanations of the same exclusion across letters create ammunition for disputes."
+          ],
+          "agentification": [
+            "Drafts personalized correspondence grounded in the customer's actual Duck Creek policy forms, endorsements, and Zendesk interaction history.",
+            "Checks every draft against approved coverage-interpretation language and plain-language readability standards before it reaches review.",
+            "Routes drafts touching denials or complaints to the team lead with cited policy provisions attached for one-pass approval."
+          ]
+        },
+        {
+          "id": "midterm-cancellation-retention-agent",
+          "title": "Mid-Term Cancellation Retention Agent",
+          "persona": "Retention Specialist",
+          "triggerType": "event-driven",
+          "systems": ["Guidewire PolicyCenter", "Salesforce Marketing Cloud", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Mid-term cancellation save rate", "before": "12%", "after": "34%"},
+            {"label": "Annualized premium retained", "before": "$3.1M", "after": "$8.8M"},
+            {"label": "Time from cancel request to retention contact", "before": "3 days", "after": "under 1 hour"}
+          ],
+          "statusQuo": [
+            "Cancellation requests are processed transactionally with no retention attempt unless the customer happens to mention price.",
+            "By the time a weekly cancellation report reaches the retention team, most customers have already bound elsewhere.",
+            "Reps have no visibility into which discounts or coverage adjustments the departing customer actually qualifies for."
+          ],
+          "agentification": [
+            "Detects cancellation intent the moment a request or competitor-comparison inquiry hits PolicyCenter and scores the account's retention value.",
+            "Generates a personalized save offer — eligible discounts, coverage rebalancing, payment plan changes — priced against the live policy.",
+            "Notifies the retention specialist within minutes for high-value accounts and triggers a tailored win-back journey in Salesforce Marketing Cloud for the rest."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "I-35",
+      "name": "Actuarial & Portfolio Risk",
+      "useCases": [
+        {
+          "id": "cat-exposure-rollup-engine",
+          "title": "Catastrophe Exposure Rollup Engine",
+          "persona": "Portfolio Manager",
+          "triggerType": "scheduled",
+          "systems": ["Verisk ISO ERC", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Exposure rollup refresh cycle", "before": "quarterly", "after": "daily"},
+            {"label": "PML estimate variance vs. modeled", "before": "±18%", "after": "±5%"},
+            {"label": "Time to answer a reinsurer exposure query", "before": "2 weeks", "after": "same day"}
+          ],
+          "statusQuo": [
+            "Cat aggregation runs quarterly on extracts that are weeks stale by the time the rollup is finished.",
+            "New policies bound in a hurricane-exposed county between rollups are invisible to the accumulation view.",
+            "Reinsurance renewal questionnaires trigger a two-week scramble of manual geocoding and spreadsheet consolidation."
+          ],
+          "agentification": [
+            "Geocodes and aggregates the full in-force book daily in BigQuery, enriched with Verisk hazard and construction data.",
+            "Monitors accumulation against zone appetite limits and escalates any county or coastal band approaching capacity before new business breaches it.",
+            "Publishes live PML and TIV dashboards in Looker and generates reinsurer-ready exposure schedules on demand."
+          ]
+        },
+        {
+          "id": "reserve-adequacy-analyzer",
+          "title": "Reserve Adequacy Analyzer",
+          "persona": "Actuary",
+          "triggerType": "scheduled",
+          "systems": ["Guidewire ClaimCenter", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Quarterly reserve review preparation time", "before": "3 weeks", "after": "4 days"},
+            {"label": "Segments with material adverse development", "before": "detected 2 quarters late", "after": "detected within 1 month"},
+            {"label": "IBNR estimate range width", "before": "±12%", "after": "±6%"}
+          ],
+          "statusQuo": [
+            "Actuaries spend the first two weeks of every quarter assembling and cleaning loss triangles before analysis can even start.",
+            "Development anomalies hide inside aggregated triangles until they are large enough to move the whole segment.",
+            "Case reserve philosophy shifts in claims go unnoticed by actuarial until they distort paid-to-incurred ratios."
+          ],
+          "agentification": [
+            "Builds clean, reconciled loss triangles from ClaimCenter transactional data in BigQuery continuously rather than quarterly.",
+            "Runs multiple development methods per segment, detects diagnostics drifting outside expected ranges, and flags case-reserving pattern shifts.",
+            "Drafts the quarterly reserve review deck with segment-level commentary and highlights the exhibits that most need actuarial judgment."
+          ]
+        },
+        {
+          "id": "loss-ratio-trend-monitor",
+          "title": "Loss Ratio Trend Monitor",
+          "persona": "Chief Actuary",
+          "triggerType": "scheduled",
+          "systems": ["Verisk ISO ERC", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Time to detect a deteriorating segment", "before": "4-6 months", "after": "3 weeks"},
+            {"label": "Segments monitored continuously", "before": "12 top-level", "after": "400+ granular"},
+            {"label": "Combined ratio impact of late detection", "before": "1.8 points", "after": "0.4 points"}
+          ],
+          "statusQuo": [
+            "Loss ratio reviews happen monthly at line-of-business level, hiding a deteriorating state-class-tier cell inside a healthy aggregate.",
+            "Analysts manually cut the data a few dimensions at a time and inevitably miss interaction effects.",
+            "By the time deterioration is confirmed, two more months of underpriced business has been written."
+          ],
+          "agentification": [
+            "Continuously scans loss ratios across hundreds of state, class, tier, and cohort combinations in BigQuery, benchmarked against Verisk industry trends.",
+            "Distinguishes credible deterioration from noise using severity, frequency, and large-loss decomposition.",
+            "Escalates confirmed adverse trends to the chief actuary with a driver analysis and recommends which cells to fast-track for rate review."
+          ]
+        },
+        {
+          "id": "rate-indication-preparation-engine",
+          "title": "Rate Indication Preparation Engine",
+          "persona": "Pricing Actuary",
+          "triggerType": "on-demand",
+          "systems": ["Verisk ISO ERC", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Rate indication preparation time", "before": "6 weeks", "after": "1 week"},
+            {"label": "Filings completed per actuary per year", "before": "8", "after": "22"},
+            {"label": "Objection cycles per rate filing", "before": "2.4", "after": "0.9"}
+          ],
+          "statusQuo": [
+            "Each state rate indication is a bespoke spreadsheet effort: pulling premium and loss data, trending, developing, and on-leveling by hand.",
+            "Actuaries re-derive the same trend and development selections for every filing because prior work isn't systematically reusable.",
+            "Filing exhibits get inconsistent formatting across states, inviting avoidable regulator objections."
+          ],
+          "agentification": [
+            "Assembles the full indication data set — earned premium at current rate level, developed and trended losses, expense provisions — from BigQuery on request.",
+            "Applies Verisk loss cost trends and prior filing selections as starting points, showing the actuary exactly what changed since the last review.",
+            "Generates regulator-formatted filing exhibits and drafts responses to standard objection letters from the filing's own support."
+          ]
+        },
+        {
+          "id": "premium-leakage-detection-analyzer",
+          "title": "Premium Leakage Detection Analyzer",
+          "persona": "Premium Audit Manager",
+          "triggerType": "scheduled",
+          "systems": ["LexisNexis Risk Solutions", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Leakage rate on audited book", "before": "3.9% of written premium", "after": "1.2% of written premium"},
+            {"label": "Audit hit rate (audits finding material misstatement)", "before": "18%", "after": "57%"},
+            {"label": "Additional premium recovered annually", "before": "$5.5M", "after": "$16.2M"}
+          ],
+          "statusQuo": [
+            "Premium audits are scheduled by policy size and rotation, not by likelihood of misreported payroll, mileage, or class codes.",
+            "Auditors discover undisclosed business operations only if the insured volunteers them during a site visit.",
+            "Unrated exposure — extra drivers, new locations, higher payrolls — accrues all term and is often never recovered."
+          ],
+          "agentification": [
+            "Cross-references declared exposures against LexisNexis business intelligence, public filings, and telematics-derived signals in BigQuery.",
+            "Scores every policy for leakage probability and expected recovery, and recommends which audits to prioritize each month.",
+            "Drafts pre-audit findings summaries for auditors and publishes recovered-premium tracking in Looker."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "I-36",
+      "name": "Fraud, SIU & Compliance",
+      "useCases": [
+        {
+          "id": "siu-referral-scoring-engine",
+          "title": "SIU Referral Scoring Engine",
+          "persona": "SIU Investigator",
+          "triggerType": "event-driven",
+          "systems": ["FRISS Fraud Detection", "Guidewire ClaimCenter", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "SIU referral precision (referrals confirmed)", "before": "24%", "after": "61%"},
+            {"label": "Fraud detected before payment", "before": "31%", "after": "74%"},
+            {"label": "Investigator hours per cleared referral", "before": "14", "after": "6"}
+          ],
+          "statusQuo": [
+            "Referrals depend on adjuster intuition, so the SIU queue mixes solid cases with hunches that consume investigator weeks.",
+            "Fraud indicators buried in claim notes and documents are never systematically compared across the book.",
+            "Most fraud is detected after indemnity payments have already gone out the door."
+          ],
+          "agentification": [
+            "Rescored every open claim on each new document or transaction, combining FRISS indicators with text signals mined from ClaimCenter notes.",
+            "Routes high-score claims to SIU with an evidence dossier summarizing the specific red flags and their sources.",
+            "Recommends payment holds on claims crossing the fraud threshold and notifies the assigned adjuster with the rationale."
+          ]
+        },
+        {
+          "id": "fraud-ring-network-analyzer",
+          "title": "Fraud Ring Network Analyzer",
+          "persona": "SIU Manager",
+          "triggerType": "scheduled",
+          "systems": ["FRISS Fraud Detection", "LexisNexis Risk Solutions", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Organized fraud rings identified per year", "before": "3", "after": "14"},
+            {"label": "Average ring exposure at detection", "before": "$2.1M", "after": "$0.5M"},
+            {"label": "Cross-claim link discovery time", "before": "weeks of manual research", "after": "hours"}
+          ],
+          "statusQuo": [
+            "Investigators spot ring activity only when the same body shop or clinic name happens to catch someone's eye across files.",
+            "Shared phone numbers, addresses, and bank accounts across claims are invisible without manual cross-referencing.",
+            "Staged-accident rings rotate participants faster than case-by-case investigation can connect them."
+          ],
+          "agentification": [
+            "Builds entity-resolution graphs across claims, providers, and participants nightly in BigQuery, enriched with LexisNexis identity data.",
+            "Detects suspicious clusters — shared identifiers, provider billing patterns, choreographed loss sequences — and scores them for organized activity.",
+            "Creates ring case files with network visualizations and recommends which claims to consolidate under a single SIU investigation."
+          ]
+        },
+        {
+          "id": "application-fraud-screening-agent",
+          "title": "Application Fraud Screening Agent",
+          "persona": "Underwriting Fraud Analyst",
+          "triggerType": "event-driven",
+          "systems": ["FRISS Fraud Detection", "LexisNexis Risk Solutions", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "Material misrepresentation caught at bind", "before": "9%", "after": "48%"},
+            {"label": "Rate evasion premium loss", "before": "$7.3M annually", "after": "$2.6M annually"},
+            {"label": "False-positive hold rate on clean applications", "before": "11%", "after": "3%"}
+          ],
+          "statusQuo": [
+            "Garaging address fraud, undisclosed drivers, and prior-carrier cancellation history surface only after a claim is filed.",
+            "Analysts manually spot-check a small sample of new business applications against third-party data.",
+            "Agent-assisted rate manipulation patterns go undetected because no one aggregates application anomalies by producer."
+          ],
+          "agentification": [
+            "Screens every application at quote and bind against FRISS device, identity, and behavior signals plus LexisNexis household and vehicle data.",
+            "Flags discrepancies — garaging mismatches, undisclosed operators, recycled identities — and routes them for verification before issue.",
+            "Aggregates anomaly patterns by producer in BigQuery and escalates suspicious agency-level clusters to the fraud analyst."
+          ]
+        },
+        {
+          "id": "regulatory-complaint-response-agent",
+          "title": "Regulatory Complaint Response Agent",
+          "persona": "Compliance Officer",
+          "triggerType": "event-driven",
+          "systems": ["Guidewire PolicyCenter", "Zendesk", "BigQuery", "Vertex AI"],
+          "kpis": [
+            {"label": "DOI complaint response time", "before": "18 days", "after": "5 days"},
+            {"label": "Late responses incurring regulator follow-up", "before": "12%", "after": "0.5%"},
+            {"label": "Complaint file assembly effort", "before": "6 hours per complaint", "after": "45 min per complaint"}
+          ],
+          "statusQuo": [
+            "Each DOI complaint kicks off a manual hunt across policy, claims, billing, and correspondence systems to reconstruct what happened.",
+            "Response drafting starts from scratch every time, even for recurring complaint themes.",
+            "Deadlines vary by state and are tracked in a shared calendar that has missed entries before."
+          ],
+          "agentification": [
+            "Assembles the complete customer file — policy transactions from PolicyCenter, correspondence, Zendesk interactions — the moment a DOI complaint is logged.",
+            "Drafts the regulator response with a factual timeline and citations to the governing policy provisions and state rules.",
+            "Tracks every statutory deadline, escalates responses at risk of lateness, and publishes complaint-trend analytics to BigQuery for root-cause review."
+          ]
+        },
+        {
+          "id": "market-conduct-exam-prep-orchestrator",
+          "title": "Market Conduct Exam Prep Orchestrator",
+          "persona": "Regulatory Affairs Manager",
+          "triggerType": "on-demand",
+          "systems": ["Guidewire PolicyCenter", "BigQuery", "Looker", "Vertex AI"],
+          "kpis": [
+            {"label": "Exam data call fulfillment time", "before": "6 weeks", "after": "1 week"},
+            {"label": "Findings from unpreparedness (vs. substantive)", "before": "40% of findings", "after": "8% of findings"},
+            {"label": "Staff hours consumed per exam", "before": "2,800", "after": "900"}
+          ],
+          "statusQuo": [
+            "A market conduct data call pulls a dozen staff off their jobs for weeks to extract, reconcile, and format policy and claims records.",
+            "Self-audit happens only after an exam is announced, so known issues surface with no time to remediate.",
+            "Prior exam findings and remediation commitments live in scattered documents nobody re-checks until the next exam."
+          ],
+          "agentification": [
+            "Maintains exam-ready data marts in BigQuery mapped to NAIC market conduct standards, refreshed from PolicyCenter continuously.",
+            "Runs ongoing self-audits against timeliness, disclosure, and handling standards and escalates emerging violations before regulators find them.",
+            "Generates examiner data-call packages in the requested format and drafts responses to prior-finding follow-ups with remediation evidence attached."
+          ]
+        }
+      ]
+    }
+  ]
+}

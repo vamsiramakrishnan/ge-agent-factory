@@ -1,0 +1,17 @@
+---
+type: Index
+title: Agent Tools
+timestamp: "2026-07-04T00:00:00.000Z"
+---
+
+# Agent Tools
+
+- [query_sap_s_4hana_qm_inspection_lots](/tools/query-sap-s-4hana-qm-inspection-lots.md)
+- [query_sap_s_4hana_mm_purchase_orders](/tools/query-sap-s-4hana-mm-purchase-orders.md)
+- [query_bigquery_analytics_events](/tools/query-bigquery-analytics-events.md)
+- [query_looker_dashboards](/tools/query-looker-dashboards.md)
+- [lookup_supplier_quality_scorecard_engine_sop](/tools/lookup-supplier-quality-scorecard-engine-sop.md)
+- [action_sap_s_4hana_qm_publish](/tools/action-sap-s-4hana-qm-publish.md)
+- [query_sap_s_4hana_qm_nonconformance_records](/tools/query-sap-s-4hana-qm-nonconformance-records.md)
+- [query_sap_s_4hana_qm_capa_actions](/tools/query-sap-s-4hana-qm-capa-actions.md)
+- [lookup_supplier_risk_classification_policy](/tools/lookup-supplier-risk-classification-policy.md)

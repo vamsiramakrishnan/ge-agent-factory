@@ -1,0 +1,144 @@
+{
+  "id": "ibm_maximo_schema",
+  "version": 1,
+  "collections": {
+    "tickets": {
+      "primaryKey": "ticket_id",
+      "fields": {
+        "ticket_id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "short_description": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "string"
+        },
+        "assignment_group": {
+          "type": "string"
+        },
+        "requester": {
+          "type": "string"
+        },
+        "configuration_item": {
+          "type": "string"
+        },
+        "sla": {
+          "type": "string"
+        }
+      }
+    },
+    "cmdb_items": {
+      "primaryKey": "ci_id",
+      "fields": {
+        "ci_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "criticality": {
+          "type": "string"
+        }
+      }
+    },
+    "changes": {
+      "primaryKey": "change_id",
+      "fields": {
+        "change_id": {
+          "type": "string"
+        },
+        "ticket_id": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "risk": {
+          "type": "string"
+        },
+        "planned_start": {
+          "type": "string"
+        },
+        "planned_end": {
+          "type": "string"
+        }
+      }
+    },
+    "slas": {
+      "primaryKey": "sla_id",
+      "fields": {
+        "sla_id": {
+          "type": "string"
+        },
+        "ticket_id": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "target_time": {
+          "type": "string"
+        },
+        "breach_risk": {
+          "type": "string"
+        }
+      }
+    },
+    "approvals": {
+      "primaryKey": "approval_id",
+      "fields": {
+        "approval_id": {
+          "type": "string"
+        },
+        "source_record_id": {
+          "type": "string"
+        },
+        "approver": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "entity": {
+          "type": "string"
+        },
+        "entity_id": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

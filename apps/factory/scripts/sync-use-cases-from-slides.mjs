@@ -316,6 +316,7 @@ await writeFile(
       title: entry.title,
       department: entry.department,
       domainId: entry.domainId,
+      classification: entry.classification || null,
       systems: entry.systems,
       hasBehaviorContract: entry.hasBehaviorContract,
       registry: entry.registry,

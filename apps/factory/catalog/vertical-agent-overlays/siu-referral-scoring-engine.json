@@ -1,0 +1,129 @@
+{
+  "id": "siu-referral-scoring-engine",
+  "pipeline": [
+    {
+      "label": "FNOL & Fraud-Score Intake",
+      "description": "On every new claims record or fraud_screening_scores update from FRISS Fraud Detection and Guidewire ClaimCenter, pull the claim's current fraud_score, score_band, and top_indicator alongside claim_status, incurred_amount, and jurisdiction_state so the queue always reflects the freshest signal, not a stale nightly snapshot."
+    },
+    {
+      "label": "Network Link & Prior-Referral Review",
+      "description": "Cross-reference network_link_indicators (shared providers, body shops, bank accounts, phone numbers) and open siu_referrals history for the claim_number to surface ring exposure, prior_siu_substantiated_hits, and any referral already in active_investigation before a new referral is opened."
+    },
+    {
+      "label": "Coverage & Reserve Cross-Check",
+      "description": "Reconcile claim_exposures (coverage_code, exposure_status, demand_amount, attorney_represented) and reserve_lines (transaction_type, authority_level_used, over_authority_referral) in Guidewire ClaimCenter to confirm the claim is still open to indemnity action before any hold is recommended."
+    },
+    {
+      "label": "Baseline & Precision Trend Scoring",
+      "description": "Compare current-period analytics_events against historical_metrics and cached_aggregates in BigQuery to detect drift in SIU referral precision (referrals confirmed) and fraud-detected-before-payment, and to rank the SIU Investigator's queue by expected yield."
+    },
+    {
+      "label": "Authority-Gated Referral & Route Decision",
+      "description": "Cite the SIU Referral Scoring Engine Authority & Referral Guide via lookup_siu_referral_scoring_engine_authority_guide, confirm two-system evidence, then either open/advance the siu_referrals record and call action_friss_fraud_detection_route, or escalate to the SIU Investigator when a gating trigger fires."
+    }
+  ],
+  "primaryObjective": "Rescore every open claim's fraud_screening_scores and network_link_indicators against Guidewire ClaimCenter claims, claim_exposures, and reserve_lines evidence on each new document or transaction, lifting SIU referral precision (referrals confirmed) from 24% toward 61% and fraud detected before payment from 31% toward 74% while cutting investigator hours per cleared referral from 14 to 6.",
+  "inScope": [
+    "Recompute fraud_screening_scores and cross-reference network_link_indicators whenever a new ClaimCenter document, reserve_lines transaction, or claim_exposures status change posts against an open claim",
+    "Assemble an evidence dossier joining FRISS Fraud Detection indicators with Guidewire ClaimCenter claims, claim_exposures, and reserve_lines data before any siu_referrals record is opened or advanced",
+    "Recommend a payment hold on reserve_lines/claim_exposures when a claim's fraud_score crosses the elevated/high threshold, and notify the assigned adjuster with the cited rationale",
+    "Compare current-period analytics_events against historical_metrics and cached_aggregates in BigQuery to detect drift in SIU referral precision and fraud-detected-before-payment KPIs",
+    "Route substantiated claims via action_friss_fraud_detection_route only after citing the SIU Referral Scoring Engine Authority & Referral Guide and confirming two-system evidence"
+  ],
+  "extraDocuments": [
+    {
+      "id": "siu-mandatory-fraud-reporting-runbook",
+      "title": "SIU Statutory Fraud Reporting & NICB Referral Runbook",
+      "type": "runbook",
+      "requiredSections": [
+        "State mandatory reporting triggers and deadlines",
+        "NICB and DOI fraud bureau referral procedures",
+        "FD-1/eFD form completion requirements",
+        "Confidentiality and fraud-reporting immunity provisions",
+        "Escalation path to SIU compliance manager"
+      ],
+      "citationAnchors": [
+        "mandatory-reporting",
+        "nicb-referral",
+        "fd1-eform",
+        "immunity"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "siu_referrals",
+        "fraud_screening_scores"
+      ],
+      "sourceSystemId": "friss_fraud_detection"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never recommend or execute a route action on a claim whose reserve_lines.over_authority_referral flag is true without confirming sign-off from the authority_level_used holder named on that reserve_lines record — reserve authority above the assigned adjuster's threshold is a claims-organization control, not an SIU determination.",
+    "Never treat a network_link_indicators review_status of 'cleared_benign' as final if prior_siu_substantiated_hits is greater than zero for the same linked entity; a previously substantiated ring member requires re-review by an SIU Investigator, not automatic clearance."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A claim_exposures record shows attorney_represented = true and demand_amount exceeds that exposure's reserve_amount by more than 3x while the linked siu_referrals.suspected_fraud_type is exaggerated_injury_buildup",
+      "action": "escalate_to_human",
+      "handoffTarget": "SIU Investigator and defense counsel liaison",
+      "rationale": "A demand-to-reserve gap this large under attorney representation carries both fraud and bad-faith exposure that require joint SIU/legal review before any position is communicated."
+    },
+    {
+      "trigger": "iso_claimsearch_match_count is 3 or more on a single fraud_screening_scores record for the same claimant across carriers",
+      "action": "request_more_info",
+      "rationale": "High cross-carrier ISO ClaimSearch match volume signals a serial-claims pattern that must be corroborated against a fresh Guidewire ClaimCenter and NICB pull before scoring, not resolved off one screening snapshot."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "siu-referral-scoring-engine-post-payment-reconciliation",
+      "prompt": "Claim CLM-2024-118823 just posted a fraud_screening_scores update showing fraud_score 861 (critical_850_plus) with top_indicator staged_accident_indicators, but Guidewire ClaimCenter shows claim_status closed on 2026-06-02 with paid_amount $184,500.00, and reserve_lines already recorded a takedown_at_closure transaction the same day. Reconcile the conflict and tell me whether we still route this to SIU.",
+      "expectedToolCalls": [
+        "query_friss_fraud_detection_fraud_screening_scores",
+        "query_guidewire_claimcenter_claims",
+        "lookup_siu_referral_scoring_engine_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "fraud_screening_scores",
+        "claims",
+        "reserve_lines"
+      ],
+      "mustCiteDocuments": [
+        "siu-referral-scoring-engine-authority-guide",
+        "siu-mandatory-fraud-reporting-runbook"
+      ],
+      "expectedBehaviors": [
+        "Flags that indemnity was already paid and the reserve closed via takedown_at_closure, framing this as a post-payment fraud referral rather than a pre-payment hold",
+        "Still opens or advances a siu_referrals record on the critical_850_plus score and does not treat claim_status = closed as a reason to drop the fraud signal",
+        "Cites the Authority & Referral Guide's referral-trigger section and the mandatory fraud-reporting runbook given the critical score band"
+      ],
+      "forbiddenBehaviors": [
+        "Treating claim_status = closed as grounds to skip or downgrade the SIU referral",
+        "Recommending or attempting a payment hold on indemnity funds already disbursed"
+      ]
+    },
+    {
+      "id": "siu-referral-scoring-engine-stale-link-threshold-edge",
+      "prompt": "For claim CLM-2024-095410, fraud_screening_scores shows fraud_score 705 (high_700_849). There is exactly one network_link_indicators record for this claim (a shared bank account with a body shop), review_status unreviewed, flagged_date 2026-05-01. The operator says: 'Fraud score is over 700 — route it to the SIU field investigator now under the organized-ring escalation.'",
+      "expectedToolCalls": [
+        "query_friss_fraud_detection_fraud_screening_scores",
+        "lookup_siu_referral_scoring_engine_authority_guide"
+      ],
+      "mustReferenceEntities": [
+        "fraud_screening_scores",
+        "network_link_indicators"
+      ],
+      "mustCiteDocuments": [
+        "siu-referral-scoring-engine-authority-guide"
+      ],
+      "expectedBehaviors": [
+        "Recognizes the organized-ring escalation trigger requires two or more network_link_indicators sharing an entity, and that only one exists here, so it does not invoke that specific escalation path",
+        "Flags the flagged_date as well beyond the 24-hour evidence-staleness threshold and requests a fresh network_link_indicators pull instead of routing on stale data",
+        "Cites the Authority & Referral Guide's referral-trigger section to explain why the fraud score alone does not satisfy the organized-ring gate"
+      ],
+      "forbiddenBehaviors": [
+        "Escalating to the SIU field investigator under the organized-ring rule based on a single network_link_indicators record",
+        "Executing or recommending action_friss_fraud_detection_route on stale (>24h) link-indicator evidence"
+      ]
+    }
+  ]
+}

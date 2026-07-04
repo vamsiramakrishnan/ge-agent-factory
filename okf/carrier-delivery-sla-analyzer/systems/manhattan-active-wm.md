@@ -1,0 +1,31 @@
+---
+type: Source System
+title: Manhattan Active WM
+description: "warehouse orders, pick tasks, inventory snapshots records"
+tags:
+  - retail
+  - okf
+  - brd
+timestamp: "2026-07-04T00:00:00.000Z"
+---
+
+# Manhattan Active WM
+
+warehouse orders, pick tasks, inventory snapshots records
+
+- **Protocol:** REST API
+- **Local backing:** alloydb
+
+# Schema
+
+- [warehouse_orders](/tables/warehouse-orders.md)
+- [pick_tasks](/tables/pick-tasks.md)
+- [inventory_snapshots](/tables/inventory-snapshots.md)
+
+## Tools using this system
+
+- [query_manhattan_active_wm_warehouse_orders](/tools/query-manhattan-active-wm-warehouse-orders.md)
+- [action_manhattan_active_wm_recommend](/tools/action-manhattan-active-wm-recommend.md)
+- [query_manhattan_active_wm_pick_tasks](/tools/query-manhattan-active-wm-pick-tasks.md)
+- [query_manhattan_active_wm_inventory_snapshots](/tools/query-manhattan-active-wm-inventory-snapshots.md)
+- [lookup_carrier_rate_claims_adjudication_policy](/tools/lookup-carrier-rate-claims-adjudication-policy.md)

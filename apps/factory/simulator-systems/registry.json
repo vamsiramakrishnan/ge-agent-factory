@@ -4419,6 +4419,2571 @@
         "strategy": "simulator-backed-mcp",
         "runtime": "cloud-run-mcp-service"
       }
+    },
+    {
+      "id": "oracle_retail_mfcs",
+      "displayName": "Oracle Retail MFCS",
+      "aliases": [
+        "Oracle Retail MFCS",
+        "oracle_retail_mfcs"
+      ],
+      "maturity": "starter",
+      "family": "supply-chain",
+      "entities": [
+        "supplier",
+        "material",
+        "shipment",
+        "purchase_order",
+        "inventory_position",
+        "risk_event"
+      ],
+      "workflows": [
+        "supplier_lookup",
+        "shipment_update",
+        "inventory_exception",
+        "risk_review",
+        "audit"
+      ],
+      "roles": [
+        "planner",
+        "buyer",
+        "supplier_manager",
+        "logistics_coordinator",
+        "risk_owner"
+      ],
+      "tools": [
+        "search_suppliers",
+        "get_supplier",
+        "submit_supplier_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/oracle_retail_mfcs/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/oracle_retail_mfcs/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/oracle_retail_mfcs/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/oracle_retail_mfcs/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/oracle_retail_mfcs/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/oracle_retail_mfcs/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "suppliers": "supplier_id",
+          "materials": "material_id",
+          "shipments": "shipment_id",
+          "purchase_orders": "po_id",
+          "inventory_positions": "inventory_id",
+          "risk_events": "risk_event_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "oracle_xstore_pos",
+      "displayName": "Oracle Xstore POS",
+      "aliases": [
+        "Oracle Xstore POS",
+        "oracle_xstore_pos"
+      ],
+      "maturity": "starter",
+      "family": "finance-erp",
+      "entities": [
+        "vendor",
+        "invoice",
+        "journal_entry",
+        "payment",
+        "cost_center",
+        "approval"
+      ],
+      "workflows": [
+        "invoice_review",
+        "journal_approval",
+        "payment_status",
+        "close_audit"
+      ],
+      "roles": [
+        "ap_analyst",
+        "controller",
+        "finance_manager",
+        "auditor"
+      ],
+      "tools": [
+        "search_vendors",
+        "get_vendor",
+        "list_pending_approvals",
+        "submit_vendor_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/oracle_xstore_pos/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/oracle_xstore_pos/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/oracle_xstore_pos/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/oracle_xstore_pos/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/oracle_xstore_pos/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/oracle_xstore_pos/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "vendors": "vendor_id",
+          "invoices": "invoice_id",
+          "journal_entries": "journal_id",
+          "payments": "payment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "blue_yonder_demand_planning",
+      "displayName": "Blue Yonder Demand Planning",
+      "aliases": [
+        "Blue Yonder Demand Planning",
+        "blue_yonder_demand_planning"
+      ],
+      "maturity": "starter",
+      "family": "planning-epm",
+      "entities": [
+        "planning_model",
+        "scenario",
+        "forecast_line",
+        "budget_owner",
+        "approval"
+      ],
+      "workflows": [
+        "scenario_review",
+        "forecast_update",
+        "budget_approval",
+        "variance_audit"
+      ],
+      "roles": [
+        "planner",
+        "finance_manager",
+        "budget_owner",
+        "controller"
+      ],
+      "tools": [
+        "search_planning_models",
+        "get_planning_model",
+        "list_pending_approvals",
+        "submit_planning_model_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/blue_yonder_demand_planning/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/blue_yonder_demand_planning/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/blue_yonder_demand_planning/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/blue_yonder_demand_planning/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/blue_yonder_demand_planning/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/blue_yonder_demand_planning/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "planning_models": "model_id",
+          "scenarios": "scenario_id",
+          "forecast_lines": "forecast_line_id",
+          "budget_owners": "owner_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "manhattan_active_wm",
+      "displayName": "Manhattan Active WM",
+      "aliases": [
+        "Manhattan Active WM",
+        "manhattan_active_wm"
+      ],
+      "maturity": "starter",
+      "family": "supply-chain",
+      "entities": [
+        "supplier",
+        "material",
+        "shipment",
+        "purchase_order",
+        "inventory_position",
+        "risk_event"
+      ],
+      "workflows": [
+        "supplier_lookup",
+        "shipment_update",
+        "inventory_exception",
+        "risk_review",
+        "audit"
+      ],
+      "roles": [
+        "planner",
+        "buyer",
+        "supplier_manager",
+        "logistics_coordinator",
+        "risk_owner"
+      ],
+      "tools": [
+        "search_suppliers",
+        "get_supplier",
+        "submit_supplier_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/manhattan_active_wm/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/manhattan_active_wm/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/manhattan_active_wm/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/manhattan_active_wm/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/manhattan_active_wm/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/manhattan_active_wm/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "suppliers": "supplier_id",
+          "materials": "material_id",
+          "shipments": "shipment_id",
+          "purchase_orders": "po_id",
+          "inventory_positions": "inventory_id",
+          "risk_events": "risk_event_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "salesforce_commerce_cloud",
+      "displayName": "Salesforce Commerce Cloud",
+      "aliases": [
+        "Salesforce Commerce Cloud",
+        "salesforce_commerce_cloud"
+      ],
+      "maturity": "starter",
+      "family": "crm",
+      "entities": [
+        "account",
+        "contact",
+        "opportunity",
+        "activity",
+        "campaign"
+      ],
+      "workflows": [
+        "account_search",
+        "opportunity_review",
+        "activity_logging",
+        "forecast_update"
+      ],
+      "roles": [
+        "seller",
+        "sales_manager",
+        "marketing_ops",
+        "revops"
+      ],
+      "tools": [
+        "search_accounts",
+        "get_account",
+        "submit_account_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/salesforce_commerce_cloud/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/salesforce_commerce_cloud/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/salesforce_commerce_cloud/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/salesforce_commerce_cloud/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/salesforce_commerce_cloud/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/salesforce_commerce_cloud/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "accounts": "account_id",
+          "contacts": "contact_id",
+          "opportunities": "opportunity_id",
+          "activities": "activity_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "ukg_dimensions",
+      "displayName": "UKG Dimensions",
+      "aliases": [
+        "UKG Dimensions",
+        "ukg_dimensions"
+      ],
+      "maturity": "starter",
+      "family": "hr-talent",
+      "entities": [
+        "worker",
+        "position",
+        "supervisory_org",
+        "job_requisition",
+        "worker_event",
+        "approval"
+      ],
+      "workflows": [
+        "worker_search",
+        "job_change",
+        "manager_approval",
+        "org_lookup",
+        "audit"
+      ],
+      "roles": [
+        "employee",
+        "manager",
+        "hr_partner",
+        "recruiter",
+        "comp_partner"
+      ],
+      "tools": [
+        "search_workers",
+        "get_worker",
+        "list_pending_approvals",
+        "submit_worker_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/ukg_dimensions/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/ukg_dimensions/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/ukg_dimensions/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/ukg_dimensions/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/ukg_dimensions/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/ukg_dimensions/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "workers": "worker_id",
+          "positions": "position_id",
+          "supervisory_orgs": "org_id",
+          "job_requisitions": "requisition_id",
+          "worker_events": "event_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "revionics_price_optimization",
+      "displayName": "Revionics Price Optimization",
+      "aliases": [
+        "Revionics Price Optimization",
+        "revionics_price_optimization"
+      ],
+      "maturity": "starter",
+      "family": "planning-epm",
+      "entities": [
+        "planning_model",
+        "scenario",
+        "forecast_line",
+        "budget_owner",
+        "approval"
+      ],
+      "workflows": [
+        "scenario_review",
+        "forecast_update",
+        "budget_approval",
+        "variance_audit"
+      ],
+      "roles": [
+        "planner",
+        "finance_manager",
+        "budget_owner",
+        "controller"
+      ],
+      "tools": [
+        "search_planning_models",
+        "get_planning_model",
+        "list_pending_approvals",
+        "submit_planning_model_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/revionics_price_optimization/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/revionics_price_optimization/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/revionics_price_optimization/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/revionics_price_optimization/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/revionics_price_optimization/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/revionics_price_optimization/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "planning_models": "model_id",
+          "scenarios": "scenario_id",
+          "forecast_lines": "forecast_line_id",
+          "budget_owners": "owner_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "temenos_transact",
+      "displayName": "Temenos Transact",
+      "aliases": [
+        "Temenos Transact",
+        "temenos_transact"
+      ],
+      "maturity": "starter",
+      "family": "finance-erp",
+      "entities": [
+        "vendor",
+        "invoice",
+        "journal_entry",
+        "payment",
+        "cost_center",
+        "approval"
+      ],
+      "workflows": [
+        "invoice_review",
+        "journal_approval",
+        "payment_status",
+        "close_audit"
+      ],
+      "roles": [
+        "ap_analyst",
+        "controller",
+        "finance_manager",
+        "auditor"
+      ],
+      "tools": [
+        "search_vendors",
+        "get_vendor",
+        "list_pending_approvals",
+        "submit_vendor_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/temenos_transact/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/temenos_transact/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/temenos_transact/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/temenos_transact/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/temenos_transact/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/temenos_transact/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "vendors": "vendor_id",
+          "invoices": "invoice_id",
+          "journal_entries": "journal_id",
+          "payments": "payment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "fis_payments_hub",
+      "displayName": "FIS Payments Hub",
+      "aliases": [
+        "FIS Payments Hub",
+        "fis_payments_hub"
+      ],
+      "maturity": "starter",
+      "family": "finance-erp",
+      "entities": [
+        "vendor",
+        "invoice",
+        "journal_entry",
+        "payment",
+        "cost_center",
+        "approval"
+      ],
+      "workflows": [
+        "invoice_review",
+        "journal_approval",
+        "payment_status",
+        "close_audit"
+      ],
+      "roles": [
+        "ap_analyst",
+        "controller",
+        "finance_manager",
+        "auditor"
+      ],
+      "tools": [
+        "search_vendors",
+        "get_vendor",
+        "list_pending_approvals",
+        "submit_vendor_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/fis_payments_hub/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/fis_payments_hub/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/fis_payments_hub/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/fis_payments_hub/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/fis_payments_hub/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/fis_payments_hub/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "vendors": "vendor_id",
+          "invoices": "invoice_id",
+          "journal_entries": "journal_id",
+          "payments": "payment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "ncino_loan_origination",
+      "displayName": "nCino Loan Origination",
+      "aliases": [
+        "nCino Loan Origination",
+        "ncino_loan_origination"
+      ],
+      "maturity": "starter",
+      "family": "contract-lifecycle",
+      "entities": [
+        "agreement",
+        "clause",
+        "obligation",
+        "amendment",
+        "approval"
+      ],
+      "workflows": [
+        "agreement_lookup",
+        "clause_review",
+        "obligation_tracking",
+        "approval"
+      ],
+      "roles": [
+        "contract_manager",
+        "legal_reviewer",
+        "business_owner",
+        "approver"
+      ],
+      "tools": [
+        "search_agreements",
+        "get_agreement",
+        "list_pending_approvals",
+        "submit_agreement_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/ncino_loan_origination/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/ncino_loan_origination/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/ncino_loan_origination/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/ncino_loan_origination/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/ncino_loan_origination/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/ncino_loan_origination/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "agreements": "agreement_id",
+          "clauses": "clause_id",
+          "obligations": "obligation_id",
+          "amendments": "amendment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "fenergo_clm",
+      "displayName": "Fenergo CLM",
+      "aliases": [
+        "Fenergo CLM",
+        "fenergo_clm"
+      ],
+      "maturity": "starter",
+      "family": "contract-lifecycle",
+      "entities": [
+        "agreement",
+        "clause",
+        "obligation",
+        "amendment",
+        "approval"
+      ],
+      "workflows": [
+        "agreement_lookup",
+        "clause_review",
+        "obligation_tracking",
+        "approval"
+      ],
+      "roles": [
+        "contract_manager",
+        "legal_reviewer",
+        "business_owner",
+        "approver"
+      ],
+      "tools": [
+        "search_agreements",
+        "get_agreement",
+        "list_pending_approvals",
+        "submit_agreement_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/fenergo_clm/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/fenergo_clm/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/fenergo_clm/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/fenergo_clm/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/fenergo_clm/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/fenergo_clm/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "agreements": "agreement_id",
+          "clauses": "clause_id",
+          "obligations": "obligation_id",
+          "amendments": "amendment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "nice_actimize",
+      "displayName": "NICE Actimize",
+      "aliases": [
+        "NICE Actimize",
+        "nice_actimize"
+      ],
+      "maturity": "starter",
+      "family": "risk-grc",
+      "entities": [
+        "risk",
+        "control",
+        "issue",
+        "policy",
+        "assessment",
+        "approval"
+      ],
+      "workflows": [
+        "risk_review",
+        "control_attestation",
+        "issue_remediation",
+        "policy_exception",
+        "audit"
+      ],
+      "roles": [
+        "risk_owner",
+        "control_owner",
+        "auditor",
+        "compliance_manager",
+        "approver"
+      ],
+      "tools": [
+        "search_risks",
+        "get_risk",
+        "list_pending_approvals",
+        "submit_risk_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/nice_actimize/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/nice_actimize/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/nice_actimize/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/nice_actimize/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/nice_actimize/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/nice_actimize/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "risks": "risk_id",
+          "controls": "control_id",
+          "issues": "issue_id",
+          "policies": "policy_id",
+          "assessments": "assessment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "murex_mx_3",
+      "displayName": "Murex MX.3",
+      "aliases": [
+        "Murex MX.3",
+        "murex_mx_3"
+      ],
+      "maturity": "starter",
+      "family": "risk-grc",
+      "entities": [
+        "risk",
+        "control",
+        "issue",
+        "policy",
+        "assessment",
+        "approval"
+      ],
+      "workflows": [
+        "risk_review",
+        "control_attestation",
+        "issue_remediation",
+        "policy_exception",
+        "audit"
+      ],
+      "roles": [
+        "risk_owner",
+        "control_owner",
+        "auditor",
+        "compliance_manager",
+        "approver"
+      ],
+      "tools": [
+        "search_risks",
+        "get_risk",
+        "list_pending_approvals",
+        "submit_risk_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/murex_mx_3/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/murex_mx_3/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/murex_mx_3/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/murex_mx_3/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/murex_mx_3/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/murex_mx_3/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "risks": "risk_id",
+          "controls": "control_id",
+          "issues": "issue_id",
+          "policies": "policy_id",
+          "assessments": "assessment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "salesforce_financial_services_cloud",
+      "displayName": "Salesforce Financial Services Cloud",
+      "aliases": [
+        "Salesforce Financial Services Cloud",
+        "salesforce_financial_services_cloud"
+      ],
+      "maturity": "starter",
+      "family": "crm",
+      "entities": [
+        "account",
+        "contact",
+        "opportunity",
+        "activity",
+        "campaign"
+      ],
+      "workflows": [
+        "account_search",
+        "opportunity_review",
+        "activity_logging",
+        "forecast_update"
+      ],
+      "roles": [
+        "seller",
+        "sales_manager",
+        "marketing_ops",
+        "revops"
+      ],
+      "tools": [
+        "search_accounts",
+        "get_account",
+        "submit_account_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/salesforce_financial_services_cloud/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/salesforce_financial_services_cloud/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/salesforce_financial_services_cloud/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/salesforce_financial_services_cloud/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/salesforce_financial_services_cloud/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/salesforce_financial_services_cloud/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "accounts": "account_id",
+          "contacts": "contact_id",
+          "opportunities": "opportunity_id",
+          "activities": "activity_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "guidewire_policycenter",
+      "displayName": "Guidewire PolicyCenter",
+      "aliases": [
+        "Guidewire PolicyCenter",
+        "guidewire_policycenter"
+      ],
+      "maturity": "starter",
+      "family": "contract-lifecycle",
+      "entities": [
+        "agreement",
+        "clause",
+        "obligation",
+        "amendment",
+        "approval"
+      ],
+      "workflows": [
+        "agreement_lookup",
+        "clause_review",
+        "obligation_tracking",
+        "approval"
+      ],
+      "roles": [
+        "contract_manager",
+        "legal_reviewer",
+        "business_owner",
+        "approver"
+      ],
+      "tools": [
+        "search_agreements",
+        "get_agreement",
+        "list_pending_approvals",
+        "submit_agreement_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/guidewire_policycenter/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/guidewire_policycenter/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/guidewire_policycenter/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/guidewire_policycenter/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/guidewire_policycenter/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/guidewire_policycenter/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "agreements": "agreement_id",
+          "clauses": "clause_id",
+          "obligations": "obligation_id",
+          "amendments": "amendment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "guidewire_claimcenter",
+      "displayName": "Guidewire ClaimCenter",
+      "aliases": [
+        "Guidewire ClaimCenter",
+        "guidewire_claimcenter"
+      ],
+      "maturity": "starter",
+      "family": "it-ops-security",
+      "entities": [
+        "ticket",
+        "service_request",
+        "change_request",
+        "cmdb_ci",
+        "approval",
+        "sla"
+      ],
+      "workflows": [
+        "incident_triage",
+        "request_fulfillment",
+        "change_approval",
+        "sla_escalation",
+        "audit"
+      ],
+      "roles": [
+        "requester",
+        "resolver",
+        "change_manager",
+        "service_owner"
+      ],
+      "tools": [
+        "search_tickets",
+        "get_ticket",
+        "list_pending_approvals",
+        "submit_ticket_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/guidewire_claimcenter/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/guidewire_claimcenter/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/guidewire_claimcenter/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/guidewire_claimcenter/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/guidewire_claimcenter/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/guidewire_claimcenter/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "tickets": "ticket_id",
+          "cmdb_items": "ci_id",
+          "changes": "change_id",
+          "slas": "sla_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "guidewire_billingcenter",
+      "displayName": "Guidewire BillingCenter",
+      "aliases": [
+        "Guidewire BillingCenter",
+        "guidewire_billingcenter"
+      ],
+      "maturity": "starter",
+      "family": "finance-erp",
+      "entities": [
+        "vendor",
+        "invoice",
+        "journal_entry",
+        "payment",
+        "cost_center",
+        "approval"
+      ],
+      "workflows": [
+        "invoice_review",
+        "journal_approval",
+        "payment_status",
+        "close_audit"
+      ],
+      "roles": [
+        "ap_analyst",
+        "controller",
+        "finance_manager",
+        "auditor"
+      ],
+      "tools": [
+        "search_vendors",
+        "get_vendor",
+        "list_pending_approvals",
+        "submit_vendor_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/guidewire_billingcenter/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/guidewire_billingcenter/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/guidewire_billingcenter/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/guidewire_billingcenter/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/guidewire_billingcenter/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/guidewire_billingcenter/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "vendors": "vendor_id",
+          "invoices": "invoice_id",
+          "journal_entries": "journal_id",
+          "payments": "payment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "duck_creek_policy",
+      "displayName": "Duck Creek Policy",
+      "aliases": [
+        "Duck Creek Policy",
+        "duck_creek_policy"
+      ],
+      "maturity": "starter",
+      "family": "contract-lifecycle",
+      "entities": [
+        "agreement",
+        "clause",
+        "obligation",
+        "amendment",
+        "approval"
+      ],
+      "workflows": [
+        "agreement_lookup",
+        "clause_review",
+        "obligation_tracking",
+        "approval"
+      ],
+      "roles": [
+        "contract_manager",
+        "legal_reviewer",
+        "business_owner",
+        "approver"
+      ],
+      "tools": [
+        "search_agreements",
+        "get_agreement",
+        "list_pending_approvals",
+        "submit_agreement_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/duck_creek_policy/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/duck_creek_policy/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/duck_creek_policy/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/duck_creek_policy/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/duck_creek_policy/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/duck_creek_policy/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "agreements": "agreement_id",
+          "clauses": "clause_id",
+          "obligations": "obligation_id",
+          "amendments": "amendment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "verisk_iso_erc",
+      "displayName": "Verisk ISO ERC",
+      "aliases": [
+        "Verisk ISO ERC",
+        "verisk_iso_erc"
+      ],
+      "maturity": "starter",
+      "family": "external-intelligence",
+      "entities": [
+        "company",
+        "signal",
+        "watchlist",
+        "risk_score",
+        "source_feed"
+      ],
+      "workflows": [
+        "company_lookup",
+        "signal_review",
+        "watchlist_update",
+        "risk_score_refresh",
+        "audit"
+      ],
+      "roles": [
+        "analyst",
+        "risk_manager",
+        "category_manager",
+        "finance_owner"
+      ],
+      "tools": [
+        "search_companies",
+        "get_company",
+        "submit_company_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/verisk_iso_erc/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/verisk_iso_erc/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/verisk_iso_erc/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/verisk_iso_erc/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/verisk_iso_erc/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/verisk_iso_erc/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "companies": "company_id",
+          "signals": "signal_id",
+          "watchlists": "watchlist_id",
+          "risk_scores": "score_id",
+          "source_feeds": "feed_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "lexisnexis_risk_solutions",
+      "displayName": "LexisNexis Risk Solutions",
+      "aliases": [
+        "LexisNexis Risk Solutions",
+        "lexisnexis_risk_solutions"
+      ],
+      "maturity": "starter",
+      "family": "external-intelligence",
+      "entities": [
+        "company",
+        "signal",
+        "watchlist",
+        "risk_score",
+        "source_feed"
+      ],
+      "workflows": [
+        "company_lookup",
+        "signal_review",
+        "watchlist_update",
+        "risk_score_refresh",
+        "audit"
+      ],
+      "roles": [
+        "analyst",
+        "risk_manager",
+        "category_manager",
+        "finance_owner"
+      ],
+      "tools": [
+        "search_companies",
+        "get_company",
+        "submit_company_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/lexisnexis_risk_solutions/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/lexisnexis_risk_solutions/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/lexisnexis_risk_solutions/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/lexisnexis_risk_solutions/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/lexisnexis_risk_solutions/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/lexisnexis_risk_solutions/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "companies": "company_id",
+          "signals": "signal_id",
+          "watchlists": "watchlist_id",
+          "risk_scores": "score_id",
+          "source_feeds": "feed_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "friss_fraud_detection",
+      "displayName": "FRISS Fraud Detection",
+      "aliases": [
+        "FRISS Fraud Detection",
+        "friss_fraud_detection"
+      ],
+      "maturity": "starter",
+      "family": "risk-grc",
+      "entities": [
+        "risk",
+        "control",
+        "issue",
+        "policy",
+        "assessment",
+        "approval"
+      ],
+      "workflows": [
+        "risk_review",
+        "control_attestation",
+        "issue_remediation",
+        "policy_exception",
+        "audit"
+      ],
+      "roles": [
+        "risk_owner",
+        "control_owner",
+        "auditor",
+        "compliance_manager",
+        "approver"
+      ],
+      "tools": [
+        "search_risks",
+        "get_risk",
+        "list_pending_approvals",
+        "submit_risk_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/friss_fraud_detection/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/friss_fraud_detection/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/friss_fraud_detection/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/friss_fraud_detection/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/friss_fraud_detection/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/friss_fraud_detection/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "risks": "risk_id",
+          "controls": "control_id",
+          "issues": "issue_id",
+          "policies": "policy_id",
+          "assessments": "assessment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "amdocs_ces_billing",
+      "displayName": "Amdocs CES Billing",
+      "aliases": [
+        "Amdocs CES Billing",
+        "amdocs_ces_billing"
+      ],
+      "maturity": "starter",
+      "family": "finance-erp",
+      "entities": [
+        "vendor",
+        "invoice",
+        "journal_entry",
+        "payment",
+        "cost_center",
+        "approval"
+      ],
+      "workflows": [
+        "invoice_review",
+        "journal_approval",
+        "payment_status",
+        "close_audit"
+      ],
+      "roles": [
+        "ap_analyst",
+        "controller",
+        "finance_manager",
+        "auditor"
+      ],
+      "tools": [
+        "search_vendors",
+        "get_vendor",
+        "list_pending_approvals",
+        "submit_vendor_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/amdocs_ces_billing/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/amdocs_ces_billing/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/amdocs_ces_billing/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/amdocs_ces_billing/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/amdocs_ces_billing/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/amdocs_ces_billing/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "vendors": "vendor_id",
+          "invoices": "invoice_id",
+          "journal_entries": "journal_id",
+          "payments": "payment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "netcracker_service_orchestration",
+      "displayName": "Netcracker Service Orchestration",
+      "aliases": [
+        "Netcracker Service Orchestration",
+        "netcracker_service_orchestration"
+      ],
+      "maturity": "starter",
+      "family": "it-ops-security",
+      "entities": [
+        "ticket",
+        "service_request",
+        "change_request",
+        "cmdb_ci",
+        "approval",
+        "sla"
+      ],
+      "workflows": [
+        "incident_triage",
+        "request_fulfillment",
+        "change_approval",
+        "sla_escalation",
+        "audit"
+      ],
+      "roles": [
+        "requester",
+        "resolver",
+        "change_manager",
+        "service_owner"
+      ],
+      "tools": [
+        "search_tickets",
+        "get_ticket",
+        "list_pending_approvals",
+        "submit_ticket_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/netcracker_service_orchestration/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/netcracker_service_orchestration/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/netcracker_service_orchestration/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/netcracker_service_orchestration/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/netcracker_service_orchestration/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/netcracker_service_orchestration/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "tickets": "ticket_id",
+          "cmdb_items": "ci_id",
+          "changes": "change_id",
+          "slas": "sla_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "ericsson_network_manager",
+      "displayName": "Ericsson Network Manager",
+      "aliases": [
+        "Ericsson Network Manager",
+        "ericsson_network_manager"
+      ],
+      "maturity": "starter",
+      "family": "it-observability",
+      "entities": [
+        "service",
+        "monitor",
+        "alert",
+        "incident",
+        "slo"
+      ],
+      "workflows": [
+        "alert_triage",
+        "incident_status",
+        "slo_review",
+        "monitor_update",
+        "audit"
+      ],
+      "roles": [
+        "sre",
+        "service_owner",
+        "incident_commander",
+        "platform_admin"
+      ],
+      "tools": [
+        "search_services",
+        "get_service",
+        "submit_service_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/ericsson_network_manager/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/ericsson_network_manager/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/ericsson_network_manager/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/ericsson_network_manager/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/ericsson_network_manager/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/ericsson_network_manager/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "services": "service_id",
+          "monitors": "monitor_id",
+          "alerts": "alert_id",
+          "incidents": "incident_id",
+          "slos": "slo_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "genesys_cloud_cx",
+      "displayName": "Genesys Cloud CX",
+      "aliases": [
+        "Genesys Cloud CX",
+        "genesys_cloud_cx"
+      ],
+      "maturity": "starter",
+      "family": "crm",
+      "entities": [
+        "account",
+        "contact",
+        "opportunity",
+        "activity",
+        "campaign"
+      ],
+      "workflows": [
+        "account_search",
+        "opportunity_review",
+        "activity_logging",
+        "forecast_update"
+      ],
+      "roles": [
+        "seller",
+        "sales_manager",
+        "marketing_ops",
+        "revops"
+      ],
+      "tools": [
+        "search_accounts",
+        "get_account",
+        "submit_account_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/genesys_cloud_cx/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/genesys_cloud_cx/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/genesys_cloud_cx/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/genesys_cloud_cx/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/genesys_cloud_cx/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/genesys_cloud_cx/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "accounts": "account_id",
+          "contacts": "contact_id",
+          "opportunities": "opportunity_id",
+          "activities": "activity_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "oracle_field_service",
+      "displayName": "Oracle Field Service",
+      "aliases": [
+        "Oracle Field Service",
+        "oracle_field_service"
+      ],
+      "maturity": "starter",
+      "family": "it-ops-security",
+      "entities": [
+        "ticket",
+        "service_request",
+        "change_request",
+        "cmdb_ci",
+        "approval",
+        "sla"
+      ],
+      "workflows": [
+        "incident_triage",
+        "request_fulfillment",
+        "change_approval",
+        "sla_escalation",
+        "audit"
+      ],
+      "roles": [
+        "requester",
+        "resolver",
+        "change_manager",
+        "service_owner"
+      ],
+      "tools": [
+        "search_tickets",
+        "get_ticket",
+        "list_pending_approvals",
+        "submit_ticket_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/oracle_field_service/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/oracle_field_service/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/oracle_field_service/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/oracle_field_service/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/oracle_field_service/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/oracle_field_service/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "tickets": "ticket_id",
+          "cmdb_items": "ci_id",
+          "changes": "change_id",
+          "slas": "sla_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "salesforce_communications_cloud",
+      "displayName": "Salesforce Communications Cloud",
+      "aliases": [
+        "Salesforce Communications Cloud",
+        "salesforce_communications_cloud"
+      ],
+      "maturity": "starter",
+      "family": "crm",
+      "entities": [
+        "account",
+        "contact",
+        "opportunity",
+        "activity",
+        "campaign"
+      ],
+      "workflows": [
+        "account_search",
+        "opportunity_review",
+        "activity_logging",
+        "forecast_update"
+      ],
+      "roles": [
+        "seller",
+        "sales_manager",
+        "marketing_ops",
+        "revops"
+      ],
+      "tools": [
+        "search_accounts",
+        "get_account",
+        "submit_account_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/salesforce_communications_cloud/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/salesforce_communications_cloud/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/salesforce_communications_cloud/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/salesforce_communications_cloud/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/salesforce_communications_cloud/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/salesforce_communications_cloud/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "accounts": "account_id",
+          "contacts": "contact_id",
+          "opportunities": "opportunity_id",
+          "activities": "activity_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "siemens_opcenter_mes",
+      "displayName": "Siemens Opcenter MES",
+      "aliases": [
+        "Siemens Opcenter MES",
+        "siemens_opcenter_mes"
+      ],
+      "maturity": "starter",
+      "family": "supply-chain",
+      "entities": [
+        "supplier",
+        "material",
+        "shipment",
+        "purchase_order",
+        "inventory_position",
+        "risk_event"
+      ],
+      "workflows": [
+        "supplier_lookup",
+        "shipment_update",
+        "inventory_exception",
+        "risk_review",
+        "audit"
+      ],
+      "roles": [
+        "planner",
+        "buyer",
+        "supplier_manager",
+        "logistics_coordinator",
+        "risk_owner"
+      ],
+      "tools": [
+        "search_suppliers",
+        "get_supplier",
+        "submit_supplier_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/siemens_opcenter_mes/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/siemens_opcenter_mes/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/siemens_opcenter_mes/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/siemens_opcenter_mes/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/siemens_opcenter_mes/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/siemens_opcenter_mes/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "suppliers": "supplier_id",
+          "materials": "material_id",
+          "shipments": "shipment_id",
+          "purchase_orders": "po_id",
+          "inventory_positions": "inventory_id",
+          "risk_events": "risk_event_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "sap_s_4hana_pp",
+      "displayName": "SAP S/4HANA PP",
+      "aliases": [
+        "SAP S/4HANA PP",
+        "sap_s_4hana_pp"
+      ],
+      "maturity": "starter",
+      "family": "supply-chain",
+      "entities": [
+        "supplier",
+        "material",
+        "shipment",
+        "purchase_order",
+        "inventory_position",
+        "risk_event"
+      ],
+      "workflows": [
+        "supplier_lookup",
+        "shipment_update",
+        "inventory_exception",
+        "risk_review",
+        "audit"
+      ],
+      "roles": [
+        "planner",
+        "buyer",
+        "supplier_manager",
+        "logistics_coordinator",
+        "risk_owner"
+      ],
+      "tools": [
+        "search_suppliers",
+        "get_supplier",
+        "submit_supplier_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/sap_s_4hana_pp/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/sap_s_4hana_pp/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/sap_s_4hana_pp/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/sap_s_4hana_pp/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/sap_s_4hana_pp/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/sap_s_4hana_pp/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "suppliers": "supplier_id",
+          "materials": "material_id",
+          "shipments": "shipment_id",
+          "purchase_orders": "po_id",
+          "inventory_positions": "inventory_id",
+          "risk_events": "risk_event_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "sap_s_4hana_qm",
+      "displayName": "SAP S/4HANA QM",
+      "aliases": [
+        "SAP S/4HANA QM",
+        "sap_s_4hana_qm"
+      ],
+      "maturity": "starter",
+      "family": "risk-grc",
+      "entities": [
+        "risk",
+        "control",
+        "issue",
+        "policy",
+        "assessment",
+        "approval"
+      ],
+      "workflows": [
+        "risk_review",
+        "control_attestation",
+        "issue_remediation",
+        "policy_exception",
+        "audit"
+      ],
+      "roles": [
+        "risk_owner",
+        "control_owner",
+        "auditor",
+        "compliance_manager",
+        "approver"
+      ],
+      "tools": [
+        "search_risks",
+        "get_risk",
+        "list_pending_approvals",
+        "submit_risk_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/sap_s_4hana_qm/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/sap_s_4hana_qm/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/sap_s_4hana_qm/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/sap_s_4hana_qm/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/sap_s_4hana_qm/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/sap_s_4hana_qm/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "risks": "risk_id",
+          "controls": "control_id",
+          "issues": "issue_id",
+          "policies": "policy_id",
+          "assessments": "assessment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "ibm_maximo",
+      "displayName": "IBM Maximo",
+      "aliases": [
+        "IBM Maximo",
+        "ibm_maximo"
+      ],
+      "maturity": "starter",
+      "family": "it-ops-security",
+      "entities": [
+        "ticket",
+        "service_request",
+        "change_request",
+        "cmdb_ci",
+        "approval",
+        "sla"
+      ],
+      "workflows": [
+        "incident_triage",
+        "request_fulfillment",
+        "change_approval",
+        "sla_escalation",
+        "audit"
+      ],
+      "roles": [
+        "requester",
+        "resolver",
+        "change_manager",
+        "service_owner"
+      ],
+      "tools": [
+        "search_tickets",
+        "get_ticket",
+        "list_pending_approvals",
+        "submit_ticket_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/ibm_maximo/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/ibm_maximo/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/ibm_maximo/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/ibm_maximo/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/ibm_maximo/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/ibm_maximo/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "tickets": "ticket_id",
+          "cmdb_items": "ci_id",
+          "changes": "change_id",
+          "slas": "sla_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "osisoft_pi_system",
+      "displayName": "OSIsoft PI System",
+      "aliases": [
+        "OSIsoft PI System",
+        "osisoft_pi_system"
+      ],
+      "maturity": "starter",
+      "family": "it-observability",
+      "entities": [
+        "service",
+        "monitor",
+        "alert",
+        "incident",
+        "slo"
+      ],
+      "workflows": [
+        "alert_triage",
+        "incident_status",
+        "slo_review",
+        "monitor_update",
+        "audit"
+      ],
+      "roles": [
+        "sre",
+        "service_owner",
+        "incident_commander",
+        "platform_admin"
+      ],
+      "tools": [
+        "search_services",
+        "get_service",
+        "submit_service_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/osisoft_pi_system/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/osisoft_pi_system/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/osisoft_pi_system/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/osisoft_pi_system/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/osisoft_pi_system/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/osisoft_pi_system/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "services": "service_id",
+          "monitors": "monitor_id",
+          "alerts": "alert_id",
+          "incidents": "incident_id",
+          "slos": "slo_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "ptc_windchill_plm",
+      "displayName": "PTC Windchill PLM",
+      "aliases": [
+        "PTC Windchill PLM",
+        "ptc_windchill_plm"
+      ],
+      "maturity": "starter",
+      "family": "work-management",
+      "entities": [
+        "project",
+        "issue",
+        "task",
+        "sprint",
+        "release",
+        "approval"
+      ],
+      "workflows": [
+        "issue_triage",
+        "task_update",
+        "release_approval",
+        "sprint_review",
+        "audit"
+      ],
+      "roles": [
+        "project_manager",
+        "engineer",
+        "product_owner",
+        "release_manager",
+        "approver"
+      ],
+      "tools": [
+        "search_projects",
+        "get_project",
+        "list_pending_approvals",
+        "submit_project_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/ptc_windchill_plm/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/ptc_windchill_plm/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/ptc_windchill_plm/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/ptc_windchill_plm/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/ptc_windchill_plm/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/ptc_windchill_plm/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "projects": "project_id",
+          "issues": "issue_id",
+          "tasks": "task_id",
+          "sprints": "sprint_id",
+          "releases": "release_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "kinaxis_rapidresponse",
+      "displayName": "Kinaxis RapidResponse",
+      "aliases": [
+        "Kinaxis RapidResponse",
+        "kinaxis_rapidresponse"
+      ],
+      "maturity": "starter",
+      "family": "planning-epm",
+      "entities": [
+        "planning_model",
+        "scenario",
+        "forecast_line",
+        "budget_owner",
+        "approval"
+      ],
+      "workflows": [
+        "scenario_review",
+        "forecast_update",
+        "budget_approval",
+        "variance_audit"
+      ],
+      "roles": [
+        "planner",
+        "finance_manager",
+        "budget_owner",
+        "controller"
+      ],
+      "tools": [
+        "search_planning_models",
+        "get_planning_model",
+        "list_pending_approvals",
+        "submit_planning_model_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/kinaxis_rapidresponse/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/kinaxis_rapidresponse/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/kinaxis_rapidresponse/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/kinaxis_rapidresponse/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/kinaxis_rapidresponse/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/kinaxis_rapidresponse/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "planning_models": "model_id",
+          "scenarios": "scenario_id",
+          "forecast_lines": "forecast_line_id",
+          "budget_owners": "owner_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
+    },
+    {
+      "id": "sphera_ehs",
+      "displayName": "Sphera EHS",
+      "aliases": [
+        "Sphera EHS",
+        "sphera_ehs"
+      ],
+      "maturity": "starter",
+      "family": "risk-grc",
+      "entities": [
+        "risk",
+        "control",
+        "issue",
+        "policy",
+        "assessment",
+        "approval"
+      ],
+      "workflows": [
+        "risk_review",
+        "control_attestation",
+        "issue_remediation",
+        "policy_exception",
+        "audit"
+      ],
+      "roles": [
+        "risk_owner",
+        "control_owner",
+        "auditor",
+        "compliance_manager",
+        "approver"
+      ],
+      "tools": [
+        "search_risks",
+        "get_risk",
+        "list_pending_approvals",
+        "submit_risk_update",
+        "list_audit_events"
+      ],
+      "schemaPath": "apps/factory/simulator-systems/sphera_ehs/schema.json",
+      "toolsPath": "apps/factory/simulator-systems/sphera_ehs/tools.json",
+      "projectionPath": "apps/factory/simulator-systems/sphera_ehs/projection.json",
+      "materializationPath": "apps/factory/simulator-systems/sphera_ehs/materialization.json",
+      "workflowsPath": "apps/factory/simulator-systems/sphera_ehs/workflows.json",
+      "seedPath": "apps/factory/simulator-systems/sphera_ehs/seed.json",
+      "plugin": {
+        "runtime": "python",
+        "module": "simulator_runtime.generic",
+        "handlerMap": null
+      },
+      "schemaExtension": {
+        "mode": "merge-records-by-primary-key",
+        "collections": {
+          "risks": "risk_id",
+          "controls": "control_id",
+          "issues": "issue_id",
+          "policies": "policy_id",
+          "assessments": "assessment_id",
+          "approvals": "approval_id",
+          "audit_events": "event_id"
+        }
+      },
+      "backingStores": [
+        "alloydb",
+        "bigquery"
+      ],
+      "failureModes": [
+        "permission_denied",
+        "validation_error",
+        "pending_approval"
+      ],
+      "evalScenarios": [],
+      "sourceIntegration": {
+        "strategy": "simulator-backed-mcp",
+        "runtime": "cloud-run-mcp-service"
+      }
     }
   ]
 }

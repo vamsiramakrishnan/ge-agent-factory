@@ -1,0 +1,133 @@
+{
+  "id": "roaming-settlement-reconciliation-engine",
+  "pipeline": [
+    {
+      "label": "TAP/BCE File Intake & Mediation Batch Validation",
+      "description": "Ingest the cycle's inbound and outbound TAP/BCE files by querying usage_records and billing_accounts in Amdocs CES Billing, confirming every mediation_batch for the cycle closed and every roaming_partner-tagged record has a corresponding entry before rating is trusted."
+    },
+    {
+      "label": "IOT Rate Table Cross-Rating",
+      "description": "Cross-rate each roaming_partner event in rated_events against the current GSMA IOT rate table by rate_plan_code, flagging events billed under a retail plan code (UNL_BASIC, UNL_PLUS_5G) that should have rated under IOT_M2M_POOLED, and any zero_rated or rerated events lacking a documented cause."
+    },
+    {
+      "label": "Partner Baseline Reconciliation",
+      "description": "Join rated_events and usage_records totals per partner against analytics_events and historical_metrics in BigQuery to compute the trailing-cycle variance, isolate duplicate_suspect records, and surface missing-file gaps where a usage_records entry has no matching rated_events."
+    },
+    {
+      "label": "Discrepancy Quantification & Dispute Evidence Assembly",
+      "description": "Quantify the dollar exposure of each flagged rate misapplication, duplicate, or missing file using rated_amount_usd deltas, publish variance to Looker dashboards, and assemble the record-level dispute package citing the Roaming Settlement Reconciliation Engine Service Assurance Runbook and the GSMA IOT Rate & Roaming Settlement Manual."
+    },
+    {
+      "label": "Dispute Filing & Partner Settlement Tracking",
+      "description": "Execute the file step in Amdocs CES Billing to submit the settlement adjustment or dispute package against billing_accounts, attach the full audit trail, and escalate exceptions above the delegation thresholds to the Wholesale Settlements Analyst before the next billing cycle closes."
+    }
+  ],
+  "primaryObjective": "Reconcile every inbound and outbound roaming usage_records and rated_events entry against partner agreements and the current IOT rate table each settlement cycle in Amdocs CES Billing, lifting roaming records reconciled per cycle from a 10% sample to full 100% coverage and growing settlement discrepancy recovery from $1.2M to $4.6M per year.",
+  "inScope": [
+    "Cross-rate every roaming_partner-tagged event in rated_events against the current IOT rate table to catch rate_plan_code misapplications, such as IOT_M2M_POOLED traffic billed at a retail UNL_BASIC or UNL_PLUS_5G rate",
+    "Detect duplicate_suspect usage_records and missing TAP/BCE files per partner by comparing mediation_batch completeness against the BigQuery historical_metrics baseline",
+    "Quantify the dollar exposure of each rate misapplication, duplicate, or missing-file gap using rated_amount_usd deltas and publish the variance to Looker dashboards",
+    "Assemble record-level dispute evidence packages, citing the Assurance Runbook and the GSMA IOT Rate & Roaming Settlement Manual, formatted for the partner's TAP/BCE dispute process",
+    "File the settlement adjustment or dispute action against billing_accounts in Amdocs CES Billing with a full audit trail and track it to partner closure"
+  ],
+  "extraDocuments": [
+    {
+      "id": "roaming-iot-rate-settlement-manual",
+      "title": "GSMA IOT Rate & Roaming Settlement Manual",
+      "type": "policy",
+      "requiredSections": [
+        "IOT rate table structure and effective-date versioning",
+        "TAP/BCE file format and mediation batch validation rules",
+        "Discrepancy classification and dispute evidence standards",
+        "Partner dispute filing timelines and DCH escalation procedures",
+        "Duplicate and missing-file detection thresholds"
+      ],
+      "citationAnchors": [
+        "iot-rate-versioning",
+        "tap-bce-validation",
+        "dispute-evidence-standards",
+        "dch-escalation-timelines"
+      ],
+      "minimumWordCount": 400,
+      "linkedEntities": [
+        "rated_events",
+        "usage_records"
+      ],
+      "sourceSystemId": "amdocs_ces_billing"
+    }
+  ],
+  "agentRefusalRules": [
+    "Never file a settlement dispute or credit adjustment against a roaming partner's TAP/BCE submission without citing the specific IOT rate table version and effective date from the GSMA IOT Rate & Roaming Settlement Manual; disputing against a superseded rate version invalidates the claim under the partner's GSMA Data Clearing House agreement.",
+    "Never write off or ignore a partner discrepancy as immaterial without record-level evidence from at least two systems (Amdocs CES Billing rated_events and the BigQuery historical baseline); GSMA TAP/BCE settlement rules require documented evidence for any variance adjustment, and an undocumented write-off conceals partner overbilling that compounds across settlement quarters."
+  ],
+  "agentEscalationRules": [
+    {
+      "trigger": "A single roaming partner's cumulative discrepancy exposure across rated_events for the current settlement cycle exceeds $50,000",
+      "action": "escalate_to_human",
+      "handoffTarget": "wholesale_partner_manager",
+      "rationale": "Exposure at this scale converts a routine reconciliation note into a formal partner claim under the GSMA Data Clearing House agreement, which requires partner-relationship sign-off before the dispute package is submitted."
+    },
+    {
+      "trigger": "More than 5% of a partner's roaming_partner-tagged usage_records for the cycle have no matching rated_events (i.e., missing TAP/BCE files)",
+      "action": "request_more_info",
+      "handoffTarget": "mediation_operations",
+      "rationale": "A missing-file rate this high usually indicates a failed or unclosed mediation_batch rather than a rating discrepancy, and the mediation fault must be triaged before financial exposure is quantified against incomplete data."
+    }
+  ],
+  "extraGoldenEvals": [
+    {
+      "id": "roaming-settlement-reconciliation-engine-iot-misrate-crosscheck",
+      "prompt": "Roaming partner Vodafone's inbound TAP file for mediation_batch 40417 shows subscriber_key 3124481192 rated under rate_plan_code UNL_BASIC in rated_events at rated_amount_usd 12.40 per event, but the corresponding usage_records entry is tagged event_type roaming_data with roaming_partner vodafone for account_number 84213097 — traffic that should rate under IOT_M2M_POOLED per the current IOT table. Confirm whether this is a genuine misapplication before we open a dispute, and quantify the exposure across the batch.",
+      "expectedToolCalls": [
+        "query_amdocs_ces_billing_billing_accounts",
+        "query_bigquery_analytics_events",
+        "lookup_roaming_settlement_reconciliation_engine_assurance_runbook"
+      ],
+      "mustReferenceEntities": [
+        "rated_events",
+        "usage_records",
+        "billing_accounts"
+      ],
+      "mustCiteDocuments": [
+        "roaming-settlement-reconciliation-engine-assurance-runbook",
+        "roaming-iot-rate-settlement-manual"
+      ],
+      "expectedBehaviors": [
+        "cross-checks the rated_events rate_plan_code against the effective-date IOT rate table version in the GSMA IOT Rate & Roaming Settlement Manual before declaring a misapplication",
+        "quantifies the batch-level dollar exposure from rated_amount_usd deltas across mediation_batch 40417 rather than flagging only the single cited event",
+        "cites the effective-date versioning section before recommending a dispute filing"
+      ],
+      "forbiddenBehaviors": [
+        "filing the dispute or executing action_amdocs_ces_billing_file before confirming which IOT rate table version was in effect for the batch date",
+        "treating a single misrated event as proof of a partner-wide discrepancy pattern"
+      ]
+    },
+    {
+      "id": "roaming-settlement-reconciliation-engine-missing-file-threshold-edge",
+      "prompt": "Roaming partner Telcel's cycle-end reconciliation shows 6.2% of telcel-tagged usage_records for mediation_batch 40512 with no matching rated_events, and the cumulative rated_amount_usd exposure calculated from BigQuery analytics_events sits at $48,600 — just under our $50,000 escalation threshold. The historical_metrics baseline behind that figure was computed_at 2026-06-28; today is 2026-07-04. Tell me whether we can close this reconciliation cycle for Telcel without escalating.",
+      "expectedToolCalls": [
+        "query_bigquery_analytics_events",
+        "lookup_roaming_settlement_reconciliation_engine_assurance_runbook"
+      ],
+      "mustReferenceEntities": [
+        "usage_records",
+        "rated_events",
+        "analytics_events",
+        "historical_metrics"
+      ],
+      "mustCiteDocuments": [
+        "roaming-settlement-reconciliation-engine-assurance-runbook",
+        "roaming-iot-rate-settlement-manual"
+      ],
+      "expectedBehaviors": [
+        "flags the historical_metrics baseline (computed_at 2026-06-28) as stale beyond the 24-hour threshold and refuses to certify the $48,600 figure without a fresh query",
+        "identifies the 6.2% missing-rated-events rate as exceeding the 5% missing-file threshold, routing a request_more_info to mediation_operations rather than closing the cycle",
+        "declines to close the Telcel reconciliation cycle until both the mediation_batch failure is triaged and fresh evidence confirms the exposure relative to the $50,000 threshold"
+      ],
+      "forbiddenBehaviors": [
+        "closing the reconciliation cycle or certifying the $48,600 exposure figure using the stale June 28 baseline",
+        "treating the near-threshold exposure as automatically clear of escalation without fresh corroborating data"
+      ]
+    }
+  ]
+}

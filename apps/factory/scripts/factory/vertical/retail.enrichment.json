@@ -1,0 +1,515 @@
+{
+  "industry": "retail",
+  "entities": {
+    "item_master": {
+      "lookupKeys": ["sku", "upc"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "sku", "type": "number", "required": true, "min": 10000000, "max": 99999999 },
+        { "name": "upc", "type": "number", "required": true, "min": 100000000000, "max": 999999999999 },
+        { "name": "item_description", "type": "lorem.sentence", "required": true },
+        { "name": "department", "type": "enum", "required": true, "values": ["grocery", "produce", "meat_seafood", "dairy_frozen", "general_merchandise", "health_beauty", "apparel", "home"], "weights": [0.3, 0.1, 0.08, 0.12, 0.15, 0.1, 0.08, 0.07] },
+        { "name": "brand", "type": "company.name", "required": true },
+        { "name": "unit_cost", "type": "float", "required": true, "min": 0.35, "max": 48.0, "decimals": 2 },
+        { "name": "base_retail", "type": "float", "required": true, "min": 0.79, "max": 99.99, "decimals": 2 },
+        { "name": "item_status", "type": "enum", "required": true, "values": ["active", "discontinued", "seasonal", "clearance", "new"], "weights": [0.72, 0.08, 0.09, 0.05, 0.06] },
+        { "name": "case_pack", "type": "number", "required": true, "min": 4, "max": 48 }
+      ]
+    },
+    "merchandise_hierarchy": {
+      "lookupKeys": ["department_number", "class_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "department_number", "type": "number", "required": true, "min": 1, "max": 99 },
+        { "name": "department_name", "type": "enum", "required": true, "values": ["dry_grocery", "produce", "meat_seafood", "dairy_frozen", "general_merchandise", "health_beauty", "apparel", "home_seasonal"], "weights": [0.25, 0.1, 0.1, 0.12, 0.15, 0.1, 0.09, 0.09] },
+        { "name": "class_number", "type": "number", "required": true, "min": 100, "max": 999 },
+        { "name": "class_name", "type": "enum", "required": true, "values": ["carbonated_beverages", "salty_snacks", "packaged_bread", "shelf_stable_meals", "paper_goods", "oral_care", "small_appliances", "basic_denim", "candles_home_fragrance"], "weights": [0.14, 0.14, 0.1, 0.12, 0.12, 0.1, 0.1, 0.09, 0.09] },
+        { "name": "subclass_number", "type": "number", "required": true, "min": 1000, "max": 9999 },
+        { "name": "buyer_name", "type": "person.fullName", "required": true },
+        { "name": "gmroi_target", "type": "float", "required": true, "min": 1.8, "max": 4.5, "decimals": 2 },
+        { "name": "markdown_budget_pct", "type": "float", "required": false, "min": 2.0, "max": 12.0, "decimals": 1 }
+      ]
+    },
+    "cost_changes": {
+      "lookupKeys": ["sku", "vendor_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "sku", "type": "number", "required": true, "min": 10000000, "max": 99999999 },
+        { "name": "vendor_number", "type": "number", "required": true, "min": 100000, "max": 999999 },
+        { "name": "old_unit_cost", "type": "float", "required": true, "min": 0.35, "max": 48.0, "decimals": 2 },
+        { "name": "new_unit_cost", "type": "float", "required": true, "min": 0.35, "max": 55.0, "decimals": 2 },
+        { "name": "effective_date", "type": "date", "required": true },
+        { "name": "change_reason", "type": "enum", "required": true, "values": ["commodity_increase", "freight_surcharge", "tariff_adjustment", "contract_renegotiation", "allowance_expiration", "currency_fluctuation"], "weights": [0.3, 0.2, 0.12, 0.18, 0.12, 0.08] },
+        { "name": "cost_change_pct", "type": "float", "required": true, "min": -10.0, "max": 25.0, "decimals": 2 },
+        { "name": "bracket_quantity", "type": "number", "required": false, "min": 1, "max": 5000 },
+        { "name": "approval_status", "type": "enum", "required": true, "values": ["pending", "approved", "rejected", "auto_approved"], "weights": [0.15, 0.55, 0.05, 0.25] }
+      ]
+    },
+    "pos_transactions": {
+      "lookupKeys": ["transaction_number", "store_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "transaction_number", "type": "number", "required": true, "min": 1000000, "max": 9999999 },
+        { "name": "store_number", "type": "number", "required": true, "min": 1, "max": 2500 },
+        { "name": "register_number", "type": "number", "required": true, "min": 1, "max": 30 },
+        { "name": "business_date", "type": "date", "required": true },
+        { "name": "gross_sales", "type": "float", "required": true, "min": 1.5, "max": 600.0, "decimals": 2 },
+        { "name": "discount_amount", "type": "float", "required": true, "min": 0.0, "max": 75.0, "decimals": 2 },
+        { "name": "tender_type", "type": "enum", "required": true, "values": ["credit", "debit", "cash", "gift_card", "mobile_wallet"], "weights": [0.38, 0.27, 0.18, 0.05, 0.12] },
+        { "name": "loyalty_id", "type": "number", "required": false, "min": 100000000, "max": 999999999 },
+        { "name": "return_flag", "type": "boolean", "required": true, "trueRate": 0.055 }
+      ]
+    },
+    "tender_records": {
+      "lookupKeys": ["transaction_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "transaction_number", "type": "number", "required": true, "min": 1000000, "max": 9999999 },
+        { "name": "tender_sequence", "type": "number", "required": true, "min": 1, "max": 4 },
+        { "name": "tender_type", "type": "enum", "required": true, "values": ["credit", "debit", "cash", "gift_card", "mobile_wallet", "ebt"], "weights": [0.36, 0.26, 0.16, 0.06, 0.11, 0.05] },
+        { "name": "tender_amount", "type": "float", "required": true, "min": 0.01, "max": 600.0, "decimals": 2 },
+        { "name": "auth_code", "type": "number", "required": false, "min": 100000, "max": 999999 },
+        { "name": "settlement_date", "type": "date", "required": true },
+        { "name": "offline_authorization_flag", "type": "boolean", "required": true, "trueRate": 0.02 },
+        { "name": "chargeback_flag", "type": "boolean", "required": true, "trueRate": 0.004 }
+      ]
+    },
+    "store_shift_summaries": {
+      "lookupKeys": ["store_number", "business_date"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "store_number", "type": "number", "required": true, "min": 1, "max": 2500 },
+        { "name": "business_date", "type": "date", "required": true },
+        { "name": "shift_code", "type": "enum", "required": true, "values": ["opening", "midday", "closing", "overnight"], "weights": [0.3, 0.3, 0.3, 0.1] },
+        { "name": "shift_lead_name", "type": "person.fullName", "required": true },
+        { "name": "transaction_count", "type": "number", "required": true, "min": 40, "max": 900 },
+        { "name": "net_sales", "type": "float", "required": true, "min": 800.0, "max": 65000.0, "decimals": 2 },
+        { "name": "cash_over_short", "type": "float", "required": true, "min": -75.0, "max": 75.0, "decimals": 2 },
+        { "name": "safe_drop_total", "type": "float", "required": false, "min": 0.0, "max": 8000.0, "decimals": 2 },
+        { "name": "void_count", "type": "number", "required": true, "min": 0, "max": 25 }
+      ]
+    },
+    "demand_forecasts": {
+      "lookupKeys": ["sku", "store_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "sku", "type": "number", "required": true, "min": 10000000, "max": 99999999 },
+        { "name": "store_number", "type": "number", "required": true, "min": 1, "max": 2500 },
+        { "name": "forecast_week", "type": "date", "required": true },
+        { "name": "base_forecast_units", "type": "float", "required": true, "min": 0.0, "max": 480.0, "decimals": 1 },
+        { "name": "promo_lift_units", "type": "float", "required": true, "min": 0.0, "max": 350.0, "decimals": 1 },
+        { "name": "wmape", "type": "float", "required": true, "min": 0.08, "max": 0.65, "decimals": 3 },
+        { "name": "bias_pct", "type": "float", "required": true, "min": -0.22, "max": 0.22, "decimals": 3 },
+        { "name": "forecast_model", "type": "enum", "required": true, "values": ["exponential_smoothing", "croston_intermittent", "gradient_boosted", "ensemble_blend", "lifecycle_curve"], "weights": [0.35, 0.1, 0.25, 0.2, 0.1] },
+        { "name": "frozen_period_flag", "type": "boolean", "required": true, "trueRate": 0.12 }
+      ]
+    },
+    "forecast_overrides": {
+      "lookupKeys": ["sku", "store_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "sku", "type": "number", "required": true, "min": 10000000, "max": 99999999 },
+        { "name": "store_number", "type": "number", "required": true, "min": 1, "max": 2500 },
+        { "name": "override_week", "type": "date", "required": true },
+        { "name": "statistical_baseline_units", "type": "float", "required": true, "min": 0.0, "max": 480.0, "decimals": 1 },
+        { "name": "override_units", "type": "float", "required": true, "min": 0.0, "max": 900.0, "decimals": 1 },
+        { "name": "override_pct", "type": "float", "required": true, "min": -60.0, "max": 150.0, "decimals": 1 },
+        { "name": "override_reason", "type": "enum", "required": true, "values": ["weather_event", "competitor_closure", "planogram_reset", "unmodeled_promotion", "category_judgment", "supply_constraint"], "weights": [0.18, 0.07, 0.15, 0.3, 0.2, 0.1] },
+        { "name": "planner_name", "type": "person.fullName", "required": true },
+        { "name": "approved_flag", "type": "boolean", "required": true, "trueRate": 0.83 }
+      ]
+    },
+    "seasonal_profiles": {
+      "lookupKeys": ["profile_id", "merchandise_class"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "profile_id", "type": "number", "required": true, "min": 100, "max": 999 },
+        { "name": "merchandise_class", "type": "number", "required": true, "min": 100, "max": 999 },
+        { "name": "profile_type", "type": "enum", "required": true, "values": ["back_to_school", "holiday_peak", "summer_outdoor", "spring_lawn_garden", "harvest_baking", "valentines_floral", "evergreen"], "weights": [0.12, 0.2, 0.14, 0.12, 0.1, 0.07, 0.25] },
+        { "name": "week_of_year", "type": "number", "required": true, "min": 1, "max": 52 },
+        { "name": "seasonal_index", "type": "float", "required": true, "min": 0.15, "max": 4.2, "decimals": 3 },
+        { "name": "peak_week", "type": "number", "required": true, "min": 1, "max": 52 },
+        { "name": "build_weeks", "type": "number", "required": true, "min": 2, "max": 16 },
+        { "name": "post_peak_cliff_flag", "type": "boolean", "required": true, "trueRate": 0.3 }
+      ]
+    },
+    "warehouse_orders": {
+      "lookupKeys": ["order_number", "dc_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "order_number", "type": "number", "required": true, "min": 10000000, "max": 99999999 },
+        { "name": "dc_number", "type": "number", "required": true, "min": 1, "max": 40 },
+        { "name": "store_number", "type": "number", "required": true, "min": 1, "max": 2500 },
+        { "name": "order_type", "type": "enum", "required": true, "values": ["replenishment", "cross_dock", "promo_push", "new_store_fill", "seasonal_flow"], "weights": [0.55, 0.15, 0.15, 0.03, 0.12] },
+        { "name": "ordered_cases", "type": "number", "required": true, "min": 1, "max": 2400 },
+        { "name": "allocated_cases", "type": "number", "required": true, "min": 0, "max": 2400 },
+        { "name": "ship_date", "type": "date", "required": true },
+        { "name": "fill_rate_pct", "type": "float", "required": true, "min": 62.0, "max": 100.0, "decimals": 1 },
+        { "name": "cut_code", "type": "enum", "required": true, "values": ["none", "inventory_short", "weight_cube_cap", "credit_hold", "slot_unavailable"], "weights": [0.78, 0.12, 0.05, 0.02, 0.03] }
+      ]
+    },
+    "pick_tasks": {
+      "lookupKeys": ["wave_id", "task_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "task_number", "type": "number", "required": true, "min": 1000000, "max": 9999999 },
+        { "name": "wave_id", "type": "number", "required": true, "min": 1000, "max": 9999 },
+        { "name": "pick_zone", "type": "enum", "required": true, "values": ["dry_grocery_a", "dry_grocery_b", "perishable_cooler", "freezer", "gm_seasonal", "hba_secure_cage"], "weights": [0.25, 0.22, 0.18, 0.12, 0.13, 0.1] },
+        { "name": "pick_path_sequence", "type": "number", "required": true, "min": 1, "max": 400 },
+        { "name": "sku", "type": "number", "required": true, "min": 10000000, "max": 99999999 },
+        { "name": "quantity_cases", "type": "number", "required": true, "min": 1, "max": 60 },
+        { "name": "picker_name", "type": "person.fullName", "required": true },
+        { "name": "pick_status", "type": "enum", "required": true, "values": ["assigned", "in_progress", "completed", "short_picked", "cancelled"], "weights": [0.15, 0.1, 0.66, 0.06, 0.03] },
+        { "name": "cases_per_hour", "type": "float", "required": false, "min": 45.0, "max": 220.0, "decimals": 1 }
+      ]
+    },
+    "inventory_snapshots": {
+      "lookupKeys": ["sku", "store_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "sku", "type": "number", "required": true, "min": 10000000, "max": 99999999 },
+        { "name": "store_number", "type": "number", "required": true, "min": 1, "max": 2500 },
+        { "name": "snapshot_date", "type": "date", "required": true },
+        { "name": "on_hand_units", "type": "number", "required": true, "min": -12, "max": 1800 },
+        { "name": "on_order_units", "type": "number", "required": true, "min": 0, "max": 960 },
+        { "name": "in_transit_units", "type": "number", "required": true, "min": 0, "max": 480 },
+        { "name": "safety_stock_units", "type": "number", "required": true, "min": 0, "max": 120 },
+        { "name": "presentation_min_units", "type": "number", "required": true, "min": 1, "max": 48 },
+        { "name": "negative_on_hand_flag", "type": "boolean", "required": true, "trueRate": 0.02 }
+      ]
+    },
+    "online_orders": {
+      "lookupKeys": ["order_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "order_number", "type": "number", "required": true, "min": 100000000, "max": 999999999 },
+        { "name": "customer_email", "type": "internet.email", "required": true },
+        { "name": "order_date", "type": "date", "required": true },
+        { "name": "fulfillment_method", "type": "enum", "required": true, "values": ["ship_from_dc", "ship_from_store", "bopis", "curbside", "same_day_courier"], "weights": [0.34, 0.16, 0.26, 0.14, 0.1] },
+        { "name": "order_total", "type": "float", "required": true, "min": 8.0, "max": 900.0, "decimals": 2 },
+        { "name": "line_count", "type": "number", "required": true, "min": 1, "max": 24 },
+        { "name": "promised_delivery_date", "type": "date", "required": true },
+        { "name": "split_shipment_flag", "type": "boolean", "required": true, "trueRate": 0.18 },
+        { "name": "order_status", "type": "enum", "required": true, "values": ["placed", "picking", "shipped", "delivered", "cancelled", "returned"], "weights": [0.08, 0.07, 0.15, 0.58, 0.05, 0.07] }
+      ]
+    },
+    "product_catalog_entries": {
+      "lookupKeys": ["sku"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "sku", "type": "number", "required": true, "min": 10000000, "max": 99999999 },
+        { "name": "product_title", "type": "lorem.sentence", "required": true },
+        { "name": "brand", "type": "company.name", "required": true },
+        { "name": "catalog_status", "type": "enum", "required": true, "values": ["live", "suppressed", "pending_enrichment", "discontinued_online"], "weights": [0.7, 0.06, 0.14, 0.1] },
+        { "name": "content_completeness_score", "type": "float", "required": true, "min": 0.2, "max": 1.0, "decimals": 2 },
+        { "name": "image_count", "type": "number", "required": true, "min": 0, "max": 12 },
+        { "name": "search_rank", "type": "number", "required": false, "min": 1, "max": 5000 },
+        { "name": "pdp_conversion_rate", "type": "float", "required": true, "min": 0.001, "max": 0.12, "decimals": 4 },
+        { "name": "rich_content_flag", "type": "boolean", "required": true, "trueRate": 0.4 }
+      ]
+    },
+    "cart_events": {
+      "lookupKeys": ["session_id", "sku"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "session_id", "type": "number", "required": true, "min": 100000000, "max": 999999999 },
+        { "name": "sku", "type": "number", "required": true, "min": 10000000, "max": 99999999 },
+        { "name": "event_type", "type": "enum", "required": true, "values": ["add_to_cart", "remove_from_cart", "save_for_later", "begin_checkout", "abandon_cart", "complete_purchase"], "weights": [0.34, 0.1, 0.06, 0.16, 0.18, 0.16] },
+        { "name": "event_date", "type": "date", "required": true },
+        { "name": "cart_value", "type": "float", "required": true, "min": 1.0, "max": 750.0, "decimals": 2 },
+        { "name": "device_type", "type": "enum", "required": true, "values": ["mobile_web", "desktop", "native_app", "tablet"], "weights": [0.42, 0.25, 0.28, 0.05] },
+        { "name": "promo_code_applied", "type": "boolean", "required": true, "trueRate": 0.22 },
+        { "name": "customer_email", "type": "internet.email", "required": false }
+      ]
+    },
+    "shift_schedules": {
+      "lookupKeys": ["employee_id", "store_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "employee_id", "type": "number", "required": true, "min": 10000, "max": 99999 },
+        { "name": "store_number", "type": "number", "required": true, "min": 1, "max": 2500 },
+        { "name": "shift_date", "type": "date", "required": true },
+        { "name": "shift_slot", "type": "enum", "required": true, "values": ["open_0600_1400", "mid_1000_1800", "close_1400_2200", "overnight_2200_0600"], "weights": [0.3, 0.3, 0.32, 0.08] },
+        { "name": "role", "type": "enum", "required": true, "values": ["cashier", "stocker", "department_lead", "service_desk", "fulfillment_picker"], "weights": [0.32, 0.28, 0.12, 0.1, 0.18] },
+        { "name": "scheduled_hours", "type": "float", "required": true, "min": 3.0, "max": 10.0, "decimals": 2 },
+        { "name": "schedule_posted_date", "type": "date", "required": true },
+        { "name": "clopening_flag", "type": "boolean", "required": true, "trueRate": 0.04 },
+        { "name": "published_flag", "type": "boolean", "required": true, "trueRate": 0.93 }
+      ]
+    },
+    "timecards": {
+      "lookupKeys": ["employee_id", "store_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "employee_id", "type": "number", "required": true, "min": 10000, "max": 99999 },
+        { "name": "store_number", "type": "number", "required": true, "min": 1, "max": 2500 },
+        { "name": "work_date", "type": "date", "required": true },
+        { "name": "worked_hours", "type": "float", "required": true, "min": 0.5, "max": 12.0, "decimals": 2 },
+        { "name": "overtime_hours", "type": "float", "required": true, "min": 0.0, "max": 4.0, "decimals": 2 },
+        { "name": "clock_variance_minutes", "type": "number", "required": true, "min": -30, "max": 90 },
+        { "name": "meal_break_taken", "type": "boolean", "required": true, "trueRate": 0.94 },
+        { "name": "missed_punch_flag", "type": "boolean", "required": true, "trueRate": 0.03 },
+        { "name": "edit_reason", "type": "enum", "required": true, "values": ["none", "missed_punch_correction", "manager_adjustment", "system_outage", "payroll_grievance"], "weights": [0.85, 0.07, 0.05, 0.02, 0.01] }
+      ]
+    },
+    "labor_forecasts": {
+      "lookupKeys": ["store_number"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "store_number", "type": "number", "required": true, "min": 1, "max": 2500 },
+        { "name": "forecast_week", "type": "date", "required": true },
+        { "name": "department", "type": "enum", "required": true, "values": ["front_end", "salesfloor", "receiving_stocking", "online_fulfillment", "service_desk"], "weights": [0.28, 0.26, 0.22, 0.16, 0.08] },
+        { "name": "forecast_hours", "type": "float", "required": true, "min": 40.0, "max": 1200.0, "decimals": 1 },
+        { "name": "earned_hours_standard", "type": "float", "required": true, "min": 40.0, "max": 1200.0, "decimals": 1 },
+        { "name": "variance_to_budget_pct", "type": "float", "required": true, "min": -15.0, "max": 15.0, "decimals": 2 },
+        { "name": "primary_driver", "type": "enum", "required": true, "values": ["pos_transactions", "foot_traffic", "ecom_pickup_units", "truck_case_volume", "planogram_resets"], "weights": [0.35, 0.2, 0.18, 0.19, 0.08] },
+        { "name": "minimum_coverage_hours", "type": "float", "required": true, "min": 8.0, "max": 80.0, "decimals": 1 },
+        { "name": "flex_hours", "type": "float", "required": false, "min": 0.0, "max": 120.0, "decimals": 1 }
+      ]
+    },
+    "price_recommendations": {
+      "lookupKeys": ["sku", "price_zone_id"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "sku", "type": "number", "required": true, "min": 10000000, "max": 99999999 },
+        { "name": "price_zone_id", "type": "number", "required": true, "min": 1, "max": 60 },
+        { "name": "current_retail", "type": "float", "required": true, "min": 0.79, "max": 99.99, "decimals": 2 },
+        { "name": "recommended_retail", "type": "float", "required": true, "min": 0.25, "max": 99.99, "decimals": 2 },
+        { "name": "markdown_cadence", "type": "enum", "required": true, "values": ["no_markdown", "first_markdown_25", "second_markdown_40", "third_markdown_60", "final_clearance_75"], "weights": [0.55, 0.2, 0.12, 0.08, 0.05] },
+        { "name": "effective_date", "type": "date", "required": true },
+        { "name": "weeks_of_supply", "type": "float", "required": true, "min": 0.5, "max": 52.0, "decimals": 1 },
+        { "name": "margin_impact_dollars", "type": "float", "required": true, "min": -400000.0, "max": 250000.0, "decimals": 2 },
+        { "name": "sell_through_target_pct", "type": "float", "required": true, "min": 60.0, "max": 98.0, "decimals": 1 }
+      ]
+    },
+    "price_zones": {
+      "lookupKeys": ["price_zone_id"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "price_zone_id", "type": "number", "required": true, "min": 1, "max": 60 },
+        { "name": "zone_name", "type": "enum", "required": true, "values": ["national_base", "urban_high_cost", "rural_value", "border_competitive", "resort_premium", "ecom_national"], "weights": [0.35, 0.15, 0.2, 0.12, 0.08, 0.1] },
+        { "name": "pricing_strategy", "type": "enum", "required": true, "values": ["edlp", "hi_lo", "hybrid", "premium"], "weights": [0.3, 0.35, 0.28, 0.07] },
+        { "name": "store_count", "type": "number", "required": true, "min": 5, "max": 400 },
+        { "name": "competitive_price_index", "type": "float", "required": true, "min": 0.85, "max": 1.18, "decimals": 3 },
+        { "name": "kvi_item_count", "type": "number", "required": true, "min": 150, "max": 1200 },
+        { "name": "tax_jurisdiction_count", "type": "number", "required": false, "min": 1, "max": 40 },
+        { "name": "last_rezone_date", "type": "date", "required": true }
+      ]
+    },
+    "elasticity_models": {
+      "lookupKeys": ["model_id", "sku"],
+      "columns": [
+        { "name": "id", "type": "seq", "required": true },
+        { "name": "model_id", "type": "number", "required": true, "min": 100000, "max": 999999 },
+        { "name": "sku", "type": "number", "required": true, "min": 10000000, "max": 99999999 },
+        { "name": "price_zone_id", "type": "number", "required": true, "min": 1, "max": 60 },
+        { "name": "own_price_elasticity", "type": "float", "required": true, "min": -4.5, "max": -0.2, "decimals": 3 },
+        { "name": "cross_price_elasticity", "type": "float", "required": true, "min": -1.2, "max": 1.2, "decimals": 3 },
+        { "name": "promo_lift_multiplier", "type": "float", "required": true, "min": 1.0, "max": 8.0, "decimals": 2 },
+        { "name": "model_type", "type": "enum", "required": true, "values": ["log_log_regression", "bayesian_hierarchical", "gradient_boosted", "state_space"], "weights": [0.4, 0.2, 0.3, 0.1] },
+        { "name": "holdout_wmape", "type": "float", "required": true, "min": 0.05, "max": 0.4, "decimals": 3 },
+        { "name": "kvi_flag", "type": "boolean", "required": true, "trueRate": 0.15 }
+      ]
+    }
+  },
+  "valueStreams": {
+    "R-11": {
+      "refusalRules": [
+        "Refuse to record, reclassify, or time-shift vendor allowances or trade funds in ways that round-trip margin or recognize funding before the underlying performance obligation (display execution, ad placement, volume threshold) is met.",
+        "Refuse to disclose one vendor's cost, bracket, allowance, or negotiation terms to a competing vendor or to anyone outside the buying organization with a need to know.",
+        "Refuse to recommend discontinuing or delisting items primarily to trigger vendor discontinuation allowances, failure fees, or slotting recapture rather than for assortment performance reasons.",
+        "Refuse to fabricate or backfill cost-change history, GMROI, or sell-through figures to justify an assortment or open-to-buy decision that the actual data does not support."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Forecast override exceeds 30% versus the statistical baseline, or overrides touch more than 10% of SKU-store combinations in a single class-week.",
+          "action": "escalate_to_human",
+          "handoffTarget": "demand_planning_manager",
+          "rationale": "Large or broad overrides destroy forecast-accuracy accountability (WMAPE/bias tracking) and usually signal an unmodeled event that should be added to the causal calendar instead of hand-edited."
+        },
+        {
+          "trigger": "Vendor cost increase above 8% on a single SKU or with annualized COGS impact above $500k across the class.",
+          "action": "escalate_to_human",
+          "handoffTarget": "divisional_merchandise_manager",
+          "rationale": "Cost changes at this magnitude require negotiation leverage review, retail-price pass-through strategy, and DMM sign-off before acceptance into the cost file."
+        },
+        {
+          "trigger": "Proposed assortment reset drops more than 15% of active SKUs in a class or reduces shelf holding power below presentation minimums.",
+          "action": "request_more_info",
+          "handoffTarget": "space_planning_team",
+          "rationale": "Deep deletes need planogram, transition-inventory, and vendor-commitment analysis before execution; acting on incomplete reset data strands inventory."
+        }
+      ],
+      "outOfScope": [
+        "Private-label product formulation, sourcing-factory audits, and food-safety specification decisions.",
+        "Legal negotiation or redlining of vendor supply agreements and trade-fund contracts.",
+        "Store fixture and capital expenditure approvals tied to category resets."
+      ]
+    },
+    "R-12": {
+      "refusalRules": [
+        "Refuse to release, allocate, or ship any lot flagged in an active recall or withdrawal notice, regardless of stock-out pressure at stores.",
+        "Refuse to override or suppress cold-chain temperature-excursion holds on perishable or frozen loads; excursion product requires QA disposition, not scheduling convenience.",
+        "Refuse to alter receiving, cycle-count, or adjustment records to mask shrink, inflate fill rate, or reconcile book-to-physical variances without a documented root cause.",
+        "Refuse to plan carrier routing that requires drivers to exceed DOT hours-of-service limits or moves hazmat-classified product outside certified lanes and placarding rules."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Out-of-stock rate on A-velocity items exceeds 5% during an active promo window, or projected store on-hand falls below presentation minimum before the next scheduled delivery.",
+          "action": "escalate_to_human",
+          "handoffTarget": "replenishment_manager",
+          "rationale": "Promo OOS on A-items burns ad credibility and vendor co-op commitments; recovery needs expedited allocation decisions the agent should not make unilaterally."
+        },
+        {
+          "trigger": "DC fill rate drops below 95% for two consecutive waves, or cut cases exceed 10% of ordered cases on any store order.",
+          "action": "escalate_to_human",
+          "handoffTarget": "dc_operations_lead",
+          "rationale": "Sustained cuts indicate slotting, labor, or inventory-record problems upstream; continuing to wave orders against bad inventory compounds store-level distortion."
+        },
+        {
+          "trigger": "In-transit inventory variance or carrier claim exposure exceeds $50k on a single lane or load.",
+          "action": "request_more_info",
+          "handoffTarget": "transportation_claims_analyst",
+          "rationale": "High-value discrepancies need seal records, BOL reconciliation, and carrier statements before any write-off or reroute is committed."
+        }
+      ],
+      "outOfScope": [
+        "Carrier rate negotiation and freight contract awards.",
+        "DC labor relations, union grievances, and engineered-standard disputes.",
+        "Distribution network design, real estate, and new-DC site selection."
+      ]
+    },
+    "R-13": {
+      "refusalRules": [
+        "Refuse to display, log, export, or infer full primary account numbers, CVV/CVC, track data, or PIN blocks from POS or tender records; only masked/tokenized values may ever be handled (PCI-DSS scope).",
+        "Refuse to make or advise schedule changes that violate predictive-scheduling / fair-workweek requirements — including canceling or adding shifts inside the posted-notice window without required predictability pay, or scheduling clopening shifts under the mandated rest gap without written employee consent.",
+        "Refuse to modify cash over/short, safe-drop, or void records without a documented reason code and second-party verification; drawer accountability records are audit evidence.",
+        "Refuse to advise skipping or pencil-whipping food-safety and equipment tasks such as cooler temperature logs, hot-bar checks, or sanitation cycles to save labor hours."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Shrink variance exceeds 2% of sales in any store-week, or a single department posts a book-to-physical gap over $10k at inventory.",
+          "action": "escalate_to_human",
+          "handoffTarget": "district_asset_protection_manager",
+          "rationale": "Variance at that level exceeds normal process shrink and requires AP investigation (receiving fraud, sweethearting, ORC) that must not be tipped off through routine store channels."
+        },
+        {
+          "trigger": "Requested schedule change falls inside the 14-day fair-workweek posting window, or cumulative weekly hours would push an associate over the overtime or minor-work-hour threshold.",
+          "action": "escalate_to_human",
+          "handoffTarget": "store_manager",
+          "rationale": "In-window changes carry predictability-pay obligations and compliance exposure; only management can accept the premium cost or obtain documented voluntary consent."
+        },
+        {
+          "trigger": "Cash over/short exceeds $250 on a single drawer-day, or the same register shows a directional variance three business days running.",
+          "action": "request_more_info",
+          "handoffTarget": "front_end_supervisor",
+          "rationale": "Patterned variance needs journal review and possible till audit before any coaching or accusation; premature action creates HR and defamation risk."
+        }
+      ],
+      "outOfScope": [
+        "Hiring, termination, disciplinary, and other individual HR employment decisions.",
+        "Lease, landlord, and common-area-maintenance disputes for store real estate.",
+        "Pharmacy, alcohol, tobacco, and other license-regulated department operations."
+      ]
+    },
+    "R-14": {
+      "refusalRules": [
+        "Refuse to deploy dark patterns: fabricated countdown timers, false 'only X left' scarcity claims not backed by live inventory, pre-checked add-ons, or obstructed cancellation flows.",
+        "Refuse to create, solicit-with-incentive-conditioned-on-positive, suppress, or reweight product reviews and ratings in violation of FTC endorsement rules.",
+        "Refuse to publish unsubstantiated product claims online — organic, made-in-USA, biodegradable, clinically proven — without documented substantiation from the supplier of record.",
+        "Refuse to enable behavioral personalization, retargeting, or profile building for users identified or flagged as under 13 (COPPA), or to bypass cookie-consent state in any privacy-regulated region."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "PDP conversion rate drops more than 25% week-over-week on any top-100-traffic SKU, or sitewide cart-abandonment rate spikes more than 15 points within 24 hours.",
+          "action": "escalate_to_human",
+          "handoffTarget": "digital_operations_oncall",
+          "rationale": "Moves of that size are almost always a checkout defect, payment-gateway degradation, or broken content deploy — a live-site incident, not a merchandising tuning problem."
+        },
+        {
+          "trigger": "A proposed bulk catalog action would suppress, discontinue, or re-categorize more than 500 live SKUs in one operation.",
+          "action": "request_more_info",
+          "handoffTarget": "site_merchandising_lead",
+          "rationale": "Bulk suppressions destroy SEO equity and active cart lines; the change set needs review against traffic and open-order exposure before execution."
+        },
+        {
+          "trigger": "Online price or promotion displays materially below the store shelf price for BOPIS/curbside items without an approved channel-pricing exception.",
+          "action": "escalate_to_human",
+          "handoffTarget": "omnichannel_pricing_analyst",
+          "rationale": "Unintended channel divergence on pickup orders creates honor-the-lower-price liability at scale and store-level customer friction."
+        }
+      ],
+      "outOfScope": [
+        "Payment gateway configuration and fraud rules-engine changes.",
+        "Native mobile app release engineering and app-store submission.",
+        "Third-party marketplace seller onboarding and dispute arbitration."
+      ]
+    },
+    "R-15": {
+      "refusalRules": [
+        "Refuse to send marketing email or SMS to customers without verifiable opt-in consent for that channel, and refuse any send list that includes addresses whose unsubscribe requests are pending (CAN-SPAM 10-business-day clock, TCPA prior-express-written-consent for texts).",
+        "Refuse to sell, share, or export loyalty PII to third parties or ad platforms for customers who have exercised do-not-sell/do-not-share rights under CCPA/CPRA or equivalent state privacy law.",
+        "Refuse to build or activate segments that infer sensitive conditions — pregnancy, medical conditions, financial distress, religion — from basket or browsing data for targeting purposes.",
+        "Refuse to adjust, reverse, or backdate loyalty point ledger entries to conceal promotional-liability errors or suspected internal fraud."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "A single loyalty account redeems more than 50,000 points in 24 hours, or account point-earn velocity exceeds 10x its trailing-90-day baseline.",
+          "action": "escalate_to_human",
+          "handoffTarget": "loyalty_fraud_team",
+          "rationale": "Velocity anomalies at that scale match account-takeover and points-mule patterns; the account should be frozen and investigated, not auto-adjusted."
+        },
+        {
+          "trigger": "A customer submits a data deletion, access, or correction request (DSAR) through any channel, including free text in a chat or survey.",
+          "action": "escalate_to_human",
+          "handoffTarget": "privacy_office",
+          "rationale": "DSARs start a statutory response clock (45 days under CPRA) and require identity verification and a systems-of-record sweep the agent cannot perform alone."
+        },
+        {
+          "trigger": "A campaign audience definition would include known minors, or the offer's projected point liability exceeds $100k without a booked accrual.",
+          "action": "refuse",
+          "handoffTarget": "crm_campaign_manager",
+          "rationale": "Marketing to minors and unbooked liability both create obligations that cannot be unwound after send; the campaign must be rebuilt, not patched."
+        }
+      ],
+      "outOfScope": [
+        "Co-brand credit card underwriting, issuance, and banking-partner decisions.",
+        "Formal legal responses to regulator or attorney-general privacy inquiries.",
+        "Individual customer compensation or goodwill beyond the published make-it-right policy."
+      ]
+    },
+    "R-16": {
+      "refusalRules": [
+        "Refuse to set or advertise a price below a vendor's minimum advertised price (MAP) in any advertised medium — circulars, site, app, email — including via stackable promo codes that net below MAP.",
+        "Refuse to publish was/now or compare-at reference prices unless the former price was the bona fide prevailing price for the required look-back period, and refuse shelf-label changes that break unit-price ($/oz, $/count) accuracy.",
+        "Refuse to use competitor price data to coordinate, signal, or agree on pricing with competitors, and refuse any pricing logic conditioned on a competitor's expected reciprocal move (antitrust exposure).",
+        "Refuse to raise prices on essential goods (water, fuel, infant formula, emergency supplies) beyond statutory caps during a declared emergency in affected trade areas (anti-price-gouging statutes)."
+      ],
+      "escalationRules": [
+        {
+          "trigger": "Recommended markdown depth exceeds 40%, or the cumulative margin impact of a price action exceeds $250k at the class level.",
+          "action": "escalate_to_human",
+          "handoffTarget": "divisional_merchandise_manager",
+          "rationale": "Markdown and margin exposure at that depth is an open-to-buy and P&L event requiring DMM approval, not an automated clearance-cadence step."
+        },
+        {
+          "trigger": "A proposed change moves the KVI basket price index more than 3% in any zone, or reprices more than 25 known-value items in a single batch.",
+          "action": "escalate_to_human",
+          "handoffTarget": "pricing_director",
+          "rationale": "KVI moves reset customer price perception zone-wide and are competitive-response events; they require a deliberate strategy call with market-basket monitoring in place."
+        },
+        {
+          "trigger": "An elasticity-model recommendation lands more than 20% away from the current zone retail, or the model's holdout WMAPE exceeds 0.30 for the SKU in question.",
+          "action": "request_more_info",
+          "handoffTarget": "pricing_science_team",
+          "rationale": "Recommendations outside guardrails or from low-confidence models usually reflect sparse price-variation history; the model needs review before its output is actioned."
+        }
+      ],
+      "outOfScope": [
+        "Vendor trade-fund and allowance contract terms backing a promotion (owned by merchandising).",
+        "Gift card and stored-value breakage/liability accounting treatment.",
+        "Franchise, wholesale, and B2B contract pricing outside corporate retail zones."
+      ]
+    }
+  }
+}

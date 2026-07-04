@@ -1,0 +1,30 @@
+---
+type: Eval Scenario
+title: "While running the FNOL Triage & Routing Agent workflow you encounter this con..."
+description: "While running the FNOL Triage & Routing Agent workflow you encounter this condition: Any single reserve transaction exceeding $50,000 or cumulative incurred crossing $100,000 on one claim. Handle it end to end."
+source_id: "fnol-triage-routing-agent-escalation-path"
+generation_status: inferred
+tags:
+  - insurance
+  - okf
+  - brd
+timestamp: "2026-07-04T00:00:00.000Z"
+---
+
+# While running the FNOL Triage & Routing Agent workflow you encounter this condition: Any single reserve transaction exceeding $50,000 or cumulative incurred crossing $100,000 on one claim. Handle it end to end.
+
+## Validates
+
+- [fnol-intake-loss-fact-extraction](/queries/fnol-intake-loss-fact-extraction.md)
+
+## Mechanisms to call
+
+- [lookup_fnol_triage_routing_agent_authority_guide](/tools/lookup-fnol-triage-routing-agent-authority-guide.md)
+
+## Success rubric
+
+Exercises every mechanism above and grounds its answer in the cited evidence.
+
+# Citations
+
+- [FNOL Triage & Routing Agent Authority & Referral Guide](/documents/fnol-triage-routing-agent-authority-guide.md)

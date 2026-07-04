@@ -1,0 +1,143 @@
+{
+  "id": "osisoft_pi_system_schema",
+  "version": 1,
+  "collections": {
+    "services": {
+      "primaryKey": "service_id",
+      "fields": {
+        "service_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "tier": {
+          "type": "string"
+        },
+        "environment": {
+          "type": "string"
+        }
+      }
+    },
+    "monitors": {
+      "primaryKey": "monitor_id",
+      "fields": {
+        "monitor_id": {
+          "type": "string"
+        },
+        "service_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "query": {
+          "type": "string"
+        }
+      }
+    },
+    "alerts": {
+      "primaryKey": "alert_id",
+      "fields": {
+        "alert_id": {
+          "type": "string"
+        },
+        "monitor_id": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "triggered_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "summary": {
+          "type": "string"
+        }
+      }
+    },
+    "incidents": {
+      "primaryKey": "incident_id",
+      "fields": {
+        "incident_id": {
+          "type": "string"
+        },
+        "service_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "commander": {
+          "type": "string"
+        },
+        "started_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "slos": {
+      "primaryKey": "slo_id",
+      "fields": {
+        "slo_id": {
+          "type": "string"
+        },
+        "service_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "target": {
+          "type": "number"
+        },
+        "window": {
+          "type": "string"
+        },
+        "burn_rate": {
+          "type": "number"
+        }
+      }
+    },
+    "audit_events": {
+      "primaryKey": "event_id",
+      "fields": {
+        "event_id": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "entity": {
+          "type": "string"
+        },
+        "entity_id": {
+          "type": "string"
+        },
+        "outcome": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
