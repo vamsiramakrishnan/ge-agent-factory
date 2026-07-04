@@ -7,6 +7,7 @@ import { PALETTE } from "../src/palette.mjs";
 import {
   TARGETS,
   TOKEN_TABLE,
+  checkDocsCustomCssAnchors,
   checkTokens,
   formatCheckReport,
   renderRegion,
@@ -97,4 +98,34 @@ test("writeTokens is a no-op on an up-to-date tree", () => {
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }
+});
+
+test("checkDocsCustomCssAnchors returns no findings when the file is absent (isolated fixture roots)", () => {
+  const tmp = mkdtempSync(join(tmpdir(), "gen-tokens-test-"));
+  try {
+    expect(checkDocsCustomCssAnchors(tmp)).toEqual([]);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("checkDocsCustomCssAnchors flags a drifted annotated anchor in apps/docs/src/styles/custom.css", () => {
+  const tmp = mkdtempSync(join(tmpdir(), "gen-tokens-test-"));
+  try {
+    const dest = join(tmp, "apps/docs/src/styles/custom.css");
+    mkdirSync(dirname(dest), { recursive: true });
+    const original = readFileSync(join(ROOT, "apps/docs/src/styles/custom.css"), "utf8");
+    writeFileSync(dest, original.replace("--sl-color-accent: #2953ff; /* --color-primary */", "--sl-color-accent: #123456; /* --color-primary */"));
+
+    const findings = checkDocsCustomCssAnchors(tmp);
+    expect(findings.length).toBeGreaterThan(0);
+    expect(findings[0].message).toContain("drifted");
+    expect(findings[0].file).toBe("apps/docs/src/styles/custom.css");
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
+test("the checked-in apps/docs/src/styles/custom.css has no drifted anchors", () => {
+  expect(checkDocsCustomCssAnchors(ROOT)).toEqual([]);
 });

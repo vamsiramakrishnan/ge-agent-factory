@@ -27,7 +27,7 @@
 //
 //   node packages/design/scripts/gen-tokens.mjs           # regenerate
 //   node packages/design/scripts/gen-tokens.mjs --check   # exit 1 on drift
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PALETTE } from "../src/palette.mjs";
@@ -191,6 +191,43 @@ export function splitRegion(text, target) {
   };
 }
 
+// apps/docs/src/styles/custom.css is hand-written prose, not a generated
+// region — it has no @ge/design dependency and instead documents, inline,
+// which of its hex values are verbatim copies of a tokens.css --color-*
+// token (a comment like `/* --color-primary */` or `/* IS --color-primary:
+// ... */`). Those self-declared anchors are exactly the seam a palette
+// change could silently desync, since nothing else in this file watches
+// apps/docs/. Reuse TOKEN_TABLE's existing tokens.css name→PALETTE-key
+// pairs (no new hand-mirrored mapping) to verify every anchor line's hex
+// still matches.
+const DOCS_CUSTOM_CSS_REL = "apps/docs/src/styles/custom.css";
+const TOKENS_CSS_NAME_TO_KEY = new Map(
+  TOKEN_TABLE.filter((row) => row.file === "tokens.css" && row.key).map((row) => [row.name, row.key]),
+);
+const ANCHOR_LINE_RE = /^\s*(--[\w-]+):\s*(#[0-9a-fA-F]{6});\s*\/\*\s*(?:IS\s+)?(--color-[\w-]+)/;
+
+export function checkDocsCustomCssAnchors(root = ROOT) {
+  const path = join(root, DOCS_CUSTOM_CSS_REL);
+  if (!existsSync(path)) return []; // not every check root is a full repo checkout (e.g. isolated test fixtures)
+  const lines = readFileSync(path, "utf8").split("\n");
+  const findings = [];
+  lines.forEach((line, i) => {
+    const m = line.match(ANCHOR_LINE_RE);
+    if (!m) return;
+    const [, name, hexInFile, colorToken] = m;
+    const key = TOKENS_CSS_NAME_TO_KEY.get(colorToken);
+    if (!key) {
+      findings.push({ file: DOCS_CUSTOM_CSS_REL, anchorLine: i + 1, name, message: `references unknown token ${colorToken} (not in TOKEN_TABLE's tokens.css rows)` });
+      return;
+    }
+    const expectedHex = PALETTE[key];
+    if (hexInFile.toLowerCase() !== expectedHex.toLowerCase()) {
+      findings.push({ file: DOCS_CUSTOM_CSS_REL, anchorLine: i + 1, name, message: `${name}: ${hexInFile} claims to match ${colorToken} (${expectedHex}) but has drifted` });
+    }
+  });
+  return findings;
+}
+
 // Byte-compare every target's on-disk region against the rendered truth.
 // Returns findings instead of printing (rendering happens at the CLI
 // boundary below).
@@ -203,6 +240,7 @@ export function checkTokens(root = ROOT) {
       findings.push({ file: target.relPath, actual: region, expected });
     }
   }
+  findings.push(...checkDocsCustomCssAnchors(root));
   return { ok: findings.length === 0, findings };
 }
 
@@ -225,12 +263,16 @@ export function writeTokens(root = ROOT) {
 
 export function formatCheckReport(result) {
   if (result.ok) {
-    return `Design token check passed: all ${TARGETS.length} generated palette regions match packages/design/src/palette.mjs (via TOKEN_TABLE).`;
+    return `Design token check passed: all ${TARGETS.length} generated palette regions match packages/design/src/palette.mjs (via TOKEN_TABLE), and ${DOCS_CUSTOM_CSS_REL}'s annotated anchors match.`;
   }
   const lines = [
-    `Design token check failed: ${result.findings.length} generated palette region${result.findings.length === 1 ? "" : "s"} drifted from packages/design/src/palette.mjs.`,
+    `Design token check failed: ${result.findings.length} finding${result.findings.length === 1 ? "" : "s"} drifted from packages/design/src/palette.mjs.`,
   ];
   for (const finding of result.findings) {
+    if (finding.message) {
+      lines.push("", `${finding.file}:${finding.anchorLine} — ${finding.message}`);
+      continue;
+    }
     lines.push("", `--- ${finding.file} (on disk)`, `+++ ${finding.file} (generated from palette.mjs)`);
     const actualLines = finding.actual.split("\n");
     const expectedLines = finding.expected.split("\n");
@@ -241,7 +283,7 @@ export function formatCheckReport(result) {
       }
     }
   }
-  lines.push("", "Edit packages/design/src/palette.mjs (or the TOKEN_TABLE in packages/design/scripts/gen-tokens.mjs) and run: bun run docs:tokens");
+  lines.push("", "Edit packages/design/src/palette.mjs (or the TOKEN_TABLE in packages/design/scripts/gen-tokens.mjs) and run: bun run docs:tokens", `For a ${DOCS_CUSTOM_CSS_REL} finding: hand-edit its hex to match, since that file is prose, not generated.`);
   return lines.join("\n");
 }
 
