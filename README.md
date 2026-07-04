@@ -254,7 +254,7 @@ never disagree. Full layout, conventions, and how to run one app locally:
 | [`apps/presentation`](apps/presentation) | The transformation deck and source use-case catalog — including the periodic table above. |
 | [`apps/docs`](apps/docs) | The Astro/Starlight docs site (content sourced from `docs/`). |
 | [`tools/`](tools) | The `ge` CLI, the MCP server, the shared operator core + local runtime daemon. |
-| [`packages/`](packages) | Shared contracts: the agent-spec schema, the run ledger, OKF, design tokens. |
+| [`packages/`](packages) | Shared contracts and engines: the agent-spec schema, the run ledger, OKF, design tokens, plus the extracted `@ge/synthkit` (deterministic synthetic data) and `@ge/evalkit` (behavioral eval compiler + metrics) engines — see [`packages/README.md`](packages/README.md). |
 
 ## The `ge` CLI
 
