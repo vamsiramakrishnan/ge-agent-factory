@@ -19,9 +19,13 @@ export interface SegmentedProps<V extends string = string> {
   "aria-label"?: string;
 }
 
+// Rendered as a physical selector switch: a recessed track (tokens.css
+// .well) in which the engaged option is a raised, machined key with a lit
+// indicator lamp — state is shown the way the chassis shows it everywhere
+// else (the lamp), never by flooding the control with color.
 export function Segmented<V extends string = string>({ options, value, onChange, className, ...aria }: SegmentedProps<V>) {
   return (
-    <div role="group" {...aria} className={cx("inline-flex rounded-lg border border-outline-variant/30 bg-surface p-1", className)}>
+    <div role="group" {...aria} className={cx("well inline-flex rounded-full bg-surface-container p-1", className)}>
       {options.map((option) => {
         const active = option.value === value;
         return (
@@ -31,13 +35,14 @@ export function Segmented<V extends string = string>({ options, value, onChange,
             aria-pressed={active}
             onClick={() => onChange(option.value)}
             className={cx(
-              "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-              active ? "bg-primary text-on-primary" : "text-secondary hover:bg-surface-container hover:text-on-surface",
+              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+              active ? "key bg-surface font-semibold text-on-surface" : "text-secondary hover:text-on-surface",
             )}
           >
+            {active && <span className="lamp h-1.5 w-1.5 rounded-full bg-primary" aria-hidden />}
             {option.label}
             {option.count != null && (
-              <span className={cx("rounded-full px-1.5 text-4xs font-semibold tabular-nums", active ? "bg-white/20" : "bg-surface-container text-secondary")}>
+              <span className={cx("rounded-full px-1.5 text-4xs font-semibold tabular-nums", active ? "bg-surface-container text-secondary" : "text-secondary")}>
                 {option.count}
               </span>
             )}

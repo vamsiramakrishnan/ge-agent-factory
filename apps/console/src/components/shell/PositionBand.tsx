@@ -52,7 +52,7 @@ export function PositionBand() {
       className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-b border-outline-variant/60 bg-surface px-6 py-1.5 text-xs"
       aria-label="Golden path position"
     >
-      <span className="select-none text-4xs font-semibold uppercase tracking-wide text-secondary">
+      <span className="engraved select-none">
         Golden path
       </span>
 
@@ -61,11 +61,13 @@ export function PositionBand() {
           const tone = statusToneClasses(stageTone(stage, data.current));
           const isCurrent = stage.id === data.current && !stage.done;
           const chip = (
+            // Neutral housing, lit lamp — the stage row reads like the row
+            // of indicator lights over a tape deck's transport keys.
             <span
-              className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 font-mono text-3xs ${tone.badge} ${isCurrent ? "font-semibold" : ""}`}
+              className={`inline-flex items-center gap-1.5 rounded-full border border-outline-variant/70 bg-surface px-2 py-0.5 font-mono text-3xs ${tone.text} ${isCurrent ? "font-semibold" : ""}`}
               title={stage.detail}
             >
-              <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} aria-hidden />
+              <span className={`lamp h-1.5 w-1.5 rounded-full ${tone.dot}`} aria-hidden />
               {stage.id}
             </span>
           );
@@ -89,17 +91,17 @@ export function PositionBand() {
 
       {data.blocker && (
         <span
-          className={`inline-flex min-w-0 items-center gap-1.5 rounded-full border px-2 py-0.5 text-3xs ${blockerTone.badge}`}
+          className={`inline-flex min-w-0 items-center gap-1.5 rounded-full border border-outline-variant/70 bg-surface px-2 py-0.5 text-3xs ${blockerTone.text}`}
           title={data.blocker}
         >
-          <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${blockerTone.dot}`} aria-hidden />
+          <span className={`lamp h-1.5 w-1.5 shrink-0 rounded-full ${blockerTone.dot}`} aria-hidden />
           <span className="truncate">{data.blocker}</span>
         </span>
       )}
 
       {data.next && (
         <span className="ml-auto flex items-center gap-1.5">
-          <span className="select-none text-4xs font-semibold uppercase tracking-wide text-secondary">
+          <span className="engraved select-none">
             Next
           </span>
           <CommandChip command={data.next} />

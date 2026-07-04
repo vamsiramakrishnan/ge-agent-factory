@@ -26,11 +26,16 @@ export interface PageHeaderProps {
 export function PageHeader({ eyebrow, title, subtitle, meta, actions, size = "md", children, className }: PageHeaderProps) {
   const hasRight = Boolean(meta || actions);
   return (
-    <header className={cx("mb-6 border-b border-outline-variant/40 pb-6", className)}>
+    <header className={cx("mb-6", className)}>
       <div className={cx("grid gap-5", hasRight && "xl:grid-cols-[minmax(0,1fr)_auto] xl:items-end")}>
         <div className="min-w-0">
           {eyebrow && (
-            <div className="mb-1 text-3xs font-semibold uppercase tracking-widest text-secondary">{eyebrow}</div>
+            // Engraved caption with a short rule — how a Braun fascia
+            // captions the module underneath it.
+            <div className="mb-1.5 flex items-center gap-3">
+              <span className="engraved">{eyebrow}</span>
+              <span className="h-px w-10 bg-outline-variant" aria-hidden />
+            </div>
           )}
           <h1 className={cx("font-headline font-semibold tracking-tight text-on-surface", size === "lg" ? "text-3xl" : "text-2xl")}>{title}</h1>
           {subtitle && <p className="mt-2 max-w-3xl text-sm leading-6 text-secondary">{subtitle}</p>}
@@ -43,6 +48,9 @@ export function PageHeader({ eyebrow, title, subtitle, meta, actions, size = "md
         )}
       </div>
       {children && <div className="mt-4">{children}</div>}
+      {/* The closing rule is a measuring scale, not a plain border — the
+          T1000's tuning-dial ticks as the page's one structural flourish. */}
+      <div className="ticks-x mt-6 h-1.5 border-b border-outline-variant/60" aria-hidden />
     </header>
   );
 }
