@@ -59,11 +59,11 @@ Operator tools — the same machinery under its operator names:
 
 | Tool | Args | Notes |
 |---|---|---|
-| `factory_list_usecases` | `department?`, `search?`, `limit?` | Browse the 363-use-case catalog. Read-only, offline. |
+| `factory_usecases_list` | `department?`, `search?`, `limit?` | Browse the 363-use-case catalog. Read-only, offline. |
 | `factory_doctor` | — | Preflight (APIs/IAM/IAP/memory/health) with fixes. Read-only. |
 | `factory_status` | `noProxy?` | Stage tally + per-run status for submitted runs. Read-only. |
 | `factory_logs` | `runId`, `stage?`, `item?` | A stage's result JSON (errors, exit codes, build log URL). Read-only. |
-| `factory_provision` | `scope: canary\|all`, `dept?`, `ids?`, `concurrency?`, `force?`, `noProxy?`, `local?`, `vertex?`, `target?`, `limit?` | **Mutates** — builds agents (locally with `local`, or through the cloud factory). |
+| `factory_agents_build` | `scope: canary\|all`, `dept?`, `ids?`, `concurrency?`, `force?`, `noProxy?`, `local?`, `vertex?`, `target?`, `limit?` | **Mutates** — builds agents (locally with `local`, or through the cloud factory). |
 | `factory_sync` | `force?`, `push?`, `commit?`, `local?`, `remote?`, `create?` | **Mutates** — syncs generated agent code to/from git. |
 | `factory_mcp_deploy` | — | **Mutates** — deploys the per-department MCP services (tool plane). |
 | `factory_mcp_doctor` | — | Tool-plane health. Read-only. |

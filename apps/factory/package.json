@@ -10,7 +10,7 @@
     "ge-agent-factory-worker": "./scripts/factory-worker.mjs"
   },
   "scripts": {
-    "ge": "node src/cli.js",
+    "harness": "node src/cli.js",
     "dev": "bun scripts/dev-bun.mjs",
     "dev:node": "node src/cli.js web --port 17655 --no-open",
     "dev:bun": "bun scripts/dev-bun.mjs",
@@ -47,6 +47,7 @@
     "@ge/std": "workspace:*",
     "@ge/synthkit": "workspace:*",
     "better-sqlite3": "^12.9.0",
+    "hono": "^4.12.27",
     "yaml": "^2.9.0"
   }
 }

@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 932.637 388" width="932.637" height="388" style="--bg:#f7f7f5;--fg:#1a1a18;--line:#55554f;--accent:#cc3d0d;--muted:#7c7c74;--surface:#e3e3df;--border:#d4d4cf;background:var(--bg)">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 932.637 388" width="932.637" height="388" style="--bg:#fcf9f8;--fg:#1b1c1c;--line:#565e6c;--accent:#00408b;--muted:#79818e;--surface:#f0eded;--border:#c2c6d4;background:var(--bg)">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap');
   text { font-family: 'Inter', system-ui, sans-serif; }

@@ -33,10 +33,15 @@ async function getAuthInstance(): Promise<Auth> {
 
 /**
  * Subscribe to auth-state changes. Returns an unsubscribe function. When auth
- * is disabled the callback never fires and unsubscribe is a no-op.
+ * is disabled we invoke the callback once with null and never change — callers
+ * treat null as "no gate" because they also read `authEnabled` (matches
+ * apps/console/src/auth/firebase.ts's subscribe() contract).
  */
 export function subscribe(cb: (user: User | null) => void): () => void {
-  if (!authEnabled) return () => {};
+  if (!authEnabled) {
+    cb(null);
+    return () => {};
+  }
   let unsub: (() => void) | null = null;
   let cancelled = false;
   getAuthInstance().then(async (auth) => {

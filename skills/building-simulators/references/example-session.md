@@ -47,7 +47,7 @@ truth. Scaffold before running anything.
 ## Step 2 — pick the archetype
 
 ```console
-$ npm run generator:new-simulator -- --list-archetypes true
+$ npm run generator:scaffold-simulator -- --list-archetypes true
 {
   "ok": true,
   "archetypes": [
@@ -75,7 +75,7 @@ approval and role gates, not just read rows. Record the choice — copy
 ## Step 3 — scaffold the pack
 
 ```console
-$ npm run generator:new-simulator -- --id lever --name "Lever" --archetype recruiting --realism enterprise
+$ npm run generator:scaffold-simulator -- --id lever --name "Lever" --archetype recruiting --realism enterprise
 {
   "ok": true,
   "id": "lever",

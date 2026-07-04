@@ -36,7 +36,7 @@ mise run devex-check
 mise run prove
 mise run console
 mise run mode-local
-CANARY=1 mise run provision-local
+CANARY=1 mise run build-agents-local
 ```
 
 The local path installs the toolchain, checks docs and workspace contracts,
@@ -50,7 +50,7 @@ For cloud release work:
 
 ```bash
 export GEMINI_ENTERPRISE_APP_ID=projects/<num>/locations/global/collections/default_collection/engines/<app>
-CANARY=1 mise run bootstrap
+CANARY=1 mise run bootstrap-cloud
 ```
 
 ## Repo map
@@ -142,7 +142,7 @@ manifest path, then gives the next commands to run.
 ### Generator or generated-agent change
 
 1. Edit `apps/factory/src/*` or the relevant generator scripts.
-2. Build one canary locally with `mise run mode-local && CANARY=1 mise run provision-local`.
+2. Build one canary locally with `mise run mode-local && CANARY=1 mise run build-agents-local`.
 3. Inspect the generated workspace under `.ge/factory/workspaces/`.
 4. Run evals when the change affects behavior contracts.
 5. Update [Agent generation](./reference/agent-generation.html),
@@ -181,7 +181,7 @@ merging shared behavior.
 | Python simulator runtime | `bun run test:py` | `mise run ci` plus simulator conformance test |
 | Terraform/platform | `ge infra plan`, `ge doctor` | Canary bootstrap in a test project |
 
-`mise run ci` mirrors `cloudbuild.ci.yaml`: source hygiene → `bun run lint` →
+`mise run ci` mirrors `cloudbuild.ci.yaml`: source hygiene → `bun run typecheck` →
 the catalog build → `bun run docs:gate` → `bun run test:gated` (the last one
 wraps `bun test apps tools packages` and cross-checks failures against
 `tools/known-test-failures.json` — see AGENTS.md's "Before you commit"

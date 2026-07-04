@@ -32,13 +32,13 @@ import {
   cpSync,
   existsSync,
   mkdirSync,
-  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
 import { dirname, join, posix, relative } from "node:path";
 import { fileURLToPath } from "node:url";
+import { globSync } from "tinyglobby";
 import {
   convertCallouts,
   convertIndexTables,
@@ -118,17 +118,9 @@ const CALLOUTS = {
 const warnings = [];
 const copiedAssets = new Set();
 
-function walk(dir, acc = [], rel = "") {
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const entryRel = rel ? `${rel}/${entry.name}` : entry.name;
-    if (entry.isDirectory()) {
-      if (SKIP_DIRS.has(entry.name) || entry.name.startsWith(".")) continue;
-      walk(join(dir, entry.name), acc, entryRel);
-    } else if (entry.name.endsWith(".md")) {
-      acc.push(entryRel);
-    }
-  }
-  return acc;
+function walk(dir) {
+  const ignore = [...SKIP_DIRS].map((name) => `**/${name}/**`);
+  return globSync("**/*.md", { cwd: dir, ignore });
 }
 
 function destFor(srcRel) {
@@ -373,13 +365,7 @@ for (const [srcRel, mapped] of pages) {
 // ship a broken image (the tape GIFs on the landing page were exactly this).
 const SITE_ASSET_RE = new RegExp(`${BASE}/(assets/[\\w./@-]+\\.(?:svg|png|jpe?g|gif|webp))`, "gi");
 const contentFiles = (dir) =>
-  readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
-    e.isDirectory()
-      ? contentFiles(join(dir, e.name))
-      : /\.mdx?$/.test(e.name)
-        ? [join(dir, e.name)]
-        : [],
-  );
+  globSync("**/*.{md,mdx}", { cwd: dir }).map((rel) => join(dir, rel));
 for (const file of contentFiles(DEST)) {
   for (const m of readFileSync(file, "utf8").matchAll(SITE_ASSET_RE)) {
     const rel = m[1];

@@ -792,7 +792,7 @@ Compile spec→OKF bundle or OKF bundle→spec (typed compiler with variant reso
 
 ### `ge okf customize`
 
-Scaffold a variant bundle from a base agent (system swaps, terminology, vertical policy overlay) and compile it against the base
+Customize a base agent into a variant bundle (system swaps, terminology, vertical policy overlay) and compile it against the base
 
 | Flag | Type | Description |
 |---|---|---|
@@ -829,6 +829,14 @@ Reconcile actual → desired platform + fleet from a manifest (ge.manifest.json)
 |---|---|---|
 | `--yes` | boolean | Execute the plan in dependency order (default: plan only) |
 | `--manifest` | string | Path to a manifest JSON (default ge.manifest.json) |
+
+### `ge completions`
+
+Emit a shell completion script for `ge` (bash|zsh|fish) — subcommand names only, not flags
+
+| Flag | Type | Description |
+|---|---|---|
+| `<shell>` | positional (required) | bash, zsh, or fish |
 <!-- END GENERATED: ge-command-tree -->
 
 ### Examples
@@ -935,7 +943,7 @@ the handful that collide with a built-in mise command name (`doctor`, `install`,
 | `mise run setup` | Install JS + Python/uv deps, sync catalog/skills, put `ge` on PATH, start the daemon |
 | `mise run devex-check` | Run `ge devex check`: local doctor + docs links + workspace manifest contracts |
 | `mise run prove` | Run `ge prove`: local doctor → local mode → one validated canary workspace |
-| `mise run bootstrap [CANARY=1]` | End-to-end: toolchain + `ge init` + `ge up`. `CANARY=1` also builds one agent. Needs `GEMINI_ENTERPRISE_APP_ID` + gcloud auth |
+| `mise run bootstrap-cloud [CANARY=1]` | End-to-end: toolchain + `ge init` + `ge up`. `CANARY=1` also builds one agent. Needs `GEMINI_ENTERPRISE_APP_ID` + gcloud auth |
 | `mise run all` | Alias for `bootstrap` |
 | `mise run deps` / `mise run data-runtime` / `mise run deps-terraform` | Toolchain pieces: uv + agents-cli + `.venv` (google-antigravity); Snowfakery runtime; terraform |
 | `mise run install` / `mise run uninstall` | Install / remove the `ge` command |
@@ -945,7 +953,7 @@ the handful that collide with a built-in mise command name (`doctor`, `install`,
 
 ### Skills
 
-`mise run skills-sync` · `mise run skills-doctor` · `mise run skills-spec-audit` ·
+`mise run skills-sync` · `mise run skills-doctor` · `mise run skills-doctor-spec` ·
 `mise run skills-install` (link repo skills into a headless harness at
 `AGENTS_SKILLS_DIR`, default `~/.agents/skills`).
 
@@ -960,8 +968,8 @@ the handful that collide with a built-in mise command name (`doctor`, `install`,
 | `mise run mcp-deploy` / `mise run mcp-doctor` | `ge mcp deploy` / `ge mcp doctor` |
 | `mise run status` | bare `ge` |
 | `mise run mode-local` / `mise run mode-remote` | `ge mode local` / `ge mode remote` |
-| `mise run provision [CANARY=1]` | `ge agents build` (`--canary` or `--all`) |
-| `mise run provision-local [CANARY=1]` | `ge agents build --local` |
+| `mise run build-agents [CANARY=1]` | `ge agents build` (`--canary` or `--all`) |
+| `mise run build-agents-local [CANARY=1]` | `ge agents build --local` |
 | `mise run sync` / `mise run sync-local` | `ge agents sync --push` / `--local --create --push` |
 | `mise run mcp-server` / `mise run mcp` | Run the factory's MCP server (stdio) |
 

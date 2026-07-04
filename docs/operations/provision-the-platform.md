@@ -47,7 +47,7 @@ doctor. Or use the guided self-service installer for a turnkey deploy.
    Or do all of toolchain + `ge init` + `ge up` in one shot:
 
    ```bash
-   mise run bootstrap            # add CANARY=1 to also build one agent end-to-end
+   mise run bootstrap-cloud      # add CANARY=1 to also build one agent end-to-end
    ```
 
 2. **Stand up the data plane** (GCS / BigQuery / AlloyDB / Bigtable / Firestore):
@@ -118,7 +118,7 @@ Installer path: `./installer/verify.sh` returns all checks passing.
 ## Troubleshoot
 
 - **`Set GEMINI_ENTERPRISE_APP_ID first`** — export it (or have a `.ge.json`)
-  before `mise run bootstrap` / `ge up`.
+  before `mise run bootstrap-cloud` / `ge up`.
 - **`gcloud not found`** — install the Cloud SDK and `gcloud auth login`.
 - **`Error 409: Already Exists` (Firestore)** — the project already has a default
   database; use a fresh project (Firestore can't be deleted in-place).

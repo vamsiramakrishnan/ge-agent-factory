@@ -34,7 +34,7 @@ the others.
 | Capture the contract | `ge capture` | yes | — (capture *is* the console Interview) | `factory_capture` | `interviewing-specs` |
 | Review the spec | `ge capture --from <agent-spec.json>` (register) | yes | `#/spec-review/:usecaseId` view + `/api/interviews/:id/*` | — | `grounding-interviews-with-documents` |
 | Compile evals | `ge evals compile` | yes | `POST /api/ge/evals/compile` | `factory_evals_compile` | `driving-live-proof` |
-| Build the agent | `ge agents build` (`--local` for on-machine) | yes | `POST /api/ge/agents/build` | `factory_provision` | `running-factory` |
+| Build the agent | `ge agents build` (`--local` for on-machine) | yes | `POST /api/ge/agents/build` | `factory_agents_build` | `running-factory` |
 | Generate dependency data | `ge pipeline run` | yes | — (observed via `/api/runtime/*`) | — | `building-simulators` |
 | Synthesize seed data | `ge data synth` | yes | `POST /api/ge/data/synth` | `factory_data_synth` | `building-simulators` |
 | Prove locally | `ge prove` | yes | `POST /api/ge/prove` | `factory_prove` | `checking-workspaces` |
@@ -44,7 +44,7 @@ the others.
 | Bench | `ge bench` | yes | `POST /api/ge/bench` | `factory_bench` | `driving-live-proof` |
 
 Supporting operator tools exist alongside these (read-only:
-`factory_list_usecases`, `factory_doctor`, `factory_status`, `factory_logs`,
+`factory_usecases_list`, `factory_doctor`, `factory_status`, `factory_logs`,
 `factory_mcp_doctor`; mutating: `factory_sync`, `factory_mcp_deploy`) — the
 authoritative list is the registry itself.
 

@@ -82,13 +82,13 @@ bun tools/ge.mjs pipeline resume <run_id>
 List available archetypes:
 
 ```bash
-npm run generator:new-simulator -- --list-archetypes true
+npm run generator:scaffold-simulator -- --list-archetypes true
 ```
 
 Scaffold:
 
 ```bash
-npm run generator:new-simulator -- --id <system_id> --name "<Display Name>" --archetype <archetype> --realism <level>
+npm run generator:scaffold-simulator -- --id <system_id> --name "<Display Name>" --archetype <archetype> --realism <level>
 ```
 
 Validate:

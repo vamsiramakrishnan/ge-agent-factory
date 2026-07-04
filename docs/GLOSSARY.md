@@ -411,12 +411,12 @@ one validated [canary](#canary) workspace) lives at `ge prove`; see
 
 **What it is:** A build of exactly **one** agent, used to prove the pipeline
 works end to end before committing to the whole catalog. `--canary` on
-`ge agents build` (or `CANARY=1` on the `mise run provision*` tasks) is the
+`ge agents build` (or `CANARY=1` on the `mise run build-agents*` tasks) is the
 opposite of `--all`. Nothing to do with feature-flag canary releases — it's
 "one [workspace](#workspace), all the way through."
 
 **Where you'll meet it:** `mise run prove` builds one;
-`CANARY=1 mise run provision-local`; the bootstrap task's optional canary
+`CANARY=1 mise run build-agents-local`; the bootstrap task's optional canary
 step.
 
 ---

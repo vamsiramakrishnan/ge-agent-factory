@@ -7,8 +7,8 @@ the canonical `.ge/` state substrate. The current golden path is:
 ```bash
 ge doctor --local
 ge agents build --ids <use-case-id> --local
-ge mission run --scenario <use-case-id> --ids <use-case-id> --target-stage preview
-ge runtime tasks
+ge pipeline run --scenario <use-case-id> --ids <use-case-id> --target-stage preview
+ge daemon tasks
 ge agents sync --ids <use-case-id> --local
 ```
 
@@ -27,9 +27,9 @@ ge agents sync --ids <use-case-id> --local
 - `ge daemon status|start|stop`: operate the durable local runtime daemon.
 - `ge state paths`: show the canonical `.ge/` state layout.
 - `ge agents build --ids <id> --local`: create a bounded generated workspace.
-- `ge mission run --scenario <id> --ids <id> --target-stage preview`: run data,
-  simulator, factory, and preview convergence through the typed mission graph.
-- `ge agents ship --ids <workspace-id>`: hand previewed local workspaces to the
+- `ge pipeline run --scenario <id> --ids <id> --target-stage preview`: run data,
+  simulator, factory, and preview convergence through the typed pipeline graph.
+- `ge handoff --ids <workspace-id>`: hand previewed local workspaces to the
   cloud deploy boundary.
 - `ge agents sync --ids <id> --local [--remote <git-url>]`: export generated
   workspace code to `generated-agents/` or a dedicated repo.

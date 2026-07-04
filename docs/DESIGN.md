@@ -36,18 +36,20 @@ derived from the product's own design tokens
 apps read as one system:
 
 - **Colors** — `docs/_sass/color_schemes/ge.scss` re-tints just-the-docs'
-  stock purple theme to the "Punktraster" palette
+  stock purple theme to the "Modernist Functionalism" palette
   (`packages/design/src/palette.mjs`, the canonical source): primary
-  `#cc3d0d`, on-surface `#1a1a18`, body text `#3a3a35`, border `#d4d4cf`,
-  sidebar `#e9e9e6`. `docs/_sass/custom/setup.scss` re-tints the built-in
+  `#00408b`, on-surface `#1b1c1c`, body text `#383e47`, border `#c2c6d4`,
+  sidebar `#f0eded`. `docs/_sass/custom/setup.scss` re-tints the built-in
   blue/green swatches used by callouts to the same palette (`$blue-200:
-  #cc3d0d`, `$green-200: #266b3d`). Both files are generated — run
+  #00408b`, `$green-200: #0d6d3a`). Both files are generated — run
   `bun run docs:tokens` after editing `palette.mjs`.
-- **Fonts** — `docs/_sass/custom/custom.scss` sets `Archivo` for
+- **Fonts** — `docs/_sass/custom/custom.scss` sets `Space Grotesk` for
   headings, nav, and site chrome (`$ge-display-font`); body copy stays on the
   theme's system-ui reading face for long-form legibility. Code uses `Geist
   Mono` (`docs/_sass/custom/setup.scss`, `$mono-font-family`) — the same
-  monospace family as the product UI.
+  monospace family as the product UI. (This is the legacy Jekyll site's own
+  font choice, independent of the Astro/Starlight site's Hanken Grotesk +
+  JetBrains Mono — see `apps/docs/README.md`.)
 
 Don't hand-roll colors or fonts in a page. If something needs a new color,
 add it to `ge.scss` or `setup.scss`, not inline `style=`.
@@ -60,8 +62,9 @@ Diagram source is Mermaid, one `.mmd` file per diagram in
 `docs/diagrams-src/`. Rendering goes through
 [`beautiful-mermaid`](https://www.npmjs.com/package/beautiful-mermaid) via
 `tools/gen-docs-diagrams.mjs`, themed by `tools/lib/docs-diagram-theme.mjs`
-(`DIAGRAM_THEME` — white background, `#cc3d0d` vermilion signal accent, `#55554f`
-graphite lines, Inter font), so every diagram in the site shares one visual system instead of
+(`DIAGRAM_THEME` — reads its colors live from `packages/design/src/palette.mjs`,
+currently a warm paper background, `#00408b` navy accent, `#565e6c` graphite
+lines, Inter font), so every diagram in the site shares one visual system instead of
 hand-drawn ASCII art of varying quality. Output SVGs land in
 `docs/assets/diagrams/*.svg`, one per source file, same basename.
 
@@ -85,33 +88,13 @@ error; it silently fails to match *and* creates a phantom node literally named
 
 ```
 # correct — no semicolons
-classDef cloudbuild fill:#dfeadf,stroke:#2e7a47,color:#1a1a18
+classDef cloudbuild fill:#e1f3e7,stroke:#16874a,color:#1b1c1c
 class validate,preview cloudbuild
 
 # wrong — silently broken, adds a phantom "class" node
-classDef cloudbuild fill:#dfeadf,stroke:#2e7a47,color:#1a1a18;
+classDef cloudbuild fill:#e1f3e7,stroke:#16874a,color:#1b1c1c;
 class validate,preview cloudbuild;
 ```
-
-### Three more silent renderer landmines
-
-All three fail without an error, so check the rendered SVG, not just the
-source:
-
-- **Never write an edge that names a *nested* subgraph.** Edges between
-  *top-level* subgraphs are fine (`factory-line.mmd`'s `AB --> VR`), but if
-  the subgraph sits inside another subgraph, an edge to its id renders a
-  phantom duplicate box with the same title floating next to the real one.
-  Connect nested groups through their inner nodes instead.
-- **Define a node's label before (or where) the node is first referenced.**
-  A node that first appears bare in an edge (`CLI --> GW`) and only later
-  gets its label (`GW["Cloud Run gateway"]` inside a subgraph) renders with
-  the bare id as its label. Put cross-subgraph edges *after* the subgraph
-  blocks that define their endpoints — see `three-planes.mmd`.
-- **`~~~` (invisible link) is not supported** — the statement's remaining
-  nodes are silently dropped from the diagram. For a row of peers with no
-  flow between them, use `---` (a plain line, no arrowhead), which renders
-  correctly.
 
 ### Shape vocabulary
 
@@ -147,26 +130,6 @@ direction — see `factory-line.mmd`'s three subgraphs (`Author and Build`,
 tall or too wide: switch the outer direction, or add/adjust a subgraph's own
 `direction`.
 
-### Layered (stacked / boxes-in-boxes) diagrams
-
-For an architecture that is *layers*, not a pipeline — surfaces over a core
-over an engine, or a directory of grouped artifacts — two shapes render
-reliably; anything more entangled tends to collapse into overlapping boxes:
-
-- **Stacked layers** (`platform-stack.mmd`, `repo-layers.mmd`): one
-  top-level `subgraph` per layer, connected **subgraph-to-subgraph**
-  (`SURF --> CORE`) — that is what stacks the boxes vertically. Inside each
-  layer, set `direction LR` and chain the nodes: `-->` where the flow is
-  real, `---` between mere peers. Do **not** connect layers node-to-node
-  across boxes — cross-box node edges make the renderer place the boxes
-  side-by-side instead of stacked.
-- **One outer box with nested groups** (`workspace-anatomy.mmd`,
-  `three-planes.mmd`): a single outer `subgraph` containing the inner
-  groups, with a *small* number of node-to-node edges between the inner
-  groups (about four is the proven ceiling). Keep the landmines above in
-  mind: no edges to a nested subgraph's id, labels defined at first
-  reference.
-
 ### Brand color convention
 
 Use `classDef` sparingly, to mark one or two meaningful categories of node —
@@ -174,15 +137,15 @@ not every node:
 
 | Meaning | classDef |
 |---|---|
-| Primary / local emphasis, data | `fill:#f6ddd1,stroke:#cc3d0d,color:#1a1a18` |
-| Cloud / release / passing | `fill:#dfeadf,stroke:#2e7a47,color:#1a1a18` |
-| Blocked / error | `fill:#fce8e5,stroke:#b3231c,color:#1a1a18` |
+| Primary / local emphasis, data | `fill:#e6ebff,stroke:#00408b,color:#1b1c1c` |
+| Cloud / release / passing | `fill:#e1f3e7,stroke:#16874a,color:#1b1c1c` |
+| Blocked / error | `fill:#fce8e5,stroke:#dc3626,color:#1b1c1c` |
 
 Example (`docs/diagrams-src/write-guard-flow.mmd`):
 
 ```
-classDef blocked fill:#fce8e5,stroke:#b3231c,color:#1a1a18
-classDef pass fill:#dfeadf,stroke:#2e7a47,color:#1a1a18
+classDef blocked fill:#fce8e5,stroke:#dc3626,color:#1b1c1c
+classDef pass fill:#e1f3e7,stroke:#16874a,color:#1b1c1c
 class D blocked
 class C,E pass
 ```
@@ -197,11 +160,11 @@ one of these diagrams can read any other without a legend:
 | Entity | Shape | Syntax | classDef |
 |---|---|---|---|
 | Human touchpoint (interview, review, approval) | Stadium or circle | `A(["capture"])` / `A(("review"))` | none (default node style — the theme's own white fill/border already reads as "unmarked") |
-| Contract (the use-case spec / OKF pair) | Rectangle, primary emphasis | `A["contract"]` | `contract` — `fill:#f6ddd1,stroke:#cc3d0d,color:#1a1a18` |
+| Contract (the use-case spec / OKF pair) | Rectangle, primary emphasis | `A["contract"]` | `contract` — `fill:#e6ebff,stroke:#00408b,color:#1b1c1c` |
 | Generated artifact (code, tools, fixtures) | Rectangle, default | `A["tools"]` | none (default node style) |
-| Source-system twin | Cylinder (data store) | `A[("twin")]` | `system` — `fill:#e3e3df,stroke:#55554f,color:#1a1a18` |
-| Eval / proof gate | Hexagon (gate distinct from a decision) | `A{{"promotion gate"}}` | `proof` — `fill:#dfeadf,stroke:#2e7a47,color:#1a1a18` |
-| Handoff target (agents-cli / ADK / Gemini Enterprise) | Stadium, cloud/release emphasis | `A(["agents-cli"])` | `handoff` — `fill:#dfeadf,stroke:#2e7a47,color:#1a1a18` |
+| Source-system twin | Cylinder (data store) | `A[("twin")]` | `system` — `fill:#f0eded,stroke:#565e6c,color:#1b1c1c` |
+| Eval / proof gate | Hexagon (gate distinct from a decision) | `A{{"promotion gate"}}` | `proof` — `fill:#e1f3e7,stroke:#16874a,color:#1b1c1c` |
+| Handoff target (agents-cli / ADK / Gemini Enterprise) | Stadium, cloud/release emphasis | `A(["agents-cli"])` | `handoff` — `fill:#e1f3e7,stroke:#16874a,color:#1b1c1c` |
 
 This extends, rather than replaces, the general shape vocabulary and brand
 color convention above — those still govern diagrams outside the signature
@@ -228,11 +191,11 @@ invent a different status palette for docs:
 
 | Status | classDef |
 |---|---|
-| `pending` | `fill:#e3e3df,stroke:#6e6e68,color:#1a1a18` (the status ramp's `queued` gray) |
-| `running` | `fill:#f6ddd1,stroke:#cc3d0d,color:#1a1a18` (the ramp's `running` — the lit dot means "on") |
-| `blocked` | `fill:#fbeadb,stroke:#96590d,color:#1a1a18` (the ramp's `blocked` orange) |
-| `done` | `fill:#dfeadf,stroke:#2e7a47,color:#1a1a18` (same green as `pass`/handoff above) |
-| `failed` | `fill:#fce8e5,stroke:#b3231c,color:#1a1a18` (same red as the existing "Blocked / error" row) |
+| `pending` | `fill:#f0eded,stroke:#6b7280,color:#1b1c1c` (the status ramp's `queued` gray) |
+| `running` | `fill:#e6ebff,stroke:#00408b,color:#1b1c1c` (the ramp's `running` — blue means "live") |
+| `blocked` | `fill:#fbeadb,stroke:#d9660a,color:#1b1c1c` (the ramp's `blocked` orange) |
+| `done` | `fill:#e1f3e7,stroke:#16874a,color:#1b1c1c` (same green as `pass`/handoff above) |
+| `failed` | `fill:#fce8e5,stroke:#dc3626,color:#1b1c1c` (same red as the existing "Blocked / error" row) |
 
 ### Embedding a diagram in a page
 
@@ -477,7 +440,7 @@ listing itself as the first entry.
 Add a diagram only where a flow, architecture, or decision is currently
 prose-only *and* a picture would genuinely resolve it faster than reading —
 not for every table, command list, or file layout, which read fine as text.
-Before adding a new one, check the existing set (37 diagrams as of this
+Before adding a new one, check the existing set (19 diagrams as of this
 writing, see filenames in `docs/diagrams-src/`) so a new diagram doesn't
 duplicate an existing concept from a slightly different angle — extend or
 reference the existing one instead where possible.
