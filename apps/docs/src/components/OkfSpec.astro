@@ -29,14 +29,22 @@ const titleize = (s: string) =>
     .replace(/[_-]+/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
-const KIND_COLOR: Record<string, string> = {
-  query: "#2563eb",
-  action: "#d97706",
-  mutation: "#e11d48",
-  lookup: "#64748b",
-  compute: "#059669",
+// Tool kinds ride the status ramp (--ge-* tokens in src/styles/custom.css,
+// mirroring packages/design/src/status-ramp.mjs): reads are calm, writes are
+// hot, compute is the one green. Each token has a `-text` AA companion.
+const KIND_TONE: Record<string, string> = {
+  query: "ge-status-running",
+  action: "ge-status-blocked",
+  mutation: "ge-status-failed",
+  lookup: "ge-status-queued",
+  compute: "ge-status-passed",
 };
-const kindColor = (k: string) => KIND_COLOR[k] || "#5f6368";
+const kindStyle = (k: string) => {
+  const tone = KIND_TONE[k];
+  return tone
+    ? `--k: var(--${tone}); --k-text: var(--${tone}-text);`
+    : "--k: var(--sl-color-gray-4); --k-text: var(--sl-color-gray-2);";
+};
 
 // Column type → readable label; enum columns list their values.
 const colType = (c: any) => {
@@ -141,7 +149,7 @@ const toolBySystem = (id: string) => (spec.systems || []).find((s: any) => s.id 
           <div class="okf-tool" id={`tool-${t.name}`}>
             <div class="okf-tool-head">
               <code class="okf-tool-name">{t.name}</code>
-              <span class="okf-kind" style={`--k:${kindColor(t.kind)}`}>{t.kind}</span>
+              <span class="okf-kind" style={kindStyle(t.kind)}>{t.kind}</span>
               {t.sourceSystemId && <span class="okf-tool-sys">{toolBySystem(t.sourceSystemId)}</span>}
             </div>
             {t.description && <p class="okf-dim okf-tool-desc">{t.description}</p>}
@@ -367,14 +375,17 @@ const toolBySystem = (id: string) => (spec.systems || []).find((s: any) => s.id 
   }
   .okf-scope-col ul { margin: 0.25rem 0 0; padding-left: 1.1rem; }
   .okf-scope-col li { font-size: var(--sl-text-sm); margin: 0.15rem 0; }
-  .okf-scope-in { border-left: 3px solid #059669; }
-  .okf-scope-out { border-left: 3px solid var(--sl-color-gray-4); }
+  .okf-scope-in {
+    border-color: color-mix(in srgb, var(--ge-status-passed) 40%, var(--sl-color-gray-5));
+    background: color-mix(in srgb, var(--ge-status-passed) 5%, transparent);
+  }
+  .okf-scope-out { background: var(--sl-color-gray-6); }
 
   /* tables */
   .okf-table-wrap { overflow-x: auto; }
   .okf-table { width: 100%; font-size: var(--sl-text-xs); margin: 0.25rem 0; }
   .okf-table td { vertical-align: top; }
-  .okf-action { color: #d97706; }
+  .okf-action { color: var(--ge-status-blocked-text); }
   code.okf-action, .okf-req { white-space: nowrap; }
 
   .okf-guardrails li, .okf-evidence li { font-size: var(--sl-text-sm); }
@@ -425,7 +436,7 @@ const toolBySystem = (id: string) => (spec.systems || []).find((s: any) => s.id 
     text-decoration: none;
   }
   a.okf-chip:hover { border-color: var(--sl-color-accent); color: var(--sl-color-text-accent); }
-  .okf-chip-tool { color: #2563eb; }
+  .okf-chip-tool { color: var(--sl-color-text-accent); }
 
   /* tools */
   .okf-tools, .okf-systems, .okf-evals, .okf-docs, .okf-anoms {
@@ -444,7 +455,7 @@ const toolBySystem = (id: string) => (spec.systems || []).find((s: any) => s.id 
   .okf-tool-name, .okf-entity-name { font-size: 0.78rem; font-weight: 600; }
   .okf-kind {
     font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
-    color: var(--k); border: 1px solid color-mix(in srgb, var(--k) 40%, transparent);
+    color: var(--k-text); border: 1px solid color-mix(in srgb, var(--k) 40%, transparent);
     border-radius: 0.25rem; padding: 0 0.35rem;
   }
   .okf-tool-sys, .okf-sys-proto { margin-left: auto; font-size: 0.68rem; color: var(--sl-color-gray-3); }
@@ -462,7 +473,7 @@ const toolBySystem = (id: string) => (spec.systems || []).find((s: any) => s.id 
     font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
     color: var(--sl-color-gray-4); min-width: 3.8rem;
   }
-  .okf-ev { color: #059669 !important; }
+  .okf-ev { color: var(--ge-status-passed-text) !important; }
 
   /* data model */
   .okf-entities { display: flex; flex-direction: column; gap: 0.4rem; margin: 0.5rem 0; }
@@ -481,8 +492,8 @@ const toolBySystem = (id: string) => (spec.systems || []).find((s: any) => s.id 
   .okf-schema { margin: 0; }
   .okf-schema td, .okf-schema th { padding: 0.25rem 0.75rem; }
   .okf-pk {
-    font-size: 0.55rem; font-weight: 700; margin-left: 0.35rem; color: #d97706;
-    border: 1px solid color-mix(in srgb, #d97706 40%, transparent); border-radius: 0.2rem; padding: 0 0.25rem;
+    font-size: 0.55rem; font-weight: 700; margin-left: 0.35rem; color: var(--ge-status-blocked-text);
+    border: 1px solid color-mix(in srgb, var(--ge-status-blocked) 40%, transparent); border-radius: 0.2rem; padding: 0 0.25rem;
   }
   .okf-req { font-size: 0.65rem; color: var(--sl-color-gray-3); margin-right: 0.4rem; }
   .okf-enum { font-size: 0.68rem; color: var(--sl-color-gray-2); }

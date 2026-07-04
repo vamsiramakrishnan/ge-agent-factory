@@ -365,6 +365,39 @@ for (const [srcRel, mapped] of pages) {
   }
 }
 
+// Curated pages (index.mdx, start/quickstart.mdx, …) are authored in this app,
+// not synced, so the reference-driven copy above never walks them — but they
+// point at the same docs/ assets by absolute site path
+// (`${BASE}/assets/tapes/ge-init.gif`). Scan the whole content tree for those
+// references and copy them from docs/ too, so a curated page can't silently
+// ship a broken image (the tape GIFs on the landing page were exactly this).
+const SITE_ASSET_RE = new RegExp(`${BASE}/(assets/[\\w./@-]+\\.(?:svg|png|jpe?g|gif|webp))`, "gi");
+const contentFiles = (dir) =>
+  readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+    e.isDirectory()
+      ? contentFiles(join(dir, e.name))
+      : /\.mdx?$/.test(e.name)
+        ? [join(dir, e.name)]
+        : [],
+  );
+for (const file of contentFiles(DEST)) {
+  for (const m of readFileSync(file, "utf8").matchAll(SITE_ASSET_RE)) {
+    const rel = m[1];
+    if (copiedAssets.has(rel)) continue;
+    const abs = join(SRC, rel);
+    if (!existsSync(abs)) {
+      warnings.push(`${relative(join(HERE, ".."), file)}: asset not found in docs/: ${rel}`);
+      continue;
+    }
+    if (!DRY) {
+      const out = join(PUBLIC, rel);
+      mkdirSync(dirname(out), { recursive: true });
+      cpSync(abs, out);
+    }
+    copiedAssets.add(rel);
+  }
+}
+
 // MDX-parse guard: every emitted page must compile with the same MDX compiler
 // Astro will use. This is what keeps docs/ authoring safe — a hostile token
 // that slips past the mechanical escapes fails here, with source context,
